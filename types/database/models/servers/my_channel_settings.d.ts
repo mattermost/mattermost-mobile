@@ -4,6 +4,8 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
+import type ChannelModel from './channel';
+
 /**
  * The MyChannelSettings model represents the specific user's configuration to
  * the channel this user belongs to.

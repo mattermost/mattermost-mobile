@@ -22,7 +22,7 @@ const enhance = withObservables(['channelId'], ({channelId, database}: {channelI
     const currentUserId = observeCurrentUserId(database);
 
     const channel = myChannel.pipe(switchMap((my) => (my ? my.channel.observe() : of$(undefined))));
-    const settings = channel.pipe(switchMap((c) => c.settings.observe()));
+    const settings = channel.pipe(switchMap((c) => (c ? c.settings.observe() : of$(undefined))));
 
     const isOwnDirectMessage = combineLatest([currentUserId, channel]).pipe(
         switchMap(([userId, ch]) => {

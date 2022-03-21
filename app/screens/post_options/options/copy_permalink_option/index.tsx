@@ -21,7 +21,7 @@ const enhanced = withObservables(['post'], ({post, database}: WithDatabaseArgs &
 
     const teamName = combineLatest([channel, currentTeamId]).pipe(
         switchMap(([c, tid]) => {
-            const teamId = c.teamId || tid;
+            const teamId = c?.teamId || tid;
             return observeTeam(database, teamId).
                 pipe(
                     // eslint-disable-next-line max-nested-callbacks

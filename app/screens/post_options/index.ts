@@ -81,7 +81,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
     const serverVersion = config.pipe(switchMap((cfg) => of$(cfg?.Version || '')));
     const postEditTimeLimit = config.pipe(switchMap((cfg) => of$(parseInt(cfg?.PostEditTimeLimit || '-1', 10))));
 
-    const canPostPermission = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => (u ? from$(hasPermissionForChannel(c, u, Permissions.CREATE_POST, false)) : of$(false))));
+    const canPostPermission = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => ((c && u) ? from$(hasPermissionForChannel(c, u, Permissions.CREATE_POST, false)) : of$(false))));
     const hasAddReactionPermission = currentUser.pipe(switchMap((u) => (u ? from$(hasPermissionForPost(post, u, Permissions.ADD_REACTION, true)) : of$(false))));
     const canDeletePostPermission = currentUser.pipe(switchMap((u) => {
         const isOwner = post.userId === u?.id;
@@ -119,7 +119,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
 
     const canEdit = combineLatest([postEditTimeLimit, isLicensed, channel, currentUser, channelIsArchived, channelIsReadOnly, canEditUntil, canPostPermission]).pipe(switchMap(([lt, ls, c, u, isArchived, isReadOnly, until, canPost]) => {
         const isOwner = u?.id === post.userId;
-        const canEditPostPermission = u ? canEditPost(isOwner, post, lt, ls, c, u) : false;
+        const canEditPostPermission = (c && u) ? canEditPost(isOwner, post, lt, ls, c, u) : false;
         const timeNotReached = (until === -1) || (until > Date.now());
         return of$(canEditPostPermission && !isArchived && !isReadOnly && timeNotReached && canPost);
     }));

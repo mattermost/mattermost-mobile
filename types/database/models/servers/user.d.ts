@@ -3,6 +3,15 @@
 
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
+import type ChannelModel from './channel';
+import type ChannelMembershipModel from './channel_membership';
+import type PostModel from './post';
+import type PreferenceModel from './preference';
+import type ReactionModel from './reaction';
+import type TeamMembershipModel from './team_membership';
+import type ThreadParticipantsModel from './thread_participant';
+import type {UserMentionKey} from '@typings/global/markdown';
+
 /**
  * The User model represents the 'USER' table and its relationship to other
  * shareholders in the app.

@@ -34,59 +34,61 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
         const member = await getMyChannel(database, channelId);
 
         if (member) {
-            const channel: ChannelModel = await member.channel.fetch();
-            if (!channel.teamId && teamId) {
-                const team = await getTeamById(database, teamId);
-                if (!team) {
-                    return {error: `team with id ${teamId} not found`};
+            const channel = await member.channel.fetch();
+            if (channel) {
+                if (!channel.teamId && teamId) {
+                    const team = await getTeamById(database, teamId);
+                    if (!team) {
+                        return {error: `team with id ${teamId} not found`};
+                    }
                 }
-            }
-            const toTeamId = channel.teamId || teamId || system.currentTeamId;
+                const toTeamId = channel.teamId || teamId || system.currentTeamId;
 
-            if (isTabletDevice && system.currentChannelId !== channelId) {
-                // On tablet, the channel is being rendered, by setting the channel to empty first we speed up
-                // the switch by ~3x
-                await setCurrentChannelId(operator, '');
-            }
-
-            if (system.currentTeamId !== toTeamId) {
-                const history = await addTeamToTeamHistory(operator, toTeamId, true);
-                models.push(...history);
-            }
-
-            if ((system.currentTeamId !== toTeamId) || (system.currentChannelId !== channelId)) {
-                const commonValues: PrepareCommonSystemValuesArgs = {
-                    currentChannelId: system.currentChannelId === channelId ? undefined : channelId,
-                    currentTeamId: system.currentTeamId === toTeamId ? undefined : toTeamId,
-                };
-                const common = await prepareCommonSystemValues(operator, commonValues);
-                if (common) {
-                    models.push(...common);
+                if (isTabletDevice && system.currentChannelId !== channelId) {
+                    // On tablet, the channel is being rendered, by setting the channel to empty first we speed up
+                    // the switch by ~3x
+                    await setCurrentChannelId(operator, '');
                 }
-            }
 
-            if (system.currentChannelId !== channelId || system.currentTeamId !== toTeamId) {
-                const history = await addChannelToTeamHistory(operator, toTeamId, channelId, true);
-                models.push(...history);
-            }
+                if (system.currentTeamId !== toTeamId) {
+                    const history = await addTeamToTeamHistory(operator, toTeamId, true);
+                    models.push(...history);
+                }
 
-            const {member: viewedAt} = await markChannelAsViewed(serverUrl, channelId, true);
-            if (viewedAt) {
-                models.push(viewedAt);
-            }
+                if ((system.currentTeamId !== toTeamId) || (system.currentChannelId !== channelId)) {
+                    const commonValues: PrepareCommonSystemValuesArgs = {
+                        currentChannelId: system.currentChannelId === channelId ? undefined : channelId,
+                        currentTeamId: system.currentTeamId === toTeamId ? undefined : toTeamId,
+                    };
+                    const common = await prepareCommonSystemValues(operator, commonValues);
+                    if (common) {
+                        models.push(...common);
+                    }
+                }
 
-            if (models.length && !prepareRecordsOnly) {
-                await operator.batchRecords(models);
-            }
+                if (system.currentChannelId !== channelId || system.currentTeamId !== toTeamId) {
+                    const history = await addChannelToTeamHistory(operator, toTeamId, channelId, true);
+                    models.push(...history);
+                }
 
-            if (isTabletDevice) {
-                dismissAllModalsAndPopToRoot();
-                DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME);
-            } else {
-                dismissAllModalsAndPopToScreen(Screens.CHANNEL, '', undefined, {topBar: {visible: false}});
-            }
+                const {member: viewedAt} = await markChannelAsViewed(serverUrl, channelId, true);
+                if (viewedAt) {
+                    models.push(viewedAt);
+                }
 
-            console.log('channel switch to', channel?.displayName, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
+                if (models.length && !prepareRecordsOnly) {
+                    await operator.batchRecords(models);
+                }
+
+                if (isTabletDevice) {
+                    dismissAllModalsAndPopToRoot();
+                    DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME);
+                } else {
+                    dismissAllModalsAndPopToScreen(Screens.CHANNEL, '', undefined, {topBar: {visible: false}});
+                }
+
+                console.log('channel switch to', channel?.displayName, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
+            }
         }
     } catch (error) {
         return {error};

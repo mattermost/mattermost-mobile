@@ -119,7 +119,7 @@ const withPost = withObservables(
         }
         const hasReplies = from$(post.hasReplies());
         const isConsecutivePost = author.pipe(
-            switchMap((user) => of$(Boolean(post && previousPost && !user.isBot && areConsecutivePosts(post, previousPost)))),
+            switchMap((user) => of$(Boolean(post && previousPost && !user?.isBot && areConsecutivePosts(post, previousPost)))),
         );
 
         return {
