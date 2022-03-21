@@ -7,13 +7,26 @@ import {map, switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {processIsCRTEnabled} from '@helpers/api/preference';
+import {getPreferenceValue} from '@helpers/api/preference';
 
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
 import type ThreadModel from '@typings/database/models/servers/thread';
 
 const {SERVER: {CHANNEL, POST, PREFERENCE, SYSTEM, THREAD}} = MM_TABLES;
+
+export function processIsCRTEnabled(preferences: PreferenceModel[], config?: ClientConfig): boolean {
+    let preferenceDefault = Preferences.COLLAPSED_REPLY_THREADS_OFF;
+    const configValue = config?.CollapsedThreads;
+    if (configValue === 'default_on') {
+        preferenceDefault = Preferences.COLLAPSED_REPLY_THREADS_ON;
+    }
+    const preference = getPreferenceValue(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.COLLAPSED_REPLY_THREADS, preferenceDefault);
+
+    const isAllowed = config?.FeatureFlagCollapsedThreads === 'true' && config?.CollapsedThreads !== 'disabled';
+
+    return isAllowed && (preference === Preferences.COLLAPSED_REPLY_THREADS_ON || config?.CollapsedThreads === 'always_on');
+}
 
 export const getIsCRTEnabled = async (database: Database): Promise<boolean> => {
     const {value: config} = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.CONFIG);
