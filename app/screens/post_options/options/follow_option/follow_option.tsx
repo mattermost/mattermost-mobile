@@ -16,8 +16,6 @@ import type ThreadModel from '@typings/database/models/servers/thread';
 type FollowThreadOptionProps = {
     thread: ThreadModel;
     teamId: string;
-    channelId: string;
-    location?: typeof Screens[keyof typeof Screens];
 };
 
 const FollowThreadOption = ({thread, teamId}: FollowThreadOptionProps) => {

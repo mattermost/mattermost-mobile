@@ -95,7 +95,6 @@ const PostOptions = ({
                 {canReply && <ReplyOption post={post}/>}
                 {shouldRenderFollow &&
                     <FollowThreadOption
-                        location={location}
                         thread={thread}
                         channelId={post.channelId}
                     />
