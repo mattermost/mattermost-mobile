@@ -483,6 +483,7 @@
   "thread.repliesCount": "{repliesCount, number} {repliesCount, plural, one {reply} other {replies}}",
   "threads": "Threads",
   "threads.deleted": "Original Message Deleted",
+  "threads.follow": "Follow",
   "threads.following": "Following",
   "threads.followMessage": "Follow Message",
   "threads.followThread": "Follow Thread",
