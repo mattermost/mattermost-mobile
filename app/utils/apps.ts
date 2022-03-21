@@ -12,13 +12,7 @@ export function appsEnabled(state: GlobalState): boolean { // eslint-disable-lin
 }
 
 export function cleanBinding(binding: AppBinding, topLocation: string): AppBinding {
-    if ((binding as any).expanded) {
-        return binding;
-    }
-
-    const b = cleanBindingRec(binding, topLocation, 0);
-    (b as any).expanded = true;
-    return b;
+    return cleanBindingRec(binding, topLocation, 0);
 }
 
 function cleanBindingRec(binding: AppBinding, topLocation: string, depth: number): AppBinding {
