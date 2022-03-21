@@ -11,6 +11,7 @@ const Preferences: Record<string, any> = {
     CATEGORY_FAVORITE_CHANNEL: 'favorite_channel',
     CATEGORY_AUTO_RESET_MANUAL_STATUS: 'auto_reset_manual_status',
     CATEGORY_NOTIFICATIONS: 'notifications',
+
     COMMENTS: 'comments',
     COMMENTS_ANY: 'any',
     COMMENTS_ROOT: 'root',
@@ -35,7 +36,7 @@ const Preferences: Record<string, any> = {
     USE_MILITARY_TIME: 'use_military_time',
     CATEGORY_SIDEBAR_SETTINGS: 'sidebar_settings',
     CHANNEL_SIDEBAR_ORGANIZATION: 'channel_sidebar_organization',
-    CHANNEL_SIDEBAR_AUTOCLOSE_DMS: 'close_unused_direct_messages',
+    CHANNEL_SIDEBAR_LIMIT_DMS: 'limit_visible_dms_gms',
     AUTOCLOSE_DMS_ENABLED: 'after_seven_days',
     CATEGORY_ADVANCED_SETTINGS: 'advanced_settings',
     ADVANCED_FILTER_JOIN_LEAVE: 'join_leave',

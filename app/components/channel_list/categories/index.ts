@@ -16,7 +16,7 @@ import type CategoryModel from '@typings/database/models/servers/category';
 import type SystemModel from '@typings/database/models/servers/system';
 
 const {SERVER: {CATEGORY, SYSTEM}} = MM_TABLES;
-const {CURRENT_CHANNEL_ID} = SYSTEM_IDENTIFIERS;
+const {CURRENT_CHANNEL_ID, CURRENT_USER_ID} = SYSTEM_IDENTIFIERS;
 
 type WithDatabaseProps = {currentTeamId: string } & WithDatabaseArgs
 
@@ -26,6 +26,9 @@ const enhanced = withObservables(
         const currentChannelId = database.get<SystemModel>(SYSTEM).findAndObserve(CURRENT_CHANNEL_ID).pipe(
             switchMap(({value}) => of$(value)),
         );
+        const currentUserId = database.get<SystemModel>(SYSTEM).findAndObserve(CURRENT_USER_ID).pipe(
+            switchMap(({value}) => of$(value)),
+        );
         const categories = database.get<CategoryModel>(CATEGORY).query(
             Q.where('team_id', currentTeamId),
         ).observeWithColumns(['sort_order']);
@@ -33,6 +36,7 @@ const enhanced = withObservables(
         return {
             currentChannelId,
             categories,
+            currentUserId,
         };
     });
 

@@ -247,3 +247,7 @@ export const addChannelMembership = async (operator: ServerDataOperator, userId:
 export const queryAllMyChannelMembershipIds = async (database: Database, userId: string) => {
     return database.get(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId))).fetchIds();
 };
+
+export const queryChannelsByNames = (database: Database, names: string[]) => {
+    return database.get<ChannelModel>(CHANNEL).query(Q.where('name', Q.oneOf(names)));
+};

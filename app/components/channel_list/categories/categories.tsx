@@ -14,6 +14,7 @@ import type {CategoryModel} from '@database/models/server';
 type Props = {
     categories: CategoryModel[];
     currentChannelId: string;
+    currentUserId: string;
 }
 
 const styles = StyleSheet.create({
@@ -24,8 +25,9 @@ const styles = StyleSheet.create({
 
 const extractKey = (item: CategoryModel) => item.id;
 
-const Categories = ({categories, currentChannelId}: Props) => {
+const Categories = ({categories, currentChannelId, currentUserId}: Props) => {
     const intl = useIntl();
+
     const renderCategory = useCallback((data: {item: CategoryModel}) => {
         return (
             <>
@@ -33,6 +35,7 @@ const Categories = ({categories, currentChannelId}: Props) => {
                 <CategoryBody
                     category={data.item}
                     currentChannelId={currentChannelId}
+                    currentUserId={currentUserId}
                     locale={intl.locale}
                 />
             </>

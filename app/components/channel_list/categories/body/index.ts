@@ -8,6 +8,9 @@ import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {MM_TABLES} from '@app/constants/database';
+import {queryChannelsByNames} from '@app/queries/servers/channel';
+import {queryPreferencesByCategory} from '@app/queries/servers/preference';
+import {getDirectChannelName} from '@app/utils/channel';
 import {General, Preferences} from '@constants';
 import {WithDatabaseArgs} from '@typings/database/database';
 
@@ -22,7 +25,7 @@ type ChannelData = Pick<ChannelModel, 'id' | 'displayName'> & {
     isMuted: boolean;
 };
 
-const {SERVER: {MY_CHANNEL_SETTINGS, PREFERENCE}} = MM_TABLES;
+const {SERVER: {MY_CHANNEL_SETTINGS}} = MM_TABLES;
 
 const sortAlpha = (locale: string, a: ChannelData, b: ChannelData) => {
     if (a.isMuted && !b.isMuted) {
@@ -82,19 +85,37 @@ const getSortedIds = (database: Database, category: CategoryModel, locale: strin
     }
 };
 
-const enhance = withObservables(['category'], ({category, locale, database}: {category: CategoryModel; locale: string} & WithDatabaseArgs) => {
+const mapPrefName = (prefs: PreferenceModel[]) => of$(prefs.map((p) => p.name));
+
+const mapChannelIds = (channels: ChannelModel[]) => of$(channels.map((c) => c.id));
+
+const enhance = withObservables(['category'], ({category, locale, database, currentUserId}: {category: CategoryModel; locale: string; currentUserId: string} & WithDatabaseArgs) => {
     const observedCategory = category.observe();
     const sortedIds = observedCategory.pipe(
         switchMap((c) => getSortedIds(database, c, locale)),
     );
 
+    const dmMap = (p: PreferenceModel) => getDirectChannelName(p.name, currentUserId);
+
+    const hiddenDmIds = queryPreferencesByCategory(database, Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, undefined, 'false').
+        observe().pipe(
+            switchMap((prefs: PreferenceModel[]) => {
+                const names = prefs.map(dmMap);
+                const channels = queryChannelsByNames(database, names).observe();
+
+                return channels.pipe(
+                    switchMap(mapChannelIds),
+                );
+            }),
+        );
+
+    const hiddenGmIds = queryPreferencesByCategory(database, Preferences.CATEGORY_GROUP_CHANNEL_SHOW, undefined, 'false').
+        observe().pipe(switchMap(mapPrefName));
+
     let limit = of$(0);
     if (category.type === 'direct_messages') {
-        limit = database.get<PreferenceModel>(PREFERENCE).
-            query(
-                Q.where('category', Preferences.CATEGORY_SIDEBAR_SETTINGS),
-                Q.where('name', 'limit_visible_dms_gms'),
-            ).observe().pipe(
+        limit = queryPreferencesByCategory(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_LIMIT_DMS).
+            observe().pipe(
                 switchMap(
                     (val) => {
                         if (val[0]) {
@@ -107,8 +128,13 @@ const enhance = withObservables(['category'], ({category, locale, database}: {ca
             );
     }
 
+    const hiddenChannelIds = combineLatest([hiddenDmIds, hiddenGmIds]).pipe(switchMap(
+        ([a, b]) => of$(a.concat(b)),
+    ));
+
     return {
         limit,
+        hiddenChannelIds,
         sortedIds,
         category: observedCategory,
     };
