@@ -1,22 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {UserProfile} from '@mm-redux/types/users';
-
-import type {UserAutocomplete} from '@mm-redux/types/apps';
-
-import type {AutocompleteSuggestion} from '@mm-redux/types/integrations';
-
 import {autocompleteChannels} from '@mm-redux/actions/channels';
 import {autocompleteUsersInChannel} from '@mm-redux/actions/users';
-
+import {COMMAND_SUGGESTION_CHANNEL, COMMAND_SUGGESTION_USER} from '@mm-redux/constants/apps';
 import {Channel} from '@mm-redux/types/channels';
 
-import {COMMAND_SUGGESTION_CHANNEL, COMMAND_SUGGESTION_USER} from '@mm-redux/constants/apps';
-
 import type {DispatchFunc} from '@mm-redux/types/actions';
-
+import type {UserAutocomplete} from '@mm-redux/types/apps';
+import type {AutocompleteSuggestion} from '@mm-redux/types/integrations';
 import type {GlobalState} from '@mm-redux/types/store';
+import type {UserProfile} from '@mm-redux/types/users';
 
 interface Store {
     dispatch: DispatchFunc;

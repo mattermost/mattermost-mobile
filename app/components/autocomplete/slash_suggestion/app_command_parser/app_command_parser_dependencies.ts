@@ -3,16 +3,20 @@
 
 import {intlShape} from 'react-intl';
 
+export {doAppFetchForm, doAppLookup} from '@actions/apps';
+
+export {getChannelByNameAndTeamName, getChannel, autocompleteChannels} from '@mm-redux/actions/channels';
 import {getUserByUsername, getUser, autocompleteUsers, autocompleteUsersInChannel} from '@mm-redux/actions/users';
+export {AppsTypes} from '@mm-redux/action_types';
+export {makeAppBindingsSelector, makeRHSAppBindingSelector, getAppCommandForm, getAppRHSCommandForm} from '@mm-redux/selectors/entities/apps';
+export {getChannel as selectChannel, getCurrentChannel, getChannelByName as selectChannelByName} from '@mm-redux/selectors/entities/channels';
+export {getPost} from '@mm-redux/selectors/entities/posts';
 import {getCurrentTeamId, getCurrentTeam} from '@mm-redux/selectors/entities/teams';
-import {
-    DispatchFunc,
-} from '@mm-redux/types/actions';
+export {getUserByUsername as selectUserByUsername, getUser as selectUser} from '@mm-redux/selectors/entities/users';
+import {DispatchFunc} from '@mm-redux/types/actions';
 import ReduxStore from '@store/store';
 
 import type {ParsedCommand} from './app_command_parser';
-import type {AutocompleteSuggestion} from '@mm-redux/types/integrations';
-
 export type {
     AppCall,
     AppCallRequest,
@@ -30,27 +34,18 @@ export type {
     AutocompleteChannelSelect,
     AppLookupResponse,
 } from '@mm-redux/types/apps';
-
-export type {
-    DoAppCallResult,
-} from 'types/actions/apps';
-
-export {AppsTypes} from '@mm-redux/action_types';
-
-export type {AutocompleteSuggestion};
-
-export type {
-    Channel,
-} from '@mm-redux/types/channels';
-
-import type {
-    GlobalState,
-} from '@mm-redux/types/store';
+export type {Channel} from '@mm-redux/types/channels';
+import type {AutocompleteSuggestion} from '@mm-redux/types/integrations';
+import type {GlobalState} from '@mm-redux/types/store';
 
 export type {
     DispatchFunc,
     GlobalState,
 };
+
+export type {AutocompleteSuggestion};
+
+export type {DoAppCallResult} from 'types/actions/apps';
 
 export {
     AppBindingLocations,
@@ -61,17 +56,10 @@ export {
     COMMAND_SUGGESTION_USER,
 } from '@mm-redux/constants/apps';
 
-export {makeAppBindingsSelector, makeRHSAppBindingSelector, getAppCommandForm, getAppRHSCommandForm} from '@mm-redux/selectors/entities/apps';
-
-export {getPost} from '@mm-redux/selectors/entities/posts';
-export {getChannel as selectChannel, getCurrentChannel, getChannelByName as selectChannelByName} from '@mm-redux/selectors/entities/channels';
-
 export {
     getCurrentTeamId,
     getCurrentTeam,
 };
-
-export {getUserByUsername as selectUserByUsername, getUser as selectUser} from '@mm-redux/selectors/entities/users';
 
 export {
     getUserByUsername,
@@ -80,9 +68,6 @@ export {
     autocompleteUsersInChannel,
 };
 
-export {getChannelByNameAndTeamName, getChannel, autocompleteChannels} from '@mm-redux/actions/channels';
-
-export {doAppFetchForm, doAppLookup} from '@actions/apps';
 export {
     createCallRequest,
     filterEmptyOptions,
@@ -98,7 +83,7 @@ export const getStore = () => ReduxStore.redux as Store;
 export const EXECUTE_CURRENT_COMMAND_ITEM_ID = '_execute_current_command';
 export const OPEN_COMMAND_IN_MODAL_ITEM_ID = '_open_command_in_modal';
 
-export const getOpenInModalSuggestion = (_: ParsedCommand): AutocompleteSuggestion | null => {
+export const getOpenInModalSuggestion = (_: ParsedCommand): AutocompleteSuggestion | null => { // eslint-disable-line @typescript-eslint/no-unused-vars
     // Not supported on mobile yet
     return null;
 };

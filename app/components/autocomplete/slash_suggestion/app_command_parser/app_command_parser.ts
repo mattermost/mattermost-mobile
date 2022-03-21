@@ -1120,7 +1120,7 @@ export class AppCommandParser {
         }
 
         return suggestions.map((suggestion) => this.decorateSuggestionComplete(parsed, suggestion));
-    }
+    };
 
     getNoMatchingSuggestion = () => {
         return [{
@@ -1256,7 +1256,7 @@ export class AppCommandParser {
                 break;
             }
             case AppFieldTypes.USER: {
-                const getUser = async (userName: string) => {
+                const getFieldUser = async (userName: string) => {
                     let user = selectUserByUsername(this.store.getState(), userName);
                     if (!user) {
                         const dispatchResult = await this.store.dispatch(getUserByUsername(userName) as any);
@@ -1287,7 +1287,7 @@ export class AppCommandParser {
                         if (userName[0] === '@') {
                             userName = userName.substr(1);
                         }
-                        const user = await getUser(userName);
+                        const user = await getFieldUser(userName);
                         if (!user) {
                             setUserError(userName);
                             return;
@@ -1313,7 +1313,7 @@ export class AppCommandParser {
                 if (userName[0] === '@') {
                     userName = userName.substr(1);
                 }
-                const user = await getUser(userName);
+                const user = await getFieldUser(userName);
                 if (!user) {
                     setUserError(userName);
                     return;
@@ -1322,7 +1322,7 @@ export class AppCommandParser {
                 break;
             }
             case AppFieldTypes.CHANNEL: {
-                const getChannel = async (channelName: string) => {
+                const getFieldChannel = async (channelName: string) => {
                     let channel = selectChannelByName(this.store.getState(), channelName);
                     if (!channel) {
                         const dispatchResult = await this.store.dispatch(getChannelByNameAndTeamName(getCurrentTeam(this.store.getState()).name, channelName) as any);
@@ -1353,7 +1353,7 @@ export class AppCommandParser {
                         if (channelName[0] === '~') {
                             channelName = channelName.substr(1);
                         }
-                        const channel = await getChannel(channelName);
+                        const channel = await getFieldChannel(channelName);
                         if (!channel) {
                             setChannelError(channelName);
                             return;
@@ -1380,7 +1380,7 @@ export class AppCommandParser {
                 if (channelName[0] === '~') {
                     channelName = channelName.substr(1);
                 }
-                const channel = await getChannel(channelName);
+                const channel = await getFieldChannel(channelName);
                 if (!channel) {
                     setChannelError(channelName);
                     return;
