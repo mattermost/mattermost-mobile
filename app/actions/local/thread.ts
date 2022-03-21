@@ -10,7 +10,7 @@ import {queryChannelById} from '@queries/servers/channel';
 import {queryPostById} from '@queries/servers/post';
 import {getIsCRTEnabled, getThreadById, queryThreadsInTeam} from '@queries/servers/thread';
 import {queryCurrentUser} from '@queries/servers/user';
-import {showModal} from '@screens/navigation';
+import {goToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {changeOpacity} from '@utils/theme';
 
@@ -87,9 +87,7 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
             subtitle = subtitle.replace('{channelName}', channel.displayName);
         }
 
-        const closeButtonId = 'close-threads';
-
-        showModal(Screens.THREAD, '', {closeButtonId, rootId}, {
+        goToScreen(Screens.THREAD, '', {rootId}, {
             topBar: {
                 title: {
                     text: title,

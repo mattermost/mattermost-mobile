@@ -6,6 +6,7 @@ import {
     LoginScreen,
 } from '@support/ui/screen';
 import {timeouts} from '@support/utils';
+import {expect} from 'detox';
 
 class HomeScreen {
     testID = {
@@ -33,7 +34,7 @@ class HomeScreen {
         return this.toBeVisible();
     };
 
-    logout = async (serverDisplayName = null) => {
+    logout = async (serverDisplayName: string | null = null) => {
         await AccountScreen.open();
         await AccountScreen.logout(serverDisplayName);
         await expect(this.channelListTab).not.toBeVisible();

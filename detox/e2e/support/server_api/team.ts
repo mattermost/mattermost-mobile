@@ -27,7 +27,7 @@ import {getResponseFromError} from './common';
  * @param {string} teamId - The team ID
  * @return {Object} returns {member} on success or {error, status} on error
  */
-export const apiAddUserToTeam = async (baseUrl, userId, teamId) => {
+export const apiAddUserToTeam = async (baseUrl: string, userId: string, teamId: string): Promise<any> => {
     try {
         const response = await client.post(
             `${baseUrl}/api/v4/teams/${teamId}/members`,
@@ -49,7 +49,7 @@ export const apiAddUserToTeam = async (baseUrl, userId, teamId) => {
  * @param {Object} option.team - team object to be created
  * @return {Object} returns {team} on success or {error, status} on error
  */
-export const apiCreateTeam = async (baseUrl, {type = 'O', prefix = 'team', team = null} = {}) => {
+export const apiCreateTeam = async (baseUrl: string, {type = 'O', prefix = 'team', team = null}: any = {}): Promise<any> => {
     try {
         const response = await client.post(
             `${baseUrl}/api/v4/teams`,
@@ -69,7 +69,7 @@ export const apiCreateTeam = async (baseUrl, {type = 'O', prefix = 'team', team 
  * @param {string} teamId - The team ID
  * @return {Object} returns {status} on success or {error, status} on error
  */
-export const apiDeleteTeam = async (baseUrl, teamId) => {
+export const apiDeleteTeam = async (baseUrl: string, teamId: string): Promise<any> => {
     try {
         const response = await client.delete(
             `${baseUrl}/api/v4/teams/${teamId}`,
@@ -86,13 +86,13 @@ export const apiDeleteTeam = async (baseUrl, teamId) => {
  * @param {string} baseUrl - the base server URL
  * @param {Array} teams - array of teams
  */
-export const apiDeleteTeams = async (baseUrl, teams = []) => {
+export const apiDeleteTeams = async (baseUrl: string, teams: any[] = []) => {
     let teamArray = teams;
-    if (!teamArray.length > 0) {
+    if (teamArray.length === 0) {
         ({teams: teamArray} = await Team.apiGetTeams(baseUrl));
     }
 
-    teamArray.forEach(async (team) => {
+    teamArray.forEach(async (team: any) => {
         const {status} = await Team.apiDeleteTeam(baseUrl, team.id);
         jestExpect(status).toEqual(200);
     });
@@ -106,7 +106,7 @@ export const apiDeleteTeams = async (baseUrl, teams = []) => {
  * @param {string} userId - The user ID to be removed from team
  * @return {Object} returns {status} on success or {error, status} on error
  */
-export const apiDeleteUserFromTeam = async (baseUrl, teamId, userId) => {
+export const apiDeleteUserFromTeam = async (baseUrl: string, teamId: string, userId: string): Promise<any> => {
     try {
         const response = await client.delete(
             `${baseUrl}/api/v4/teams/${teamId}/members/${userId}`,
@@ -124,7 +124,7 @@ export const apiDeleteUserFromTeam = async (baseUrl, teamId, userId) => {
  * @param {string} baseUrl - the base server URL
  * @return {Object} returns {teams} on success or {error, status} on error
  */
-export const apiGetTeams = async (baseUrl) => {
+export const apiGetTeams = async (baseUrl: string): Promise<any> => {
     try {
         const response = await client.get(`${baseUrl}/api/v4/teams`);
 
@@ -141,7 +141,7 @@ export const apiGetTeams = async (baseUrl) => {
  * @param {string} userId - The user ID
  * @return {Object} returns {teams} on success or {error, status} on error
  */
-export const apiGetTeamsForUser = async (baseUrl, userId = 'me') => {
+export const apiGetTeamsForUser = async (baseUrl: string, userId = 'me'): Promise<any> => {
     try {
         const response = await client.get(`${baseUrl}/api/v4/users/${userId}/teams`);
 
@@ -164,7 +164,7 @@ export const apiGetTeamsForUser = async (baseUrl, userId = 'me') => {
  * @param {boolean} patch.group_constrained - Group constrained
  * @return {Object} returns {team} on success or {error, status} on error
  */
-export const apiPatchTeam = async (baseUrl, teamId, teamData) => {
+export const apiPatchTeam = async (baseUrl: string, teamId: string, teamData: string): Promise<any> => {
     try {
         const response = await client.put(
             `${baseUrl}/api/v4/teams/${teamId}/patch`,
@@ -188,18 +188,18 @@ export const apiPatchTeam = async (baseUrl, teamId, teamData) => {
  * @param {boolean} patch.group_constrained - Group constrained
  * @param {Array} teams - array of teams
  */
-export const apiPatchTeams = async (baseUrl, teamData, teams = []) => {
+export const apiPatchTeams = async (baseUrl: string, teamData: any, teams: any[] = []) => {
     let teamArray = teams;
-    if (!teamArray.length > 0) {
+    if (teamArray.length === 0) {
         ({teams: teamArray} = await Team.apiGetTeams(baseUrl));
     }
 
-    teamArray.forEach(async (team) => {
+    teamArray.forEach(async (team: any) => {
         await Team.apiPatchTeam(baseUrl, team.id, teamData);
     });
 };
 
-function generateRandomTeam(type, prefix) {
+export const generateRandomTeam = (type: string, prefix: string) => {
     const randomId = getRandomId();
 
     return {
@@ -207,7 +207,7 @@ function generateRandomTeam(type, prefix) {
         display_name: `${capitalize(prefix)} ${randomId}`,
         type,
     };
-}
+};
 
 export const Team = {
     apiAddUserToTeam,
@@ -219,6 +219,7 @@ export const Team = {
     apiGetTeamsForUser,
     apiPatchTeam,
     apiPatchTeams,
+    generateRandomTeam,
 };
 
 export default Team;

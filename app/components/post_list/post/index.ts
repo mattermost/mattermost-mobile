@@ -146,7 +146,7 @@ const withPost = withObservables(
             canDelete,
             channel: post.channel.observe(),
             differentThreadSequence: of$(differentThreadSequence),
-            files: post.files.observe(),
+            filesCount: post.files.observeCount(),
             hasReplies,
             highlightReplyBar,
             isConsecutivePost,

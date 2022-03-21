@@ -17,6 +17,7 @@ type Props = {
     positionX: number;
     progress: Animated.AnimatedInterpolation;
     style?: StyleProp<ViewStyle>;
+    testID?: string;
     text: string;
 }
 
@@ -37,7 +38,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ServerOption = ({color, icon, onPress, positionX, progress, style, text}: Props) => {
+const ServerOption = ({color, icon, onPress, positionX, progress, style, testID, text}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const containerStyle = useMemo(() => {
@@ -52,7 +53,10 @@ const ServerOption = ({color, icon, onPress, positionX, progress, style, text}: 
 
     return (
         <Animated.View style={{transform: [{translateX: trans}]}}>
-            <View style={containerStyle}>
+            <View
+                style={containerStyle}
+                testID={testID}
+            >
                 <RectButton
                     style={centeredStyle}
                     onPress={onPress}

@@ -4,6 +4,7 @@
 import {Alert} from '@support/ui/component';
 import {HomeScreen} from '@support/ui/screen';
 import {timeouts} from '@support/utils';
+import {expect} from 'detox';
 
 class AccountScreen {
     testID = {
@@ -15,7 +16,7 @@ class AccountScreen {
     logoutAction = element(by.id(this.testID.logoutAction));
 
     toBeVisible = async () => {
-        await waitFor(this.accountScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.accountScreen).toExist().withTimeout(timeouts.TEN_SEC);
 
         return this.accountScreen;
     };
@@ -27,7 +28,7 @@ class AccountScreen {
         return this.toBeVisible();
     };
 
-    logout = async (serverDisplayName = null) => {
+    logout = async (serverDisplayName: string | null = null) => {
         await this.logoutAction.tap();
         if (serverDisplayName) {
             await expect(Alert.logoutTitle(serverDisplayName)).toBeVisible();

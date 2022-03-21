@@ -58,6 +58,7 @@ const ServerList = ({servers}: Props) => {
             onPress={onAddServer}
             showButton={true}
             showTitle={!isTablet}
+            testID='server_list'
             title={intl.formatMessage({id: 'your.servers', defaultMessage: 'Your servers'})}
         >
             <View style={styles.container}>

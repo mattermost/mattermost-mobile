@@ -18,6 +18,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
+import {expect} from 'detox';
 
 describe('Server Login', () => {
     const serverOneDisplayName = 'Server 1';

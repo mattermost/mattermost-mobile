@@ -12,9 +12,10 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 type Props = {
     onPress?: (e: GestureResponderEvent) => void;
     icon?: string;
+    testID?: string;
     text?: string;
 }
-export default function BottomSheetButton({onPress, icon, text}: Props) {
+export default function BottomSheetButton({onPress, icon, testID, text}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -23,6 +24,7 @@ export default function BottomSheetButton({onPress, icon, text}: Props) {
             onPress={onPress}
             type='opacity'
             style={styles.button}
+            testID={testID}
         >
             {icon && (
                 <View style={styles.icon_container}>

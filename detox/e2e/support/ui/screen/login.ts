@@ -3,6 +3,7 @@
 
 import {ServerScreen} from '@support/ui/screen';
 import {timeouts} from '@support/utils';
+import {expect} from 'detox';
 
 class LoginScreen {
     testID = {
@@ -28,13 +29,13 @@ class LoginScreen {
     signinButtonDisabled = element(by.id(this.testID.signinButtonDisabled));
 
     toBeVisible = async () => {
-        await waitFor(this.loginScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.loginScreen).toExist().withTimeout(timeouts.TEN_SEC);
         await waitFor(this.usernameInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.loginScreen;
     };
 
-    open = async (serverUrl, serverDisplayName) => {
+    open = async (serverUrl: string, serverDisplayName: string) => {
         // # Open login screen
         await ServerScreen.connectToServer(serverUrl, serverDisplayName);
 
@@ -46,7 +47,7 @@ class LoginScreen {
         await expect(this.loginScreen).not.toBeVisible();
     };
 
-    login = async (user = {}) => {
+    login = async (user: any = {}) => {
         await this.toBeVisible();
         await this.usernameInput.replaceText(user.username);
         await this.passwordInput.replaceText(user.password);

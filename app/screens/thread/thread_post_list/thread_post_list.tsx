@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useMemo, useRef} from 'react';
-import {StyleProp, StyleSheet, ViewStyle} from 'react-native';
+import {StyleSheet} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateThreadRead} from '@actions/remote/thread';
@@ -15,8 +15,7 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
-    channel: ChannelModel;
-    contentContainerStyle?: StyleProp<ViewStyle>;
+    channelId: string;
     currentTimezone: string | null;
     currentUsername: string;
     isCRTEnabled: boolean;
@@ -30,12 +29,13 @@ type Props = {
 const edges: Edge[] = ['bottom'];
 
 const styles = StyleSheet.create({
+    container: {marginTop: 20},
     flex: {flex: 1},
 });
 
 const ThreadPostList = ({
-    channel, contentContainerStyle, currentTimezone, currentUsername,
-    isCRTEnabled, isTimezoneEnabled, lastViewedAt, nativeID, posts, rootPost,
+    channelId, currentTimezone, currentUsername,
+    isTimezoneEnabled, lastViewedAt, nativeID, posts, rootPost,
 }: Props) => {
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
@@ -55,8 +55,8 @@ const ThreadPostList = ({
 
     const postList = (
         <PostList
-            channelId={channel.id}
-            contentContainerStyle={contentContainerStyle}
+            channelId={channelId}
+            contentContainerStyle={styles.container}
             currentTimezone={currentTimezone}
             currentUsername={currentUsername}
             isTimezoneEnabled={isTimezoneEnabled}

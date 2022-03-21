@@ -21,6 +21,7 @@ type Props = {
     onPress?: () => void;
     size?: number;
     style?: StyleProp<ViewStyle>;
+    testID?: string;
     unreadStyle?: StyleProp<ViewStyle>;
 }
 
@@ -46,6 +47,7 @@ export default function ServerIcon({
     onPress,
     size = 24,
     style,
+    testID,
     unreadStyle,
 }: Props) {
     const theme = useTheme();
@@ -61,6 +63,7 @@ export default function ServerIcon({
                 disabled={onPress === undefined}
                 onPress={onPress}
                 type='opacity'
+                testID={testID}
             >
                 <CompassIcon
                     size={size}
@@ -73,6 +76,7 @@ export default function ServerIcon({
                     color={badgeColor}
                     visible={hasBadge}
                     style={memoizedStyle}
+                    testID={`${testID}.badge`}
                     value={count}
                 />
             </TouchableWithFeedback>
