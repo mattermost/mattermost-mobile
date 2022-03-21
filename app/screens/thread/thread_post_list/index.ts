@@ -39,7 +39,7 @@ const enhanced = withObservables(['forceQueryAfterAppState', 'rootPost'], ({data
         currentUsername: currentUser.pipe((switchMap((user) => of$(user.username)))),
         isCRTEnabled: observeIsCRTEnabled(database),
         isTimezoneEnabled: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-            switchMap((cfg) => of$(cfg.value.ExperimentalTimezone === 'true')),
+            switchMap((config) => of$(config.value.ExperimentalTimezone === 'true')),
         ),
         lastViewedAt: database.get<MyChannelModel>(MY_CHANNEL).findAndObserve(rootPost.channelId).pipe(
             switchMap((myChannel) => of$(myChannel.viewedAt)),
