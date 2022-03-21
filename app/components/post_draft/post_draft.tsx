@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {RefObject, useState} from 'react';
-import {Platform, useWindowDimensions, View} from 'react-native';
+import {Platform, View} from 'react-native';
 import {KeyboardTrackingView, KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 
 import Autocomplete from '@components/autocomplete';
@@ -29,11 +29,7 @@ type Props = {
     keyboardTracker: RefObject<KeyboardTrackingViewRef>;
 }
 
-const {
-    KEYBOARD_TRACKING_OFFSET,
-    KEYBOARD_TRACKING_OFFSET_MODAL_LANDSCAPE,
-    KEYBOARD_TRACKING_OFFSET_MODAL_PORTRAIT,
-} = ViewConstants;
+const {KEYBOARD_TRACKING_OFFSET} = ViewConstants;
 
 function PostDraft({
     testID,
@@ -54,8 +50,6 @@ function PostDraft({
     const [cursorPosition, setCursorPosition] = useState(message.length);
     const [postInputTop, setPostInputTop] = useState(0);
     const isTablet = useIsTablet();
-    const dimensions = useWindowDimensions();
-    const isLandscape = dimensions.width > dimensions.height;
 
     if (channelIsArchived || deactivatedChannel) {
         const archivedTestID = `${testID}.archived`;
@@ -114,18 +108,13 @@ function PostDraft({
         );
     }
 
-    let viewInitialOffsetY = isTablet ? KEYBOARD_TRACKING_OFFSET : 0;
-    if (isTablet && rootId) {
-        viewInitialOffsetY = isLandscape ? KEYBOARD_TRACKING_OFFSET_MODAL_LANDSCAPE : KEYBOARD_TRACKING_OFFSET_MODAL_PORTRAIT;
-    }
-
     return (
         <>
             <KeyboardTrackingView
                 accessoriesContainerID={accessoriesContainerID}
                 ref={keyboardTracker}
                 scrollViewNativeID={scrollViewNativeID}
-                viewInitialOffsetY={viewInitialOffsetY}
+                viewInitialOffsetY={isTablet && !rootId ? KEYBOARD_TRACKING_OFFSET : 0}
             >
                 {draftHandler}
             </KeyboardTrackingView>

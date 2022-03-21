@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {StyleProp, StyleSheet, ViewStyle} from 'react-native';
+import {StyleSheet} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import PostList from '@components/post_list';
@@ -13,7 +13,6 @@ import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
     channelId: string;
-    contentContainerStyle?: StyleProp<ViewStyle>;
     currentTimezone: string | null;
     currentUsername: string;
     isTimezoneEnabled: boolean;
@@ -26,11 +25,12 @@ type Props = {
 const edges: Edge[] = ['bottom'];
 
 const styles = StyleSheet.create({
+    container: {marginTop: 20},
     flex: {flex: 1},
 });
 
 const ThreadPostList = ({
-    channelId, contentContainerStyle, currentTimezone, currentUsername,
+    channelId, currentTimezone, currentUsername,
     isTimezoneEnabled, lastViewedAt, nativeID, posts, rootPost,
 }: Props) => {
     const isTablet = useIsTablet();
@@ -42,7 +42,7 @@ const ThreadPostList = ({
     const postList = (
         <PostList
             channelId={channelId}
-            contentContainerStyle={contentContainerStyle}
+            contentContainerStyle={styles.container}
             currentTimezone={currentTimezone}
             currentUsername={currentUsername}
             isTimezoneEnabled={isTimezoneEnabled}
