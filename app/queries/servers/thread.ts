@@ -101,6 +101,8 @@ export const queryThreadsInTeam = ({database, hasReplies = true, isFollowing = t
 
     if (onlyUnreads) {
         query.push(Q.where('unread_replies', Q.gt(0)));
+    } else {
+        query.push(Q.where('loaded_in_global_threads', true));
     }
 
     if (sort) {
@@ -123,3 +125,42 @@ export const queryUnreadsAndMentionsInTeam = (database: Database, teamId: string
         }),
     );
 };
+
+export async function queryNewestThreadInTeam(
+    database: Database,
+    teamId: string,
+    unread: boolean,
+): Promise<ThreadModel | null> {
+    const query: Q.Clause[] = [
+        Q.where('is_following', true),
+        Q.experimentalNestedJoin(POST, CHANNEL),
+        Q.on(
+            POST,
+            Q.on(
+                CHANNEL,
+                Q.or(
+                    Q.where('team_id', teamId),
+                    Q.where('team_id', ''),
+                ),
+            ),
+        ),
+    ];
+
+    if (unread) {
+        query.push(Q.where('unread_replies', Q.gt(0)));
+    } else {
+        query.push(Q.where('loaded_in_global_threads', true));
+    }
+
+    query.push(
+        Q.sortBy('last_reply_at', Q.desc),
+        Q.take(1),
+    );
+
+    try {
+        const threads = await database.get<ThreadModel>(THREAD).query(...query).fetch();
+        return threads?.[0] || null;
+    } catch (e) {
+        return null;
+    }
+}
