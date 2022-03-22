@@ -440,7 +440,7 @@ const CallScreen = (props: Props) => {
                             <CompassIcon
                                 name={'volume-high'}
                                 size={24}
-                                style={{...style.buttonIcon, ...style.speakerphoneIcon}}
+                                style={[style.buttonIcon, style.speakerphoneIcon]}
                             />
                             <Text style={style.buttonText}>{'Speaker'}</Text>
                         </Pressable>
@@ -452,7 +452,7 @@ const CallScreen = (props: Props) => {
                                 fill={props.currentParticipant?.raisedHand ? 'rgb(255, 188, 66)' : props.theme.sidebarText}
                                 height={24}
                                 width={24}
-                                style={{...style.buttonIcon, ...style.handIcon}}
+                                style={[style.buttonIcon, style.handIcon]}
                                 svgStyle={style.handIconSvgStyle}
                             />
                             <Text style={style.buttonText}>
