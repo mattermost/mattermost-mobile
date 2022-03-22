@@ -7,12 +7,22 @@ import DatabaseManager from '@database/manager';
 export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     try {
         const thread = JSON.parse(msg.data.thread) as Thread;
-        thread.is_following = true; // Mark as following
+
+        // Mark it as following and visible in global threads
+        thread.is_following = true;
+        thread.loaded_in_global_threads = true;
         processReceivedThreads(serverUrl, [thread]);
     } catch (error) {
         // Do nothing
     }
 }
+
+type ThreadReadChangedData = {
+    thread_id: string;
+    timestamp: number;
+    unread_mentions: number;
+    unread_replies: number;
+};
 
 export async function handleThreadReadChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const database = DatabaseManager.serverDatabases[serverUrl];
@@ -23,12 +33,7 @@ export async function handleThreadReadChangedEvent(serverUrl: string, msg: WebSo
     try {
         const operator = database?.operator;
         if (operator) {
-            const {thread_id, timestamp, unread_mentions, unread_replies} = msg.data as {
-                thread_id: string;
-                timestamp: number;
-                unread_mentions: number;
-                unread_replies: number;
-            };
+            const {thread_id, timestamp, unread_mentions, unread_replies} = msg.data as ThreadReadChangedData;
             if (thread_id) {
                 processUpdateThreadRead(serverUrl, thread_id, timestamp, unread_mentions, unread_replies);
             } else {
