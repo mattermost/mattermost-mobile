@@ -5,7 +5,7 @@
 
 import {debounce} from 'lodash';
 import React, {useState, useEffect, useRef, useImperativeHandle, forwardRef, useMemo, useCallback} from 'react';
-import {GestureResponderEvent, NativeSyntheticEvent, Platform, StyleProp, TargetedEvent, Text, TextInput, TextInputFocusEventData, TextInputProps, TextStyle, TouchableWithoutFeedback, View, ViewStyle} from 'react-native';
+import {GestureResponderEvent, LayoutChangeEvent, NativeSyntheticEvent, Platform, StyleProp, TargetedEvent, Text, TextInput, TextInputFocusEventData, TextInputProps, TextStyle, TouchableWithoutFeedback, View, ViewStyle} from 'react-native';
 import Animated, {useCode, interpolateNode, EasingNode, Value, set, Clock} from 'react-native-reanimated';
 
 import {useTheme} from '@app/context/theme';
@@ -18,8 +18,8 @@ const DEFAULT_INPUT_HEIGHT = 48;
 const BORDER_DEFAULT_WIDTH = 1;
 const BORDER_FOCUSED_WIDTH = 2;
 
-const getTopStyle = (styles: any, animation: Value<0|1>, placeholder?: string) => {
-    if (placeholder) {
+const getTopStyle = (styles: any, animation: Value<0|1>, inputText?: string) => {
+    if (inputText) {
         return getLabelPositions(styles.textInput, styles.label, styles.smallLabel)[1];
     }
 
@@ -29,8 +29,8 @@ const getTopStyle = (styles: any, animation: Value<0|1>, placeholder?: string) =
     });
 };
 
-const getFontSize = (styles: any, animation: Value<0|1>, placeholder?: string) => {
-    if (placeholder) {
+const getFontSize = (styles: any, animation: Value<0|1>, inputText?: string) => {
+    if (inputText) {
         return styles.smallLabel.fontSize;
     }
 
@@ -128,6 +128,7 @@ type FloatingTextInputProps = TextInputProps & {
     onBlur?: (event: NativeSyntheticEvent<TargetedEvent>) => void;
     onFocus?: (e: NativeSyntheticEvent<TargetedEvent>) => void;
     onPress?: (e: GestureResponderEvent) => void;
+    onLayout?: (e: LayoutChangeEvent) => void;
     placeholder?: string;
     showErrorIcon?: boolean;
     testID?: string;
@@ -144,6 +145,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     onPress = undefined,
     onFocus,
     onBlur,
+    onLayout,
     showErrorIcon = true,
     placeholder,
     multiline,
@@ -253,14 +255,14 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
 
     const textAnimatedTextStyle = useMemo(() => {
         const res = [styles.label];
-
+        const inputText = value || placeholder;
         res.push({
-            top: getTopStyle(styles, animation, placeholder),
-            fontSize: getFontSize(styles, animation, placeholder),
+            top: getTopStyle(styles, animation, inputText),
+            fontSize: getFontSize(styles, animation, inputText),
             backgroundColor: (
-                focusedLabel || placeholder ? theme.centerChannelBg : 'transparent'
+                focusedLabel || inputText ? theme.centerChannelBg : 'transparent'
             ),
-            paddingHorizontal: focusedLabel || placeholder ? 4 : 0,
+            paddingHorizontal: focusedLabel || inputText ? 4 : 0,
             color: styles.label.color,
         });
 
@@ -280,17 +282,16 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     return (
         <TouchableWithoutFeedback
             onPress={onPressAction}
+            onLayout={onLayout}
         >
             <View style={combinedContainerStyle}>
-                {
-                    <Animated.Text
-                        onPress={onAnimatedTextPress}
-                        style={textAnimatedTextStyle}
-                        suppressHighlighting={true}
-                    >
-                        {label}
-                    </Animated.Text>
-                }
+                <Animated.Text
+                    onPress={onAnimatedTextPress}
+                    style={textAnimatedTextStyle}
+                    suppressHighlighting={true}
+                >
+                    {label}
+                </Animated.Text>
                 <TextInput
                     {...props}
                     editable={isKeyboardInput && editable}

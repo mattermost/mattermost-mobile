@@ -9,10 +9,15 @@ import {
     TouchableWithoutFeedback,
     StatusBar,
     View,
+    NativeSyntheticEvent,
+    NativeScrollEvent,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import useHeaderHeight from '@app/hooks/header';
+import {typography} from '@app/utils/typography';
+import Autocomplete from '@components/autocomplete';
 import ErrorText from '@components/error_text';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
@@ -20,6 +25,7 @@ import Loading from '@components/loading';
 import SectionItem from '@components/section_item';
 import {General, Channel} from '@constants';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import {
     changeOpacity,
@@ -30,10 +36,10 @@ import {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
         flex: 1,
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
     },
     scrollView: {
-        paddingTop: 30,
+        paddingVertical: 30,
+        paddingHorizontal: 20,
     },
     errorContainer: {
         width: '100%',
@@ -57,10 +63,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         marginTop: 30,
     },
     helpText: {
-        fontSize: 14,
+        ...typography('Body', 400, 'Regular'),
+        fontSize: 12,
+        lineHeight: 16,
         color: changeOpacity(theme.centerChannelColor, 0.5),
         marginTop: 10,
-        marginHorizontal: 15,
     },
     headerHelpText: {
         zIndex: -1,
@@ -98,9 +105,13 @@ export default function ChannelInfoForm({
     testID,
     type,
 }: Props) {
-    const theme = useTheme();
     const intl = useIntl();
     const {formatMessage} = intl;
+    const isTablet = useIsTablet();
+    const headerHeight = useHeaderHeight(false, false, false);
+
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
 
     const nameInput = useRef<TextInput>(null);
     const purposeInput = useRef<TextInput>(null);
@@ -108,10 +119,13 @@ export default function ChannelInfoForm({
 
     const scrollViewRef = useRef<KeyboardAwareScrollView>();
 
-    const [keyboardVisible, setKeyBoardVisible] = useState<boolean>(false);
+    const updateScrollTimeout = useRef<NodeJS.Timeout>();
 
-    const [headerHasFocus, setHeaderHasFocus] = useState<boolean>(false);
-    const [headerPosition, setHeaderPosition] = useState<number>();
+    const [keyboardVisible, setKeyBoardVisible] = useState<boolean>(false);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const [scrollPosition, setScrollPosition] = useState(0);
+
+    const [headerPosition, setHeaderPosition] = useState<number>(0);
 
     const optionalText = formatMessage({id: t('channel_modal.optional'), defaultMessage: '(optional)'});
     const labelDisplayName = formatMessage({id: t('channel_modal.name'), defaultMessage: 'Name'});
@@ -122,7 +136,8 @@ export default function ChannelInfoForm({
     const placeholderPurpose = formatMessage({id: t('channel_modal.purposeEx'), defaultMessage: 'A channel to file bugs and improvements'});
     const placeholderHeader = formatMessage({id: t('channel_modal.headerEx'), defaultMessage: 'Use Markdown to format header text'});
 
-    const styles = getStyleSheet(theme);
+    const makePrivateLabel = formatMessage({id: t('channel_modal.makePrivate.label'), defaultMessage: 'Make Private'});
+    const makePrivateDescription = formatMessage({id: t('channel_modal.makePrivate.description'), defaultMessage: 'When a channel is set to private, only invited team members can access and participate in that channel.'});
 
     const displayHeaderOnly = channelType === General.DM_CHANNEL || channelType === General.GM_CHANNEL;
     const showSelector = !displayHeaderOnly && !editing;
@@ -161,18 +176,25 @@ export default function ChannelInfoForm({
         }
     }, []);
 
-    const onKeyboardDidShow = useCallback(() => {
+    const onKeyboardDidShow = useCallback((frames: any) => {
         setKeyBoardVisible(true);
-
-        if (headerHasFocus) {
-            setKeyBoardVisible(true);
-            setHeaderHasFocus(false);
-            scrollHeaderToTop();
-        }
+        setKeyboardHeight(frames.endCoordinates.height);
     }, [scrollHeaderToTop]);
 
     const onKeyboardDidHide = useCallback(() => {
         setKeyBoardVisible(false);
+        setKeyboardHeight(0);
+    }, []);
+
+    const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const pos = e.nativeEvent.contentOffset.y;
+        if (updateScrollTimeout.current) {
+            clearTimeout(updateScrollTimeout.current);
+        }
+        updateScrollTimeout.current = setTimeout(() => {
+            setScrollPosition(pos);
+            updateScrollTimeout.current = undefined;
+        }, 200);
     }, []);
 
     if (saving) {
@@ -203,12 +225,22 @@ export default function ChannelInfoForm({
         );
     }
 
+    const autoComplete = (
+        <Autocomplete
+            postInputTop={(headerPosition + scrollPosition + headerHeight.defaultHeight) - keyboardHeight}
+            updateValue={onHeaderChange}
+            cursorPosition={header.length}
+            value={header}
+            nestedScrollEnabled={true}
+            maxHeightOverride={isTablet ? 200 : undefined}
+        />
+    );
+
     return (
         <SafeAreaView
             edges={['bottom', 'left', 'right']}
             style={styles.container}
         >
-            <StatusBar/>
             <KeyboardAwareScrollView
                 testID={testID}
 
@@ -219,6 +251,7 @@ export default function ChannelInfoForm({
                 onKeyboardDidHide={onKeyboardDidHide}
                 enableAutomaticScroll={!keyboardVisible}
                 contentContainerStyle={styles.scrollView}
+                onScroll={onScroll}
             >
                 {displayError}
                 <TouchableWithoutFeedback
@@ -227,21 +260,12 @@ export default function ChannelInfoForm({
                     <View>
                         {showSelector && (
                             <SectionItem
-                                label={(
-                                    <FormattedText
-                                        id='channel_modal.makePrivate.'
-                                        defaultMessage={'Make Private'}
-                                    />
-                                )}
-                                description={(
-                                    <FormattedText
-                                        id='channel_modal.makePrivate.description'
-                                        defaultMessage={'When a channel is set to private, only invited team members can access and participate in that channel'}
-                                    />
-                                )}
+                                label={makePrivateLabel}
+                                description={makePrivateDescription}
                                 action={handlePress}
                                 actionType={'toggle'}
                                 selected={isPrivate}
+                                icon={'lock-outline'}
                             />
                         )}
                         {!displayHeaderOnly && (
@@ -317,7 +341,11 @@ export default function ChannelInfoForm({
                         />
                     </View>
                 </TouchableWithoutFeedback>
+
             </KeyboardAwareScrollView>
+            <View>
+                {autoComplete}
+            </View>
         </SafeAreaView>
     );
 }

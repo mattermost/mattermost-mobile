@@ -12,7 +12,7 @@ import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import NetworkManager from '@init/network_manager';
-import {prepareMyChannelsForTeam, queryChannelById, queryChannelByName, queryMyChannel} from '@queries/servers/channel';
+import {prepareMyChannelsForTeam, queryChannelById, queryChannelByName, queryChannelsInfoById, queryMyChannel} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {queryCommonSystemValues, queryCurrentTeamId, queryCurrentUserId} from '@queries/servers/system';
 import {prepareMyTeams, queryNthLastChannelFromTeam, queryMyTeamById, queryTeamById, queryTeamByName} from '@queries/servers/team';
@@ -170,12 +170,25 @@ export const patchChannel = async (serverUrl: string, channelPatch: Partial<Chan
     }
 
     try {
-        const currentUserId = await queryCurrentUserId(operator.database);
         const channelData = await client.patchChannel(channelPatch.id, channelPatch);
-        const member = await client.getChannelMember(channelData.id, currentUserId);
-        const channelModels = await prepareMyChannelsForTeam(operator, channelData.team_id, [channelData], [member]);
-        if (channelModels?.length) {
-            const models = await Promise.all(channelModels);
+        const models = [];
+        const channelInfo = (await queryChannelsInfoById(operator.database, [channelData.id]))?.[0];
+        if (channelInfo && (channelInfo.purpose !== channelData.purpose || channelInfo.header !== channelData.header)) {
+            channelInfo.prepareUpdate((v) => {
+                v.purpose = channelData.purpose;
+                v.header = channelData.header;
+            });
+            models.push(channelInfo);
+        }
+        const channel = await queryChannelById(operator.database, channelData.id);
+        if (channel && (channel.displayName !== channelData.display_name || channel.type !== channelData.type)) {
+            channel.prepareUpdate((v) => {
+                v.displayName = channelData.display_name;
+                v.type = channelData.type;
+            });
+            models.push(channel);
+        }
+        if (models?.length) {
             await operator.batchRecords(models.flat());
         }
         return {channel: channelData};

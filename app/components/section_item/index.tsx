@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactElement} from 'react';
+import React from 'react';
 import {
     Switch,
+    Text,
     TouchableOpacity,
     View,
 } from 'react-native';
@@ -11,6 +12,7 @@ import {
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const ActionTypes = {
     ARROW: 'arrow',
@@ -19,18 +21,61 @@ const ActionTypes = {
     SELECT: 'select',
 };
 
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        container: {
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
+        singleContainer: {
+            alignItems: 'center',
+            flex: 1,
+            flexDirection: 'row',
+            height: 45,
+        },
+        doubleContainer: {
+            flex: 1,
+            flexDirection: 'column',
+            height: 69,
+            justifyContent: 'center',
+        },
+        label: {
+            color: theme.centerChannelColor,
+            ...typography('Body', 600, 'SemiBold'),
+            fontSize: 16,
+            lineHeight: 24,
+        },
+        description: {
+            color: changeOpacity(theme.centerChannelColor, 0.6),
+            ...typography('Body', 400, 'Regular'),
+            fontSize: 12,
+            lineHeight: 16,
+            marginTop: 3,
+        },
+        arrow: {
+            color: changeOpacity(theme.centerChannelColor, 0.25),
+            fontSize: 24,
+        },
+        labelContainer: {
+            flex: 0,
+            flexDirection: 'row',
+        },
+    };
+});
+
 type Props = {
     testID?: string;
 
     action: (value: string | boolean) => void;
     actionType: string;
     actionValue?: string;
-    label: ReactElement;
+    label: string;
     selected: boolean;
-    description: ReactElement;
+    description: string;
+    icon?: string;
 }
 
-const SectionItem = ({testID, action, actionType, actionValue, label, selected, description}: Props) => {
+const SectionItem = ({testID, action, actionType, actionValue, label, selected, description, icon}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
@@ -60,33 +105,33 @@ const SectionItem = ({testID, action, actionType, actionValue, label, selected, 
         );
     }
 
-    const labelComponent = React.cloneElement(
-        label as React.ReactElement,
-        {
-            style: style.label,
-            testID: `${testID}.label`,
-        },
-    );
-
-    let descriptionComponent;
-    if (description) {
-        descriptionComponent = React.cloneElement(
-            description as React.ReactElement,
-            {
-                style: style.description,
-                testID: `${testID}.description`,
-            },
-        );
-    }
-
     const component = (
         <View
             testID={testID}
             style={style.container}
         >
             <View style={description ? style.doubleContainer : style.singleContainer}>
-                {labelComponent}
-                {descriptionComponent}
+                <View style={style.labelContainer}>
+                    {Boolean(icon) && (
+                        <CompassIcon
+                            name={icon!}
+                            size={24}
+                            color={changeOpacity(theme.centerChannelColor, 0.6)}
+                        />
+                    )}
+                    <Text
+                        style={style.label}
+                        testID={`${testID}.label`}
+                    >
+                        {label}
+                    </Text>
+                </View>
+                <Text
+                    style={style.description}
+                    testID={`${testID}.description`}
+                >
+                    {description}
+                </Text>
             </View>
             {actionComponent}
         </View>
@@ -102,40 +147,5 @@ const SectionItem = ({testID, action, actionType, actionValue, label, selected, 
 
     return component;
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingHorizontal: 15,
-        },
-        singleContainer: {
-            alignItems: 'center',
-            flex: 1,
-            flexDirection: 'row',
-            height: 45,
-        },
-        doubleContainer: {
-            flex: 1,
-            flexDirection: 'column',
-            height: 69,
-            justifyContent: 'center',
-        },
-        label: {
-            color: theme.centerChannelColor,
-            fontSize: 15,
-        },
-        description: {
-            color: changeOpacity(theme.centerChannelColor, 0.6),
-            fontSize: 14,
-            marginTop: 3,
-        },
-        arrow: {
-            color: changeOpacity(theme.centerChannelColor, 0.25),
-            fontSize: 24,
-        },
-    };
-});
 
 export default SectionItem;

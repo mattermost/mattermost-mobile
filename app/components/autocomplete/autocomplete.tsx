@@ -55,8 +55,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 type Props = {
     cursorPosition: number;
     postInputTop: number;
-    rootId: string;
-    channelId: string;
+    rootId?: string;
+    channelId?: string;
     fixedBottomPosition?: boolean;
     isSearch?: boolean;
     value: string;
@@ -64,7 +64,7 @@ type Props = {
     isAppsEnabled: boolean;
     nestedScrollEnabled?: boolean;
     updateValue: (v: string) => void;
-    hasFilesAttached: boolean;
+    hasFilesAttached?: boolean;
     maxHeightOverride?: number;
 }
 

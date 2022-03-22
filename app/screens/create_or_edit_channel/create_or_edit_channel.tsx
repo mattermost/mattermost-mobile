@@ -9,6 +9,7 @@ import {
 import {Navigation} from 'react-native-navigation';
 
 import {patchChannel as handlePatchChannel, createChannel, switchToChannelById} from '@actions/remote/channel';
+import CompassIcon from '@app/components/compass_icon';
 import ChannelInfoForm from '@app/screens/create_or_edit_channel/channel_info_form';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -115,6 +116,18 @@ const CreateOrEditChannel = ({
             rightButtons: [{...rightButton, enabled: canSave}],
         });
     }, [rightButton, canSave, componentId]);
+
+    useEffect(() => {
+        CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor).then((i) => {
+            setButtons(componentId, {
+                leftButtons: [{
+                    id: CLOSE_BUTTON_ID,
+                    icon: i,
+                    testID: 'close.more_direct_messages.button',
+                }],
+            });
+        });
+    }, [theme]);
 
     useEffect(() => {
         setCanSave(
