@@ -41,6 +41,7 @@ type Props = {
     };
     theme: Theme;
     call: Call | null;
+    participants: CallParticipant[];
     currentParticipant: CallParticipant;
     teammateNameDisplay: string;
     screenShareURL: string;
@@ -355,7 +356,7 @@ const CallScreen = (props: Props) => {
                     onPress={toggleControlsInLandscape}
                     style={style.users}
                 >
-                    {Object.values(props.call.participants).map((user) => {
+                    {props.participants.map((user) => {
                         return (
                             <View
                                 style={style.user}
@@ -369,7 +370,7 @@ const CallScreen = (props: Props) => {
                                     size={props.call?.screenOn ? 'm' : 'l'}
                                 />
                                 <Text style={style.username}>
-                                    {displayUsername(props.call?.participants[user.id].profile, props.teammateNameDisplay)}
+                                    {displayUsername(user.profile, props.teammateNameDisplay)}
                                 </Text>
                             </View>
                         );

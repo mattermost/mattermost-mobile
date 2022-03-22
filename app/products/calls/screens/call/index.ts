@@ -14,6 +14,7 @@ import {
     unraiseHand,
 } from '@mmproducts/calls//store/actions/calls';
 import {getCurrentCall, getScreenShareURL, isSpeakerphoneOn} from '@mmproducts/calls/store/selectors/calls';
+import {sortParticipants} from '@mmproducts/calls/utils';
 
 import CallScreen from './call_screen';
 
@@ -26,6 +27,7 @@ function mapStateToProps(state: GlobalState) {
         theme: getTheme(state),
         call: currentCall,
         teammateNameDisplay: getTeammateNameDisplaySetting(state),
+        participants: sortParticipants(currentCall?.participants),
         currentParticipant: currentCall && currentCall.participants[currentUserId],
         screenShareURL: getScreenShareURL(state),
         speakerphoneOn: isSpeakerphoneOn(state),

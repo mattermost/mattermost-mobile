@@ -45,6 +45,26 @@ describe('CallScreen', () => {
             screenOn: '',
             threadId: false,
         },
+        participants: [{
+            id: 'user-1-id',
+            muted: false,
+            isTalking: false,
+            profile: {
+                id: 'user-1-id',
+                username: 'user-1-username',
+                nickname: 'User 1',
+            },
+        },
+        {
+            id: 'user-2-id',
+            muted: true,
+            isTalking: true,
+            profile: {
+                id: 'user-2-id',
+                username: 'user-2-username',
+                nickname: 'User 2',
+            },
+        }],
         currentParticipant: {
             id: 'user-2-id',
             muted: true,
