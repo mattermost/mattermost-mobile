@@ -175,4 +175,4 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
     );
 };
 
-export default React.memo(Reactions);
+export default Reactions;
