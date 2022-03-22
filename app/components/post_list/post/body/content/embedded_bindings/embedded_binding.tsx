@@ -45,7 +45,7 @@ const EmbeddedBinding = ({embed, postId, theme}: Props) => {
         const copiedBindings = JSON.parse(JSON.stringify(embed)) as AppBinding;
         const bindings = cleanBinding(copiedBindings, AppBindingLocations.IN_POST)?.bindings;
         setCleanedBindings(bindings!);
-    }, []);
+    }, [embed]);
 
     const style = getStyleSheet(theme);
 
