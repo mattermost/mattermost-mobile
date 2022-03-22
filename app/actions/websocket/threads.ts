@@ -14,6 +14,13 @@ export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocket
     }
 }
 
+type ThreadReadChangedData = {
+    thread_id: string;
+    timestamp: number;
+    unread_mentions: number;
+    unread_replies: number;
+};
+
 export async function handleThreadReadChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
@@ -23,12 +30,7 @@ export async function handleThreadReadChangedEvent(serverUrl: string, msg: WebSo
     try {
         const operator = database?.operator;
         if (operator) {
-            const {thread_id, timestamp, unread_mentions, unread_replies} = msg.data as {
-                thread_id: string;
-                timestamp: number;
-                unread_mentions: number;
-                unread_replies: number;
-            };
+            const {thread_id, timestamp, unread_mentions, unread_replies} = msg.data as ThreadReadChangedData;
             if (thread_id) {
                 processUpdateThreadRead(serverUrl, thread_id, timestamp, unread_mentions, unread_replies);
             } else {
