@@ -306,7 +306,7 @@ const CallScreen = (props: Props) => {
 
     const toggleSpeakerphoneHandler = useCallback(() => {
         props.actions.setSpeakerphoneOn(!props.speakerphoneOn);
-    }, [props.actions.setSpeakerphoneOn, props.speakerphoneOn]);
+    }, [props.speakerphoneOn]);
 
     const toggleRaiseHand = useCallback(() => {
         if (props.currentParticipant?.raisedHand > 0) {
