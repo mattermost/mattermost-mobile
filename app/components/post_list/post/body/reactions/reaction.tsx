@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {TouchableOpacity, View} from 'react-native';
 import AnimatedNumbers from 'react-native-animated-numbers';
 
@@ -14,7 +14,7 @@ type ReactionProps = {
     emojiName: string;
     highlight: boolean;
     onPress: (emojiName: string, highlight: boolean) => void;
-    onLongPress: () => void;
+    onLongPress: (initialEmoji: string) => void;
     theme: Theme;
 }
 
@@ -24,7 +24,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.56),
             ...typography('Body', 100, 'SemiBold'),
         },
-        countContainer: {marginRight: 5},
+        countContainer: {marginRight: 8},
         countHighlight: {
             color: theme.buttonBg,
         },
@@ -51,6 +51,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Reaction = ({count, emojiName, highlight, onPress, onLongPress, theme}: ReactionProps) => {
     const styles = getStyleSheet(theme);
+    const digits = String(count).length;
+    const containerStyle = useMemo(() => {
+        const minWidth = 50 + (digits * 5);
+        return [styles.reaction, (highlight && styles.highlight), {minWidth}];
+    }, [styles.reaction, highlight, digits]);
+
+    const handleLongPress = useCallback(() => {
+        onLongPress(emojiName);
+    }, []);
 
     const handlePress = useCallback(() => {
         onPress(emojiName, highlight);
@@ -59,9 +68,9 @@ const Reaction = ({count, emojiName, highlight, onPress, onLongPress, theme}: Re
     return (
         <TouchableOpacity
             onPress={handlePress}
-            onLongPress={onLongPress}
+            onLongPress={handleLongPress}
             delayLongPress={350}
-            style={[styles.reaction, (highlight && styles.highlight)]}
+            style={containerStyle}
         >
             <View style={styles.emoji}>
                 <Emoji
