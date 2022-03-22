@@ -3,13 +3,12 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {map} from 'rxjs/operators';
 
-import {getThreads} from '@actions/remote/thread';
 import NavigationHeader from '@components/navigation_header';
 import {Database} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -51,12 +50,6 @@ const GlobalThreads = ({componentId, currentTeamId}: Props) => {
 
     const [tab, setTab] = useState<Tab>('all');
 
-    const [isLoading, setIsLoading] = useState(true);
-    useEffect(() => {
-        setIsLoading(true);
-        getThreads(serverUrl, currentTeamId).finally(() => setIsLoading(false));
-    }, [serverUrl]);
-
     const containerStyle = useMemo(() => {
         const marginTop = defaultHeight + insets.top;
         return [styles.flex, {marginTop}];
@@ -65,7 +58,7 @@ const GlobalThreads = ({componentId, currentTeamId}: Props) => {
     const onBackPress = useCallback(() => {
         Keyboard.dismiss();
         popTopScreen(componentId);
-    }, []);
+    }, [componentId]);
 
     return (
         <SafeAreaView
@@ -88,7 +81,7 @@ const GlobalThreads = ({componentId, currentTeamId}: Props) => {
                 <ThreadsList
                     forceQueryAfterAppState={appState}
                     setTab={setTab}
-                    isLoading={isLoading}
+                    serverUrl={serverUrl}
                     tab={tab}
                     teamId={currentTeamId}
                     testID={'global_threads.list'}
