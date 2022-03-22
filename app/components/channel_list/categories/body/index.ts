@@ -89,7 +89,9 @@ const mapPrefName = (prefs: PreferenceModel[]) => of$(prefs.map((p) => p.name));
 
 const mapChannelIds = (channels: ChannelModel[]) => of$(channels.map((c) => c.id));
 
-const enhance = withObservables(['category'], ({category, locale, database, currentUserId}: {category: CategoryModel; locale: string; currentUserId: string} & WithDatabaseArgs) => {
+type EnhanceProps = {category: CategoryModel; locale: string; currentUserId: string} & WithDatabaseArgs
+
+const enhance = withObservables(['category'], ({category, locale, database, currentUserId}: EnhanceProps) => {
     const observedCategory = category.observe();
     const sortedIds = observedCategory.pipe(
         switchMap((c) => getSortedIds(database, c, locale)),
@@ -112,7 +114,7 @@ const enhance = withObservables(['category'], ({category, locale, database, curr
     const hiddenGmIds = queryPreferencesByCategory(database, Preferences.CATEGORY_GROUP_CHANNEL_SHOW, undefined, 'false').
         observe().pipe(switchMap(mapPrefName));
 
-    let limit = of$(0);
+    let limit = of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
     if (category.type === 'direct_messages') {
         limit = queryPreferencesByCategory(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_LIMIT_DMS).
             observe().pipe(
@@ -122,7 +124,7 @@ const enhance = withObservables(['category'], ({category, locale, database, curr
                             return of$(parseInt(val[0].value, 10));
                         }
 
-                        return of$(0);
+                        return of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
                     },
                 ),
             );
