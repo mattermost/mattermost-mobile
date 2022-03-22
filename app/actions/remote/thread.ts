@@ -223,56 +223,6 @@ export const updateThreadFollow = async (serverUrl: string, teamId: string, thre
     }
 };
 
-export async function getNewThreads(
-    serverUrl: string,
-    teamId: string,
-    prepareRecordsOnly = false,
-): Promise<{error: unknown; models?: Model[]}> {
-    const options: FetchThreadOptions = {
-        unread: false,
-        deleted: true,
-        perPage: General.CRT_CHUNK_SIZE,
-    };
-
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    const newestThread = await queryNewestThreadInTeam(operator.database, teamId, false);
-    options.since = newestThread ? newestThread.lastReplyAt : 0;
-    let pages: number|undefined;
-
-    if (options.since === 0) {
-        // ask just for one page since we got nothing saved.
-        // also no need to sync deleted threads
-        pages = 1;
-        options.deleted = false;
-    }
-
-    // batch fetch latest updated threads (including deleted ones)
-    const {error, models} = await batchSyncThreads(serverUrl, teamId, options, pages);
-
-    if (error) {
-        return {error};
-    }
-
-    if (models.length && !prepareRecordsOnly) {
-        try {
-            await operator.batchRecords(models);
-            return {error: false};
-        } catch (err) {
-            if (__DEV__) {
-                throw err;
-            }
-            return {error: true};
-        }
-    }
-
-    return {error: false, models};
-}
-
 enum Direction {
     Up,
     Down,
@@ -398,5 +348,64 @@ export async function batchSyncAllUnreads(
             return {error: true};
         }
     }
+    return {error: false, models};
+}
+
+export async function getNewThreads(
+    serverUrl: string,
+    teamId: string,
+    prepareRecordsOnly = false,
+): Promise<{error: unknown; models?: Model[]}> {
+    const options: FetchThreadOptions = {
+        unread: false,
+        deleted: true,
+        perPage: General.CRT_CHUNK_SIZE,
+    };
+
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const newestThread = await queryNewestThreadInTeam(operator.database, teamId, false);
+    options.since = newestThread ? newestThread.lastReplyAt : 0;
+
+    let data = {
+        error: false,
+        models: [],
+    } as {
+        error: unknown;
+        models?: Model[];
+    };
+
+    if (options.since === 0) {
+        options.deleted = false;
+
+        // batch fetch all unread threads
+        data = await batchSyncAllUnreads(serverUrl, teamId, false);
+    } else {
+        // batch fetch latest updated threads (including deleted ones)
+        data = await batchSyncThreads(serverUrl, teamId, options);
+    }
+
+    const {error, models} = data;
+
+    if (error) {
+        return {error};
+    }
+
+    if (models?.length && !prepareRecordsOnly) {
+        try {
+            await operator.batchRecords(models);
+            return {error: false};
+        } catch (err) {
+            if (__DEV__) {
+                throw err;
+            }
+            return {error: true};
+        }
+    }
+
     return {error: false, models};
 }

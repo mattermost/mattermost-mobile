@@ -18,7 +18,7 @@ import {queryAllChannelsForTeam} from '@queries/servers/channel';
 import {getConfig} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 
-import {getNewThreads, batchSyncAllUnreads} from '../thread';
+import {getNewThreads} from '../thread';
 
 import type ClientError from '@client/rest/error';
 
@@ -68,10 +68,7 @@ export const fetchAppEntryData = async (serverUrl: string, since: number, initia
 
     await fetchConfigAndLicense(serverUrl);
 
-    // TODO: we need to merge all models and de-duplicate
-    // so that we won't process the same models twice.
     await getNewThreads(serverUrl, initialTeamId, false);
-    await batchSyncAllUnreads(serverUrl, initialTeamId, false);
 
     // Fetch in parallel teams / team membership / channels for current team / user preferences / user
     const promises: [Promise<MyTeamsRequest>, Promise<MyChannelsRequest | undefined>, Promise<MyPreferencesRequest>, Promise<MyUserRequest>] = [
