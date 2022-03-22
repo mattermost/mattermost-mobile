@@ -68,9 +68,10 @@ type QueryThreadsInTeamArgs = {
     onlyUnreads?: boolean;
     sort?: boolean;
     teamId?: string;
+    limit?: number;
 };
 
-export const queryThreadsInTeam = ({database, hasReplies = true, isFollowing = true, onlyUnreads, sort, teamId}: QueryThreadsInTeamArgs): Query<ThreadModel> => {
+export const queryThreadsInTeam = ({database, hasReplies = true, isFollowing = true, onlyUnreads, sort, teamId, limit}: QueryThreadsInTeamArgs): Query<ThreadModel> => {
     const query: Q.Clause[] = [];
 
     if (isFollowing) {
@@ -109,6 +110,10 @@ export const queryThreadsInTeam = ({database, hasReplies = true, isFollowing = t
         query.push(Q.sortBy('last_reply_at', Q.desc));
     }
 
+    if (limit) {
+        query.push(Q.take(limit));
+    }
+
     return database.get<ThreadModel>(THREAD).query(...query);
 };
 
@@ -126,39 +131,13 @@ export const queryUnreadsAndMentionsInTeam = (database: Database, teamId: string
     );
 };
 
-export async function queryNewestThreadInTeam(
+export async function getNewestThreadInTeam(
     database: Database,
     teamId: string,
     unread: boolean,
 ): Promise<ThreadModel | null> {
-    const query: Q.Clause[] = [
-        Q.where('is_following', true),
-        Q.experimentalNestedJoin(POST, CHANNEL),
-        Q.on(
-            POST,
-            Q.on(
-                CHANNEL,
-                Q.or(
-                    Q.where('team_id', teamId),
-                    Q.where('team_id', ''),
-                ),
-            ),
-        ),
-    ];
-
-    if (unread) {
-        query.push(Q.where('unread_replies', Q.gt(0)));
-    } else {
-        query.push(Q.where('loaded_in_global_threads', true));
-    }
-
-    query.push(
-        Q.sortBy('last_reply_at', Q.desc),
-        Q.take(1),
-    );
-
     try {
-        const threads = await database.get<ThreadModel>(THREAD).query(...query).fetch();
+        const threads = await queryThreadsInTeam({database, isFollowing: true, onlyUnreads: unread, sort: true, teamId, limit: 1}).fetch();
         return threads?.[0] || null;
     } catch (e) {
         return null;

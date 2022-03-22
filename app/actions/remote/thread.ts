@@ -10,7 +10,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {getCommonSystemValues} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
-import {queryNewestThreadInTeam} from '@queries/servers/thread';
+import {getNewestThreadInTeam} from '@queries/servers/thread';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -322,7 +322,7 @@ export async function batchSyncAllUnreads(
         return {error: `${serverUrl} database not found`};
     }
 
-    const newestThread = await queryNewestThreadInTeam(operator.database, teamId, true);
+    const newestThread = await getNewestThreadInTeam(operator.database, teamId, true);
     const since = newestThread ? newestThread.lastReplyAt : 0;
 
     const options: FetchThreadOptions = {
@@ -368,7 +368,7 @@ export async function getNewThreads(
         return {error: `${serverUrl} database not found`};
     }
 
-    const newestThread = await queryNewestThreadInTeam(operator.database, teamId, false);
+    const newestThread = await getNewestThreadInTeam(operator.database, teamId, false);
     options.since = newestThread ? newestThread.lastReplyAt : 0;
 
     let data = {
