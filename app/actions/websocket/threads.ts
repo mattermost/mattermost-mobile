@@ -7,7 +7,10 @@ import DatabaseManager from '@database/manager';
 export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     try {
         const thread = JSON.parse(msg.data.thread) as Thread;
-        thread.is_following = true; // Mark as following
+
+        // Mark it as following and visible in global threads
+        thread.is_following = true;
+        thread.loaded_in_global_threads = true;
         processReceivedThreads(serverUrl, [thread]);
     } catch (error) {
         // Do nothing
