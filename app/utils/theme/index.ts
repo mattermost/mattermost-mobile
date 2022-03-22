@@ -6,26 +6,11 @@ import {StatusBar, StyleSheet} from 'react-native';
 import tinyColor from 'tinycolor2';
 
 import {Preferences} from '@constants';
+import {MODAL_SCREENS_WITHOUT_BACK} from '@constants/screens';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 
 import type {Options} from 'react-native-navigation';
-
-const MODAL_SCREENS_WITHOUT_BACK = [
-    'AddReaction',
-    'ChannelInfo',
-    'ClientUpgrade',
-    'CreateChannel',
-    'EditPost',
-    'ErrorTeamsList',
-    'MoreChannels',
-    'MoreDirectMessages',
-    'Permalink',
-    'SelectTeam',
-    'Settings',
-    'TermsOfService',
-    'UserProfile',
-];
 
 const rgbPattern = /^rgba?\((\d+),(\d+),(\d+)(?:,([\d.]+))?\)$/;
 
