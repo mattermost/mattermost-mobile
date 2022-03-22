@@ -314,7 +314,7 @@ const CallScreen = (props: Props) => {
         } else {
             props.actions.raiseHand();
         }
-    }, [props.currentParticipant.raisedHand]);
+    }, [props.currentParticipant?.raisedHand]);
 
     const toggleControlsInLandscape = useCallback(() => {
         setShowControlsInLandscape(!showControlsInLandscape);
