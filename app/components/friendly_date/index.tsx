@@ -37,7 +37,7 @@ export function getFriendlyDate(intl: typeof intlShape, inputDate: number | Date
 
     // Message: Minutes Ago
     if (difference < DateTypes.SECONDS.HOUR) {
-        const minutes = Math.floor(difference / DateTypes.SECONDS.MINUTE);
+        const minutes = Math.floor(Math.round(10 * difference / DateTypes.SECONDS.MINUTE) / 10);
         return intl.formatMessage({
             id: 'friendly_date.minsAgo',
             defaultMessage: '{count} {count, plural, one {min} other {mins}} ago',
@@ -48,7 +48,7 @@ export function getFriendlyDate(intl: typeof intlShape, inputDate: number | Date
 
     // Message: Hours Ago
     if (difference < DateTypes.SECONDS.DAY) {
-        const hours = Math.floor(difference / DateTypes.SECONDS.HOUR);
+        const hours = Math.floor(Math.round(10 * difference / DateTypes.SECONDS.HOUR) / 10);
         return intl.formatMessage({
             id: 'friendly_date.hoursAgo',
             defaultMessage: '{count} {count, plural, one {hour} other {hours}} ago',
@@ -67,7 +67,7 @@ export function getFriendlyDate(intl: typeof intlShape, inputDate: number | Date
         }
         const completedAMonth = today.getMonth() !== date.getMonth() && today.getDate() >= date.getDate();
         if (!completedAMonth) {
-            const days = Math.floor(difference / DateTypes.SECONDS.DAY) || 1;
+            const days = Math.floor(Math.round(10 * difference / DateTypes.SECONDS.DAY) / 10) || 1;
             return intl.formatMessage({
                 id: 'friendly_date.daysAgo',
                 defaultMessage: '{count} {count, plural, one {day} other {days}} ago',
@@ -83,7 +83,7 @@ export function getFriendlyDate(intl: typeof intlShape, inputDate: number | Date
             today.getMonth() >= date.getMonth() &&
             today.getDate() >= date.getDate();
         if (!completedAnYear) {
-            const months = Math.floor(difference / DateTypes.SECONDS.DAYS_30) || 1;
+            const months = Math.floor(Math.round(10 * difference / DateTypes.SECONDS.DAYS_30) / 10) || 1;
             return intl.formatMessage({
                 id: 'friendly_date.monthsAgo',
                 defaultMessage: '{count} {count, plural, one {month} other {months}} ago',
@@ -94,7 +94,7 @@ export function getFriendlyDate(intl: typeof intlShape, inputDate: number | Date
     }
 
     // Message: Years Ago
-    const years = Math.floor(difference / DateTypes.SECONDS.DAYS_365) || 1;
+    const years = Math.floor(Math.round(10 * difference / DateTypes.SECONDS.DAYS_365) / 10) || 1;
     return intl.formatMessage({
         id: 'friendly_date.yearsAgo',
         defaultMessage: '{count} {count, plural, one {year} other {years}} ago',
