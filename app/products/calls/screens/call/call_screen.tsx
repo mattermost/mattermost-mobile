@@ -304,17 +304,17 @@ const CallScreen = (props: Props) => {
         }
     }, [props.call?.channelId, props.currentParticipant]);
 
-    const toggleSpeakerphoneHandler = () => {
+    const toggleSpeakerphoneHandler = useCallback(() => {
         props.actions.setSpeakerphoneOn(!props.speakerphoneOn);
-    };
+    }, [props.actions.setSpeakerphoneOn, props.speakerphoneOn]);
 
-    const toggleRaiseHand = () => {
+    const toggleRaiseHand = useCallback(() => {
         if (props.currentParticipant?.raisedHand > 0) {
             props.actions.unraiseHand();
         } else {
             props.actions.raiseHand();
         }
-    };
+    }, [props.currentParticipant.raisedHand]);
 
     const toggleControlsInLandscape = useCallback(() => {
         setShowControlsInLandscape(!showControlsInLandscape);

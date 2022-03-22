@@ -223,16 +223,22 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
             name="volume-high"
             size={24}
             style={
-              Object {
-                "backgroundColor": "rgba(255,255,255,0.12)",
-                "borderRadius": 34,
-                "color": "#ffffff",
-                "height": 68,
-                "margin": 10,
-                "overflow": "hidden",
-                "padding": 22,
-                "width": 68,
-              }
+              Array [
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "borderRadius": 34,
+                  "color": "#ffffff",
+                  "height": 68,
+                  "margin": 10,
+                  "overflow": "hidden",
+                  "padding": 22,
+                  "width": 68,
+                },
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "color": "#ffffff",
+                },
+              ]
             }
           />
           <Text
@@ -259,16 +265,25 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
             fill="#ffffff"
             height={24}
             style={
-              Object {
-                "backgroundColor": "rgba(255,255,255,0.12)",
-                "borderRadius": 34,
-                "color": "#ffffff",
-                "height": 68,
-                "margin": 10,
-                "overflow": "hidden",
-                "padding": 34,
-                "width": 68,
-              }
+              Array [
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "borderRadius": 34,
+                  "color": "#ffffff",
+                  "height": 68,
+                  "margin": 10,
+                  "overflow": "hidden",
+                  "padding": 22,
+                  "width": 68,
+                },
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "borderRadius": 34,
+                  "margin": 10,
+                  "overflow": "hidden",
+                  "padding": 34,
+                },
+              ]
             }
             svgStyle={
               Object {
@@ -543,16 +558,22 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
             name="volume-high"
             size={24}
             style={
-              Object {
-                "backgroundColor": "rgba(255,255,255,0.12)",
-                "borderRadius": 34,
-                "color": "#ffffff",
-                "height": 68,
-                "margin": 10,
-                "overflow": "hidden",
-                "padding": 22,
-                "width": 68,
-              }
+              Array [
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "borderRadius": 34,
+                  "color": "#ffffff",
+                  "height": 68,
+                  "margin": 10,
+                  "overflow": "hidden",
+                  "padding": 22,
+                  "width": 68,
+                },
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "color": "#ffffff",
+                },
+              ]
             }
           />
           <Text
@@ -579,16 +600,25 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
             fill="#ffffff"
             height={24}
             style={
-              Object {
-                "backgroundColor": "rgba(255,255,255,0.12)",
-                "borderRadius": 34,
-                "color": "#ffffff",
-                "height": 68,
-                "margin": 10,
-                "overflow": "hidden",
-                "padding": 34,
-                "width": 68,
-              }
+              Array [
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "borderRadius": 34,
+                  "color": "#ffffff",
+                  "height": 68,
+                  "margin": 10,
+                  "overflow": "hidden",
+                  "padding": 22,
+                  "width": 68,
+                },
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "borderRadius": 34,
+                  "margin": 10,
+                  "overflow": "hidden",
+                  "padding": 34,
+                },
+              ]
             }
             svgStyle={
               Object {
@@ -940,16 +970,22 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
             name="volume-high"
             size={24}
             style={
-              Object {
-                "backgroundColor": "rgba(255,255,255,0.12)",
-                "borderRadius": 34,
-                "color": "#ffffff",
-                "height": 68,
-                "margin": 10,
-                "overflow": "hidden",
-                "padding": 22,
-                "width": 68,
-              }
+              Array [
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "borderRadius": 34,
+                  "color": "#ffffff",
+                  "height": 68,
+                  "margin": 10,
+                  "overflow": "hidden",
+                  "padding": 22,
+                  "width": 68,
+                },
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "color": "#ffffff",
+                },
+              ]
             }
           />
           <Text
@@ -976,16 +1012,25 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
             fill="#ffffff"
             height={24}
             style={
-              Object {
-                "backgroundColor": "rgba(255,255,255,0.12)",
-                "borderRadius": 34,
-                "color": "#ffffff",
-                "height": 68,
-                "margin": 10,
-                "overflow": "hidden",
-                "padding": 34,
-                "width": 68,
-              }
+              Array [
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "borderRadius": 34,
+                  "color": "#ffffff",
+                  "height": 68,
+                  "margin": 10,
+                  "overflow": "hidden",
+                  "padding": 22,
+                  "width": 68,
+                },
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "borderRadius": 34,
+                  "margin": 10,
+                  "overflow": "hidden",
+                  "padding": 34,
+                },
+              ]
             }
             svgStyle={
               Object {
@@ -1334,16 +1379,22 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
             name="volume-high"
             size={24}
             style={
-              Object {
-                "backgroundColor": "rgba(255,255,255,0.12)",
-                "borderRadius": 34,
-                "color": "#ffffff",
-                "height": 68,
-                "margin": 10,
-                "overflow": "hidden",
-                "padding": 22,
-                "width": 68,
-              }
+              Array [
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "borderRadius": 34,
+                  "color": "#ffffff",
+                  "height": 68,
+                  "margin": 10,
+                  "overflow": "hidden",
+                  "padding": 22,
+                  "width": 68,
+                },
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "color": "#ffffff",
+                },
+              ]
             }
           />
           <Text
@@ -1370,16 +1421,25 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
             fill="#ffffff"
             height={24}
             style={
-              Object {
-                "backgroundColor": "rgba(255,255,255,0.12)",
-                "borderRadius": 34,
-                "color": "#ffffff",
-                "height": 68,
-                "margin": 10,
-                "overflow": "hidden",
-                "padding": 34,
-                "width": 68,
-              }
+              Array [
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "borderRadius": 34,
+                  "color": "#ffffff",
+                  "height": 68,
+                  "margin": 10,
+                  "overflow": "hidden",
+                  "padding": 22,
+                  "width": 68,
+                },
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "borderRadius": 34,
+                  "margin": 10,
+                  "overflow": "hidden",
+                  "padding": 34,
+                },
+              ]
             }
             svgStyle={
               Object {
@@ -1617,16 +1677,22 @@ exports[`CallScreen should show controls in landscape view on click the screen s
             name="volume-high"
             size={24}
             style={
-              Object {
-                "backgroundColor": "rgba(255,255,255,0.12)",
-                "borderRadius": 34,
-                "color": "#ffffff",
-                "height": 68,
-                "margin": 10,
-                "overflow": "hidden",
-                "padding": 22,
-                "width": 68,
-              }
+              Array [
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "borderRadius": 34,
+                  "color": "#ffffff",
+                  "height": 68,
+                  "margin": 10,
+                  "overflow": "hidden",
+                  "padding": 22,
+                  "width": 68,
+                },
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "color": "#ffffff",
+                },
+              ]
             }
           />
           <Text
@@ -1653,16 +1719,25 @@ exports[`CallScreen should show controls in landscape view on click the screen s
             fill="#ffffff"
             height={24}
             style={
-              Object {
-                "backgroundColor": "rgba(255,255,255,0.12)",
-                "borderRadius": 34,
-                "color": "#ffffff",
-                "height": 68,
-                "margin": 10,
-                "overflow": "hidden",
-                "padding": 34,
-                "width": 68,
-              }
+              Array [
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "borderRadius": 34,
+                  "color": "#ffffff",
+                  "height": 68,
+                  "margin": 10,
+                  "overflow": "hidden",
+                  "padding": 22,
+                  "width": 68,
+                },
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "borderRadius": 34,
+                  "margin": 10,
+                  "overflow": "hidden",
+                  "padding": 34,
+                },
+              ]
             }
             svgStyle={
               Object {
@@ -1985,16 +2060,22 @@ exports[`CallScreen should show controls in landscape view on click the users li
             name="volume-high"
             size={24}
             style={
-              Object {
-                "backgroundColor": "rgba(255,255,255,0.12)",
-                "borderRadius": 34,
-                "color": "#ffffff",
-                "height": 68,
-                "margin": 10,
-                "overflow": "hidden",
-                "padding": 22,
-                "width": 68,
-              }
+              Array [
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "borderRadius": 34,
+                  "color": "#ffffff",
+                  "height": 68,
+                  "margin": 10,
+                  "overflow": "hidden",
+                  "padding": 22,
+                  "width": 68,
+                },
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "color": "#ffffff",
+                },
+              ]
             }
           />
           <Text
@@ -2021,16 +2102,25 @@ exports[`CallScreen should show controls in landscape view on click the users li
             fill="#ffffff"
             height={24}
             style={
-              Object {
-                "backgroundColor": "rgba(255,255,255,0.12)",
-                "borderRadius": 34,
-                "color": "#ffffff",
-                "height": 68,
-                "margin": 10,
-                "overflow": "hidden",
-                "padding": 34,
-                "width": 68,
-              }
+              Array [
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "borderRadius": 34,
+                  "color": "#ffffff",
+                  "height": 68,
+                  "margin": 10,
+                  "overflow": "hidden",
+                  "padding": 22,
+                  "width": 68,
+                },
+                Object {
+                  "backgroundColor": "rgba(255,255,255,0.12)",
+                  "borderRadius": 34,
+                  "margin": 10,
+                  "overflow": "hidden",
+                  "padding": 34,
+                },
+              ]
             }
             svgStyle={
               Object {
