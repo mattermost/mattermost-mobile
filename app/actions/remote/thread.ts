@@ -23,6 +23,7 @@ export type FetchThreadOptions = {
     deleted?: boolean;
     unread?: boolean;
     since?: number;
+    totalsOnly?: boolean;
 };
 
 export type GetThreadsRequest = {
@@ -123,7 +124,6 @@ export const getThread = async (serverUrl: string, teamId: string, threadId: str
         await processReceivedThreads(serverUrl, [thread], teamId);
 
         return {data: thread};
-        return {};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -228,18 +228,23 @@ enum Direction {
     Down,
 }
 
-async function batchSyncThreads(serverUrl: string, teamId: string, options: FetchThreadOptions, pages?: number): Promise<{error: unknown; models: Model[]}> {
+async function fetchBatchThreads(
+    serverUrl: string,
+    teamId: string,
+    options: FetchThreadOptions,
+    pages?: number,
+): Promise<{error: unknown; data?: Thread[]}> {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
 
     if (!operator) {
-        return {error: `${serverUrl} database not found`, models: []};
+        return {error: `${serverUrl} database not found`};
     }
 
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
     } catch (error) {
-        return {error, models: []};
+        return {error};
     }
 
     // if we start from the begging of time (since = 0) we need to fetch threads from newest to oldest (Direction.Down)
@@ -251,49 +256,41 @@ async function batchSyncThreads(serverUrl: string, teamId: string, options: Fetc
 
     const currentUser = await getCurrentUser(operator.database);
     if (!currentUser) {
-        return {error: true, models: []};
+        return {error: true};
     }
 
     const {config} = await getCommonSystemValues(operator.database);
-    const allThreadModels: Model[] = [];
+    const data: Thread[] = [];
 
     const fetchThreads = async (opts: FetchThreadOptions) => {
         let page = 0;
         const {before, after, perPage = General.CRT_CHUNK_SIZE, deleted, unread, since} = opts;
 
-        try {
-            page += 1;
-            const {threads} = await client.getThreads(config.Version, currentUser.id, teamId, before, after, perPage, deleted, unread, since);
-            if (threads.length) {
-                // Mark all fetched threads as following
-                threads.forEach((thread: Thread) => {
-                    thread.is_following = true;
-                    if (!unread) {
-                        thread.loaded_in_global_threads = true;
-                    }
-                });
+        page += 1;
+        const {threads} = await client.getThreads(config.Version, currentUser.id, teamId, before, after, perPage, deleted, unread, since);
+        if (threads.length) {
+            // Mark all fetched threads as following
+            threads.forEach((thread: Thread) => {
+                thread.is_following = true;
+                if (!unread) {
+                    thread.loaded_in_global_threads = true;
+                }
+            });
 
-                const {models} = await processReceivedThreads(serverUrl, threads, teamId, true);
-                if (models?.length) {
-                    allThreadModels.push(...models);
+            data.push(...threads);
+
+            if (threads.length === perPage) {
+                const newOptions: FetchThreadOptions = {perPage, deleted, unread};
+                if (direction === Direction.Down) {
+                    const last = threads[threads.length - 1];
+                    newOptions.before = last.id;
+                } else {
+                    const first = threads[0];
+                    newOptions.after = first.id;
                 }
-                if (threads.length === perPage) {
-                    const newOptions: FetchThreadOptions = {perPage, deleted, unread};
-                    if (direction === Direction.Down) {
-                        const last = threads[threads.length - 1];
-                        newOptions.before = last.id;
-                    } else {
-                        const first = threads[0];
-                        newOptions.after = first.id;
-                    }
-                    if (pages != null && page < pages) {
-                        fetchThreads(newOptions);
-                    }
+                if (pages != null && page < pages) {
+                    fetchThreads(newOptions);
                 }
-            }
-        } catch (error) {
-            if (__DEV__) {
-                throw error;
             }
         }
     };
@@ -305,17 +302,16 @@ async function batchSyncThreads(serverUrl: string, teamId: string, options: Fetc
             throw error;
         }
 
-        return {error, models: allThreadModels};
+        return {error, data};
     }
 
-    return {error: false, models: allThreadModels};
+    return {error: false, data};
 }
 
-export async function batchSyncAllUnreads(
+export async function fetchBatchAllUnreads(
     serverUrl: string,
     teamId: string,
-    prepareRecordsOnly = false,
-): Promise<{error: unknown; models?: Model[]}> {
+): Promise<{error: unknown; data?: Thread[]}> {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
 
     if (!operator) {
@@ -332,26 +328,10 @@ export async function batchSyncAllUnreads(
         since,
     };
 
-    const {error, models} = await batchSyncThreads(serverUrl, teamId, options);
-    if (error) {
-        return {error};
-    }
-
-    if (!prepareRecordsOnly) {
-        try {
-            await operator.batchRecords(models);
-            return {error: false, models};
-        } catch (err) {
-            if (__DEV__) {
-                throw err;
-            }
-            return {error: true};
-        }
-    }
-    return {error: false, models};
+    return fetchBatchThreads(serverUrl, teamId, options);
 }
 
-export async function getNewThreads(
+export async function fetchNewThreads(
     serverUrl: string,
     teamId: string,
     prepareRecordsOnly = false,
@@ -359,7 +339,8 @@ export async function getNewThreads(
     const options: FetchThreadOptions = {
         unread: false,
         deleted: true,
-        perPage: General.CRT_CHUNK_SIZE,
+        perPage: 60,
+        totalsOnly: true,
     };
 
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -371,31 +352,38 @@ export async function getNewThreads(
     const newestThread = await getNewestThreadInTeam(operator.database, teamId, false);
     options.since = newestThread ? newestThread.lastReplyAt : 0;
 
-    let data = {
-        error: false,
-        models: [],
+    let response = {
+        error: undefined,
+        data: [],
     } as {
         error: unknown;
-        models?: Model[];
+        data?: Thread[];
     };
 
+    // if we have no threads in the DB fetch all unread ones
     if (options.since === 0) {
         options.deleted = false;
 
         // batch fetch all unread threads
-        data = await batchSyncAllUnreads(serverUrl, teamId, false);
+        response = await fetchBatchAllUnreads(serverUrl, teamId);
     } else {
         // batch fetch latest updated threads (including deleted ones)
-        data = await batchSyncThreads(serverUrl, teamId, options);
+        response = await fetchBatchThreads(serverUrl, teamId, options);
     }
 
-    const {error, models} = data;
+    const {error: nErr, data} = response;
 
-    if (error) {
-        return {error};
+    if (nErr) {
+        return {error: nErr};
     }
 
-    if (models?.length && !prepareRecordsOnly) {
+    if (!data?.length) {
+        return {error: false, models: []};
+    }
+
+    const {error, models} = await processReceivedThreads(serverUrl, data, teamId, true);
+
+    if (!error && !prepareRecordsOnly && models?.length) {
         try {
             await operator.batchRecords(models);
             return {error: false};

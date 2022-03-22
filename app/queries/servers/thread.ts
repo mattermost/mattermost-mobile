@@ -135,11 +135,11 @@ export async function getNewestThreadInTeam(
     database: Database,
     teamId: string,
     unread: boolean,
-): Promise<ThreadModel | null> {
+): Promise<ThreadModel | undefined> {
     try {
         const threads = await queryThreadsInTeam({database, isFollowing: true, onlyUnreads: unread, sort: true, teamId, limit: 1}).fetch();
-        return threads?.[0] || null;
+        return threads?.[0] || undefined;
     } catch (e) {
-        return null;
+        return undefined;
     }
 }

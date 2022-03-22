@@ -18,7 +18,7 @@ import {queryAllChannelsForTeam} from '@queries/servers/channel';
 import {getConfig} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 
-import {getNewThreads} from '../thread';
+import {fetchNewThreads} from '../thread';
 
 import type ClientError from '@client/rest/error';
 
@@ -68,7 +68,8 @@ export const fetchAppEntryData = async (serverUrl: string, since: number, initia
 
     await fetchConfigAndLicense(serverUrl);
 
-    await getNewThreads(serverUrl, initialTeamId, false);
+    // Sync threads
+    fetchNewThreads(serverUrl, initialTeamId, false);
 
     // Fetch in parallel teams / team membership / channels for current team / user preferences / user
     const promises: [Promise<MyTeamsRequest>, Promise<MyChannelsRequest | undefined>, Promise<MyPreferencesRequest>, Promise<MyUserRequest>] = [

@@ -14,7 +14,7 @@ export interface ClientThreadsMix {
 }
 
 const ClientThreads = (superclass: any) => class extends superclass {
-    getThreads = async (serverVersion: string, userId: string, teamId: string, before = '', after = '', pageSize = PER_PAGE_DEFAULT, deleted = false, unread = false, since = 0) => {
+    getThreads = async (serverVersion: string, userId: string, teamId: string, before = '', after = '', pageSize = PER_PAGE_DEFAULT, deleted = false, unread = false, since = 0, totalsOnly = false) => {
         const queryStringObj: Record<string, any> = {
             extended: 'true',
             before,
@@ -22,6 +22,7 @@ const ClientThreads = (superclass: any) => class extends superclass {
             deleted,
             unread,
             since,
+            totalsOnly,
         };
         if (isMinimumServerVersion(serverVersion, 6, 0)) {
             queryStringObj.per_page = pageSize;
