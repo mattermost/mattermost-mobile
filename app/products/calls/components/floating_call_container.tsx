@@ -3,6 +3,7 @@
 
 import React, {useState, useEffect} from 'react';
 import {View, Platform} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {ViewTypes} from '@constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -11,15 +12,20 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 const {
     IOS_TOP_PORTRAIT,
     STATUS_BAR_HEIGHT,
+    ANDROID_TOP_PORTRAIT,
 } = ViewTypes;
 
 const getStyleSheet = makeStyleSheetFromTheme(() => {
-    const topBarHeight = Platform.select({android: 9, ios: IOS_TOP_PORTRAIT - STATUS_BAR_HEIGHT}) || 0;
+    const insets = useSafeAreaInsets();
+    let topBarHeight = ANDROID_TOP_PORTRAIT;
+    if (Platform.OS === 'ios') {
+        topBarHeight = (IOS_TOP_PORTRAIT - STATUS_BAR_HEIGHT) + insets.top;
+    }
 
     return {
         wrapper: {
             position: 'absolute',
-            top: topBarHeight + ViewTypes.STATUS_BAR_HEIGHT + 27,
+            top: topBarHeight,
             width: '100%',
             ...Platform.select({
                 android: {
@@ -31,7 +37,7 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
             }),
         },
         withIndicatorBar: {
-            top: topBarHeight + ViewTypes.STATUS_BAR_HEIGHT + 27 + ViewTypes.INDICATOR_BAR_HEIGHT,
+            top: topBarHeight + ViewTypes.INDICATOR_BAR_HEIGHT,
         },
     };
 });
