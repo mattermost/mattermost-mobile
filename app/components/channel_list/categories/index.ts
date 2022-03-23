@@ -5,7 +5,7 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
 import {queryCategoriesByTeamIds} from '@queries/servers/categories';
-import {observeCurrentChannelId} from '@queries/servers/system';
+import {observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
 
 import Categories from './categories';
 
@@ -17,11 +17,13 @@ const enhanced = withObservables(
     ['currentTeamId'],
     ({currentTeamId, database}: WithDatabaseProps) => {
         const currentChannelId = observeCurrentChannelId(database);
+        const currentUserId = observeCurrentUserId(database);
         const categories = queryCategoriesByTeamIds(database, [currentTeamId]).observeWithColumns(['sort_order']);
 
         return {
             currentChannelId,
             categories,
+            currentUserId,
         };
     });
 

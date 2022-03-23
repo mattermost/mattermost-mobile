@@ -12,6 +12,8 @@ import {getCurrentTeamId} from './system';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
+const {SERVER: {PREFERENCE}} = MM_TABLES;
+
 export const prepareMyPreferences = (operator: ServerDataOperator, preferences: PreferenceType[], sync = false) => {
     try {
         return operator.handlePreferences({
@@ -32,7 +34,7 @@ export const queryPreferencesByCategoryAndName = (database: Database, category: 
     if (value != null) {
         clauses.push(Q.where('value', value));
     }
-    return database.get<PreferenceModel>(MM_TABLES.SERVER.PREFERENCE).query(...clauses);
+    return database.get<PreferenceModel>(PREFERENCE).query(...clauses);
 };
 
 export const getThemeForCurrentTeam = async (database: Database) => {
