@@ -54,7 +54,7 @@ export const searchCustomEmojis = async (serverUrl: string, term: string) => {
         const data = await client.searchCustomEmoji(term);
         if (data.length) {
             const names = data.map((c) => c.name);
-            const exist = await queryCustomEmojisByName(operator.database, names);
+            const exist = await queryCustomEmojisByName(operator.database, names).fetch();
             const emojis = data.filter((d) => exist.findIndex((c) => c.name === d.name));
             if (emojis.length) {
                 await operator.handleCustomEmojis({

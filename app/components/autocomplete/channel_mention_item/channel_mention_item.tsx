@@ -5,7 +5,7 @@ import React, {useMemo} from 'react';
 import {Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import ChannelIcon from '@app/components/channel_icon';
+import ChannelIcon from '@components/channel_icon';
 import {BotTag, GuestTag} from '@components/tag';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {General} from '@constants';

@@ -1,6 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import type CategoryModel from './category';
+import type ChannelModel from './channel';
+import type MyTeamModel from './my_team';
+import type SlashCommandModel from './slash_command';
+import type TeamChannelHistoryModel from './team_channel_history';
+import type TeamMembershipModel from './team_membership';
+import type TeamSearchHistoryModel from './team_search_history';
 import type {Query, Relation} from '@nozbe/watermelondb';
 import type Model, {Associations} from '@nozbe/watermelondb/Model';
 

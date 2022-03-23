@@ -4,6 +4,8 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
+import type ChannelModel from './channel';
+
 /**
  * ChannelInfo is an extension of the information contained in the Channel table.
  * In a Separation of Concerns approach, ChannelInfo will provide additional information about a channel but on a more

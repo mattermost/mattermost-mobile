@@ -14,17 +14,15 @@ import {
     NavigationComponentProps,
     Options,
 } from 'react-native-navigation';
-import {switchMap} from 'rxjs/operators';
 
 import {CustomStatusDuration} from '@constants/custom_status';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {observeCurrentUser} from '@queries/servers/user';
 import {dismissModal, mergeNavigationOptions, popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ClearAfterMenuItem from './components/clear_after_menu_item';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
 interface Props extends NavigationComponentProps {
@@ -42,7 +40,6 @@ type State = {
     showExpiryTime: boolean;
 }
 
-const {SERVER: {SYSTEM, USER}} = MM_TABLES;
 const CLEAR_AFTER = 'update-custom-status-clear-after';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -208,11 +205,7 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
 }
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentUser: database.get<SystemModel>(SYSTEM).
-        findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).
-        pipe(
-            switchMap((id) => database.get<UserModel>(USER).findAndObserve(id.value)),
-        ),
+    currentUser: observeCurrentUser(database),
 }));
 
 export default withDatabase(enhanced(injectIntl(ClearAfterModal)));

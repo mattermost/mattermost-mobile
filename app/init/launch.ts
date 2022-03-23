@@ -9,8 +9,8 @@ import {appEntry, pushNotificationEntry, upgradeEntry} from '@actions/remote/ent
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from '@init/credentials';
-import {queryThemeForCurrentTeam} from '@queries/servers/preference';
-import {queryCurrentUserId} from '@queries/servers/system';
+import {getThemeForCurrentTeam} from '@queries/servers/preference';
+import {getCurrentUserId} from '@queries/servers/system';
 import {goToScreen, resetToHome, resetToSelectServer} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkType, DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
@@ -81,8 +81,8 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
             const database = DatabaseManager.serverDatabases[serverUrl]?.database;
             let hasCurrentUser = false;
             if (database) {
-                EphemeralStore.theme = await queryThemeForCurrentTeam(database);
-                const currentUserId = await queryCurrentUserId(database);
+                EphemeralStore.theme = await getThemeForCurrentTeam(database);
+                const currentUserId = await getCurrentUserId(database);
                 hasCurrentUser = Boolean(currentUserId);
             }
 

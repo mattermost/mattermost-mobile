@@ -4,6 +4,17 @@
 import {Query, Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
+import type CategoryChannelModel from './category_channel';
+import type ChannelInfoModel from './channel_info';
+import type ChannelMembershipModel from './channel_membership';
+import type DraftModel from './draft';
+import type MyChannelModel from './my_channel';
+import type MyChannelSettingsModel from './my_channel_settings';
+import type PostModel from './post';
+import type PostsInChannelModel from './posts_in_channel';
+import type TeamModel from './team';
+import type UserModel from './user';
+
 /**
  * The Channel model represents a channel in the Mattermost app.
  */
@@ -72,7 +83,7 @@ export default class ChannelModel extends Model {
     settings: Relation<MyChannelSettingsModel>;
 
     /** categoryChannel: category of this channel */
-    categoryChannel: Relation<CategoryChanelModel>;
+    categoryChannel: Relation<CategoryChannelModel>;
 
     toApi = () => Channel;
 }

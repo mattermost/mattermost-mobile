@@ -1,10 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
-
-import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {queryReaction} from '@queries/servers/reactions';
 
 export async function handleAddCustomEmoji(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -52,11 +50,7 @@ export async function handleReactionRemovedFromPostEvent(serverUrl: string, msg:
 
     try {
         const msgReaction = JSON.parse(msg.data.reaction) as Reaction;
-        const reaction = await database.get(MM_TABLES.SERVER.REACTION).query(
-            Q.where('emoji_name', msgReaction.emoji_name),
-            Q.where('post_id', msgReaction.post_id),
-            Q.where('user_id', msgReaction.user_id),
-        ).fetch();
+        const reaction = await queryReaction(database, msgReaction.emoji_name, msgReaction.post_id, msgReaction.user_id).fetch();
 
         if (reaction.length) {
             await database.write(async () => {

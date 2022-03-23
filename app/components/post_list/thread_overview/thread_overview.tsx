@@ -7,14 +7,14 @@ import {Keyboard, Platform, View} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import {deleteSavedPost, savePostPreference} from '@actions/remote/preference';
-import FormattedText from '@app/components/formatted_text';
-import {Screens} from '@app/constants';
-import {preventDoubleTap} from '@app/utils/tap';
 import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 

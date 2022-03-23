@@ -1,30 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {ReactNode, useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
-import {combineLatest} from 'rxjs';
-import {map} from 'rxjs/operators';
 
 import CompasIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Preferences, Screens, View as ViewConstants} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {Screens, View as ViewConstants} from '@constants';
 import {useTheme} from '@context/theme';
-import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import {observeTeammateNameDisplay} from '@queries/servers/user';
 import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type PreferenceModel from '@typings/database/models/servers/preference';
-import type SystemModel from '@typings/database/models/servers/system';
 
 type AutoCompleteSelectorProps = {
     dataSource?: string;
@@ -42,8 +36,6 @@ type AutoCompleteSelectorProps = {
     showRequiredAsterisk?: boolean;
     teammateNameDisplay: string;
 }
-
-const {SERVER: {PREFERENCE, SYSTEM}} = MM_TABLES;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     const input = {
@@ -240,16 +232,8 @@ const AutoCompleteSelector = ({
 };
 
 const withTeammateNameDisplay = withObservables([], ({database}: WithDatabaseArgs) => {
-    const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
-    const license = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE);
-    const preferences = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe();
-    const teammateNameDisplay = combineLatest([config, license, preferences]).pipe(
-        map(
-            ([{value: cfg}, {value: lcs}, prefs]) => getTeammateNameDisplaySetting(prefs, cfg, lcs),
-        ),
-    );
     return {
-        teammateNameDisplay,
+        teammateNameDisplay: observeTeammateNameDisplay(database),
     };
 });
 

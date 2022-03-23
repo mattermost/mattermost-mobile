@@ -4,6 +4,8 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
+import type PostModel from './post';
+
 /**
  * PostsInThread model helps us to combine adjacent threads together without leaving
  * gaps in between for an efficient user reading experience for threads.

@@ -4,8 +4,8 @@
 import {postActionWithCookie} from '@actions/remote/post';
 import {ActionType, Post} from '@constants';
 import DatabaseManager from '@database/manager';
-import {prepareDeletePost, queryPostById} from '@queries/servers/post';
-import {queryCurrentUserId} from '@queries/servers/system';
+import {getPostById, prepareDeletePost} from '@queries/servers/post';
+import {getCurrentUserId} from '@queries/servers/system';
 import {generateId} from '@utils/general';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
@@ -66,7 +66,7 @@ export const sendEphemeralPost = async (serverUrl: string, message: string, chan
 
     let authorId = userId;
     if (!authorId) {
-        authorId = await queryCurrentUserId(operator.database);
+        authorId = await getCurrentUserId(operator.database);
     }
 
     const timestamp = Date.now();
@@ -110,7 +110,7 @@ export const removePost = async (serverUrl: string, post: PostModel | Post) => {
         const systemPostIds = getPostIdsForCombinedUserActivityPost(post.id);
         const removeModels = [];
         for await (const id of systemPostIds) {
-            const postModel = await queryPostById(operator.database, id);
+            const postModel = await getPostById(operator.database, id);
             if (postModel) {
                 const preparedPost = await prepareDeletePost(postModel);
                 removeModels.push(...preparedPost);
@@ -121,7 +121,7 @@ export const removePost = async (serverUrl: string, post: PostModel | Post) => {
             await operator.batchRecords(removeModels);
         }
     } else {
-        const postModel = await queryPostById(operator.database, post.id);
+        const postModel = await getPostById(operator.database, post.id);
         if (postModel) {
             const preparedPost = await prepareDeletePost(postModel);
             if (preparedPost.length) {
@@ -143,7 +143,7 @@ export const markPostAsDeleted = async (serverUrl: string, post: Post) => {
         return {error: `${serverUrl} database not found`};
     }
 
-    const dbPost = await queryPostById(operator.database, post.id);
+    const dbPost = await getPostById(operator.database, post.id);
     if (!dbPost) {
         return {};
     }
