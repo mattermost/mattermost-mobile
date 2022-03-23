@@ -92,13 +92,13 @@ export default class InteractiveDialogController extends PureComponent {
         };
 
         showModal('InteractiveDialog', dialog.title, null, options);
-    }
+    };
 
     handleCancel = (dialog, url) => {
         if (dialog.notify_on_cancel) {
             this.props.actions.submitInteractiveDialog({...dialog, url, cancelled: true});
         }
-    }
+    };
 
     render() {
         return null;

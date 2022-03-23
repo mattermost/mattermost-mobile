@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
 });
 
 const Summary = (props: SummaryProps) => {
-    const containerStyles: Array<ViewStyle> = [styles.container];
+    const containerStyles: ViewStyle[] = [styles.container];
 
     if (props.isLandscape) {
         containerStyles.push(styles.containerLandscape);

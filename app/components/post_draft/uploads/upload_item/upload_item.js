@@ -56,7 +56,7 @@ export default class UploadItem extends PureComponent {
 
     handlePress = () => {
         this.props.onPress(this.props.file);
-    }
+    };
 
     handleRetryFileUpload = (file) => {
         if (!file.failed) {
@@ -120,7 +120,7 @@ export default class UploadItem extends PureComponent {
         }
 
         this.uploadFile(newFile);
-    }
+    };
 
     uploadFile = async (file) => {
         const {channelId} = this.props;

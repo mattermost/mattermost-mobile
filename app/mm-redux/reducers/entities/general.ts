@@ -13,7 +13,10 @@ function config(state: Partial<Config> = {}, action: GenericAction) {
         return Object.assign({}, state, action.data);
     case UserTypes.LOGIN: // Used by the mobile app
     case GeneralTypes.SET_CONFIG_AND_LICENSE:
-        return Object.assign({}, state, action.data.config);
+        if (action.data.config) {
+            return Object.assign({}, state, action.data.config);
+        }
+        return state;
     case GeneralTypes.CLIENT_CONFIG_RESET:
     default:
         return state;

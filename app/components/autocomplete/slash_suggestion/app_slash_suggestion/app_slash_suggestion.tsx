@@ -109,13 +109,13 @@ export default class AppSlashSuggestion extends PureComponent<Props, State> {
     isAppCommand = (pretext: string, channelID: string, teamID = '', rootID?: string) => {
         this.appCommandParser.setChannelContext(channelID, teamID, rootID);
         return this.appCommandParser.isAppCommand(pretext);
-    }
+    };
 
     fetchAndShowAppCommandSuggestions = async (pretext: string, channelID: string, teamID = '', rootID?: string) => {
         this.appCommandParser.setChannelContext(channelID, teamID, rootID);
         const suggestions = await this.appCommandParser.getSuggestions(pretext);
         this.updateSuggestions(suggestions);
-    }
+    };
 
     updateSuggestions = (matches: ExtendedAutocompleteSuggestion[]) => {
         this.setState({
@@ -123,7 +123,7 @@ export default class AppSlashSuggestion extends PureComponent<Props, State> {
             dataSource: matches,
         });
         this.props.onResultCountChange(matches.length);
-    }
+    };
 
     completeSuggestion = (command: string) => {
         const {onChangeText} = this.props;
@@ -157,13 +157,13 @@ export default class AppSlashSuggestion extends PureComponent<Props, State> {
         return () => {
             this.completeSuggestion(base);
         };
-    }
+    };
 
     completeChannelMention = (base: string): (channelName: string) => void => {
         return () => {
             this.completeSuggestion(base);
         };
-    }
+    };
 
     keyExtractor = (item: ExtendedAutocompleteSuggestion): string => item.Suggestion + item.type + item.item;
 
@@ -198,7 +198,7 @@ export default class AppSlashSuggestion extends PureComponent<Props, State> {
                 />
             );
         }
-    }
+    };
 
     render() {
         const {maxListHeight, theme, nestedScrollEnabled} = this.props;

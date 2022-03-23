@@ -19,19 +19,19 @@ import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 import {isDirectChannelVisible, isGroupChannelVisible} from '@utils/channels';
 import {buildPreference} from '@utils/preferences';
 
-export async function loadSidebarDirectMessagesProfiles(state: GlobalState, channels: Array<Channel>, channelMembers: Array<ChannelMembership>) {
+export async function loadSidebarDirectMessagesProfiles(state: GlobalState, channels: Channel[], channelMembers: ChannelMembership[]) {
     const currentUserId = getCurrentUserId(state);
     const usersInChannel: RelationOneToMany<Channel, UserProfile> = getUserIdsInChannels(state);
     const directChannels = Object.values(channels).filter((c) => c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL);
-    const prefs: Array<PreferenceType> = [];
+    const prefs: PreferenceType[] = [];
     const promises: Array<Promise<ActionResult>> = []; //only fetch profiles that we don't have and the Direct channel should be visible
     const actions = [];
-    const userIds: Array<string> = [];
+    const userIds: string[] = [];
 
     // Prepare preferences and start fetching profiles to batch them
     directChannels.forEach((c) => {
         const profileIds = Array.from(usersInChannel[c.id] || []);
-        const profilesInChannel: Array<string> = profileIds.filter((u: string) => u !== currentUserId);
+        const profilesInChannel: string[] = profileIds.filter((u: string) => u !== currentUserId);
         userIds.push(...profilesInChannel);
 
         switch (c.type) {
@@ -118,7 +118,7 @@ export async function fetchMyChannelMember(channelId: string) {
     }
 }
 
-export function markChannelAsUnread(state: GlobalState, teamId: string, channelId: string, mentions: Array<string>, isRoot = false): Array<GenericAction> {
+export function markChannelAsUnread(state: GlobalState, teamId: string, channelId: string, mentions: string[], isRoot = false): GenericAction[] {
     const {myMembers} = state.entities.channels;
     const {currentUserId} = state.entities.users;
 
@@ -214,8 +214,8 @@ export async function makeGroupMessageVisibleIfNecessary(state: GlobalState, cha
     }
 }
 
-export async function fetchChannelAndMyMember(channelId: string): Promise<Array<GenericAction>> {
-    const actions: Array<GenericAction> = [];
+export async function fetchChannelAndMyMember(channelId: string): Promise<GenericAction[]> {
+    const actions: GenericAction[] = [];
 
     try {
         const [channel, member] = await Promise.all([
@@ -246,9 +246,9 @@ export async function fetchChannelAndMyMember(channelId: string): Promise<Array<
     return actions;
 }
 
-export async function getAddedDmUsersIfNecessary(state: GlobalState, preferences: PreferenceType[]): Promise<Array<GenericAction>> {
+export async function getAddedDmUsersIfNecessary(state: GlobalState, preferences: PreferenceType[]): Promise<GenericAction[]> {
     const userIds: string[] = [];
-    const actions: Array<GenericAction> = [];
+    const actions: GenericAction[] = [];
 
     for (const preference of preferences) {
         if (preference.category === Preferences.CATEGORY_DIRECT_CHANNEL_SHOW && preference.value === 'true') {
@@ -319,7 +319,7 @@ export function lastChannelIdForTeam(state: GlobalState, teamId: string): string
     return firstChannel;
 }
 
-function fetchDirectMessageProfileIfNeeded(state: GlobalState, channel: Channel, channelMembers: Array<ChannelMembership>, profilesInChannel: Array<string>) {
+function fetchDirectMessageProfileIfNeeded(state: GlobalState, channel: Channel, channelMembers: ChannelMembership[], profilesInChannel: string[]) {
     const currentUserId = getCurrentUserId(state);
     const myPreferences = getMyPreferences(state);
     const users = getUsers(state);
@@ -351,7 +351,7 @@ function fetchDirectMessageProfileIfNeeded(state: GlobalState, channel: Channel,
     return {preferences};
 }
 
-function fetchGroupMessageProfilesIfNeeded(state: GlobalState, channel: Channel, channelMembers: Array<ChannelMembership>, profilesInChannel: Array<string>) {
+function fetchGroupMessageProfilesIfNeeded(state: GlobalState, channel: Channel, channelMembers: ChannelMembership[], profilesInChannel: string[]) {
     const currentUserId = getCurrentUserId(state);
     const myPreferences = getMyPreferences(state);
     const config = getConfig(state);

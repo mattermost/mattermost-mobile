@@ -62,7 +62,7 @@ export function handleChannelDeletedEvent(msg: WebSocketMessage) {
         const currentTeamId = getCurrentTeamId(state);
         const config = getConfig(state);
         const viewArchivedChannels = config.ExperimentalViewArchivedChannels === 'true';
-        const actions: Array<GenericAction> = [{
+        const actions: GenericAction[] = [{
             type: ChannelTypes.RECEIVED_CHANNEL_DELETED,
             data: {
                 id: msg.data.channel_id,
@@ -94,7 +94,7 @@ export function handleChannelMemberUpdatedEvent(msg: WebSocketMessage) {
         try {
             const channelMember = JSON.parse(msg.data.channelMember);
             const rolesToLoad = channelMember.roles.split(' ');
-            const actions: Array<GenericAction> = [{
+            const actions: GenericAction[] = [{
                 type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER,
                 data: channelMember,
             }];
@@ -129,7 +129,7 @@ export function handleChannelUnarchiveEvent(msg: WebSocketMessage) {
         const viewArchivedChannels = config.ExperimentalViewArchivedChannels === 'true';
 
         if (msg.broadcast.team_id === currentTeamId) {
-            const actions: Array<GenericAction> = [{
+            const actions: GenericAction[] = [{
                 type: ChannelTypes.RECEIVED_CHANNEL_UNARCHIVED,
                 data: {
                     id: msg.data.channel_id,

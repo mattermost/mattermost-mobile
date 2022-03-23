@@ -9,7 +9,7 @@ import type {Theme} from '@mm-redux/types/theme';
 
 type SafeAreaProps = {
     backgroundColor?: string;
-    children: Array<React.ReactChild> | React.ReactChild;
+    children: React.ReactChild[] | React.ReactChild;
     excludeHeader?: boolean;
     excludeFooter?: boolean;
     excludeLeft?: boolean;

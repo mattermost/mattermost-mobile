@@ -170,7 +170,7 @@ export default class CreateChannel extends PureComponent {
 
     onTypeChange = (type) => {
         this.setState({type});
-    }
+    };
 
     render() {
         const {theme} = this.props;

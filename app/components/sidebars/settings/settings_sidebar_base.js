@@ -57,7 +57,7 @@ export default class SettingsSidebarBase extends PureComponent {
     componentDidMount() {
         this.mounted = true;
         EventEmitter.on(NavigationTypes.CLOSE_SETTINGS_SIDEBAR, this.closeSettingsSidebar);
-        EventEmitter.on(CustomStatus.SET_CUSTOM_STATUS_FAILURE, this.handleSetCustomStatusFailure);
+        EventEmitter.on(CustomStatus.SET_CUSTOM_STATUS, this.handleSetCustomStatus);
     }
 
     componentDidUpdate(prevProps) {
@@ -67,14 +67,21 @@ export default class SettingsSidebarBase extends PureComponent {
     componentWillUnmount() {
         this.mounted = false;
         EventEmitter.off(NavigationTypes.CLOSE_SETTINGS_SIDEBAR, this.closeSettingsSidebar);
-        EventEmitter.off(CustomStatus.SET_CUSTOM_STATUS_FAILURE, this.handleSetCustomStatusFailure);
+        EventEmitter.off(CustomStatus.SET_CUSTOM_STATUS, this.handleSetCustomStatus);
     }
 
-    handleSetCustomStatusFailure = () => {
-        this.setState({
-            showRetryMessage: true,
-        });
-    }
+    handleSetCustomStatus = (error) => {
+        if (error) {
+            this.setState({showRetryMessage: true});
+        } else {
+            this.setState({
+                showStatus: true,
+                showRetryMessage: false,
+            });
+
+            this.closeSettingsSidebar();
+        }
+    };
 
     handleCustomStatusChange = (prevCustomStatus, customStatus) => {
         const isStatusSet = Boolean(customStatus?.emoji);
@@ -87,7 +94,7 @@ export default class SettingsSidebarBase extends PureComponent {
                 });
             }
         }
-    }
+    };
 
     confirmResetBase = (status, intl) => {
         confirmOutOfOfficeDisabled(intl, status, this.updateStatus);
@@ -167,9 +174,8 @@ export default class SettingsSidebarBase extends PureComponent {
     };
 
     goToCustomStatusScreen = (intl) => {
-        this.closeSettingsSidebar();
         showModal('CustomStatus', intl.formatMessage({id: 'mobile.routes.custom_status', defaultMessage: 'Set a Status'}));
-    }
+    };
 
     logout = preventDoubleTap(() => {
         const {logout} = this.props.actions;
@@ -239,7 +245,7 @@ export default class SettingsSidebarBase extends PureComponent {
         if (error) {
             this.setState({showStatus: true, showRetryMessage: true});
         }
-    }
+    };
 
     renderCustomStatus = () => {
         const {isCustomStatusEnabled, customStatus, theme, isCustomStatusExpired, isCustomStatusExpirySupported} = this.props;

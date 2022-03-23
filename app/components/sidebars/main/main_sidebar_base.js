@@ -278,7 +278,7 @@ export default class MainSidebarBase extends Component {
         const {setCategoryCollapsed} = this.props.actions;
 
         setCategoryCollapsed(categoryId, collapse);
-    }
+    };
 
     selectChannel = (channel, currentChannelId, closeDrawer = true) => {
         const {handleSelectChannel, handleNotViewingGlobalThreadsScreen} = this.props.actions;

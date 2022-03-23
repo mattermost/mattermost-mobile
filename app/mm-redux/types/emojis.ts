@@ -26,7 +26,7 @@ export type CustomEmoji = {
 };
 export type StandardEmoji = {
     image: string;
-    short_names: Array<string>;
+    short_names: string[];
     short_name: string;
     category: EmojiCategory;
     batch: number;

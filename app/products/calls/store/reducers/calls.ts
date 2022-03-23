@@ -31,7 +31,7 @@ function calls(state: Dictionary<Call> = {}, action: GenericAction) {
         return nextState;
     }
     case CallsTypes.RECEIVED_JOINED_CALL: {
-        const {channelId, userId} = action.data;
+        const {channelId, userId, profile} = action.data;
         if (!state[channelId]) {
             return state;
         }
@@ -40,6 +40,7 @@ function calls(state: Dictionary<Call> = {}, action: GenericAction) {
             id: userId,
             muted: true,
             isTalking: false,
+            profile,
         };
         const nextState = {...state};
         nextState[channelId] = channelUpdate;
@@ -87,41 +88,6 @@ function calls(state: Dictionary<Call> = {}, action: GenericAction) {
         nextState[channelId] = channelUpdate;
         return nextState;
     }
-    case CallsTypes.RECEIVED_VOICE_ON_USER_CALL: {
-        const {channelId, userId} = action.data;
-        if (!state[channelId]) {
-            return state;
-        }
-        if (!state[channelId].participants[userId]) {
-            return state;
-        }
-        const userUpdate = {...state[channelId].participants[userId], isTalking: true};
-        const channelUpdate = {...state[channelId], participants: {...state[channelId].participants}};
-        channelUpdate.participants[userId] = userUpdate;
-        channelUpdate.speakers = [userId, ...(channelUpdate.speakers || [])];
-        const nextState = {...state};
-        nextState[channelId] = channelUpdate;
-        return nextState;
-    }
-    case CallsTypes.RECEIVED_VOICE_OFF_USER_CALL: {
-        const {channelId, userId} = action.data;
-        if (!state[channelId]) {
-            return state;
-        }
-        if (!state[channelId].participants[userId]) {
-            return state;
-        }
-        const userUpdate = {...state[channelId].participants[userId], isTalking: false};
-        const channelUpdate = {...state[channelId], participants: {...state[channelId].participants}};
-        channelUpdate.participants[userId] = userUpdate;
-        channelUpdate.speakers = channelUpdate.speakers?.filter((id) => id !== userId);
-        if (!channelUpdate.speakers) {
-            channelUpdate.speakers = [];
-        }
-        const nextState = {...state};
-        nextState[channelId] = channelUpdate;
-        return nextState;
-    }
     case CallsTypes.RECEIVED_CHANNEL_CALL_SCREEN_ON: {
         const {channelId, userId} = action.data;
         if (!state[channelId]) {
@@ -154,9 +120,6 @@ function joined(state = '', action: GenericAction) {
     switch (action.type) {
     case CallsTypes.RECEIVED_MYSELF_JOINED_CALL: {
         return action.data;
-    }
-    case CallsTypes.RECEIVED_CALLS: {
-        return '';
     }
     case CallsTypes.RECEIVED_MYSELF_LEFT_CALL: {
         return '';
@@ -202,9 +165,20 @@ function screenShareURL(state = '', action: GenericAction) {
     }
 }
 
+function speakerphoneOn(state = false, action: GenericAction) {
+    switch (action.type) {
+    case CallsTypes.SET_SPEAKERPHONE: {
+        return action.data;
+    }
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     calls,
     enabled,
     joined,
     screenShareURL,
+    speakerphoneOn,
 });

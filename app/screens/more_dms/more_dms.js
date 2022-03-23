@@ -109,7 +109,7 @@ export default class MoreDirectMessages extends PureComponent {
 
     setSearchBarRef = (ref) => {
         this.searchBarRef = ref;
-    }
+    };
 
     close = () => {
         Keyboard.dismiss();
@@ -369,7 +369,7 @@ export default class MoreDirectMessages extends PureComponent {
         );
     };
 
-    filterUnknownUsers = (u) => Boolean(this.props.allProfiles[u.id])
+    filterUnknownUsers = (u) => Boolean(this.props.allProfiles[u.id]);
 
     renderLoading = () => {
         const {theme} = this.props;

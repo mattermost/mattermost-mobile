@@ -22,8 +22,8 @@ exports[`CurrentCall should match snapshot muted 1`] = `
     }
   >
     <CallAvatar
-      userId="user-1-id"
-      volume={0.5}
+      userId=""
+      volume={0}
     />
     <View
       style={
@@ -41,15 +41,7 @@ exports[`CurrentCall should match snapshot muted 1`] = `
           }
         }
       >
-        <InjectIntl(FormattedText)
-          defaultMessage="{username} is speaking"
-          id="current_call.user-is-speaking"
-          values={
-            Object {
-              "username": "User 1",
-            }
-          }
-        />
+        No one is talking
       </Text>
       <Text
         style={
@@ -59,15 +51,7 @@ exports[`CurrentCall should match snapshot muted 1`] = `
           }
         }
       >
-        <InjectIntl(FormattedText)
-          defaultMessage="~{channelName}"
-          id="current_call.channel-name"
-          values={
-            Object {
-              "channelName": "Channel Name",
-            }
-          }
-        />
+        ~Channel Name
       </Text>
     </View>
     <Pressable
@@ -149,8 +133,8 @@ exports[`CurrentCall should match snapshot unmuted 1`] = `
     }
   >
     <CallAvatar
-      userId="user-1-id"
-      volume={0.5}
+      userId=""
+      volume={0}
     />
     <View
       style={
@@ -168,15 +152,7 @@ exports[`CurrentCall should match snapshot unmuted 1`] = `
           }
         }
       >
-        <InjectIntl(FormattedText)
-          defaultMessage="{username} is speaking"
-          id="current_call.user-is-speaking"
-          values={
-            Object {
-              "username": "User 1",
-            }
-          }
-        />
+        No one is talking
       </Text>
       <Text
         style={
@@ -186,15 +162,7 @@ exports[`CurrentCall should match snapshot unmuted 1`] = `
           }
         }
       >
-        <InjectIntl(FormattedText)
-          defaultMessage="~{channelName}"
-          id="current_call.channel-name"
-          values={
-            Object {
-              "channelName": "Channel Name",
-            }
-          }
-        />
+        ~Channel Name
       </Text>
     </View>
     <Pressable

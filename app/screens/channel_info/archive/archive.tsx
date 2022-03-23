@@ -61,7 +61,7 @@ export default class Archive extends PureComponent<ArchiveProps> {
                 onPress: onPressAction,
             }],
         );
-    }
+    };
 
     handleDelete = preventDoubleTap(() => {
         const {channelId, deleteChannel, displayName, teamId} = this.props;

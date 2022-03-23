@@ -3,6 +3,8 @@
 
 import assert from 'assert';
 
+import InCallManager from 'react-native-incall-manager';
+
 import {Client4} from '@client/rest';
 import configureStore from '@test/test_store';
 
@@ -64,6 +66,7 @@ export function addFakeCall(channelId) {
 describe('Actions.Calls', () => {
     let store;
     const {newClient} = require('@mmproducts/calls/connection');
+    InCallManager.setSpeakerphoneOn = jest.fn();
 
     beforeEach(async () => {
         newClient.mockClear();

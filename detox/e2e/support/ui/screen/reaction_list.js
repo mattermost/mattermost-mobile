@@ -5,7 +5,7 @@ class ReactionListScreen {
     testID = {
         reactionRowPrefix: 'reaction_row.',
         reactionListScreen: 'reaction_list.screen',
-    }
+    };
 
     reactionListScreen = element(by.id(this.testID.reactionListScreen));
 
@@ -13,12 +13,12 @@ class ReactionListScreen {
         await expect(this.reactionListScreen).toExist();
 
         return reactionListScreen;
-    }
+    };
 
     close = async () => {
         await this.reactionListScreen.tap({x: 5, y: 10});
         await expect(this.reactionListScreen).not.toBeVisible();
-    }
+    };
 
     getReactionRow = (userId, emojiName) => {
         const reactionRowEmojiMatcher = by.id(`${this.testID.reactionRowPrefix}emoji.${emojiName}.${userId}`);
@@ -30,7 +30,7 @@ class ReactionListScreen {
             reactionRowProfilePicture: element(reactionRowProfilePictureMatcher),
             reactionRowUser: element(reactionRowUserMatcher),
         };
-    }
+    };
 }
 
 const reactionListScreen = new ReactionListScreen();

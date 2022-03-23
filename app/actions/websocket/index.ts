@@ -40,6 +40,7 @@ import {
 } from '@mmproducts/calls/store/actions/websockets';
 import {appsConfiguredAsEnabled} from '@utils/apps';
 import {getChannelSinceValue} from '@utils/channels';
+import {semverFromServerVersion} from '@utils/general';
 import websocketClient from '@websocket';
 
 import {handleAppsPluginDisabled, handleAppsPluginEnabled, handleRefreshAppsBindings} from './apps';
@@ -113,7 +114,7 @@ export function doFirstConnect(now: number) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc): Promise<ActionResult> => {
         const state = getState();
         const {lastDisconnectAt} = state.websocket;
-        const actions: Array<GenericAction> = [wsConnected(now)];
+        const actions: GenericAction[] = [wsConnected(now)];
 
         if (lastDisconnectAt) {
             const currentUserId = getCurrentUserId(state);
@@ -152,7 +153,7 @@ export function doReconnect(now: number) {
         const currentUserId = getCurrentUserId(state);
         const users = getUsers(state);
         const {lastDisconnectAt} = state.websocket;
-        const actions: Array<GenericAction> = [];
+        const actions: GenericAction[] = [];
 
         dispatch(batchActions([
             wsConnected(now),
@@ -456,7 +457,8 @@ function handleEvent(msg: WebSocketMessage) {
             case WebsocketEvents.CALLS_CHANNEL_DISABLED:
                 return dispatch(handleCallChannelDisabled(msg));
             case WebsocketEvents.CALLS_USER_CONNECTED:
-                return dispatch(handleCallUserConnected(msg));
+                handleCallUserConnected(dispatch, getState, msg);
+                break;
             case WebsocketEvents.CALLS_USER_DISCONNECTED:
                 return dispatch(handleCallUserDisconnected(msg));
             case WebsocketEvents.CALLS_USER_MUTED:
@@ -464,9 +466,11 @@ function handleEvent(msg: WebSocketMessage) {
             case WebsocketEvents.CALLS_USER_UNMUTED:
                 return dispatch(handleCallUserUnmuted(msg));
             case WebsocketEvents.CALLS_USER_VOICE_ON:
-                return dispatch(handleCallUserVoiceOn(msg));
+                handleCallUserVoiceOn(msg);
+                break;
             case WebsocketEvents.CALLS_USER_VOICE_OFF:
-                return dispatch(handleCallUserVoiceOff(msg));
+                handleCallUserVoiceOff(msg);
+                break;
             case WebsocketEvents.CALLS_CALL_START:
                 return dispatch(handleCallStarted(msg));
             case WebsocketEvents.CALLS_SCREEN_ON:
@@ -481,11 +485,8 @@ function handleEvent(msg: WebSocketMessage) {
 }
 
 function handleHelloEvent(msg: WebSocketMessage) {
-    const serverVersion = msg.data.server_version;
-    if (serverVersion && Client4.serverVersion !== serverVersion) {
-        Client4.serverVersion = serverVersion;
-        EventEmitter.emit(General.SERVER_VERSION_CHANGED, serverVersion);
-    }
+    const serverVersion = semverFromServerVersion(msg.data.server_version);
+    EventEmitter.emit(General.SERVER_VERSION_CHANGED, serverVersion);
 }
 
 // Helpers

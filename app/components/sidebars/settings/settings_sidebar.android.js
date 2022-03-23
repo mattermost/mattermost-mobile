@@ -50,7 +50,7 @@ export default class SettingsDrawerAndroid extends SettingsSidebarBase {
     goToCustomStatus = preventDoubleTap(() => {
         const {intl} = this.providerRef.getChildContext();
         this.goToCustomStatusScreen(intl);
-    })
+    });
 
     renderNavigationView = () => {
         const {theme} = this.props;
@@ -65,7 +65,7 @@ export default class SettingsDrawerAndroid extends SettingsSidebarBase {
 
     setProviderRef = (ref) => {
         this.providerRef = ref;
-    }
+    };
 
     render() {
         const locale = this.props.locale;

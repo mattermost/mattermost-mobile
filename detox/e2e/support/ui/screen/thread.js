@@ -19,7 +19,7 @@ class ThreadScreen {
         threadScreen: 'thread.screen',
         threadPostList: 'thread.post_list',
         backButton: 'screen.back.button',
-    }
+    };
 
     threadScreen = element(by.id(this.testID.threadScreen));
     threadPostList = element(by.id(this.testID.threadPostList));
@@ -47,23 +47,23 @@ class ThreadScreen {
 
     getPostListPostItem = (postId, text, postProfileOptions = {}) => {
         return this.postList.getPost(postId, text, postProfileOptions);
-    }
+    };
 
     getPostMessageAtIndex = (index) => {
         return this.postList.getPostMessageAtIndex(index);
-    }
+    };
 
     toBeVisible = async () => {
         await wait(timeouts.HALF_SEC);
         await expect(this.threadScreen).toBeVisible();
 
         return this.threadScreen;
-    }
+    };
 
     back = async () => {
         await this.backButton.tap();
         await expect(this.threadScreen).not.toBeVisible();
-    }
+    };
 
     deletePost = async (postId, text, {confirm = true, isParentPost = true} = {}) => {
         await this.openPostOptionsFor(postId, text);
@@ -75,7 +75,7 @@ class ThreadScreen {
         } else {
             this.toBeVisible();
         }
-    }
+    };
 
     openPostOptionsFor = async (postId, text) => {
         const {postListPostItem} = await this.getPostListPostItem(postId, text);
@@ -84,7 +84,7 @@ class ThreadScreen {
         // # Open post options
         await postListPostItem.longPress();
         await PostOptions.toBeVisible();
-    }
+    };
 
     postMessage = async (message, {quickReplace = false} = {}) => {
         // # Post message
@@ -95,31 +95,31 @@ class ThreadScreen {
             await this.postInput.typeText(message);
         }
         await this.tapSendButton();
-    }
+    };
 
     tapSendButton = async () => {
         // # Tap send button
         await this.sendButton.tap();
         await expect(this.sendButton).not.toExist();
         await expect(this.sendButtonDisabled).toBeVisible();
-    }
+    };
 
     hasLongPostMessage = async (postMessage) => {
         await expect(
             this.getLongPostMessage(),
         ).toHaveText(postMessage);
-    }
+    };
 
     hasPostMessage = async (postId, postMessage) => {
         const {postListPostItem} = this.getPostListPostItem(postId, postMessage);
         await expect(postListPostItem).toBeVisible();
-    }
+    };
 
     hasPostMessageAtIndex = async (index, postMessage) => {
         await expect(
             this.getPostMessageAtIndex(index),
         ).toHaveText(postMessage);
-    }
+    };
 }
 
 const threadScreen = new ThreadScreen();
