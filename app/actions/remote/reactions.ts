@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model, Q} from '@nozbe/watermelondb';
+import {Model} from '@nozbe/watermelondb';
 
 import {addRecentReaction} from '@actions/local/reactions';
-import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
-import {queryRecentPostsInChannel, queryRecentPostsInThread} from '@queries/servers/post';
-import {queryCurrentChannelId, queryCurrentUserId} from '@queries/servers/system';
+import {getRecentPostsInChannel, getRecentPostsInThread} from '@queries/servers/post';
+import {queryReaction} from '@queries/servers/reactions';
+import {getCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -29,7 +29,7 @@ export const addReaction = async (serverUrl: string, postId: string, emojiName: 
     }
 
     try {
-        const currentUserId = await queryCurrentUserId(operator.database);
+        const currentUserId = await getCurrentUserId(operator.database);
         const reaction = await client.addReaction(currentUserId, postId, emojiName);
         const models: Model[] = [];
 
@@ -73,15 +73,11 @@ export const removeReaction = async (serverUrl: string, postId: string, emojiNam
     }
 
     try {
-        const currentUserId = await queryCurrentUserId(database);
+        const currentUserId = await getCurrentUserId(database);
         await client.removeReaction(currentUserId, postId, emojiName);
 
         // should return one or no reaction
-        const reaction = await database.get(MM_TABLES.SERVER.REACTION).query(
-            Q.where('emoji_name', emojiName),
-            Q.where('post_id', postId),
-            Q.where('user_id', currentUserId),
-        ).fetch();
+        const reaction = await queryReaction(database, emojiName, postId, currentUserId).fetch();
 
         if (reaction.length) {
             await database.write(async () => {
@@ -105,10 +101,10 @@ export const handleReactionToLatestPost = async (serverUrl: string, emojiName: s
     try {
         let posts: PostModel[];
         if (rootId) {
-            posts = await queryRecentPostsInThread(operator.database, rootId);
+            posts = await getRecentPostsInThread(operator.database, rootId);
         } else {
-            const channelId = await queryCurrentChannelId(operator.database);
-            posts = await queryRecentPostsInChannel(operator.database, channelId);
+            const channelId = await getCurrentChannelId(operator.database);
+            posts = await getRecentPostsInChannel(operator.database, channelId);
         }
 
         if (add) {

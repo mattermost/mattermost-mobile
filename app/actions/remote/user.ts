@@ -1,26 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model, Q} from '@nozbe/watermelondb';
+import {Model} from '@nozbe/watermelondb';
 import {chunk} from 'lodash';
 
 import {updateChannelsDisplayName} from '@actions/local/channel';
 import {updateRecentCustomStatuses, updateLocalUser} from '@actions/local/user';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
-import {removeUserFromList} from '@app/utils/user';
-import {Database, General} from '@constants';
-import {MM_TABLES} from '@constants/database';
+import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
 import NetworkManager from '@init/network_manager';
-import {queryCurrentTeamId, queryCurrentUserId} from '@queries/servers/system';
-import {prepareUsers, queryAllUsers, queryCurrentUser, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
+import {queryChannelsByTypes} from '@queries/servers/channel';
+import {getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
+import {getCurrentUser, prepareUsers, queryAllUsers, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
+import {removeUserFromList} from '@utils/user';
 
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
 import type ClientError from '@client/rest/error';
-import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
 
 export type MyUserRequest = {
@@ -38,8 +37,6 @@ export type ProfilesInChannelRequest = {
     channelId: string;
     error?: unknown;
 }
-
-const {SERVER: {CHANNEL}} = MM_TABLES;
 
 export const fetchMe = async (serverUrl: string, fetchOnly = false): Promise<MyUserRequest> => {
     let client;
@@ -224,7 +221,7 @@ export const fetchStatusByIds = async (serverUrl: string, userIds: string[], fet
         if (!fetchOnly && DatabaseManager.serverDatabases[serverUrl]) {
             const {database, operator} = DatabaseManager.serverDatabases[serverUrl];
             if (operator) {
-                const users = await database.get(Database.MM_TABLES.SERVER.USER).query(Q.where('id', Q.oneOf(userIds))).fetch() as UserModel[];
+                const users = await queryUsersById(database, userIds).fetch();
                 for (const user of users) {
                     const status = statuses.find((s) => s.user_id === user.id);
                     user.prepareStatus(status?.status || General.OFFLINE);
@@ -258,8 +255,8 @@ export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetc
     }
 
     try {
-        const currentUser = await queryCurrentUser(operator.database);
-        const existingUsers = await queryUsersById(operator.database, userIds);
+        const currentUser = await getCurrentUser(operator.database);
+        const existingUsers = await queryUsersById(operator.database, userIds).fetch();
         if (userIds.includes(currentUser!.id)) {
             existingUsers.push(currentUser!);
         }
@@ -299,8 +296,8 @@ export const fetchUsersByUsernames = async (serverUrl: string, usernames: string
     }
 
     try {
-        const currentUser = await queryCurrentUser(operator.database);
-        const exisingUsers = await queryUsersByUsername(operator.database, usernames);
+        const currentUser = await getCurrentUser(operator.database);
+        const exisingUsers = await queryUsersByUsername(operator.database, usernames).fetch();
         const usersToLoad = usernames.filter((username) => (username !== currentUser?.username && !exisingUsers.find((u) => u.username === username)));
         const users = await client.getProfilesByUsernames([...new Set(usersToLoad)]);
 
@@ -335,7 +332,7 @@ export const fetchProfiles = async (serverUrl: string, page = 0, perPage: number
         const users = await client.getProfiles(page, perPage, options);
 
         if (!fetchOnly) {
-            const currentUserId = await queryCurrentUserId(operator.database);
+            const currentUserId = await getCurrentUserId(operator.database);
             const toStore = removeUserFromList(currentUserId, users);
             await operator.handleUsers({
                 users: toStore,
@@ -367,7 +364,7 @@ export const fetchProfilesInTeam = async (serverUrl: string, teamId: string, pag
         const users = await client.getProfilesInTeam(teamId, page, perPage, sort, options);
 
         if (!fetchOnly) {
-            const currentUserId = await queryCurrentUserId(operator.database);
+            const currentUserId = await getCurrentUserId(operator.database);
             const toStore = removeUserFromList(currentUserId, users);
 
             await operator.handleUsers({
@@ -397,7 +394,7 @@ export const searchProfiles = async (serverUrl: string, term: string, options: a
     }
 
     try {
-        const currentUserId = await queryCurrentUserId(operator.database);
+        const currentUserId = await getCurrentUserId(operator.database);
         const users = await client.searchUsers(term, options);
 
         if (!fetchOnly) {
@@ -462,6 +459,7 @@ export const updateAllUsersSince = async (serverUrl: string, since: number, fetc
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+    const database = operator.database;
 
     let client: Client;
     try {
@@ -470,9 +468,8 @@ export const updateAllUsersSince = async (serverUrl: string, since: number, fetc
         return {error};
     }
 
-    const currentUserId = await queryCurrentUserId(operator.database);
-    const users = await queryAllUsers(operator.database);
-    const userIds = users.map((u) => u.id).filter((id) => id !== currentUserId);
+    const currentUserId = await getCurrentUserId(database);
+    const userIds = (await queryAllUsers(database).fetchIds()).filter((id) => id !== currentUserId);
     let userUpdates: UserProfile[] = [];
     try {
         userUpdates = await client.getProfilesByIds(userIds, {since});
@@ -480,9 +477,7 @@ export const updateAllUsersSince = async (serverUrl: string, since: number, fetc
             const modelsToBatch: Model[] = [];
             const userModels = await operator.handleUsers({users: userUpdates, prepareRecordsOnly: true});
             modelsToBatch.push(...userModels);
-            const directChannels = await operator.database.get<ChannelModel>(CHANNEL).
-                query(Q.where('type', Q.oneOf([General.DM_CHANNEL, General.GM_CHANNEL]))).
-                fetch();
+            const directChannels = await queryChannelsByTypes(database, [General.DM_CHANNEL, General.GM_CHANNEL]).fetch();
             const {models} = await updateChannelsDisplayName(serverUrl, directChannels, userUpdates, true);
             if (models?.length) {
                 modelsToBatch.push(...models);
@@ -515,10 +510,10 @@ export const updateUsersNoLongerVisible = async (serverUrl: string, prepareRecor
     const models: Model[] = [];
     try {
         const knownUsers = new Set(await client.getKnownUsers());
-        const currentUserId = await queryCurrentUserId(serverDatabase.database);
+        const currentUserId = await getCurrentUserId(serverDatabase.database);
         knownUsers.add(currentUserId);
 
-        const allUsers = await queryAllUsers(serverDatabase.database);
+        const allUsers = await queryAllUsers(serverDatabase.database).fetch();
         for (const user of allUsers) {
             if (!knownUsers.has(user.id)) {
                 user.prepareDestroyPermanently();
@@ -648,7 +643,7 @@ export const uploadUserProfileImage = async (serverUrl: string, localPath: strin
     }
 
     try {
-        const currentUser = await queryCurrentUser(database);
+        const currentUser = await getCurrentUser(database);
         if (currentUser) {
             const endpoint = `${client.getUserRoute(currentUser.id)}/image`;
 
@@ -680,7 +675,7 @@ export const searchUsers = async (serverUrl: string, term: string, channelId?: s
     }
 
     try {
-        const currentTeamId = await queryCurrentTeamId(database);
+        const currentTeamId = await getCurrentTeamId(database);
         const users = await client.autocompleteUsers(term, currentTeamId, channelId);
         return {users};
     } catch (error) {

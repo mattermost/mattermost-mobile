@@ -9,8 +9,8 @@ import {map} from 'rxjs/operators';
 
 import {doAppCall, postEphemeralCallResponseForPost} from '@actions/remote/apps';
 import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@constants/apps';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server';
+import {observeCurrentTeamId} from '@queries/servers/system';
 import {createCallContext, createCallRequest} from '@utils/apps';
 import {getStatusColors} from '@utils/message_attachment_colors';
 import {preventDoubleTap} from '@utils/tap';
@@ -20,7 +20,6 @@ import ButtonBindingText from './button_binding_text';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
-import type SystemModel from '@typings/database/models/servers/system';
 
 type Props = {
     currentTeamId: string;
@@ -29,8 +28,6 @@ type Props = {
     teamID?: string;
     theme: Theme;
 }
-
-const {SERVER: {SYSTEM}} = MM_TABLES;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     const STATUS_COLORS = getStatusColors(theme);
@@ -136,9 +133,7 @@ const ButtonBinding = ({currentTeamId, binding, post, teamID, theme}: Props) => 
 
 const withTeamId = withObservables(['post'], ({post}: {post: PostModel}) => ({
     teamID: post.channel.observe().pipe(map((channel: ChannelModel) => channel.teamId)),
-    currentTeamId: post.collections.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).pipe(
-        map(({value}) => value),
-    ),
+    currentTeamId: observeCurrentTeamId(post.database),
 }));
 
 export default withTeamId(ButtonBinding);

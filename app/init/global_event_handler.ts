@@ -16,7 +16,7 @@ import {getLaunchPropsFromDeepLink, relaunchApp} from '@init/launch';
 import NetworkManager from '@init/network_manager';
 import PushNotifications from '@init/push_notifications';
 import WebsocketManager from '@init/websocket_manager';
-import {queryCurrentUser} from '@queries/servers/user';
+import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {LaunchType} from '@typings/launch';
 import {deleteFileCache} from '@utils/file';
@@ -158,7 +158,7 @@ class GlobalEventHandler {
     resetLocale = async () => {
         if (Object.keys(DatabaseManager.serverDatabases).length) {
             const serverDatabase = await DatabaseManager.getActiveServerDatabase();
-            const user = await queryCurrentUser(serverDatabase!);
+            const user = await getCurrentUser(serverDatabase!);
             resetMomentLocale(user?.locale);
         } else {
             resetMomentLocale();

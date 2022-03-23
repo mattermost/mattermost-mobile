@@ -5,7 +5,7 @@ import {getTimeZone} from 'react-native-localize';
 
 import {updateMe} from '@actions/remote/user';
 import DatabaseManager from '@database/manager';
-import {queryUserById} from '@queries/servers/user';
+import {getUserById} from '@queries/servers/user';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -23,7 +23,7 @@ export const autoUpdateTimezone = async (serverUrl: string, {deviceTimezone, use
         return {error: `No database present for ${serverUrl}`};
     }
 
-    const currentUser = await queryUserById(database, userId) ?? null;
+    const currentUser = await getUserById(database, userId);
 
     if (!currentUser) {
         return null;

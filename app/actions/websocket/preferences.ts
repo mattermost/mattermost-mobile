@@ -4,7 +4,7 @@
 import {fetchPostById} from '@actions/remote/post';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
-import {queryPostById} from '@queries/servers/post';
+import {getPostById} from '@queries/servers/post';
 import {deletePreferences} from '@queries/servers/preference';
 
 export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
@@ -70,7 +70,7 @@ async function handleSavePostAdded(serverUrl: string, preferences: PreferenceTyp
 
     const savedPosts = preferences.filter((p) => p.category === Preferences.CATEGORY_SAVED_POST);
     for await (const saved of savedPosts) {
-        const post = await queryPostById(database, saved.name);
+        const post = await getPostById(database, saved.name);
         if (!post) {
             await fetchPostById(serverUrl, saved.name, false);
         }

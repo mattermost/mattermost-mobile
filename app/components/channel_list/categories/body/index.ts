@@ -1,18 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Q} from '@nozbe/watermelondb';
+import {Database} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {MM_TABLES} from '@app/constants/database';
-import {queryChannelsByNames} from '@app/queries/servers/channel';
-import {queryPreferencesByCategory} from '@app/queries/servers/preference';
-import {getDirectChannelName} from '@app/utils/channel';
 import {General, Preferences} from '@constants';
+import {queryChannelsByNames, queryMyChannelSettingsByIds} from '@queries/servers/channel';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {WithDatabaseArgs} from '@typings/database/database';
+import {getDirectChannelName} from '@utils/channel';
 
 import CategoryBody from './category_body';
 
@@ -24,8 +23,6 @@ import type PreferenceModel from '@typings/database/models/servers/preference';
 type ChannelData = Pick<ChannelModel, 'id' | 'displayName'> & {
     isMuted: boolean;
 };
-
-const {SERVER: {MY_CHANNEL_SETTINGS}} = MM_TABLES;
 
 const sortAlpha = (locale: string, a: ChannelData, b: ChannelData) => {
     if (a.isMuted && !b.isMuted) {
@@ -52,12 +49,9 @@ const buildAlphaData = (channels: ChannelModel[], settings: MyChannelSettingsMod
     return of$(combined.map((c) => c.id));
 };
 
-const querySettings = (database: Database, channels: ChannelModel[]) => {
+const observeSettings = (database: Database, channels: ChannelModel[]) => {
     const ids = channels.map((c) => c.id);
-    return database.get<MyChannelSettingsModel>(MY_CHANNEL_SETTINGS).
-        query(
-            Q.where('id', Q.oneOf(ids)),
-        ).observeWithColumns(['notify_props']);
+    return queryMyChannelSettingsByIds(database, ids).observeWithColumns(['notify_props']);
 };
 
 const getSortedIds = (database: Database, category: CategoryModel, locale: string) => {
@@ -65,7 +59,7 @@ const getSortedIds = (database: Database, category: CategoryModel, locale: strin
         case 'alpha': {
             const channels = category.channels.observeWithColumns(['display_name']);
             const settings = channels.pipe(
-                switchMap((cs) => querySettings(database, cs)),
+                switchMap((cs) => observeSettings(database, cs)),
             );
             return combineLatest([channels, settings]).pipe(
                 switchMap(([cs, st]) => buildAlphaData(cs, st, locale)),
@@ -99,7 +93,7 @@ const enhance = withObservables(['category'], ({category, locale, database, curr
 
     const dmMap = (p: PreferenceModel) => getDirectChannelName(p.name, currentUserId);
 
-    const hiddenDmIds = queryPreferencesByCategory(database, Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, undefined, 'false').
+    const hiddenDmIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, undefined, 'false').
         observe().pipe(
             switchMap((prefs: PreferenceModel[]) => {
                 const names = prefs.map(dmMap);
@@ -111,23 +105,16 @@ const enhance = withObservables(['category'], ({category, locale, database, curr
             }),
         );
 
-    const hiddenGmIds = queryPreferencesByCategory(database, Preferences.CATEGORY_GROUP_CHANNEL_SHOW, undefined, 'false').
+    const hiddenGmIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_GROUP_CHANNEL_SHOW, undefined, 'false').
         observe().pipe(switchMap(mapPrefName));
 
     let limit = of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
     if (category.type === 'direct_messages') {
-        limit = queryPreferencesByCategory(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_LIMIT_DMS).
-            observe().pipe(
-                switchMap(
-                    (val) => {
-                        if (val[0]) {
-                            return of$(parseInt(val[0].value, 10));
-                        }
-
-                        return of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
-                    },
-                ),
-            );
+        limit = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_LIMIT_DMS).observe().pipe(
+            switchMap((val) => {
+                return val[0] ? of$(parseInt(val[0].value, 10)) : of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
+            }),
+        );
     }
 
     const hiddenChannelIds = combineLatest([hiddenDmIds, hiddenGmIds]).pipe(switchMap(

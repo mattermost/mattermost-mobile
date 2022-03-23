@@ -3,34 +3,25 @@
 
 /* eslint-disable max-nested-callbacks */
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {of as of$, combineLatest} from 'rxjs';
 import {switchMap, map} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
-import {MM_TABLES} from '@constants/database';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {queryJoinedTeams, queryMyTeams} from '@queries/servers/team';
 
 import TeamList from './team_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type MyTeamModel from '@typings/database/models/servers/my_team';
-import type PreferenceModel from '@typings/database/models/servers/preference';
-import type TeamModel from '@typings/database/models/servers/team';
-
-const {SERVER: {MY_TEAM, PREFERENCE, TEAM}} = MM_TABLES;
 
 const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
-    const myTeams = database.get<MyTeamModel>(MY_TEAM).query().observe();
-    const teamIds = database.get<TeamModel>(TEAM).query(
-        Q.on(MY_TEAM, Q.where('id', Q.notEq(''))),
-    ).observe().pipe(
+    const myTeams = queryMyTeams(database).observe();
+    const teamIds = queryJoinedTeams(database).observe().pipe(
         map((ts) => ts.map((t) => ({id: t.id, displayName: t.displayName}))),
     );
-    const order = database.get<PreferenceModel>(PREFERENCE).query(
-        Q.where('category', Preferences.TEAMS_ORDER),
-    ).observe().pipe(
+    const order = queryPreferencesByCategoryAndName(database, Preferences.TEAMS_ORDER).observe().pipe(
         switchMap((p) => (p.length ? of$(p[0].value.split(',')) : of$([]))),
     );
     const myOrderedTeams = combineLatest([myTeams, order, teamIds]).pipe(

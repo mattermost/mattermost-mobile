@@ -13,7 +13,6 @@ import {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import Share from 'react-native-share';
 
 import {downloadFile} from '@actions/remote/file';
-import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import ProgressBar from '@components/progress_bar';
 import Toast from '@components/toast';
@@ -22,6 +21,7 @@ import {useServerUrl} from '@context/server';
 import {alertFailedToOpenDocument} from '@utils/document';
 import {fileExists, getLocalFilePathFromFile, hasWriteStoragePermission} from '@utils/file';
 import {galleryItemToFileInfo} from '@utils/gallery';
+import {typography} from '@utils/typography';
 
 import type {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
 

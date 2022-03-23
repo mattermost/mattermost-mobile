@@ -7,28 +7,22 @@ import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {observeMyChannel} from '@queries/servers/channel';
+import {observeCurrentUserId} from '@queries/servers/system';
 import {getUserIdFromChannelName} from '@utils/user';
 
 import ChannelListItem from './channel_list_item';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
-import type SystemModel from '@typings/database/models/servers/system';
-
-const {SERVER: {MY_CHANNEL, SYSTEM}} = MM_TABLES;
-const {CURRENT_USER_ID} = SYSTEM_IDENTIFIERS;
 
 const enhance = withObservables(['channelId'], ({channelId, database}: {channelId: string} & WithDatabaseArgs) => {
-    const myChannel = database.get<MyChannelModel>(MY_CHANNEL).findAndObserve(channelId);
-    const currentUserId = database.get<SystemModel>(SYSTEM).findAndObserve(CURRENT_USER_ID).pipe(
-        switchMap(({value}) => of$(value)),
-    );
+    const myChannel = observeMyChannel(database, channelId);
+    const currentUserId = observeCurrentUserId(database);
 
-    const channel = myChannel.pipe(switchMap((my) => my.channel.observe()));
-    const settings = channel.pipe(switchMap((c) => c.settings.observe()));
+    const channel = myChannel.pipe(switchMap((my) => (my ? my.channel.observe() : of$(undefined))));
+    const settings = channel.pipe(switchMap((c) => (c ? c.settings.observe() : of$(undefined))));
 
     const isOwnDirectMessage = combineLatest([currentUserId, channel]).pipe(
         switchMap(([userId, ch]) => {

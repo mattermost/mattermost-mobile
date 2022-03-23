@@ -12,7 +12,7 @@ import {handleClose, handleEvent, handleFirstConnect, handleReconnect} from '@ac
 import WebSocketClient from '@client/websocket';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
-import {queryCurrentUserId} from '@queries/servers/system';
+import {getCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
 
 import type {ServerCredential} from '@typings/credentials';
@@ -157,13 +157,8 @@ class WebsocketManager {
                 return;
             }
 
-            const currentUserId = await queryCurrentUserId(database.database);
-            const users = await queryAllUsers(database.database);
-
-            const userIds = users.map((u) => u.id).filter((id) => id !== currentUserId);
-            if (!userIds.length) {
-                return;
-            }
+            const currentUserId = await getCurrentUserId(database.database);
+            const userIds = (await queryAllUsers(database.database).fetchIds()).filter((id) => id !== currentUserId);
 
             fetchStatusByIds(serverUrl, userIds);
         };
