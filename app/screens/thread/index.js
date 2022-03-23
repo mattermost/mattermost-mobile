@@ -14,6 +14,7 @@ import {makeGetPostIdsForThread} from '@mm-redux/selectors/entities/posts';
 import {getTheme, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getThread} from '@mm-redux/selectors/entities/threads';
 import {getThreadLastViewedAt} from '@selectors/threads';
+import {appsEnabled} from '@utils/apps';
 
 import Thread from './thread';
 
@@ -42,7 +43,7 @@ function makeMapStateToProps() {
             theme: getTheme(state),
             thread,
             threadLoadingStatus: state.requests.posts.getPostThread,
-            shouldFetchBindings: ownProps.channelId !== getCurrentChannelId(state),
+            shouldFetchBindings: appsEnabled(state) && ownProps.channelId !== getCurrentChannelId(state),
         };
     };
 }

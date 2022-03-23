@@ -9,6 +9,7 @@ export type CallsState = {
     enabled: Dictionary<boolean>;
     joined: string;
     screenShareURL: string;
+    speakerphoneOn: boolean;
 }
 
 export type Call = {

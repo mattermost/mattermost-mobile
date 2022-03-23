@@ -5,8 +5,8 @@ import {bindActionCreators, Dispatch} from 'redux';
 
 import {getTheme, getTeammateNameDisplaySetting} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {muteMyself, unmuteMyself, leaveCall} from '@mmproducts/calls//store/actions/calls';
-import {getCurrentCall, getScreenShareURL} from '@mmproducts/calls/store/selectors/calls';
+import {muteMyself, unmuteMyself, leaveCall, setSpeakerphoneOn} from '@mmproducts/calls//store/actions/calls';
+import {getCurrentCall, getScreenShareURL, isSpeakerphoneOn} from '@mmproducts/calls/store/selectors/calls';
 
 import CallScreen from './call_screen';
 
@@ -21,6 +21,7 @@ function mapStateToProps(state: GlobalState) {
         teammateNameDisplay: getTeammateNameDisplaySetting(state),
         currentParticipant: currentCall && currentCall.participants[currentUserId],
         screenShareURL: getScreenShareURL(state),
+        speakerphoneOn: isSpeakerphoneOn(state),
     };
 }
 
@@ -29,6 +30,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
         actions: bindActionCreators({
             muteMyself,
             unmuteMyself,
+            setSpeakerphoneOn,
             leaveCall,
         }, dispatch),
     };

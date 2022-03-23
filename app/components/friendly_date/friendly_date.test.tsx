@@ -66,7 +66,7 @@ describe('Friendly Date', () => {
         expect(daysAgoMaxText.getByText('30 days ago')).toBeTruthy();
 
         const monthsAgo = new Date();
-        monthsAgo.setMonth(monthsAgo.getMonth() - 2);
+        monthsAgo.setDate(monthsAgo.getDate() - 60);
         const monthsAgoText = renderWithIntl(
             <FriendlyDate value={monthsAgo}/>,
         );

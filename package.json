@@ -1,6 +1,6 @@
 {
   "name": "mattermost-mobile",
-  "version": "1.49.1",
+  "version": "1.50.1",
   "description": "Mattermost Mobile with React Native",
   "repository": "git@github.com:mattermost/mattermost-mobile.git",
   "author": "Mattermost, Inc.",
@@ -25,8 +25,8 @@
     "array.prototype.flat": "1.2.5",
     "base-64": "1.0.0",
     "buffer": "6.0.3",
-    "commonmark": "0.30.0",
-    "commonmark-react-renderer": "4.3.5",
+    "commonmark": "github:mattermost/commonmark.js#90a62d97ed2dbd2d4711a5adda327128f5827983",
+    "commonmark-react-renderer": "github:mattermost/commonmark-react-renderer#4e52e1725c0ef5b1e2ecfe9883220ec36c2eb67d",
     "deep-equal": "2.0.5",
     "deepmerge": "4.2.2",
     "emoji-regex": "10.0.0",
@@ -97,7 +97,7 @@
     "serialize-error": "9.0.0",
     "shallow-equals": "1.0.0",
     "tinycolor2": "1.4.2",
-    "url-parse": "1.5.8"
+    "url-parse": "1.5.10"
   },
   "devDependencies": {
     "@babel/cli": "7.16.8",

@@ -121,9 +121,6 @@ function joined(state = '', action: GenericAction) {
     case CallsTypes.RECEIVED_MYSELF_JOINED_CALL: {
         return action.data;
     }
-    case CallsTypes.RECEIVED_CALLS: {
-        return '';
-    }
     case CallsTypes.RECEIVED_MYSELF_LEFT_CALL: {
         return '';
     }
@@ -168,9 +165,20 @@ function screenShareURL(state = '', action: GenericAction) {
     }
 }
 
+function speakerphoneOn(state = false, action: GenericAction) {
+    switch (action.type) {
+    case CallsTypes.SET_SPEAKERPHONE: {
+        return action.data;
+    }
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     calls,
     enabled,
     joined,
     screenShareURL,
+    speakerphoneOn,
 });

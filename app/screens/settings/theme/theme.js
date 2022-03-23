@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {intlShape} from 'react-intl';
 import {Text, View} from 'react-native';
+import {ScrollView} from 'react-native-gesture-handler';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
@@ -112,7 +113,7 @@ export default class Theme extends React.PureComponent {
         const {customTheme} = this.state;
         const style = getStyleSheet(theme);
         return (
-            <View style={style.container}>
+            <ScrollView style={style.container}>
                 <StatusBar/>
                 <View style={style.wrapper}>
                     <View style={style.tilesContainer}>
@@ -132,7 +133,7 @@ export default class Theme extends React.PureComponent {
                         </SafeAreaView>
                     }
                 </View>
-            </View>
+            </ScrollView>
         );
     }
 }
