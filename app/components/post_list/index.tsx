@@ -235,6 +235,7 @@ const PostList = ({
                     <ThreadOverview
                         rootId={rootId!}
                         testID={`${testID}.thread_overview`}
+                        style={styles.scale}
                     />
                 );
             }

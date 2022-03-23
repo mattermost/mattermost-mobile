@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, View} from 'react-native';
+import {Keyboard, Platform, StyleProp, View, ViewStyle} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import {deleteSavedPost, savePostPreference} from '@actions/remote/preference';
@@ -25,6 +25,7 @@ type Props = {
     repliesCount: number;
     rootPost?: PostModel;
     testID: string;
+    style: StyleProp<ViewStyle>;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -55,7 +56,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const ThreadOverview = ({isSaved, repliesCount, rootPost, testID}: Props) => {
+const ThreadOverview = ({isSaved, repliesCount, rootPost, style, testID}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -85,14 +86,15 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, testID}: Props) => {
     }), [rootPost]);
 
     const containerStyle = useMemo(() => {
-        const style = [styles.container];
+        const container = [styles.container];
         if (repliesCount === 0) {
-            style.push({
+            container.push({
                 borderBottomWidth: 0,
             });
         }
-        return style;
-    }, [repliesCount]);
+        container.push(style);
+        return container;
+    }, [repliesCount, style]);
 
     return (
         <View
