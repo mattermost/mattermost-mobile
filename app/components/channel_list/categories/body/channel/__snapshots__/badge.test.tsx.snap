@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/channel_list/categories/body/channel/badge should match snapshot 1`] = `
+<View
+  style={
+    Array [
+      Object {
+        "alignItems": "center",
+        "backgroundColor": "#ffffff",
+        "borderRadius": 10,
+        "height": 20,
+        "justifyContent": "center",
+        "marginTop": 5,
+        "paddingHorizontal": 8,
+        "textAlignVertical": "center",
+      },
+      false,
+    ]
+  }
+>
+  <Text
+    style={
+      Array [
+        Object {
+          "color": "#1e325c",
+          "fontFamily": "OpenSans",
+          "fontSize": 12,
+          "fontWeight": "400",
+          "lineHeight": 16,
+        },
+        false,
+      ]
+    }
+  >
+    10
+  </Text>
+</View>
+`;

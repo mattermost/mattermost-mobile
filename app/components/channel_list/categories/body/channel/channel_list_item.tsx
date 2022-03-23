@@ -15,6 +15,8 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import Badge from './badge';
+
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
@@ -65,7 +67,7 @@ const ChannelListItem = ({channel, isActive, isOwnDirectMessage, isMuted, myChan
     const serverUrl = useServerUrl();
 
     // Make it brighter if it's not muted, and highlighted or has unreads
-    const bright = !isMuted && (myChannel.isUnread || myChannel.mentionsCount > 0);
+    const bright = !isMuted && (isActive || myChannel.isUnread || myChannel.mentionsCount > 0);
 
     const sharedValue = useSharedValue(collapsed && !bright);
 
@@ -117,6 +119,7 @@ const ChannelListItem = ({channel, isActive, isOwnDirectMessage, isMuted, myChan
                         shared={channel.shared}
                         size={24}
                         type={channel.type}
+                        isMuted={isMuted}
                     />
                     <Text
                         ellipsizeMode='tail'
@@ -125,6 +128,12 @@ const ChannelListItem = ({channel, isActive, isOwnDirectMessage, isMuted, myChan
                     >
                         {displayName}
                     </Text>
+                    {myChannel.mentionsCount > 0 &&
+                        <Badge
+                            count={myChannel.mentionsCount}
+                            muted={isMuted}
+                        />
+                    }
 
                 </View>
             </TouchableOpacity>
