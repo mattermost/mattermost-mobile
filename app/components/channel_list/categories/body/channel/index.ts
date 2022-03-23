@@ -14,7 +14,6 @@ import {getUserIdFromChannelName} from '@utils/user';
 import ChannelListItem from './channel_list_item';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type ChannelModel from '@typings/database/models/servers/channel';
 
 const enhance = withObservables(['channelId'], ({channelId, database}: {channelId: string} & WithDatabaseArgs) => {
     const myChannel = observeMyChannel(database, channelId);
@@ -40,12 +39,12 @@ const enhance = withObservables(['channelId'], ({channelId, database}: {channelI
         ),
         myChannel,
         channel: channel.pipe(
-            switchMap((c: ChannelModel) => of$({
-                deleteAt: c.deleteAt,
-                displayName: c.displayName,
-                name: c.name,
-                shared: c.shared,
-                type: c.type,
+            switchMap((c) => of$({
+                deleteAt: c?.deleteAt || 0,
+                displayName: c?.displayName || '',
+                name: c?.name || '',
+                shared: c?.shared || false,
+                type: c?.type || '',
             })),
         ),
     };
