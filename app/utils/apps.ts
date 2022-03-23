@@ -2,11 +2,6 @@
 // See LICENSE.txt for license information.
 import {AppBindingLocations, AppCallResponseTypes} from '@constants/apps';
 
-export function appsEnabled(config: Partial<ClientConfig>) { // eslint-disable-line @typescript-eslint/no-unused-vars
-    const enabled = config['FeatureFlagAppsEnabled' as keyof Partial<ClientConfig>];
-    return enabled === 'true';
-}
-
 export function copyAndFillBindings(binding?: AppBinding): AppBinding | undefined {
     if (!binding) {
         return undefined;

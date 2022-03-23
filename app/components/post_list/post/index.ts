@@ -1,15 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {from as from$, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Permissions, Preferences} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {appsEnabled} from '@utils/apps';
+import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
+import {queryPostsBetween} from '@queries/servers/post';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeConfigBooleanValue} from '@queries/servers/system';
+import {observeCurrentUser} from '@queries/servers/user';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
 import {areConsecutivePosts, isPostEphemeral} from '@utils/post';
 import {canManageChannelMembers, hasPermissionForPost} from '@utils/role';
@@ -20,14 +22,10 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type PostModel from '@typings/database/models/servers/post';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
-import type PreferenceModel from '@typings/database/models/servers/preference';
-import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {CUSTOM_EMOJI, POST, PREFERENCE, SYSTEM, USER}} = MM_TABLES;
-
 type PropsInput = WithDatabaseArgs & {
-    featureFlagAppsEnabled?: string;
+    appsEnabled: boolean;
     currentUser: UserModel;
     nextPost: PostModel | undefined;
     post: PostModel;
@@ -38,13 +36,7 @@ async function shouldHighlightReplyBar(currentUser: UserModel, post: PostModel, 
     let commentsNotifyLevel = Preferences.COMMENTS_NEVER;
     let threadCreatedByCurrentUser = false;
     let rootPost: PostModel | undefined;
-    const myPosts = await postsInThread.collections.get(POST).query(
-        Q.and(
-            Q.where('root_id', post.rootId || post.id),
-            Q.where('create_at', Q.between(postsInThread.earliest, postsInThread.latest)),
-            Q.where('user_id', currentUser.id),
-        ),
-    ).fetch();
+    const myPosts = await queryPostsBetween(postsInThread.database, postsInThread.earliest, postsInThread.latest, null, currentUser.id, '', post.rootId || post.id).fetch();
 
     const threadRepliedToByCurrentUser = myPosts.length > 0;
     const root = await post.root.fetch();
@@ -82,17 +74,13 @@ function isFirstReply(post: PostModel, previousPost?: PostModel) {
 }
 
 const withSystem = withObservables([], ({database}: WithDatabaseArgs) => ({
-    featureFlagAppsEnabled: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        switchMap((cfg) => of$(cfg.value.FeatureFlagAppsEnabled)),
-    ),
-    currentUser: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap((currentUserId) => database.get<UserModel>(USER).findAndObserve(currentUserId.value)),
-    ),
+    appsEnabled: observeConfigBooleanValue(database, 'FeatureFlagAppsEnabled'),
+    currentUser: observeCurrentUser(database),
 }));
 
 const withPost = withObservables(
     ['currentUser', 'post', 'previousPost', 'nextPost'],
-    ({featureFlagAppsEnabled, currentUser, database, post, previousPost, nextPost}: PropsInput) => {
+    ({appsEnabled, currentUser, database, post, previousPost, nextPost}: PropsInput) => {
         let isJumboEmoji = of$(false);
         let isLastReply = of$(true);
         let isPostAddChannelMember = of$(false);
@@ -100,10 +88,9 @@ const withPost = withObservables(
         const author = post.author.observe();
         const canDelete = from$(hasPermissionForPost(post, currentUser, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false));
         const isEphemeral = of$(isPostEphemeral(post));
-        const isSaved = database.get<PreferenceModel>(PREFERENCE).query(
-            Q.where('category', Preferences.CATEGORY_SAVED_POST),
-            Q.where('name', post.id),
-        ).observe().pipe(switchMap((pref) => of$(Boolean(pref.length))));
+        const isSaved = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, post.id).observe().pipe(
+            switchMap((pref) => of$(Boolean(pref.length))),
+        );
 
         if (post.props?.add_channel_member && isPostEphemeral(post)) {
             isPostAddChannelMember = from$(canManageChannelMembers(post, currentUser));
@@ -124,7 +111,7 @@ const withPost = withObservables(
         }
 
         if (post.message.length && !(/^\s{4}/).test(post.message)) {
-            isJumboEmoji = post.collections.get(CUSTOM_EMOJI).query().observe().pipe(
+            isJumboEmoji = queryAllCustomEmojis(post.database).observe().pipe(
                 // eslint-disable-next-line max-nested-callbacks
                 switchMap((customEmojis: CustomEmojiModel[]) => of$(hasJumboEmojiOnly(post.message, customEmojis.map((c) => c.name))),
                 ),
@@ -132,15 +119,11 @@ const withPost = withObservables(
         }
         const hasReplies = from$(post.hasReplies());
         const isConsecutivePost = author.pipe(
-            switchMap((user) => of$(Boolean(post && previousPost && !user.isBot && areConsecutivePosts(post, previousPost)))),
+            switchMap((user) => of$(Boolean(post && previousPost && !user?.isBot && areConsecutivePosts(post, previousPost)))),
         );
 
-        const partialConfig: Partial<ClientConfig> = {
-            FeatureFlagAppsEnabled: featureFlagAppsEnabled,
-        };
-
         return {
-            appsEnabled: of$(appsEnabled(partialConfig)),
+            appsEnabled: of$(appsEnabled),
             canDelete,
             differentThreadSequence: of$(differentThreadSequence),
             filesCount: post.files.observeCount(),

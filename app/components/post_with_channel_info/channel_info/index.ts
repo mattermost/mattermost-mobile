@@ -7,18 +7,17 @@ import {switchMap, of as of$} from 'rxjs';
 import ChannelInfo from './channel_info';
 
 import type PostModel from '@typings/database/models/servers/post';
-import type TeamModel from '@typings/database/models/servers/team';
 
 const enhance = withObservables(['post'], ({post}: {post: PostModel}) => {
     const channel = post.channel.observe();
 
     return {
         channelName: channel.pipe(
-            switchMap((chan) => of$(chan.displayName)),
+            switchMap((chan) => (chan ? of$(chan.displayName) : '')),
         ),
         teamName: channel.pipe(
-            switchMap((chan) => chan.team || of$(null)),
-            switchMap((team: TeamModel|null) => of$(team?.displayName || null)),
+            switchMap((chan) => (chan ? chan.team.observe() : of$(null))),
+            switchMap((team) => of$(team?.displayName || null)),
         ),
     };
 });

@@ -6,7 +6,7 @@ import {Platform} from 'react-native';
 
 import {WebsocketEvents} from '@constants';
 import DatabaseManager from '@database/manager';
-import {queryCommonSystemValues} from '@queries/servers/system';
+import {getCommonSystemValues} from '@queries/servers/system';
 
 const MAX_WEBSOCKET_FAILS = 7;
 const MIN_WEBSOCKET_RETRY_TIME = 3000; // 3 sec
@@ -74,7 +74,7 @@ export default class WebSocketClient {
             return;
         }
 
-        const system = await queryCommonSystemValues(database);
+        const system = await getCommonSystemValues(database);
         const connectionUrl = (system.config.WebsocketURL || this.serverUrl) + '/api/v4/websocket';
 
         if (this.connectingCallback) {

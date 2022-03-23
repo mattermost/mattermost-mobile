@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useState} from 'react';
@@ -9,16 +8,17 @@ import {useIntl} from 'react-intl';
 import {LayoutChangeEvent, Platform, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
-import {catchError, switchMap} from 'rxjs/operators';
+import {switchMap} from 'rxjs/operators';
 
 import {searchCustomEmojis} from '@actions/remote/custom_emoji';
 import SearchBar from '@components/search_bar';
 import {Preferences} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
-import {safeParseJSON} from '@utils/helpers';
+import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeConfigBooleanValue, observeRecentReactions} from '@queries/servers/system';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmojiFiltered from './filtered';
@@ -26,8 +26,6 @@ import EmojiSections from './sections';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
-import type PreferenceModel from '@typings/database/models/servers/preference';
-import type SystemModel from '@typings/database/models/servers/system';
 
 export const SCROLLVIEW_NATIVE_ID = 'emojiSelector';
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -150,21 +148,10 @@ const EmojiPicker = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmo
 };
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    customEmojisEnabled: database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).
-        findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-            switchMap((config) => of$(config.value.EnableCustomEmoji === 'true')),
-        ),
-    customEmojis: database.get<CustomEmojiModel>(MM_TABLES.SERVER.CUSTOM_EMOJI).query().observe(),
-    recentEmojis: database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).
-        findAndObserve(SYSTEM_IDENTIFIERS.RECENT_REACTIONS).
-        pipe(
-            switchMap((recent) => of$(safeParseJSON(recent.value) as string[])),
-            catchError(() => of$([])),
-        ),
-    skinTone: database.get<PreferenceModel>(MM_TABLES.SERVER.PREFERENCE).query(
-        Q.where('category', Preferences.CATEGORY_EMOJI),
-        Q.where('name', Preferences.EMOJI_SKINTONE),
-    ).observe().pipe(
+    customEmojisEnabled: observeConfigBooleanValue(database, 'EnableCustomEmoji'),
+    customEmojis: queryAllCustomEmojis(database).observe(),
+    recentEmojis: observeRecentReactions(database),
+    skinTone: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_EMOJI, Preferences.EMOJI_SKINTONE).observe().pipe(
         switchMap((prefs) => of$(prefs?.[0]?.value ?? 'default')),
     ),
 }));

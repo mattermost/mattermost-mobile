@@ -10,7 +10,7 @@ import {BackHandler, DeviceEventEmitter, Keyboard, KeyboardAvoidingView, Platfor
 import {EventSubscription, Navigation, NavigationButtonPressedEvent, NavigationComponent, NavigationComponentProps} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
-import {switchMap, catchError} from 'rxjs/operators';
+import {switchMap} from 'rxjs/operators';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
 import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';
@@ -18,11 +18,12 @@ import CompassIcon from '@components/compass_icon';
 import TabletTitle from '@components/tablet_title';
 import {CustomStatusDuration, Events, Screens} from '@constants';
 import {SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {withServerUrl} from '@context/server';
 import {withTheme} from '@context/theme';
+import {observeConfig, observeRecentCustomStatus} from '@queries/servers/system';
+import {observeCurrentUser} from '@queries/servers/user';
 import {dismissModal, goToScreen, mergeNavigationOptions, showModal} from '@screens/navigation';
-import {getCurrentMomentForTimezone, getRoundedTime, isCustomStatusExpirySupported, safeParseJSON} from '@utils/helpers';
+import {getCurrentMomentForTimezone, getRoundedTime, isCustomStatusExpirySupported} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {
@@ -37,7 +38,6 @@ import CustomStatusSuggestions from './components/custom_status_suggestions';
 import RecentCustomStatuses from './components/recent_custom_statuses';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
 interface Props extends NavigationComponentProps {
@@ -58,7 +58,6 @@ type State = {
     expires_at: Moment;
 };
 
-const {SERVER: {SYSTEM, USER}} = MM_TABLES;
 const {DONT_CLEAR, THIRTY_MINUTES, ONE_HOUR, FOUR_HOURS, TODAY, THIS_WEEK, DATE_AND_TIME} = CustomStatusDuration;
 const DEFAULT_DURATION: CustomStatusDuration = TODAY;
 const BTN_UPDATE_STATUS = 'update-custom-status';
@@ -394,29 +393,13 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 const augmentCSM = injectIntl(withTheme(withServerUrl(CustomStatusModal)));
 
 const enhancedCSM = withObservables([], ({database}: WithDatabaseArgs) => {
-    const config = database.
-        get<SystemModel>(SYSTEM).
-        findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
+    const config = observeConfig(database);
     return {
-        currentUser: database.
-            get<SystemModel>(SYSTEM).
-            findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).
-            pipe(
-                switchMap((id) => database.get<UserModel>(USER).findAndObserve(id.value)),
-            ),
+        currentUser: observeCurrentUser(database),
         customStatusExpirySupported: config.pipe(
-            switchMap((cfg) => of$(isCustomStatusExpirySupported((cfg.value as ClientConfig).Version))),
+            switchMap((cfg) => of$(isCustomStatusExpirySupported(cfg?.Version || ''))),
         ),
-        recentCustomStatuses: database.
-            get<SystemModel>(SYSTEM).
-            findAndObserve(SYSTEM_IDENTIFIERS.RECENT_CUSTOM_STATUS).pipe(
-                switchMap(
-                    (recentStatuses) => of$(
-                        safeParseJSON(recentStatuses.value) as unknown as UserCustomStatus[],
-                    ),
-                ),
-                catchError(() => of$([])),
-            ),
+        recentCustomStatuses: observeRecentCustomStatus(database),
     };
 });
 

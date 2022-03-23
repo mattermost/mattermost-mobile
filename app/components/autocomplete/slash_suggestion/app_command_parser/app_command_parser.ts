@@ -9,9 +9,9 @@ import {fetchChannelById, fetchChannelByName, searchChannels} from '@actions/rem
 import {fetchUsersByIds, fetchUsersByUsernames, searchUsers} from '@actions/remote/user';
 import {AppCallResponseTypes, AppCallTypes, AppFieldTypes, COMMAND_SUGGESTION_ERROR} from '@constants/apps';
 import DatabaseManager from '@database/manager';
-import {queryChannelById, queryChannelByName} from '@queries/servers/channel';
-import {queryCurrentTeamId} from '@queries/servers/system';
-import {queryUsersById, queryUsersByUsername} from '@queries/servers/user';
+import {getChannelById, queryChannelsByNames} from '@queries/servers/channel';
+import {getCurrentTeamId} from '@queries/servers/system';
+import {getUserById, queryUsersByUsername} from '@queries/servers/user';
 import ChannelModel from '@typings/database/models/servers/channel';
 import UserModel from '@typings/database/models/servers/user';
 import {createCallRequest, filterEmptyOptions} from '@utils/apps';
@@ -671,7 +671,7 @@ export class AppCommandParser {
                         break;
                     case AppFieldTypes.USER: {
                         const userID = (f.value as AppSelectOption).value;
-                        let user: UserModel | UserProfile = (await queryUsersById(this.database, [userID]))[0];
+                        let user: UserModel | UserProfile | undefined = await getUserById(this.database, userID);
                         if (!user) {
                             const res = await fetchUsersByIds(this.serverUrl, [userID]);
                             if ('error' in res) {
@@ -685,7 +685,7 @@ export class AppCommandParser {
                     }
                     case AppFieldTypes.CHANNEL: {
                         const channelID = (f.value as AppSelectOption).label;
-                        let channel: ChannelModel | Channel | undefined = await queryChannelById(this.database, channelID);
+                        let channel: ChannelModel | Channel | undefined = await getChannelById(this.database, channelID);
                         if (!channel) {
                             const res = await fetchChannelById(this.serverUrl, channelID);
                             if ('error' in res) {
@@ -882,7 +882,7 @@ export class AppCommandParser {
                     if (userName[0] === '@') {
                         userName = userName.substr(1);
                     }
-                    let user: UserModel | UserProfile | undefined = (await queryUsersByUsername(this.database, [userName]))[0];
+                    let user: UserModel | UserProfile | undefined = (await queryUsersByUsername(this.database, [userName]).fetch())[0];
                     if (!user) {
                         const res = await fetchUsersByUsernames(this.serverUrl, [userName]);
                         if ('error' in res) {
@@ -905,7 +905,7 @@ export class AppCommandParser {
                     if (channelName[0] === '~') {
                         channelName = channelName.substr(1);
                     }
-                    let channel: ChannelModel | Channel | undefined = await queryChannelByName(this.database, channelName);
+                    let channel: ChannelModel | Channel | undefined = (await queryChannelsByNames(this.database, [channelName]).fetch())[0];
                     if (!channel) {
                         const res = await fetchChannelByName(this.serverUrl, this.teamID, channelName);
                         if ('error' in res) {
@@ -969,7 +969,7 @@ export class AppCommandParser {
 
     // getChannel gets the channel in which the user is typing the command
     private getChannel = async () => {
-        return queryChannelById(this.database, this.channelID);
+        return getChannelById(this.database, this.channelID);
     };
 
     public setChannelContext = (channelID: string, teamID = '', rootPostID?: string) => {
@@ -1014,7 +1014,7 @@ export class AppCommandParser {
         }
 
         context.channel_id = channel.id;
-        context.team_id = channel.teamId || await queryCurrentTeamId(this.database);
+        context.team_id = channel.teamId || await getCurrentTeamId(this.database);
 
         return context;
     };

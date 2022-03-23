@@ -1,10 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
-
 import {General, Permissions} from '@constants';
-import {MM_TABLES} from '@constants/database';
+import {queryRolesByNames} from '@queries/servers/role';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -41,7 +39,7 @@ export async function hasPermissionForChannel(channel: ChannelModel, user: UserM
     }
 
     if (rolesArray.length) {
-        const roles = await user.collections.get(MM_TABLES.SERVER.ROLE).query(Q.where('name', Q.oneOf(rolesArray))).fetch() as RoleModel[];
+        const roles = await queryRolesByNames(user.database, rolesArray).fetch();
         return hasPermission(roles, permission, defaultValue);
     }
 
@@ -57,7 +55,7 @@ export async function hasPermissionForTeam(team: TeamModel, user: UserModel, per
     }
 
     if (rolesArray.length) {
-        const roles = await user.collections.get(MM_TABLES.SERVER.ROLE).query(Q.where('name', Q.oneOf(rolesArray))).fetch() as RoleModel[];
+        const roles = await queryRolesByNames(user.database, rolesArray).fetch();
         return hasPermission(roles, permission, defaultValue);
     }
 
@@ -77,7 +75,7 @@ export async function canManageChannelMembers(post: PostModel, user: UserModel) 
     const rolesArray = [...user.roles.split(' ')];
     const channel = await post.channel.fetch() as ChannelModel | undefined;
 
-    if (!channel || channel.deleteAt !== 0 || [General.DM_CHANNEL, General.GM_CHANNEL].includes(channel.type) || channel.name === General.DEFAULT_CHANNEL) {
+    if (!channel || channel.deleteAt !== 0 || [General.DM_CHANNEL, General.GM_CHANNEL].includes(channel.type as any) || channel.name === General.DEFAULT_CHANNEL) {
         return false;
     }
 
@@ -95,7 +93,7 @@ export async function canManageChannelMembers(post: PostModel, user: UserModel) 
     }
 
     if (rolesArray.length) {
-        const roles = await post.collections.get(MM_TABLES.SERVER.ROLE).query(Q.where('name', Q.oneOf(rolesArray))).fetch() as RoleModel[];
+        const roles = await queryRolesByNames(post.database, rolesArray).fetch() as RoleModel[];
         const permission = channel.type === General.OPEN_CHANNEL ? Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS : Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS;
         return hasPermission(roles, permission, true);
     }

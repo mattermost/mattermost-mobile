@@ -4,6 +4,8 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
+import type UserModel from './user';
+
 /**
  * The Preference model hold information about the user's preference in the app.
  * This includes settings about the account, the themes, etc.

@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import moment, {Moment} from 'moment-timezone';
@@ -15,13 +14,12 @@ import FormattedDate from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {Preferences} from '@constants';
-import {MM_TABLES} from '@constants/database';
 import {getPreferenceAsBool} from '@helpers/api/preference';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCurrentMomentForTimezone} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type PreferenceModel from '@typings/database/models/servers/preference';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
@@ -128,14 +126,11 @@ const CustomStatusExpiry = ({currentUser, isMilitaryTime, showPrefix, showTimeCo
 };
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    isMilitaryTime: database.get<PreferenceModel>(MM_TABLES.SERVER.PREFERENCE).
-        query(
-            Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS),
-        ).observe().pipe(
-            switchMap(
-                (preferences) => of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)),
-            ),
+    isMilitaryTime: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observe().pipe(
+        switchMap(
+            (preferences) => of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)),
         ),
+    ),
 }));
 
 export default withDatabase(enhanced(CustomStatusExpiry));

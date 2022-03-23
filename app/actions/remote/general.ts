@@ -5,7 +5,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
 import NetworkManager from '@init/network_manager';
-import {queryExpandedLinks} from '@queries/servers/system';
+import {getExpandedLinks} from '@queries/servers/system';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -69,7 +69,7 @@ export const getRedirectLocation = async (serverUrl: string, link: string) => {
     try {
         const expandedLink = await client.getRedirectLocation(link);
         if (expandedLink?.location) {
-            const storedLinks = await queryExpandedLinks(operator.database);
+            const storedLinks = await getExpandedLinks(operator.database);
             storedLinks[link] = expandedLink.location;
             const expanded: IdValue = {
                 id: SYSTEM_IDENTIFIERS.EXPANDED_LINKS,

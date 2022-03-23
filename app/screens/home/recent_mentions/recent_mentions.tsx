@@ -9,9 +9,9 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 import {SafeAreaView, Edge} from 'react-native-safe-area-context';
 
 import {fetchRecentMentions} from '@actions/remote/search';
-import PostWithChannelInfo from '@app/components/post_with_channel_info';
 import NavigationHeader from '@components/navigation_header';
 import DateSeparator from '@components/post_list/date_separator';
+import PostWithChannelInfo from '@components/post_with_channel_info';
 import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
