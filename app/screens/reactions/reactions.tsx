@@ -15,14 +15,14 @@ import type ReactionModel from '@typings/database/models/servers/reaction';
 
 type Props = {
     initialEmoji: string;
-    reactions: ReactionModel[];
+    reactions?: ReactionModel[];
 }
 
 const Reactions = ({initialEmoji, reactions}: Props) => {
-    const [sortedReactions, setSortedReactions] = useState(Array.from(new Set(reactions.map((r) => getEmojiFirstAlias(r.emojiName)))));
+    const [sortedReactions, setSortedReactions] = useState(Array.from(new Set(reactions?.map((r) => getEmojiFirstAlias(r.emojiName)))));
     const [index, setIndex] = useState(sortedReactions.indexOf(initialEmoji));
     const reactionsByName = useMemo(() => {
-        return reactions.reduce((acc, reaction) => {
+        return reactions?.reduce((acc, reaction) => {
             const emojiAlias = getEmojiFirstAlias(reaction.emojiName);
             if (acc.has(emojiAlias)) {
                 const rs = acc.get(emojiAlias);
@@ -41,6 +41,9 @@ const Reactions = ({initialEmoji, reactions}: Props) => {
 
     const renderContent = useCallback(() => {
         const emojiAlias = sortedReactions[index];
+        if (!reactionsByName) {
+            return null;
+        }
 
         return (
             <>
@@ -61,11 +64,11 @@ const Reactions = ({initialEmoji, reactions}: Props) => {
 
     useEffect(() => {
         // This helps keep the reactions in the same position at all times until unmounted
-        const rs = reactions.map((r) => getEmojiFirstAlias(r.emojiName));
+        const rs = reactions?.map((r) => getEmojiFirstAlias(r.emojiName));
         const sorted = new Set([...sortedReactions]);
-        const added = rs.filter((r) => !sorted.has(r));
-        added.forEach(sorted.add, sorted);
-        const removed = [...sorted].filter((s) => !rs.includes(s));
+        const added = rs?.filter((r) => !sorted.has(r));
+        added?.forEach(sorted.add, sorted);
+        const removed = [...sorted].filter((s) => !rs?.includes(s));
         removed.forEach(sorted.delete, sorted);
         setSortedReactions(Array.from(sorted));
     }, [reactions]);
