@@ -18,6 +18,9 @@ type ReactionProps = {
     theme: Theme;
 }
 
+const MIN_WIDTH = 50;
+const DIGIT_WIDTH = 5;
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         count: {
@@ -44,7 +47,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center',
             marginBottom: 12,
             marginRight: 8,
-            minWidth: 50,
+            minWidth: MIN_WIDTH,
         },
     };
 });
@@ -53,7 +56,7 @@ const Reaction = ({count, emojiName, highlight, onPress, onLongPress, theme}: Re
     const styles = getStyleSheet(theme);
     const digits = String(count).length;
     const containerStyle = useMemo(() => {
-        const minWidth = 50 + (digits * 5);
+        const minWidth = MIN_WIDTH + (digits * DIGIT_WIDTH);
         return [styles.reaction, (highlight && styles.highlight), {minWidth}];
     }, [styles.reaction, highlight, digits]);
 

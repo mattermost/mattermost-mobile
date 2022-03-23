@@ -43,7 +43,6 @@ type UserProfile = {
     last_picture_update: number;
     remote_id?: string;
     status?: string;
-    remote_id?: string;
 };
 
 type UsersState = {

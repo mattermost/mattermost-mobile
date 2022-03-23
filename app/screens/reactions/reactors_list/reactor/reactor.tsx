@@ -14,9 +14,6 @@ type Props = {
 
 const style = StyleSheet.create({
     container: {
-        paddingVertical: 0,
-        paddingHorizontal: 0,
-        paddingTop: 0,
         marginBottom: 8,
     },
 });
