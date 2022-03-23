@@ -7,13 +7,13 @@ import FastImage from 'react-native-fast-image';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {SvgXml} from 'react-native-svg';
 
+import CompassIcon from '@app/components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {COMMAND_SUGGESTION_ERROR} from '@constants/apps';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const slashIcon = require('@assets/images/autocomplete/slash_command.png');
-const bangIcon = require('@assets/images/autocomplete/slash_command_error.png');
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -105,11 +105,9 @@ const SlashSuggestionItem = ({
     );
     if (icon === COMMAND_SUGGESTION_ERROR) {
         image = (
-            <Image
-                style={style.iconColor}
-                width={10}
-                height={16}
-                source={bangIcon}
+            <CompassIcon
+                name='alert-circle-outline'
+                size={24}
             />
         );
     } else if (icon.startsWith('http')) {
@@ -121,7 +119,6 @@ const SlashSuggestionItem = ({
         );
     } else if (icon.startsWith('data:')) {
         if (icon.startsWith('data:image/svg+xml')) {
-            // TODO: What base64 library should we use? Security implications on doing things like this?
             let xml = '';
             try {
                 xml = Buffer.from(icon.substring('data:image/svg+xml;base64,'.length), 'base64').toString();
