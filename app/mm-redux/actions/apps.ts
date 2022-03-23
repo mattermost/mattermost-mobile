@@ -5,7 +5,7 @@ import {Client4} from '@client/rest';
 import {AppsTypes} from '@mm-redux/action_types';
 import {getThreadAppsBindingsChannelId} from '@mm-redux/selectors/entities/apps';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
-import {getCurrentChannelId, getCurrentUserId} from '@mm-redux/selectors/entities/common';
+import {getCurrentChannelId, getCurrentTeamId, getCurrentUserId} from '@mm-redux/selectors/entities/common';
 import {ActionFunc, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 
 import {bindClientFunc} from './helpers';
@@ -27,8 +27,9 @@ export function refreshAppBindings(): ActionFunc {
 
 export function fetchAppBindings(userID: string, channelID: string): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        const channel = getChannel(getState(), channelID);
-        const teamID = channel?.team_id || '';
+        const state = getState();
+        const channel = getChannel(state, channelID);
+        const teamID = channel?.team_id || getCurrentTeamId(state);
 
         return dispatch(bindClientFunc({
             clientFunc: () => Client4.getAppsBindings(userID, channelID, teamID),
