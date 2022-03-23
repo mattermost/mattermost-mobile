@@ -122,7 +122,12 @@ const SlashSuggestionItem = ({
     } else if (icon.startsWith('data:')) {
         if (icon.startsWith('data:image/svg+xml')) {
             // TODO: What base64 library should we use? Security implications on doing things like this?
-            const xml = ''; // base64.decode(icon.substring('data:image/svg+xml;base64,'.length));
+            let xml = '';
+            try {
+                xml = Buffer.from(icon.substring('data:image/svg+xml;base64,'.length), 'base64').toString();
+            } catch {
+                // Do nothing
+            }
             image = (
                 <SvgXml
                     xml={xml}

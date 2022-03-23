@@ -205,6 +205,10 @@ export const fetchCommands = async (serverUrl: string, teamId: string) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error: error as ClientErrorProps};
+    }
+    try {
         return {commands: await client.getCommandsList(teamId)};
     } catch (error) {
         return {error: error as ClientErrorProps};
@@ -215,6 +219,11 @@ export const fetchSuggestions = async (serverUrl: string, term: string, teamId: 
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error: error as ClientErrorProps};
+    }
+
+    try {
         return {suggestions: await client.getCommandAutocompleteSuggestionsList(term, teamId, channelId, rootId)};
     } catch (error) {
         return {error: error as ClientErrorProps};

@@ -73,10 +73,7 @@ export async function getChannelSuggestions(channels?: Channel[]): Promise<Autoc
         Hint: '',
         IconData: '',
     }];
-    if (!channels) {
-        return notFoundSuggestion;
-    }
-    if (!channels.length) {
+    if (!channels?.length) {
         return notFoundSuggestion;
     }
 

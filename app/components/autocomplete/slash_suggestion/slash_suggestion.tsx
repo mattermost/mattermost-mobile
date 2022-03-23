@@ -92,6 +92,7 @@ const SlashSuggestion = ({
     const serverUrl = useServerUrl();
     const appCommandParser = useRef<AppCommandParser>(new AppCommandParser(serverUrl, intl, channelId, currentTeamId, rootId, theme));
     const mounted = useRef(false);
+    const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
 
     const [dataSource, setDataSource] = useState<AutocompleteSuggestion[]>(emptySuggestionList);
     const [commands, setCommands] = useState<Command[]>();
@@ -113,6 +114,7 @@ const SlashSuggestion = ({
                 updateSuggestions(emptySuggestionList);
             } else if (res.suggestions.length === 0) {
                 updateSuggestions(emptySuggestionList);
+                setNoResultsTerm(term);
             } else {
                 updateSuggestions(res.suggestions);
             }
@@ -182,6 +184,7 @@ const SlashSuggestion = ({
     useEffect(() => {
         if (value[0] !== '/') {
             runFetch.cancel();
+            setNoResultsTerm(null);
             updateSuggestions(emptySuggestionList);
             return;
         }
@@ -200,6 +203,11 @@ const SlashSuggestion = ({
         if (value.indexOf(' ') === -1) {
             runFetch.cancel();
             showBaseCommands(value);
+            setNoResultsTerm(null);
+            return;
+        }
+
+        if (noResultsTerm && value.startsWith(noResultsTerm)) {
             return;
         }
 
