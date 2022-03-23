@@ -4,8 +4,8 @@
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import General from '@constants/general';
 import DatabaseManager from '@database/manager';
-import {queryRecentCustomStatuses} from '@queries/servers/system';
-import {queryCurrentUser} from '@queries/servers/user';
+import {getRecentCustomStatuses} from '@queries/servers/system';
+import {getCurrentUser} from '@queries/servers/user';
 
 import {addRecentReaction} from './reactions';
 
@@ -20,7 +20,7 @@ export const setCurrentUserStatusOffline = async (serverUrl: string) => {
 
     const {database, operator} = serverDatabase;
 
-    const user = await queryCurrentUser(database);
+    const user = await getCurrentUser(database);
     if (!user) {
         return {error: `No current user for ${serverUrl}`};
     }
@@ -80,8 +80,7 @@ export const updateRecentCustomStatuses = async (serverUrl: string, customStatus
         return {error: `${serverUrl} database not found`};
     }
 
-    const recent = await queryRecentCustomStatuses(operator.database);
-    const recentStatuses = (recent ? recent.value : []) as UserCustomStatus[];
+    const recentStatuses = await getRecentCustomStatuses(operator.database);
     const index = recentStatuses.findIndex((cs) => (
         cs.emoji === customStatus.emoji &&
         cs.text === customStatus.text &&
@@ -115,7 +114,7 @@ export const updateLocalUser = async (
     }
 
     try {
-        const user = await queryCurrentUser(database);
+        const user = await getCurrentUser(database);
         if (user) {
             await database.write(async () => {
                 await user.update((userRecord: UserModel) => {

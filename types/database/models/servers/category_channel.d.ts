@@ -4,6 +4,10 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
+import type CategoryModel from './category';
+import type ChannelModel from './channel';
+import type MyChannelModel from './my_channel';
+
 /**
  * The CategoryChannel model represents the 'association table' where many categories have channels and many channels are in
  * categories (relationship type N:N)

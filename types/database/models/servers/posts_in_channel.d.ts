@@ -4,6 +4,8 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
+import type ChannelModel from './channel';
+
 /**
  * PostsInChannel model helps us to combine adjacent posts together without leaving
  * gaps in between for an efficient user reading experience of posts.

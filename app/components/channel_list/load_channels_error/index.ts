@@ -6,20 +6,18 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {MM_TABLES} from '@constants/database';
+import {observeTeam} from '@queries/servers/team';
 
-const {SERVER: {TEAM}} = MM_TABLES;
 import LoadChannelsError from './load_channel_error';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type TeamModel from '@typings/database/models/servers/team';
 
 const enhanced = withObservables(['teamId'], ({database, teamId}: {teamId: string} & WithDatabaseArgs) => {
-    const team = database.get<TeamModel>(TEAM).findAndObserve(teamId);
+    const team = observeTeam(database, teamId);
 
     return {
         teamDisplayName: team.pipe(
-            switchMap((t) => of$(t.displayName)),
+            switchMap((t) => of$(t?.displayName)),
         ),
     };
 });

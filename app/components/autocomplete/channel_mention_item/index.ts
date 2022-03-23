@@ -7,7 +7,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General} from '@constants';
-import {MM_TABLES} from '@constants/database';
+import {observeUser} from '@queries/servers/user';
 
 import ChannelMentionItem from './channel_mention_item';
 
@@ -18,11 +18,10 @@ type OwnProps = {
     channel: Channel;
 }
 
-const {SERVER: {USER}} = MM_TABLES;
 const enhanced = withObservables([], ({database, channel}: WithDatabaseArgs & OwnProps) => {
     let user = of$<UserModel | undefined>(undefined);
     if (channel.type === General.DM_CHANNEL) {
-        user = database.get<UserModel>(USER).findAndObserve(channel.teammate_id!);
+        user = observeUser(database, channel.teammate_id!);
     }
 
     const isBot = user.pipe(switchMap((u) => of$(u ? u.isBot : false)));

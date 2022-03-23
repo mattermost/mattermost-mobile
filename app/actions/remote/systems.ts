@@ -9,7 +9,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import NetworkManager from '@init/network_manager';
-import {queryCommonSystemValues} from '@queries/servers/system';
+import {getCommonSystemValues} from '@queries/servers/system';
 
 import type ClientError from '@client/rest/error';
 
@@ -73,7 +73,7 @@ export const fetchConfigAndLicense = async (serverUrl: string, fetchOnly = false
             const credentials = await getServerCredentials(serverUrl);
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             if (credentials && operator) {
-                const current = await queryCommonSystemValues(operator.database);
+                const current = await getCommonSystemValues(operator.database);
                 const systems: IdValue[] = [];
                 if (!deepEqual(config, current.config)) {
                     systems.push({

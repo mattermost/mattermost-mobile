@@ -12,9 +12,10 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {View as ViewConstants} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {observeConfig} from '@queries/servers/system';
+import {observeCurrentUser} from '@queries/servers/user';
 import {isCustomStatusExpirySupported, isMinimumServerVersion} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -23,7 +24,6 @@ import AccountTabletView from './components/tablet_view';
 import AccountUserInfo from './components/user_info';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
 type AccountScreenProps = {
@@ -33,7 +33,6 @@ type AccountScreenProps = {
     showFullName: boolean;
 };
 
-const {SERVER: {SYSTEM, USER}} = MM_TABLES;
 const edges: Edge[] = ['left', 'right'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -144,30 +143,20 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, customStatusExpir
 };
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const config = database.
-        get<SystemModel>(SYSTEM).
-        findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
-    const showFullName = config.pipe((switchMap((cfg) => of$((cfg.value as ClientConfig).ShowFullName === 'true'))));
+    const config = observeConfig(database);
+    const showFullName = config.pipe((switchMap((cfg) => of$(cfg?.ShowFullName === 'true'))));
     const enableCustomUserStatuses = config.pipe((switchMap((cfg) => {
-        const ClientConfig = cfg.value as ClientConfig;
-        return of$(ClientConfig.EnableCustomUserStatuses === 'true' && isMinimumServerVersion(ClientConfig.Version, 5, 36));
+        return of$(cfg?.EnableCustomUserStatuses === 'true' && isMinimumServerVersion(cfg?.Version || '', 5, 36));
     })));
     const version = config.pipe(
-        switchMap((cfg) => of$((cfg.value as ClientConfig).Version)),
+        switchMap((cfg) => of$(cfg?.Version || '')),
     );
     const customStatusExpirySupported = config.pipe(
-        switchMap((cfg) => of$(isCustomStatusExpirySupported((cfg.value as ClientConfig).Version))),
+        switchMap((cfg) => of$(isCustomStatusExpirySupported(cfg?.Version || ''))),
     );
 
     return {
-        currentUser: database.
-            get(SYSTEM).
-            findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).
-            pipe(
-                switchMap((id: SystemModel) =>
-                    database.get(USER).findAndObserve(id.value),
-                ),
-            ),
+        currentUser: observeCurrentUser(database),
         enableCustomUserStatuses,
         customStatusExpirySupported,
         showFullName,
