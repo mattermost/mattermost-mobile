@@ -4,7 +4,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {catchError, switchMap} from 'rxjs/operators';
 
 import {General} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -22,12 +22,14 @@ const {SERVER: {MY_CHANNEL, SYSTEM}} = MM_TABLES;
 const {CURRENT_USER_ID} = SYSTEM_IDENTIFIERS;
 
 const enhance = withObservables(['channelId'], ({channelId, database}: {channelId: string} & WithDatabaseArgs) => {
-    const myChannel = database.get<MyChannelModel>(MY_CHANNEL).findAndObserve(channelId);
+    const myChannel = database.get<MyChannelModel>(MY_CHANNEL).findAndObserve(channelId).pipe(
+        catchError(() => of$(undefined)),
+    );
     const currentUserId = database.get<SystemModel>(SYSTEM).findAndObserve(CURRENT_USER_ID).pipe(
         switchMap(({value}) => of$(value)),
     );
 
-    const channel = myChannel.pipe(switchMap((my) => my.channel.observe()));
+    const channel = myChannel.pipe(switchMap((my) => (my ? my.channel.observe() : of$(undefined))));
     const settings = channel.pipe(switchMap((c) => c.settings.observe()));
 
     const isOwnDirectMessage = combineLatest([currentUserId, channel]).pipe(
