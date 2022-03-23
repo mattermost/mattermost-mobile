@@ -33,7 +33,7 @@ const CategoryBody = ({currentChannelId, sortedIds, category, limit}: Props) => 
                 collapsed={category.collapsed}
             />
         );
-    }, [currentChannelId]);
+    }, [currentChannelId, category.collapsed]);
 
     return (
         <FlatList
