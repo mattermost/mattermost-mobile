@@ -240,10 +240,11 @@ export const processUpdateTeamThreadsAsRead = async (serverUrl: string, teamId: 
     }
     try {
         const {database} = operator;
-        const threads = await queryThreadsInTeam({database, teamId}).fetch();
+        const threads = await queryThreadsInTeam({database, teamId, onlyUnreads: true}).fetch();
         const models = threads.map((thread) => thread.prepareUpdate((record) => {
             record.unreadMentions = 0;
             record.unreadReplies = 0;
+            record.lastViewedAt = new Date().getTime();
         }));
         if (!prepareRecordsOnly) {
             await operator.batchRecords(models);
