@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {ActivityIndicator, DeviceEventEmitter, View, ViewToken} from 'react-native';
+import {ActivityIndicator, DeviceEventEmitter, Platform, View, ViewToken} from 'react-native';
 import Animated, {interpolate, useAnimatedStyle, useSharedValue, withSpring} from 'react-native-reanimated';
 
 import {resetMessageCount} from '@actions/local/channel';
@@ -30,7 +30,7 @@ type Props = {
 }
 
 const HIDDEN_TOP = -60;
-const SHOWN_TOP = 0;
+const SHOWN_TOP = Platform.select({ios: 40, default: 0});
 const MIN_INPUT = 0;
 const MAX_INPUT = 1;
 

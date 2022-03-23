@@ -317,7 +317,7 @@ const PostList = ({
         listRef.current?.scrollToIndex({
             animated,
             index,
-            viewOffset: 0,
+            viewOffset: Platform.select({ios: -45, default: 0}),
             viewPosition: 1, // 0 is at bottom
         });
     }, []);
