@@ -34,10 +34,8 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const joinedChannels = queryAllMyChannel(database).observe();
 
     const roles = currentUserId.pipe(
-        switchMap((id) => observeUser(database, id),
-        )).pipe(
+        switchMap((id) => observeUser(database, id)),
         switchMap((u) => (u ? of$(u.roles.split(' ')) : of$([]))),
-    ).pipe(
         switchMap((values) => queryRolesByNames(database, values).observe()),
     );
 

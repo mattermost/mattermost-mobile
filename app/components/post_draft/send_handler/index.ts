@@ -17,7 +17,6 @@ import {hasPermissionForChannel} from '@utils/role';
 import SendHandler from './send_handler';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 
 type OwnProps = {
     rootId: string;
@@ -66,7 +65,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
 
     const channelInfo = channel.pipe(switchMap((c) => (c ? c.info.observe() : of$(undefined))));
     const membersCount = channelInfo.pipe(
-        switchMap((i: ChannelInfoModel) => of$(i.memberCount)),
+        switchMap((i) => (i ? of$(i.memberCount) : of$(0))),
     );
 
     const customEmojis = queryAllCustomEmojis(database).observe();

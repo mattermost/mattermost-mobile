@@ -25,7 +25,7 @@ type OwnProps = {
     rootId?: string;
 }
 
-const observeFirst = (v: DraftModel[]) => v[0]?.observe();
+const observeFirst = (v: DraftModel[]) => v[0]?.observe() || of$(undefined);
 
 const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => {
     const {database, rootId = ''} = ownProps;

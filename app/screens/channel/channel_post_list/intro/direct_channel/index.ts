@@ -4,7 +4,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
-import {catchError, switchMap} from 'rxjs/operators';
+import {switchMap} from 'rxjs/operators';
 
 import {General} from '@constants';
 import {observeCurrentUserId} from '@queries/servers/system';
@@ -15,6 +15,9 @@ import DirectChannel from './direct_channel';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type UserModel from '@typings/database/models/servers/user';
+
+const observeIsBot = (user: UserModel | undefined) => of$(Boolean(user?.isBot));
 
 const enhanced = withObservables([], ({channel, database}: {channel: ChannelModel} & WithDatabaseArgs) => {
     const currentUserId = observeCurrentUserId(database);
@@ -26,9 +29,7 @@ const enhanced = withObservables([], ({channel, database}: {channel: ChannelMode
             switchMap((userId: string) => {
                 const otherUserId = getUserIdFromChannelName(userId, channel.name);
                 return observeUser(database, otherUserId).pipe(
-                    // eslint-disable-next-line max-nested-callbacks
-                    switchMap((user) => of$(Boolean(user?.isBot))), // eslint-disable-next-line max-nested-callbacks
-                    catchError(() => of$(false)),
+                    switchMap(observeIsBot),
                 );
             }),
         );

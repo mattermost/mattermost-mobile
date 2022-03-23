@@ -34,8 +34,8 @@ const withReactions = withObservables(['post'], ({database, post}: WithReactions
         map(([u, c, readOnly]) => ((c && c.deleteAt > 0) || (c?.name === General.DEFAULT_CHANNEL && !isSystemAdmin(u?.roles || '') && readOnly))),
     );
 
-    const canAddReaction = currentUser.pipe(switchMap((u) => (u ? from$(hasPermissionForPost(post, u, Permissions.ADD_REACTION, true)) : of$(false))));
-    const canRemoveReaction = currentUser.pipe(switchMap((u) => (u ? from$(hasPermissionForPost(post, u, Permissions.REMOVE_REACTION, true)) : of$(false))));
+    const canAddReaction = currentUser.pipe(switchMap((u) => (u ? from$(hasPermissionForPost(post, u, Permissions.ADD_REACTION, true)) : of$(true))));
+    const canRemoveReaction = currentUser.pipe(switchMap((u) => (u ? from$(hasPermissionForPost(post, u, Permissions.REMOVE_REACTION, true)) : of$(true))));
 
     return {
         canAddReaction,

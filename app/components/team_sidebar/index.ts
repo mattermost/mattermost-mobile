@@ -19,9 +19,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const canCreateTeams = observeCurrentUser(database).pipe(
         switchMap((u) => (u ? of$(u.roles.split(' ')) : of$([]))),
-    ).pipe(
         switchMap((values) => queryRolesByNames(database, values).observe()),
-    ).pipe(
         switchMap((r) => of$(hasPermission(r, Permissions.CREATE_TEAM, false))),
     );
 
