@@ -68,17 +68,3 @@ export const deletePreferences = async (database: ServerDatabase, preferences: P
         return false;
     }
 };
-
-export const queryPreferencesByCategory = (database: Database, category: string, name?: string, value?: string) => {
-    const clauses = [Q.where('category', category)];
-
-    if (typeof name === 'string') {
-        clauses.push(Q.where('name', name));
-    }
-
-    if (typeof value === 'string') {
-        clauses.push(Q.where('value', value));
-    }
-
-    return database.get<PreferenceModel>(PREFERENCE).query(...clauses);
-};

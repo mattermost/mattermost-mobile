@@ -307,7 +307,3 @@ export const queryMyChannelSettingsByIds = (database: Database, ids: string[]) =
 export const queryChannelsByNames = (database: Database, names: string[]) => {
     return database.get<ChannelModel>(CHANNEL).query(Q.where('name', Q.oneOf(names)));
 };
-
-export const queryChannelsByNames = (database: Database, names: string[]) => {
-    return database.get<ChannelModel>(CHANNEL).query(Q.where('name', Q.oneOf(names)));
-};
