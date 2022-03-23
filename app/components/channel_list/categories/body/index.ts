@@ -8,7 +8,7 @@ import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {MM_TABLES} from '@app/constants/database';
-import {General} from '@constants';
+import {General, Preferences} from '@constants';
 import {WithDatabaseArgs} from '@typings/database/database';
 
 import CategoryBody from './category_body';
@@ -16,12 +16,13 @@ import CategoryBody from './category_body';
 import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
+import type PreferenceModel from '@typings/database/models/servers/preference';
 
 type ChannelData = Pick<ChannelModel, 'id' | 'displayName'> & {
     isMuted: boolean;
 };
 
-const {SERVER: {MY_CHANNEL_SETTINGS}} = MM_TABLES;
+const {SERVER: {MY_CHANNEL_SETTINGS, PREFERENCE}} = MM_TABLES;
 
 const sortAlpha = (locale: string, a: ChannelData, b: ChannelData) => {
     if (a.isMuted && !b.isMuted) {
@@ -87,7 +88,27 @@ const enhance = withObservables(['category'], ({category, locale, database}: {ca
         switchMap((c) => getSortedIds(database, c, locale)),
     );
 
+    let limit = of$(0);
+    if (category.type === 'direct_messages') {
+        limit = database.get<PreferenceModel>(PREFERENCE).
+            query(
+                Q.where('category', Preferences.CATEGORY_SIDEBAR_SETTINGS),
+                Q.where('name', 'limit_visible_dms_gms'),
+            ).observe().pipe(
+                switchMap(
+                    (val) => {
+                        if (val[0]) {
+                            return of$(parseInt(val[0].value, 10));
+                        }
+
+                        return of$(0);
+                    },
+                ),
+            );
+    }
+
     return {
+        limit,
         sortedIds,
         category: observedCategory,
     };

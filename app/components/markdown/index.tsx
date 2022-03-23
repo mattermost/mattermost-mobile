@@ -134,6 +134,7 @@ class Markdown extends PureComponent<MarkdownProps> {
             channelLink: this.renderChannelLink,
             emoji: this.renderEmoji,
             hashtag: this.renderHashtag,
+            latexinline: this.renderParagraph,
 
             paragraph: this.renderParagraph,
             heading: this.renderHeading,

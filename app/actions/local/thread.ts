@@ -1,14 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import CompassIcon from '@components/compass_icon';
 import {General, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getTranslations, t} from '@i18n';
 import {queryChannelById} from '@queries/servers/channel';
 import {queryPostById} from '@queries/servers/post';
 import {queryCurrentUser} from '@queries/servers/user';
-import {showModal} from '@screens/navigation';
+import {goToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {changeOpacity} from '@utils/theme';
 
@@ -54,9 +53,7 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
             subtitle = subtitle.replace('{channelName}', channel.displayName);
         }
 
-        const closeButtonId = 'close-threads';
-
-        showModal(Screens.THREAD, '', {closeButtonId, rootId}, {
+        goToScreen(Screens.THREAD, '', {rootId}, {
             topBar: {
                 title: {
                     text: title,
@@ -65,11 +62,6 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
                     color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
                     text: subtitle,
                 },
-                leftButtons: [{
-                    id: closeButtonId,
-                    icon: CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor),
-                    testID: closeButtonId,
-                }],
             },
         });
         return {};
