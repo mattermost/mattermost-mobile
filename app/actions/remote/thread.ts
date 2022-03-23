@@ -308,29 +308,6 @@ async function fetchBatchThreads(
     return {error: false, data};
 }
 
-export async function fetchBatchAllUnreads(
-    serverUrl: string,
-    teamId: string,
-): Promise<{error: unknown; data?: Thread[]}> {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    const newestThread = await getNewestThreadInTeam(operator.database, teamId, true);
-    const since = newestThread ? newestThread.lastReplyAt : 0;
-
-    const options: FetchThreadOptions = {
-        perPage: General.CRT_CHUNK_SIZE,
-        unread: true,
-        deleted: true,
-        since,
-    };
-
-    return fetchBatchThreads(serverUrl, teamId, options);
-}
-
 export async function fetchNewThreads(
     serverUrl: string,
     teamId: string,
@@ -340,7 +317,6 @@ export async function fetchNewThreads(
         unread: false,
         deleted: true,
         perPage: 60,
-        totalsOnly: true,
     };
 
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -363,9 +339,10 @@ export async function fetchNewThreads(
     // if we have no threads in the DB fetch all unread ones
     if (options.since === 0) {
         options.deleted = false;
+        options.unread = true;
 
         // batch fetch all unread threads
-        response = await fetchBatchAllUnreads(serverUrl, teamId);
+        response = await fetchBatchThreads(serverUrl, teamId, options);
     } else {
         // batch fetch latest updated threads (including deleted ones)
         response = await fetchBatchThreads(serverUrl, teamId, options);

@@ -68,9 +68,6 @@ export const fetchAppEntryData = async (serverUrl: string, since: number, initia
 
     await fetchConfigAndLicense(serverUrl);
 
-    // Sync threads
-    fetchNewThreads(serverUrl, initialTeamId, false);
-
     // Fetch in parallel teams / team membership / channels for current team / user preferences / user
     const promises: [Promise<MyTeamsRequest>, Promise<MyChannelsRequest | undefined>, Promise<MyPreferencesRequest>, Promise<MyUserRequest>] = [
         fetchMyTeams(serverUrl, fetchOnly),
@@ -215,6 +212,15 @@ export const deferredAppEntryActions = async (
 
     fetchAllTeams(serverUrl);
     updateAllUsersSince(serverUrl, since);
+
+    if (teamData.teams?.length && teamData.memberships?.length) {
+        /* eslint-disable no-await-in-loop */
+        for (const team of teamData.teams) {
+            // need to await here since GM/DM threads in different teams overlap
+            await fetchNewThreads(serverUrl, team.id, false);
+        }
+        /* eslint-enable no-await-in-loop */
+    }
 };
 
 export const syncOtherServers = async (serverUrl: string) => {
