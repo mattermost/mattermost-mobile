@@ -11,7 +11,7 @@ import {getServerCredentials} from '@init/credentials';
 import NetworkManager from '@init/network_manager';
 import WebsocketManager from '@init/websocket_manager';
 import {queryDeviceToken} from '@queries/app/global';
-import {queryCurrentUserId, queryCommonSystemValues} from '@queries/servers/system';
+import {getCurrentUserId, getCommonSystemValues} from '@queries/servers/system';
 import {getCSRFFromCookie} from '@utils/security';
 
 import {loginEntry} from './entry';
@@ -30,7 +30,7 @@ export const completeLogin = async (serverUrl: string, user: UserProfile) => {
     }
 
     const {database} = operator;
-    const {config, license}: { config: Partial<ClientConfig>; license: Partial<ClientLicense> } = await queryCommonSystemValues(database);
+    const {config, license}: { config: Partial<ClientConfig>; license: Partial<ClientLicense> } = await getCommonSystemValues(database);
 
     if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
         return null;
@@ -68,7 +68,7 @@ export const forceLogoutIfNecessary = async (serverUrl: string, err: ClientError
         return {error: `${serverUrl} database not found`};
     }
 
-    const currentUserId = await queryCurrentUserId(database);
+    const currentUserId = await getCurrentUserId(database);
 
     if ('status_code' in err && err.status_code === HTTP_UNAUTHORIZED && err?.url?.indexOf('/login') === -1 && currentUserId) {
         await logout(serverUrl);

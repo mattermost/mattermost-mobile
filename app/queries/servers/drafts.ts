@@ -9,14 +9,19 @@ import type DraftModel from '@typings/database/models/servers/draft';
 
 const {SERVER: {DRAFT}} = MM_TABLES;
 
-export const queryDraft = async (database: Database, channelId: string, rootId = '') => {
-    try {
-        const record = await database.collections.get<DraftModel>(DRAFT).query(
-            Q.where('channel_id', channelId),
-            Q.where('root_id', rootId),
-        ).fetch();
-        return record?.[0];
-    } catch {
-        return undefined;
+export const getDraft = async (database: Database, channelId: string, rootId = '') => {
+    const record = await queryDraft(database, channelId, rootId).fetch();
+
+    // Check done to force types
+    if (record.length) {
+        return record[0];
     }
+    return undefined;
+};
+
+export const queryDraft = (database: Database, channelId: string, rootId = '') => {
+    return database.collections.get<DraftModel>(DRAFT).query(
+        Q.where('channel_id', channelId),
+        Q.where('root_id', rootId),
+    );
 };

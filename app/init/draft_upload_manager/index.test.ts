@@ -8,7 +8,7 @@ import {addFilesToDraft} from '@actions/local/draft';
 import {PROGRESS_TIME_TO_STORE} from '@constants/files';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
-import {queryDraft} from '@queries/servers/drafts';
+import {getDraft} from '@queries/servers/drafts';
 import TestHelper from '@test/test_helper';
 
 import {exportedForTesting} from '.';
@@ -94,7 +94,7 @@ describe('draft upload manager', () => {
         // Wait for other promises (on complete write) to finish
         await new Promise(process.nextTick);
 
-        const draft = await queryDraft(operator.database, channelId, rootId);
+        const draft = await getDraft(operator.database, channelId, rootId);
         expect(draft?.files.length).toBe(1);
         expect(draft?.files[0].id).toBe(fileServerId);
 
@@ -121,7 +121,7 @@ describe('draft upload manager', () => {
         await new Promise(process.nextTick);
 
         // There has been progress, but we are not storing in to the database since the app is still active.
-        let draft = await queryDraft(operator.database, channelId, rootId);
+        let draft = await getDraft(operator.database, channelId, rootId);
         expect(draft?.files.length).toBe(1);
         expect(draft?.files[0].bytesRead).toBeUndefined();
 
@@ -131,7 +131,7 @@ describe('draft upload manager', () => {
         await new Promise(process.nextTick);
 
         // After a failure, we store the progress on the database, so we can resume from the point before failure.
-        draft = await queryDraft(operator.database, channelId, rootId);
+        draft = await getDraft(operator.database, channelId, rootId);
         expect(draft?.files.length).toBe(1);
         expect(draft?.files[0].bytesRead).toBe(bytesRead);
         expect(draft?.files[0].failed).toBe(true);
@@ -196,7 +196,7 @@ describe('draft upload manager', () => {
 
         for (let i = 0; i < 3; i++) {
             // eslint-disable-next-line no-await-in-loop
-            const draft = await queryDraft(operator.database, channelIds[i], rootIds[i]);
+            const draft = await getDraft(operator.database, channelIds[i], rootIds[i]);
             expect(draft?.files.length).toBe(1);
             expect(draft?.files[0].bytesRead).toBe(bytesReads[i]);
         }
@@ -213,7 +213,7 @@ describe('draft upload manager', () => {
 
         for (let i = 0; i < 3; i++) {
             // eslint-disable-next-line no-await-in-loop
-            const draft = await queryDraft(operator.database, channelIds[i], rootIds[i]);
+            const draft = await getDraft(operator.database, channelIds[i], rootIds[i]);
             expect(draft?.files.length).toBe(1);
             expect(draft?.files[0].bytesRead).toBe(bytesReads[i]);
         }
@@ -231,7 +231,7 @@ describe('draft upload manager', () => {
 
         for (let i = 0; i < 3; i++) {
             // eslint-disable-next-line no-await-in-loop
-            const draft = await queryDraft(operator.database, channelIds[i], rootIds[i]);
+            const draft = await getDraft(operator.database, channelIds[i], rootIds[i]);
             expect(draft?.files.length).toBe(1);
             expect(draft?.files[0].bytesRead).toBe(bytesReadsStore[i]);
         }
@@ -245,7 +245,7 @@ describe('draft upload manager', () => {
 
         for (let i = 0; i < 3; i++) {
             // eslint-disable-next-line no-await-in-loop
-            const draft = await queryDraft(operator.database, channelIds[i], rootIds[i]);
+            const draft = await getDraft(operator.database, channelIds[i], rootIds[i]);
             expect(draft?.files.length).toBe(1);
             expect(draft?.files[0].bytesRead).toBe(bytesReadsStore[i]);
         }
@@ -270,7 +270,7 @@ describe('draft upload manager', () => {
         // Wait for other promises (on complete write) to finish
         await new Promise(process.nextTick);
 
-        const draft = await queryDraft(operator.database, channelId, rootId);
+        const draft = await getDraft(operator.database, channelId, rootId);
         expect(draft?.files.length).toBe(1);
         expect(draft?.files[0].id).toBeUndefined();
         expect(draft?.files[0].failed).toBe(true);
@@ -294,7 +294,7 @@ describe('draft upload manager', () => {
         // Wait for other promises (on complete write) to finish
         await new Promise(process.nextTick);
 
-        const draft = await queryDraft(operator.database, channelId, rootId);
+        const draft = await getDraft(operator.database, channelId, rootId);
         expect(draft?.files.length).toBe(1);
         expect(draft?.files[0].id).toBeUndefined();
         expect(draft?.files[0].failed).toBe(true);
@@ -318,7 +318,7 @@ describe('draft upload manager', () => {
         // Wait for other promises (on complete write) to finish
         await new Promise(process.nextTick);
 
-        const draft = await queryDraft(operator.database, channelId, rootId);
+        const draft = await getDraft(operator.database, channelId, rootId);
         expect(draft?.files.length).toBe(1);
         expect(draft?.files[0].id).toBeUndefined();
         expect(draft?.files[0].failed).toBe(true);

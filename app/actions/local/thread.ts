@@ -4,9 +4,9 @@
 import {General, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getTranslations, t} from '@i18n';
-import {queryChannelById} from '@queries/servers/channel';
-import {queryPostById} from '@queries/servers/post';
-import {queryCurrentUser} from '@queries/servers/user';
+import {getChannelById} from '@queries/servers/channel';
+import {getPostById} from '@queries/servers/post';
+import {getCurrentUser} from '@queries/servers/user';
 import {goToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {changeOpacity} from '@utils/theme';
@@ -18,16 +18,16 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
     }
 
     try {
-        const user = await queryCurrentUser(database);
+        const user = await getCurrentUser(database);
         if (!user) {
             return {error: 'User not found'};
         }
 
-        const post = await queryPostById(database, rootId);
+        const post = await getPostById(database, rootId);
         if (!post) {
             return {error: 'Post not found'};
         }
-        const channel = await queryChannelById(database, post.channelId);
+        const channel = await getChannelById(database, post.channelId);
         if (!channel) {
             return {error: 'Channel not found'};
         }

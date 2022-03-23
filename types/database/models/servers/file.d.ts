@@ -4,6 +4,8 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
+import type PostModel from './post';
+
 /**
  * The File model works in pair with the Post model.  It hosts information about the files shared in a Post
  */

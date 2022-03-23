@@ -11,9 +11,9 @@ import {updateUsersNoLongerVisible} from '@actions/remote/user';
 import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
-import {queryCurrentTeamId} from '@queries/servers/system';
-import {queryLastTeam, prepareMyTeams} from '@queries/servers/team';
-import {queryCurrentUser} from '@queries/servers/user';
+import {getCurrentTeamId} from '@queries/servers/system';
+import {getLastTeam, prepareMyTeams} from '@queries/servers/team';
+import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 
 export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMessage) {
@@ -22,8 +22,8 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
         return;
     }
 
-    const currentTeamId = await queryCurrentTeamId(database.database);
-    const user = await queryCurrentUser(database.database);
+    const currentTeamId = await getCurrentTeamId(database.database);
+    const user = await getCurrentUser(database.database);
     if (!user) {
         return;
     }
@@ -46,7 +46,7 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
                 await popToRoot();
             }
 
-            const teamToJumpTo = await queryLastTeam(database.database);
+            const teamToJumpTo = await getLastTeam(database.database);
             if (teamToJumpTo) {
                 handleTeamChange(serverUrl, teamToJumpTo);
             } // TODO else jump to "join a team" screen

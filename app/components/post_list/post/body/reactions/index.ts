@@ -7,7 +7,8 @@ import {combineLatest, from as from$, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {observeConfigBooleanValue, observeCurrentUserId} from '@queries/servers/system';
+import {observeUser} from '@queries/servers/user';
 import {hasPermissionForPost} from '@utils/role';
 import {isSystemAdmin} from '@utils/user';
 
@@ -17,30 +18,24 @@ import type {Relation} from '@nozbe/watermelondb';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
-import type SystemModel from '@typings/database/models/servers/system';
-import type UserModel from '@typings/database/models/servers/user';
 
 type WithReactionsInput = WithDatabaseArgs & {
     post: PostModel;
 }
 
 const withReactions = withObservables(['post'], ({database, post}: WithReactionsInput) => {
-    const currentUserId = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        map(({value}: {value: string}) => value),
-    );
+    const currentUserId = observeCurrentUserId(database);
     const currentUser = currentUserId.pipe(
-        switchMap((id) => database.get<UserModel>(MM_TABLES.SERVER.USER).findAndObserve(id)),
+        switchMap((id) => observeUser(database, id)),
     );
     const channel = (post.channel as Relation<ChannelModel>).observe();
-    const experimentalTownSquareIsReadOnly = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        map(({value}: {value: ClientConfig}) => value.ExperimentalTownSquareIsReadOnly === 'true'),
-    );
+    const experimentalTownSquareIsReadOnly = observeConfigBooleanValue(database, 'ExperimentalTownSquareIsReadOnly');
     const disabled = combineLatest([currentUser, channel, experimentalTownSquareIsReadOnly]).pipe(
-        map(([u, c, readOnly]) => ((c && c.deleteAt > 0) || (c?.name === General.DEFAULT_CHANNEL && !isSystemAdmin(u.roles) && readOnly))),
+        map(([u, c, readOnly]) => ((c && c.deleteAt > 0) || (c?.name === General.DEFAULT_CHANNEL && !isSystemAdmin(u?.roles || '') && readOnly))),
     );
 
-    const canAddReaction = currentUser.pipe(switchMap((u) => from$(hasPermissionForPost(post, u, Permissions.ADD_REACTION, true))));
-    const canRemoveReaction = currentUser.pipe(switchMap((u) => from$(hasPermissionForPost(post, u, Permissions.REMOVE_REACTION, true))));
+    const canAddReaction = currentUser.pipe(switchMap((u) => (u ? from$(hasPermissionForPost(post, u, Permissions.ADD_REACTION, true)) : of$(true))));
+    const canRemoveReaction = currentUser.pipe(switchMap((u) => (u ? from$(hasPermissionForPost(post, u, Permissions.REMOVE_REACTION, true)) : of$(true))));
 
     return {
         canAddReaction,

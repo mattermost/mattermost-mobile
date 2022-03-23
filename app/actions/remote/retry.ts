@@ -8,9 +8,9 @@ import {selectDefaultTeam} from '@helpers/api/team';
 import NetworkManager from '@init/network_manager';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {prepareMyPreferences, queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {prepareCommonSystemValues, queryCommonSystemValues} from '@queries/servers/system';
+import {prepareCommonSystemValues, getCommonSystemValues} from '@queries/servers/system';
 import {prepareMyTeams} from '@queries/servers/team';
-import {queryCurrentUser} from '@queries/servers/user';
+import {getCurrentUser} from '@queries/servers/user';
 import {selectDefaultChannelForTeam} from '@utils/channel';
 
 import {fetchMissingSidebarInfo, fetchMyChannelsForTeam, MyChannelsRequest} from './channel';
@@ -38,7 +38,7 @@ export const retryInitialTeamAndChannel = async (serverUrl: string) => {
         let initialTeam: Team|undefined;
         let initialChannel: Channel|undefined;
 
-        const user = await queryCurrentUser(database);
+        const user = await getCurrentUser(database);
         if (!user) {
             return {error: true};
         }
@@ -161,19 +161,19 @@ export const retryInitialChannel = async (serverUrl: string, teamId: string) => 
         let initialChannel: Channel|undefined;
         const rolesToFetch = new Set<string>();
 
-        const user = await queryCurrentUser(database);
+        const user = await getCurrentUser(database);
         if (!user) {
             return {error: true};
         }
 
-        const prefs = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
+        const prefs = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT).fetch();
         const preferences: PreferenceType[] = prefs.map((p) => ({
             category: p.category,
             name: p.name,
             user_id: p.userId,
             value: p.value,
         }));
-        const {config, license} = await queryCommonSystemValues(database);
+        const {config, license} = await getCommonSystemValues(database);
 
         // fetch channels / channel membership for initial team
         const chData = await fetchMyChannelsForTeam(serverUrl, teamId, false, 0, true);

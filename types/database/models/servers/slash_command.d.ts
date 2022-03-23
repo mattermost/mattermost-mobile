@@ -4,6 +4,8 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
+import type TeamModel from './team';
+
 /**
  * The SlashCommand model describes the commands of the various commands available in each team.
  */

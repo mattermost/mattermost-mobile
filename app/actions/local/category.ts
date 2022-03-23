@@ -4,7 +4,7 @@
 import {Model} from '@nozbe/watermelondb';
 
 import DatabaseManager from '@database/manager';
-import {prepareCategories, prepareCategoryChannels, queryCategoriesByTeamIds, queryCategoryById} from '@queries/servers/categories';
+import {prepareCategories, prepareCategoryChannels, queryCategoriesByTeamIds, getCategoryById} from '@queries/servers/categories';
 import {pluckUnique} from '@utils/helpers';
 
 export const deleteCategory = async (serverUrl: string, categoryId: string) => {
@@ -14,7 +14,7 @@ export const deleteCategory = async (serverUrl: string, categoryId: string) => {
     }
 
     try {
-        const category = await queryCategoryById(database, categoryId);
+        const category = await getCategoryById(database, categoryId);
 
         if (category) {
             await database.write(async () => {
@@ -56,7 +56,7 @@ export const storeCategories = async (serverUrl: string, categories: CategoryWit
 
         // If the passed categories have more than one team, we want to update across teams
         const teamIds = pluckUnique('team_id')(categories) as string[];
-        const localCategories = await queryCategoriesByTeamIds(database, teamIds);
+        const localCategories = await queryCategoriesByTeamIds(database, teamIds).fetch();
 
         localCategories.
             filter((category) => category.type === 'custom').
@@ -92,7 +92,7 @@ export const toggleCollapseCategory = async (serverUrl: string, categoryId: stri
     }
 
     try {
-        const category = await queryCategoryById(database, categoryId);
+        const category = await getCategoryById(database, categoryId);
 
         if (category) {
             await database.write(async () => {
