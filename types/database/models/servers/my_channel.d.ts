@@ -4,6 +4,8 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
+import type ChannelModel from './channel';
+
 /**
  * MyChannel is an extension of the Channel model but it lists only the Channels the app's user belongs to
  */

@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
@@ -9,14 +11,16 @@ import {hasPermission} from '@utils/role';
 
 import {prepareDeletePost} from './post';
 import {queryRoles} from './role';
-import {queryCurrentChannelId} from './system';
+import {observeCurrentChannelId, getCurrentChannelId} from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
+import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
+import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP}} = MM_TABLES;
+const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP, MY_CHANNEL_SETTINGS, CHANNEL_INFO, USER}} = MM_TABLES;
 
 export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, channels: Channel[], channelMembers: ChannelMembership[]): Array<Promise<Model[]>> | undefined {
     const channelInfos: ChannelInfo[] = [];
@@ -47,7 +51,7 @@ export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, 
 }
 
 export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[]) => {
-    const allChannelsForTeam = await queryAllChannelsForTeam(operator.database, teamId);
+    const allChannelsForTeam = await queryAllChannelsForTeam(operator.database, teamId).fetch();
     const channelInfos: ChannelInfo[] = [];
     const memberships = channelMembers.map((cm) => ({...cm, id: cm.channel_id}));
 
@@ -129,14 +133,14 @@ export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model
 };
 
 export const queryAllChannelsForTeam = (database: Database, teamId: string) => {
-    return database.get<ChannelModel>(CHANNEL).query(Q.where('team_id', teamId)).fetch();
+    return database.get<ChannelModel>(CHANNEL).query(Q.where('team_id', teamId));
 };
 
-export const queryAllMyChannelIds = (database: Database) => {
-    return database.get<MyChannelModel>(MY_CHANNEL).query().fetchIds();
+export const queryAllMyChannel = (database: Database) => {
+    return database.get<MyChannelModel>(MY_CHANNEL).query();
 };
 
-export const queryMyChannel = async (database: Database, channelId: string) => {
+export const getMyChannel = async (database: Database, channelId: string) => {
     try {
         const member = await database.get<MyChannelModel>(MY_CHANNEL).find(channelId);
         return member;
@@ -145,7 +149,13 @@ export const queryMyChannel = async (database: Database, channelId: string) => {
     }
 };
 
-export const queryChannelById = async (database: Database, channelId: string) => {
+export const observeMyChannel = (database: Database, channelId: string) => {
+    return database.get<MyChannelModel>(MY_CHANNEL).query(Q.where('id', channelId), Q.take(1)).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+    );
+};
+
+export const getChannelById = async (database: Database, channelId: string) => {
     try {
         const channel = await database.get<ChannelModel>(CHANNEL).find(channelId);
         return channel;
@@ -154,32 +164,30 @@ export const queryChannelById = async (database: Database, channelId: string) =>
     }
 };
 
-export const queryChannelByName = async (database: Database, channelName: string) => {
-    try {
-        const channels = await database.get(CHANNEL).query(Q.where('name', channelName)).fetch() as ChannelModel[];
-        if (channels.length) {
-            return channels[0];
-        }
-
-        return undefined;
-    } catch {
-        return undefined;
-    }
+export const observeChannel = (database: Database, channelId: string) => {
+    return database.get<ChannelModel>(CHANNEL).query(Q.where('id', channelId), Q.take(1)).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+    );
 };
 
-export const queryChannelsById = async (database: Database, channelIds: string[]): Promise<ChannelModel[]|undefined> => {
-    try {
-        const channels = (await database.get(CHANNEL).query(Q.where('id', Q.oneOf(channelIds))).fetch()) as ChannelModel[];
-        return channels;
-    } catch {
-        return undefined;
+export const getChannelByName = async (database: Database, channelName: string) => {
+    const channels = await database.get<ChannelModel>(CHANNEL).query(Q.where('name', channelName)).fetch();
+
+    // Check done to force types
+    if (channels.length) {
+        return channels[0];
     }
+    return undefined;
 };
 
-export const queryDefaultChannelForTeam = async (database: Database, teamId: string) => {
+export const queryChannelsById = (database: Database, channelIds: string[]) => {
+    return database.get<ChannelModel>(CHANNEL).query(Q.where('id', Q.oneOf(channelIds)));
+};
+
+export const getDefaultChannelForTeam = async (database: Database, teamId: string) => {
     let channel: ChannelModel|undefined;
     let canIJoinPublicChannelsInTeam = false;
-    const roles = await queryRoles(database);
+    const roles = await queryRoles(database).fetch();
 
     if (roles.length) {
         canIJoinPublicChannelsInTeam = hasPermission(roles, Permissions.JOIN_PUBLIC_CHANNELS, true);
@@ -207,16 +215,21 @@ export const queryDefaultChannelForTeam = async (database: Database, teamId: str
     return channel;
 };
 
-export const queryCurrentChannel = async (database: Database) => {
-    const currentChannelId = await queryCurrentChannelId(database);
+export const getCurrentChannel = async (database: Database) => {
+    const currentChannelId = await getCurrentChannelId(database);
     if (currentChannelId) {
-        const channels = await queryChannelsById(database, [currentChannelId]);
-        if (channels?.length) {
-            return channels[0];
-        }
+        return getChannelById(database, currentChannelId);
     }
 
     return undefined;
+};
+
+export const observeCurrentChannel = (database: Database) => {
+    return observeCurrentChannelId(database).pipe(
+        switchMap((id) => database.get<ChannelModel>(CHANNEL).query(Q.where('id', id), Q.take(1)).observe().pipe(
+            switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+        ),
+        ));
 };
 
 export const deleteChannelMembership = async (operator: ServerDataOperator, userId: string, channelId: string, prepareRecordsOnly = false) => {
@@ -244,6 +257,49 @@ export const addChannelMembership = async (operator: ServerDataOperator, userId:
     }
 };
 
-export const queryAllMyChannelMembershipIds = async (database: Database, userId: string) => {
-    return database.get(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId))).fetchIds();
+export const queryUsersOnChannel = (database: Database, channelId: string) => {
+    return database.get<UserModel>(USER).query(Q.on(CHANNEL_MEMBERSHIP, Q.where('channel_id', channelId)));
+};
+
+export const queryChannelsByTypes = (database: Database, channelTypes: ChannelType[]) => {
+    return database.get<ChannelModel>(CHANNEL).query(
+        Q.where('type', Q.oneOf(channelTypes)));
+};
+
+export const queryUserChannelsByTypes = (database: Database, userId: string, channelTypes: ChannelType[]) => {
+    return database.get<ChannelModel>(CHANNEL).query(
+        Q.where('type', Q.oneOf(channelTypes)),
+        Q.on(CHANNEL_MEMBERSHIP, Q.where('user_id', userId)));
+};
+
+export const queryTeamDefaultChannel = (database: Database, teamId: string) => {
+    return database.get<ChannelModel>(MM_TABLES.SERVER.CHANNEL).query(
+        Q.where('team_id', teamId),
+        Q.where('name', General.DEFAULT_CHANNEL),
+    );
+};
+
+export const queryMyChannelsByTeam = (database: Database, teamId: string, includeDeleted = false) => {
+    const conditions: Q.Condition[] = [Q.where('team_id', Q.eq(teamId))];
+    if (!includeDeleted) {
+        conditions.push(Q.where('delete_at', Q.eq(0)));
+    }
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.on(CHANNEL, Q.and(
+            ...conditions,
+        )),
+    );
+};
+
+export const observeChannelInfo = (database: Database, channelId: string) => {
+    return database.get<ChannelInfoModel>(CHANNEL_INFO).query(Q.where('id', channelId), Q.take(1)).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+    );
+};
+
+export const queryMyChannelSettingsByIds = (database: Database, ids: string[]) => {
+    return database.get<MyChannelSettingsModel>(MY_CHANNEL_SETTINGS).
+        query(
+            Q.where('id', Q.oneOf(ids)),
+        );
 };

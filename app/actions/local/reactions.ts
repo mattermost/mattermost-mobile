@@ -1,12 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {getRecentReactions} from '@queries/servers/system';
 import {getEmojiFirstAlias} from '@utils/emoji/helpers';
-import {safeParseJSON} from '@utils/helpers';
-
-import type SystemModel from '@typings/database/models/servers/system';
 
 const MAXIMUM_RECENT_EMOJI = 27;
 
@@ -15,18 +13,13 @@ export const addRecentReaction = async (serverUrl: string, emojiNames: string[],
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+    const {database} = operator;
 
     if (!emojiNames.length) {
         return [];
     }
 
-    let recent: string[] = [];
-    try {
-        const emojis = await operator.database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).find(SYSTEM_IDENTIFIERS.RECENT_REACTIONS);
-        recent.push(...(safeParseJSON(emojis.value) as string[] || []));
-    } catch {
-        // no previous values.. continue
-    }
+    let recent = await getRecentReactions(database);
 
     try {
         const recentEmojis = new Set(recent);

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import {queryDraft} from '@queries/servers/drafts';
+import {getDraft} from '@queries/servers/drafts';
 
 export const updateDraftFile = async (serverUrl: string, channelId: string, rootId: string, file: FileInfo, prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -10,7 +10,7 @@ export const updateDraftFile = async (serverUrl: string, channelId: string, root
         return {error: `${serverUrl} database not found`};
     }
 
-    const draft = await queryDraft(operator.database, channelId, rootId);
+    const draft = await getDraft(operator.database, channelId, rootId);
     if (!draft) {
         return {error: 'no draft'};
     }
@@ -44,7 +44,7 @@ export const removeDraftFile = async (serverUrl: string, channelId: string, root
         return {error: `${serverUrl} database not found`};
     }
 
-    const draft = await queryDraft(operator.database, channelId, rootId);
+    const draft = await getDraft(operator.database, channelId, rootId);
     if (!draft) {
         return {error: 'no draft'};
     }
@@ -79,7 +79,7 @@ export const updateDraftMessage = async (serverUrl: string, channelId: string, r
         return {error: `${serverUrl} database not found`};
     }
 
-    const draft = await queryDraft(operator.database, channelId, rootId);
+    const draft = await getDraft(operator.database, channelId, rootId);
     if (!draft) {
         if (!message) {
             return {};
@@ -123,7 +123,7 @@ export const addFilesToDraft = async (serverUrl: string, channelId: string, root
         return {error: `${serverUrl} database not found`};
     }
 
-    const draft = await queryDraft(operator.database, channelId, rootId);
+    const draft = await getDraft(operator.database, channelId, rootId);
     if (!draft) {
         const newDraft: Draft = {
             channel_id: channelId,
@@ -156,7 +156,7 @@ export const removeDraft = async (serverUrl: string, channelId: string, rootId =
         return {error: `${serverUrl} database not found`};
     }
 
-    const draft = await queryDraft(database, channelId, rootId);
+    const draft = await getDraft(database, channelId, rootId);
     if (draft) {
         await database.write(async () => {
             await draft.destroyPermanently();

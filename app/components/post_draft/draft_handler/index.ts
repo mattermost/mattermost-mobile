@@ -6,40 +6,33 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {DEFAULT_SERVER_MAX_FILE_SIZE} from '@constants/post_draft';
+import {observeConfig, observeLicense} from '@queries/servers/system';
 import {isMinimumServerVersion} from '@utils/helpers';
 
 import DraftHandler from './draft_handler';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type SystemModel from '@typings/database/models/servers/system';
-
-const {SERVER: {SYSTEM}} = MM_TABLES;
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        switchMap(({value}) => of$(value as ClientConfig)),
-    );
+    const config = observeConfig(database);
 
-    const license = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE).pipe(
-        switchMap(({value}) => of$(value as ClientLicense)),
-    );
+    const license = observeLicense(database);
 
     const canUploadFiles = combineLatest([config, license]).pipe(
         switchMap(([c, l]) => of$(
-            c.EnableFileAttachments !== 'false' &&
-                (l.IsLicensed === 'false' || l.Compliance === 'false' || c.EnableMobileFileUpload !== 'false'),
+            c?.EnableFileAttachments === 'true' ||
+                (l?.IsLicensed !== 'true' && l?.Compliance !== 'true' && c?.EnableMobileFileUpload === 'true'),
         ),
         ),
     );
 
     const maxFileSize = config.pipe(
-        switchMap((cfg) => of$(parseInt(cfg.MaxFileSize || '0', 10) || DEFAULT_SERVER_MAX_FILE_SIZE)),
+        switchMap((cfg) => of$(parseInt(cfg?.MaxFileSize || '0', 10) || DEFAULT_SERVER_MAX_FILE_SIZE)),
     );
 
     const maxFileCount = config.pipe(
-        switchMap((cfg) => of$(isMinimumServerVersion(cfg.Version, 6, 0) ? 10 : 5)),
+        switchMap((cfg) => of$(isMinimumServerVersion(cfg?.Version || '', 6, 0) ? 10 : 5)),
     );
 
     return {

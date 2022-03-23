@@ -9,10 +9,10 @@ import {
     View,
 } from 'react-native';
 
-import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
 type Props = {

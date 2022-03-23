@@ -7,20 +7,16 @@ import {combineLatest, of as of$, from as from$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
+import {observeChannel, observeCurrentChannel} from '@queries/servers/channel';
+import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
+import {observeConfig, observeCurrentUserId} from '@queries/servers/system';
+import {observeUser} from '@queries/servers/user';
 import {hasPermissionForChannel} from '@utils/role';
 
 import SendHandler from './send_handler';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type ChannelModel from '@typings/database/models/servers/channel';
-import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
-import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
-import type SystemModel from '@typings/database/models/servers/system';
-import type UserModel from '@typings/database/models/servers/user';
-
-const {SERVER: {SYSTEM, USER, CHANNEL, CUSTOM_EMOJI}} = MM_TABLES;
 
 type OwnProps = {
     rootId: string;
@@ -33,34 +29,28 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
     const {rootId, channelId} = ownProps;
     let channel;
     if (rootId) {
-        channel = database.get<ChannelModel>(CHANNEL).findAndObserve(channelId);
+        channel = observeChannel(database, channelId);
     } else {
-        channel = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID).pipe(
-            switchMap((t) => database.get<ChannelModel>(CHANNEL).findAndObserve(t.value)),
-        );
+        channel = observeCurrentChannel(database);
     }
 
-    const currentUserId = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap(({value}) => of$(value)),
-    );
+    const currentUserId = observeCurrentUserId(database);
     const currentUser = currentUserId.pipe(
-        switchMap((id) => database.get<UserModel>(USER).findAndObserve(id)),
-    );
+        switchMap((id) => observeUser(database, id),
+        ));
     const userIsOutOfOffice = currentUser.pipe(
-        switchMap((u) => of$(u.status === General.OUT_OF_OFFICE)),
+        switchMap((u) => of$(u?.status === General.OUT_OF_OFFICE)),
     );
 
-    const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        switchMap(({value}) => of$(value as ClientConfig)),
-    );
+    const config = observeConfig(database);
     const enableConfirmNotificationsToChannel = config.pipe(
-        switchMap((cfg) => of$(Boolean(cfg.EnableConfirmNotificationsToChannel === 'true'))),
+        switchMap((cfg) => of$(Boolean(cfg?.EnableConfirmNotificationsToChannel === 'true'))),
     );
     const isTimezoneEnabled = config.pipe(
-        switchMap((cfg) => of$(Boolean(cfg.ExperimentalTimezone === 'true'))),
+        switchMap((cfg) => of$(Boolean(cfg?.ExperimentalTimezone === 'true'))),
     );
     const maxMessageLength = config.pipe(
-        switchMap((cfg) => of$(parseInt(cfg.MaxPostSize || '0', 10) || MAX_MESSAGE_LENGTH_FALLBACK)),
+        switchMap((cfg) => of$(parseInt(cfg?.MaxPostSize || '0', 10) || MAX_MESSAGE_LENGTH_FALLBACK)),
     );
 
     const useChannelMentions = combineLatest([channel, currentUser]).pipe(
@@ -69,16 +59,16 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
                 return of$(true);
             }
 
-            return from$(hasPermissionForChannel(c, u, Permissions.USE_CHANNEL_MENTIONS, false));
+            return u ? from$(hasPermissionForChannel(c, u, Permissions.USE_CHANNEL_MENTIONS, false)) : of$(false);
         }),
     );
 
-    const channelInfo = channel.pipe(switchMap((c) => c.info.observe()));
+    const channelInfo = channel.pipe(switchMap((c) => (c ? c.info.observe() : of$(undefined))));
     const membersCount = channelInfo.pipe(
-        switchMap((i: ChannelInfoModel) => of$(i.memberCount)),
+        switchMap((i) => (i ? of$(i.memberCount) : of$(0))),
     );
 
-    const customEmojis = database.get<CustomEmojiModel>(CUSTOM_EMOJI).query().observe();
+    const customEmojis = queryAllCustomEmojis(database).observe();
 
     return {
         currentUserId,

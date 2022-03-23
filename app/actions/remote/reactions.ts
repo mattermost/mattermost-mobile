@@ -6,9 +6,9 @@ import {Model} from '@nozbe/watermelondb';
 import {addRecentReaction} from '@actions/local/reactions';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
-import {queryRecentPostsInChannel, queryRecentPostsInThread} from '@queries/servers/post';
+import {getRecentPostsInChannel, getRecentPostsInThread} from '@queries/servers/post';
 import {queryReaction} from '@queries/servers/reaction';
-import {queryCurrentChannelId, queryCurrentUserId} from '@queries/servers/system';
+import {getCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
 import {getEmojiFirstAlias} from '@utils/emoji/helpers';
 
 import {forceLogoutIfNecessary} from './session';
@@ -30,7 +30,7 @@ export const addReaction = async (serverUrl: string, postId: string, emojiName: 
     }
 
     try {
-        const currentUserId = await queryCurrentUserId(operator.database);
+        const currentUserId = await getCurrentUserId(operator.database);
         const emojiAlias = getEmojiFirstAlias(emojiName);
         const reacted = await queryReaction(operator.database, emojiAlias, postId, currentUserId).fetchCount() > 0;
         if (!reacted) {
@@ -86,7 +86,7 @@ export const removeReaction = async (serverUrl: string, postId: string, emojiNam
     }
 
     try {
-        const currentUserId = await queryCurrentUserId(database);
+        const currentUserId = await getCurrentUserId(database);
         const emojiAlias = getEmojiFirstAlias(emojiName);
         await client.removeReaction(currentUserId, postId, emojiAlias);
 
@@ -115,10 +115,10 @@ export const handleReactionToLatestPost = async (serverUrl: string, emojiName: s
     try {
         let posts: PostModel[];
         if (rootId) {
-            posts = await queryRecentPostsInThread(operator.database, rootId);
+            posts = await getRecentPostsInThread(operator.database, rootId);
         } else {
-            const channelId = await queryCurrentChannelId(operator.database);
-            posts = await queryRecentPostsInChannel(operator.database, channelId);
+            const channelId = await getCurrentChannelId(operator.database);
+            posts = await getRecentPostsInChannel(operator.database, channelId);
         }
 
         if (add) {

@@ -7,31 +7,27 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {Preferences} from '@app/constants';
-import {SYSTEM_IDENTIFIERS, MM_TABLES} from '@constants/database';
-import {SystemModel, UserModel, PreferenceModel} from '@database/models/server';
+import {Preferences} from '@constants';
+import {PreferenceModel} from '@database/models/server';
+import {queryPostsById} from '@queries/servers/post';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeConfigBooleanValue} from '@queries/servers/system';
+import {observeCurrentUser} from '@queries/servers/user';
 import {getTimezone} from '@utils/user';
 
 import SavedMessagesScreen from './saved_posts';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const {USER, SYSTEM, POST, PREFERENCE} = MM_TABLES.SERVER;
-
 function getPostIDs(preferences: PreferenceModel[]) {
     return preferences.map((preference) => preference.name);
 }
 
 const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
-    const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap((currentUserId) => database.get<UserModel>(USER).findAndObserve(currentUserId.value)),
-    );
+    const currentUser = observeCurrentUser(database);
 
     return {
-        posts: database.get<PreferenceModel>(PREFERENCE).query(
-            Q.where('category', Preferences.CATEGORY_SAVED_POST),
-            Q.where('value', 'true'),
-        ).observeWithColumns(['name']).pipe(
+        posts: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, undefined, 'true').observeWithColumns(['name']).pipe(
             switchMap((rows) => {
                 if (!rows.length) {
                     return of$([]);
@@ -39,16 +35,11 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
                 return of$(getPostIDs(rows));
             }),
             switchMap((ids) => {
-                return database.get(POST).query(
-                    Q.where('id', Q.oneOf(ids)),
-                    Q.sortBy('create_at', Q.asc),
-                ).observe();
+                return queryPostsById(database, ids, Q.asc).observe();
             }),
         ),
-        currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user.timezone))))),
-        isTimezoneEnabled: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-            switchMap((config) => of$(config.value.ExperimentalTimezone === 'true')),
-        ),
+        currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
+        isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
     };
 });
 
