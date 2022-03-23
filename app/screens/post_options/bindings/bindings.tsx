@@ -4,18 +4,18 @@
 import React, {useState, useEffect} from 'react';
 import {intlShape, injectIntl} from 'react-intl';
 import {Alert} from 'react-native';
-import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
+import {HandleBindingClick, PostEphemeralCallResponseForPost} from 'types/actions/apps';
 
 import {showAppForm} from '@actions/navigation';
 import {Client4} from '@client/rest';
-import {AppBindingLocations, AppCallResponseTypes, AppCallTypes, AppExpandLevels} from '@mm-redux/constants/apps';
+import {AppBindingLocations, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {ActionResult} from '@mm-redux/types/actions';
 import {AppBinding, AppCallResponse} from '@mm-redux/types/apps';
 import {Post} from '@mm-redux/types/posts';
 import {Theme} from '@mm-redux/types/theme';
 import {UserProfile} from '@mm-redux/types/users';
 import {isSystemMessage} from '@mm-redux/utils/post_utils';
-import {createCallContext, createCallRequest} from '@utils/apps';
+import {createCallContext} from '@utils/apps';
 
 import PostOption from '../post_option';
 
@@ -29,7 +29,7 @@ type Props = {
     appsEnabled: boolean;
     intl: typeof intlShape;
     actions: {
-        doAppCall: DoAppCall;
+        handleBindingClick: HandleBindingClick;
         postEphemeralCallResponseForPost: PostEphemeralCallResponseForPost;
         handleGotoLocation: (href: string, intl: any) => Promise<ActionResult>;
     };
@@ -101,7 +101,7 @@ type OptionProps = {
     closeWithAnimation: (cb?: () => void) => void;
     intl: typeof intlShape;
     actions: {
-        doAppCall: DoAppCall;
+        handleBindingClick: HandleBindingClick;
         postEphemeralCallResponseForPost: PostEphemeralCallResponseForPost;
         handleGotoLocation: (href: string, intl: any) => Promise<ActionResult>;
     };
@@ -110,13 +110,7 @@ type OptionProps = {
 class Option extends React.PureComponent<OptionProps> {
     onPress = async () => {
         const {post, teamID, binding, intl, theme} = this.props;
-        const {doAppCall, postEphemeralCallResponseForPost} = this.props.actions;
-
-        const call = binding.form?.call || binding.call;
-
-        if (!call) {
-            return;
-        }
+        const {handleBindingClick, postEphemeralCallResponseForPost} = this.props.actions;
 
         const context = createCallContext(
             binding.app_id,
@@ -126,20 +120,8 @@ class Option extends React.PureComponent<OptionProps> {
             post.id,
             post.root_id,
         );
-        const callRequest = createCallRequest(
-            call,
-            context,
-            {
-                post: AppExpandLevels.ALL,
-            },
-        );
 
-        if (binding.form) {
-            showAppForm(binding.form, callRequest, theme);
-            return;
-        }
-
-        const callPromise = doAppCall(callRequest, AppCallTypes.SUBMIT, intl);
+        const callPromise = handleBindingClick(binding, context, intl);
         await this.close();
 
         const res = await callPromise;
@@ -149,7 +131,7 @@ class Option extends React.PureComponent<OptionProps> {
                 id: 'mobile.general.error.title',
                 defaultMessage: 'Error',
             });
-            const errorMessage = errorResponse.error || intl.formatMessage({
+            const errorMessage = errorResponse.text || intl.formatMessage({
                 id: 'apps.error.unknown',
                 defaultMessage: 'Unknown error occurred.',
             });
@@ -160,15 +142,15 @@ class Option extends React.PureComponent<OptionProps> {
         const callResp = (res as {data: AppCallResponse}).data;
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
-            if (callResp.markdown) {
-                postEphemeralCallResponseForPost(callResp, callResp.markdown, post);
+            if (callResp.text) {
+                postEphemeralCallResponseForPost(callResp, callResp.text, post);
             }
             break;
         case AppCallResponseTypes.NAVIGATE:
             this.props.actions.handleGotoLocation(callResp.navigate_to_url!, intl);
             break;
         case AppCallResponseTypes.FORM:
-            showAppForm(callResp.form, callRequest, theme);
+            showAppForm(callResp.form, context, theme);
             break;
         default: {
             const title = intl.formatMessage({

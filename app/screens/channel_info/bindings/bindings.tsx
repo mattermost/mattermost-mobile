@@ -6,14 +6,14 @@ import {intlShape, injectIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {dismissModal, showAppForm} from '@actions/navigation';
-import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
+import {AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {ActionResult} from '@mm-redux/types/actions';
 import {AppBinding} from '@mm-redux/types/apps';
 import {Channel} from '@mm-redux/types/channels';
 import {Theme} from '@mm-redux/types/theme';
-import {DoAppCall, PostEphemeralCallResponseForChannel} from '@mm-types/actions/apps';
+import {HandleBindingClick, PostEphemeralCallResponseForChannel} from '@mm-types/actions/apps';
 import Separator from '@screens/channel_info/separator';
-import {createCallContext, createCallRequest} from '@utils/apps';
+import {createCallContext} from '@utils/apps';
 
 import ChannelInfoRow from '../channel_info_row';
 
@@ -25,7 +25,7 @@ type Props = {
     intl: typeof intlShape;
     currentTeamId: string;
     actions: {
-        doAppCall: DoAppCall;
+        handleBindingClick: HandleBindingClick;
         postEphemeralCallResponseForChannel: PostEphemeralCallResponseForChannel;
         handleGotoLocation: (href: string, intl: any) => Promise<ActionResult>;
     };
@@ -70,7 +70,7 @@ type OptionProps = {
     intl: typeof intlShape;
     currentTeamId: string;
     actions: {
-        doAppCall: DoAppCall;
+        handleBindingClick: HandleBindingClick;
         postEphemeralCallResponseForChannel: PostEphemeralCallResponseForChannel;
         handleGotoLocation: (href: string, intl: any) => Promise<ActionResult>;
     };
@@ -87,15 +87,9 @@ class Option extends React.PureComponent<OptionProps, OptionState> {
 
     onPress = async () => {
         const {binding, currentChannel, currentTeamId, intl, theme} = this.props;
-        const {doAppCall, postEphemeralCallResponseForChannel} = this.props.actions;
+        const {handleBindingClick, postEphemeralCallResponseForChannel} = this.props.actions;
 
         if (this.state.submitting) {
-            return;
-        }
-
-        const call = binding.form?.call || binding.call;
-
-        if (!call) {
             return;
         }
 
@@ -105,20 +99,10 @@ class Option extends React.PureComponent<OptionProps, OptionState> {
             currentChannel.id,
             currentChannel.team_id || currentTeamId,
         );
-        const callRequest = createCallRequest(
-            call,
-            context,
-        );
-
-        if (binding.form) {
-            await dismissModal();
-            showAppForm(binding.form, callRequest, theme);
-            return;
-        }
 
         this.setState({submitting: true});
 
-        const res = await doAppCall(callRequest, AppCallTypes.SUBMIT, intl);
+        const res = await handleBindingClick(binding, context, intl);
 
         this.setState({submitting: false});
 
@@ -128,7 +112,7 @@ class Option extends React.PureComponent<OptionProps, OptionState> {
                 id: 'mobile.general.error.title',
                 defaultMessage: 'Error',
             });
-            const errorMessage = errorResponse.error || intl.formatMessage({
+            const errorMessage = errorResponse.text || intl.formatMessage({
                 id: 'apps.error.unknown',
                 defaultMessage: 'Unknown error occurred.',
             });
@@ -139,8 +123,8 @@ class Option extends React.PureComponent<OptionProps, OptionState> {
         const callResp = res.data!;
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
-            if (callResp.markdown) {
-                postEphemeralCallResponseForChannel(callResp, callResp.markdown, currentChannel.id);
+            if (callResp.text) {
+                postEphemeralCallResponseForChannel(callResp, callResp.text, currentChannel.id);
             }
             break;
         case AppCallResponseTypes.NAVIGATE:
@@ -149,7 +133,7 @@ class Option extends React.PureComponent<OptionProps, OptionState> {
             return;
         case AppCallResponseTypes.FORM:
             await dismissModal();
-            showAppForm(callResp.form, call, theme);
+            showAppForm(callResp.form, context, theme);
             return;
         default: {
             const title = intl.formatMessage({
