@@ -7,8 +7,9 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {General} from '@constants';
+import {General, Preferences} from '@constants';
 import {queryMyChannelSettingsByIds} from '@queries/servers/channel';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {WithDatabaseArgs} from '@typings/database/database';
 
 import CategoryBody from './category_body';
@@ -46,7 +47,7 @@ const buildAlphaData = (channels: ChannelModel[], settings: MyChannelSettingsMod
     return of$(combined.map((c) => c.id));
 };
 
-const querySettings = (database: Database, channels: ChannelModel[]) => {
+const observeSettings = (database: Database, channels: ChannelModel[]) => {
     const ids = channels.map((c) => c.id);
     return queryMyChannelSettingsByIds(database, ids).observeWithColumns(['notify_props']);
 };
@@ -56,7 +57,7 @@ const getSortedIds = (database: Database, category: CategoryModel, locale: strin
         case 'alpha': {
             const channels = category.channels.observeWithColumns(['display_name']);
             const settings = channels.pipe(
-                switchMap((cs) => querySettings(database, cs)),
+                switchMap((cs) => observeSettings(database, cs)),
             );
             return combineLatest([channels, settings]).pipe(
                 switchMap(([cs, st]) => buildAlphaData(cs, st, locale)),
@@ -82,7 +83,17 @@ const enhance = withObservables(['category'], ({category, locale, database}: {ca
         switchMap((c) => getSortedIds(database, c, locale)),
     );
 
+    let limit = of$(0);
+    if (category.type === 'direct_messages') {
+        limit = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, 'limit_visible_dms_gms').observe().pipe(
+            switchMap((val) => {
+                return val[0] ? of$(parseInt(val[0].value, 10)) : of$(0);
+            }),
+        );
+    }
+
     return {
+        limit,
         sortedIds,
         category: observedCategory,
     };
