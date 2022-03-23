@@ -15,7 +15,6 @@ import ChannelListItem from './channel_list_item';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 
 const enhance = withObservables(['channelId'], ({channelId, database}: {channelId: string} & WithDatabaseArgs) => {
     const myChannel = observeMyChannel(database, channelId);
@@ -37,7 +36,7 @@ const enhance = withObservables(['channelId'], ({channelId, database}: {channelI
     return {
         isOwnDirectMessage,
         isMuted: settings.pipe(
-            switchMap((s: MyChannelSettingsModel) => of$(s.notifyProps?.mark_unread === 'mention')),
+            switchMap((s) => of$(s?.notifyProps?.mark_unread === 'mention')),
         ),
         myChannel,
         channel: channel.pipe(
