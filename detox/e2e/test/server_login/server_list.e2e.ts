@@ -36,9 +36,9 @@ describe('Server Login - Server List', () => {
     const serverOneDisplayName = 'Server 1';
     const serverTwoDisplayName = 'Server 2';
     const serverThreeDisplayName = 'Server 3';
-    let serverOneUser;
-    let serverTwoUser;
-    let serverThreeUser;
+    let serverOneUser: any;
+    let serverTwoUser: any;
+    let serverThreeUser: any;
 
     beforeAll(async () => {
         // # Log in to the first server
@@ -115,7 +115,7 @@ describe('Server Login - Server List', () => {
         await ChannelListScreen.toBeVisible();
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
-        // # Tap on third server
+        // # Open server list screen and tap on third server
         await ServerListScreen.open();
         await ServerListScreen.getServerItemInactive(serverThreeDisplayName).tap();
 
@@ -123,7 +123,7 @@ describe('Server Login - Server List', () => {
         await ChannelListScreen.toBeVisible();
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverThreeDisplayName);
 
-        // # Go back to first server
+        // # Open server list screen and go back to first server
         await ServerListScreen.open();
         await ServerListScreen.getServerItemInactive(serverOneDisplayName).tap();
     });
@@ -133,7 +133,7 @@ describe('Server Login - Server List', () => {
         await ChannelListScreen.toBeVisible();
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
-        // # Swipe left on first server and tap on edit option
+        // # Open server list screen, swipe left on first server and tap on edit option
         await ServerListScreen.open();
         await ServerListScreen.getServerItemActive(serverOneDisplayName).swipe('left');
         await ServerListScreen.getServerItemEditOption(serverOneDisplayName).tap();
@@ -173,7 +173,7 @@ describe('Server Login - Server List', () => {
         await ChannelListScreen.toBeVisible();
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
-        // # Swipe left on first server and tap on remove option
+        // # Open server list screen, swipe left on first server and tap on remove option
         await ServerListScreen.open();
         await ServerListScreen.getServerItemActive(serverOneDisplayName).swipe('left');
         await ServerListScreen.getServerItemRemoveOption(serverOneDisplayName).tap();
@@ -190,8 +190,6 @@ describe('Server Login - Server List', () => {
         await expect(ServerListScreen.getServerItemInactive(serverOneDisplayName)).not.toExist();
 
         // # Add first server back to the list and log in to the first server
-        await User.apiAdminLogin(siteOneUrl);
-        ({user: serverOneUser} = await Setup.apiInit(siteOneUrl));
         await ServerListScreen.addServerButton.tap();
         await expect(ServerScreen.headerTitleAddServer).toBeVisible();
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -203,7 +201,7 @@ describe('Server Login - Server List', () => {
         await ChannelListScreen.toBeVisible();
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
-        // # Swipe left on first server and tap on logout option
+        // # Open server list screen, swipe left on first server and tap on logout option
         await ServerListScreen.open();
         await ServerListScreen.getServerItemActive(serverOneDisplayName).swipe('left');
         await ServerListScreen.getServerItemLogoutOption(serverOneDisplayName).tap();
@@ -221,10 +219,37 @@ describe('Server Login - Server List', () => {
 
         // # Log back in to first server
         await ServerListScreen.getServerItemLoginOption(serverOneDisplayName).tap();
-        await User.apiAdminLogin(siteOneUrl);
-        ({user: serverOneUser} = await Setup.apiInit(siteOneUrl));
         await expect(ServerScreen.headerTitleAddServer).toBeVisible();
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(serverOneUser);
+    });
+
+    it('MM-T4691_6 - should not be able to add server for an already existing server', async () => {
+        // * Verify on channel list screen of the first server
+        await ChannelListScreen.toBeVisible();
+        await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
+
+        // # Open server list screen, attempt to add a server already logged in and with inactive session
+        await ServerListScreen.open();
+        await ServerListScreen.addServerButton.tap();
+        await expect(ServerScreen.headerTitleAddServer).toBeVisible();
+        await ServerScreen.serverUrlInput.replaceText(serverTwoUrl);
+        await ServerScreen.serverDisplayNameInput.replaceText(serverTwoDisplayName);
+        await ServerScreen.connectButton.tap();
+
+        // * Verify same name server error
+        const sameNameServerError = 'You are using this name for another server.';
+        await expect(ServerScreen.serverDisplayNameInputError).toHaveText(sameNameServerError);
+
+        // # Attempt to add a server already logged in and with active session, with the same server display name
+        await ServerScreen.serverUrlInput.replaceText(serverOneUrl);
+        await ServerScreen.serverDisplayNameInput.replaceText(serverOneDisplayName);
+        await ServerScreen.connectButton.tap();
+
+        // * Verify same name server error
+        await expect(ServerScreen.serverDisplayNameInputError).toHaveText(sameNameServerError);
+
+        // # Close server screen to go back to first server
+        await ServerScreen.closeButton.tap();
     });
 });

@@ -6,6 +6,7 @@ import {timeouts} from '@support/utils';
 class EditServerScreen {
     testID = {
         editServerScreen: 'edit_server.screen',
+        closeButton: 'close-server-edit',
         headerTitle: 'edit_server_header.title',
         headerDescription: 'edit_server_header.description',
         serverDisplayNameInput: 'edit_server_form.server_display_name.input',
@@ -16,6 +17,7 @@ class EditServerScreen {
     };
 
     editServerScreen = element(by.id(this.testID.editServerScreen));
+    closeButton = element(by.id(this.testID.closeButton));
     headerTitle = element(by.id(this.testID.headerTitle));
     headerDescription = element(by.id(this.testID.headerDescription));
     serverDisplayNameInput = element(by.id(this.testID.serverDisplayNameInput));
