@@ -11,19 +11,27 @@ import type CategoryModel from '@typings/database/models/servers/category';
 type Props = {
     currentChannelId: string;
     sortedIds: string[];
+    hiddenChannelIds: string[];
     category: CategoryModel;
     limit: number;
 };
 
 const extractKey = (item: string) => item;
 
-const CategoryBody = ({currentChannelId, sortedIds, category, limit}: Props) => {
+const CategoryBody = ({currentChannelId, sortedIds, category, hiddenChannelIds, limit}: Props) => {
     const ids = useMemo(() => {
-        if (category.type === 'direct_messages' && limit > 0) {
-            return sortedIds.slice(0, limit - 1);
+        let filteredIds = sortedIds;
+
+        // Remove all closed gm/dms
+        if (hiddenChannelIds.length) {
+            filteredIds = sortedIds.filter((id) => !hiddenChannelIds.includes(id));
         }
-        return sortedIds;
-    }, [category.type, limit]);
+
+        if (category.type === 'direct_messages' && limit > 0) {
+            return filteredIds.slice(0, limit - 1);
+        }
+        return filteredIds;
+    }, [category.type, limit, hiddenChannelIds]);
 
     const ChannelItem = useCallback(({item}: {item: string}) => {
         return (
