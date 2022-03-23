@@ -7,6 +7,7 @@ import {useIntl} from 'react-intl';
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {makeCloseButton as makeCreateOrEditCloseButton} from '@screens/create_or_edit_channel/create_or_edit_channel';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
 
 import PlusMenuItem from './item';
@@ -36,8 +37,10 @@ const PlusMenuList = ({canCreateChannels, canJoinChannels}: Props) => {
 
         const title = intl.formatMessage({id: 'mobile.create_channel.title', defaultMessage: 'New channel'});
         const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
-        showModal(Screens.CREATE_OR_EDIT_CHANNEL, title, {
-            closeButton,
+        showModal(Screens.CREATE_OR_EDIT_CHANNEL, title, {}, {
+            topBar: {
+                leftButtons: [makeCreateOrEditCloseButton(closeButton)],
+            },
         });
     }, [intl, theme]);
 

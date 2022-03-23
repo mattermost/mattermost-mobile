@@ -8,7 +8,6 @@ import React, {useState, useEffect, useRef, useImperativeHandle, forwardRef, use
 import {GestureResponderEvent, LayoutChangeEvent, NativeSyntheticEvent, Platform, StyleProp, TargetedEvent, Text, TextInput, TextInputFocusEventData, TextInputProps, TextStyle, TouchableWithoutFeedback, View, ViewStyle} from 'react-native';
 import Animated, {useCode, interpolateNode, EasingNode, Value, set, Clock} from 'react-native-reanimated';
 
-import {useTheme} from '@app/context/theme';
 import CompassIcon from '@components/compass_icon';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -132,6 +131,7 @@ type FloatingTextInputProps = TextInputProps & {
     placeholder?: string;
     showErrorIcon?: boolean;
     testID?: string;
+    theme: Theme;
     value: string;
 }
 
@@ -149,6 +149,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     showErrorIcon = true,
     placeholder,
     multiline,
+    theme,
     value = '',
     textInputStyle,
     labelTextStyle,
@@ -160,7 +161,6 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     const inputRef = useRef<TextInput>(null);
     const [animation] = useState(new Value(focusedLabel ? 1 : 0));
     const debouncedOnFocusTextInput = debounce(setIsFocusLabel, 500, {leading: true, trailing: false});
-    const theme = useTheme();
     const styles = getStyleSheet(theme);
     let from = 0;
     let to = 0;

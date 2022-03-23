@@ -14,7 +14,7 @@ import ChannelInfoForm from '@app/screens/create_or_edit_channel/channel_info_fo
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {dismissModal, setButtons} from '@screens/navigation';
+import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {validateDisplayName} from '@utils/channel';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -55,6 +55,10 @@ const isDirect = (channel?: ChannelModel): boolean => {
     return channel?.type === General.DM_CHANNEL || channel?.type === General.GM_CHANNEL;
 };
 
+export const makeCloseButton = (icon: any) => {
+    return buildNavigationButton(CLOSE_BUTTON_ID, 'close.more_direct_messages.button', icon);
+};
+
 const CreateOrEditChannel = ({
     componentId,
     channel,
@@ -66,17 +70,6 @@ const CreateOrEditChannel = ({
     const serverUrl = useServerUrl();
 
     const editing = Boolean(channel);
-
-    const rightButton = useMemo(() => {
-        return {
-            testID: 'edit_channel.save.button',
-            id: editing ? EDIT_BUTTON_ID : CREATE_BUTTON_ID,
-            enabled: false,
-            showAsAction: 'always' as const,
-            color: theme.sidebarHeaderTextColor,
-            text: editing ? formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'}) : formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
-        };
-    }, [editing, theme.sidebarHeaderTextColor, intl.locale]);
 
     const [type, setType] = useState<ChannelType>(channel?.type as ChannelType || General.OPEN_CHANNEL);
     const [canSave, setCanSave] = useState(false);
@@ -111,20 +104,29 @@ const CreateOrEditChannel = ({
         saving: false,
     });
 
+    const rightButton = useMemo(() => {
+        const base = buildNavigationButton(
+            editing ? EDIT_BUTTON_ID : CREATE_BUTTON_ID,
+            'edit_channel.save.button',
+            undefined,
+            editing ? formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'}) : formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
+        );
+        base.enabled = canSave;
+        base.showAsAction = 'always';
+        base.color = theme.sidebarHeaderTextColor;
+        return base;
+    }, [editing, theme.sidebarHeaderTextColor, intl.locale, canSave]);
+
     useEffect(() => {
         setButtons(componentId, {
-            rightButtons: [{...rightButton, enabled: canSave}],
+            rightButtons: [rightButton],
         });
-    }, [rightButton, canSave, componentId]);
+    }, [rightButton, componentId]);
 
     useEffect(() => {
         CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor).then((i) => {
             setButtons(componentId, {
-                leftButtons: [{
-                    id: CLOSE_BUTTON_ID,
-                    icon: i,
-                    testID: 'close.more_direct_messages.button',
-                }],
+                leftButtons: [makeCloseButton(i)],
             });
         });
     }, [theme]);

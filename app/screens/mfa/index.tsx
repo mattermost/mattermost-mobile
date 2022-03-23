@@ -235,6 +235,7 @@ const MFA = ({config, goToHome, license, loginId, password, serverDisplayName, s
                                 returnKeyType='go'
                                 spellCheck={false}
                                 testID='login_mfa.input'
+                                theme={theme}
                                 value={token}
                             />
                             <Button

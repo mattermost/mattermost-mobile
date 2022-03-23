@@ -233,6 +233,7 @@ export default function ChannelInfoForm({
             value={header}
             nestedScrollEnabled={true}
             maxHeightOverride={isTablet ? 200 : undefined}
+            inPost={false}
         />
     );
 
@@ -288,6 +289,7 @@ export default function ChannelInfoForm({
                                     value={displayName}
                                     ref={nameInput}
                                     containerStyle={styles.textInput}
+                                    theme={theme}
                                 />
                                 <FloatingTextInput
                                     autoCorrect={false}
@@ -306,6 +308,7 @@ export default function ChannelInfoForm({
                                     value={purpose}
                                     ref={purposeInput}
                                     containerStyle={styles.textInput}
+                                    theme={theme}
                                 />
                                 <FormattedText
                                     style={styles.helpText}
@@ -333,6 +336,7 @@ export default function ChannelInfoForm({
                             onLayout={onHeaderLayout}
                             ref={headerInput}
                             containerStyle={styles.textInput}
+                            theme={theme}
                         />
                         <FormattedText
                             style={styles.helpText}

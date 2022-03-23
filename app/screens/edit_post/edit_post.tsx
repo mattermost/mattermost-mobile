@@ -298,6 +298,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                     postInputTop={1}
                     fixedBottomPosition={true}
                     maxHeightOverride={isTablet ? 200 : undefined}
+                    inPost={false}
                 />
             </Animated.View>
 

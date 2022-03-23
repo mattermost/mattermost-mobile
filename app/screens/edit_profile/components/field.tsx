@@ -89,6 +89,7 @@ const Field = ({
                 maxLength={maxLength}
                 onChangeText={onChangeText}
                 testID={`${testID}.input`}
+                theme={theme}
                 value={value}
                 ref={fieldRef}
                 onSubmitEditing={onSubmitEditing}

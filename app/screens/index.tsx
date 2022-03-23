@@ -70,6 +70,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CHANNEL:
             screen = withServerDatabase(require('@screens/channel').default);
             break;
+        case Screens.CREATE_OR_EDIT_CHANNEL:
+            screen = withServerDatabase(require('@screens/create_or_edit_channel').default);
+            break;
         case Screens.CUSTOM_STATUS:
             screen = withServerDatabase(
                 require('@screens/custom_status').default,
@@ -135,9 +138,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.THREAD:
             screen = withServerDatabase(require('@screens/thread').default);
-            break;
-        case Screens.CREATE_OR_EDIT_CHANNEL:
-            screen = withServerDatabase(require('@screens/create_or_edit_channel').default);
             break;
     }
 

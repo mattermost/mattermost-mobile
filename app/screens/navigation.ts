@@ -572,7 +572,7 @@ export async function dismissAllModals() {
     }
 }
 
-export const buildNavigationButton = (id: string, testID: string, icon?: ImageResource): OptionsTopBarButton => ({
+export const buildNavigationButton = (id: string, testID: string, icon?: ImageResource, text?: string): OptionsTopBarButton => ({
     fontSize: 16,
     fontFamily: 'OpenSans-SemiBold',
     fontWeight: '600',
@@ -580,6 +580,7 @@ export const buildNavigationButton = (id: string, testID: string, icon?: ImageRe
     icon,
     showAsAction: 'always',
     testID,
+    text,
 });
 
 export function setButtons(componentId: string, buttons: NavButtons = {leftButtons: [], rightButtons: []}) {

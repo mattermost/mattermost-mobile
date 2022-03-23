@@ -66,6 +66,7 @@ type Props = {
     updateValue: (v: string) => void;
     hasFilesAttached?: boolean;
     maxHeightOverride?: number;
+    inPost?: boolean;
 }
 
 const Autocomplete = ({
@@ -83,6 +84,7 @@ const Autocomplete = ({
     nestedScrollEnabled = false,
     updateValue,
     hasFilesAttached,
+    inPost = false,
 }: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -190,6 +192,7 @@ const Autocomplete = ({
                         nestedScrollEnabled={nestedScrollEnabled}
                         rootId={rootId}
                         hasFilesAttached={hasFilesAttached}
+                        inPost={inPost}
                     />
                     }
                     {/* <SlashSuggestion
