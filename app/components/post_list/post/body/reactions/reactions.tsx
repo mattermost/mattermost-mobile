@@ -149,7 +149,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
                 showModalOverCurrentContext(screen, passProps);
             }
         }
-    }, [intl, postId, theme]);
+    }, [intl, isTablet, postId, theme]);
 
     let addMoreReactions = null;
     const {reactionsByName, highlightedReactions} = buildReactionsMap();

@@ -60,7 +60,7 @@ const EmojiBar = ({emojiSelected, reactionsByName, setIndex, sortedReactions}: P
                 onPress={onPress}
             />
         );
-    }, [sortedReactions, emojiSelected, reactionsByName]);
+    }, [onPress, emojiSelected, reactionsByName]);
 
     useEffect(() => {
         const t = setTimeout(() => {

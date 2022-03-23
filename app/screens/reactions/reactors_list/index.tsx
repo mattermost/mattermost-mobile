@@ -19,8 +19,8 @@ type Props = {
 const ReactorsList = ({reactions}: Props) => {
     const serverUrl = useServerUrl();
     const [enabled, setEnabled] = useState(false);
-    const listRef = useRef<FlatList>(null);
     const [direction, setDirection] = useState<'down' | 'up'>('down');
+    const listRef = useRef<FlatList>(null);
     const prevOffset = useRef(0);
     const panResponder = useRef(PanResponder.create({
         onMoveShouldSetPanResponderCapture: (evt, g) => {

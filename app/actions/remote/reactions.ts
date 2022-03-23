@@ -63,7 +63,7 @@ export const addReaction = async (serverUrl: string, postId: string, emojiName: 
                 user_id: currentUserId,
                 post_id: postId,
                 emoji_name: emojiAlias,
-                create_at: Date.now(),
+                create_at: 0,
             } as Reaction,
         };
     } catch (error) {

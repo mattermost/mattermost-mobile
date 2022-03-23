@@ -51,7 +51,7 @@ const Reaction = ({count, emojiName, highlight, onPress}: ReactionProps) => {
 
     const handlePress = useCallback(() => {
         onPress(emojiName);
-    }, [highlight]);
+    }, [onPress, emojiName]);
 
     return (
         <TouchableOpacity
