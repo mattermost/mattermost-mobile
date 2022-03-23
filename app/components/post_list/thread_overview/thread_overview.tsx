@@ -25,7 +25,7 @@ type Props = {
     repliesCount: number;
     rootPost?: PostModel;
     testID: string;
-    style: StyleProp<ViewStyle>;
+    style?: StyleProp<ViewStyle>;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {

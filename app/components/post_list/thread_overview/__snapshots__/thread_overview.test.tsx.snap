@@ -16,7 +16,7 @@ exports[`ThreadOverview should match snapshot when post is not saved and 0 repli
       Object {
         "borderBottomWidth": 0,
       },
-      Object {},
+      undefined,
     ]
   }
   testID="thread-overview"
@@ -121,7 +121,7 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
         "paddingHorizontal": 20,
         "paddingVertical": 10,
       },
-      Object {},
+      undefined,
     ]
   }
   testID="thread-overview"

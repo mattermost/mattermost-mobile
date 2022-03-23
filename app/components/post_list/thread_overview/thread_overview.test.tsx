@@ -16,7 +16,6 @@ describe('ThreadOverview', () => {
             repliesCount: 0,
             rootPost: {} as PostModel,
             testID: 'thread-overview',
-            style: {},
         };
 
         const wrapper = renderWithIntl(<ThreadOverview {...props}/>);
@@ -29,7 +28,6 @@ describe('ThreadOverview', () => {
             repliesCount: 2,
             rootPost: {} as PostModel,
             testID: 'thread-overview',
-            style: {},
         };
 
         const wrapper = renderWithIntl(<ThreadOverview {...props}/>);

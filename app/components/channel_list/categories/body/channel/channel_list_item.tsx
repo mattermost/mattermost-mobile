@@ -65,7 +65,7 @@ const ChannelListItem = ({channel, isActive, isOwnDirectMessage, isMuted, myChan
     const serverUrl = useServerUrl();
 
     // Make it brighter if it's not muted, and highlighted or has unreads
-    const bright = !isMuted && (myChannel?.isUnread || (myChannel?.mentionsCount ?? 0) > 0);
+    const bright = !isMuted && myChannel && (myChannel.isUnread || myChannel.mentionsCount > 0);
 
     const sharedValue = useSharedValue(collapsed && !bright);
 
