@@ -23,7 +23,7 @@ type Props = {
     posts: Array<string | PostModel>;
     registerScrollEndIndexListener: (fn: (endIndex: number) => void) => () => void;
     registerViewableItemsListener: (fn: (viewableItems: ViewToken[]) => void) => () => void;
-    scrollToIndex: (index: number, animated?: boolean) => void;
+    scrollToIndex: (index: number, animated?: boolean, applyOffset?: boolean) => void;
     unreadCount: number;
     theme: Theme;
     testID: string;
@@ -103,6 +103,7 @@ const MoreMessages = ({
     const serverUrl = useServerUrl();
     const pressed = useRef(false);
     const resetting = useRef(false);
+    const initialScroll = useRef(false);
     const [loading, setLoading] = useState(false);
     const [remaining, setRemaining] = useState(0);
     const underlayColor = useMemo(() => `hsl(${hexToHue(theme.buttonBg)}, 50%, 38%)`, [theme]);
@@ -149,13 +150,14 @@ const MoreMessages = ({
 
         const lastViewableIndex = viewableItems.filter((v) => v.isViewable)[viewableItems.length - 1]?.index || 0;
         const nextViewableIndex = lastViewableIndex + 1;
-        if (viewableItems[0].index === 0 && nextViewableIndex > newMessageLineIndex) {
+        if (viewableItems[0].index === 0 && nextViewableIndex > newMessageLineIndex && !initialScroll.current) {
             // Auto scroll if the first post is viewable and
             // * the new message line is viewable OR
             // * the new message line will be the first next viewable item
-            scrollToIndex(newMessageLineIndex, true);
+            scrollToIndex(newMessageLineIndex, true, false);
             resetCount();
             top.value = 0;
+            initialScroll.current = true;
             return;
         }
 
@@ -212,6 +214,7 @@ const MoreMessages = ({
 
     useEffect(() => {
         resetting.current = false;
+        initialScroll.current = false;
     }, [channelId]);
 
     return (
