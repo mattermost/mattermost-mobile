@@ -12,7 +12,7 @@ import {fetchPostAuthors, fetchPostById} from '@actions/remote/post';
 import {getThread} from '@actions/remote/thread';
 import {ActionType, Events} from '@constants';
 import DatabaseManager from '@database/manager';
-import {getChannelById,getMyChannel} from '@queries/servers/channel';
+import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {getCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';

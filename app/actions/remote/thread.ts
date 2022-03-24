@@ -6,8 +6,8 @@ import {fetchPostThread} from '@actions/remote/post';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
-import {queryCommonSystemValues} from '@queries/servers/system';
-import {queryCurrentUser} from '@queries/servers/user';
+import {getCommonSystemValues} from '@queries/servers/system';
+import {getCurrentUser} from '@queries/servers/user';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -63,11 +63,11 @@ export const getThreads = async (
 
     try {
         const {database} = operator;
-        const currentUser = await queryCurrentUser(database);
+        const currentUser = await getCurrentUser(database);
         if (!currentUser) {
             return {};
         }
-        const {config} = await queryCommonSystemValues(database);
+        const {config} = await getCommonSystemValues(database);
 
         const data = await client.getThreads(config.Version, currentUser.id, teamId, before, after, perPage, deleted, unread, since);
 
@@ -107,7 +107,7 @@ export const getThread = async (serverUrl: string, teamId: string, threadId: str
 
     try {
         const {database} = operator;
-        const currentUser = await queryCurrentUser(database);
+        const currentUser = await getCurrentUser(database);
         if (!currentUser) {
             return {};
         }
@@ -139,7 +139,7 @@ export const updateTeamThreadsAsRead = async (serverUrl: string, teamId: string)
 
     try {
         const {database} = operator;
-        const currentUser = await queryCurrentUser(database);
+        const currentUser = await getCurrentUser(database);
         if (!currentUser) {
             return {};
         }
@@ -170,7 +170,7 @@ export const updateThreadRead = async (serverUrl: string, teamId: string, thread
 
     try {
         const {database} = operator;
-        const currentUser = await queryCurrentUser(database);
+        const currentUser = await getCurrentUser(database);
         if (!currentUser) {
             return {};
         }
@@ -201,7 +201,7 @@ export const updateThreadFollow = async (serverUrl: string, teamId: string, thre
 
     try {
         const {database} = operator;
-        const currentUser = await queryCurrentUser(database);
+        const currentUser = await getCurrentUser(database);
         if (!currentUser) {
             return {};
         }

@@ -24,7 +24,7 @@ type Props = WithDatabaseArgs & {
     rootPost: PostModel;
 };
 
-const enhanced = withObservables(['channelId', 'forceQueryAfterAppState', 'rootPost'], ({channelId, database, rootPost}: Props) => {
+const enhanced = withObservables(['forceQueryAfterAppState', 'rootPost'], ({database, rootPost}: Props) => {
     const currentUser = observeCurrentUser(database);
 
     return {
@@ -33,7 +33,7 @@ const enhanced = withObservables(['channelId', 'forceQueryAfterAppState', 'rootP
         currentUsername: currentUser.pipe((switchMap((user) => of$(user?.username || '')))),
         isCRTEnabled: observeIsCRTEnabled(database),
         isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
-        lastViewedAt: observeMyChannel(database, channelId).pipe(
+        lastViewedAt: observeMyChannel(database, rootPost.channelId).pipe(
             switchMap((myChannel) => of$(myChannel?.viewedAt)),
         ),
         posts: queryPostsInThread(database, rootPost.id, true, true).observeWithColumns(['earliest', 'latest']).pipe(

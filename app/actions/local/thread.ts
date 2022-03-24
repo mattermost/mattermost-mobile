@@ -6,7 +6,7 @@ import {ActionType, General, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getTranslations, t} from '@i18n';
 import {getChannelById} from '@queries/servers/channel';
-import {queryPostById} from '@queries/servers/post';
+import {getPostById} from '@queries/servers/post';
 import {getIsCRTEnabled, getThreadById, queryThreadsInTeam} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import {goToScreen} from '@screens/navigation';

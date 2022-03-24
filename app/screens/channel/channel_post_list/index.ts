@@ -24,8 +24,9 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({database, channelId}: {channelId: string; forceQueryAfterAppState: AppStateStatus} & WithDatabaseArgs) => {
     const currentUser = observeCurrentUser(database);
-  
+
     const isCRTEnabledObserver = observeIsCRTEnabled(database);
+    const postsInChannelObserver = queryPostsInChannel(database, channelId).observeWithColumns(['earliest', 'latest']);
 
     return {
         currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
@@ -35,14 +36,14 @@ const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({dat
         lastViewedAt: observeMyChannel(database, channelId).pipe(
             switchMap((myChannel) => of$(myChannel?.viewedAt)),
         ),
-        posts: queryPostsInChannel(database, channelId).observeWithColumns(['earliest', 'latest']).pipe(
-            switchMap((postsInChannel) => {
+        posts: combineLatest([isCRTEnabledObserver, postsInChannelObserver]).pipe(
+            switchMap(([isCRTEnabled, postsInChannel]) => {
                 if (!postsInChannel.length) {
                     return of$([]);
                 }
 
                 const {earliest, latest} = postsInChannel[0];
-                return queryPostsBetween(database, earliest, latest, Q.desc, '', channelId).observe();
+                return queryPostsBetween(database, earliest, latest, Q.desc, '', channelId, '', isCRTEnabled).observe();
             }),
         ),
         shouldShowJoinLeaveMessages: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE).observe().pipe(
