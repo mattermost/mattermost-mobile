@@ -4,6 +4,8 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
+import type TeamModel from './team';
+
 /**
  * MyTeam represents only the teams that the current user belongs to
  */

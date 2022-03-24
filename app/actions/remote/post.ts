@@ -17,10 +17,10 @@ import {filterPostsInOrderedArray} from '@helpers/api/post';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import {extractRecordsForTable} from '@helpers/database';
 import NetworkManager from '@init/network_manager';
-import {prepareMissingChannelsForAllTeams, queryAllMyChannelIds} from '@queries/servers/channel';
+import {prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
-import {queryPostById, queryRecentPostsInChannel} from '@queries/servers/post';
-import {queryCurrentUserId, queryCurrentChannelId} from '@queries/servers/system';
+import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
+import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {queryAllUsers} from '@queries/servers/user';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
@@ -66,11 +66,11 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
 
     const {database} = operator;
 
-    const currentUserId = await queryCurrentUserId(database);
+    const currentUserId = await getCurrentUserId(database);
     const timestamp = Date.now();
     const pendingPostId = post.pending_post_id || `${currentUserId}:${timestamp}`;
 
-    const existing = await queryPostById(database, pendingPostId);
+    const existing = await getPostById(database, pendingPostId);
     if (existing && !existing.props.failed) {
         return {data: false};
     }
@@ -115,7 +115,7 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         initialPostModels.push(...postModels);
     }
 
-    const customEmojis = await queryAllCustomEmojis(database);
+    const customEmojis = await queryAllCustomEmojis(database).fetch();
     const emojisInMessage = matchEmoticons(newPost.message);
     const reactionModels = await addRecentReaction(serverUrl, getValidEmojis(emojisInMessage, customEmojis), true);
     if (!('error' in reactionModels) && reactionModels.length) {
@@ -187,7 +187,7 @@ export const fetchPostsForCurrentChannel = async (serverUrl: string) => {
         return {error: `${serverUrl} database not found`};
     }
 
-    const currentChannelId = await queryCurrentChannelId(database);
+    const currentChannelId = await getCurrentChannelId(database);
     return fetchPostsForChannel(serverUrl, currentChannelId);
 };
 
@@ -199,7 +199,7 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string,
 
     let postAction: Promise<PostsRequest>|undefined;
     let actionType: string|undefined;
-    const postsInChannel = await queryRecentPostsInChannel(operator.database, channelId);
+    const postsInChannel = await getRecentPostsInChannel(operator.database, channelId);
     if (!postsInChannel || postsInChannel.length < General.POST_CHUNK_SIZE) {
         postAction = fetchPosts(serverUrl, channelId, 0, General.POST_CHUNK_SIZE, true);
         actionType = ActionType.POSTS.RECEIVED_IN_CHANNEL;
@@ -448,8 +448,8 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
         return {error};
     }
 
-    const currentUserId = await queryCurrentUserId(operator.database);
-    const users = await queryAllUsers(operator.database);
+    const currentUserId = await getCurrentUserId(operator.database);
+    const users = await queryAllUsers(operator.database).fetch();
     const existingUserIds = new Set<string>();
     const existingUserNames = new Set<string>();
     let excludeUsername;
@@ -636,7 +636,7 @@ export async function fetchMissingChannelsFromPosts(serverUrl: string, posts: Po
     }
 
     try {
-        const channelIds = await queryAllMyChannelIds(operator.database);
+        const channelIds = await queryAllMyChannel(operator.database).fetchIds();
         const channelPromises: Array<Promise<Channel>> = [];
         const userPromises: Array<Promise<ChannelMembership>> = [];
 
@@ -737,7 +737,7 @@ export const togglePinPost = async (serverUrl: string, postId: string) => {
     }
 
     try {
-        const post = await queryPostById(database, postId);
+        const post = await getPostById(database, postId);
         if (post) {
             const isPinned = post.isPinned;
             const request = isPinned ? client.unpinPost : client.pinPost;
@@ -799,7 +799,7 @@ export const markPostAsUnread = async (serverUrl: string, postId: string) => {
     }
 
     try {
-        const [userId, post] = await Promise.all([queryCurrentUserId(database), queryPostById(database, postId)]);
+        const [userId, post] = await Promise.all([getCurrentUserId(database), getPostById(database, postId)]);
         if (post && userId) {
             await client.markPostAsUnread(userId, postId);
             const {channelId} = post;
@@ -839,7 +839,7 @@ export const editPost = async (serverUrl: string, postId: string, postMessage: s
     }
 
     try {
-        const post = await queryPostById(database, postId);
+        const post = await getPostById(database, postId);
         if (post) {
             const {update_at, edit_at, message: updatedMessage} = await client.patchPost({message: postMessage, id: postId});
             await database.write(async () => {
@@ -872,7 +872,7 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
     }
 
     try {
-        const userId = await queryCurrentUserId(operator.database);
+        const userId = await getCurrentUserId(operator.database);
         const data = await client.getSavedPosts(userId, channelId, teamId, page, perPage);
         const posts = data.posts || {};
         const order = data.order || [];

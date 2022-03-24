@@ -1,24 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model, Q} from '@nozbe/watermelondb';
+import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {updateChannelsDisplayName} from '@actions/local/channel';
 import {fetchMe, fetchUsersByIds} from '@actions/remote/user';
 import {General, Events, Preferences} from '@constants';
-import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import WebsocketManager from '@init/websocket_manager';
+import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {queryCommonSystemValues} from '@queries/servers/system';
-import {queryCurrentUser} from '@queries/servers/user';
+import {getCommonSystemValues} from '@queries/servers/system';
+import {getCurrentUser} from '@queries/servers/user';
 import {displayUsername} from '@utils/user';
-
-import type ChannelModel from '@typings/database/models/servers/channel';
-
-const {SERVER: {CHANNEL, CHANNEL_MEMBERSHIP}} = MM_TABLES;
 
 export async function handleUserUpdatedEvent(serverUrl: string, msg: WebSocketMessage) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -27,7 +23,7 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: WebSocketMe
     }
 
     const {database} = operator;
-    const currentUser = await queryCurrentUser(database);
+    const currentUser = await getCurrentUser(database);
     if (!currentUser) {
         return;
     }
@@ -51,8 +47,7 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: WebSocketMe
 
             // Update GMs display name if locale has changed
             if (user.locale !== currentUser.locale) {
-                const channels = await database.get<ChannelModel>(CHANNEL).query(
-                    Q.where('type', Q.eq(General.GM_CHANNEL))).fetch();
+                const channels = await queryChannelsByTypes(database, [General.GM_CHANNEL]).fetch();
                 if (channels.length) {
                     const {models} = await updateChannelsDisplayName(serverUrl, channels, [user], true);
                     if (models?.length) {
@@ -62,9 +57,7 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: WebSocketMe
             }
         }
     } else {
-        const channels = await database.get<ChannelModel>(CHANNEL).query(
-            Q.where('type', Q.oneOf([General.DM_CHANNEL, General.GM_CHANNEL])),
-            Q.on(CHANNEL_MEMBERSHIP, Q.where('user_id', user.id))).fetch();
+        const channels = await queryUserChannelsByTypes(database, user.id, [General.DM_CHANNEL, General.GM_CHANNEL]).fetch();
         if (channels.length) {
             const {models} = await updateChannelsDisplayName(serverUrl, channels, [user], true);
             if (models?.length) {
@@ -91,14 +84,14 @@ export async function handleUserTypingEvent(serverUrl: string, msg: WebSocketMes
             return;
         }
 
-        const {config, license} = await queryCommonSystemValues(database);
+        const {config, license} = await getCommonSystemValues(database);
 
         const {users, existingUsers} = await fetchUsersByIds(serverUrl, [msg.data.user_id]);
         const user = users?.[0] || existingUsers?.[0];
 
-        const namePreference = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
+        const namePreference = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT).fetch();
         const teammateDisplayNameSetting = getTeammateNameDisplaySetting(namePreference, config, license);
-        const currentUser = await queryCurrentUser(database);
+        const currentUser = await getCurrentUser(database);
         const username = displayUsername(user, currentUser?.locale, teammateDisplayNameSetting);
         const data = {
             channelId: msg.broadcast.channel_id,

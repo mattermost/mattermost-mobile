@@ -1,15 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {combineLatest, from as from$, of as of$, Observable} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions, Post, Preferences, Screens} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
+import {observePost} from '@queries/servers/post';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeConfig, observeLicense} from '@queries/servers/system';
+import {observeCurrentUser} from '@queries/servers/user';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
@@ -21,9 +23,7 @@ import PostOptions from './post_options';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
-import type PreferenceModel from '@typings/database/models/servers/preference';
 import type ReactionModel from '@typings/database/models/servers/reaction';
-import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
 type EnhancedProps = WithDatabaseArgs & {
@@ -32,9 +32,6 @@ type EnhancedProps = WithDatabaseArgs & {
     showAddReaction: boolean;
     location: string;
 }
-
-const {POST, USER, SYSTEM, PREFERENCE} = MM_TABLES.SERVER;
-const {CURRENT_USER_ID, LICENSE, CONFIG} = SYSTEM_IDENTIFIERS;
 
 const canEditPost = (isOwner: boolean, post: PostModel, postEditTimeLimit: number, isLicensed: boolean, channel: ChannelModel, user: UserModel): boolean => {
     if (!post || isSystemMessage(post)) {
@@ -67,7 +64,7 @@ const withPost = withObservables([], ({post, database}: {post: Post | PostModel}
         id = systemPostIds?.pop();
         combinedPost = of$(post as Post);
     }
-    const thePost = id ? database.get<PostModel>(POST).findAndObserve(id) : post;
+    const thePost = id ? observePost(database, id) : post;
     return {
         combinedPost,
         post: thePost,
@@ -77,23 +74,23 @@ const withPost = withObservables([], ({post, database}: {post: Post | PostModel}
 const enhanced = withObservables([], ({combinedPost, post, showAddReaction, location, database}: EnhancedProps) => {
     const channel = post.channel.observe();
     const channelIsArchived = channel.pipe(switchMap((ch: ChannelModel) => of$(ch.deleteAt !== 0)));
-    const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(CURRENT_USER_ID).pipe(switchMap(({value}) => database.get<UserModel>(USER).findAndObserve(value)));
-    const config = database.get<SystemModel>(SYSTEM).findAndObserve(CONFIG).pipe(switchMap(({value}) => of$(value as ClientConfig)));
-    const isLicensed = database.get<SystemModel>(SYSTEM).findAndObserve(LICENSE).pipe(switchMap(({value}) => of$(value.IsLicensed === 'true')));
-    const allowEditPost = config.pipe(switchMap((cfg) => of$(cfg.AllowEditPost)));
-    const serverVersion = config.pipe(switchMap((cfg) => cfg.Version));
-    const postEditTimeLimit = config.pipe(switchMap((cfg) => of$(parseInt(cfg.PostEditTimeLimit || '-1', 10))));
+    const currentUser = observeCurrentUser(database);
+    const config = observeConfig(database);
+    const isLicensed = observeLicense(database).pipe(switchMap((lcs) => of$(lcs?.IsLicensed === 'true')));
+    const allowEditPost = config.pipe(switchMap((cfg) => of$(cfg?.AllowEditPost)));
+    const serverVersion = config.pipe(switchMap((cfg) => of$(cfg?.Version || '')));
+    const postEditTimeLimit = config.pipe(switchMap((cfg) => of$(parseInt(cfg?.PostEditTimeLimit || '-1', 10))));
 
-    const canPostPermission = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => from$(hasPermissionForChannel(c, u, Permissions.CREATE_POST, false))));
-    const hasAddReactionPermission = currentUser.pipe(switchMap((u) => from$(hasPermissionForPost(post, u, Permissions.ADD_REACTION, true))));
+    const canPostPermission = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => ((c && u) ? from$(hasPermissionForChannel(c, u, Permissions.CREATE_POST, false)) : of$(false))));
+    const hasAddReactionPermission = currentUser.pipe(switchMap((u) => (u ? from$(hasPermissionForPost(post, u, Permissions.ADD_REACTION, true)) : of$(false))));
     const canDeletePostPermission = currentUser.pipe(switchMap((u) => {
-        const isOwner = post.userId === u.id;
-        return from$(hasPermissionForPost(post, u, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false));
+        const isOwner = post.userId === u?.id;
+        return u ? from$(hasPermissionForPost(post, u, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false)) : of$(false);
     }));
 
-    const experimentalTownSquareIsReadOnly = config.pipe(switchMap((value) => of$(value.ExperimentalTownSquareIsReadOnly === 'true')));
+    const experimentalTownSquareIsReadOnly = config.pipe(switchMap((value) => of$(value?.ExperimentalTownSquareIsReadOnly === 'true')));
     const channelIsReadOnly = combineLatest([currentUser, channel, experimentalTownSquareIsReadOnly]).pipe(switchMap(([u, c, readOnly]) => {
-        return of$(c?.name === General.DEFAULT_CHANNEL && !isSystemAdmin(u.roles) && readOnly);
+        return of$(c?.name === General.DEFAULT_CHANNEL && (u && !isSystemAdmin(u.roles)) && readOnly);
     }));
 
     const isUnderMaxAllowedReactions = post.reactions.observe().pipe(
@@ -118,17 +115,17 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
         return of$(!isSystemMessage(post) && !isArchived && !isReadOnly);
     }));
 
-    const isSaved = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_SAVED_POST), Q.where('name', post.id)).observe().pipe(switchMap((pref) => of$(Boolean(pref[0]?.value === 'true'))));
+    const isSaved = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, post.id).observe().pipe(switchMap((pref) => of$(Boolean(pref[0]?.value === 'true'))));
 
     const canEdit = combineLatest([postEditTimeLimit, isLicensed, channel, currentUser, channelIsArchived, channelIsReadOnly, canEditUntil, canPostPermission]).pipe(switchMap(([lt, ls, c, u, isArchived, isReadOnly, until, canPost]) => {
-        const isOwner = u.id === post.userId;
-        const canEditPostPermission = canEditPost(isOwner, post, lt, ls, c, u);
+        const isOwner = u?.id === post.userId;
+        const canEditPostPermission = (c && u) ? canEditPost(isOwner, post, lt, ls, c, u) : false;
         const timeNotReached = (until === -1) || (until > Date.now());
         return of$(canEditPostPermission && !isArchived && !isReadOnly && timeNotReached && canPost);
     }));
 
     const canMarkAsUnread = combineLatest([currentUser, channelIsArchived]).pipe(
-        switchMap(([user, isArchived]) => of$(!isArchived && user.id !== post.userId && !isSystemMessage(post))),
+        switchMap(([user, isArchived]) => of$(!isArchived && user?.id !== post.userId && !isSystemMessage(post))),
     );
 
     const canAddReaction = combineLatest([hasAddReactionPermission, channelIsReadOnly, isUnderMaxAllowedReactions, channelIsArchived]).pipe(

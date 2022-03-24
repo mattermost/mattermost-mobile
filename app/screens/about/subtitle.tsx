@@ -8,10 +8,8 @@ import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type SystemModel from '@typings/database/models/servers/system';
-
 type SubtitleProps = {
-    config: SystemModel;
+    config: ClientConfig;
 }
 
 const Subtitle = ({config}: SubtitleProps) => {
@@ -21,7 +19,7 @@ const Subtitle = ({config}: SubtitleProps) => {
     let id = t('about.teamEditionSt');
     let defaultMessage = 'All your team communication in one place, instantly searchable and accessible anywhere.';
 
-    if (config.value.BuildEnterpriseReady === 'true') {
+    if (config.BuildEnterpriseReady === 'true') {
         id = t('about.enterpriseEditionSt');
         defaultMessage = 'Modern communication from behind your firewall.';
     }

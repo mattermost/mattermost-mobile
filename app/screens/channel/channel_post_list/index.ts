@@ -9,70 +9,44 @@ import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {getPreferenceAsBool} from '@helpers/api/preference';
+import {observeMyChannel} from '@queries/servers/channel';
+import {queryPostsBetween, queryPostsInChannel} from '@queries/servers/post';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
+import {observeCurrentUser} from '@queries/servers/user';
 import {getTimezone} from '@utils/user';
 
 import ChannelPostList from './channel_post_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
-import type PostModel from '@typings/database/models/servers/post';
-import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
-import type PreferenceModel from '@typings/database/models/servers/preference';
-import type SystemModel from '@typings/database/models/servers/system';
-import type UserModel from '@typings/database/models/servers/user';
-
-const {SERVER: {MY_CHANNEL, POST, POSTS_IN_CHANNEL, PREFERENCE, SYSTEM, USER}} = MM_TABLES;
 
 const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({database, channelId}: {channelId: string; forceQueryAfterAppState: AppStateStatus} & WithDatabaseArgs) => {
-    const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
-    const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap((currentUserId) => database.get<UserModel>(USER).findAndObserve(currentUserId.value)),
-    );
-
+    const currentUser = observeCurrentUser(database);
+  
     const isCRTEnabledObserver = observeIsCRTEnabled(database);
-    const postsInChannelObserver = database.get<PostsInChannelModel>(POSTS_IN_CHANNEL).query(
-        Q.where('channel_id', channelId),
-        Q.sortBy('latest', Q.desc),
-    ).observeWithColumns(['earliest', 'latest']);
 
     return {
-        currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user.timezone))))),
-        currentUsername: currentUser.pipe((switchMap((user) => of$(user.username)))),
+        currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
+        currentUsername: currentUser.pipe((switchMap((user) => of$(user?.username)))),
         isCRTEnabled: isCRTEnabledObserver,
-        isTimezoneEnabled: config.pipe(
-            switchMap((cfg) => of$(cfg.value.ExperimentalTimezone === 'true')),
+        isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
+        lastViewedAt: observeMyChannel(database, channelId).pipe(
+            switchMap((myChannel) => of$(myChannel?.viewedAt)),
         ),
-        lastViewedAt: database.get<MyChannelModel>(MY_CHANNEL).findAndObserve(channelId).pipe(
-            switchMap((myChannel) => of$(myChannel.viewedAt)),
-        ),
-        posts: combineLatest([isCRTEnabledObserver, postsInChannelObserver]).pipe(
-            switchMap(([isCRTEnabled, postsInChannel]) => {
+        posts: queryPostsInChannel(database, channelId).observeWithColumns(['earliest', 'latest']).pipe(
+            switchMap((postsInChannel) => {
                 if (!postsInChannel.length) {
                     return of$([]);
                 }
 
                 const {earliest, latest} = postsInChannel[0];
-                const matchPostsConditions = [
-                    Q.where('channel_id', channelId),
-                    Q.where('create_at', Q.between(earliest, latest)),
-                ];
-                if (isCRTEnabled) {
-                    matchPostsConditions.push(Q.where('root_id', ''));
-                }
-                return database.get<PostModel>(POST).query(
-                    Q.and(...matchPostsConditions),
-                    Q.sortBy('create_at', Q.desc),
-                ).observe();
+                return queryPostsBetween(database, earliest, latest, Q.desc, '', channelId).observe();
             }),
         ),
-        shouldShowJoinLeaveMessages: database.get<PreferenceModel>(PREFERENCE).query(
-            Q.where('category', Preferences.CATEGORY_ADVANCED_SETTINGS),
-            Q.where('name', Preferences.ADVANCED_FILTER_JOIN_LEAVE),
-        ).observe().pipe(
-            switchMap((prefs) => of$(getPreferenceAsBool(prefs, Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE, true))),
+        shouldShowJoinLeaveMessages: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE).observe().pipe(
+            switchMap((preferences) => of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE, true))),
         ),
     };
 });

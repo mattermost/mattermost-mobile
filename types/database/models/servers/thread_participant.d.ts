@@ -4,6 +4,9 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
+import type ThreadModel from './thread';
+import type UserModel from './user';
+
 /**
  * The Thread Participants Model is used to show the participants of a thread
  */
