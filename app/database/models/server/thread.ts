@@ -8,6 +8,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type ThreadInTeamModel from '@typings/database/models/servers/team_thread';
 import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
 
 const {POST, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM} = MM_TABLES.SERVER;
@@ -56,11 +57,15 @@ export default class ThreadModel extends Model {
     /** participants : All the participants associated with this Thread */
     @children(THREAD_PARTICIPANT) participants!: Query<ThreadParticipantModel>;
 
+    /** threadsInTeam : All the threadsInTeam associated with this Thread */
+    @children(THREADS_IN_TEAM) threadsInTeam!: Query<ThreadInTeamModel>;
+
     /** post : The root post of this thread */
     @immutableRelation(POST, 'id') post!: Relation<PostModel>;
 
     async destroyPermanently() {
         await this.participants.destroyAllPermanently();
+        await this.threadsInTeam.destroyAllPermanently();
         super.destroyPermanently();
     }
 }

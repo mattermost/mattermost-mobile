@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
+import {Q, Database} from '@nozbe/watermelondb';
 
-import {Database} from '@constants';
+import {Database as DBConstants} from '@constants';
 import {transformThreadInTeamRecord} from '@database/operator/server_data_operator/transformers/thread';
 import {getRawRecordPairs} from '@database/operator/utils/general';
 import {HandleThreadInTeamArgs} from '@typings/database/database';
@@ -14,7 +14,7 @@ export interface ThreadInTeamHandlerMix {
     handleThreadInTeam: ({threadsMap, prepareRecordsOnly}: HandleThreadInTeamArgs) => Promise<ThreadInTeamModel[]>;
 }
 
-const {THREADS_IN_TEAM} = Database.MM_TABLES.SERVER;
+const {THREADS_IN_TEAM} = DBConstants.MM_TABLES.SERVER;
 
 const ThreadInTeamHandler = (superclass: any) => class extends superclass {
     handleThreadInTeam = async ({threadsMap, prepareRecordsOnly = false}: HandleThreadInTeamArgs): Promise<ThreadInTeamModel[]> => {
@@ -25,9 +25,9 @@ const ThreadInTeamHandler = (superclass: any) => class extends superclass {
         const create: ThreadInTeam[] = [];
         const teamIds = Object.keys(threadsMap);
         for await (const teamId of teamIds) {
-            const chunks = (await this.database.get(THREADS_IN_TEAM).query(
+            const chunks = await (this.database as Database).get<ThreadInTeamModel>(THREADS_IN_TEAM).query(
                 Q.where('team_id', teamId),
-            ).fetch()) as ThreadInTeamModel[];
+            ).fetch();
 
             for (const thread of threadsMap[teamId]) {
                 const exists = chunks.some((threadInTeam) => {

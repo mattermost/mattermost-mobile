@@ -14,6 +14,7 @@ import type SlashCommandModel from '@typings/database/models/servers/slash_comma
 import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
 import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
 import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
+import type ThreadModel from '@typings/database/models/servers/thread';
 
 const {
     CATEGORY,
@@ -109,7 +110,7 @@ export default class TeamModel extends Model {
     @children(TEAM_SEARCH_HISTORY) teamSearchHistories!: TeamSearchHistoryModel[];
 
     /** threads : All threads belonging to a team */
-    @lazy threads = this.collections.get(THREAD).query(
+    @lazy threads = this.collections.get<ThreadModel>(THREAD).query(
         Q.on(THREADS_IN_TEAM, 'team_id', this.id),
     );
 
