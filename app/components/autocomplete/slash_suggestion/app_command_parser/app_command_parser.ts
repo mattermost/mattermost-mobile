@@ -9,6 +9,7 @@ import {fetchChannelById, fetchChannelByName, searchChannels} from '@actions/rem
 import {fetchUsersByIds, fetchUsersByUsernames, searchUsers} from '@actions/remote/user';
 import {AppCallResponseTypes, AppCallTypes, AppFieldTypes, COMMAND_SUGGESTION_ERROR} from '@constants/apps';
 import DatabaseManager from '@database/manager';
+import IntegrationsManager from '@init/integrations_manager';
 import {getChannelById, queryChannelsByNames} from '@queries/servers/channel';
 import {getCurrentTeamId} from '@queries/servers/system';
 import {getUserById, queryUsersByUsername} from '@queries/servers/user';
@@ -47,26 +48,6 @@ interface FormsCache {
 interface Intl {
     formatMessage(config: {id: string; defaultMessage: string}, values?: {[name: string]: any}): string;
 }
-
-// TODO: Implemnet app bindings
-const getCommandBindings = () => {
-    return [];
-};
-const getRHSCommandBindings = () => {
-    return [];
-};
-const getAppRHSCommandForm = (key: string) => {// eslint-disable-line @typescript-eslint/no-unused-vars
-    return undefined;
-};
-const getAppCommandForm = (key: string) => {// eslint-disable-line @typescript-eslint/no-unused-vars
-    return undefined;
-};
-const setAppRHSCommandForm = (key: string, form: AppForm) => {// eslint-disable-line @typescript-eslint/no-unused-vars
-    return undefined;
-};
-const setAppCommandForm = (key: string, form: AppForm) => {// eslint-disable-line @typescript-eslint/no-unused-vars
-    return undefined;
-};
 
 // Common dependencies with Webapp. Due to the big change of removing redux, we may have to rethink how to deal with this.
 const getExecuteSuggestion = (parsed: ParsedCommand) => null; // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -961,10 +942,11 @@ export class AppCommandParser {
     // getCommandBindings returns the commands in the redux store.
     // They are grouped by app id since each app has one base command
     private getCommandBindings = (): AppBinding[] => {
+        const manager = IntegrationsManager.getManager(this.serverUrl);
         if (this.rootPostID) {
-            return getRHSCommandBindings();
+            return manager.getRHSCommandBindings();
         }
-        return getCommandBindings();
+        return manager.getCommandBindings();
     };
 
     // getChannel gets the channel in which the user is typing the command
@@ -1067,9 +1049,10 @@ export class AppCommandParser {
     };
 
     public getForm = async (location: string, binding: AppBinding): Promise<{form?: AppForm; error?: string} | undefined> => {
+        const manager = IntegrationsManager.getManager(this.serverUrl);
         const rootID = this.rootPostID || '';
         const key = `${this.channelID}-${rootID}-${location}`;
-        const form = this.rootPostID ? getAppRHSCommandForm(key) : getAppCommandForm(key);
+        const form = this.rootPostID ? manager.getAppRHSCommandForm(key) : manager.getAppCommandForm(key);
         if (form) {
             return {form};
         }
@@ -1077,9 +1060,9 @@ export class AppCommandParser {
         const fetched = await this.fetchForm(binding);
         if (fetched?.form) {
             if (this.rootPostID) {
-                setAppRHSCommandForm(key, fetched.form);
+                manager.setAppRHSCommandForm(key, fetched.form);
             } else {
-                setAppCommandForm(key, fetched.form);
+                manager.setAppCommandForm(key, fetched.form);
             }
         }
         return fetched;

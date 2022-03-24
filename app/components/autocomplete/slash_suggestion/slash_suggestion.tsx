@@ -9,7 +9,8 @@ import {
     Platform,
 } from 'react-native';
 
-import {fetchCommands, fetchSuggestions} from '@actions/remote/command';
+import {fetchSuggestions} from '@actions/remote/command';
+import IntegrationsManager from '@app/init/integrations_manager';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import analytics from '@init/analytics';
@@ -98,6 +99,8 @@ const SlashSuggestion = ({
     const [commands, setCommands] = useState<Command[]>();
 
     const active = Boolean(dataSource.length);
+
+    const listStyle = useMemo(() => [style.listView, {maxHeight: maxListHeight}], [maxListHeight, style]);
 
     const updateSuggestions = useCallback((matches: AutocompleteSuggestion[]) => {
         setDataSource(matches);
@@ -190,11 +193,11 @@ const SlashSuggestion = ({
         }
 
         if (!commands) {
-            fetchCommands(serverUrl, currentTeamId).then((res) => {
-                if (res.error) {
-                    setCommands(emptyCommandList);
+            IntegrationsManager.getManager(serverUrl).fetchCommands(currentTeamId).then((res) => {
+                if (res.length) {
+                    setCommands(res.filter(commandFilter));
                 } else {
-                    setCommands(res.commands.filter(commandFilter));
+                    setCommands(emptyCommandList);
                 }
             });
             return;
@@ -231,7 +234,7 @@ const SlashSuggestion = ({
         <FlatList
             testID='slash_suggestion.list'
             keyboardShouldPersistTaps='always'
-            style={[style.listView, {maxHeight: maxListHeight}]}
+            style={listStyle}
             data={dataSource}
             keyExtractor={keyExtractor}
             removeClippedSubviews={true}

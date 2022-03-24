@@ -4,14 +4,14 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
-import {observeConfigBooleanValue, observeCurrentChannelId} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeCurrentTeamId} from '@queries/servers/system';
 
 import AppSlashSuggestion from './app_slash_suggestion';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentTeamId: observeCurrentChannelId(database),
+    currentTeamId: observeCurrentTeamId(database),
     isAppsEnabled: observeConfigBooleanValue(database, 'FeatureFlagAppsEnabled'),
 }));
 

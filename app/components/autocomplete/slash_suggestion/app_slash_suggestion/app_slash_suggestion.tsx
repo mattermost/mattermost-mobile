@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {debounce} from 'lodash';
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
     FlatList,
@@ -70,6 +70,8 @@ const AppSlashSuggestion = ({
     const style = getStyleFromTheme(theme);
     const mounted = useRef(false);
 
+    const listStyle = useMemo(() => [style.listView, {maxHeight: maxListHeight}], [maxListHeight, style]);
+
     const fetchAndShowAppCommandSuggestions = useMemo(() => debounce(async (pretext: string, cId: string, tId = '', rId?: string) => {
         appCommandParser.current.setChannelContext(cId, tId, rId);
         const suggestions = await appCommandParser.current.getSuggestions(pretext);
@@ -84,7 +86,7 @@ const AppSlashSuggestion = ({
         onShowingChange(Boolean(matches.length));
     };
 
-    const completeSuggestion = (command: string) => {
+    const completeSuggestion = useCallback((command: string) => {
         analytics.get(serverUrl)?.trackCommand('complete_suggestion', `/${command} `);
 
         // We are going to set a double / on iOS to prevent the auto correct from taking over and replacing it
@@ -103,21 +105,15 @@ const AppSlashSuggestion = ({
                 updateValue(completedDraft.replace(`//${command} `, `/${command} `));
             });
         }
-    };
+    }, [serverUrl, updateValue]);
 
-    const completeUserSuggestion = (base: string): (username: string) => void => {
+    const completeIgnoringSuggestion = useCallback((base: string): (toIgnore: string) => void => {
         return () => {
             completeSuggestion(base);
         };
-    };
+    }, [completeSuggestion]);
 
-    const completeChannelMention = (base: string): (channelName: string) => void => {
-        return () => {
-            completeSuggestion(base);
-        };
-    };
-
-    const renderItem = ({item}: {item: ExtendedAutocompleteSuggestion}) => {
+    const renderItem = useCallback(({item}: {item: ExtendedAutocompleteSuggestion}) => {
         switch (item.type) {
             case COMMAND_SUGGESTION_USER:
                 if (!item.item) {
@@ -126,7 +122,7 @@ const AppSlashSuggestion = ({
                 return (
                     <AtMentionItem
                         user={item.item as UserProfile | UserModel}
-                        onPress={completeUserSuggestion(item.Complete)}
+                        onPress={completeIgnoringSuggestion(item.Complete)}
                         testID={`autocomplete.at_mention.item.${item.item}`}
                     />
                 );
@@ -137,7 +133,7 @@ const AppSlashSuggestion = ({
                 return (
                     <ChannelMentionItem
                         channel={item.item as Channel | ChannelModel}
-                        onPress={completeChannelMention(item.Complete)}
+                        onPress={completeIgnoringSuggestion(item.Complete)}
                         testID={`autocomplete.channel_mention.item.${item.item}`}
                     />
                 );
@@ -153,7 +149,7 @@ const AppSlashSuggestion = ({
                     />
                 );
         }
-    };
+    }, [completeSuggestion, completeIgnoringSuggestion]);
 
     const isAppCommand = (pretext: string, channelID: string, teamID = '', rootID?: string) => {
         appCommandParser.current.setChannelContext(channelID, teamID, rootID);
@@ -199,7 +195,7 @@ const AppSlashSuggestion = ({
         <FlatList
             testID='app_slash_suggestion.list'
             keyboardShouldPersistTaps='always'
-            style={[style.listView, {maxHeight: maxListHeight}]}
+            style={listStyle}
             data={dataSource}
             keyExtractor={keyExtractor}
             removeClippedSubviews={true}

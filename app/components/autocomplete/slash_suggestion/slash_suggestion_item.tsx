@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import base64 from 'base-64';
+import React, {useCallback, useMemo} from 'react';
 import {Image, Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -78,9 +79,17 @@ const SlashSuggestionItem = ({
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
-    const completeSuggestion = () => {
+    const iconAsSource = useMemo(() => {
+        return {uri: icon};
+    }, [icon]);
+
+    const touchableStyle = useMemo(() => {
+        return {marginLeft: insets.left, marginRight: insets.right};
+    }, [insets]);
+
+    const completeSuggestion = useCallback(() => {
         onPress(complete);
-    };
+    }, [onPress, complete]);
 
     let suggestionText = suggestion;
     if (suggestionText?.[0] === '/' && complete.split(' ').length === 1) {
@@ -113,7 +122,7 @@ const SlashSuggestionItem = ({
     } else if (icon.startsWith('http')) {
         image = (
             <FastImage
-                source={{uri: icon}}
+                source={iconAsSource}
                 style={style.uriIcon}
             />
         );
@@ -121,21 +130,21 @@ const SlashSuggestionItem = ({
         if (icon.startsWith('data:image/svg+xml')) {
             let xml = '';
             try {
-                xml = Buffer.from(icon.substring('data:image/svg+xml;base64,'.length), 'base64').toString();
-            } catch {
+                xml = base64.decode(icon.substring('data:image/svg+xml;base64,'.length));
+                image = (
+                    <SvgXml
+                        xml={xml}
+                        width={32}
+                        height={32}
+                    />
+                );
+            } catch (error) {
                 // Do nothing
             }
-            image = (
-                <SvgXml
-                    xml={xml}
-                    width={32}
-                    height={32}
-                />
-            );
         } else {
             image = (
                 <Image
-                    source={{uri: icon}}
+                    source={iconAsSource}
                     style={style.uriIcon}
                 />
             );
@@ -145,7 +154,7 @@ const SlashSuggestionItem = ({
     return (
         <TouchableWithFeedback
             onPress={completeSuggestion}
-            style={{marginLeft: insets.left, marginRight: insets.right}}
+            style={touchableStyle}
             underlayColor={changeOpacity(theme.buttonBg, 0.08)}
             type={'native'}
         >
