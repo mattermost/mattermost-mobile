@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useManagedConfig} from '@mattermost/react-native-emm';
+// import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useEffect} from 'react';
 import {Text} from 'react-native';
 import {Navigation} from 'react-native-navigation';
@@ -41,7 +41,7 @@ const PostOptions = ({
     const renderContent = () => {
         return (
             <>
-                <Text>LOL - {componentId}</Text>
+                <Text>{componentId}</Text>
             </>
         );
     };

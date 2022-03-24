@@ -17,11 +17,11 @@ const enhanced = withObservables([], ({thread}: WithDatabaseArgs & {thread: Thre
         post,
         thread: thread.observe(),
         channel: post.pipe(
-            switchMap((row) => row.channel.observe()),
+            switchMap((row) => row!.channel.observe()),
             catchError(() => of$(undefined)),
         ),
         author: post.pipe(
-            switchMap((row) => row.author.observe()),
+            switchMap((row) => row!.author.observe()),
             catchError(() => of$(undefined)),
         ),
     };
