@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import ThreadInTeamModel from '@app/database/models/server/team_thread';
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
 import {OperationType} from '@typings/database/enums';
@@ -12,6 +13,7 @@ import type ThreadParticipantModel from '@typings/database/models/servers/thread
 const {
     THREAD,
     THREAD_PARTICIPANT,
+    THREADS_IN_TEAM,
 } = MM_TABLES.SERVER;
 
 /**
@@ -70,4 +72,21 @@ export const transformThreadParticipantRecord = ({action, database, value}: Tran
         value,
         fieldsMapper,
     }) as Promise<ThreadParticipantModel>;
+};
+
+export const transformThreadInTeamRecord = ({action, database, value}: TransformerArgs): Promise<ThreadInTeamModel> => {
+    const raw = value.raw as ThreadInTeam;
+
+    const fieldsMapper = (threadInTeam: ThreadInTeamModel) => {
+        threadInTeam.threadId = raw.thread_id;
+        threadInTeam.teamId = raw.team_id;
+    };
+
+    return prepareBaseRecord({
+        action,
+        database,
+        tableName: THREADS_IN_TEAM,
+        value,
+        fieldsMapper,
+    }) as Promise<ThreadInTeamModel>;
 };

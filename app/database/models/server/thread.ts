@@ -10,7 +10,7 @@ import {MM_TABLES} from '@constants/database';
 import type PostModel from '@typings/database/models/servers/post';
 import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
 
-const {POST, THREAD, THREAD_PARTICIPANT} = MM_TABLES.SERVER;
+const {POST, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM} = MM_TABLES.SERVER;
 
 /**
  * The Thread model contains thread information of a post.
@@ -27,6 +27,9 @@ export default class ThreadModel extends Model {
 
         /** A THREAD can have multiple THREAD_PARTICIPANT. (relationship is 1:N)*/
         [THREAD_PARTICIPANT]: {type: 'has_many', foreignKey: 'thread_id'},
+
+        /** A THREAD can have multiple THREADS_IN_TEAM. (relationship is 1:N)*/
+        [THREADS_IN_TEAM]: {type: 'has_many', foreignKey: 'team_id'},
     };
 
     /** last_reply_at : The timestamp of when user last replied to the thread. */
