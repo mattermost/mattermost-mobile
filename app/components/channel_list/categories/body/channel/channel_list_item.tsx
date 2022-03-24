@@ -65,7 +65,7 @@ type Props = {
     isActive: boolean;
     isOwnDirectMessage: boolean;
     isMuted: boolean;
-    myChannel: MyChannelModel;
+    myChannel?: MyChannelModel;
     collapsed: boolean;
 }
 
@@ -76,7 +76,7 @@ const ChannelListItem = ({channel, isActive, isOwnDirectMessage, isMuted, myChan
     const serverUrl = useServerUrl();
 
     // Make it brighter if it's not muted, and highlighted or has unreads
-    const bright = !isMuted && (isActive || myChannel.isUnread || myChannel.mentionsCount > 0);
+    const bright = !isMuted && (isActive || (myChannel && (myChannel.isUnread || myChannel.mentionsCount > 0)));
 
     const sharedValue = useSharedValue(collapsed && !bright);
 
@@ -92,7 +92,11 @@ const ChannelListItem = ({channel, isActive, isOwnDirectMessage, isMuted, myChan
         };
     });
 
-    const switchChannels = () => switchToChannelById(serverUrl, myChannel.id);
+    const switchChannels = () => {
+        if (myChannel) {
+            switchToChannelById(serverUrl, myChannel.id);
+        }
+    };
     const membersCount = useMemo(() => {
         if (channel.type === General.GM_CHANNEL) {
             return channel.displayName?.split(',').length;
@@ -112,7 +116,7 @@ const ChannelListItem = ({channel, isActive, isOwnDirectMessage, isMuted, myChan
         displayName = formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
     }
 
-    if (channel.deleteAt > 0 && !isActive) {
+    if ((channel.deleteAt > 0 && !isActive) || !myChannel) {
         return null;
     }
 

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import PostList from '@components/post_list';
@@ -25,8 +25,9 @@ type Props = {
 const edges: Edge[] = ['bottom'];
 
 const styles = StyleSheet.create({
-    container: {marginTop: 20},
+    container: {marginTop: 10},
     flex: {flex: 1},
+    footer: {height: 20},
 });
 
 const ThreadPostList = ({
@@ -54,6 +55,7 @@ const ThreadPostList = ({
             shouldShowJoinLeaveMessages={false}
             showMoreMessages={false}
             showNewMessageLine={false}
+            footer={<View style={styles.footer}/>}
             testID='thread.post_list'
         />
     );
