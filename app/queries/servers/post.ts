@@ -75,6 +75,14 @@ export const queryPostsInThread = (database: Database, rootId: string, sorted = 
     return database.get<PostsInThreadModel>(POSTS_IN_THREAD).query(...clauses);
 };
 
+export const queryPostRepliesCount = (database: Database, rootId: string, excludeDeleted = true) => {
+    const clauses: Q.Clause[] = [Q.where('root_id', rootId)];
+    if (excludeDeleted) {
+        clauses.push(Q.where('delete_at', Q.eq(0)));
+    }
+    return database.get(POST).query(...clauses);
+};
+
 export const getRecentPostsInThread = async (database: Database, rootId: string) => {
     const chunks = await queryPostsInThread(database, rootId, true, true).fetch();
     if (chunks.length) {
