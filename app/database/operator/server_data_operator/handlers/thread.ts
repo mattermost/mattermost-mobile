@@ -14,8 +14,8 @@ import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {sanitizeThreadParticipants} from '@database/operator/utils/thread';
 
 import type {HandleThreadsArgs, HandleThreadParticipantsArgs} from '@typings/database/database';
-import type ThreadInTeamModel from '@typings/database/models/servers/team_thread';
 import type ThreadModel from '@typings/database/models/servers/thread';
+import type ThreadInTeamModel from '@typings/database/models/servers/thread_in_team';
 import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
 
 const {

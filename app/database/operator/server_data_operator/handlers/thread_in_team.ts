@@ -3,18 +3,18 @@
 
 import {Q, Database} from '@nozbe/watermelondb';
 
-import {Database as DBConstants} from '@constants';
+import {MM_TABLES} from '@constants/database';
 import {transformThreadInTeamRecord} from '@database/operator/server_data_operator/transformers/thread';
 import {getRawRecordPairs} from '@database/operator/utils/general';
-import type {HandleThreadInTeamArgs} from '@typings/database/database';
 
-import type ThreadInTeamModel from '@typings/database/models/servers/team_thread';
+import type {HandleThreadInTeamArgs} from '@typings/database/database';
+import type ThreadInTeamModel from '@typings/database/models/servers/thread_in_team';
 
 export interface ThreadInTeamHandlerMix {
     handleThreadInTeam: ({threadsMap, prepareRecordsOnly}: HandleThreadInTeamArgs) => Promise<ThreadInTeamModel[]>;
 }
 
-const {THREADS_IN_TEAM} = DBConstants.MM_TABLES.SERVER;
+const {THREADS_IN_TEAM} = MM_TABLES.SERVER;
 
 const ThreadInTeamHandler = (superclass: any) => class extends superclass {
     handleThreadInTeam = async ({threadsMap, prepareRecordsOnly = false}: HandleThreadInTeamArgs): Promise<ThreadInTeamModel[]> => {

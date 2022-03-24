@@ -3,12 +3,11 @@
 
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
-
-import type ThreadInTeamModel from '@typings/database/models/server/thread_in_team';
 import {OperationType} from '@typings/database/enums';
 
 import type {TransformerArgs} from '@typings/database/database';
 import type ThreadModel from '@typings/database/models/servers/thread';
+import type ThreadInTeamModel from '@typings/database/models/servers/thread_in_team';
 import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
 
 const {
