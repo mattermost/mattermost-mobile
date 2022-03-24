@@ -4,10 +4,7 @@
 import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {
-    FlatList,
-    Platform,
-} from 'react-native';
+import {FlatList, Platform} from 'react-native';
 
 import AtMentionItem from '@components/autocomplete/at_mention_item';
 import ChannelMentionItem from '@components/autocomplete/channel_mention_item';
