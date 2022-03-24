@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import {AppBindingLocations, AppCallResponseTypes, AppFieldTypes} from '@mm-redux/constants/apps';
 import {getConfig} from '@mm-redux/selectors/entities/general';
-import {AppBinding, AppCall, AppCallRequest, AppCallValues, AppContext, AppExpand, AppField, AppForm, AppSelectOption} from '@mm-redux/types/apps';
+import {AppBinding, AppCall, AppCallRequest, AppCallResponse, AppCallValues, AppContext, AppExpand, AppField, AppForm, AppSelectOption} from '@mm-redux/types/apps';
 import {Config} from '@mm-redux/types/config';
 import {GlobalState} from '@mm-redux/types/store';
 
@@ -24,16 +24,6 @@ function cleanBindingRec(binding: AppBinding, topLocation: string, depth: number
     const usedLabels: {[label: string]: boolean} = {};
     binding.bindings?.forEach((b, i) => {
         // Inheritance and defaults
-        if (!b.call && binding.call) {
-            b.call = binding.call;
-        }
-
-        if (b.form) {
-            cleanForm(b.form);
-        } else if (binding.form) {
-            b.form = binding.form;
-        }
-
         if (!b.app_id) {
             b.app_id = binding.app_id;
         }
@@ -45,7 +35,13 @@ function cleanBindingRec(binding: AppBinding, topLocation: string, depth: number
         b.location = binding.location + '/' + b.location;
 
         // Validation
-        if (!b.label) {
+        if (!b.app_id) {
+            toRemove.unshift(i);
+            return;
+        }
+
+        // No empty labels nor "whitespace" labels
+        if (!b.label.trim()) {
             toRemove.unshift(i);
             return;
         }
@@ -72,7 +68,19 @@ function cleanBindingRec(binding: AppBinding, topLocation: string, depth: number
         }
         }
 
-        if (b.bindings?.length) {
+        // Must have only subbindings, a form or a submit call.
+        const hasBindings = Boolean(b.bindings?.length);
+        const hasForm = Boolean(b.form);
+        const hasSubmit = Boolean(b.submit);
+        if ((!hasBindings && !hasForm && !hasSubmit) ||
+            (hasBindings && hasForm) ||
+            (hasBindings && hasSubmit) ||
+            (hasForm && hasSubmit)) {
+            toRemove.unshift(i);
+            return;
+        }
+
+        if (hasBindings) {
             cleanBindingRec(b, topLocation, depth + 1);
 
             // Remove invalid branches
@@ -80,18 +88,13 @@ function cleanBindingRec(binding: AppBinding, topLocation: string, depth: number
                 toRemove.unshift(i);
                 return;
             }
-        } else {
-            // Remove leaves without a call
-            if (!b.call && !b.form?.call) {
+        } else if (hasForm) {
+            if (!b.form?.submit && !b.form?.source) {
                 toRemove.unshift(i);
                 return;
             }
 
-            // Remove leaves without app id
-            if (!b.app_id) {
-                toRemove.unshift(i);
-                return;
-            }
+            cleanForm(b.form);
         }
 
         usedLabels[b.label] = true;
@@ -150,9 +153,16 @@ export function cleanForm(form?: AppForm): void {
             return;
         }
 
-        if (field.type === AppFieldTypes.STATIC_SELECT) {
+        switch (field.type) {
+        case AppFieldTypes.STATIC_SELECT:
             cleanStaticSelect(field);
             if (!field.options?.length) {
+                toRemove.unshift(i);
+                return;
+            }
+            break;
+        case AppFieldTypes.DYNAMIC_SELECT:
+            if (!field.lookup) {
                 toRemove.unshift(i);
                 return;
             }
@@ -162,7 +172,7 @@ export function cleanForm(form?: AppForm): void {
     });
 
     toRemove.forEach((i) => {
-        form.fields.splice(i, 1);
+        form.fields!.splice(i, 1);
     });
 }
 
@@ -224,8 +234,6 @@ export function createCallRequest(
     defaultExpand: AppExpand = {},
     values?: AppCallValues,
     rawCommand?: string,
-    query?: string,
-    selectedField?: string,
 ): AppCallRequest {
     return {
         ...call,
@@ -236,15 +244,13 @@ export function createCallRequest(
             ...call.expand,
         },
         raw_command: rawCommand,
-        query,
-        selected_field: selectedField,
     };
 }
 
-export const makeCallErrorResponse = (errMessage: string) => {
+export const makeCallErrorResponse = (errMessage: string): AppCallResponse<any> => {
     return {
         type: AppCallResponseTypes.ERROR,
-        error: errMessage,
+        text: errMessage,
     };
 };
 

@@ -3,11 +3,11 @@
 
 import {intlShape} from 'react-intl';
 
-import {doAppCall, postEphemeralCallResponseForCommandArgs} from '@actions/apps';
+import {doAppSubmit, postEphemeralCallResponseForCommandArgs} from '@actions/apps';
 import {AppCommandParser} from '@components/autocomplete/slash_suggestion/app_command_parser/app_command_parser';
 import {IntegrationTypes} from '@mm-redux/action_types';
 import {executeCommand as executeCommandService} from '@mm-redux/actions/integrations';
-import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
+import {AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {DispatchFunc, GetStateFunc, ActionFunc} from '@mm-redux/types/actions';
 import {AppCallResponse} from '@mm-redux/types/apps';
@@ -41,19 +41,19 @@ export function executeCommand(message: string, channelId: string, rootId: strin
         if (appsAreEnabled) {
             const parser = new AppCommandParser({dispatch, getState}, intl, args.channel_id, args.team_id, args.root_id);
             if (parser.isAppCommand(msg)) {
-                const {call, errorMessage} = await parser.composeCallFromCommand(msg);
+                const {creq, errorMessage} = await parser.composeCommandSubmitCall(msg);
                 const createErrorMessage = (errMessage: string) => {
                     return {error: {message: errMessage}};
                 };
 
-                if (!call) {
+                if (!creq) {
                     return createErrorMessage(errorMessage!);
                 }
 
-                const res = await dispatch(doAppCall(call, AppCallTypes.SUBMIT, intl));
+                const res = await dispatch(doAppSubmit(creq, intl));
                 if (res.error) {
                     const errorResponse = res.error as AppCallResponse;
-                    return createErrorMessage(errorResponse.error || intl.formatMessage({
+                    return createErrorMessage(errorResponse.text || intl.formatMessage({
                         id: 'apps.error.unknown',
                         defaultMessage: 'Unknown error.',
                     }));
@@ -61,14 +61,14 @@ export function executeCommand(message: string, channelId: string, rootId: strin
                 const callResp = res.data as AppCallResponse;
                 switch (callResp.type) {
                 case AppCallResponseTypes.OK:
-                    if (callResp.markdown) {
-                        dispatch(postEphemeralCallResponseForCommandArgs(callResp, callResp.markdown, args));
+                    if (callResp.text) {
+                        dispatch(postEphemeralCallResponseForCommandArgs(callResp, callResp.text, args));
                     }
                     return {data: {}};
                 case AppCallResponseTypes.FORM:
                     return {data: {
                         form: callResp.form,
-                        call,
+                        call: creq,
                     }};
                 case AppCallResponseTypes.NAVIGATE:
                     return {data: {

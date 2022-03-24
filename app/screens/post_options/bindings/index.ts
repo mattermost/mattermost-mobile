@@ -4,7 +4,7 @@
 import {connect} from 'react-redux';
 import {bindActionCreators, Dispatch, ActionCreatorsMapObject} from 'redux';
 
-import {doAppCall, postEphemeralCallResponseForPost} from '@actions/apps';
+import {handleBindingClick, postEphemeralCallResponseForPost} from '@actions/apps';
 import {handleGotoLocation} from '@mm-redux/actions/integrations';
 import {AppBindingLocations} from '@mm-redux/constants/apps';
 import {getThreadAppsBindingsChannelId, makeAppBindingsSelector, makeRHSAppBindingSelector} from '@mm-redux/selectors/entities/apps';
@@ -16,7 +16,7 @@ import {GenericAction, ActionFunc} from '@mm-redux/types/actions';
 import {AppBinding} from '@mm-redux/types/apps';
 import {Post} from '@mm-redux/types/posts';
 import {GlobalState} from '@mm-redux/types/store';
-import {DoAppCall, PostEphemeralCallResponseForPost} from '@mm-types/actions/apps';
+import {HandleBindingClick, PostEphemeralCallResponseForPost} from '@mm-types/actions/apps';
 import {appsEnabled} from '@utils/apps';
 
 import Bindings from './bindings';
@@ -56,14 +56,14 @@ function mapStateToProps(state: GlobalState, props: OwnProps) {
 }
 
 type Actions = {
-    doAppCall: DoAppCall;
+    handleBindingClick: HandleBindingClick;
     postEphemeralCallResponseForPost: PostEphemeralCallResponseForPost;
 }
 
 function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
     return {
         actions: bindActionCreators<ActionCreatorsMapObject<ActionFunc>, Actions>({
-            doAppCall,
+            handleBindingClick,
             postEphemeralCallResponseForPost,
             handleGotoLocation,
         }, dispatch),

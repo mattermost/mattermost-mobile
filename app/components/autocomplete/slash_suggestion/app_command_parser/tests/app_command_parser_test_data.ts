@@ -27,7 +27,6 @@ export const reduxTestState = {
                     display_name: 'Default',
                     delete_at: 0,
                     type: 'O',
-                    total_msg_count: 10,
                     team_id: 'team_id',
                 },
                 current_user_id__existingId: {
@@ -36,12 +35,15 @@ export const reduxTestState = {
                     display_name: 'Default',
                     delete_at: 0,
                     type: '0',
-                    total_msg_count: 0,
                     team_id: 'team_id',
                 },
             },
             channelsInTeam: {
                 'team-id': ['current_channel_id'],
+            },
+            messageCounts: {
+                current_channel_id: {total: 10},
+                current_user_id__existingId: {total: 0},
             },
         },
         teams: {
@@ -103,7 +105,7 @@ export const viewCommand: AppBinding = {
     location: '/command/jira/issue/view',
     description: 'View details of a Jira issue',
     form: {
-        call: {
+        submit: {
             path: '/view-issue',
         },
         fields: [
@@ -114,6 +116,9 @@ export const viewCommand: AppBinding = {
                 type: AppFieldTypes.DYNAMIC_SELECT,
                 hint: 'The Jira project hint',
                 is_required: true,
+                lookup: {
+                    path: '/view-issue-lookup',
+                },
             },
             {
                 name: 'issue',
@@ -135,7 +140,7 @@ export const createCommand: AppBinding = {
     icon: 'Create icon',
     hint: 'Create hint',
     form: {
-        call: {
+        submit: {
             path: '/create-issue',
         },
         fields: [
@@ -145,6 +150,9 @@ export const createCommand: AppBinding = {
                 description: 'The Jira project description',
                 type: AppFieldTypes.DYNAMIC_SELECT,
                 hint: 'The Jira project hint',
+                lookup: {
+                    path: '/create-issue-lookup',
+                },
             },
             {
                 name: 'summary',
@@ -189,7 +197,7 @@ export const restCommand: AppBinding = {
     icon: 'rest icon',
     hint: 'rest hint',
     form: {
-        call: {
+        submit: {
             path: '/create-issue',
         },
         fields: [
@@ -252,6 +260,9 @@ export const testBindings: AppBinding[] = [
                     label: 'sub1',
                     description: 'Some Description',
                     form: {
+                        submit: {
+                            path: '/submit_other',
+                        },
                         fields: [{
                             name: 'fieldname',
                             label: 'fieldlabel',
