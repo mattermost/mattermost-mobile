@@ -7,7 +7,7 @@ import {PER_PAGE_DEFAULT} from './constants';
 
 export interface ClientIntegrationsMix {
     getCommandsList: (teamId: string) => Promise<Command[]>;
-    getCommandAutocompleteSuggestionsList: (userInput: string, teamId: string, commandArgs?: CommandArgs) => Promise<Command[]>;
+    getCommandAutocompleteSuggestionsList: (userInput: string, teamId: string, channelId: string, rootId?: string) => Promise<AutocompleteSuggestion[]>;
     getAutocompleteCommandsList: (teamId: string, page?: number, perPage?: number) => Promise<Command[]>;
     executeCommand: (command: string, commandArgs?: CommandArgs) => Promise<CommandResponse>;
     addCommand: (command: Command) => Promise<Command>;
@@ -22,9 +22,9 @@ const ClientIntegrations = (superclass: any) => class extends superclass {
         );
     };
 
-    getCommandAutocompleteSuggestionsList = async (userInput: string, teamId: string, commandArgs: {}) => {
+    getCommandAutocompleteSuggestionsList = async (userInput: string, teamId: string, channelId: string, rootId?: string) => {
         return this.doFetch(
-            `${this.getTeamRoute(teamId)}/commands/autocomplete_suggestions${buildQueryString({...commandArgs, user_input: userInput})}`,
+            `${this.getTeamRoute(teamId)}/commands/autocomplete_suggestions${buildQueryString({user_input: userInput, team_id: teamId, channel_id: channelId, root_id: rootId})}`,
             {method: 'get'},
         );
     };

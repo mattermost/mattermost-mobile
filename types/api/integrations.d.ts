@@ -19,6 +19,7 @@ type Command = {
     'display_name': string;
     'description': string;
     'url': string;
+    'autocomplete_icon_data'?: string;
 };
 
 type CommandArgs = {
