@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import {
     Switch,
     Text,
@@ -105,6 +105,13 @@ const SectionItem = ({testID, action, actionType, actionValue, label, selected, 
         );
     }
 
+    const labelStyle = useMemo(() => {
+        if (icon) {
+            return [style.label, {marginLeft: 4}];
+        }
+        return style.label;
+    }, [Boolean(icon)]);
+
     const component = (
         <View
             testID={testID}
@@ -120,7 +127,7 @@ const SectionItem = ({testID, action, actionType, actionValue, label, selected, 
                         />
                     )}
                     <Text
-                        style={style.label}
+                        style={labelStyle}
                         testID={`${testID}.label`}
                     >
                         {label}
