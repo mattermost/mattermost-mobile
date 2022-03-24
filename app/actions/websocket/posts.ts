@@ -12,9 +12,9 @@ import {fetchPostAuthors, fetchPostById} from '@actions/remote/post';
 import {getThread} from '@actions/remote/thread';
 import {ActionType, Events} from '@constants';
 import DatabaseManager from '@database/manager';
-import {queryChannelById, queryMyChannel} from '@queries/servers/channel';
-import {queryPostById} from '@queries/servers/post';
-import {queryCurrentChannelId, queryCurrentUserId} from '@queries/servers/system';
+import {getChannelById, getMyChannel} from '@queries/servers/channel';
+import {getPostById} from '@queries/servers/post';
+import {getCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
 
@@ -42,9 +42,9 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     } catch {
         return;
     }
-    const currentUserId = await queryCurrentUserId(database);
+    const currentUserId = await getCurrentUserId(database);
 
-    const existing = await queryPostById(database, post.pending_post_id);
+    const existing = await getPostById(database, post.pending_post_id);
 
     if (existing) {
         return;
@@ -72,7 +72,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     }
 
     // Ensure the channel membership
-    let myChannel = await queryMyChannel(database, post.channel_id);
+    let myChannel = await getMyChannel(database, post.channel_id);
     if (myChannel) {
         const {member} = await updateLastPostAt(serverUrl, post.channel_id, post.create_at, false);
         if (member) {
@@ -90,7 +90,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             return;
         }
 
-        myChannel = await queryMyChannel(database, post.channel_id);
+        myChannel = await getMyChannel(database, post.channel_id);
         if (!myChannel) {
             return;
         }
@@ -98,14 +98,14 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
 
     // If we don't have the root post for this post, fetch it from the server
     if (post.root_id) {
-        const rootPost = await queryPostById(database, post.root_id);
+        const rootPost = await getPostById(database, post.root_id);
 
         if (!rootPost) {
             fetchPostById(serverUrl, post.root_id);
         }
     }
 
-    const currentChannelId = await queryCurrentChannelId(database);
+    const currentChannelId = await getCurrentChannelId(database);
 
     if (post.channel_id === currentChannelId) {
         const data = {
@@ -239,7 +239,7 @@ export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage
                     models.push(threadModel);
                 }
 
-                const channel = await queryChannelById(database, post.channel_id);
+                const channel = await getChannelById(database, post.channel_id);
                 if (channel) {
                     getThread(serverUrl, channel.teamId, post.root_id);
                 }

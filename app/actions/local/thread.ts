@@ -5,10 +5,10 @@ import {updateThreadRead} from '@actions/remote/thread';
 import {ActionType, General, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getTranslations, t} from '@i18n';
-import {queryChannelById} from '@queries/servers/channel';
-import {queryPostById} from '@queries/servers/post';
+import {getChannelById} from '@queries/servers/channel';
+import {getPostById} from '@queries/servers/post';
 import {getIsCRTEnabled, getThreadById, queryThreadsInTeam} from '@queries/servers/thread';
-import {queryCurrentUser} from '@queries/servers/user';
+import {getCurrentUser} from '@queries/servers/user';
 import {goToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {changeOpacity} from '@utils/theme';
@@ -22,16 +22,16 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
     }
 
     try {
-        const user = await queryCurrentUser(database);
+        const user = await getCurrentUser(database);
         if (!user) {
             return {error: 'User not found'};
         }
 
-        const post = await queryPostById(database, rootId);
+        const post = await getPostById(database, rootId);
         if (!post) {
             return {error: 'Post not found'};
         }
-        const channel = await queryChannelById(database, post.channelId);
+        const channel = await getChannelById(database, post.channelId);
         if (!channel) {
             return {error: 'Channel not found'};
         }
@@ -58,7 +58,7 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
 
             // CRT: Add follow/following button
             rightButtons.push({
-                id: 1,
+                id: 'thread-follow-button',
                 component: {
                     id: thread.id,
                     name: 'ThreadFollow',
