@@ -6,7 +6,7 @@ import {Q, Database} from '@nozbe/watermelondb';
 import {Database as DBConstants} from '@constants';
 import {transformThreadInTeamRecord} from '@database/operator/server_data_operator/transformers/thread';
 import {getRawRecordPairs} from '@database/operator/utils/general';
-import {HandleThreadInTeamArgs} from '@typings/database/database';
+import type {HandleThreadInTeamArgs} from '@typings/database/database';
 
 import type ThreadInTeamModel from '@typings/database/models/servers/team_thread';
 
