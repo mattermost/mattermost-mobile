@@ -42,6 +42,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     } catch {
         return;
     }
+
     const currentUserId = await getCurrentUserId(database);
 
     const existing = await getPostById(database, post.pending_post_id);
@@ -99,7 +100,6 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     // If we don't have the root post for this post, fetch it from the server
     if (post.root_id) {
         const rootPost = await getPostById(database, post.root_id);
-
         if (!rootPost) {
             fetchPostById(serverUrl, post.root_id);
         }

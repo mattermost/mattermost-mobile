@@ -6,8 +6,8 @@ import {Text, TouchableOpacity, View} from 'react-native';
 import Animated, {Easing, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {toggleCollapseCategory} from '@actions/local/category';
-import CompassIcon from '@app/components/compass_icon';
-import {useServerUrl} from '@app/context/server';
+import CompassIcon from '@components/compass_icon';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';

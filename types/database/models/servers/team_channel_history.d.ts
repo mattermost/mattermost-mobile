@@ -4,6 +4,8 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
+import type TeamModel from './team';
+
 /**
  * The TeamChannelHistory model helps keeping track of the last channel visited
  * by the user.

@@ -4,7 +4,6 @@
 import React, {useCallback, useMemo} from 'react';
 import {FlatList, Keyboard, ListRenderItemInfo, Platform, SectionList, SectionListData, Text, View} from 'react-native';
 
-import {typography} from '@app/utils/typography';
 import FormattedText from '@components/formatted_text';
 import UserListRow from '@components/user_list_row';
 import {General} from '@constants';
@@ -13,6 +12,7 @@ import {
     changeOpacity,
     makeStyleSheetFromTheme,
 } from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const INITIAL_BATCH_TO_RENDER = 15;
 const SCROLL_EVENT_THROTTLE = 60;

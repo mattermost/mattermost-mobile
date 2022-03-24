@@ -8,9 +8,9 @@ import {removeUserFromTeam as localRemoveUserFromTeam} from '@actions/local/team
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
-import {prepareMyChannelsForTeam, queryDefaultChannelForTeam} from '@queries/servers/channel';
-import {prepareCommonSystemValues, queryCurrentTeamId, queryWebSocketLastDisconnected} from '@queries/servers/system';
-import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, queryNthLastChannelFromTeam, queryTeamsById, syncTeamTable} from '@queries/servers/team';
+import {prepareMyChannelsForTeam, getDefaultChannelForTeam} from '@queries/servers/channel';
+import {prepareCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected} from '@queries/servers/system';
+import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, syncTeamTable} from '@queries/servers/team';
 import {isTablet} from '@utils/helpers';
 
 import {fetchMyChannelsForTeam, switchToChannelById} from './channel';
@@ -61,7 +61,7 @@ export const addUserToTeam = async (serverUrl: string, teamId: string, userId: s
                 }
 
                 if (await isTablet()) {
-                    const channel = await queryDefaultChannelForTeam(operator.database, teamId);
+                    const channel = await getDefaultChannelForTeam(operator.database, teamId);
                     if (channel) {
                         fetchPostsForChannel(serverUrl, channel.id);
                     }
@@ -104,8 +104,8 @@ export const fetchMyTeams = async (serverUrl: string, fetchOnly = false): Promis
                 if (removeTeamIds.length) {
                     if (removeTeamIds?.length) {
                         // Immediately delete myTeams so that the UI renders only teams the user is a member of.
-                        const removeTeams = await queryTeamsById(operator.database, removeTeamIds);
-                        removeTeams?.forEach((team) => {
+                        const removeTeams = await queryTeamsById(operator.database, removeTeamIds).fetch();
+                        removeTeams.forEach((team) => {
                             modelPromises.push(prepareDeleteTeam(team));
                         });
                     }
@@ -268,7 +268,7 @@ export const handleTeamChange = async (serverUrl: string, teamId: string) => {
     }
 
     const {database} = operator;
-    const currentTeamId = await queryCurrentTeamId(database);
+    const currentTeamId = await getCurrentTeamId(database);
 
     if (currentTeamId === teamId) {
         return;
@@ -276,7 +276,7 @@ export const handleTeamChange = async (serverUrl: string, teamId: string) => {
 
     let channelId = '';
     if (await isTablet()) {
-        channelId = await queryNthLastChannelFromTeam(database, teamId);
+        channelId = await getNthLastChannelFromTeam(database, teamId);
         if (channelId) {
             await switchToChannelById(serverUrl, channelId, teamId);
             return;
@@ -298,7 +298,7 @@ export const handleTeamChange = async (serverUrl: string, teamId: string) => {
     }
 
     // If WebSocket is not disconnected we fetch everything since this moment
-    const lastDisconnectedAt = (await queryWebSocketLastDisconnected(database)) || Date.now();
+    const lastDisconnectedAt = (await getWebSocketLastDisconnected(database)) || Date.now();
     const {channels, memberships, error} = await fetchMyChannelsForTeam(serverUrl, teamId, true, lastDisconnectedAt, false, true);
 
     if (error) {

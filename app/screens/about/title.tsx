@@ -8,11 +8,9 @@ import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type SystemModel from '@typings/database/models/servers/system';
-
 type TitleProps = {
-    config: SystemModel;
-    license: SystemModel;
+    config: ClientConfig;
+    license: ClientLicense;
 }
 
 const Title = ({config, license}: TitleProps) => {
@@ -22,11 +20,11 @@ const Title = ({config, license}: TitleProps) => {
     let id = t('about.teamEditiont0');
     let defaultMessage = 'Team Edition';
 
-    if (config.value.BuildEnterpriseReady === 'true') {
+    if (config.BuildEnterpriseReady === 'true') {
         id = t('about.teamEditiont1');
         defaultMessage = 'Enterprise Edition';
 
-        if (license.value.IsLicensed === 'true') {
+        if (license.IsLicensed === 'true') {
             id = t('about.enterpriseEditione1');
             defaultMessage = 'Enterprise Edition';
         }
