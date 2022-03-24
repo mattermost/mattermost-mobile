@@ -8,7 +8,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {observeConfig, observeCurrentUserId} from '@queries/servers/system';
 
-import AtMentionItem from './at_mention_item';
+import UserItem from './user_item';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -28,4 +28,4 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     };
 });
 
-export default withDatabase(enhanced(AtMentionItem));
+export default withDatabase(enhanced(UserItem));

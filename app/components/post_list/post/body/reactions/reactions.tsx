@@ -3,13 +3,16 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {TouchableOpacity, View} from 'react-native';
+import {Keyboard, TouchableOpacity, View} from 'react-native';
 
 import {addReaction, removeReaction} from '@actions/remote/reactions';
 import CompassIcon from '@components/compass_icon';
+import {Screens} from '@constants';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import {useServerUrl} from '@context/server';
-import {showModal, showModalOverCurrentContext} from '@screens/navigation';
+import {useIsTablet} from '@hooks/device';
+import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
+import {getEmojiFirstAlias} from '@utils/emoji/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -58,13 +61,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, postId, reactions, theme}: ReactionsProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
+    const isTablet = useIsTablet();
     const pressed = useRef(false);
-    const [sortedReactions, setSortedReactions] = useState(new Set(reactions.map((r) => r.emojiName)));
+    const [sortedReactions, setSortedReactions] = useState(new Set(reactions.map((r) => getEmojiFirstAlias(r.emojiName))));
     const styles = getStyleSheet(theme);
 
     useEffect(() => {
         // This helps keep the reactions in the same position at all times until unmounted
-        const rs = reactions.map((r) => r.emojiName);
+        const rs = reactions.map((r) => getEmojiFirstAlias(r.emojiName));
         const sorted = new Set([...sortedReactions]);
         const added = rs.filter((r) => !sorted.has(r));
         added.forEach(sorted.add, sorted);
@@ -78,14 +82,20 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
 
         const reactionsByName = reactions.reduce((acc, reaction) => {
             if (reaction) {
-                if (acc.has(reaction.emojiName)) {
-                    acc.get(reaction.emojiName)!.push(reaction);
+                const emojiAlias = getEmojiFirstAlias(reaction.emojiName);
+                if (acc.has(emojiAlias)) {
+                    const rs = acc.get(emojiAlias);
+                    // eslint-disable-next-line max-nested-callbacks
+                    const present = rs!.findIndex((r) => r.userId === reaction.userId) > -1;
+                    if (!present) {
+                        rs!.push(reaction);
+                    }
                 } else {
-                    acc.set(reaction.emojiName, [reaction]);
+                    acc.set(emojiAlias, [reaction]);
                 }
 
                 if (reaction.userId === currentUserId) {
-                    highlightedReactions.push(reaction.emojiName);
+                    highlightedReactions.push(emojiAlias);
                 }
             }
 
@@ -99,8 +109,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
         addReaction(serverUrl, postId, emoji);
     };
 
-    const handleAddReaction = preventDoubleTap(() => {
-        const screen = 'AddReaction';
+    const handleAddReaction = useCallback(preventDoubleTap(() => {
         const title = intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
 
         const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
@@ -109,10 +118,10 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
             onEmojiPress: handleAddReactionToPost,
         };
 
-        showModal(screen, title, passProps);
-    });
+        showModal(Screens.EMOJI_PICKER, title, passProps);
+    }), [intl, theme]);
 
-    const handleReactionPress = async (emoji: string, remove: boolean) => {
+    const handleReactionPress = useCallback(async (emoji: string, remove: boolean) => {
         pressed.current = true;
         if (remove && canRemoveReaction && !disabled) {
             await removeReaction(serverUrl, postId, emoji);
@@ -121,18 +130,26 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
         }
 
         pressed.current = false;
-    };
+    }, [canRemoveReaction, canAddReaction, disabled]);
 
-    const showReactionList = () => {
-        const screen = 'ReactionList';
+    const showReactionList = useCallback((initialEmoji: string) => {
+        const screen = Screens.REACTIONS;
         const passProps = {
+            initialEmoji,
             postId,
         };
 
+        Keyboard.dismiss();
+        const title = isTablet ? intl.formatMessage({id: 'post.reactions.title', defaultMessage: 'Reactions'}) : '';
+
         if (!pressed.current) {
-            showModalOverCurrentContext(screen, passProps);
+            if (isTablet) {
+                showModal(screen, title, passProps, bottomSheetModalOptions(theme, 'close-post-reactions'));
+            } else {
+                showModalOverCurrentContext(screen, passProps);
+            }
         }
-    };
+    }, [intl, isTablet, postId, theme]);
 
     let addMoreReactions = null;
     const {reactionsByName, highlightedReactions} = buildReactionsMap();
@@ -175,4 +192,4 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
     );
 };
 
-export default React.memo(Reactions);
+export default Reactions;

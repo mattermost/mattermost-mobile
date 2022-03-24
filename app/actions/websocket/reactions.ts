@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import {queryReaction} from '@queries/servers/reactions';
+import {queryReaction} from '@queries/servers/reaction';
 
 export async function handleAddCustomEmoji(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;

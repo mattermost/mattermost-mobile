@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback} from 'react';
 import {TouchableOpacity, View} from 'react-native';
 import AnimatedNumbers from 'react-native-animated-numbers';
 
 import Emoji from '@components/emoji';
+import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -13,13 +14,8 @@ type ReactionProps = {
     count: number;
     emojiName: string;
     highlight: boolean;
-    onPress: (emojiName: string, highlight: boolean) => void;
-    onLongPress: (initialEmoji: string) => void;
-    theme: Theme;
+    onPress: (emojiName: string) => void;
 }
-
-const MIN_WIDTH = 50;
-const DIGIT_WIDTH = 5;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -27,7 +23,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.56),
             ...typography('Body', 100, 'SemiBold'),
         },
-        countContainer: {marginRight: 8},
+        countContainer: {marginRight: 5},
         countHighlight: {
             color: theme.buttonBg,
         },
@@ -35,45 +31,32 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         emoji: {marginHorizontal: 5},
         highlight: {
             backgroundColor: changeOpacity(theme.buttonBg, 0.08),
-            borderColor: theme.buttonBg,
-            borderWidth: 1,
         },
         reaction: {
             alignItems: 'center',
             borderRadius: 4,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            backgroundColor: theme.centerChannelBg,
             flexDirection: 'row',
             height: 32,
             justifyContent: 'center',
-            marginBottom: 12,
-            marginRight: 8,
-            minWidth: MIN_WIDTH,
+            marginRight: 12,
+            minWidth: 50,
         },
     };
 });
 
-const Reaction = ({count, emojiName, highlight, onPress, onLongPress, theme}: ReactionProps) => {
+const Reaction = ({count, emojiName, highlight, onPress}: ReactionProps) => {
+    const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const digits = String(count).length;
-    const containerStyle = useMemo(() => {
-        const minWidth = MIN_WIDTH + (digits * DIGIT_WIDTH);
-        return [styles.reaction, (highlight && styles.highlight), {minWidth}];
-    }, [styles.reaction, highlight, digits]);
-
-    const handleLongPress = useCallback(() => {
-        onLongPress(emojiName);
-    }, []);
 
     const handlePress = useCallback(() => {
-        onPress(emojiName, highlight);
-    }, [highlight]);
+        onPress(emojiName);
+    }, [onPress, emojiName]);
 
     return (
         <TouchableOpacity
             onPress={handlePress}
-            onLongPress={handleLongPress}
-            delayLongPress={350}
-            style={containerStyle}
+            style={[styles.reaction, (highlight && styles.highlight)]}
         >
             <View style={styles.emoji}>
                 <Emoji
