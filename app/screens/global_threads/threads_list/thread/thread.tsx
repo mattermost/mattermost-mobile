@@ -2,12 +2,16 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
 import {Text, TouchableHighlight, View} from 'react-native';
 
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import FormattedText from '@components/formatted_text';
 import FriendlyDate from '@components/friendly_date';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
+import {useIsTablet} from '@hooks/device';
+import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
@@ -124,6 +128,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Thread = ({author, channel, post, teammateNameDisplay, testID, theme, thread}: Props) => {
+    const intl = useIntl();
+    const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
@@ -131,9 +137,16 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, theme, thre
         fetchAndSwitchToThread(serverUrl, thread.id);
     }), [serverUrl, thread.id]);
 
-    const showThreadOptions = () => {
-        //@todo: https://mattermost.atlassian.net/browse/MM-40078
-    };
+    const showThreadOptions = useCallback(() => {
+        const passProps = {thread};
+        const title = isTablet ? intl.formatMessage({id: 'thread.options.title', defaultMessage: 'THREAD ACTIONS'}) : '';
+
+        if (isTablet) {
+            showModal(Screens.THREAD_OPTIONS, title, passProps, bottomSheetModalOptions(theme, 'close-thread-options'));
+        } else {
+            showModalOverCurrentContext(Screens.THREAD_OPTIONS, passProps);
+        }
+    }, [isTablet, thread]);
 
     const threadStarterName = displayUsername(author, undefined, teammateNameDisplay);
     const testIDPrefix = `${testID}.${thread.id}`;

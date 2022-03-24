@@ -34,6 +34,7 @@ export const SETTINGS_SIDEBAR = 'SettingsSidebar';
 export const SSO = 'SSO';
 export const THREAD = 'Thread';
 export const THREAD_FOLLOW = 'ThreadFollow';
+export const THREAD_OPTIONS = 'ThreadOptions';
 export const USER_PROFILE = 'UserProfile';
 export const POST_OPTIONS = 'PostOptions';
 export const SAVED_POSTS = 'SavedPosts';
@@ -72,6 +73,7 @@ export default {
     SSO,
     THREAD,
     THREAD_FOLLOW,
+    THREAD_OPTIONS,
     USER_PROFILE,
     POST_OPTIONS,
     SAVED_POSTS,
