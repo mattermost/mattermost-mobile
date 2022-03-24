@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, StyleSheet} from 'react-native';
 
@@ -15,6 +15,7 @@ type Props = {
     categories: CategoryModel[];
     currentChannelId: string;
     currentUserId: string;
+    currentTeamId: string;
 }
 
 const styles = StyleSheet.create({
@@ -25,8 +26,9 @@ const styles = StyleSheet.create({
 
 const extractKey = (item: CategoryModel) => item.id;
 
-const Categories = ({categories, currentChannelId, currentUserId}: Props) => {
+const Categories = ({categories, currentChannelId, currentUserId, currentTeamId}: Props) => {
     const intl = useIntl();
+    const listRef = useRef<FlatList>(null);
 
     const renderCategory = useCallback((data: {item: CategoryModel}) => {
         return (
@@ -42,6 +44,10 @@ const Categories = ({categories, currentChannelId, currentUserId}: Props) => {
         );
     }, [categories, currentChannelId, intl.locale]);
 
+    useEffect(() => {
+        listRef.current?.scrollToOffset({animated: false, offset: 0});
+    }, [currentTeamId]);
+
     // Sort Categories
     categories.sort((a, b) => a.sortOrder - b.sortOrder);
 
@@ -52,6 +58,7 @@ const Categories = ({categories, currentChannelId, currentUserId}: Props) => {
     return (
         <FlatList
             data={categories}
+            ref={listRef}
             renderItem={renderCategory}
             style={styles.flex}
             showsHorizontalScrollIndicator={false}

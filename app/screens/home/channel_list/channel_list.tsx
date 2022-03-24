@@ -94,7 +94,6 @@ const ChannelListScreen = (props: ChannelProps) => {
                         teamsCount={props.teamsCount}
                     />
                     <ChannelList
-                        key={props.currentTeamId}
                         iconPad={canAddOtherServers && props.teamsCount <= 1}
                         isTablet={isTablet}
                         teamsCount={props.teamsCount}
