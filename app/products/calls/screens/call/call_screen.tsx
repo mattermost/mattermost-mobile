@@ -337,9 +337,9 @@ const CallScreen = (props: Props) => {
                     streamURL={props.screenShareURL}
                     style={style.screenShareImage}
                 />
-                <Text
-                    style={style.screenShareText}
-                >{`You are seeing ${displayUsername(props.call.participants[props.call.screenOn].profile, props.teammateNameDisplay)} screen`}</Text>
+                <Text style={style.screenShareText}>
+                    {`You are viewing ${displayUsername(props.call.participants[props.call.screenOn].profile, props.teammateNameDisplay)}'s screen`}
+                </Text>
             </Pressable>
         );
     }
