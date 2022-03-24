@@ -9,7 +9,7 @@ import CategoryBody from './body';
 import LoadCategoriesError from './error';
 import CategoryHeader from './header';
 
-import type {CategoryModel} from '@database/models/server';
+import type CategoryModel from '@typings/database/models/servers/category';
 
 type Props = {
     categories: CategoryModel[];
