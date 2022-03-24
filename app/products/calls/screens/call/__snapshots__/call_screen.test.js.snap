@@ -480,7 +480,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
           }
         }
       >
-        You are seeing User 2 screen
+        You are viewing User 2's screen
       </Text>
     </Pressable>
     <View
@@ -1268,7 +1268,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
           }
         }
       >
-        You are seeing User 2 screen
+        You are viewing User 2's screen
       </Text>
     </Pressable>
     <View
@@ -1599,7 +1599,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
           }
         }
       >
-        You are seeing User 2 screen
+        You are viewing User 2's screen
       </Text>
     </Pressable>
     <View
