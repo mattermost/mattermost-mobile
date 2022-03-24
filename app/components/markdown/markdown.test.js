@@ -4,11 +4,13 @@
 import {shallow} from 'enzyme';
 import React from 'react';
 
+import {General} from '../../mm-redux/constants';
+
 import Markdown from './markdown.js';
 
 describe('Markdown', () => {
     const baseProps = {
-        autolinkedUrlSchemes: ['mattermost'],
+        autolinkedUrlSchemes: General.DEFAULT_AUTOLINKED_URL_SCHEMES,
         baseTextStyle: {},
         mentionKeys: [{key: 'user.name'}, {key: '@channel'}, {key: '@all'}, {key: '@here'}],
         minimumHashtagLength: 3,
@@ -55,5 +57,32 @@ describe('Markdown', () => {
         shallow(
             <Markdown {...props}/>,
         );
+    });
+
+    test('should return true for an uncapitalized scheme', () => {
+        const url = 'https://www.mattermost.com/';
+        const wrapper = shallow(
+            <Markdown {...baseProps}/>,
+        );
+
+        expect(wrapper.instance().urlFilter(url)).toBe(true);
+    });
+
+    test('should return true for a capitalized scheme', () => {
+        const url = 'Https://www.mattermost.com/';
+        const wrapper = shallow(
+            <Markdown {...baseProps}/>,
+        );
+
+        expect(wrapper.instance().urlFilter(url)).toBe(true);
+    });
+
+    test('should return false for an unknown scheme', () => {
+        const url = 'unknown://www.mattermost.com/';
+        const wrapper = shallow(
+            <Markdown {...baseProps}/>,
+        );
+
+        expect(wrapper.instance().urlFilter(url)).toBe(false);
     });
 });

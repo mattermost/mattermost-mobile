@@ -146,7 +146,7 @@ export default class AttachmentButton extends PureComponent {
             };
         }
         }
-    }
+    };
 
     attachPhotoFromCamera = () => {
         return this.attachFileFromCamera('camera', 'photo');
@@ -274,7 +274,7 @@ export default class AttachmentButton extends PureComponent {
         }
 
         return files;
-    }
+    };
 
     hasPhotoPermission = async (source, mediaType = '') => {
         if (Platform.OS === 'ios') {

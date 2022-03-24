@@ -1,5 +1,37 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`SettingsSidebar Custom Status should close sidebar when update custom status succeeds 1`] = `
+<DrawerLayoutAdapter
+  drawerPosition="right"
+  drawerWidth={710}
+  forwardRef={
+    Object {
+      "current": null,
+    }
+  }
+  onDrawerClose={[Function]}
+  onDrawerOpen={[Function]}
+  renderNavigationView={[Function]}
+  useNativeAnimations={true}
+/>
+`;
+
+exports[`SettingsSidebar Custom Status should keep sidebar open when update custom status fails 1`] = `
+<DrawerLayoutAdapter
+  drawerPosition="right"
+  drawerWidth={710}
+  forwardRef={
+    Object {
+      "current": null,
+    }
+  }
+  onDrawerClose={[Function]}
+  onDrawerOpen={[Function]}
+  renderNavigationView={[Function]}
+  useNativeAnimations={true}
+/>
+`;
+
 exports[`SettingsSidebar should match snapshot 1`] = `
 <DrawerLayoutAdapter
   drawerPosition="right"

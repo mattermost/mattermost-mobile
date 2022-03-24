@@ -62,7 +62,7 @@ export default class NotificationPreference extends PureComponent<NotificationPr
         }
 
         return intl.formatMessage({id: textId, defaultMessage: defaultMsg});
-    }
+    };
 
     render() {
         const {testID, theme, notifyProps, userId, channelId} = this.props;

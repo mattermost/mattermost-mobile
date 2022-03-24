@@ -69,7 +69,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
     <ScrollView
       alwaysBounceVertical={false}
       contentContainerStyle={Object {}}
-      horizontal={true}
+      horizontal={false}
     >
       <Pressable
         onPress={[Function]}
@@ -132,7 +132,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
             muted={true}
             size="l"
             userId="user-2-id"
-            volume={1}
+            volume={0}
           />
           <Text
             style={
@@ -196,15 +196,15 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Leave"
-            id="call.leave"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Leave
+          </Text>
         </Pressable>
         <Pressable
           onPress={[Function]}
@@ -232,17 +232,18 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Chat thread"
-            id="call.chat_thread"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Chat thread
+          </Text>
         </Pressable>
         <Pressable
+          onPress={[Function]}
           style={
             Object {
               "alignItems": "center",
@@ -250,9 +251,10 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
               "flexDirection": "column",
             }
           }
+          testID="toggle-speakerphone"
         >
           <CompassIcon
-            name="settings-outline"
+            name="volume-high"
             size={24}
             style={
               Object {
@@ -267,15 +269,15 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Settings"
-            id="call.settings"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Speaker
+          </Text>
         </Pressable>
         <Pressable
           onPress={[Function]}
@@ -303,15 +305,15 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="More"
-            id="call.more"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            More
+          </Text>
         </Pressable>
         <Pressable
           onPress={[Function]}
@@ -340,15 +342,15 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Unmute"
-            id="call.unmute"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Unmute
+          </Text>
         </Pressable>
       </View>
     </View>
@@ -445,21 +447,16 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
           }
         }
       />
-      <InjectIntl(FormattedText)
-        defaultMessage="You are seing {userDisplayName} screen"
-        id="call.screen_share_user"
+      <Text
         style={
           Object {
             "color": "white",
             "margin": 3,
           }
         }
-        values={
-          Object {
-            "userDisplayName": "Someone",
-          }
-        }
-      />
+      >
+        You are seeing User 2 screen
+      </Text>
     </Pressable>
     <View
       style={
@@ -511,15 +508,15 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Leave"
-            id="call.leave"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Leave
+          </Text>
         </Pressable>
         <Pressable
           onPress={[Function]}
@@ -547,17 +544,18 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Chat thread"
-            id="call.chat_thread"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Chat thread
+          </Text>
         </Pressable>
         <Pressable
+          onPress={[Function]}
           style={
             Object {
               "alignItems": "center",
@@ -565,9 +563,10 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
               "flexDirection": "column",
             }
           }
+          testID="toggle-speakerphone"
         >
           <CompassIcon
-            name="settings-outline"
+            name="volume-high"
             size={24}
             style={
               Object {
@@ -582,15 +581,15 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Settings"
-            id="call.settings"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Speaker
+          </Text>
         </Pressable>
         <Pressable
           onPress={[Function]}
@@ -618,15 +617,15 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="More"
-            id="call.more"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            More
+          </Text>
         </Pressable>
         <Pressable
           onPress={[Function]}
@@ -655,15 +654,15 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Unmute"
-            id="call.unmute"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Unmute
+          </Text>
         </Pressable>
       </View>
     </View>
@@ -736,7 +735,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
     <ScrollView
       alwaysBounceVertical={false}
       contentContainerStyle={Object {}}
-      horizontal={true}
+      horizontal={false}
     >
       <Pressable
         onPress={[Function]}
@@ -799,7 +798,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
             muted={true}
             size="l"
             userId="user-2-id"
-            volume={1}
+            volume={0}
           />
           <Text
             style={
@@ -850,15 +849,15 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
             }
           }
         />
-        <InjectIntl(FormattedText)
-          defaultMessage="Unmute"
-          id="call.unmute"
+        <Text
           style={
             Object {
               "color": "#ffffff",
             }
           }
-        />
+        >
+          Unmute
+        </Text>
       </Pressable>
       <View
         style={
@@ -896,15 +895,15 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Leave"
-            id="call.leave"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Leave
+          </Text>
         </Pressable>
         <Pressable
           onPress={[Function]}
@@ -932,17 +931,18 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Chat thread"
-            id="call.chat_thread"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Chat thread
+          </Text>
         </Pressable>
         <Pressable
+          onPress={[Function]}
           style={
             Object {
               "alignItems": "center",
@@ -950,9 +950,10 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
               "flexDirection": "column",
             }
           }
+          testID="toggle-speakerphone"
         >
           <CompassIcon
-            name="settings-outline"
+            name="volume-high"
             size={24}
             style={
               Object {
@@ -967,15 +968,15 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Settings"
-            id="call.settings"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Speaker
+          </Text>
         </Pressable>
         <Pressable
           onPress={[Function]}
@@ -1003,15 +1004,15 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="More"
-            id="call.more"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            More
+          </Text>
         </Pressable>
       </View>
     </View>
@@ -1147,7 +1148,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
             muted={true}
             size="m"
             userId="user-2-id"
-            volume={1}
+            volume={0}
           />
           <Text
             style={
@@ -1184,21 +1185,16 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
           }
         }
       />
-      <InjectIntl(FormattedText)
-        defaultMessage="You are seing {userDisplayName} screen"
-        id="call.screen_share_user"
+      <Text
         style={
           Object {
             "color": "white",
             "margin": 3,
           }
         }
-        values={
-          Object {
-            "userDisplayName": "Someone",
-          }
-        }
-      />
+      >
+        You are seeing User 2 screen
+      </Text>
     </Pressable>
     <View
       style={
@@ -1237,15 +1233,15 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
             }
           }
         />
-        <InjectIntl(FormattedText)
-          defaultMessage="Unmute"
-          id="call.unmute"
+        <Text
           style={
             Object {
               "color": "#ffffff",
             }
           }
-        />
+        >
+          Unmute
+        </Text>
       </Pressable>
       <View
         style={
@@ -1283,15 +1279,15 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Leave"
-            id="call.leave"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Leave
+          </Text>
         </Pressable>
         <Pressable
           onPress={[Function]}
@@ -1319,17 +1315,18 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Chat thread"
-            id="call.chat_thread"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Chat thread
+          </Text>
         </Pressable>
         <Pressable
+          onPress={[Function]}
           style={
             Object {
               "alignItems": "center",
@@ -1337,9 +1334,10 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
               "flexDirection": "column",
             }
           }
+          testID="toggle-speakerphone"
         >
           <CompassIcon
-            name="settings-outline"
+            name="volume-high"
             size={24}
             style={
               Object {
@@ -1354,15 +1352,15 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Settings"
-            id="call.settings"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Speaker
+          </Text>
         </Pressable>
         <Pressable
           onPress={[Function]}
@@ -1390,15 +1388,15 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="More"
-            id="call.more"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            More
+          </Text>
         </Pressable>
       </View>
     </View>
@@ -1495,21 +1493,16 @@ exports[`CallScreen should show controls in landscape view on click the screen s
           }
         }
       />
-      <InjectIntl(FormattedText)
-        defaultMessage="You are seing {userDisplayName} screen"
-        id="call.screen_share_user"
+      <Text
         style={
           Object {
             "color": "white",
             "margin": 3,
           }
         }
-        values={
-          Object {
-            "userDisplayName": "Someone",
-          }
-        }
-      />
+      >
+        You are seeing User 2 screen
+      </Text>
     </Pressable>
     <View
       style={
@@ -1561,15 +1554,15 @@ exports[`CallScreen should show controls in landscape view on click the screen s
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Leave"
-            id="call.leave"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Leave
+          </Text>
         </Pressable>
         <Pressable
           onPress={[Function]}
@@ -1597,17 +1590,18 @@ exports[`CallScreen should show controls in landscape view on click the screen s
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Chat thread"
-            id="call.chat_thread"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Chat thread
+          </Text>
         </Pressable>
         <Pressable
+          onPress={[Function]}
           style={
             Object {
               "alignItems": "center",
@@ -1615,9 +1609,10 @@ exports[`CallScreen should show controls in landscape view on click the screen s
               "flexDirection": "column",
             }
           }
+          testID="toggle-speakerphone"
         >
           <CompassIcon
-            name="settings-outline"
+            name="volume-high"
             size={24}
             style={
               Object {
@@ -1632,15 +1627,15 @@ exports[`CallScreen should show controls in landscape view on click the screen s
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Settings"
-            id="call.settings"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Speaker
+          </Text>
         </Pressable>
         <Pressable
           onPress={[Function]}
@@ -1668,15 +1663,15 @@ exports[`CallScreen should show controls in landscape view on click the screen s
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="More"
-            id="call.more"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            More
+          </Text>
         </Pressable>
         <Pressable
           onPress={[Function]}
@@ -1705,15 +1700,15 @@ exports[`CallScreen should show controls in landscape view on click the screen s
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Unmute"
-            id="call.unmute"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Unmute
+          </Text>
         </Pressable>
       </View>
     </View>
@@ -1790,7 +1785,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
     <ScrollView
       alwaysBounceVertical={false}
       contentContainerStyle={Object {}}
-      horizontal={true}
+      horizontal={false}
     >
       <Pressable
         onPress={[Function]}
@@ -1853,7 +1848,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
             muted={true}
             size="l"
             userId="user-2-id"
-            volume={1}
+            volume={0}
           />
           <Text
             style={
@@ -1917,15 +1912,15 @@ exports[`CallScreen should show controls in landscape view on click the users li
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Leave"
-            id="call.leave"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Leave
+          </Text>
         </Pressable>
         <Pressable
           onPress={[Function]}
@@ -1953,17 +1948,18 @@ exports[`CallScreen should show controls in landscape view on click the users li
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Chat thread"
-            id="call.chat_thread"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Chat thread
+          </Text>
         </Pressable>
         <Pressable
+          onPress={[Function]}
           style={
             Object {
               "alignItems": "center",
@@ -1971,9 +1967,10 @@ exports[`CallScreen should show controls in landscape view on click the users li
               "flexDirection": "column",
             }
           }
+          testID="toggle-speakerphone"
         >
           <CompassIcon
-            name="settings-outline"
+            name="volume-high"
             size={24}
             style={
               Object {
@@ -1988,15 +1985,15 @@ exports[`CallScreen should show controls in landscape view on click the users li
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Settings"
-            id="call.settings"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Speaker
+          </Text>
         </Pressable>
         <Pressable
           onPress={[Function]}
@@ -2024,15 +2021,15 @@ exports[`CallScreen should show controls in landscape view on click the users li
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="More"
-            id="call.more"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            More
+          </Text>
         </Pressable>
         <Pressable
           onPress={[Function]}
@@ -2061,15 +2058,15 @@ exports[`CallScreen should show controls in landscape view on click the users li
               }
             }
           />
-          <InjectIntl(FormattedText)
-            defaultMessage="Unmute"
-            id="call.unmute"
+          <Text
             style={
               Object {
                 "color": "#ffffff",
               }
             }
-          />
+          >
+            Unmute
+          </Text>
         </Pressable>
       </View>
     </View>

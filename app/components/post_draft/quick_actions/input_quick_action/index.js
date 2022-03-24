@@ -38,7 +38,7 @@ export default class InputQuickAction extends PureComponent {
         }
 
         onTextChange(newValue);
-    }
+    };
 
     renderInput = () => {
         const {disabled, inputType, theme} = this.props;
@@ -54,7 +54,7 @@ export default class InputQuickAction extends PureComponent {
                 size={ICON_SIZE}
             />
         );
-    }
+    };
 
     render() {
         const {testID, disabled, theme} = this.props;

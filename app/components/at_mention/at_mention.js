@@ -137,7 +137,7 @@ export default class AtMention extends React.PureComponent {
         this.setState({
             user,
         });
-    }
+    };
 
     render() {
         const {isSearchResult, mentionName, mentionStyle, onPostPress, teammateNameDisplay, textStyle, mentionKeys, theme} = this.props;

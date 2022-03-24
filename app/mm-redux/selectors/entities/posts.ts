@@ -74,10 +74,11 @@ export function getPostIdsInCurrentChannel(state: GlobalState): Array<$ID<Post>>
 // getPostsInCurrentChannel returns the posts loaded at the bottom of the channel. It does not include older posts
 // such as those loaded by viewing a thread or a permalink.
 
-export const getPostsInCurrentChannel: (a: GlobalState) => Array<PostWithFormatData> | undefined | null = (() => {
+export const getPostsInCurrentChannel: (a: GlobalState) => PostWithFormatData[] | undefined | null = (() => {
     const getPostsInChannel = makeGetPostsInChannel();
     return (state: GlobalState) => getPostsInChannel(state, state.entities.channels.currentChannelId, -1);
 })();
+
 export function makeGetPostIdsForThread(): (b: GlobalState, a: $ID<Post>) => Array<$ID<Post>> {
     return createIdsSelector(
         getAllPosts,
@@ -97,6 +98,25 @@ export function makeGetPostIdsForThread(): (b: GlobalState, a: $ID<Post>) => Arr
             }
 
             return thread.map((post) => post.id);
+        },
+    );
+}
+
+export function makeGetPostIdsForThreadWithLimit(): (b: GlobalState, a: $ID<Post>, c: string, d: number, e: number) => Array<$ID<Post>> {
+    const getPostIdsForThread = makeGetPostIdsForThread();
+    return createIdsSelector(
+        (state: GlobalState, rootId: string) => getPostIdsForThread(state, rootId),
+        (state: GlobalState, rootId: string, focusedPostId: string) => focusedPostId,
+        (state: GlobalState, rootId: string, focusedPostId: string, postsBeforeCount: number) => postsBeforeCount,
+        (state: GlobalState, rootId: string, focusedPostId: string, postsBeforeCount: number, postsAfterCount: number) => postsAfterCount,
+        (postIds: Array<$ID<Post>>, focusedPostId: string, postsBeforeCount = Posts.POST_CHUNK_SIZE / 2, postsAfterCount = Posts.POST_CHUNK_SIZE / 2) => {
+            const index = postIds.indexOf(focusedPostId);
+            if (index > -1) {
+                const minPostIndex = Math.max(index - postsAfterCount, 0);
+                const maxPostIndex = Math.min(index + postsBeforeCount + 1, postIds.length);
+                return postIds.slice(minPostIndex, maxPostIndex);
+            }
+            return postIds;
         },
     );
 }
@@ -242,7 +262,7 @@ function formatPostInChannel(post: Post, previousPost: Post | undefined | null, 
 // makeGetPostsInChannel creates a selector that returns up to the given number of posts loaded at the bottom of the
 // given channel. It does not include older posts such as those loaded by viewing a thread or a permalink.
 
-export function makeGetPostsInChannel(): (c: GlobalState, b: $ID<Channel>, a: number) => Array<PostWithFormatData> | undefined | null {
+export function makeGetPostsInChannel(): (c: GlobalState, b: $ID<Channel>, a: number) => PostWithFormatData[] | undefined | null {
     return createSelector(
         getAllPosts,
         getPostsInThread,
@@ -278,7 +298,7 @@ export function makeGetPostsInChannel(): (c: GlobalState, b: $ID<Channel>, a: nu
     );
 }
 
-export function makeGetPostsAroundPost(): (c: GlobalState, b: $ID<Post>, a: $ID<Channel>) => Array<PostWithFormatData> | undefined | null {
+export function makeGetPostsAroundPost(): (c: GlobalState, b: $ID<Post>, a: $ID<Channel>) => PostWithFormatData[] | undefined | null {
     const getPostIdsAroundPost = makeGetPostIdsAroundPost();
     const options = {
         postsBeforeCount: -1, // Where this is used in the web app, view state is used to determine how far back to display
@@ -325,7 +345,7 @@ export function makeGetPostsAroundPost(): (c: GlobalState, b: $ID<Post>, a: $ID<
 
 export function makeGetPostsForThread(): (b: GlobalState, a: {
   rootId: $ID<Post>;
-}) => Array<Post> {
+}) => Post[] {
     return createSelector(getAllPosts, (state: GlobalState, {
         rootId,
     }: {rootId: string}) => state.entities.posts.postsInThread[rootId] || [], (state: GlobalState, {
@@ -371,7 +391,7 @@ export function makeGetCommentCountForPost(): (b: GlobalState, a: Post) => numbe
     );
 }
 
-export const getSearchResults: (a: GlobalState) => Array<Post> = createSelector(
+export const getSearchResults: (a: GlobalState) => Post[] = createSelector(
     getAllPosts,
     (state: GlobalState) => state.entities.search.results,
     (posts, postIds) => {
@@ -388,7 +408,7 @@ export const getSearchResults: (a: GlobalState) => Array<Post> = createSelector(
 // with Elasticsearch enabled to search posts. Otherwise, null will be returned.
 
 export function getSearchMatches(state: GlobalState): {
-  [x: string]: Array<string>;
+  [x: string]: string[];
 } {
     return state.entities.search.matches;
 }
@@ -407,7 +427,7 @@ export function makeGetMessageInHistoryItem(type: 'post'|'comment'): (a: GlobalS
     );
 }
 
-export function makeGetPostsForIds(): (b: GlobalState, a: Array<$ID<Post>>) => Array<Post> {
+export function makeGetPostsForIds(): (b: GlobalState, a: Array<$ID<Post>>) => Post[] {
     return createIdsSelector(
         getAllPosts,
         (state: GlobalState, postIds: Array<$ID<Post>>) => postIds,

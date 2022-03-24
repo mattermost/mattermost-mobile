@@ -62,7 +62,7 @@ export default class SavedPosts extends PureComponent {
             isLoading: false,
             didFail: Boolean(error),
         });
-    }
+    };
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
@@ -78,7 +78,7 @@ export default class SavedPosts extends PureComponent {
 
     setListRef = (ref) => {
         this.listRef = ref;
-    }
+    };
 
     keyExtractor = (item) => item;
 

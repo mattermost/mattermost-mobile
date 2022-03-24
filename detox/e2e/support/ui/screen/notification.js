@@ -7,7 +7,7 @@ class NotificationScreen {
         inAppNotificationIcon: 'in_app_notification.icon',
         inAppNotificationTitle: 'in_app_notification.title',
         inAppNotificationMessage: 'in_app_notification.message',
-    }
+    };
 
     inAppNotificationScreen = element(by.id(this.testID.inAppNotificationScreen));
     inAppNotificationIcon = element(by.id(this.testID.inAppNotificationIcon));
@@ -18,7 +18,7 @@ class NotificationScreen {
         await expect(this.inAppNotificationScreen).toBeVisible();
 
         return this.inAppNotificationScreen;
-    }
+    };
 }
 
 const notificationScreen = new NotificationScreen();

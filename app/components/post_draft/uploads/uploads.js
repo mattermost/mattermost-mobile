@@ -118,7 +118,7 @@ export default class Uploads extends PureComponent {
         const {files} = this.props;
         const index = files.indexOf(file);
         openGalleryAtIndex(index, files.filter((f) => !f.failed && !f.loading));
-    }
+    };
 
     clearErrorsFromState = () => {
         this.setState({
@@ -126,7 +126,7 @@ export default class Uploads extends PureComponent {
             showFileMaxWarning: false,
             fileSizeWarning: null,
         });
-    }
+    };
 
     handleAndroidBack = () => {
         const {channelId, files, handleRemoveLastFile, rootId} = this.props;
@@ -255,7 +255,7 @@ export default class Uploads extends PureComponent {
 
         this.makeErrorVisible(true);
         this.hideErrorTimer = setTimeout(this.hideError, 5000);
-    }
+    };
 
     hideError = () => this.makeErrorVisible(false);
 
@@ -270,7 +270,7 @@ export default class Uploads extends PureComponent {
                 this.clearErrorsFromState();
             }
         }
-    }
+    };
 
     showOrHideContainer = () => {
         const {
@@ -286,7 +286,7 @@ export default class Uploads extends PureComponent {
             this.containerRef.current.transition(hideFiles, showFiles, 350, 'ease-in');
             this.shown = true;
         }
-    }
+    };
 
     showPasteFilesErrorDialog = () => {
         const {formatMessage} = this.context.intl;

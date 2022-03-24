@@ -74,11 +74,11 @@ export default class PinnedPosts extends PureComponent {
             isLoading: false,
             didFail: Boolean(error),
         });
-    }
+    };
 
     setListRef = (ref) => {
         this.listRef = ref;
-    }
+    };
 
     keyExtractor = (item) => item;
 

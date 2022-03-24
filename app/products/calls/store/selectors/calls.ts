@@ -23,3 +23,7 @@ export function isCallsEnabled(state: GlobalState) {
 export function getScreenShareURL(state: GlobalState) {
     return state.entities.calls.screenShareURL;
 }
+
+export function isSpeakerphoneOn(state: GlobalState) {
+    return state.entities.calls.speakerphoneOn;
+}

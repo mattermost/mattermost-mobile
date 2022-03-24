@@ -90,7 +90,7 @@ export default class SelectTeam extends PureComponent {
                 page: state.page + 1,
             }));
         });
-    }
+    };
 
     memoizedTeams = memoize((teams) => {
         if (teams.length) {
@@ -100,7 +100,7 @@ export default class SelectTeam extends PureComponent {
             id: t('mobile.select_team.no_teams'),
             defaultMessage: 'There are no available teams for you to join.',
         }];
-    })
+    });
 
     close = () => {
         dismissModal();
@@ -145,7 +145,7 @@ export default class SelectTeam extends PureComponent {
         this.setState({page: 0, refreshing: true}, () => {
             this.getTeams();
         });
-    }
+    };
 
     renderItem = ({item}) => {
         const {currentUrl, theme} = this.props;

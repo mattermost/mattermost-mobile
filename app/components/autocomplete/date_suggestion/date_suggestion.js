@@ -77,7 +77,7 @@ export default class DateSuggestion extends PureComponent {
 
     setCalendarActive = (active) => {
         this.setState({active});
-    }
+    };
 
     completeMention = (day) => {
         const mention = day.dateString;

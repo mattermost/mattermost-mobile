@@ -11,7 +11,7 @@ import {Dictionary} from '@mm-redux/types/utilities';
 
 import {Preferences} from '../../constants';
 
-function results(state: Array<string> = [], action: GenericAction) {
+function results(state: string[] = [], action: GenericAction) {
     switch (action.type) {
     case SearchTypes.RECEIVED_SEARCH_POSTS: {
         if (action.isGettingMore) {
@@ -37,7 +37,7 @@ function results(state: Array<string> = [], action: GenericAction) {
     }
 }
 
-function matches(state: Dictionary<Array<string>> = {}, action: GenericAction) {
+function matches(state: Dictionary<string[]> = {}, action: GenericAction) {
     switch (action.type) {
     case SearchTypes.RECEIVED_SEARCH_POSTS:
         if (action.isGettingMore) {
@@ -61,7 +61,7 @@ function matches(state: Dictionary<Array<string>> = {}, action: GenericAction) {
     }
 }
 
-function flagged(state: Array<string> = [], action: GenericAction) {
+function flagged(state: string[] = [], action: GenericAction) {
     switch (action.type) {
     case SearchTypes.RECEIVED_SEARCH_FLAGGED_POSTS: {
         return action.data.order;
@@ -122,7 +122,7 @@ function flagged(state: Array<string> = [], action: GenericAction) {
     }
 }
 
-function removePinnedPost(state: Dictionary<Array<string>>, post: Post) {
+function removePinnedPost(state: Dictionary<string[]>, post: Post) {
     if (post && state[post.channel_id]) {
         const postId = post.id;
         const channelId = post.channel_id;
@@ -141,7 +141,7 @@ function removePinnedPost(state: Dictionary<Array<string>>, post: Post) {
     return state;
 }
 
-function pinned(state: Dictionary<Array<string>> = {}, action: GenericAction) {
+function pinned(state: Dictionary<string[]> = {}, action: GenericAction) {
     switch (action.type) {
     case SearchTypes.RECEIVED_SEARCH_PINNED_POSTS: {
         const {channelId, pinned: posts} = action.data;
@@ -192,7 +192,7 @@ function pinned(state: Dictionary<Array<string>> = {}, action: GenericAction) {
     }
 }
 
-function recent(state: Dictionary<Array<Search>> = {}, action: GenericAction) {
+function recent(state: Dictionary<Search[]> = {}, action: GenericAction) {
     const {data, type} = action;
 
     switch (type) {

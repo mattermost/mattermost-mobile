@@ -64,7 +64,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const NotificationSettingsAutoResponder = ({currentUser, currentUserStatus, intl, onBack, theme} : NotificationSettingsAutoResponderProps) => {
+const NotificationSettingsAutoResponder = ({currentUser, currentUserStatus, intl, onBack, theme}: NotificationSettingsAutoResponderProps) => {
     const autoresponderRef = useRef<TextInputWithLocalizedPlaceholder>(null);
     const [notifyProps, setNotifyProps] = useState<UserNotifyProps>(getNotificationProps(currentUser));
     const style = getStyleSheet(theme);

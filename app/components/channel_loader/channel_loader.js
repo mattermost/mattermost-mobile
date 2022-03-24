@@ -92,7 +92,7 @@ export default class ChannelLoader extends PureComponent {
             delay: 500,
             useNativeDriver: false,
         }).start();
-    }
+    };
 
     buildSections({key, style, bg, color}) {
         return (
@@ -128,7 +128,7 @@ export default class ChannelLoader extends PureComponent {
         const {height} = e.nativeEvent.layout;
         const maxRows = calculateMaxRows(height);
         this.setState({maxRows});
-    }
+    };
 
     render() {
         const {

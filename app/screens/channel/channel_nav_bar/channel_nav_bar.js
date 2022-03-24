@@ -35,14 +35,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             justifyContent: 'flex-start',
             width: '100%',
-            ...Platform.select({
-                android: {
-                    elevation: 10,
-                },
-                ios: {
-                    zIndex: 10,
-                },
-            }),
+            zIndex: 10,
         },
         wrapper: {
             alignItems: 'center',

@@ -33,7 +33,7 @@ const channelTypeOrder = {
  *  favoriteChannels: [...]
  * }
  */
-export function buildDisplayableChannelListWithUnreadSection(usersState: UsersState, myChannels: Array<Channel>, myMembers: RelationOneToOne<Channel, ChannelMembership>, config: any, myPreferences: {
+export function buildDisplayableChannelListWithUnreadSection(usersState: UsersState, myChannels: Channel[], myMembers: RelationOneToOne<Channel, ChannelMembership>, config: any, myPreferences: {
     [x: string]: PreferenceType;
 }, teammateNameDisplay: string, lastPosts: RelationOneToOne<Channel, Post>, collapsedThreadsEnabled: boolean) {
     const {
@@ -53,8 +53,8 @@ export function buildDisplayableChannelListWithUnreadSection(usersState: UsersSt
     return {
         unreadChannels,
         favoriteChannels,
-        publicChannels: (notFavoriteChannels.filter(isOpenChannel) as Array<Channel>),
-        privateChannels: (notFavoriteChannels.filter(isPrivateChannel) as Array<Channel>),
+        publicChannels: (notFavoriteChannels.filter(isOpenChannel) as Channel[]),
+        privateChannels: (notFavoriteChannels.filter(isPrivateChannel) as Channel[]),
         directAndGroupChannels,
     };
 }
@@ -317,7 +317,7 @@ export function showDeleteOption(state: GlobalState, channel: Channel): boolean 
     return true;
 }
 
-export function getChannelsIdForTeam(state: GlobalState, teamId: string): Array<string> {
+export function getChannelsIdForTeam(state: GlobalState, teamId: string): string[] {
     const {channels} = state.entities.channels;
 
     return Object.keys(channels).map((key) => channels[key]).reduce((res, channel: Channel) => {
@@ -328,7 +328,7 @@ export function getChannelsIdForTeam(state: GlobalState, teamId: string): Array<
     }, [] as string[]);
 }
 
-export function getGroupDisplayNameFromUserIds(userIds: Array<string>, profiles: IDMappedObjects<UserProfile>, currentUserId: string, teammateNameDisplay: string): string {
+export function getGroupDisplayNameFromUserIds(userIds: string[], profiles: IDMappedObjects<UserProfile>, currentUserId: string, teammateNameDisplay: string): string {
     const names: string[] = [];
     userIds.forEach((id) => {
         if (id !== currentUserId) {
@@ -384,9 +384,9 @@ function createFakeChannelCurried(userId: string): (a: string) => Channel {
     return (otherUserId) => createFakeChannel(userId, otherUserId);
 }
 
-function createMissingDirectChannels(currentUserId: string, allChannels: Array<Channel>, myPreferences: {
+function createMissingDirectChannels(currentUserId: string, allChannels: Channel[], myPreferences: {
     [x: string]: PreferenceType;
-}): Array<Channel> {
+}): Channel[] {
     const directChannelsDisplayPreferences = getPreferencesByCategory(myPreferences, Preferences.CATEGORY_DIRECT_CHANNEL_SHOW);
 
     return Array.
@@ -568,7 +568,7 @@ export function areChannelMentionsIgnored(channelMemberNotifyProps: ChannelNotif
     return ignoreChannelMentions !== Users.IGNORE_CHANNEL_MENTIONS_OFF;
 }
 
-function buildChannels(usersState: UsersState, channels: Array<Channel>, missingDirectChannels: Array<Channel>, teammateNameDisplay: string, locale: string): Array<Channel> {
+function buildChannels(usersState: UsersState, channels: Channel[], missingDirectChannels: Channel[], teammateNameDisplay: string, locale: string): Channel[] {
     return channels.
         concat(missingDirectChannels).
         map((c) => completeDirectChannelInfo(usersState, teammateNameDisplay, c)).
@@ -576,32 +576,32 @@ function buildChannels(usersState: UsersState, channels: Array<Channel>, missing
         sort(sortChannelsByTypeAndDisplayName.bind(null, locale));
 }
 
-function buildFavoriteChannels(channels: Array<Channel>, myPreferences: {
+function buildFavoriteChannels(channels: Channel[], myPreferences: {
     [x: string]: PreferenceType;
-}, locale: string): Array<Channel> {
+}, locale: string): Channel[] {
     return channels.filter((channel) => isFavoriteChannel(myPreferences, channel.id)).sort(sortChannelsByDisplayName.bind(null, locale));
 }
 
-function buildNotFavoriteChannels(channels: Array<Channel>, myPreferences: {
+function buildNotFavoriteChannels(channels: Channel[], myPreferences: {
     [x: string]: PreferenceType;
-}): Array<Channel> {
+}): Channel[] {
     return channels.filter((channel) => !isFavoriteChannel(myPreferences, channel.id));
 }
 
-function buildDirectAndGroupChannels(channels: Array<Channel>, memberships: RelationOneToOne<Channel, ChannelMembership>, config: any, myPreferences: {
+function buildDirectAndGroupChannels(channels: Channel[], memberships: RelationOneToOne<Channel, ChannelMembership>, config: any, myPreferences: {
     [x: string]: PreferenceType;
-}, currentUserId: string, users: IDMappedObjects<UserProfile>, lastPosts: RelationOneToOne<Channel, Post>, collapsedThreadsEnabled: boolean): Array<Channel> {
+}, currentUserId: string, users: IDMappedObjects<UserProfile>, lastPosts: RelationOneToOne<Channel, Post>, collapsedThreadsEnabled: boolean): Channel[] {
     return channels.filter((channel) => {
         return isGroupOrDirectChannelVisible(channel, memberships, config, myPreferences, currentUserId, users, lastPosts, collapsedThreadsEnabled);
     });
 }
 
-function buildChannelsWithMentions(channels: Array<Channel>, members: RelationOneToOne<Channel, ChannelMembership>, locale: string) {
+function buildChannelsWithMentions(channels: Channel[], members: RelationOneToOne<Channel, ChannelMembership>, locale: string) {
     return channels.filter(channelHasMentions.bind(null, members)).
         sort(sortChannelsByDisplayName.bind(null, locale));
 }
 
-function buildUnreadChannels(channels: Array<Channel>, members: RelationOneToOne<Channel, ChannelMembership>, locale: string, collapsedThreadsEnabled: boolean) {
+function buildUnreadChannels(channels: Channel[], members: RelationOneToOne<Channel, ChannelMembership>, locale: string, collapsedThreadsEnabled: boolean) {
     return channels.filter(channelHasUnreadMessages.bind(null, collapsedThreadsEnabled, members)).
         sort(sortChannelsByDisplayName.bind(null, locale));
 }
@@ -615,7 +615,7 @@ function getUserLocale(userId: string, profiles: IDMappedObjects<UserProfile>) {
     return locale;
 }
 
-export function filterChannelsMatchingTerm(channels: Array<Channel>, term: string): Array<Channel> {
+export function filterChannelsMatchingTerm(channels: Channel[], term: string): Channel[] {
     const lowercasedTerm = term.toLowerCase();
 
     return channels.filter((channel: Channel): boolean => {

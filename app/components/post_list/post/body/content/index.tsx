@@ -29,7 +29,7 @@ const contentType: Record<string, string> = {
 };
 
 const Content = ({isReplyPost, post, theme}: ContentProps) => {
-    let type: string = post.metadata?.embeds[0]?.type;
+    let type: string = post.metadata?.embeds?.[0]?.type;
     if (!type && post.props?.app_bindings) {
         type = contentType.app_bindings;
     }
