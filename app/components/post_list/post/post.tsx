@@ -199,12 +199,11 @@ const Post = ({
     } else {
         postAvatar = (
             <View style={[styles.profilePictureContainer, pendingPostStyle]}>
-                {isAutoResponder ? (
+                {(isAutoResponder || isSystemPost) ? (
                     <SystemAvatar theme={theme}/>
                 ) : (
                     <Avatar
                         isAutoReponse={isAutoResponder}
-                        isSystemPost={isSystemPost}
                         post={post}
                     />
                 )}
