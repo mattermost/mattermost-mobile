@@ -319,7 +319,6 @@ const Server = ({
             <AnimatedSafeArea
                 key={'server_content'}
                 style={[styles.flex, transform]}
-                testID='select_server.screen'
             >
                 <KeyboardAwareScrollView
                     bounces={false}

@@ -99,7 +99,7 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
             <SafeAreaView
                 key={'server_content'}
                 style={styles.flex}
-                testID='select_server.screen'
+                testID='edit_server.screen'
             >
                 <KeyboardAwareScrollView
                     bounces={false}
