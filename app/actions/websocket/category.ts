@@ -92,7 +92,7 @@ export async function handleCategoryOrderUpdatedEvent(serverUrl: string, msg: We
         // Update category order
         if (msg.data.order?.length) {
             const order = msg.data.order;
-            const categories = await queryCategoriesById(database, order);
+            const categories = await queryCategoriesById(database, order).fetch();
             categories.forEach((c) => {
                 const findOrder = (id: string) => id === c.id;
                 c.prepareUpdate(() => {

@@ -4,6 +4,9 @@
 import {Query, Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
+import type TeamModel from './team';
+import type UserModel from './user';
+
 /**
  * The TeamMembership model represents the 'association table' where many teams have users and many users are in
  * teams (relationship type N:N)

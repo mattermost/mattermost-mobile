@@ -5,7 +5,7 @@ import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {queryCurrentUserId} from '@queries/servers/system';
+import {getCurrentUserId} from '@queries/servers/system';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -53,7 +53,7 @@ export const saveFavoriteChannel = async (serverUrl: string, channelId: string, 
 
     try {
         // Todo: @shaz I think you'll need to add the category handler here so that the channel is added/removed from the favorites category
-        const userId = await queryCurrentUserId(operator.database);
+        const userId = await getCurrentUserId(operator.database);
         const favPref: PreferenceType = {
             category: CATEGORY_FAVORITE_CHANNEL,
             name: channelId,
@@ -73,7 +73,7 @@ export const savePostPreference = async (serverUrl: string, postId: string) => {
     }
 
     try {
-        const userId = await queryCurrentUserId(operator.database);
+        const userId = await getCurrentUserId(operator.database);
         const pref: PreferenceType = {
             user_id: userId,
             category: CATEGORY_SAVED_POST,
@@ -100,7 +100,7 @@ export const savePreference = async (serverUrl: string, preferences: PreferenceT
     }
 
     try {
-        const userId = await queryCurrentUserId(operator.database);
+        const userId = await getCurrentUserId(operator.database);
         client.savePreferences(userId, preferences);
         await operator.handlePreferences({
             preferences,
@@ -126,8 +126,8 @@ export const deleteSavedPost = async (serverUrl: string, postId: string) => {
         return {error};
     }
     try {
-        const userId = await queryCurrentUserId(operator.database);
-        const records = await queryPreferencesByCategoryAndName(operator.database, CATEGORY_SAVED_POST, postId);
+        const userId = await getCurrentUserId(operator.database);
+        const records = await queryPreferencesByCategoryAndName(operator.database, CATEGORY_SAVED_POST, postId).fetch();
         const postPreferenceRecord = records.find((r) => postId === r.name);
         const pref = {
             user_id: userId,

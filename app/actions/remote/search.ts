@@ -6,7 +6,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {prepareMissingChannelsForAllTeams} from '@queries/servers/channel';
-import {queryCurrentUser} from '@queries/servers/user';
+import {getCurrentUser} from '@queries/servers/user';
 
 import {fetchPostAuthors, fetchMissingChannelsFromPosts} from './post';
 import {forceLogoutIfNecessary} from './session';
@@ -39,7 +39,7 @@ export async function fetchRecentMentions(serverUrl: string): Promise<PostSearch
     let order: string[] = [];
 
     try {
-        const currentUser = await queryCurrentUser(operator.database);
+        const currentUser = await getCurrentUser(operator.database);
         if (!currentUser) {
             return {
                 posts: [],

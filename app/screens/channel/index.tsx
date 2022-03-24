@@ -1,62 +1,32 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {Database, General} from '@constants';
+import {General} from '@constants';
+import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
+import {observeCurrentChannelId, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
+import {observeUser} from '@queries/servers/user';
 import {getUserIdFromChannelName} from '@utils/user';
 
 import Channel from './channel';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type ChannelModel from '@typings/database/models/servers/channel';
-import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
-import type SystemModel from '@typings/database/models/servers/system';
-import type UserModel from '@typings/database/models/servers/user';
-
-const {MM_TABLES, SYSTEM_IDENTIFIERS} = Database;
-const {SERVER: {CHANNEL, CHANNEL_INFO, SYSTEM, USER}} = MM_TABLES;
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const currentUserId = database.collections.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap(({value}: {value: string}) => of$(value)),
-    );
-
-    const channelId = database.collections.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID).pipe(
-        switchMap(({value}: {value: string}) => of$(value)),
-    );
-    const teamId = database.collections.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).pipe(
-        switchMap(({value}: {value: string}) => of$(value)),
-    );
+    const currentUserId = observeCurrentUserId(database);
+    const channelId = observeCurrentChannelId(database);
+    const teamId = observeCurrentTeamId(database);
 
     const channel = channelId.pipe(
-        switchMap((id) => database.get<ChannelModel>(CHANNEL).query(Q.where('id', id)).observe().pipe(
-            // eslint-disable-next-line max-nested-callbacks
-            switchMap((channels) => {
-                if (channels.length) {
-                    return channels[0].observe();
-                }
-
-                return of$(null);
-            }),
-        )),
+        switchMap((id) => observeChannel(database, id)),
     );
 
     const channelInfo = channelId.pipe(
-        switchMap((id) => database.get<ChannelInfoModel>(CHANNEL_INFO).query(Q.where('id', id)).observe().pipe(
-            // eslint-disable-next-line max-nested-callbacks
-            switchMap((infos) => {
-                if (infos.length) {
-                    return infos[0].observe();
-                }
-
-                return of$(null);
-            }),
-        )),
+        switchMap((id) => observeChannelInfo(database, id)),
     );
 
     const isOwnDirectMessage = combineLatest([currentUserId, channel]).pipe(
@@ -74,9 +44,9 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const name = combineLatest([currentUserId, channel]).pipe(switchMap(([userId, c]) => {
         if (c?.type === General.DM_CHANNEL) {
             const teammateId = getUserIdFromChannelName(userId, c.name);
-            return database.get<UserModel>(USER).findAndObserve(teammateId).pipe(
+            return observeUser(database, teammateId).pipe(
                 // eslint-disable-next-line max-nested-callbacks
-                switchMap((u) => of$(`@${u.username}`)),
+                switchMap((u) => (u ? of$(`@${u.username}`) : of$('Someone'))),
             );
         } else if (c?.type === General.GM_CHANNEL) {
             return of$(`@${c.name}`);
