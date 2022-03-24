@@ -2,30 +2,41 @@
 // See LICENSE.txt for license information.
 
 import {Dictionary} from '@mm-redux/types/utilities';
+import {displayUsername} from '@mm-redux/utils/user_utils';
 import {CallParticipant} from '@mmproducts/calls/store/types/calls';
 
-export function sortParticipants(participants?: Dictionary<CallParticipant>): CallParticipant[] {
+export function sortParticipants(teammateNameDisplay: string, participants?: Dictionary<CallParticipant>): CallParticipant[] {
     if (!participants) {
         return [];
     }
 
     const users = Object.values(participants);
 
-    return users.sort((a, b) => {
-        if (!a.muted && b.muted) {
-            return -1;
-        } else if (!b.muted && a.muted) {
-            return 1;
-        }
-
-        if (a.raisedHand && !b.raisedHand) {
-            return -1;
-        } else if (b.raisedHand && !a.raisedHand) {
-            return 1;
-        } else if (a.raisedHand && b.raisedHand) {
-            return a.raisedHand - b.raisedHand;
-        }
-
-        return 0;
-    });
+    return users.sort(sortByName(teammateNameDisplay)).sort(sortByState);
 }
+
+const sortByName = (teammateNameDisplay: string) => {
+    return (a: CallParticipant, b: CallParticipant) => {
+        const nameA = displayUsername(a.profile, teammateNameDisplay);
+        const nameB = displayUsername(b.profile, teammateNameDisplay);
+        return nameA.localeCompare(nameB);
+    };
+};
+
+const sortByState = (a: CallParticipant, b: CallParticipant) => {
+    if (!a.muted && b.muted) {
+        return -1;
+    } else if (!b.muted && a.muted) {
+        return 1;
+    }
+
+    if (a.raisedHand && !b.raisedHand) {
+        return -1;
+    } else if (b.raisedHand && !a.raisedHand) {
+        return 1;
+    } else if (a.raisedHand && b.raisedHand) {
+        return a.raisedHand - b.raisedHand;
+    }
+
+    return 0;
+};
