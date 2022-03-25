@@ -17,7 +17,7 @@ const {TEAM, THREAD, THREADS_IN_TEAM} = MM_TABLES.SERVER;
  * gaps in between for an efficient user reading experience for threads.
  */
 export default class ThreadInTeamModel extends Model {
-    /** table (name) : PostsInThread */
+    /** table (name) : ThreadsInTeam */
     static table = THREADS_IN_TEAM;
 
     /** associations : Describes every relationship to this table. */
