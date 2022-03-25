@@ -4,7 +4,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {catchError, map, switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
@@ -27,10 +27,15 @@ const enhanced = withObservables([], ({channel, database}: {channel: ChannelMode
         const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observe();
         const me = observeCurrentUser(database);
 
-        const profile = channel.creator.observe();
+        const profile = channel.observe().pipe(
+            switchMap(() => channel.creator.observe()),
+            catchError(() => of$(undefined)),
+        );
+
         const teammateNameDisplay = combineLatest([preferences, config, license]).pipe(
             map(([prefs, cfg, lcs]) => getTeammateNameDisplaySetting(prefs, cfg, lcs)),
         );
+
         creator = combineLatest([profile, teammateNameDisplay, me]).pipe(
             map(([user, displaySetting, currentUser]) => (user ? displayUsername(user as UserModel, currentUser?.locale, displaySetting, true) : '')),
         );
