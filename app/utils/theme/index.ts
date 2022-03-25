@@ -86,7 +86,7 @@ export function setNavigatorStyles(componentId: string, theme: Theme, additional
                 color: theme.sidebarHeaderTextColor,
             },
             background: {
-                color: theme.sidebarHeaderBg,
+                color: theme.sidebarBg,
             },
             leftButtonColor: theme.sidebarHeaderTextColor,
             rightButtonColor: theme.sidebarHeaderTextColor,

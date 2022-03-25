@@ -14,7 +14,7 @@ import {withServerDatabase} from '@database/components';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 
 const withGestures = (Screen: React.ComponentType, styles: StyleProp<ViewStyle>) => {
-    return function gestureHoc(props: any) {
+    return function gestureHoc(props: never) {
         if (Platform.OS === 'android') {
             return (
                 <GestureHandlerRootView style={[{flex: 1}, styles]}>
@@ -28,7 +28,7 @@ const withGestures = (Screen: React.ComponentType, styles: StyleProp<ViewStyle>)
 };
 
 const withIntl = (Screen: React.ComponentType) => {
-    return function IntlEnabledComponent(props: any) {
+    return function IntlEnabledComponent(props: never) {
         return (
             <IntlProvider
                 locale={DEFAULT_LOCALE}
@@ -41,7 +41,7 @@ const withIntl = (Screen: React.ComponentType) => {
 };
 
 const withSafeAreaInsets = (Screen: React.ComponentType) => {
-    return function SafeAreaInsets(props: any) {
+    return function SafeAreaInsets(props: never) {
         return (
             <SafeAreaProvider>
                 <Screen {...props}/>
@@ -145,13 +145,13 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     }
 
     if (screen) {
-        Navigation.registerComponent(screenName, () => withGestures(withSafeAreaInsets(withManagedConfig(screen)), extraStyles));
+        Navigation.registerComponent(screenName, () => withGestures(withSafeAreaInsets(withManagedConfig<ManagedConfig>(screen)), extraStyles));
     }
 });
 
 export function registerScreens() {
     const homeScreen = require('@screens/home').default;
     const serverScreen = require('@screens/server').default;
-    Navigation.registerComponent(Screens.SERVER, () => withGestures(withIntl(withManagedConfig(serverScreen)), undefined));
-    Navigation.registerComponent(Screens.HOME, () => withGestures(withSafeAreaInsets(withServerDatabase(withManagedConfig(homeScreen))), undefined));
+    Navigation.registerComponent(Screens.SERVER, () => withGestures(withIntl(withManagedConfig<ManagedConfig>(serverScreen)), undefined));
+    Navigation.registerComponent(Screens.HOME, () => withGestures(withSafeAreaInsets(withServerDatabase(withManagedConfig<ManagedConfig>(homeScreen))), undefined));
 }

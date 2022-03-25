@@ -187,7 +187,7 @@ export function resetToHome(passProps: LaunchProps = {launchType: LaunchType.Nor
                         visible: false,
                         height: 0,
                         background: {
-                            color: theme.sidebarHeaderBg,
+                            color: theme.sidebarBg,
                         },
                         backButton: {
                             visible: false,
@@ -234,7 +234,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
                         title: '',
                     },
                     background: {
-                        color: theme.sidebarHeaderBg,
+                        color: theme.sidebarBg,
                     },
                     visible: false,
                     height: 0,
@@ -276,7 +276,7 @@ export function resetToTeams(name: string, title: string, passProps = {}, option
                 title: '',
             },
             background: {
-                color: theme.sidebarHeaderBg,
+                color: theme.sidebarBg,
             },
         },
     };
@@ -330,7 +330,7 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
                 testID: 'screen.back.button',
             },
             background: {
-                color: theme.sidebarHeaderBg,
+                color: theme.sidebarBg,
             },
             title: {
                 color: theme.sidebarHeaderTextColor,
@@ -430,7 +430,7 @@ export function showModal(name: string, title: string, passProps = {}, options =
                 title: '',
             },
             background: {
-                color: theme.sidebarHeaderBg,
+                color: theme.sidebarBg,
             },
             title: {
                 color: theme.sidebarHeaderTextColor,

@@ -23,6 +23,8 @@ exports[`components/channel_list/categories/body/channel/item should match snaps
   <RNGestureHandlerButton
     collapsable={false}
     exclusive={true}
+    handlerTag={1}
+    handlerType="NativeViewGestureHandler"
     onGestureEvent={[Function]}
     onGestureHandlerEvent={[Function]}
     onGestureHandlerStateChange={[Function]}

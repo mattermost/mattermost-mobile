@@ -1,5 +1,6 @@
 package com.mattermost.helpers;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -16,10 +17,8 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -31,8 +30,6 @@ import androidx.core.graphics.drawable.IconCompat;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.mattermost.rnbeta.*;
-import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
-import com.wix.reactnativenotifications.core.notification.PushNotificationProps;
 
 import java.io.IOException;
 import java.util.Date;
@@ -120,6 +117,7 @@ public class CustomPushNotificationHelper {
         replyIntent.putExtra(NOTIFICATION_ID, notificationId);
         replyIntent.putExtra(NOTIFICATION, bundle);
 
+        @SuppressLint("UnspecifiedImmutableFlag")
         PendingIntent replyPendingIntent = PendingIntent.getBroadcast(
                 context,
                 notificationId,
@@ -148,16 +146,12 @@ public class CustomPushNotificationHelper {
         String channelId = bundle.getString("channel_id");
         String postId = bundle.getString("post_id");
         int notificationId = postId != null ? postId.hashCode() : MESSAGE_NOTIFICATION_ID;
-        NotificationPreferences notificationPreferences = NotificationPreferences.getInstance(context);
 
         addNotificationExtras(notification, bundle);
         setNotificationIcons(context, notification, bundle);
         setNotificationMessagingStyle(context, notification, bundle);
         setNotificationGroup(notification, channelId, createSummary);
         setNotificationBadgeType(notification);
-        setNotificationSound(notification, notificationPreferences);
-        setNotificationVibrate(notification, notificationPreferences);
-        setNotificationBlink(notification, notificationPreferences);
 
         setNotificationChannel(notification, bundle);
         setNotificationDeleteIntent(context, notification, bundle, notificationId);
@@ -337,13 +331,6 @@ public class CustomPushNotificationHelper {
         }
     }
 
-    private static void setNotificationBlink(NotificationCompat.Builder notification, NotificationPreferences notificationPreferences) {
-        boolean blink = notificationPreferences.getShouldBlink();
-        if (blink) {
-            notification.setLights(Color.CYAN, 500, 500);
-        }
-    }
-
     private static void setNotificationChannel(NotificationCompat.Builder notification, Bundle bundle) {
         // If Android Oreo or above we need to register a channel
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
@@ -369,10 +356,12 @@ public class CustomPushNotificationHelper {
 
     private static void setNotificationDeleteIntent(Context context, NotificationCompat.Builder notification, Bundle bundle, int notificationId) {
         // Let's add a delete intent when the notification is dismissed
+        final String PUSH_NOTIFICATION_EXTRA_NAME = "pushNotification";
         Intent delIntent = new Intent(context, NotificationDismissService.class);
-        PushNotificationProps notificationProps = new PushNotificationProps(bundle);
         delIntent.putExtra(NOTIFICATION_ID, notificationId);
-        PendingIntent deleteIntent = NotificationIntentAdapter.createPendingNotificationIntent(context, delIntent, notificationProps);
+        delIntent.putExtra(PUSH_NOTIFICATION_EXTRA_NAME, bundle);
+        @SuppressLint("UnspecifiedImmutableFlag")
+        PendingIntent deleteIntent = PendingIntent.getService(context, (int) System.currentTimeMillis(), delIntent, PendingIntent.FLAG_ONE_SHOT);
         notification.setDeleteIntent(deleteIntent);
     }
 
@@ -406,26 +395,6 @@ public class CustomPushNotificationHelper {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    private static void setNotificationSound(NotificationCompat.Builder notification, NotificationPreferences notificationPreferences) {
-        String soundUri = notificationPreferences.getNotificationSound();
-        if (soundUri != null) {
-            if (!soundUri.equals("none")) {
-                notification.setSound(Uri.parse(soundUri));
-            }
-        } else {
-            Uri defaultUri = Settings.System.DEFAULT_NOTIFICATION_URI;
-            notification.setSound(defaultUri);
-        }
-    }
-
-    private static void setNotificationVibrate(NotificationCompat.Builder notification, NotificationPreferences notificationPreferences) {
-        boolean vibrate = notificationPreferences.getShouldVibrate();
-        if (vibrate) {
-            // Use the system default for vibration
-            notification.setDefaults(Notification.DEFAULT_VIBRATE);
         }
     }
 

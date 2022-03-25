@@ -28,8 +28,6 @@ import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
 import {convertToNotificationData} from '@utils/notification';
 
-import {getActiveServerUrl} from './credentials';
-
 const CATEGORY = 'CAN_REPLY';
 const REPLY_ACTION = 'REPLY_ACTION';
 const NOTIFICATION_TYPE = {
@@ -132,11 +130,10 @@ class PushNotifications {
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
         if (database) {
             const isTabletDevice = await isTablet();
-            const activeServerUrl = await getActiveServerUrl();
             const displayName = await queryServerName(DatabaseManager.appDatabase!.database, serverUrl);
             const channelId = await getCurrentChannelId(database);
             let serverName;
-            if (serverUrl !== activeServerUrl && Object.keys(DatabaseManager.serverDatabases).length > 1) {
+            if (Object.keys(DatabaseManager.serverDatabases).length > 1) {
                 serverName = displayName;
             }
 

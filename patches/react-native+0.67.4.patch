@@ -56,7 +56,7 @@ index d9e2714..bed8756 100644
      def variant ->
          def hermesFlags;
 -        if (variant.name.toLowerCase().contains("release")) {
-+        if (variant.name.toLowerCase().contains("release") || variant.name..toLowerCase().contains("unsigned")) {
++        if (variant.name.toLowerCase().contains("release") || variant.name.toLowerCase().contains("unsigned")) {
              // Can't use ?: since that will also substitute valid empty lists
              hermesFlags = config.hermesFlagsRelease
              if (hermesFlags == null) hermesFlags = ["-O", "-output-source-map"]

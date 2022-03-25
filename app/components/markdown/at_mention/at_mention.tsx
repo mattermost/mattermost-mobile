@@ -52,7 +52,7 @@ const AtMention = ({
     users,
 }: AtMentionProps) => {
     const intl = useIntl();
-    const managedConfig = useManagedConfig();
+    const managedConfig = useManagedConfig<ManagedConfig>();
     const theme = useTheme();
     const user = useMemo(() => {
         const usersByUsername = getUsersByUsername(users);
