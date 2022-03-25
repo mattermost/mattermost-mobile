@@ -13,6 +13,7 @@ Object {
             Object {
               "value": Object {
                 "height": 40,
+                "marginVertical": 2,
                 "opacity": 1,
               },
             }
@@ -21,6 +22,7 @@ Object {
           style={
             Object {
               "height": 40,
+              "marginVertical": 2,
               "opacity": 1,
             }
           }
@@ -46,10 +48,10 @@ Object {
               <View
                 style={
                   Object {
+                    "alignItems": "center",
                     "flexDirection": "row",
-                    "marginBottom": 8,
+                    "height": 40,
                     "paddingLeft": 2,
-                    "paddingVertical": 4,
                   }
                 }
               >

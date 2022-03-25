@@ -178,11 +178,11 @@ type AppField = {
 };
 
 type AutocompleteSuggestion = {
-    suggestion: string;
-    complete?: string;
-    description?: string;
-    hint?: string;
-    iconData?: string;
+    Suggestion: string;
+    Complete: string;
+    Description: string;
+    Hint: string;
+    IconData: string;
 };
 
 type AutocompleteSuggestionWithComplete = AutocompleteSuggestion & {

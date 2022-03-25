@@ -17,7 +17,7 @@ exports[`components/channel_list should render channels error 1`] = `
       "maxWidth": "100%",
       "paddingLeft": 18,
       "paddingRight": 20,
-      "paddingVertical": 10,
+      "paddingTop": 10,
     }
   }
 >
@@ -187,7 +187,7 @@ exports[`components/channel_list should render team error 1`] = `
       "maxWidth": "100%",
       "paddingLeft": 18,
       "paddingRight": 20,
-      "paddingVertical": 10,
+      "paddingTop": 10,
     }
   }
 >

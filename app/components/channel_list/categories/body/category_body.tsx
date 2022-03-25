@@ -41,7 +41,7 @@ const CategoryBody = ({currentChannelId, sortedIds, category, hiddenChannelIds, 
                 collapsed={category.collapsed}
             />
         );
-    }, [currentChannelId]);
+    }, [currentChannelId, category.collapsed]);
 
     return (
         <FlatList
