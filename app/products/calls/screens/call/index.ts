@@ -29,7 +29,7 @@ function mapStateToProps(state: GlobalState) {
         theme: getTheme(state),
         call: currentCall,
         teammateNameDisplay,
-        participants: sortParticipants(teammateNameDisplay, currentCall?.participants),
+        participants: sortParticipants(teammateNameDisplay, currentCall?.participants, currentCall?.screenOn),
         currentParticipant: currentCall && currentCall.participants[currentUserId],
         screenShareURL: getScreenShareURL(state),
         speakerphoneOn: isSpeakerphoneOn(state),

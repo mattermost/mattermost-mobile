@@ -5,14 +5,14 @@ import {Dictionary} from '@mm-redux/types/utilities';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {CallParticipant} from '@mmproducts/calls/store/types/calls';
 
-export function sortParticipants(teammateNameDisplay: string, participants?: Dictionary<CallParticipant>): CallParticipant[] {
+export function sortParticipants(teammateNameDisplay: string, participants?: Dictionary<CallParticipant>, presenterID?: string): CallParticipant[] {
     if (!participants) {
         return [];
     }
 
     const users = Object.values(participants);
 
-    return users.sort(sortByName(teammateNameDisplay)).sort(sortByState);
+    return users.sort(sortByName(teammateNameDisplay)).sort(sortByState(presenterID));
 }
 
 const sortByName = (teammateNameDisplay: string) => {
@@ -23,20 +23,28 @@ const sortByName = (teammateNameDisplay: string) => {
     };
 };
 
-const sortByState = (a: CallParticipant, b: CallParticipant) => {
-    if (!a.muted && b.muted) {
-        return -1;
-    } else if (!b.muted && a.muted) {
-        return 1;
-    }
+const sortByState = (presenterID?: string) => {
+    return (a: CallParticipant, b: CallParticipant) => {
+        if (a.id === presenterID) {
+            return -1;
+        } else if (b.id === presenterID) {
+            return 1;
+        }
 
-    if (a.raisedHand && !b.raisedHand) {
-        return -1;
-    } else if (b.raisedHand && !a.raisedHand) {
-        return 1;
-    } else if (a.raisedHand && b.raisedHand) {
-        return a.raisedHand - b.raisedHand;
-    }
+        if (!a.muted && b.muted) {
+            return -1;
+        } else if (!b.muted && a.muted) {
+            return 1;
+        }
 
-    return 0;
-};
+        if (a.raisedHand && !b.raisedHand) {
+            return -1;
+        } else if (b.raisedHand && !a.raisedHand) {
+            return 1;
+        } else if (a.raisedHand && b.raisedHand) {
+            return a.raisedHand - b.raisedHand;
+        }
+
+        return 0;
+    };
+}

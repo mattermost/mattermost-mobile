@@ -76,7 +76,9 @@ const getStyleSheet = makeStyleSheetFromTheme((props: any) => {
     const header: any = {
         flexDirection: 'row',
         width: '100%',
-        padding: 14,
+        paddingTop: 10,
+        paddingLeft: 14,
+        paddingRight: 14,
         ...Platform.select({
             android: {
                 elevation: 4,
@@ -366,6 +368,7 @@ const CallScreen = (props: Props) => {
                                     userId={user.id}
                                     volume={speaker && speaker.id === user.id ? 1 : 0}
                                     muted={user.muted}
+                                    sharingScreen={user.id === props.call?.screenOn}
                                     raisedHand={Boolean(user.raisedHand)}
                                     size={props.call?.screenOn ? 'm' : 'l'}
                                 />
