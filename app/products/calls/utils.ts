@@ -47,4 +47,4 @@ const sortByState = (presenterID?: string) => {
 
         return 0;
     };
-}
+};
