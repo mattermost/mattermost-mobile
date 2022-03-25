@@ -35,7 +35,8 @@ export function loadCalls(): ActionFunc {
                     participants: channel.call.users.reduce((prev: Dictionary<CallParticipant>, cur: string, curIdx: number) => {
                         const profile = getState().entities.users.profiles[cur];
                         const muted = channel.call.states && channel.call.states[curIdx] ? !channel.call.states[curIdx].unmuted : true;
-                        prev[cur] = {id: cur, muted, isTalking: false, profile};
+                        const raised_hand = channel.call.states && channel.call.states[curIdx] ? channel.call.states[curIdx].raised_hand : 0;
+                        prev[cur] = {id: cur, muted, raisedHand: raised_hand, isTalking: false, profile};
                         return prev;
                     }, {}),
                     channelId: channel.channel_id,
@@ -152,6 +153,22 @@ export function unmuteMyself(): GenericAction {
     if (ws) {
         ws.unmute();
     }
+    return {type: 'empty'};
+}
+
+export function raiseHand(): GenericAction {
+    if (ws) {
+        ws.raiseHand();
+    }
+
+    return {type: 'empty'};
+}
+
+export function unraiseHand(): GenericAction {
+    if (ws) {
+        ws.unraiseHand();
+    }
+
     return {type: 'empty'};
 }
 

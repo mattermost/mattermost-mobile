@@ -94,6 +94,18 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
         }
     };
 
+    const raiseHand = () => {
+        if (ws) {
+            ws.send('raise_hand');
+        }
+    };
+
+    const unraiseHand = () => {
+        if (ws) {
+            ws.send('unraise_hand');
+        }
+    };
+
     ws.on('error', (err) => {
         console.log('WS (CALLS) ERROR', err); // eslint-disable-line no-console
         ws.close();
@@ -179,6 +191,8 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
         mute,
         unmute,
         waitForReady,
+        raiseHand,
+        unraiseHand,
     };
 
     return client;

@@ -25,6 +25,7 @@ export type CallParticipant = {
     id: string;
     muted: boolean;
     isTalking: boolean;
+    raisedHand: number;
     profile: UserProfile;
 }
 
