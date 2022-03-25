@@ -8,7 +8,7 @@ import FastImage from 'react-native-fast-image';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {SvgXml} from 'react-native-svg';
 
-import CompassIcon from '@app/components/compass_icon';
+import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {COMMAND_SUGGESTION_ERROR} from '@constants/apps';
 import {useTheme} from '@context/theme';

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {
     Switch,
     Text,
@@ -65,7 +65,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 type Props = {
     testID?: string;
-
     action: (value: string | boolean) => void;
     actionType: string;
     actionValue?: string;
@@ -104,6 +103,10 @@ const SectionItem = ({testID, action, actionType, actionValue, label, selected, 
             />
         );
     }
+
+    const onPress = useCallback(() => {
+        action(actionValue || '');
+    }, [actionValue, action]);
 
     const labelStyle = useMemo(() => {
         if (icon) {
@@ -146,7 +149,7 @@ const SectionItem = ({testID, action, actionType, actionValue, label, selected, 
 
     if (actionType === ActionTypes.DEFAULT || actionType === ActionTypes.SELECT || actionType === ActionTypes.ARROW) {
         return (
-            <TouchableOpacity onPress={() => action(actionValue || '')}>
+            <TouchableOpacity onPress={onPress}>
                 {component}
             </TouchableOpacity>
         );

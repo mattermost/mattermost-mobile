@@ -15,8 +15,6 @@ import {
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import useHeaderHeight from '@app/hooks/header';
-import {typography} from '@app/utils/typography';
 import Autocomplete from '@components/autocomplete';
 import ErrorText from '@components/error_text';
 import FloatingTextInput from '@components/floating_text_input_label';
@@ -26,12 +24,14 @@ import SectionItem from '@components/section_item';
 import {General, Channel} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import useHeaderHeight from '@hooks/header';
 import {t} from '@i18n';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
 } from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
@@ -150,20 +150,10 @@ export default function ChannelInfoForm({
     };
 
     const blur = useCallback(() => {
-        if (nameInput?.current) {
-            nameInput.current.blur();
-        }
-
-        if (purposeInput?.current) {
-            purposeInput.current.blur();
-        }
-        if (headerInput?.current) {
-            headerInput.current.blur();
-        }
-
-        if (scrollViewRef?.current) {
-            scrollViewRef.current?.scrollToPosition(0, 0, true);
-        }
+        nameInput.current?.blur();
+        purposeInput.current?.blur();
+        headerInput.current?.blur();
+        scrollViewRef.current?.scrollToPosition(0, 0, true);
     }, []);
 
     const onHeaderLayout = useCallback(({nativeEvent}: LayoutChangeEvent) => {
@@ -172,7 +162,7 @@ export default function ChannelInfoForm({
 
     const scrollHeaderToTop = useCallback(() => {
         if (scrollViewRef?.current) {
-            scrollViewRef.current?.scrollToPosition(0, headerPosition as number);
+            scrollViewRef.current?.scrollToPosition(0, headerPosition);
         }
     }, []);
 

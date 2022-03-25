@@ -9,11 +9,11 @@ import {
 import {Navigation} from 'react-native-navigation';
 
 import {patchChannel as handlePatchChannel, createChannel, switchToChannelById} from '@actions/remote/channel';
-import CompassIcon from '@app/components/compass_icon';
-import ChannelInfoForm from '@app/screens/create_or_edit_channel/channel_info_form';
+import CompassIcon from '@components/compass_icon';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import ChannelInfoForm from '@screens/create_or_edit_channel/channel_info_form';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {validateDisplayName} from '@utils/channel';
 
@@ -124,10 +124,9 @@ const CreateOrEditChannel = ({
     }, [rightButton, componentId]);
 
     useEffect(() => {
-        CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor).then((i) => {
-            setButtons(componentId, {
-                leftButtons: [makeCloseButton(i)],
-            });
+        const icon = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
+        setButtons(componentId, {
+            leftButtons: [makeCloseButton(icon)],
         });
     }, [theme]);
 
