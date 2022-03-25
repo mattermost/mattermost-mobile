@@ -614,7 +614,7 @@ exports[`channelInfo should match snapshot 1`] = `
 </RNCSafeAreaView>
 `;
 
-exports[`channelInfo should match snapshot on calls features enabled and calls disabled for channel 1`] = `
+exports[`channelInfo should match snapshot on calls supported and calls disabled for channel 1`] = `
 <RNCSafeAreaView
   edges={
     Array [
@@ -1301,7 +1301,7 @@ exports[`channelInfo should match snapshot on calls features enabled and calls d
 </RNCSafeAreaView>
 `;
 
-exports[`channelInfo should match snapshot on calls features enabled and calls enabled for channel 1`] = `
+exports[`channelInfo should match snapshot on calls supported and calls enabled for channel 1`] = `
 <RNCSafeAreaView
   edges={
     Array [
@@ -1988,7 +1988,7 @@ exports[`channelInfo should match snapshot on calls features enabled and calls e
 </RNCSafeAreaView>
 `;
 
-exports[`channelInfo should match snapshot on calls features enabled, user is not admin and calls disabled for channel 1`] = `
+exports[`channelInfo should match snapshot on calls supported, user is not admin and calls disabled for channel 1`] = `
 <RNCSafeAreaView
   edges={
     Array [

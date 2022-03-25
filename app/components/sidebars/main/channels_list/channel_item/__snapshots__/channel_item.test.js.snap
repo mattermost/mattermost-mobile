@@ -808,7 +808,7 @@ exports[`ChannelItem should match snapshot for no displayName 1`] = `null`;
 
 exports[`ChannelItem should match snapshot for showUnreadForMsgs 1`] = `null`;
 
-exports[`ChannelItem should match snapshot when there is a call and but calls are disabled 1`] = `
+exports[`ChannelItem should match snapshot when there is a call and but calls are not supported 1`] = `
 <TouchableHighlight
   onPress={[Function]}
   underlayColor="rgba(40,66,123,0.5)"
@@ -914,12 +914,24 @@ exports[`ChannelItem should match snapshot when there is a call and but calls ar
       >
         display_name
       </Text>
+      <CompassIcon
+        name="phone-in-talk"
+        size={16}
+        style={
+          Object {
+            "color": "#ffffff",
+            "flex": 1,
+            "marginRight": 20,
+            "textAlign": "right",
+          }
+        }
+      />
     </View>
   </View>
 </TouchableHighlight>
 `;
 
-exports[`ChannelItem should match snapshot when there is a call and calls are enabled 1`] = `
+exports[`ChannelItem should match snapshot when there is a call and calls are supported 1`] = `
 <TouchableHighlight
   onPress={[Function]}
   underlayColor="rgba(40,66,123,0.5)"

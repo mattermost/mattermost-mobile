@@ -41,7 +41,7 @@ describe('ChannelItem', () => {
         isBot: false,
         customStatusEnabled: true,
         channelHasCall: false,
-        callsFeatureEnabled: false,
+        isSupportedServerCalls: false,
     };
 
     test('should match snapshot', () => {
@@ -52,10 +52,10 @@ describe('ChannelItem', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot when there is a call and calls are enabled', () => {
+    test('should match snapshot when there is a call and calls are supported', () => {
         const newProps = {
             ...baseProps,
-            callsFeatureEnabled: true,
+            isSupportedServerCalls: true,
             channelHasCall: true,
         };
 
@@ -66,10 +66,10 @@ describe('ChannelItem', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot when there is a call and but calls are disabled', () => {
+    test('should match snapshot when there is a call and but calls are not supported', () => {
         const newProps = {
             ...baseProps,
-            callsFeatureEnabled: false,
+            isSupportedServerCalls: false,
             channelHasCall: true,
         };
 

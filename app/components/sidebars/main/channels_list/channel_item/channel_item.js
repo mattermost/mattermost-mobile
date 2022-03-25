@@ -43,7 +43,6 @@ export default class ChannelItem extends PureComponent {
         viewingGlobalThreads: PropTypes.bool,
         customStatusEnabled: PropTypes.bool.isRequired,
         channelHasCall: PropTypes.bool.isRequired,
-        callsFeatureEnabled: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -217,7 +216,7 @@ export default class ChannelItem extends PureComponent {
                         </Text>
                         {customStatus}
                         {badge}
-                        {this.props.callsFeatureEnabled && this.props.channelHasCall &&
+                        {this.props.channelHasCall &&
                             <CompassIcon
                                 name='phone-in-talk'
                                 size={16}
