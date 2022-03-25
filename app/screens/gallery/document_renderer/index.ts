@@ -6,22 +6,16 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {observeConfigBooleanValue, observeLicense} from '@queries/servers/system';
 
 import DocumentRenderer from './document_renderer';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type SystemModel from '@typings/database/models/servers/system';
-
-const {CONFIG, LICENSE} = SYSTEM_IDENTIFIERS;
-const {SERVER: {SYSTEM}} = MM_TABLES;
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const enableMobileFileDownload = database.get<SystemModel>(SYSTEM).findAndObserve(CONFIG).pipe(
-        switchMap(({value}) => of$(value.EnableMobileFileDownload !== 'false')),
-    );
-    const complianceDisabled = database.get<SystemModel>(SYSTEM).findAndObserve(LICENSE).pipe(
-        switchMap(({value}) => of$(value.IsLicensed === 'false' || value.Compliance === 'false')),
+    const enableMobileFileDownload = observeConfigBooleanValue(database, 'EnableMobileFileDownload');
+    const complianceDisabled = observeLicense(database).pipe(
+        switchMap((lcs) => of$(lcs?.IsLicensed === 'false' || lcs?.Compliance === 'false')),
     );
     const canDownloadFiles = combineLatest([enableMobileFileDownload, complianceDisabled]).pipe(
         switchMap(([download, compliance]) => of$(compliance || download)),

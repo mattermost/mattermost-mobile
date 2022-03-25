@@ -8,6 +8,7 @@ import {TouchableOpacity} from 'react-native-gesture-handler';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {switchToChannelById} from '@actions/remote/channel';
+import Badge from '@components/badge';
 import ChannelIcon from '@components/channel_icon';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -21,9 +22,9 @@ import type MyChannelModel from '@typings/database/models/servers/my_channel';
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flexDirection: 'row',
-        marginBottom: 8,
         paddingLeft: 2,
-        paddingVertical: 4,
+        height: 40,
+        alignItems: 'center',
     },
     icon: {
         fontSize: 24,
@@ -42,6 +43,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     muted: {
         color: changeOpacity(theme.sidebarText, 0.4),
     },
+    badge: {
+        position: 'relative',
+        borderWidth: 0,
+        left: 0,
+        top: 0,
+        alignSelf: undefined,
+    },
+    mutedBadge: {
+        opacity: 0.4,
+    },
 }));
 
 const textStyle = StyleSheet.create({
@@ -54,7 +65,7 @@ type Props = {
     isActive: boolean;
     isOwnDirectMessage: boolean;
     isMuted: boolean;
-    myChannel: MyChannelModel;
+    myChannel?: MyChannelModel;
     collapsed: boolean;
 }
 
@@ -65,7 +76,7 @@ const ChannelListItem = ({channel, isActive, isOwnDirectMessage, isMuted, myChan
     const serverUrl = useServerUrl();
 
     // Make it brighter if it's not muted, and highlighted or has unreads
-    const bright = !isMuted && (myChannel.isUnread || myChannel.mentionsCount > 0);
+    const bright = !isMuted && (isActive || (myChannel && (myChannel.isUnread || myChannel.mentionsCount > 0)));
 
     const sharedValue = useSharedValue(collapsed && !bright);
 
@@ -75,17 +86,21 @@ const ChannelListItem = ({channel, isActive, isOwnDirectMessage, isMuted, myChan
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
+            marginVertical: withTiming(sharedValue.value ? 0 : 2, {duration: 500}),
             height: withTiming(sharedValue.value ? 0 : 40, {duration: 500}),
             opacity: withTiming(sharedValue.value ? 0 : 1, {duration: 500, easing: Easing.inOut(Easing.exp)}),
         };
     });
 
-    const switchChannels = () => switchToChannelById(serverUrl, myChannel.id);
+    const switchChannels = () => {
+        if (myChannel) {
+            switchToChannelById(serverUrl, myChannel.id);
+        }
+    };
     const membersCount = useMemo(() => {
         if (channel.type === General.GM_CHANNEL) {
             return channel.displayName?.split(',').length;
         }
-
         return 0;
     }, [channel.type, channel.displayName]);
 
@@ -101,7 +116,7 @@ const ChannelListItem = ({channel, isActive, isOwnDirectMessage, isMuted, myChan
         displayName = formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
     }
 
-    if (channel.deleteAt > 0 && !isActive) {
+    if ((channel.deleteAt > 0 && !isActive) || !myChannel) {
         return null;
     }
 
@@ -117,6 +132,7 @@ const ChannelListItem = ({channel, isActive, isOwnDirectMessage, isMuted, myChan
                         shared={channel.shared}
                         size={24}
                         type={channel.type}
+                        isMuted={isMuted}
                     />
                     <Text
                         ellipsizeMode='tail'
@@ -125,7 +141,11 @@ const ChannelListItem = ({channel, isActive, isOwnDirectMessage, isMuted, myChan
                     >
                         {displayName}
                     </Text>
-
+                    <Badge
+                        visible={myChannel.mentionsCount > 0}
+                        value={myChannel.mentionsCount}
+                        style={[styles.badge, isMuted && styles.mutedBadge]}
+                    />
                 </View>
             </TouchableOpacity>
         </Animated.View>

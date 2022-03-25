@@ -10,9 +10,9 @@ import {fetchMyChannel, markChannelAsRead} from '@actions/remote/channel';
 import {fetchPostAuthors, fetchPostById} from '@actions/remote/post';
 import {ActionType, Events} from '@constants';
 import DatabaseManager from '@database/manager';
-import {queryMyChannel} from '@queries/servers/channel';
-import {queryPostById} from '@queries/servers/post';
-import {queryCurrentChannelId, queryCurrentUserId} from '@queries/servers/system';
+import {getMyChannel} from '@queries/servers/channel';
+import {getPostById} from '@queries/servers/post';
+import {getCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
 
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -37,9 +37,9 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     } catch {
         return;
     }
-    const currentUserId = await queryCurrentUserId(operator.database);
+    const currentUserId = await getCurrentUserId(operator.database);
 
-    const existing = await queryPostById(operator.database, post.pending_post_id);
+    const existing = await getPostById(operator.database, post.pending_post_id);
 
     if (existing) {
         return;
@@ -59,7 +59,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     }
 
     // Ensure the channel membership
-    let myChannel = await queryMyChannel(operator.database, post.channel_id);
+    let myChannel = await getMyChannel(operator.database, post.channel_id);
     if (myChannel) {
         const {member} = await updateLastPostAt(serverUrl, post.channel_id, post.create_at, false);
         if (member) {
@@ -77,7 +77,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             return;
         }
 
-        myChannel = await queryMyChannel(operator.database, post.channel_id);
+        myChannel = await getMyChannel(operator.database, post.channel_id);
         if (!myChannel) {
             return;
         }
@@ -85,14 +85,14 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
 
     // If we don't have the root post for this post, fetch it from the server
     if (post.root_id) {
-        const rootPost = await queryPostById(operator.database, post.root_id);
+        const rootPost = await getPostById(operator.database, post.root_id);
 
         if (!rootPost) {
             fetchPostById(serverUrl, post.root_id);
         }
     }
 
-    const currentChannelId = await queryCurrentChannelId(operator.database);
+    const currentChannelId = await getCurrentChannelId(operator.database);
 
     if (post.channel_id === currentChannelId) {
         const data = {

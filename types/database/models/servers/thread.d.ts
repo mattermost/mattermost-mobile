@@ -4,6 +4,9 @@
 import {Query, Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
+import type PostModel from './post';
+import type ThreadParticipantsModel from './thread_participant';
+
 /**
  * The Thread model contains thread information of a post.
  */

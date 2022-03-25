@@ -1,25 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {View} from 'react-native';
-import {map, switchMap} from 'rxjs/operators';
+import {map} from 'rxjs/operators';
 
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {Preferences} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {getPreferenceAsBool} from '@helpers/api/preference';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeConfig} from '@queries/servers/system';
+import {observeCurrentUser} from '@queries/servers/user';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUserTimezone} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type PreferenceModel from '@typings/database/models/servers/preference';
-import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
@@ -29,8 +28,6 @@ type Props = {
     theme: Theme;
     user: UserModel;
 }
-
-const {SERVER: {PREFERENCE, SYSTEM, USER}} = MM_TABLES;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -83,17 +80,13 @@ const SystemHeader = ({isMilitaryTime, isTimezoneEnabled, createAt, theme, user}
 };
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
-    const preferences = database.get<PreferenceModel>(PREFERENCE).query(
-        Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS), Q.where('name', 'use_military_time'),
-    ).observe();
-    const isTimezoneEnabled = config.pipe(map(({value}: {value: ClientConfig}) => value.ExperimentalTimezone === 'true'));
+    const config = observeConfig(database);
+    const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time').observe();
+    const isTimezoneEnabled = config.pipe(map((cfg) => cfg?.ExperimentalTimezone === 'true'));
     const isMilitaryTime = preferences.pipe(
         map((prefs) => getPreferenceAsBool(prefs, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)),
     );
-    const user = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap(({value}) => database.get(USER).findAndObserve(value)),
-    );
+    const user = observeCurrentUser(database);
 
     return {
         isMilitaryTime,

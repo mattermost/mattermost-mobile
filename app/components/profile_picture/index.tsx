@@ -110,7 +110,7 @@ const ProfilePicture = ({
                 size={size}
                 source={source}
             />
-            {showStatus &&
+            {showStatus && !isBot &&
             <Status
                 author={author}
                 statusSize={statusSize}

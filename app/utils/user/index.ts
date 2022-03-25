@@ -123,13 +123,13 @@ export const getTimezone = (timezone: UserTimezone | null) => {
     return timezone.manualTimezone;
 };
 
-export const getUserCustomStatus = (user: UserModel | UserProfile): UserCustomStatus | undefined => {
+export const getUserCustomStatus = (user?: UserModel | UserProfile): UserCustomStatus | undefined => {
     try {
-        if (typeof user.props?.customStatus === 'string') {
+        if (typeof user?.props?.customStatus === 'string') {
             return JSON.parse(user.props.customStatus) as UserCustomStatus;
         }
 
-        return user.props?.customStatus;
+        return user?.props?.customStatus;
     } catch {
         return undefined;
     }
@@ -192,8 +192,12 @@ export function confirmOutOfOfficeDisabled(intl: IntlShape, status: string, upda
     );
 }
 
-export function isShared(user: UserProfile): boolean {
-    return Boolean(user.remote_id);
+export function isBot(user: UserProfile | UserModel): boolean {
+    return 'is_bot' in user ? Boolean(user.is_bot) : Boolean(user.isBot);
+}
+
+export function isShared(user: UserProfile | UserModel): boolean {
+    return 'remote_id' in user ? Boolean(user.remote_id) : Boolean(user.props?.remote_id);
 }
 
 export function removeUserFromList(userId: string, originalList: UserProfile[]): UserProfile[] {

@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -13,13 +12,12 @@ import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES} from '@constants/custom_status';
-import {MM_TABLES} from '@constants/database';
 import {getPreferenceAsBool} from '@helpers/api/preference';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCurrentMomentForTimezone, getRoundedTime, getUtcOffsetForTimeZone} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type PreferenceModel from '@typings/database/models/servers/preference';
 
 type Props = {
     timezone: string | null;
@@ -115,14 +113,11 @@ const DateTimeSelector = ({timezone, handleChange, isMilitaryTime, theme}: Props
 };
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    isMilitaryTime: database.get<PreferenceModel>(MM_TABLES.SERVER.PREFERENCE).
-        query(
-            Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS),
-        ).observe().pipe(
-            switchMap(
-                (preferences) => of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)),
-            ),
+    isMilitaryTime: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observe().pipe(
+        switchMap(
+            (preferences) => of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)),
         ),
+    ),
 }));
 
 export default withDatabase(enhanced(DateTimeSelector));
