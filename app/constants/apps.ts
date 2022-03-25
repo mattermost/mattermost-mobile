@@ -44,6 +44,10 @@ export const AppFieldTypes: { [name: string]: AppFieldType } = {
     MARKDOWN: 'markdown',
 };
 
+export const COMMAND_SUGGESTION_ERROR = 'error';
+export const COMMAND_SUGGESTION_CHANNEL = 'channel';
+export const COMMAND_SUGGESTION_USER = 'user';
+
 export default {
     AppBindingLocations,
     AppBindingPresentations,
@@ -51,4 +55,7 @@ export default {
     AppCallTypes,
     AppExpandLevels,
     AppFieldTypes,
+    COMMAND_SUGGESTION_ERROR,
+    COMMAND_SUGGESTION_CHANNEL,
+    COMMAND_SUGGESTION_USER,
 };

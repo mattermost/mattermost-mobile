@@ -69,4 +69,4 @@ type GalleryItemType = {
     postId?: string;
 };
 
-type GalleryAction = 'none' | 'downloading' | 'copying' | 'sharing' | 'opening';
+type GalleryAction = 'none' | 'downloading' | 'copying' | 'sharing' | 'opening' | 'external';

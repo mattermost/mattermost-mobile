@@ -62,6 +62,9 @@ export function buildQueryString(parameters: Dictionary<any>): string {
     let query = '?';
     for (let i = 0; i < keys.length; i++) {
         const key = keys[i];
+        if (parameters[key] == null) {
+            continue;
+        }
         query += key + '=' + encodeURIComponent(parameters[key]);
 
         if (i < keys.length - 1) {

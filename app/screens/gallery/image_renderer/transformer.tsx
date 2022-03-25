@@ -13,6 +13,7 @@ import Animated, {
     useSharedValue,
     withDecay, withSpring, WithSpringConfig, withTiming, WithTimingConfig,
 } from 'react-native-reanimated';
+import {SvgUri} from 'react-native-svg';
 
 import {useAnimatedGestureHandler} from '@hooks/gallery';
 import {clamp, workletNoop} from '@utils/gallery';
@@ -28,6 +29,10 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFillObject,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    svg: {
+        backgroundColor: '#FFF',
+        borderRadius: 8,
     },
 });
 
@@ -66,6 +71,7 @@ export interface ImageTransformerProps extends ImageTransformerReusableProps {
     enabled?: boolean;
     height: number;
     isActive?: Animated.SharedValue<boolean>;
+    isSvg: boolean;
     onStateChange?: (isActive: boolean) => void;
     outerGestureHandlerActive?: Animated.SharedValue<boolean>;
     outerGestureHandlerRefs?: Array<React.Ref<unknown>>;
@@ -92,7 +98,7 @@ const ImageTransformer = (
     {
         enabled = true, height, isActive,
         onDoubleTap = workletNoop, onInteraction = workletNoop, onStateChange = workletNoop, onTap = workletNoop,
-        outerGestureHandlerActive, outerGestureHandlerRefs = [], source,
+        outerGestureHandlerActive, outerGestureHandlerRefs = [], source, isSvg,
         targetDimensions, width,
     }: ImageTransformerProps) => {
     const imageSource = typeof source === 'string' ? {uri: source} : source;
@@ -524,6 +530,27 @@ const ImageTransformer = (
         };
     }, []);
 
+    let element;
+    if (isSvg) {
+        element = (
+            <SvgUri
+                uri={imageSource.uri!}
+                style={styles.svg}
+                width={Math.min(targetDimensions.width, targetDimensions.height)}
+                height={Math.min(targetDimensions.width, targetDimensions.height)}
+                onLayout={onLoadImageSuccess}
+            />
+        );
+    } else {
+        element = (
+            <FastImage
+                onLoad={onLoadImageSuccess}
+                source={imageSource}
+                style={{width: targetWidth, height: targetHeight}}
+            />
+        );
+    }
+
     return (
         <Animated.View style={[styles.container]}>
             <PinchGestureHandler
@@ -564,11 +591,7 @@ const ImageTransformer = (
                                         onGestureEvent={onDoubleTapEvent}
                                     >
                                         <Animated.View style={animatedStyles}>
-                                            <FastImage
-                                                onLoad={onLoadImageSuccess}
-                                                source={imageSource}
-                                                style={{width: targetWidth, height: targetHeight}}
-                                            />
+                                            {element}
                                         </Animated.View>
                                     </TapGestureHandler>
                                 </Animated.View>

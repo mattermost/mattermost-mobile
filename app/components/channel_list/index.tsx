@@ -21,7 +21,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: theme.sidebarBg,
         paddingLeft: 18,
         paddingRight: 20,
-        paddingVertical: 10,
+        paddingTop: 10,
     },
 
 }));

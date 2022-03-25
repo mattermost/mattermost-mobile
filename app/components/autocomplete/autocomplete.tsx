@@ -9,8 +9,11 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import AtMention from './at_mention/';
 import ChannelMention from './channel_mention/';
 import EmojiSuggestion from './emoji_suggestion/';
+import SlashSuggestion from './slash_suggestion/';
+import AppSlashSuggestion from './slash_suggestion/app_slash_suggestion/';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -56,6 +59,7 @@ type Props = {
     postInputTop: number;
     rootId: string;
     channelId: string;
+    fixedBottomPosition?: boolean;
     isSearch?: boolean;
     value: string;
     enableDateSuggestion?: boolean;
@@ -63,16 +67,18 @@ type Props = {
     nestedScrollEnabled?: boolean;
     updateValue: (v: string) => void;
     hasFilesAttached: boolean;
+    maxHeightOverride?: number;
 }
 
 const Autocomplete = ({
     cursorPosition,
     postInputTop,
     rootId,
-
-    //channelId,
+    channelId,
     isSearch = false,
+    fixedBottomPosition,
     value,
+    maxHeightOverride,
 
     //enableDateSuggestion = false,
     isAppsEnabled,
@@ -85,18 +91,22 @@ const Autocomplete = ({
     const dimensions = useWindowDimensions();
     const style = getStyleFromTheme(theme);
 
-    // const [showingAtMention, setShowingAtMention] = useState(false);
+    const [showingAtMention, setShowingAtMention] = useState(false);
     const [showingChannelMention, setShowingChannelMention] = useState(false);
     const [showingEmoji, setShowingEmoji] = useState(false);
+    const [showingCommand, setShowingCommand] = useState(false);
+    const [showingAppCommand, setShowingAppCommand] = useState(false);
 
-    // const [showingCommand, setShowingCommand] = useState(false);
-    // const [showingAppCommand, setShowingAppCommand] = useState(false);
     // const [showingDate, setShowingDate] = useState(false);
 
-    const hasElements = showingChannelMention || showingEmoji; // || showingAtMention || showingCommand || showingAppCommand || showingDate;
-    const appsTakeOver = false; // showingAppCommand;
+    const hasElements = showingChannelMention || showingEmoji || showingAtMention || showingCommand || showingAppCommand; // || showingDate;
+    const appsTakeOver = showingAppCommand;
+    const showCommands = !(showingChannelMention || showingEmoji || showingAtMention);
 
     const maxListHeight = useMemo(() => {
+        if (maxHeightOverride) {
+            return maxHeightOverride;
+        }
         const isLandscape = dimensions.width > dimensions.height;
         const offset = isTablet && isLandscape ? OFFSET_TABLET : 0;
         let postInputDiff = 0;
@@ -106,7 +116,7 @@ const Autocomplete = ({
             postInputDiff = MAX_LIST_DIFF;
         }
         return MAX_LIST_HEIGHT - postInputDiff - offset;
-    }, [postInputTop, isTablet, dimensions.width]);
+    }, [maxHeightOverride, postInputTop, isTablet, dimensions.width]);
 
     const wrapperStyles = useMemo(() => {
         const s = [];
@@ -124,9 +134,11 @@ const Autocomplete = ({
 
     const containerStyles = useMemo(() => {
         const s = [style.borders];
-        if (!isSearch) {
+        if (!isSearch && !fixedBottomPosition) {
             const offset = isTablet ? -OFFSET_TABLET : 0;
             s.push(style.base, {bottom: postInputTop + LIST_BOTTOM + offset});
+        } else if (fixedBottomPosition) {
+            s.push(style.base, {bottom: 0});
         }
         if (!hasElements) {
             s.push(style.hidden);
@@ -142,24 +154,28 @@ const Autocomplete = ({
                 testID='autocomplete'
                 style={containerStyles}
             >
-                {/* {isAppsEnabled && (
+                {isAppsEnabled && (
                     <AppSlashSuggestion
                         maxListHeight={maxListHeight}
                         updateValue={updateValue}
-                        onResultCountChange={setShowingAppCommand}
+                        onShowingChange={setShowingAppCommand}
                         value={value || ''}
                         nestedScrollEnabled={nestedScrollEnabled}
+                        channelId={channelId}
+                        rootId={rootId}
                     />
-                )} */}
+                )}
                 {(!appsTakeOver || !isAppsEnabled) && (<>
-                    {/* <AtMention
+                    <AtMention
                         cursorPosition={cursorPosition}
                         maxListHeight={maxListHeight}
                         updateValue={updateValue}
-                        onResultCountChange={setShowingAtMention}
+                        onShowingChange={setShowingAtMention}
                         value={value || ''}
                         nestedScrollEnabled={nestedScrollEnabled}
-                    /> */}
+                        isSearch={isSearch}
+                        channelId={channelId}
+                    />
                     <ChannelMention
                         cursorPosition={cursorPosition}
                         maxListHeight={maxListHeight}
@@ -181,14 +197,18 @@ const Autocomplete = ({
                         hasFilesAttached={hasFilesAttached}
                     />
                     }
-                    {/* <SlashSuggestion
+                    {showCommands &&
+                    <SlashSuggestion
                         maxListHeight={maxListHeight}
                         updateValue={updateValue}
-                        onResultCountChange={setShowingCommand}
+                        onShowingChange={setShowingCommand}
                         value={value || ''}
                         nestedScrollEnabled={nestedScrollEnabled}
+                        channelId={channelId}
+                        rootId={rootId}
                     />
-                    {(isSearch && enableDateSuggestion) &&
+                    }
+                    {/* {(isSearch && enableDateSuggestion) &&
                     <DateSuggestion
                         cursorPosition={cursorPosition}
                         updateValue={updateValue}

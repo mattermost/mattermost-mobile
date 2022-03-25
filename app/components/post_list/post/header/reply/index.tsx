@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {Text, View} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {Text, TouchableOpacity, View} from 'react-native';
 
+import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';
 import {SEARCH} from '@constants/screens';
-import {goToScreen} from '@screens/navigation';
+import {useServerUrl} from '@context/server';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -46,11 +46,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const HeaderReply = ({commentCount, location, post, theme}: HeaderReplyProps) => {
     const style = getStyleSheet(theme);
+    const serverUrl = useServerUrl();
 
     const onPress = useCallback(preventDoubleTap(() => {
-        // https://mattermost.atlassian.net/browse/MM-39708
-        goToScreen('THREADS_SCREEN_NOT_IMPLEMENTED_YET', '', {post});
-    }), []);
+        const rootId = post.rootId || post.id;
+        fetchAndSwitchToThread(serverUrl, rootId);
+    }), [serverUrl]);
 
     return (
         <View

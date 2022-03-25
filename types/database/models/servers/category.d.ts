@@ -6,6 +6,11 @@ import {lazy} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {Observable} from 'rxjs';
 
+import type CategoryChannelModel from './category_channel';
+import type ChannelModel from './channel';
+import type MyChannelModel from './my_channel';
+import type TeamModel from './team';
+
 /**
  * A Category groups together channels for a user in a team.
  */

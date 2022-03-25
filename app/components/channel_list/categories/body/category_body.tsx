@@ -1,45 +1,57 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {FlatList} from 'react-native';
 
 import ChannelListItem from './channel';
 
 import type CategoryModel from '@typings/database/models/servers/category';
-import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
-import type ChannelModel from '@typings/database/models/servers/channel';
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
 type Props = {
+    currentChannelId: string;
+    sortedIds: string[];
+    hiddenChannelIds: string[];
     category: CategoryModel;
-    channels: ChannelModel[];
-    myChannels: MyChannelModel[];
-    categoryChannels: CategoryChannelModel[];
+    limit: number;
 };
 
-const ChannelItem = ({item}: {item: string}) => {
-    return (
-        <ChannelListItem channelId={item}/>
-    );
-};
+const extractKey = (item: string) => item;
 
-const CategoryBody = ({category, categoryChannels, channels, myChannels}: Props) => {
-    const data: string[] = useMemo(() => {
-        switch (category.sorting) {
-            case 'alpha':
-                return channels.map((c) => c.id);
-            case 'manual':
-                return categoryChannels.map((cc) => cc.channelId);
-            default:
-                return myChannels.map((m) => m.id);
+const CategoryBody = ({currentChannelId, sortedIds, category, hiddenChannelIds, limit}: Props) => {
+    const ids = useMemo(() => {
+        let filteredIds = sortedIds;
+
+        // Remove all closed gm/dms
+        if (hiddenChannelIds.length) {
+            filteredIds = sortedIds.filter((id) => !hiddenChannelIds.includes(id));
         }
-    }, [category.sorting, categoryChannels, channels, myChannels]);
+
+        if (category.type === 'direct_messages' && limit > 0) {
+            return filteredIds.slice(0, limit - 1);
+        }
+        return filteredIds;
+    }, [category.type, limit, hiddenChannelIds]);
+
+    const ChannelItem = useCallback(({item}: {item: string}) => {
+        return (
+            <ChannelListItem
+                channelId={item}
+                isActive={item === currentChannelId}
+                collapsed={category.collapsed}
+            />
+        );
+    }, [currentChannelId, category.collapsed]);
 
     return (
         <FlatList
-            data={data}
+            data={ids}
             renderItem={ChannelItem}
+            keyExtractor={extractKey}
+            removeClippedSubviews={true}
+            initialNumToRender={20}
+            windowSize={15}
+            updateCellsBatchingPeriod={10}
         />
     );
 };

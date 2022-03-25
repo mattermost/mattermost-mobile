@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {TouchableOpacity, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import CompassIcon from '@components/compass_icon';

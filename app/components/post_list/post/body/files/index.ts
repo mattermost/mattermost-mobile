@@ -3,40 +3,65 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {combineLatest, of as of$} from 'rxjs';
+import {combineLatest, of as of$, from as from$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {observeConfig, observeLicense} from '@queries/servers/system';
+import {fileExists} from '@utils/file';
 
 import Files from './files';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type FileModel from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
-import type SystemModel from '@typings/database/models/servers/system';
 
-const enhance = withObservables(['post'], ({database, post}: {post: PostModel} & WithDatabaseArgs) => {
-    const config = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
+type EnhanceProps = WithDatabaseArgs & {
+    post: PostModel;
+}
+
+const filesLocalPathValidation = async (files: FileModel[], authorId: string) => {
+    const filesInfo: FileInfo[] = [];
+    for await (const f of files) {
+        const info = f.toFileInfo(authorId);
+        if (info.localPath) {
+            const exists = await fileExists(info.localPath);
+            if (!exists) {
+                info.localPath = '';
+            }
+        }
+        filesInfo.push(info);
+    }
+
+    return filesInfo;
+};
+
+const enhance = withObservables(['post'], ({database, post}: EnhanceProps) => {
+    const config = observeConfig(database);
     const enableMobileFileDownload = config.pipe(
-        switchMap(({value}: {value: ClientConfig}) => of$(value.EnableMobileFileDownload !== 'false')),
+        switchMap((cfg) => of$(cfg?.EnableMobileFileDownload !== 'false')),
     );
 
     const publicLinkEnabled = config.pipe(
-        switchMap(({value}: {value: ClientConfig}) => of$(value.EnablePublicLink !== 'false')),
+        switchMap((cfg) => of$(cfg?.EnablePublicLink !== 'false')),
     );
 
-    const complianceDisabled = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE).pipe(
-        switchMap(({value}: {value: ClientLicense}) => of$(value.IsLicensed === 'false' || value.Compliance === 'false')),
+    const complianceDisabled = observeLicense(database).pipe(
+        switchMap((lcs) => of$(lcs?.IsLicensed === 'false' || lcs?.Compliance === 'false')),
     );
 
     const canDownloadFiles = combineLatest([enableMobileFileDownload, complianceDisabled]).pipe(
         map(([download, compliance]) => compliance || download),
     );
 
+    const filesInfo = post.files.observeWithColumns(['local_path']).pipe(
+        switchMap((fs) => from$(filesLocalPathValidation(fs, post.userId))),
+    );
+
     return {
-        authorId: of$(post.userId),
         canDownloadFiles,
         postId: of$(post.id),
         publicLinkEnabled,
+        filesInfo,
     };
 });
 

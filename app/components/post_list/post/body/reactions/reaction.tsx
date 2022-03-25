@@ -1,48 +1,68 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
-import {Platform, Text} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import React, {useCallback, useMemo} from 'react';
+import {TouchableOpacity, View} from 'react-native';
+import AnimatedNumbers from 'react-native-animated-numbers';
 
 import Emoji from '@components/emoji';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type ReactionProps = {
     count: number;
     emojiName: string;
     highlight: boolean;
     onPress: (emojiName: string, highlight: boolean) => void;
-    onLongPress: () => void;
+    onLongPress: (initialEmoji: string) => void;
     theme: Theme;
 }
+
+const MIN_WIDTH = 50;
+const DIGIT_WIDTH = 5;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         count: {
-            color: theme.linkColor,
-            marginLeft: 6,
+            color: changeOpacity(theme.centerChannelColor, 0.56),
+            ...typography('Body', 100, 'SemiBold'),
         },
-        customEmojiStyle: {marginHorizontal: 3},
-        highlight: {backgroundColor: changeOpacity(theme.linkColor, 0.1)},
+        countContainer: {marginRight: 8},
+        countHighlight: {
+            color: theme.buttonBg,
+        },
+        customEmojiStyle: {color: '#000'},
+        emoji: {marginHorizontal: 5},
+        highlight: {
+            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
+            borderColor: theme.buttonBg,
+            borderWidth: 1,
+        },
         reaction: {
             alignItems: 'center',
-            borderRadius: 2,
-            borderColor: changeOpacity(theme.linkColor, 0.4),
-            borderWidth: 1,
+            borderRadius: 4,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             flexDirection: 'row',
-            height: 30,
-            marginRight: 6,
-            marginBottom: 5,
-            marginTop: 10,
-            paddingHorizontal: 6,
-            paddingBottom: Platform.select({android: 2}),
+            height: 32,
+            justifyContent: 'center',
+            marginBottom: 12,
+            marginRight: 8,
+            minWidth: MIN_WIDTH,
         },
     };
 });
 
 const Reaction = ({count, emojiName, highlight, onPress, onLongPress, theme}: ReactionProps) => {
     const styles = getStyleSheet(theme);
+    const digits = String(count).length;
+    const containerStyle = useMemo(() => {
+        const minWidth = MIN_WIDTH + (digits * DIGIT_WIDTH);
+        return [styles.reaction, (highlight && styles.highlight), {minWidth}];
+    }, [styles.reaction, highlight, digits]);
+
+    const handleLongPress = useCallback(() => {
+        onLongPress(emojiName);
+    }, []);
 
     const handlePress = useCallback(() => {
         onPress(emojiName, highlight);
@@ -51,23 +71,26 @@ const Reaction = ({count, emojiName, highlight, onPress, onLongPress, theme}: Re
     return (
         <TouchableOpacity
             onPress={handlePress}
-            onLongPress={onLongPress}
+            onLongPress={handleLongPress}
             delayLongPress={350}
-            style={[styles.reaction, (highlight && styles.highlight)]}
+            style={containerStyle}
         >
-            <Emoji
-                emojiName={emojiName}
-                size={20}
-                textStyle={{color: '#000'}}
-                customEmojiStyle={styles.customEmojiStyle}
-                testID={`reaction.emoji.${emojiName}`}
-            />
-            <Text
-                style={styles.count}
-                testID={`reaction.emoji.${emojiName}.count`}
-            >
-                {count}
-            </Text>
+            <View style={styles.emoji}>
+                <Emoji
+                    emojiName={emojiName}
+                    size={20}
+                    textStyle={styles.customEmojiStyle}
+                    testID={`reaction.emoji.${emojiName}`}
+                />
+            </View>
+            <View style={styles.countContainer}>
+                <AnimatedNumbers
+                    includeComma={false}
+                    fontStyle={[styles.count, (highlight && styles.countHighlight)]}
+                    animateToNumber={count}
+                    animationDuration={450}
+                />
+            </View>
         </TouchableOpacity>
     );
 };

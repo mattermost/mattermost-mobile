@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useRef, useState} from 'react';
-import {View} from 'react-native';
-import {TapGestureHandler} from 'react-native-gesture-handler';
+import {TouchableWithoutFeedback, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import FileIcon from '@components/post_list/post/body/files/file_icon';
@@ -45,17 +44,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 export type Props = {
     imageMetadata: PostImage;
     imageUrl: string;
+    layoutWidth?: number;
     location: string;
     postId: string;
     theme: Theme;
 }
 
-const AttachmentImage = ({imageUrl, imageMetadata, location, postId, theme}: Props) => {
+const AttachmentImage = ({imageUrl, imageMetadata, layoutWidth, location, postId, theme}: Props) => {
     const galleryIdentifier = `${postId}-AttachmentImage-${location}`;
     const [error, setError] = useState(false);
     const fileId = useRef(generateId('uid')).current;
     const isTablet = useIsTablet();
-    const {height, width} = calculateDimensions(imageMetadata.height, imageMetadata.width, getViewPortWidth(false, isTablet));
+    const {height, width} = calculateDimensions(imageMetadata.height, imageMetadata.width, layoutWidth || getViewPortWidth(false, isTablet));
     const style = getStyleSheet(theme);
 
     const onError = useCallback(() => {
@@ -97,7 +97,7 @@ const AttachmentImage = ({imageUrl, imageMetadata, location, postId, theme}: Pro
     return (
         <GalleryInit galleryIdentifier={galleryIdentifier}>
             <Animated.View style={[styles, style.container, {width}]}>
-                <TapGestureHandler onGestureEvent={onGestureEvent}>
+                <TouchableWithoutFeedback onPress={onGestureEvent}>
                     <Animated.View testID={`attachmentImage-${fileId}`}>
                         <ProgressiveImage
                             forwardRef={ref}
@@ -109,7 +109,7 @@ const AttachmentImage = ({imageUrl, imageMetadata, location, postId, theme}: Pro
                             style={{height, width}}
                         />
                     </Animated.View>
-                </TapGestureHandler>
+                </TouchableWithoutFeedback>
             </Animated.View>
         </GalleryInit>
     );

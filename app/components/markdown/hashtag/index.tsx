@@ -3,7 +3,6 @@
 
 import React from 'react';
 import {Text, TextStyle} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import {popToRoot, showSearchModal, dismissAllModals} from '@screens/navigation';
 
@@ -22,11 +21,12 @@ const Hashtag = ({hashtag, linkStyle}: HashtagProps) => {
     };
 
     return (
-        <TouchableOpacity onPress={handlePress}>
-            <Text style={linkStyle}>
-                {`#${hashtag}`}
-            </Text>
-        </TouchableOpacity>
+        <Text
+            onPress={handlePress}
+            style={linkStyle}
+        >
+            {`#${hashtag}`}
+        </Text>
     );
 };
 

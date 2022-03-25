@@ -3,18 +3,18 @@
 
 import React, {ReactNode, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, StyleProp, View, ViewStyle} from 'react-native';
-import {TouchableHighlight} from 'react-native-gesture-handler';
+import {Keyboard, Platform, StyleProp, View, ViewStyle, TouchableHighlight} from 'react-native';
 
-import {showPermalink} from '@actions/local/permalink';
 import {removePost} from '@actions/local/post';
+import {showPermalink} from '@actions/remote/permalink';
+import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import * as Screens from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {bottomSheetModalOptions, goToScreen, showModal, showModalOverCurrentContext} from '@screens/navigation';
+import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {fromAutoResponder, isFromWebhook, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -25,7 +25,6 @@ import Header from './header';
 import PreHeader from './pre_header';
 import SystemMessage from './system_message';
 
-import type FileModel from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -34,7 +33,7 @@ type PostProps = {
     canDelete: boolean;
     currentUser: UserModel;
     differentThreadSequence: boolean;
-    files: FileModel[];
+    filesCount: number;
     hasReplies: boolean;
     highlight?: boolean;
     highlightPinnedOrSaved?: boolean;
@@ -92,11 +91,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'column',
         },
         rightColumnPadding: {paddingBottom: 3},
+        touchableContainer: {marginHorizontal: -20, paddingHorizontal: 20},
     };
 });
 
 const Post = ({
-    appsEnabled, canDelete, currentUser, differentThreadSequence, files, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
+    appsEnabled, canDelete, currentUser, differentThreadSequence, filesCount, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
     isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
     location, post, reactionsCount, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
     testID, previousPost,
@@ -129,7 +129,7 @@ const Post = ({
         if (post) {
             if (location === Screens.THREAD) {
                 Keyboard.dismiss();
-            } else if (location === Screens.SEARCH) {
+            } else if ([Screens.SAVED_POSTS, Screens.MENTIONS, Screens.SEARCH].includes(location)) {
                 showPermalink(serverUrl, '', post.id, intl);
                 return;
             }
@@ -137,8 +137,8 @@ const Post = ({
             const isValidSystemMessage = isAutoResponder || !isSystemPost;
             if (post.deleteAt === 0 && isValidSystemMessage && !isPendingOrFailed) {
                 if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
-                    // https://mattermost.atlassian.net/browse/MM-39708
-                    goToScreen('THREADS_SCREEN_NOT_IMPLEMENTED_YET', '', {post});
+                    const rootId = post.rootId || post.id;
+                    fetchAndSwitchToThread(serverUrl, rootId);
                 }
             } else if ((isEphemeral || post.deleteAt > 0)) {
                 removePost(serverUrl, post);
@@ -199,12 +199,11 @@ const Post = ({
     } else {
         postAvatar = (
             <View style={[styles.profilePictureContainer, pendingPostStyle]}>
-                {isAutoResponder ? (
+                {(isAutoResponder || isSystemPost) ? (
                     <SystemAvatar theme={theme}/>
                 ) : (
                     <Avatar
                         isAutoReponse={isAutoResponder}
-                        isSystemPost={isSystemPost}
                         post={post}
                     />
                 )}
@@ -247,7 +246,7 @@ const Post = ({
         body = (
             <Body
                 appsEnabled={appsEnabled}
-                files={files}
+                filesCount={filesCount}
                 hasReactions={reactionsCount > 0}
                 highlight={Boolean(highlightedStyle)}
                 highlightReplyBar={highlightReplyBar}
@@ -275,6 +274,7 @@ const Post = ({
                 onPress={handlePress}
                 onLongPress={showPostOptions}
                 underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
+                style={styles.touchableContainer}
             >
                 <>
                     <PreHeader

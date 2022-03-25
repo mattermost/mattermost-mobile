@@ -1,0 +1,39 @@
+diff --git a/node_modules/react-native-animated-numbers/index.js b/node_modules/react-native-animated-numbers/index.js
+index f624b91..af39f58 100644
+--- a/node_modules/react-native-animated-numbers/index.js
++++ b/node_modules/react-native-animated-numbers/index.js
+@@ -1,4 +1,4 @@
+-import React from 'react';
++import React, { useCallback } from 'react';
+ import { Text, View } from 'react-native';
+ import Animated, { EasingNode } from 'react-native-reanimated';
+ 
+@@ -71,9 +71,9 @@ const AnimatedNumber = ({
+ 		return new Animated.Value(animationHeight);
+ 	});
+ 
+-	const setButtonLayout = (e) => {
++	const setButtonLayout = useCallback((e) => {
+ 		setNumberHeight(e.nativeEvent.layout.height);
+-	};
++	}, []);
+ 
+ 	React.useEffect(() => {
+ 		animations.map((animation, index) => {
+@@ -139,12 +139,14 @@ const AnimatedNumber = ({
+ 					})}
+ 				</View>
+ 			)}
++			{numberHeight === 0 &&
+ 			<Text
+-				style={[fontStyle, { position: 'absolute', top: -999999 }]}
++				style={[fontStyle]}
+ 				onLayout={setButtonLayout}
+ 			>
+-				{0}
++				{animateToNumberString}
+ 			</Text>
++			}
+ 		</>
+ 	);
+ };

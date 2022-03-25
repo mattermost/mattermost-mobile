@@ -69,8 +69,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
             paddingBottom: 2,
             backgroundColor: theme.centerChannelBg,
-            borderTopWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.20),
+            borderWidth: 1,
+            borderBottomWidth: 0,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.20),
+            borderTopLeftRadius: 12,
+            borderTopRightRadius: 12,
         },
     };
 });

@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React, {useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, Text, View} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
+import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {switchToChannelById} from '@actions/remote/channel';
+import Badge from '@components/badge';
 import ChannelIcon from '@components/channel_icon';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -20,9 +22,9 @@ import type MyChannelModel from '@typings/database/models/servers/my_channel';
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flexDirection: 'row',
-        marginBottom: 8,
         paddingLeft: 2,
-        paddingVertical: 4,
+        height: 40,
+        alignItems: 'center',
     },
     icon: {
         fontSize: 24,
@@ -38,6 +40,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     highlight: {
         color: theme.sidebarText,
     },
+    muted: {
+        color: changeOpacity(theme.sidebarText, 0.4),
+    },
+    badge: {
+        position: 'relative',
+        borderWidth: 0,
+        left: 0,
+        top: 0,
+        alignSelf: undefined,
+    },
+    mutedBadge: {
+        opacity: 0.4,
+    },
 }));
 
 const textStyle = StyleSheet.create({
@@ -46,26 +61,46 @@ const textStyle = StyleSheet.create({
 });
 
 type Props = {
-    channel: Pick<ChannelModel, 'displayName' | 'name' | 'shared' | 'type'>;
+    channel: Pick<ChannelModel, 'deleteAt' | 'displayName' | 'name' | 'shared' | 'type'>;
+    isActive: boolean;
     isOwnDirectMessage: boolean;
-    myChannel: MyChannelModel;
+    isMuted: boolean;
+    myChannel?: MyChannelModel;
+    collapsed: boolean;
 }
 
-const ChannelListItem = ({channel, isOwnDirectMessage, myChannel}: Props) => {
+const ChannelListItem = ({channel, isActive, isOwnDirectMessage, isMuted, myChannel, collapsed}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
-    // Make it brighter if it's highlighted, or has unreads
-    const bright = myChannel.isUnread || myChannel.mentionsCount > 0;
+    // Make it brighter if it's not muted, and highlighted or has unreads
+    const bright = !isMuted && (isActive || (myChannel && (myChannel.isUnread || myChannel.mentionsCount > 0)));
 
-    const switchChannels = () => switchToChannelById(serverUrl, myChannel.id);
+    const sharedValue = useSharedValue(collapsed && !bright);
+
+    useEffect(() => {
+        sharedValue.value = collapsed && !bright;
+    }, [collapsed, bright]);
+
+    const animatedStyle = useAnimatedStyle(() => {
+        return {
+            marginVertical: withTiming(sharedValue.value ? 0 : 2, {duration: 500}),
+            height: withTiming(sharedValue.value ? 0 : 40, {duration: 500}),
+            opacity: withTiming(sharedValue.value ? 0 : 1, {duration: 500, easing: Easing.inOut(Easing.exp)}),
+        };
+    });
+
+    const switchChannels = () => {
+        if (myChannel) {
+            switchToChannelById(serverUrl, myChannel.id);
+        }
+    };
     const membersCount = useMemo(() => {
         if (channel.type === General.GM_CHANNEL) {
             return channel.displayName?.split(',').length;
         }
-
         return 0;
     }, [channel.type, channel.displayName]);
 
@@ -73,33 +108,47 @@ const ChannelListItem = ({channel, isOwnDirectMessage, myChannel}: Props) => {
         bright ? textStyle.bright : textStyle.regular,
         styles.text,
         bright && styles.highlight,
-    ], [bright, styles]);
+        isMuted && styles.muted,
+    ], [bright, styles, isMuted]);
 
     let displayName = channel.displayName;
     if (isOwnDirectMessage) {
         displayName = formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
     }
 
-    return (
-        <TouchableOpacity onPress={switchChannels}>
-            <View style={styles.container}>
-                <ChannelIcon
-                    membersCount={membersCount}
-                    name={channel.name}
-                    shared={channel.shared}
-                    size={24}
-                    type={channel.type}
-                />
-                <Text
-                    ellipsizeMode='tail'
-                    numberOfLines={1}
-                    style={textStyles}
-                >
-                    {displayName}
-                </Text>
+    if ((channel.deleteAt > 0 && !isActive) || !myChannel) {
+        return null;
+    }
 
-            </View>
-        </TouchableOpacity>
+    return (
+        <Animated.View style={animatedStyle}>
+            <TouchableOpacity onPress={switchChannels}>
+                <View style={styles.container}>
+                    <ChannelIcon
+                        isActive={isActive}
+                        isArchived={channel.deleteAt > 0}
+                        membersCount={membersCount}
+                        name={channel.name}
+                        shared={channel.shared}
+                        size={24}
+                        type={channel.type}
+                        isMuted={isMuted}
+                    />
+                    <Text
+                        ellipsizeMode='tail'
+                        numberOfLines={1}
+                        style={textStyles}
+                    >
+                        {displayName}
+                    </Text>
+                    <Badge
+                        visible={myChannel.mentionsCount > 0}
+                        value={myChannel.mentionsCount}
+                        style={[styles.badge, isMuted && styles.mutedBadge]}
+                    />
+                </View>
+            </TouchableOpacity>
+        </Animated.View>
     );
 };
 

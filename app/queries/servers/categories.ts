@@ -10,7 +10,7 @@ import type CategoryModel from '@typings/database/models/servers/category';
 
 const {SERVER: {CATEGORY}} = MM_TABLES;
 
-export const queryCategoryById = async (database: Database, categoryId: string) => {
+export const getCategoryById = async (database: Database, categoryId: string) => {
     try {
         const record = (await database.collections.get<CategoryModel>(CATEGORY).find(categoryId));
         return record;
@@ -19,61 +19,12 @@ export const queryCategoryById = async (database: Database, categoryId: string) 
     }
 };
 
-export const queryCategoriesById = async (database: Database, categoryIds: string[]): Promise<CategoryModel[]> => {
-    try {
-        const records = (await database.get<CategoryModel>(CATEGORY).query(Q.where('id', Q.oneOf(categoryIds))).fetch());
-        return records;
-    } catch {
-        return Promise.resolve([] as CategoryModel[]);
-    }
+export const queryCategoriesById = (database: Database, categoryIds: string[]) => {
+    return database.get<CategoryModel>(CATEGORY).query(Q.where('id', Q.oneOf(categoryIds)));
 };
 
-export const queryCategoriesByType = async (database: Database, type: CategoryType): Promise<CategoryModel[]> => {
-    try {
-        const records = (await database.get<CategoryModel>(CATEGORY).query(Q.where('type', type)).fetch());
-        return records;
-    } catch {
-        return Promise.resolve([] as CategoryModel[]);
-    }
-};
-
-export const queryCategoriesByTeamId = async (database: Database, teamId: string): Promise<CategoryModel[]> => {
-    try {
-        const records = (await database.get<CategoryModel>(CATEGORY).query(Q.where('team_id', teamId)).fetch());
-        return records;
-    } catch {
-        return Promise.resolve([] as CategoryModel[]);
-    }
-};
-
-export const queryCategoriesByTeamIds = async (database: Database, teamIds: string[]): Promise<CategoryModel[]> => {
-    try {
-        const records = (await database.get<CategoryModel>(CATEGORY).query(Q.where('team_id', Q.oneOf(teamIds))).fetch());
-        return records;
-    } catch {
-        return Promise.resolve([] as CategoryModel[]);
-    }
-};
-
-export const queryCategoriesByTypeTeamId = async (database: Database, type: CategoryType, teamId: string): Promise<CategoryModel[]> => {
-    try {
-        const records = await database.get<CategoryModel>(CATEGORY).query(
-            Q.where('team_id', teamId),
-            Q.where('type', type),
-        ).fetch();
-        return records;
-    } catch {
-        return Promise.resolve([] as CategoryModel[]);
-    }
-};
-
-export const queryAllCategories = async (database: Database): Promise<CategoryModel[]> => {
-    try {
-        const records = await database.get<CategoryModel>(CATEGORY).query().fetch();
-        return records;
-    } catch {
-        return Promise.resolve([] as CategoryModel[]);
-    }
+export const queryCategoriesByTeamIds = (database: Database, teamIds: string[]) => {
+    return database.get<CategoryModel>(CATEGORY).query(Q.where('team_id', Q.oneOf(teamIds)));
 };
 
 export const prepareCategories = (operator: ServerDataOperator, categories: CategoryWithChannels[]) => {
@@ -117,13 +68,13 @@ export const prepareCategoryChannels = (
 export const prepareDeleteCategory = async (category: CategoryModel): Promise<Model[]> => {
     const preparedModels: Model[] = [category.prepareDestroyPermanently()];
 
-    const associatedChildren: Array<Query<any>> = [
+    const associatedChildren: Array<Query<Model>|undefined> = [
         category.categoryChannels,
     ];
-    for await (const children of associatedChildren) {
-        const models = await children?.fetch?.() as Model[] | undefined;
+    await Promise.all(associatedChildren.map(async (children) => {
+        const models = await children?.fetch();
         models?.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
-    }
+    }));
 
     return preparedModels;
 };

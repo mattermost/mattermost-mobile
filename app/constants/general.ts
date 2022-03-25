@@ -4,6 +4,7 @@
 export default {
     PAGE_SIZE_DEFAULT: 60,
     POST_CHUNK_SIZE: 60,
+    POST_AROUND_CHUNK_SIZE: 10,
     CHANNELS_CHUNK_SIZE: 50,
     STATUS_INTERVAL: 60000,
     AUTOCOMPLETE_LIMIT_DEFAULT: 25,
@@ -15,10 +16,10 @@ export default {
     DND: 'dnd',
     STATUS_COMMANDS: ['offline', 'away', 'online', 'dnd'],
     DEFAULT_CHANNEL: 'town-square',
-    DM_CHANNEL: 'D',
-    OPEN_CHANNEL: 'O',
-    PRIVATE_CHANNEL: 'P',
-    GM_CHANNEL: 'G',
+    DM_CHANNEL: 'D' as const,
+    OPEN_CHANNEL: 'O' as const,
+    PRIVATE_CHANNEL: 'P' as const,
+    GM_CHANNEL: 'G' as const,
     TEAMMATE_NAME_DISPLAY: {
         SHOW_USERNAME: 'username',
         SHOW_NICKNAME_FULLNAME: 'nickname_full_name',
@@ -32,4 +33,9 @@ export default {
     DISABLED: 'disabled',
     DEFAULT_ON: 'default_on',
     DEFAULT_OFF: 'default_off',
+    PROFILE_CHUNK_SIZE: 100,
+    SEARCH_TIMEOUT_MILLISECONDS: 100,
+    AUTOCOMPLETE_SPLIT_CHARACTERS: ['.', '-', '_'],
+    CHANNEL_USER_ROLE: 'channel_user',
+    RESTRICT_DIRECT_MESSAGE_ANY: 'any',
 };

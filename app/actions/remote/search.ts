@@ -6,9 +6,9 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {prepareMissingChannelsForAllTeams} from '@queries/servers/channel';
-import {queryCurrentUser} from '@queries/servers/user';
+import {getCurrentUser} from '@queries/servers/user';
 
-import {fetchPostAuthors, getMissingChannelsFromPosts} from './post';
+import {fetchPostAuthors, fetchMissingChannelsFromPosts} from './post';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
@@ -20,7 +20,7 @@ type PostSearchRequest = {
     posts?: Post[];
 }
 
-export async function getRecentMentions(serverUrl: string): Promise<PostSearchRequest> {
+export async function fetchRecentMentions(serverUrl: string): Promise<PostSearchRequest> {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
 
     if (!operator) {
@@ -39,7 +39,7 @@ export async function getRecentMentions(serverUrl: string): Promise<PostSearchRe
     let order: string[] = [];
 
     try {
-        const currentUser = await queryCurrentUser(operator.database);
+        const currentUser = await getCurrentUser(operator.database);
         if (!currentUser) {
             return {
                 posts: [],
@@ -67,7 +67,7 @@ export async function getRecentMentions(serverUrl: string): Promise<PostSearchRe
 
         if (postsArray.length) {
             const {authors} = await fetchPostAuthors(serverUrl, postsArray, true);
-            const {channels, channelMemberships} = await getMissingChannelsFromPosts(serverUrl, postsArray, true) as {channels: Channel[]; channelMemberships: ChannelMembership[]};
+            const {channels, channelMemberships} = await fetchMissingChannelsFromPosts(serverUrl, postsArray, true) as {channels: Channel[]; channelMemberships: ChannelMembership[]};
 
             if (authors?.length) {
                 promises.push(

@@ -87,7 +87,6 @@ const PostHandler = (superclass: any) => class extends superclass {
 
         const emojis: CustomEmoji[] = [];
         const files: FileInfo[] = [];
-        const metadatas: Metadata[] = [];
         const postsReactions: ReactionsPerPost[] = [];
         const pendingPostsToDelete: Post[] = [];
         const postsInThread: Record<string, Post[]> = {};
@@ -193,23 +192,19 @@ const PostHandler = (superclass: any) => class extends superclass {
             batch.push(...postFiles);
         }
 
-        if (metadatas.length) {
-            // calls handler for postMetadata ( embeds and images )
-            const postMetadata = await this.handlePostMetadata({metadatas, prepareRecordsOnly: true});
-            batch.push(...postMetadata);
-        }
-
         if (emojis.length) {
             const postEmojis = await this.handleCustomEmojis({emojis, prepareRecordsOnly: true});
             batch.push(...postEmojis);
         }
 
-        // link the newly received posts
-        const linkedPosts = createPostsChain({order, posts, previousPostId});
-        if (linkedPosts.length) {
-            const postsInChannel = await this.handlePostsInChannel(linkedPosts, actionType as never, true);
-            if (postsInChannel.length) {
-                batch.push(...postsInChannel);
+        if (actionType !== ActionType.POSTS.RECEIVED_IN_THREAD) {
+            // link the newly received posts
+            const linkedPosts = createPostsChain({order, posts, previousPostId});
+            if (linkedPosts.length) {
+                const postsInChannel = await this.handlePostsInChannel(linkedPosts, actionType as never, true);
+                if (postsInChannel.length) {
+                    batch.push(...postsInChannel);
+                }
             }
         }
 
@@ -275,6 +270,7 @@ const PostHandler = (superclass: any) => class extends superclass {
         }
         switch (actionType) {
             case ActionType.POSTS.RECEIVED_IN_CHANNEL:
+            case ActionType.POSTS.RECEIVED_IN_THREAD:
             case ActionType.POSTS.RECEIVED_SINCE:
             case ActionType.POSTS.RECEIVED_AFTER:
             case ActionType.POSTS.RECEIVED_BEFORE:

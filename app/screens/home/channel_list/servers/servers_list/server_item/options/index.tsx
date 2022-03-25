@@ -45,6 +45,9 @@ const ServerOptions = ({onEdit, onLogin, onLogout, onRemove, progress, server}: 
         defaultMessage: 'Log in',
     });
 
+    const serverItem = `server_list.server_item.${server.displayName.replace(/ /g, '_').toLocaleLowerCase()}`;
+    const loginOrLogoutOptionTestId = isLoggedIn ? `${serverItem}.logout.option` : `${serverItem}.login.option`;
+
     return (
         <View style={styles.container}>
             <Option
@@ -54,6 +57,7 @@ const ServerOptions = ({onEdit, onLogin, onLogout, onRemove, progress, server}: 
                 positionX={OPTION_SIZE * 3}
                 progress={progress}
                 style={styles.left}
+                testID={`${serverItem}.edit.option`}
                 text={intl.formatMessage({id: 'servers.edit', defaultMessage: 'Edit'})}
             />
             <Option
@@ -62,6 +66,7 @@ const ServerOptions = ({onEdit, onLogin, onLogout, onRemove, progress, server}: 
                 onPress={onRemove}
                 positionX={OPTION_SIZE * 2}
                 progress={progress}
+                testID={`${serverItem}.remove.option`}
                 text={intl.formatMessage({id: 'servers.remove', defaultMessage: 'Remove'})}
             />
             <Option
@@ -71,6 +76,7 @@ const ServerOptions = ({onEdit, onLogin, onLogout, onRemove, progress, server}: 
                 positionX={OPTION_SIZE}
                 progress={progress}
                 style={styles.right}
+                testID={loginOrLogoutOptionTestId}
                 text={sessionText}
             />
         </View>

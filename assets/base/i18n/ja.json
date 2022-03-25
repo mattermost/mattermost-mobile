@@ -18,7 +18,7 @@
   "channel.hasGuests": "このグループメッセージにはゲストがいます",
   "channel.isGuest": "このユーザーはゲストです",
   "channel_header.addMembers": "メンバーを追加する",
-  "channel_header.directchannel.you": "{displayname} (あなた) ",
+  "channel_header.directchannel.you": "{displayName} (あなた) ",
   "channel_header.manageMembers": "メンバー管理",
   "channel_header.notificationPreference": "モバイルプッシュ通知",
   "channel_header.notificationPreference.all": "すべて",

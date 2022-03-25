@@ -153,6 +153,7 @@ export default function Servers() {
             mentionCount={total.mentions}
             onPress={onPress}
             style={styles.icon}
+            testID={'channel_list.servers.server_icon'}
         />
     );
 }

@@ -18,7 +18,7 @@
   "channel.hasGuests": "Bu grup iletisinde konuklar var",
   "channel.isGuest": "Bu kişi bir konuk",
   "channel_header.addMembers": "Üye Ekle",
-  "channel_header.directchannel.you": "{displayname} (siz) ",
+  "channel_header.directchannel.you": "{displayName} (siz) ",
   "channel_header.manageMembers": "Üye Yönetimi",
   "channel_header.notificationPreference": "Mobil Bildirimler",
   "channel_header.notificationPreference.all": "Tümü",

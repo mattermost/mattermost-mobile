@@ -8,9 +8,9 @@ import {Navigation} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
-import {queryMyChannel} from '@queries/servers/channel';
-import {queryCommonSystemValues, queryTeamHistory} from '@queries/servers/system';
-import {queryChannelHistory} from '@queries/servers/team';
+import {getMyChannel} from '@queries/servers/channel';
+import {getCommonSystemValues, getTeamHistory} from '@queries/servers/system';
+import {getTeamChannelHistory} from '@queries/servers/team';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 
 import {switchToChannel} from './channel';
@@ -37,10 +37,10 @@ jest.mock('@utils/helpers', () => {
 });
 
 const queryDatabaseValues = async (database: Database, teamId: string, channelId: string) => ({
-    systemValues: await queryCommonSystemValues(database),
-    teamHistory: await queryTeamHistory(database),
-    channelHistory: await queryChannelHistory(database, teamId),
-    member: await queryMyChannel(database, channelId),
+    systemValues: await getCommonSystemValues(database),
+    teamHistory: await getTeamHistory(database),
+    channelHistory: await getTeamChannelHistory(database, teamId),
+    member: await getMyChannel(database, channelId),
 });
 
 describe('switchToChannel', () => {

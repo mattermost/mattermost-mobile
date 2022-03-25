@@ -7,8 +7,8 @@ const axios = require('axios');
 const ClientOAuth2 = require('client-oauth2');
 const express = require('express');
 
-const postMessageAs = require('./e2e/plugins/post_message_as');
-const webhookUtils = require('./e2e/utils/webhook_utils');
+const postMessageAs = require('./utils/post_message_as');
+const webhookUtils = require('./utils/webhook_utils');
 const port = 3000;
 
 const {

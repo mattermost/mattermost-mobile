@@ -5,7 +5,7 @@
 
 import merge from 'deepmerge';
 import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert} from 'react-native';
-import {Navigation, Options, OptionsModalPresentationStyle} from 'react-native-navigation';
+import {ImageResource, Navigation, Options, OptionsModalPresentationStyle, OptionsTopBarButton} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
@@ -104,6 +104,18 @@ export const bottomSheetModalOptions = (theme: Theme, closeButtonId: string) => 
 Navigation.setDefaultOptions({
     layout: {
         orientation: Device.IS_TABLET ? undefined : ['portrait'],
+    },
+    topBar: {
+        title: {
+            fontFamily: 'Metropolis-SemiBold',
+            fontSize: 18,
+            fontWeight: '600',
+        },
+        subtitle: {
+            fontFamily: 'OpenSans',
+            fontSize: 12,
+            fontWeight: '500',
+        },
     },
 });
 
@@ -295,7 +307,7 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
     const componentId = EphemeralStore.getNavigationTopComponentId();
-    DeviceEventEmitter.emit('tabBarVisible', false);
+    DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, false);
     const defaultOptions: Options = {
         layout: {
             componentBackgroundColor: theme.centerChannelBg,
@@ -542,19 +554,33 @@ export async function dismissModal(options?: Options & { componentId: string}) {
     }
 }
 
-export async function dismissAllModals(options: Options = {}) {
+export async function dismissAllModals() {
     if (!EphemeralStore.hasModalsOpened()) {
         return;
     }
 
     try {
-        await Navigation.dismissAllModals(options);
+        const modals = EphemeralStore.navigationModalStack;
+        for await (const modal of modals) {
+            await Navigation.dismissModal(modal, {animations: {dismissModal: {enabled: false}}});
+        }
+
         EphemeralStore.clearNavigationModals();
     } catch (error) {
         // RNN returns a promise rejection if there are no modals to
         // dismiss. We'll do nothing in this case.
     }
 }
+
+export const buildNavigationButton = (id: string, testID: string, icon?: ImageResource): OptionsTopBarButton => ({
+    fontSize: 16,
+    fontFamily: 'OpenSans-SemiBold',
+    fontWeight: '600',
+    id,
+    icon,
+    showAsAction: 'always',
+    testID,
+});
 
 export function setButtons(componentId: string, buttons: NavButtons = {leftButtons: [], rightButtons: []}) {
     const options = {
@@ -587,6 +613,7 @@ export function showOverlay(name: string, passProps = {}, options = {}) {
 
     Navigation.showOverlay({
         component: {
+            id: name,
             name,
             passProps,
             options: merge(defaultOptions, options),

@@ -18,7 +18,7 @@
   "channel.hasGuests": "Dit groepsbericht heeft gasten",
   "channel.isGuest": "Deze persoon is een gast",
   "channel_header.addMembers": "Leden toevoegen",
-  "channel_header.directchannel.you": "{displayname} (jij) ",
+  "channel_header.directchannel.you": "{displayName} (jij) ",
   "channel_header.manageMembers": "Leden beheren",
   "channel_header.notificationPreference": "Mobiele push notificaties",
   "channel_header.notificationPreference.all": "Allen",

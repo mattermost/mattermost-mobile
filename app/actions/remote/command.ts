@@ -4,14 +4,14 @@
 import {IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
-import {showPermalink} from '@actions/local/permalink';
+import {showPermalink} from '@actions/remote/permalink';
 import {Client} from '@client/rest';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DeepLinkTypes from '@constants/deep_linking';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
-import {queryChannelsById} from '@queries/servers/channel';
-import {queryConfig, queryCurrentTeamId} from '@queries/servers/system';
+import {getChannelById} from '@queries/servers/channel';
+import {getConfig, getCurrentTeamId} from '@queries/servers/system';
 import {queryUsersByUsername} from '@queries/servers/user';
 import {showModal} from '@screens/navigation';
 import * as DraftUtils from '@utils/draft';
@@ -43,8 +43,8 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
     //     }
     // }
 
-    const channel = (await queryChannelsById(operator.database, [channelId]))?.[0];
-    const teamId = channel?.teamId || (await queryCurrentTeamId(operator.database));
+    const channel = await getChannelById(operator.database, channelId);
+    const teamId = channel?.teamId || (await getCurrentTeamId(operator.database));
 
     const args: CommandArgs = {
         channel_id: channelId,
@@ -129,8 +129,8 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
         return {error: `${serverUrl} database not found`};
     }
 
-    const config = await queryConfig(operator.database);
-    const match = matchDeepLink(location, serverUrl, config.SiteURL);
+    const config = await getConfig(operator.database);
+    const match = matchDeepLink(location, serverUrl, config?.SiteURL);
 
     if (match) {
         switch (match.type) {
@@ -158,7 +158,7 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
                         return {error: `${serverUrl} database not found`};
                     }
                 }
-                const user = (await queryUsersByUsername(serverDatabase, [data.userName]))?.[0];
+                const user = (await queryUsersByUsername(serverDatabase, [data.userName]).fetch())[0];
                 if (!user) {
                     DraftUtils.errorUnkownUser(intl);
                     return {data: false};
@@ -199,4 +199,33 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
         tryOpenURL(location, onError);
     }
     return {data: true};
+};
+
+export const fetchCommands = async (serverUrl: string, teamId: string) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error: error as ClientErrorProps};
+    }
+    try {
+        return {commands: await client.getCommandsList(teamId)};
+    } catch (error) {
+        return {error: error as ClientErrorProps};
+    }
+};
+
+export const fetchSuggestions = async (serverUrl: string, term: string, teamId: string, channelId: string, rootId?: string) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error: error as ClientErrorProps};
+    }
+
+    try {
+        return {suggestions: await client.getCommandAutocompleteSuggestionsList(term, teamId, channelId, rootId)};
+    } catch (error) {
+        return {error: error as ClientErrorProps};
+    }
 };
