@@ -14,12 +14,13 @@ import NavigationConstants from '@constants/navigation';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import EphemeralStore from '@store/ephemeral_store';
 import {LaunchProps, LaunchType} from '@typings/launch';
-import {NavButtons} from '@typings/screens/navigation';
+import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
+
+import type {NavButtons} from '@typings/screens/navigation';
 
 const {MattermostManaged} = NativeModules;
 const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
-export const appearanceControlledScreens = [Screens.SERVER, Screens.LOGIN, Screens.FORGOT_PASSWORD, Screens.MFA, Screens.SSO];
 
 const alpha = {
     from: 0,
@@ -590,10 +591,6 @@ export function setButtons(componentId: string, buttons: NavButtons = {leftButto
     };
 
     mergeNavigationOptions(componentId, options);
-}
-
-export function mergeNavigationOptions(componentId: string, options: Options) {
-    Navigation.mergeOptions(componentId, options);
 }
 
 export function showOverlay(name: string, passProps = {}, options = {}) {

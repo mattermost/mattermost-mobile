@@ -1,10 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import {Model} from '@nozbe/watermelondb';
 import {chunk} from 'lodash';
 
 import {updateChannelsDisplayName} from '@actions/local/channel';
+import {getUserTimezone} from '@actions/local/timezone';
 import {updateRecentCustomStatuses, updateLocalUser} from '@actions/local/user';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {General} from '@constants';
@@ -13,7 +16,7 @@ import {debounce} from '@helpers/api/general';
 import NetworkManager from '@init/network_manager';
 import {queryChannelsByTypes} from '@queries/servers/channel';
 import {getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
-import {getCurrentUser, prepareUsers, queryAllUsers, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
+import {getCurrentUser, getUserById, prepareUsers, queryAllUsers, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
 import {removeUserFromList} from '@utils/user';
 
 import {forceLogoutIfNecessary} from './session';
@@ -692,4 +695,26 @@ export const buildProfileImageUrl = (serverUrl: string, userId: string, timestam
     }
 
     return client.getProfilePictureUrl(userId, timestamp);
+};
+
+export const autoUpdateTimezone = async (serverUrl: string, {deviceTimezone, userId}: {deviceTimezone: string; userId: string}) => {
+    const database = DatabaseManager.serverDatabases[serverUrl].database;
+    if (!database) {
+        return {error: `No database present for ${serverUrl}`};
+    }
+
+    const currentUser = await getUserById(database, userId);
+
+    if (!currentUser) {
+        return null;
+    }
+
+    const currentTimezone = getUserTimezone(currentUser);
+    const newTimezoneExists = currentTimezone.automaticTimezone !== deviceTimezone;
+
+    if (currentTimezone.useAutomaticTimezone && newTimezoneExists) {
+        const timezone = {useAutomaticTimezone: 'true', automaticTimezone: deviceTimezone, manualTimezone: currentTimezone.manualTimezone};
+        await updateMe(serverUrl, {timezone});
+    }
+    return null;
 };

@@ -854,3 +854,7 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
         return {error};
     }
 }
+
+export const selectAttachmentMenuAction = (serverUrl: string, postId: string, actionId: string, selectedOption: string) => {
+    return postActionWithCookie(serverUrl, postId, actionId, '', selectedOption);
+};

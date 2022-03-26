@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {postActionWithCookie} from '@actions/remote/post';
 import {ActionType, Post} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPostById, prepareDeletePost} from '@queries/servers/post';
@@ -131,10 +130,6 @@ export const removePost = async (serverUrl: string, post: PostModel | Post) => {
     }
 
     return {post};
-};
-
-export const selectAttachmentMenuAction = (serverUrl: string, postId: string, actionId: string, selectedOption: string) => {
-    return postActionWithCookie(serverUrl, postId, actionId, '', selectedOption);
 };
 
 export const markPostAsDeleted = async (serverUrl: string, post: Post) => {
