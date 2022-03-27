@@ -130,7 +130,7 @@ export default class EditChannelInfo extends PureComponent {
             return;
         }
 
-        const displayNameExists = displayName && displayName.length >= 2;
+        const displayNameExists = displayName && displayName.length >= 1;
         this.props.enableRightButton(displayNameExists);
     };
 
