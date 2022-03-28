@@ -36,6 +36,7 @@ describe('AppCommandParser', () => {
                     bindings,
                     threadBindings: bindings,
                     threadBindingsForms: {},
+                    pluginEnabled: true,
                 },
             },
         } as any;

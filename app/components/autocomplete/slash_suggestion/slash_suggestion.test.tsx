@@ -28,7 +28,10 @@ const makeStore = async (bindings: AppBinding[]) => {
         ...reduxTestState,
         entities: {
             ...reduxTestState.entities,
-            apps: {bindings},
+            apps: {
+                bindings,
+                pluginEnabled: true,
+            },
         },
     } as any;
     const testStore = await mockStore(initialState);
