@@ -14,7 +14,7 @@ import {withServerDatabase} from '@database/components';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 
 const withGestures = (Screen: React.ComponentType, styles: StyleProp<ViewStyle>) => {
-    return function gestureHoc(props: never) {
+    return function gestureHoc(props: any) {
         if (Platform.OS === 'android') {
             return (
                 <GestureHandlerRootView style={[{flex: 1}, styles]}>
@@ -28,7 +28,7 @@ const withGestures = (Screen: React.ComponentType, styles: StyleProp<ViewStyle>)
 };
 
 const withIntl = (Screen: React.ComponentType) => {
-    return function IntlEnabledComponent(props: never) {
+    return function IntlEnabledComponent(props: any) {
         return (
             <IntlProvider
                 locale={DEFAULT_LOCALE}
@@ -41,7 +41,7 @@ const withIntl = (Screen: React.ComponentType) => {
 };
 
 const withSafeAreaInsets = (Screen: React.ComponentType) => {
-    return function SafeAreaInsets(props: never) {
+    return function SafeAreaInsets(props: any) {
         return (
             <SafeAreaProvider>
                 <Screen {...props}/>
