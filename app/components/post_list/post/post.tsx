@@ -240,7 +240,7 @@ const Post = ({
                 theme={theme}
             />
         );
-    } else if (post.type === 'custom_calls') {
+    } else if (post.type === Posts.POST_TYPES.CUSTOM_CALLS) {
         body = (
             <CallMessage
                 post={post}

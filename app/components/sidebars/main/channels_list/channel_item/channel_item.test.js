@@ -41,7 +41,6 @@ describe('ChannelItem', () => {
         isBot: false,
         customStatusEnabled: true,
         channelHasCall: false,
-        isSupportedServerCalls: false,
     };
 
     test('should match snapshot', () => {
@@ -52,24 +51,9 @@ describe('ChannelItem', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot when there is a call and calls are supported', () => {
+    test('should match snapshot when there is a call', () => {
         const newProps = {
             ...baseProps,
-            isSupportedServerCalls: true,
-            channelHasCall: true,
-        };
-
-        const wrapper = shallowWithIntl(
-            <ChannelItem {...newProps}/>,
-        );
-
-        expect(wrapper.getElement()).toMatchSnapshot();
-    });
-
-    test('should match snapshot when there is a call and but calls are not supported', () => {
-        const newProps = {
-            ...baseProps,
-            isSupportedServerCalls: false,
             channelHasCall: true,
         };
 
