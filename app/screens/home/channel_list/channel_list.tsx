@@ -12,9 +12,9 @@ import FreezeScreen from '@components/freeze_screen';
 import TeamSidebar from '@components/team_sidebar';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import Channel from '@screens/channel';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+import ChannelTabletView from './channel_tablet_view';
 import Servers from './servers';
 
 type ChannelProps = {
@@ -101,7 +101,7 @@ const ChannelListScreen = (props: ChannelProps) => {
                         currentTeamId={props.currentTeamId}
                     />
                     {isTablet && Boolean(props.currentTeamId) &&
-                        <Channel/>
+                        <ChannelTabletView/>
                     }
                 </Animated.View>
             </SafeAreaView>

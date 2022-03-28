@@ -577,6 +577,14 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
                 prepareRecordsOnly: true,
             });
 
+            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            if (isCRTEnabled) {
+                const {models: threadModels} = await processThreadsFromReceivedPosts(serverUrl, data.posts, true);
+                if (threadModels?.length) {
+                    models.push(...threadModels);
+                }
+            }
+
             models.push(...posts);
             await operator.batchRecords(models);
         }

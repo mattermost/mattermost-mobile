@@ -2,13 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {TouchableOpacity, View} from 'react-native';
+import {DeviceEventEmitter, TouchableOpacity, View} from 'react-native';
 
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
-import {Screens} from '@constants';
+import {Navigation, Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -55,12 +56,17 @@ type Props = {
 };
 
 const ThreadsButton = ({isCRTEnabled, unreadsAndMentions}: Props) => {
+    const isTablet = useIsTablet();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     const handlePress = useCallback(preventDoubleTap(() => {
+        if (isTablet) {
+            DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_THREADS);
+            return;
+        }
         goToScreen(Screens.GLOBAL_THREADS, '', {}, {topBar: {visible: false}});
-    }), []);
+    }), [isTablet]);
 
     const {unreads, mentions} = unreadsAndMentions;
 
