@@ -33,7 +33,7 @@ export const skinCodes = {"1F3FB":"light_skin_tone","1F3FC":"medium_light_skin_t
 export const EMOJI_DEFAULT_SKIN = 'default';
 
 // Generate the list of indices that belong to each category by an specified skin
-function genSkinnedCategories(skin) {
+function genSkinnedCategories(skin: string) {
     const result = new Map();
     for (const cat of CategoryNames) {
         const indices = [];

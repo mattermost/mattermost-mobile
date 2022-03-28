@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Platform} from 'react-native';
 import * as KeyChain from 'react-native-keychain';
 
@@ -10,8 +9,6 @@ import * as analytics from '@init/analytics';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
 import type {ServerCredential} from '@typings/credentials';
-
-const ASYNC_STORAGE_CURRENT_SERVER_KEY = '@currentServerUrl';
 
 export const getAllServerCredentials = async (): Promise<ServerCredential[]> => {
     const serverCredentials: ServerCredential[] = [];
@@ -34,23 +31,18 @@ export const getAllServerCredentials = async (): Promise<ServerCredential[]> => 
     return serverCredentials;
 };
 
-// TODO: This function is only necessary to support pre-Gekidou
-// versions as the active server URL may be stored in AsyncStorage.
-// At some point we can remove this function and rely solely on
-// the database manager's `getActiveServerUrl`.
 export const getActiveServerUrl = async () => {
     let serverUrl = await DatabaseManager.getActiveServerUrl();
-    if (!serverUrl) {
-        // If upgrading from non-Gekidou, the server URL might be in
-        // AsyncStorage. If so, retrieve the server URL, create a DB for it,
-        // then delete the AsyncStorage item.
-        serverUrl = await AsyncStorage.getItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
-        if (serverUrl) {
-            DatabaseManager.setActiveServerDatabase(serverUrl);
-            AsyncStorage.removeItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
+    if (serverUrl) {
+        let serverUrls: string[];
+        if (Platform.OS === 'ios') {
+            serverUrls = await KeyChain.getAllInternetPasswordServers();
+        } else {
+            serverUrls = await KeyChain.getAllGenericPasswordServices();
         }
-    }
 
+        serverUrl = serverUrls[0];
+    }
     return serverUrl || undefined;
 };
 
@@ -87,8 +79,6 @@ export const removeServerCredentials = async (serverUrl: string) => {
     }
 
     await KeyChain.resetInternetCredentials(serverUrl, options);
-
-    await AsyncStorage.removeItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
 };
 
 export const removeActiveServerCredentials = async () => {

@@ -30,8 +30,8 @@ const Actions = ({
     canDownloadFiles, disabled, enablePublicLinks, fileId,
     onCopyPublicLink, onDownload, onShare,
 }: Props) => {
-    const managedConfig = useManagedConfig();
-    const canCopyPublicLink = !fileId.startsWith('uid') && enablePublicLinks && managedConfig.copyPasteProtection !== 'true';
+    const managedConfig = useManagedConfig<ManagedConfig>();
+    const canCopyPublicLink = !fileId.startsWith('uid') && enablePublicLinks && managedConfig.copyAndPasteProtection !== 'true';
 
     return (
         <View style={styles.container}>

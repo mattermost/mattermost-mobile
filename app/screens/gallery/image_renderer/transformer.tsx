@@ -9,7 +9,7 @@ import {
     State, TapGestureHandler, TapGestureHandlerGestureEvent,
 } from 'react-native-gesture-handler';
 import Animated, {
-    cancelAnimation, Easing, useAnimatedReaction, useAnimatedStyle, useDerivedValue,
+    cancelAnimation, Easing, runOnJS, useAnimatedReaction, useAnimatedStyle, useDerivedValue,
     useSharedValue,
     withDecay, withSpring, WithSpringConfig, withTiming, WithTimingConfig,
 } from 'react-native-reanimated';
@@ -47,8 +47,6 @@ const springConfig: WithSpringConfig = {
 
 const timingConfig: WithTimingConfig = {
     duration: 250,
-
-    // @ts-expect-error EasingFactoryFunction missing in type definition
     easing: Easing.bezier(0.33, 0.01, 0, 1),
 };
 
@@ -372,7 +370,7 @@ const ImageTransformer = (
                     // it alow us to scale into different point even then we pan the image
                     ctx.adjustFocal = vec.sub(focal, vec.add(CENTER, offset));
                 } else if (evt.state === State.ACTIVE && evt.numberOfPointers !== 2) {
-                    disablePinch();
+                    runOnJS(disablePinch)();
                 }
             },
 

@@ -1,10 +1,10 @@
 package com.mattermost.rnbeta;
 
 import android.content.Context;
-import androidx.annotation.Nullable;
 import android.os.Bundle;
 import android.util.Log;
 import java.lang.System;
+import java.util.Objects;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -17,12 +17,11 @@ import org.json.JSONObject;
 import org.json.JSONException;
 
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.WritableMap;
 
 import com.mattermost.helpers.*;
 
 public class ReceiptDelivery {
-    private static final int[] FIBONACCI_BACKOFFS = new int[] { 0, 1, 2, 3, 5, 8 };
+    private static final int[] FIBONACCI_BACKOFF = new int[] { 0, 1, 2, 3, 5, 8 };
 
     public static void send(Context context, final String ackId, final String serverUrl, final String postId, final String type, final boolean isIdLoaded, ResolvePromise promise) {
         final ReactApplicationContext reactApplicationContext = new ReactApplicationContext(context);
@@ -58,27 +57,30 @@ public class ReceiptDelivery {
             return;
         }
 
-        final HttpUrl url = HttpUrl.parse(
-            String.format("%s/api/v4/notifications/ack", serverUrl.replaceAll("/$", "")));
-        if (url != null) {
-            final OkHttpClient client = new OkHttpClient();
-            final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-            RequestBody body = RequestBody.create(JSON, json.toString());
-            Request request = new Request.Builder()
-                    .header("Authorization", String.format("Bearer %s", token))
-                    .header("Content-Type", "application/json")
-                    .url(url)
-                    .post(body)
-                    .build();
+        final HttpUrl url;
+        if (serverUrl != null) {
+            url = HttpUrl.parse(
+                String.format("%s/api/v4/notifications/ack", serverUrl.replaceAll("/$", "")));
+            if (url != null) {
+                final OkHttpClient client = new OkHttpClient();
+                final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+                RequestBody body = RequestBody.create(json.toString(), JSON);
+                Request request = new Request.Builder()
+                        .header("Authorization", String.format("Bearer %s", token))
+                        .header("Content-Type", "application/json")
+                        .url(url)
+                        .post(body)
+                        .build();
 
-            makeServerRequest(client, request, isIdLoaded, 0, promise);
+                makeServerRequest(client, request, isIdLoaded, 0, promise);
+            }
         }
     }
 
     private static void makeServerRequest(OkHttpClient client, Request request, Boolean isIdLoaded, int reRequestCount, ResolvePromise promise) {
         try {
             Response response = client.newCall(request).execute();
-            String responseBody = response.body().string();
+            String responseBody = Objects.requireNonNull(response.body()).string();
             if (response.code() != 200) {
                 switch (response.code()) {
                     case 302:
@@ -105,9 +107,8 @@ public class ReceiptDelivery {
 
             JSONObject jsonResponse = new JSONObject(responseBody);
             Bundle bundle = new Bundle();
-            String keys[] = new String[]{"post_id", "category", "message", "team_id", "channel_id", "channel_name", "type", "sender_id", "sender_name", "version"};
-            for (int i = 0; i < keys.length; i++) {
-                String key = keys[i];
+            String[] keys = new String[]{"post_id", "root_id", "category", "message", "team_id", "channel_id", "channel_name", "type", "sender_id", "sender_name", "version"};
+            for (String key : keys) {
                 if (jsonResponse.has(key)) {
                     bundle.putString(key, jsonResponse.getString(key));
                 }
@@ -118,12 +119,14 @@ public class ReceiptDelivery {
             if (isIdLoaded) {
                 try {
                     reRequestCount++;
-                    if (reRequestCount < FIBONACCI_BACKOFFS.length) {
-                        Log.i("ReactNative", "Retry attempt " + reRequestCount + " with backoff delay: " + FIBONACCI_BACKOFFS[reRequestCount] + " seconds");
-                        Thread.sleep(FIBONACCI_BACKOFFS[reRequestCount] * 1000);
-                        makeServerRequest(client, request, isIdLoaded, reRequestCount, promise);
+                    if (reRequestCount < FIBONACCI_BACKOFF.length) {
+                        Log.i("ReactNative", "Retry attempt " + reRequestCount + " with backoff delay: " + FIBONACCI_BACKOFF[reRequestCount] + " seconds");
+                        Thread.sleep(FIBONACCI_BACKOFF[reRequestCount] * 1000);
+                        makeServerRequest(client, request, true, reRequestCount, promise);
                     }
-                } catch(InterruptedException ie) {}    
+                } catch(InterruptedException ie) {
+                    ie.printStackTrace();
+                }
             }
 
             promise.reject("Receipt delivery failure", e.toString());
