@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {field} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import type ChannelModel from './channel';
@@ -67,6 +68,9 @@ export default class UserModel extends Model {
 
     /** username : The user's username */
     username: string;
+
+    /** remote_id : The ID of the remote organization that this user belongs to */
+    remoteId!: string;
 
     /** notify_props : Notification preferences/configurations */
     notifyProps: UserNotifyProps | null;
