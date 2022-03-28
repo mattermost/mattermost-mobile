@@ -13,7 +13,7 @@ import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
 import type ThreadModel from '@typings/database/models/servers/thread';
 
-const {SERVER: {CHANNEL, POST, PREFERENCE, SYSTEM, THREAD}} = MM_TABLES;
+const {SERVER: {THREADS_IN_TEAM, PREFERENCE, SYSTEM, THREAD}} = MM_TABLES;
 
 export function processIsCRTEnabled(preferences: PreferenceModel[], config?: ClientConfig): boolean {
     let preferenceDefault = Preferences.COLLAPSED_REPLY_THREADS_OFF;
@@ -83,20 +83,10 @@ export const queryThreadsInTeam = ({database, hasReplies = true, isFollowing = t
         query.push(Q.where('reply_count', Q.gt(0)));
     }
 
-    // If teamId is specified, only get threads in that team and DM
+    // If teamId is specified, only get threads in that team (includes DM/GMs)
     if (teamId) {
         query.push(
-            Q.experimentalNestedJoin(POST, CHANNEL),
-            Q.on(
-                POST,
-                Q.on(
-                    CHANNEL,
-                    Q.or(
-                        Q.where('team_id', teamId),
-                        Q.where('team_id', ''),
-                    ),
-                ),
-            ),
+            Q.on(THREADS_IN_TEAM, 'team_id', teamId),
         );
     }
 

@@ -30,7 +30,7 @@ export default class ThreadModel extends Model {
         [THREAD_PARTICIPANT]: {type: 'has_many', foreignKey: 'thread_id'},
 
         /** A THREAD can have multiple THREADS_IN_TEAM. (relationship is 1:N)*/
-        [THREADS_IN_TEAM]: {type: 'has_many', foreignKey: 'team_id'},
+        [THREADS_IN_TEAM]: {type: 'has_many', foreignKey: 'thread_id'},
     };
 
     /** last_reply_at : The timestamp of when user last replied to the thread. */

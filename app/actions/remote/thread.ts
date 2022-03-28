@@ -9,8 +9,8 @@ import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {getCommonSystemValues} from '@queries/servers/system';
-import {getCurrentUser} from '@queries/servers/user';
 import {getNewestThreadInTeam} from '@queries/servers/thread';
+import {getCurrentUser} from '@queries/servers/user';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -338,15 +338,12 @@ export async function fetchNewThreads(
 
     // if we have no threads in the DB fetch all unread ones
     if (options.since === 0) {
+        // options to fetch all unread threads
         options.deleted = false;
         options.unread = true;
-
-        // batch fetch all unread threads
-        response = await fetchBatchThreads(serverUrl, teamId, options);
-    } else {
-        // batch fetch latest updated threads (including deleted ones)
-        response = await fetchBatchThreads(serverUrl, teamId, options);
     }
+
+    response = await fetchBatchThreads(serverUrl, teamId, options);
 
     const {error: nErr, data} = response;
 
