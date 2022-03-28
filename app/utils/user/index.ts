@@ -197,7 +197,7 @@ export function isBot(user: UserProfile | UserModel): boolean {
 }
 
 export function isShared(user: UserProfile | UserModel): boolean {
-    return 'remote_id' in user ? Boolean(user.remote_id) : Boolean(user.props?.remote_id);
+    return 'remote_id' in user ? Boolean(user.remote_id) : Boolean((user as UserModel)?.remoteId);
 }
 
 export function removeUserFromList(userId: string, originalList: UserProfile[]): UserProfile[] {
