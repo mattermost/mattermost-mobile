@@ -74,7 +74,7 @@ type Props = {
     icon?: string;
 }
 
-const SectionItem = ({testID, action, actionType, actionValue, label, selected, description, icon}: Props) => {
+const SectionItem = ({testID = 'sectionItem', action, actionType, actionValue, label, selected, description, icon}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
@@ -113,7 +113,7 @@ const SectionItem = ({testID, action, actionType, actionValue, label, selected, 
             return [style.label, {marginLeft: 4}];
         }
         return style.label;
-    }, [Boolean(icon)]);
+    }, [Boolean(icon), style]);
 
     const component = (
         <View

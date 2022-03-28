@@ -3,9 +3,7 @@
 
 import React, {useState, useEffect, useReducer, useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {
-    Keyboard,
-} from 'react-native';
+import {Keyboard} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {patchChannel as handlePatchChannel, createChannel, switchToChannelById} from '@actions/remote/channel';
@@ -13,9 +11,10 @@ import CompassIcon from '@components/compass_icon';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import ChannelInfoForm from '@screens/create_or_edit_channel/channel_info_form';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {validateDisplayName} from '@utils/channel';
+
+import ChannelInfoForm from './channel_info_form';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
@@ -115,7 +114,7 @@ const CreateOrEditChannel = ({
         base.showAsAction = 'always';
         base.color = theme.sidebarHeaderTextColor;
         return base;
-    }, [editing, theme.sidebarHeaderTextColor, intl.locale, canSave]);
+    }, [editing, theme.sidebarHeaderTextColor, intl, canSave]);
 
     useEffect(() => {
         setButtons(componentId, {

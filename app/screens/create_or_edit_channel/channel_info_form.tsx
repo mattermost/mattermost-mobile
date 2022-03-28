@@ -215,18 +215,6 @@ export default function ChannelInfoForm({
         );
     }
 
-    const autoComplete = (
-        <Autocomplete
-            postInputTop={(headerPosition + scrollPosition + headerHeight.defaultHeight) - keyboardHeight}
-            updateValue={onHeaderChange}
-            cursorPosition={header.length}
-            value={header}
-            nestedScrollEnabled={true}
-            maxHeightOverride={isTablet ? 200 : undefined}
-            inPost={false}
-        />
-    );
-
     return (
         <SafeAreaView
             edges={['bottom', 'left', 'right']}
@@ -251,6 +239,7 @@ export default function ChannelInfoForm({
                     <View>
                         {showSelector && (
                             <SectionItem
+                                testID='makePrivate'
                                 label={makePrivateLabel}
                                 description={makePrivateDescription}
                                 action={handlePress}
@@ -335,10 +324,17 @@ export default function ChannelInfoForm({
                         />
                     </View>
                 </TouchableWithoutFeedback>
-
             </KeyboardAwareScrollView>
             <View>
-                {autoComplete}
+                <Autocomplete
+                    postInputTop={(headerPosition + scrollPosition + headerHeight.defaultHeight) - keyboardHeight}
+                    updateValue={onHeaderChange}
+                    cursorPosition={header.length}
+                    value={header}
+                    nestedScrollEnabled={true}
+                    maxHeightOverride={isTablet ? 200 : undefined}
+                    inPost={false}
+                />
             </View>
         </SafeAreaView>
     );
