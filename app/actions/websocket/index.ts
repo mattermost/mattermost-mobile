@@ -7,6 +7,7 @@ import {loadMe} from '@actions/views/user';
 import {Client4} from '@client/rest';
 import {WebsocketEvents} from '@constants';
 import {ChannelTypes, GeneralTypes, PreferenceTypes, TeamTypes, UserTypes, RoleTypes} from '@mm-redux/action_types';
+import {refreshAppBindings} from '@mm-redux/actions/apps';
 import {getThreads} from '@mm-redux/actions/threads';
 import {getProfilesByIds, getStatusesByIds} from '@mm-redux/actions/users';
 import {General} from '@mm-redux/constants';
@@ -37,12 +38,13 @@ import {
     handleCallScreenOn,
     handleCallScreenOff, handleCallUserRaiseHand, handleCallUserUnraiseHand,
 } from '@mmproducts/calls/store/actions/websockets';
+import {appsConfiguredAsEnabled} from '@utils/apps';
 import {isSupportedServer} from '@mmproducts/calls/store/selectors/calls';
 import {getChannelSinceValue} from '@utils/channels';
 import {semverFromServerVersion} from '@utils/general';
 import websocketClient from '@websocket';
 
-import {handleRefreshAppsBindings} from './apps';
+import {handleAppsPluginDisabled, handleAppsPluginEnabled, handleRefreshAppsBindings} from './apps';
 import {handleSidebarCategoryCreated, handleSidebarCategoryDeleted, handleSidebarCategoryOrderUpdated, handleSidebarCategoryUpdated} from './categories';
 import {
     handleChannelConvertedEvent,
@@ -159,6 +161,10 @@ export function doReconnect(now: number) {
             wsConnected(now),
             setChannelRetryFailed(false),
         ], 'BATCH_WS_SUCCESS'));
+
+        if (appsConfiguredAsEnabled(state)) {
+            dispatch(refreshAppBindings());
+        }
 
         try {
             const {data: me}: any = await dispatch(loadMe(null, null, true));
@@ -432,6 +438,10 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleThreadFollowChanged(msg));
         case WebsocketEvents.APPS_FRAMEWORK_REFRESH_BINDINGS:
             return dispatch(handleRefreshAppsBindings());
+        case WebsocketEvents.APPS_FRAMEWORK_PLUGIN_ENABLED:
+            return dispatch(handleAppsPluginEnabled());
+        case WebsocketEvents.APPS_FRAMEWORK_PLUGIN_DISABLED:
+            return dispatch(handleAppsPluginDisabled());
         case WebsocketEvents.SIDEBAR_CATEGORY_CREATED:
             return dispatch(handleSidebarCategoryCreated(msg));
         case WebsocketEvents.SIDEBAR_CATEGORY_UPDATED:
