@@ -38,8 +38,8 @@ import {
     handleCallScreenOn,
     handleCallScreenOff, handleCallUserRaiseHand, handleCallUserUnraiseHand,
 } from '@mmproducts/calls/store/actions/websockets';
-import {appsConfiguredAsEnabled} from '@utils/apps';
 import {isSupportedServer} from '@mmproducts/calls/store/selectors/calls';
+import {appsConfiguredAsEnabled} from '@utils/apps';
 import {getChannelSinceValue} from '@utils/channels';
 import {semverFromServerVersion} from '@utils/general';
 import websocketClient from '@websocket';
