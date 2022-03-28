@@ -213,13 +213,17 @@ export const deferredAppEntryActions = async (
     fetchAllTeams(serverUrl);
     updateAllUsersSince(serverUrl, since);
 
+    if (initialTeamId) {
+        await fetchNewThreads(serverUrl, initialTeamId, false);
+    }
+
     if (teamData.teams?.length && teamData.memberships?.length) {
-        /* eslint-disable no-await-in-loop */
-        for (const team of teamData.teams) {
-            // need to await here since GM/DM threads in different teams overlap
-            await fetchNewThreads(serverUrl, team.id, false);
+        for await (const team of teamData.teams) {
+            if (team.id !== initialTeamId) {
+                // need to await here since GM/DM threads in different teams overlap
+                await fetchNewThreads(serverUrl, team.id, false);
+            }
         }
-        /* eslint-enable no-await-in-loop */
     }
 };
 
