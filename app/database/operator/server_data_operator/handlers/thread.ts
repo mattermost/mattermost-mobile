@@ -123,11 +123,13 @@ const ThreadHandler = (superclass: any) => class extends superclass {
         const threadParticipants = (await this.handleThreadParticipants({threadsParticipants, prepareRecordsOnly: true})) as ThreadParticipantModel[];
         batch.push(...threadParticipants);
 
-        const threadsInTeam = await this.handleThreadInTeam({
-            threadsMap: {[teamId]: threads},
-            prepareRecordsOnly: true,
-        }) as ThreadInTeamModel[];
-        batch.push(...threadsInTeam);
+        if (teamId) {
+            const threadsInTeam = await this.handleThreadInTeam({
+                threadsMap: {[teamId]: threads},
+                prepareRecordsOnly: true,
+            }) as ThreadInTeamModel[];
+            batch.push(...threadsInTeam);
+        }
 
         if (batch.length && !prepareRecordsOnly) {
             await this.batchRecords(batch);

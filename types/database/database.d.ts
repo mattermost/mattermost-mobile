@@ -91,7 +91,7 @@ export type HandlePostsArgs = {
 export type HandleThreadsArgs = {
   threads: Thread[];
   prepareRecordsOnly?: boolean;
-  teamId: string;
+  teamId?: string;
 };
 
 export type HandleAddThreadParticipantsArgs = {
