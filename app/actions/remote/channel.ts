@@ -244,6 +244,11 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
 };
 
 export const fetchMyChannel = async (serverUrl: string, teamId: string, channelId: string, fetchOnly = false): Promise<MyChannelsRequest> => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -252,20 +257,23 @@ export const fetchMyChannel = async (serverUrl: string, teamId: string, channelI
     }
 
     try {
-        const [channel, member] = await Promise.all([
+        const [channel, member, categoriesWithOrder] = await Promise.all([
             client.getChannel(channelId),
             client.getChannelMember(channelId, 'me'),
+            client.getCategories('me', teamId || await getCurrentTeamId(database)),
         ]);
 
         if (!fetchOnly) {
-            storeMyChannelsForTeam(serverUrl, channel.team_id || teamId, [channel], [member]);
+            await storeMyChannelsForTeam(serverUrl, channel.team_id || teamId, [channel], [member]);
+            await storeCategories(serverUrl, categoriesWithOrder.categories, true, false); // Re-sync
         }
 
         return {
             channels: [channel],
             memberships: [member],
+            categories: categoriesWithOrder.categories,
         };
-    } catch (error) {
+    } catch (error: any) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }

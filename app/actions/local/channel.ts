@@ -7,7 +7,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {General, Navigation as NavigationConstants, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
-import {prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannel, getMyChannel, getChannelById, queryUsersOnChannel} from '@queries/servers/channel';
+import {prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannel, getMyChannel, getChannelById, queryUsersOnChannel, getChannelInfo} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, removeChannelFromTeamHistory} from '@queries/servers/team';
@@ -277,6 +277,53 @@ export const storeMyChannelsForTeam = async (serverUrl: string, teamId: string, 
     }
 
     return {models: flattenedModels};
+};
+
+export const updateMyChannelFromWebsocket = async (serverUrl: string, channelMember: ChannelMembership, prepareRecordsOnly = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const member = await getMyChannel(operator.database, channelMember.channel_id);
+    if (member) {
+        member.prepareUpdate((m) => {
+            m.roles = channelMember.roles;
+        });
+        if (!prepareRecordsOnly) {
+            operator.batchRecords([member]);
+        }
+    }
+    return {model: member};
+};
+
+export const updateChannelInfoFromChannel = async (serverUrl: string, channel: Channel, prepareRecordsOnly = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const storedInfo = await getChannelInfo(operator.database, channel.id);
+    if (storedInfo) {
+        storedInfo.prepareUpdate((i) => {
+            i.purpose = channel.purpose;
+            i.header = channel.header;
+        });
+        return {model: storedInfo};
+    }
+    const newInfo = (await operator.handleChannelInfo({channelInfos: [{
+        guest_count: 0,
+        member_count: 0,
+        pinned_post_count: 0,
+        header: channel.header,
+        purpose: channel.purpose,
+        id: channel.id,
+    }],
+    prepareRecordsOnly: true}))[0];
+    if (!prepareRecordsOnly) {
+        operator.batchRecords([newInfo]);
+    }
+    return {model: newInfo};
 };
 
 export const updateLastPostAt = async (serverUrl: string, channelId: string, lastPostAt: number, prepareRecordsOnly = false) => {

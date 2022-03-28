@@ -273,7 +273,7 @@ export const queryUserChannelsByTypes = (database: Database, userId: string, cha
 };
 
 export const queryTeamDefaultChannel = (database: Database, teamId: string) => {
-    return database.get<ChannelModel>(MM_TABLES.SERVER.CHANNEL).query(
+    return database.get<ChannelModel>(CHANNEL).query(
         Q.where('team_id', teamId),
         Q.where('name', General.DEFAULT_CHANNEL),
     );
@@ -295,6 +295,15 @@ export const observeChannelInfo = (database: Database, channelId: string) => {
     return database.get<ChannelInfoModel>(CHANNEL_INFO).query(Q.where('id', channelId), Q.take(1)).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
     );
+};
+
+export const getChannelInfo = (database: Database, channelId: string) => {
+    try {
+        const info = database.get<ChannelInfoModel>(CHANNEL_INFO).find(channelId);
+        return info;
+    } catch {
+        return undefined;
+    }
 };
 
 export const queryMyChannelSettingsByIds = (database: Database, ids: string[]) => {

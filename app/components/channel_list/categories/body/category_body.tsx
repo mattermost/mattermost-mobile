@@ -31,7 +31,7 @@ const CategoryBody = ({currentChannelId, sortedIds, category, hiddenChannelIds, 
             return filteredIds.slice(0, limit - 1);
         }
         return filteredIds;
-    }, [category.type, limit, hiddenChannelIds]);
+    }, [category.type, limit, hiddenChannelIds, sortedIds]);
 
     const ChannelItem = useCallback(({item}: {item: string}) => {
         return (

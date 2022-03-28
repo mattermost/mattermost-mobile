@@ -4,12 +4,17 @@
 import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
+import {storeCategories} from '@actions/local/category';
 import {
+    markChannelAsViewed,
     removeCurrentUserFromChannel,
     setChannelDeleteAt,
-    switchToChannel} from '@actions/local/channel';
+    switchToChannel,
+    updateChannelInfoFromChannel,
+    updateMyChannelFromWebsocket} from '@actions/local/channel';
 import {fetchMissingSidebarInfo, fetchMyChannel, fetchChannelStats} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
+import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
 import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
@@ -21,6 +26,7 @@ import {getCurrentUser, getUserById} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
 
+// Received when current user created a channel in a different client
 export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
@@ -69,8 +75,12 @@ export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
 
     const updatedChannel = JSON.parse(msg.data.channel);
     try {
-        await operator.handleChannel({channels: [updatedChannel], prepareRecordsOnly: false});
-        await fetchChannelStats(serverUrl, updatedChannel.id, true);
+        const models: Model[] = await operator.handleChannel({channels: [updatedChannel], prepareRecordsOnly: true});
+        const infoModel = await updateChannelInfoFromChannel(serverUrl, updatedChannel, true);
+        if (infoModel.model) {
+            models.push(infoModel.model);
+        }
+        operator.batchRecords(models);
     } catch {
         // Do nothing
     }
@@ -85,32 +95,37 @@ export async function handleChannelViewedEvent(serverUrl: string, msg: any) {
     try {
         const {channel_id: channelId} = msg.data;
 
-        // await markChannelAsViewed(serverUrl, channelId, false);
-        fetchChannelStats(serverUrl, channelId, false);
+        await markChannelAsViewed(serverUrl, channelId, false);
     } catch {
         // do nothing
     }
 }
 
+// This event is triggered by changes in the notify props or in the roles.
 export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: any) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return;
     }
 
-    const models: Model[] = [];
     try {
-        const updatedChannelMember = JSON.parse(msg.data.channelMember);
+        const models: Model[] = [];
+
+        const updatedChannelMember: ChannelMembership = JSON.parse(msg.data.channelMember);
         updatedChannelMember.id = updatedChannelMember.channel_id;
 
-        models.push(...await operator.handleChannelMembership({
-            channelMemberships: [updatedChannelMember],
-            prepareRecordsOnly: true,
-        }));
+        const myMemberModel = await updateMyChannelFromWebsocket(serverUrl, updatedChannelMember, true);
+        if (myMemberModel.model) {
+            models.push(myMemberModel.model);
+        }
         models.push(...await operator.handleMyChannelSettings({
             settings: [updatedChannelMember],
             prepareRecordsOnly: true,
         }));
+        const rolesRequest = await fetchRolesIfNeeded(serverUrl, updatedChannelMember.roles.split(','), true);
+        if (rolesRequest.roles?.length) {
+            models.push(...await operator.handleRole({roles: rolesRequest.roles, prepareRecordsOnly: true}));
+        }
         operator.batchRecords(models);
     } catch {
         // do nothing
@@ -147,30 +162,27 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
         return;
     }
     const currentUser = await getCurrentUser(database.database);
-    const {team_id: teamId, user_id: userId} = msg.data;
-    const {channel_id: channelId} = msg.broadcast;
+    const userId = msg.data.user_id || msg.broadcast.userId;
+    const channelId = msg.data.channel_id || msg.broadcast.channel_id;
+    const {team_id: teamId} = msg.data;
     const models: Model[] = [];
 
     try {
-        const addedUser = getUserById(database.database, userId);
-        if (!addedUser) {
-            // TODO Potential improvement https://mattermost.atlassian.net/browse/MM-40581
-            const {users} = await fetchUsersByIds(serverUrl, [userId], true);
-            if (users) {
-                models.push(...await database.operator.handleUsers({users, prepareRecordsOnly: true}));
-            }
-        }
-
         if (userId === currentUser?.id) {
-            const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
-            if (channels && memberships) {
+            const {channels, memberships, categories} = await fetchMyChannel(serverUrl, teamId, channelId, true);
+            if (channels && memberships && categories) {
                 const prepare = await prepareMyChannelsForTeam(database.operator, teamId, channels, memberships);
                 if (prepare) {
                     const prepareModels = await Promise.all(prepare);
                     const flattenedModels = prepareModels.flat();
                     if (flattenedModels?.length > 0) {
-                        models.push(...flattenedModels);
+                        await database.operator.batchRecords(flattenedModels);
                     }
+                }
+
+                const categoriesModels = await storeCategories(serverUrl, categories, false, true);
+                if (categoriesModels.models?.length) {
+                    models.push(...categoriesModels.models);
                 }
             }
 
@@ -189,6 +201,14 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
                 models.push(...await database.operator.handleUsers({users: authors, prepareRecordsOnly: true}));
             }
         } else {
+            const addedUser = getUserById(database.database, userId);
+            if (!addedUser) {
+                // TODO Potential improvement https://mattermost.atlassian.net/browse/MM-40581
+                const {users} = await fetchUsersByIds(serverUrl, [userId], true);
+                if (users) {
+                    models.push(...await database.operator.handleUsers({users, prepareRecordsOnly: true}));
+                }
+            }
             const channel = await getChannelById(database.database, channelId);
             if (channel) {
                 models.push(...await database.operator.handleChannelMembership({
@@ -197,12 +217,12 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
                 }));
             }
         }
+        await database.operator.batchRecords(models);
+
+        await fetchChannelStats(serverUrl, channelId, false);
     } catch {
         // Do nothing
     }
-
-    await fetchChannelStats(serverUrl, channelId, false);
-    database.operator.batchRecords(models);
 }
 
 export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: any) {

@@ -54,7 +54,7 @@ const observeSettings = (database: Database, channels: ChannelModel[]) => {
     return queryMyChannelSettingsByIds(database, ids).observeWithColumns(['notify_props']);
 };
 
-const getSortedIds = (database: Database, category: CategoryModel, locale: string) => {
+const observeSortedIds = (database: Database, category: CategoryModel, locale: string) => {
     switch (category.sorting) {
         case 'alpha': {
             const channels = category.channels.observeWithColumns(['display_name']);
@@ -86,10 +86,7 @@ const mapChannelIds = (channels: ChannelModel[]) => of$(channels.map((c) => c.id
 type EnhanceProps = {category: CategoryModel; locale: string; currentUserId: string} & WithDatabaseArgs
 
 const enhance = withObservables(['category'], ({category, locale, database, currentUserId}: EnhanceProps) => {
-    const observedCategory = category.observe();
-    const sortedIds = observedCategory.pipe(
-        switchMap((c) => getSortedIds(database, c, locale)),
-    );
+    const sortedIds = observeSortedIds(database, category, locale);
 
     const dmMap = (p: PreferenceModel) => getDirectChannelName(p.name, currentUserId);
 
@@ -125,7 +122,6 @@ const enhance = withObservables(['category'], ({category, locale, database, curr
         limit,
         hiddenChannelIds,
         sortedIds,
-        category: observedCategory,
     };
 });
 
