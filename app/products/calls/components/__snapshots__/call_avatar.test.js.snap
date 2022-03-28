@@ -40,23 +40,23 @@ exports[`CallAvatar should match snapshot muted 1`] = `
       />
       <CompassIcon
         name="microphone-off"
-        size={16}
+        size={12}
         style={
           Object {
             "backgroundColor": "black",
             "borderColor": "black",
-            "borderRadius": 12,
+            "borderRadius": 10,
             "borderWidth": 2,
             "bottom": -5,
             "color": "white",
-            "height": 24,
+            "height": 20,
             "overflow": "hidden",
-            "padding": 2,
+            "padding": 1,
             "position": "absolute",
             "right": -5,
             "textAlign": "center",
             "textAlignVertical": "center",
-            "width": 24,
+            "width": 20,
           }
         }
       />
@@ -170,23 +170,23 @@ exports[`CallAvatar should match snapshot unmuted 1`] = `
       />
       <CompassIcon
         name="microphone"
-        size={16}
+        size={12}
         style={
           Object {
             "backgroundColor": "#3DB887",
             "borderColor": "black",
-            "borderRadius": 12,
+            "borderRadius": 10,
             "borderWidth": 2,
             "bottom": -5,
             "color": "white",
-            "height": 24,
+            "height": 20,
             "overflow": "hidden",
-            "padding": 2,
+            "padding": 1,
             "position": "absolute",
             "right": -5,
             "textAlign": "center",
             "textAlignVertical": "center",
-            "width": 24,
+            "width": 20,
           }
         }
       />

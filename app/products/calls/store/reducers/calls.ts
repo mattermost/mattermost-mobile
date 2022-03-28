@@ -40,6 +40,7 @@ function calls(state: Dictionary<Call> = {}, action: GenericAction) {
             id: userId,
             muted: true,
             isTalking: false,
+            raisedHand: 0,
             profile,
         };
         const nextState = {...state};
@@ -82,6 +83,36 @@ function calls(state: Dictionary<Call> = {}, action: GenericAction) {
             return state;
         }
         const userUpdate = {...state[channelId].participants[userId], muted: false};
+        const channelUpdate = {...state[channelId], participants: {...state[channelId].participants}};
+        channelUpdate.participants[userId] = userUpdate;
+        const nextState = {...state};
+        nextState[channelId] = channelUpdate;
+        return nextState;
+    }
+    case CallsTypes.RECEIVED_RAISE_HAND: {
+        const {channelId, userId, ts} = action.data;
+        if (!state[channelId]) {
+            return state;
+        }
+        if (!state[channelId].participants[userId]) {
+            return state;
+        }
+        const userUpdate = {...state[channelId].participants[userId], raisedHand: ts};
+        const channelUpdate = {...state[channelId], participants: {...state[channelId].participants}};
+        channelUpdate.participants[userId] = userUpdate;
+        const nextState = {...state};
+        nextState[channelId] = channelUpdate;
+        return nextState;
+    }
+    case CallsTypes.RECEIVED_UNRAISE_HAND: {
+        const {channelId, userId, ts} = action.data;
+        if (!state[channelId]) {
+            return state;
+        }
+        if (!state[channelId].participants[userId]) {
+            return state;
+        }
+        const userUpdate = {...state[channelId].participants[userId], raisedHand: ts};
         const channelUpdate = {...state[channelId], participants: {...state[channelId].participants}};
         channelUpdate.participants[userId] = userUpdate;
         const nextState = {...state};
