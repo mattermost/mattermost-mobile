@@ -113,7 +113,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             width: 18,
             height: 18,
             borderRadius: 9,
-            backgroundColor: theme.mentionColor,
+            backgroundColor: theme.buttonBg,
             alignSelf: 'center',
         },
         mentionBadgeText: {
@@ -122,7 +122,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             lineHeight: 16,
             fontWeight: '700',
             alignSelf: 'center',
-            color: theme.centerChannelBg,
+            color: theme.buttonColor,
         },
     };
 });
