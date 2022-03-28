@@ -12,7 +12,6 @@ export const CHANNEL_ADD_PEOPLE = 'ChannelAddPeople';
 export const CHANNEL_DETAILS = 'ChannelDetails';
 export const CREATE_DIRECT_MESSAGE = 'CreateDirectMessage';
 export const CHANNEL_EDIT = 'ChannelEdit';
-export const CREATE_DIRECT_MESSAGE = 'CreateDirectMessage';
 export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
 export const CUSTOM_STATUS = 'CustomStatus';
 export const EDIT_POST = 'EditPost';
