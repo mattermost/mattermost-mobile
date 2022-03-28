@@ -237,6 +237,7 @@ const PostList = ({
                     <ThreadOverview
                         rootId={rootId!}
                         testID={`${testID}.thread_overview`}
+                        style={styles.scale}
                     />
                 );
             }
@@ -315,11 +316,11 @@ const PostList = ({
         );
     }, [currentTimezone, highlightPinnedOrSaved, isCRTEnabled, isTimezoneEnabled, orderedPosts, shouldRenderReplyButton, theme]);
 
-    const scrollToIndex = useCallback((index: number, animated = true) => {
+    const scrollToIndex = useCallback((index: number, animated = true, applyOffset = true) => {
         listRef.current?.scrollToIndex({
             animated,
             index,
-            viewOffset: 0,
+            viewOffset: applyOffset ? Platform.select({ios: -45, default: 0}) : 0,
             viewPosition: 1, // 0 is at bottom
         });
     }, []);

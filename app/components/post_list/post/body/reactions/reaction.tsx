@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {TouchableOpacity, View} from 'react-native';
 import AnimatedNumbers from 'react-native-animated-numbers';
 
@@ -14,9 +14,12 @@ type ReactionProps = {
     emojiName: string;
     highlight: boolean;
     onPress: (emojiName: string, highlight: boolean) => void;
-    onLongPress: () => void;
+    onLongPress: (initialEmoji: string) => void;
     theme: Theme;
 }
+
+const MIN_WIDTH = 50;
+const DIGIT_WIDTH = 5;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -24,7 +27,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.56),
             ...typography('Body', 100, 'SemiBold'),
         },
-        countContainer: {marginRight: 5},
+        countContainer: {marginRight: 8},
         countHighlight: {
             color: theme.buttonBg,
         },
@@ -44,13 +47,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center',
             marginBottom: 12,
             marginRight: 8,
-            minWidth: 50,
+            minWidth: MIN_WIDTH,
         },
     };
 });
 
 const Reaction = ({count, emojiName, highlight, onPress, onLongPress, theme}: ReactionProps) => {
     const styles = getStyleSheet(theme);
+    const digits = String(count).length;
+    const containerStyle = useMemo(() => {
+        const minWidth = MIN_WIDTH + (digits * DIGIT_WIDTH);
+        return [styles.reaction, (highlight && styles.highlight), {minWidth}];
+    }, [styles.reaction, highlight, digits]);
+
+    const handleLongPress = useCallback(() => {
+        onLongPress(emojiName);
+    }, []);
 
     const handlePress = useCallback(() => {
         onPress(emojiName, highlight);
@@ -59,9 +71,9 @@ const Reaction = ({count, emojiName, highlight, onPress, onLongPress, theme}: Re
     return (
         <TouchableOpacity
             onPress={handlePress}
-            onLongPress={onLongPress}
+            onLongPress={handleLongPress}
             delayLongPress={350}
-            style={[styles.reaction, (highlight && styles.highlight)]}
+            style={containerStyle}
         >
             <View style={styles.emoji}>
                 <Emoji

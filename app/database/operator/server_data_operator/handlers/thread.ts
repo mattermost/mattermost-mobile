@@ -15,6 +15,7 @@ import {sanitizeAddThreadParticipants, sanitizeThreadParticipants} from '@databa
 
 import type {HandleAddThreadParticipantsArgs, HandleThreadsArgs, HandleThreadParticipantsArgs} from '@typings/database/database';
 import type ThreadModel from '@typings/database/models/servers/thread';
+import type ThreadInTeamModel from '@typings/database/models/servers/thread_in_team';
 import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
 
 const {
@@ -79,7 +80,7 @@ const ThreadHandler = (superclass: any) => class extends superclass {
      * @param {boolean | undefined} handleThreads.prepareRecordsOnly
      * @returns {Promise<void>}
      */
-    handleThreads = async ({threads, prepareRecordsOnly = false}: HandleThreadsArgs): Promise<Model[]> => {
+    handleThreads = async ({threads, teamId, prepareRecordsOnly = false}: HandleThreadsArgs): Promise<Model[]> => {
         if (!threads.length) {
             throw new DataOperatorException(
                 'An empty "threads" array has been passed to the handleThreads method',
@@ -121,6 +122,12 @@ const ThreadHandler = (superclass: any) => class extends superclass {
         // calls handler for Thread Participants
         const threadParticipants = (await this.handleThreadParticipants({threadsParticipants, prepareRecordsOnly: true})) as ThreadParticipantModel[];
         batch.push(...threadParticipants);
+
+        const threadsInTeam = await this.handleThreadInTeam({
+            threadsMap: {[teamId]: threads},
+            prepareRecordsOnly: true,
+        }) as ThreadInTeamModel[];
+        batch.push(...threadsInTeam);
 
         if (batch.length && !prepareRecordsOnly) {
             await this.batchRecords(batch);

@@ -4,6 +4,7 @@
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getRecentReactions} from '@queries/servers/system';
+import {getEmojiFirstAlias} from '@utils/emoji/helpers';
 
 const MAXIMUM_RECENT_EMOJI = 27;
 
@@ -22,16 +23,17 @@ export const addRecentReaction = async (serverUrl: string, emojiNames: string[],
 
     try {
         const recentEmojis = new Set(recent);
-        for (const name of emojiNames) {
-            if (recentEmojis.has(name)) {
-                recentEmojis.delete(name);
+        const aliases = emojiNames.map((e) => getEmojiFirstAlias(e));
+        for (const alias of aliases) {
+            if (recentEmojis.has(alias)) {
+                recentEmojis.delete(alias);
             }
         }
 
         recent = Array.from(recentEmojis);
 
-        for (const name of emojiNames) {
-            recent.unshift(name);
+        for (const alias of aliases) {
+            recent.unshift(alias);
         }
         return operator.handleSystem({
             systems: [{

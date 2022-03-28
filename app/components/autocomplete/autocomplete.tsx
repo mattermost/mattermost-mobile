@@ -12,6 +12,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import AtMention from './at_mention/';
 import ChannelMention from './channel_mention/';
 import EmojiSuggestion from './emoji_suggestion/';
+import SlashSuggestion from './slash_suggestion/';
+import AppSlashSuggestion from './slash_suggestion/app_slash_suggestion/';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -92,13 +94,14 @@ const Autocomplete = ({
     const [showingAtMention, setShowingAtMention] = useState(false);
     const [showingChannelMention, setShowingChannelMention] = useState(false);
     const [showingEmoji, setShowingEmoji] = useState(false);
+    const [showingCommand, setShowingCommand] = useState(false);
+    const [showingAppCommand, setShowingAppCommand] = useState(false);
 
-    // const [showingCommand, setShowingCommand] = useState(false);
-    // const [showingAppCommand, setShowingAppCommand] = useState(false);
     // const [showingDate, setShowingDate] = useState(false);
 
-    const hasElements = showingChannelMention || showingEmoji || showingAtMention; // || showingCommand || showingAppCommand || showingDate;
-    const appsTakeOver = false; // showingAppCommand;
+    const hasElements = showingChannelMention || showingEmoji || showingAtMention || showingCommand || showingAppCommand; // || showingDate;
+    const appsTakeOver = showingAppCommand;
+    const showCommands = !(showingChannelMention || showingEmoji || showingAtMention);
 
     const maxListHeight = useMemo(() => {
         if (maxHeightOverride) {
@@ -151,15 +154,17 @@ const Autocomplete = ({
                 testID='autocomplete'
                 style={containerStyles}
             >
-                {/* {isAppsEnabled && (
+                {isAppsEnabled && (
                     <AppSlashSuggestion
                         maxListHeight={maxListHeight}
                         updateValue={updateValue}
-                        onResultCountChange={setShowingAppCommand}
+                        onShowingChange={setShowingAppCommand}
                         value={value || ''}
                         nestedScrollEnabled={nestedScrollEnabled}
+                        channelId={channelId}
+                        rootId={rootId}
                     />
-                )} */}
+                )}
                 {(!appsTakeOver || !isAppsEnabled) && (<>
                     <AtMention
                         cursorPosition={cursorPosition}
@@ -192,14 +197,18 @@ const Autocomplete = ({
                         hasFilesAttached={hasFilesAttached}
                     />
                     }
-                    {/* <SlashSuggestion
+                    {showCommands &&
+                    <SlashSuggestion
                         maxListHeight={maxListHeight}
                         updateValue={updateValue}
-                        onResultCountChange={setShowingCommand}
+                        onShowingChange={setShowingCommand}
                         value={value || ''}
                         nestedScrollEnabled={nestedScrollEnabled}
+                        channelId={channelId}
+                        rootId={rootId}
                     />
-                    {(isSearch && enableDateSuggestion) &&
+                    }
+                    {/* {(isSearch && enableDateSuggestion) &&
                     <DateSuggestion
                         cursorPosition={cursorPosition}
                         updateValue={updateValue}

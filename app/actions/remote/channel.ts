@@ -914,3 +914,19 @@ export const searchChannels = async (serverUrl: string, term: string) => {
         return {error};
     }
 };
+
+export const fetchChannelById = async (serverUrl: string, id: string) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const channel = await client.getChannel(id);
+        return {channel};
+    } catch (error) {
+        return {error};
+    }
+};

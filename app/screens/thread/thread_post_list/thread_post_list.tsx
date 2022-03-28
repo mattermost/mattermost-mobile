@@ -29,8 +29,9 @@ type Props = {
 const edges: Edge[] = ['bottom'];
 
 const styles = StyleSheet.create({
-    container: {marginTop: 20},
+    container: {marginTop: 10},
     flex: {flex: 1},
+    footer: {height: 20},
 });
 
 const ThreadPostList = ({
@@ -68,6 +69,7 @@ const ThreadPostList = ({
             shouldShowJoinLeaveMessages={false}
             showMoreMessages={false}
             showNewMessageLine={false}
+            footer={<View style={styles.footer}/>}
             testID='thread.post_list'
         />
     );

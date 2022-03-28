@@ -34,6 +34,7 @@ const {
     TERMS_OF_SERVICE,
     THREAD,
     THREAD_PARTICIPANT,
+    THREADS_IN_TEAM,
     USER,
 } = MM_TABLES.SERVER;
 
@@ -493,6 +494,18 @@ describe('*** Test schema for SERVER database ***', () => {
                     columnArray: [
                         {name: 'thread_id', type: 'string', isIndexed: true},
                         {name: 'user_id', type: 'string', isIndexed: true},
+                    ],
+                },
+                [THREADS_IN_TEAM]: {
+                    name: THREADS_IN_TEAM,
+                    unsafeSql: undefined,
+                    columns: {
+                        team_id: {name: 'team_id', type: 'string', isIndexed: true},
+                        thread_id: {name: 'thread_id', type: 'string', isIndexed: true},
+                    },
+                    columnArray: [
+                        {name: 'team_id', type: 'string', isIndexed: true},
+                        {name: 'thread_id', type: 'string', isIndexed: true},
                     ],
                 },
                 [USER]: {

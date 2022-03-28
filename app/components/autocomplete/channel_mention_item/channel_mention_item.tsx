@@ -12,6 +12,8 @@ import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
+import type ChannelModel from '@typings/database/models/servers/channel';
+
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         icon: {
@@ -37,7 +39,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 type Props = {
-    channel: Channel;
+    channel: Channel | ChannelModel;
     displayName?: string;
     isBot: boolean;
     isGuest: boolean;
@@ -73,6 +75,8 @@ const ChannelMentionItem = ({
     }, [margins, style]);
 
     let component;
+
+    const isArchived = ('delete_at' in channel ? channel.delete_at : channel.deleteAt) > 0;
 
     if (channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL) {
         if (!displayName) {
@@ -112,7 +116,7 @@ const ChannelMentionItem = ({
                         shared={channel.shared}
                         type={channel.type}
                         isInfo={true}
-                        isArchived={channel.delete_at > 0}
+                        isArchived={isArchived}
                         size={18}
                         style={style.icon}
                     />
