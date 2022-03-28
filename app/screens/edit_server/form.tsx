@@ -145,6 +145,8 @@ const EditServerForm = ({
         );
     }
 
+    const saveButtonTestId = buttonDisabled ? 'edit_server_form.save.button.disabled' : 'edit_server_form.save.button';
+
     return (
         <View style={styles.formContainer}>
             <View style={[styles.fullWidth, displayNameError?.length ? styles.error : undefined]}>
@@ -164,7 +166,7 @@ const EditServerForm = ({
                     ref={displayNameRef}
                     returnKeyType='done'
                     spellCheck={false}
-                    testID='select_server.server_display_name.input'
+                    testID='edit_server_form.server_display_name.input'
                     theme={theme}
                     value={displayName}
                 />
@@ -174,7 +176,7 @@ const EditServerForm = ({
                 defaultMessage={'Server: {url}'}
                 id={'edit_server.display_help'}
                 style={styles.chooseText}
-                testID={'edit_server.display_help'}
+                testID={'edit_server_form.display_help'}
                 values={{url: removeProtocol(stripTrailingSlashes(serverUrl))}}
             />
             }
@@ -182,7 +184,7 @@ const EditServerForm = ({
                 containerStyle={[styles.connectButton, styleButtonBackground]}
                 disabled={buttonDisabled}
                 onPress={onUpdate}
-                testID='select_server.connect.button'
+                testID={saveButtonTestId}
             >
                 {buttonIcon}
                 <FormattedText

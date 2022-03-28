@@ -3,7 +3,7 @@
 
 export const ABOUT = 'About';
 export const ACCOUNT = 'Account';
-export const EMOJI_PICKER = 'AddReaction';
+export const EMOJI_PICKER = 'EmojiPicker';
 export const APP_FORM = 'AppForm';
 export const BOTTOM_SHEET = 'BottomSheet';
 export const BROWSE_CHANNELS = 'BrowseChannels';
@@ -12,6 +12,7 @@ export const CHANNEL_ADD_PEOPLE = 'ChannelAddPeople';
 export const CHANNEL_DETAILS = 'ChannelDetails';
 export const CREATE_DIRECT_MESSAGE = 'CreateDirectMessage';
 export const CHANNEL_EDIT = 'ChannelEdit';
+export const CREATE_DIRECT_MESSAGE = 'CreateDirectMessage';
 export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
 export const CUSTOM_STATUS = 'CustomStatus';
 export const EDIT_POST = 'EditPost';
@@ -27,6 +28,9 @@ export const MENTIONS = 'Mentions';
 export const MFA = 'MFA';
 export const PARTICIPANTS_LIST = 'ParticipantsList';
 export const PERMALINK = 'Permalink';
+export const POST_OPTIONS = 'PostOptions';
+export const REACTIONS = 'Reactions';
+export const SAVED_POSTS = 'SavedPosts';
 export const SEARCH = 'Search';
 export const SERVER = 'Server';
 export const SETTINGS_SIDEBAR = 'SettingsSidebar';
@@ -34,8 +38,6 @@ export const SSO = 'SSO';
 export const THREAD = 'Thread';
 export const THREAD_FOLLOW = 'ThreadFollow';
 export const USER_PROFILE = 'UserProfile';
-export const POST_OPTIONS = 'PostOptions';
-export const SAVED_POSTS = 'SavedPosts';
 
 export default {
     ABOUT,
@@ -64,6 +66,9 @@ export default {
     MFA,
     PARTICIPANTS_LIST,
     PERMALINK,
+    POST_OPTIONS,
+    REACTIONS,
+    SAVED_POSTS,
     SEARCH,
     SERVER,
     SETTINGS_SIDEBAR,
@@ -71,6 +76,11 @@ export default {
     THREAD,
     THREAD_FOLLOW,
     USER_PROFILE,
-    POST_OPTIONS,
-    SAVED_POSTS,
 };
+
+export const MODAL_SCREENS_WITHOUT_BACK = [
+    CREATE_DIRECT_MESSAGE,
+    EMOJI_PICKER,
+    EDIT_POST,
+    PERMALINK,
+];

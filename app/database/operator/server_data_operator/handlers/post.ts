@@ -87,7 +87,6 @@ const PostHandler = (superclass: any) => class extends superclass {
 
         const emojis: CustomEmoji[] = [];
         const files: FileInfo[] = [];
-        const metadatas: Metadata[] = [];
         const postsReactions: ReactionsPerPost[] = [];
         const pendingPostsToDelete: Post[] = [];
         const postsInThread: Record<string, Post[]> = {};
@@ -191,12 +190,6 @@ const PostHandler = (superclass: any) => class extends superclass {
             // calls handler for Files
             const postFiles = await this.handleFiles({files, prepareRecordsOnly: true});
             batch.push(...postFiles);
-        }
-
-        if (metadatas.length) {
-            // calls handler for postMetadata ( embeds and images )
-            const postMetadata = await this.handlePostMetadata({metadatas, prepareRecordsOnly: true});
-            batch.push(...postMetadata);
         }
 
         if (emojis.length) {

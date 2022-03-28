@@ -4,6 +4,7 @@
 import {IntlShape} from 'react-intl';
 
 import {sendEphemeralPost} from '@actions/local/post';
+import ClientError from '@client/rest/error';
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
 import {AppCallResponseTypes, AppCallTypes} from '@constants/apps';
@@ -20,7 +21,7 @@ export async function doAppCall<Res=unknown>(serverUrl: string, call: AppCallReq
     try {
         client = NetworkManager.getClient(serverUrl);
     } catch (error) {
-        return {error};
+        return {error: makeCallErrorResponse((error as ClientError).message)};
     }
 
     try {

@@ -8,7 +8,6 @@ import FastImage from 'react-native-fast-image';
 
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
-import SystemAvatar from '@components/system_avatar';
 import {View as ViewConstant} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -25,7 +24,6 @@ type AvatarProps = {
     author: UserModel;
     enablePostIconOverride?: boolean;
     isAutoReponse: boolean;
-    isSystemPost: boolean;
     post: PostModel;
 }
 
@@ -35,7 +33,7 @@ const style = StyleSheet.create({
     },
 });
 
-const Avatar = ({author, enablePostIconOverride, isAutoReponse, isSystemPost, post}: AvatarProps) => {
+const Avatar = ({author, enablePostIconOverride, isAutoReponse, post}: AvatarProps) => {
     const closeButton = useRef<ImageSource>();
     const intl = useIntl();
     const theme = useTheme();
@@ -45,10 +43,6 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, isSystemPost, po
         client = NetworkManager.getClient(serverUrl);
     } catch {
         // do nothing, client is not set
-    }
-
-    if (isSystemPost && !isAutoReponse && !author.isBot) {
-        return (<SystemAvatar theme={theme}/>);
     }
 
     const fromWebHook = post.props?.from_webhook === 'true';
@@ -125,7 +119,7 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, isSystemPost, po
             author={author}
             size={ViewConstant.PROFILE_PICTURE_SIZE}
             iconSize={24}
-            showStatus={!isAutoReponse}
+            showStatus={!isAutoReponse || author.isBot}
             testID='post_profile_picture.profile_picture'
         />
     );

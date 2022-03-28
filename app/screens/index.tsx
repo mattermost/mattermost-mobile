@@ -80,6 +80,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
                 require('@screens/custom_status_clear_after').default,
             );
             break;
+        case Screens.CREATE_DIRECT_MESSAGE:
+            screen = withServerDatabase(require('@screens/create_direct_message').default);
+            break;
         case Screens.EDIT_POST:
             screen = withServerDatabase(require('@screens/edit_post').default);
             break;
@@ -126,6 +129,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             screen = withServerDatabase(
                 require('@screens/post_options').default,
             );
+            break;
+        case Screens.REACTIONS:
+            screen = withServerDatabase(require('@screens/reactions').default);
             break;
         case Screens.SAVED_POSTS:
             screen = withServerDatabase((require('@screens/home/saved_posts').default));
