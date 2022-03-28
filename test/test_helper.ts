@@ -320,7 +320,7 @@ class TestHelper {
         return {
             name,
             display_name: `Unit Test ${name}`,
-            type: 'O' as TeamType,
+            type: 'O' as const,
             email: this.fakeEmail(),
             allowed_domains: '',
             invite_id: inviteId,
