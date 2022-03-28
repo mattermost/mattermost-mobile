@@ -43,6 +43,7 @@ export const transformUserRecord = ({action, database, value}: TransformerArgs):
         user.props = raw.props || null;
         user.timezone = raw.timezone || null;
         user.isBot = raw.is_bot;
+        user.remoteId = raw?.remote_id ?? '';
         if (raw.status) {
             user.status = raw.status;
         }

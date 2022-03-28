@@ -69,7 +69,7 @@ export default class UserModel extends Model {
     username: string;
 
     /** remote_id : The ID of the remote organization that this user belongs to */
-    remoteId!: string;
+    remoteId: string;
 
     /** notify_props : Notification preferences/configurations */
     notifyProps: UserNotifyProps | null;
