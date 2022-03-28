@@ -3,7 +3,7 @@
 
 import {MM_TABLES} from '@constants/database';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
-import {transformReactionRecord} from '@database/operator/server_data_operator/transformers/user';
+import {transformReactionRecord} from '@database/operator/server_data_operator/transformers/reaction';
 import {sanitizeReactions} from '@database/operator/utils/reaction';
 
 import type {HandleReactionsArgs} from '@typings/database/database';
