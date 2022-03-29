@@ -4,20 +4,19 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
-import {catchError, map, switchMap} from 'rxjs/operators';
+import {map} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeConfig, observeLicense} from '@queries/servers/system';
-import {observeCurrentUser} from '@queries/servers/user';
+import {observeCurrentUser, observeUser} from '@queries/servers/user';
 import {displayUsername} from '@utils/user';
 
 import PublicOrPrivateChannel from './public_or_private_channel';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type UserModel from '@typings/database/models/servers/user';
 
 const enhanced = withObservables([], ({channel, database}: {channel: ChannelModel} & WithDatabaseArgs) => {
     let creator;
@@ -26,18 +25,14 @@ const enhanced = withObservables([], ({channel, database}: {channel: ChannelMode
         const license = observeLicense(database);
         const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observe();
         const me = observeCurrentUser(database);
-
-        const profile = channel.observe().pipe(
-            switchMap(() => channel.creator.observe()),
-            catchError(() => of$(undefined)),
-        );
+        const profile = observeUser(database, channel.creatorId);
 
         const teammateNameDisplay = combineLatest([preferences, config, license]).pipe(
             map(([prefs, cfg, lcs]) => getTeammateNameDisplaySetting(prefs, cfg, lcs)),
         );
 
         creator = combineLatest([profile, teammateNameDisplay, me]).pipe(
-            map(([user, displaySetting, currentUser]) => (user ? displayUsername(user as UserModel, currentUser?.locale, displaySetting, true) : '')),
+            map(([user, displaySetting, currentUser]) => (user ? displayUsername(user, currentUser?.locale, displaySetting, true) : '')),
         );
     } else {
         creator = of$(undefined);
