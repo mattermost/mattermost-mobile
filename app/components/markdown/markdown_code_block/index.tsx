@@ -88,7 +88,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBlockProps) => {
     const intl = useIntl();
-    const managedConfig = useManagedConfig();
+    const managedConfig = useManagedConfig<ManagedConfig>();
     const theme = useTheme();
     const style = getStyleSheet(theme);
 

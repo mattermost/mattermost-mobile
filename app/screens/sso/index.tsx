@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
 });
 
 const SSO = ({config, extra, launchError, launchType, serverDisplayName, serverUrl, ssoType, theme}: SSOProps) => {
-    const managedConfig = useManagedConfig();
+    const managedConfig = useManagedConfig<ManagedConfig>();
     const inAppSessionAuth = managedConfig?.inAppSessionAuth === 'true';
     const dimensions = useWindowDimensions();
     const translateX = useSharedValue(inAppSessionAuth ? 0 : dimensions.width);

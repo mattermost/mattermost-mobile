@@ -7,11 +7,13 @@ import {OperationType} from '@typings/database/enums';
 
 import type {TransformerArgs} from '@typings/database/database';
 import type ThreadModel from '@typings/database/models/servers/thread';
+import type ThreadInTeamModel from '@typings/database/models/servers/thread_in_team';
 import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
 
 const {
     THREAD,
     THREAD_PARTICIPANT,
+    THREADS_IN_TEAM,
 } = MM_TABLES.SERVER;
 
 /**
@@ -70,4 +72,21 @@ export const transformThreadParticipantRecord = ({action, database, value}: Tran
         value,
         fieldsMapper,
     }) as Promise<ThreadParticipantModel>;
+};
+
+export const transformThreadInTeamRecord = ({action, database, value}: TransformerArgs): Promise<ThreadInTeamModel> => {
+    const raw = value.raw as ThreadInTeam;
+
+    const fieldsMapper = (threadInTeam: ThreadInTeamModel) => {
+        threadInTeam.threadId = raw.thread_id;
+        threadInTeam.teamId = raw.team_id;
+    };
+
+    return prepareBaseRecord({
+        action,
+        database,
+        tableName: THREADS_IN_TEAM,
+        value,
+        fieldsMapper,
+    }) as Promise<ThreadInTeamModel>;
 };

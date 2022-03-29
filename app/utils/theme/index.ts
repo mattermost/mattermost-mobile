@@ -7,8 +7,8 @@ import tinyColor from 'tinycolor2';
 
 import {Preferences} from '@constants';
 import {MODAL_SCREENS_WITHOUT_BACK} from '@constants/screens';
-import {appearanceControlledScreens, mergeNavigationOptions} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 
 import type {Options} from 'react-native-navigation';
 
@@ -86,7 +86,7 @@ export function setNavigatorStyles(componentId: string, theme: Theme, additional
                 color: theme.sidebarHeaderTextColor,
             },
             background: {
-                color: theme.sidebarHeaderBg,
+                color: theme.sidebarBg,
             },
             leftButtonColor: theme.sidebarHeaderTextColor,
             rightButtonColor: theme.sidebarHeaderTextColor,

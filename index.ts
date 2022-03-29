@@ -25,7 +25,6 @@ if (__DEV__) {
     LogBox.ignoreLogs([
         '`-[RCTRootView cancelTouches]`',
         'scaleY',
-        'Require cycle: node_modules/zod/lib/src/index.js',
         "[react-native-gesture-handler] Seems like you're using an old API with gesture components, check out new Gestures system!",
         'new NativeEventEmitter',
     ]);
