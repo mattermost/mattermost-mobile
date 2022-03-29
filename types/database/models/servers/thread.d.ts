@@ -38,6 +38,9 @@ export default class ThreadModel extends Model {
     /** loaded_in_global_threads : Flag to differentiate the unread threads loaded for showing unread counts/mentions */
     loadedInGlobalThreads: boolean;
 
+    /** viewed_at : The timestamp showing when the user's last opened this thread (this is used for the new line message indicator) */
+    viewedAt: number;
+
     /** participants: All the participants of the thread */
     participants: Query<ThreadParticipantsModel>;
 

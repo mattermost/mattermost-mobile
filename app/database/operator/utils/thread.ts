@@ -4,46 +4,11 @@ import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
-import type {RecordPair, SanitizeAddThreadParticipantsArgs, SanitizeThreadParticipantsArgs} from '@typings/database/database';
+import type {Clause} from '@nozbe/watermelondb/QueryDescription';
+import type {RecordPair, SanitizeThreadParticipantsArgs} from '@typings/database/database';
 import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
 
 const {THREAD_PARTICIPANT} = MM_TABLES.SERVER;
-
-/**
- * sanitizeAddThreadParticipants: [CREATE ONLY] Treats participants to be added to a Thread. Hence, this function
- * tell us which participants to create in the ThreadParticipants table.
- * @param {SanitizeAddThreadParticipantsArgs} sanitizeAddThreadParticipants
- * @param {Database} sanitizeAddThreadParticipants.database
- * @param {string} sanitizeAddThreadParticipants.thread_id
- * @param {string[]} sanitizeAddThreadParticipants.rawParticipants
- * @returns {Promise<ThreadParticipant[]>}
- */
-export const sanitizeAddThreadParticipants = async ({database, thread_id, rawParticipants}: SanitizeAddThreadParticipantsArgs) => {
-    const participants = (await database.get<ThreadParticipantModel>(THREAD_PARTICIPANT).query(
-        Q.where('thread_id', thread_id),
-        Q.where('user_id', Q.oneOf(rawParticipants)),
-    ).fetch());
-
-    const createParticipants: RecordPair[] = [];
-
-    for (let i = 0; i < rawParticipants.length; i++) {
-        const userId = rawParticipants[i];
-
-        // If the participant is not present let's add them to the db
-        const exists = participants.find((participant) => participant.userId === userId);
-
-        if (!exists) {
-            createParticipants.push({
-                raw: {
-                    id: userId,
-                    thread_id,
-                },
-            });
-        }
-    }
-
-    return createParticipants;
-};
 
 /**
  * sanitizeThreadParticipants: Treats participants in a Thread. For example, a user can participate/not.  Hence, this function
@@ -54,10 +19,20 @@ export const sanitizeAddThreadParticipants = async ({database, thread_id, rawPar
  * @param {UserProfile[]} sanitizeThreadParticipants.rawParticipants
  * @returns {Promise<{createParticipants: ThreadParticipant[],  deleteParticipants: ThreadParticipantModel[]}>}
  */
-export const sanitizeThreadParticipants = async ({database, thread_id, rawParticipants}: SanitizeThreadParticipantsArgs) => {
+export const sanitizeThreadParticipants = async ({database, skipSync, thread_id, rawParticipants}: SanitizeThreadParticipantsArgs) => {
+    const clauses: Clause[] = [Q.where('thread_id', thread_id)];
+
+    // Check if we already have the participants
+    if (skipSync) {
+        clauses.push(
+            Q.where('user_id', Q.oneOf(
+                rawParticipants.map((participant) => participant.id),
+            )),
+        );
+    }
     const participants = (await database.collections.
         get(THREAD_PARTICIPANT).
-        query(Q.where('thread_id', thread_id)).
+        query(...clauses).
         fetch()) as ThreadParticipantModel[];
 
     // similarObjects: Contains objects that are in both the RawParticipant array and in the ThreadParticipant table
@@ -76,6 +51,10 @@ export const sanitizeThreadParticipants = async ({database, thread_id, rawPartic
         } else {
             createParticipants.push({raw: rawParticipant});
         }
+    }
+
+    if (skipSync) {
+        return {createParticipants, deleteParticipants: []};
     }
 
     // finding out elements to delete using array subtract

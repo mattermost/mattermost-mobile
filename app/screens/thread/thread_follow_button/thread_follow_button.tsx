@@ -1,23 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
-import React, {useCallback, useMemo} from 'react';
+import React from 'react';
 import {Platform, StyleSheet, TouchableOpacity, View} from 'react-native';
 
-import {updateThreadFollow} from '@actions/remote/thread';
+import {toggleThreadFollow} from '@actions/remote/thread';
 import FormattedText from '@components/formatted_text';
-import {MM_TABLES} from '@constants/database';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {WithDatabaseArgs} from '@typings/database/database';
 import type ThreadModel from '@typings/database/models/servers/thread';
-
-const {SERVER: {THREAD}} = MM_TABLES;
 
 type Props = {
     teamId: string;
@@ -61,25 +55,22 @@ function ThreadFollow({teamId, thread}: Props) {
 
     const serverUrl = useServerUrl();
 
-    const onPress = useCallback(preventDoubleTap(() => {
-        updateThreadFollow(serverUrl, teamId, thread.id, !thread.isFollowing);
-    }), [teamId, thread.isFollowing]);
+    const onPress = preventDoubleTap(() => {
+        toggleThreadFollow(serverUrl, teamId, thread.id, !thread.isFollowing);
+    });
 
-    const [containerStyle, followTextProps] = useMemo(() => {
-        const container = [styles.container];
-        let followText = {
-            id: 'threads.follow',
-            defaultMessage: 'Follow',
+    const containerStyle = [styles.container];
+    let followTextProps = {
+        id: 'threads.follow',
+        defaultMessage: 'Follow',
+    };
+    if (thread.isFollowing) {
+        containerStyle.push(styles.containerActive);
+        followTextProps = {
+            id: 'threads.following',
+            defaultMessage: 'Following',
         };
-        if (thread.isFollowing) {
-            container.push(styles.containerActive);
-            followText = {
-                id: 'threads.following',
-                defaultMessage: 'Following',
-            };
-        }
-        return [container, followText];
-    }, [thread.isFollowing]);
+    }
 
     return (
         <TouchableOpacity onPress={onPress}>
@@ -93,10 +84,4 @@ function ThreadFollow({teamId, thread}: Props) {
     );
 }
 
-const enhanced = withObservables(['threadId'], ({threadId, database}: {threadId: string} & WithDatabaseArgs) => {
-    return {
-        thread: database.get<ThreadModel>(THREAD).findAndObserve(threadId),
-    };
-});
-
-export default withDatabase(enhanced(ThreadFollow));
+export default ThreadFollow;

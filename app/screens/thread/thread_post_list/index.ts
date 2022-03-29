@@ -28,7 +28,6 @@ const enhanced = withObservables(['forceQueryAfterAppState', 'rootPost'], ({data
     const currentUser = observeCurrentUser(database);
 
     return {
-        channel: rootPost.channel.observe(),
         currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
         currentUsername: currentUser.pipe((switchMap((user) => of$(user?.username || '')))),
         isCRTEnabled: observeIsCRTEnabled(database),
@@ -45,6 +44,9 @@ const enhanced = withObservables(['forceQueryAfterAppState', 'rootPost'], ({data
                 const {earliest, latest} = postsInThread[0];
                 return queryPostsChunk(database, rootPost.id, earliest, latest, true).observe();
             }),
+        ),
+        teamId: rootPost.channel.observe().pipe(
+            switchMap((channel) => of$(channel?.teamId)),
         ),
     };
 });

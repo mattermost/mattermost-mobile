@@ -6,10 +6,10 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed, updateLastPostAt} from '@actions/local/channel';
 import {markPostAsDeleted} from '@actions/local/post';
-import {processThreadFromNewPost, processUpdateThreadReplyCount} from '@actions/local/thread';
+import {createThreadFromNewPost, updateThreadReplyCount} from '@actions/local/thread';
 import {fetchMyChannel, markChannelAsRead} from '@actions/remote/channel';
 import {fetchPostAuthors, fetchPostById} from '@actions/remote/post';
-import {getThread} from '@actions/remote/thread';
+import {fetchThread} from '@actions/remote/thread';
 import {ActionType, Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
@@ -65,7 +65,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
 
     const isCRTEnabled = await getIsCRTEnabled(database);
     if (isCRTEnabled) {
-        const {models: threadModels} = await processThreadFromNewPost(serverUrl, post, true);
+        const {models: threadModels} = await createThreadFromNewPost(serverUrl, post, true);
         if (threadModels?.length) {
             models.push(...threadModels);
         }
@@ -234,20 +234,20 @@ export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage
             if (isCRTEnabled) {
                 // Update reply_count of the thread;
                 // Note: reply_count includes current deleted count, So subtract 1 from reply_count
-                const {model: threadModel} = await processUpdateThreadReplyCount(serverUrl, post.root_id, post.reply_count - 1, true);
+                const {model: threadModel} = await updateThreadReplyCount(serverUrl, post.root_id, post.reply_count - 1, true);
                 if (threadModel) {
                     models.push(threadModel);
                 }
 
                 const channel = await getChannelById(database, post.channel_id);
                 if (channel) {
-                    getThread(serverUrl, channel.teamId, post.root_id);
+                    fetchThread(serverUrl, channel.teamId, post.root_id);
                 }
             }
         }
 
         if (models.length) {
-            operator.batchRecords(models);
+            await operator.batchRecords(models);
         }
     } catch {
         // Do nothing

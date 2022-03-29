@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {processReceivedThreads, processUpdateTeamThreadsAsRead, processUpdateThreadFollow, processUpdateThreadRead} from '@actions/local/thread';
+import {markTeamThreadsAsRead, processReceivedThreads, toggleFollowThread, updateThreadRead} from '@actions/local/thread';
 import DatabaseManager from '@database/manager';
 
 export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
@@ -17,27 +17,19 @@ export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocket
     }
 }
 
-type ThreadReadChangedData = {
-    thread_id: string;
-    timestamp: number;
-    unread_mentions: number;
-    unread_replies: number;
-};
-
 export async function handleThreadReadChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl].operator;
+    if (!operator) {
         return;
     }
 
     try {
-        const operator = database?.operator;
         if (operator) {
             const {thread_id, timestamp, unread_mentions, unread_replies} = msg.data as ThreadReadChangedData;
             if (thread_id) {
-                processUpdateThreadRead(serverUrl, thread_id, timestamp, unread_mentions, unread_replies);
+                await updateThreadRead(serverUrl, thread_id, timestamp, unread_mentions, unread_replies);
             } else {
-                processUpdateTeamThreadsAsRead(serverUrl, msg.broadcast.team_id);
+                await markTeamThreadsAsRead(serverUrl, msg.broadcast.team_id);
             }
         }
     } catch (error) {
@@ -46,20 +38,19 @@ export async function handleThreadReadChangedEvent(serverUrl: string, msg: WebSo
 }
 
 export async function handleThreadFollowChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl].operator;
+    if (!operator) {
         return;
     }
 
     try {
-        const operator = database?.operator;
         if (operator) {
             const {reply_count, state, thread_id} = msg.data as {
                 reply_count: number;
                 state: boolean;
                 thread_id: string;
             };
-            processUpdateThreadFollow(serverUrl, thread_id, state, reply_count);
+            await toggleFollowThread(serverUrl, thread_id, state, reply_count);
         }
     } catch (error) {
         // Do nothing

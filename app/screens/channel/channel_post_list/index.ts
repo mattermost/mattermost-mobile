@@ -43,7 +43,7 @@ const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({dat
                 }
 
                 const {earliest, latest} = postsInChannel[0];
-                return queryPostsBetween(database, earliest, latest, Q.desc, '', channelId, '', isCRTEnabled).observe();
+                return queryPostsBetween(database, earliest, latest, Q.desc, '', channelId, isCRTEnabled ? '' : undefined).observe();
             }),
         ),
         shouldShowJoinLeaveMessages: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE).observe().pipe(

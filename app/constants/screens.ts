@@ -35,7 +35,7 @@ export const SERVER = 'Server';
 export const SETTINGS_SIDEBAR = 'SettingsSidebar';
 export const SSO = 'SSO';
 export const THREAD = 'Thread';
-export const THREAD_FOLLOW = 'ThreadFollow';
+export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
 export const USER_PROFILE = 'UserProfile';
 
 export default {
@@ -73,7 +73,7 @@ export default {
     SETTINGS_SIDEBAR,
     SSO,
     THREAD,
-    THREAD_FOLLOW,
+    THREAD_FOLLOW_BUTTON,
     USER_PROFILE,
 };
 

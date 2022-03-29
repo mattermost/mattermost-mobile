@@ -7,31 +7,20 @@ import {map, switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {getPreferenceValue} from '@helpers/api/preference';
+import {isCRTEnabled} from '@utils/thread';
 
+import type ServerDataOperator from '@database/operator/server_data_operator';
+import type Model from '@nozbe/watermelondb/Model';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
 import type ThreadModel from '@typings/database/models/servers/thread';
 
 const {SERVER: {CHANNEL, POST, PREFERENCE, SYSTEM, THREAD}} = MM_TABLES;
 
-export function processIsCRTEnabled(preferences: PreferenceModel[], config?: ClientConfig): boolean {
-    let preferenceDefault = Preferences.COLLAPSED_REPLY_THREADS_OFF;
-    const configValue = config?.CollapsedThreads;
-    if (configValue === 'default_on') {
-        preferenceDefault = Preferences.COLLAPSED_REPLY_THREADS_ON;
-    }
-    const preference = getPreferenceValue(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.COLLAPSED_REPLY_THREADS, preferenceDefault);
-
-    const isAllowed = config?.FeatureFlagCollapsedThreads === 'true' && config?.CollapsedThreads !== 'disabled';
-
-    return isAllowed && (preference === Preferences.COLLAPSED_REPLY_THREADS_ON || config?.CollapsedThreads === 'always_on');
-}
-
 export const getIsCRTEnabled = async (database: Database): Promise<boolean> => {
     const {value: config} = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.CONFIG);
     const preferences = await database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).fetch();
-    return processIsCRTEnabled(preferences, config);
+    return isCRTEnabled(preferences, config);
 };
 
 export const getThreadById = async (database: Database, threadId: string) => {
@@ -48,17 +37,56 @@ export const observeIsCRTEnabled = (database: Database) => {
     const preferences = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe();
     return combineLatest([config, preferences]).pipe(
         map(
-            ([{value: cfg}, prefs]) => processIsCRTEnabled(prefs, cfg),
+            ([{value: cfg}, prefs]) => isCRTEnabled(prefs, cfg),
         ),
     );
 };
 
-export const queryThreadById = (database: Database, threadId: string) => {
+export const observeThreadById = (database: Database, threadId: string) => {
     return database.get<ThreadModel>(THREAD).query(
         Q.where('id', threadId),
     ).observe().pipe(
         switchMap((threads) => threads[0]?.observe() || of$(undefined)),
     );
+};
+
+export const observeUnreadsAndMentionsInTeam = (database: Database, teamId: string) => {
+    return queryThreadsInTeam({database, teamId, onlyUnreads: true}).observeWithColumns(['unread_replies', 'unread_mentions']).pipe(
+        switchMap((threads) => {
+            let unreads = 0;
+            let mentions = 0;
+            threads.forEach((thread) => {
+                unreads += thread.unreadReplies;
+                mentions += thread.unreadMentions;
+            });
+            return of$({unreads, mentions});
+        }),
+    );
+};
+
+// On receiving "posts", Save the "root posts" as "threads"
+export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperator, posts: Post[]) => {
+    const models: Model[] = [];
+    const threads: Thread[] = [];
+    posts.forEach((post: Post) => {
+        if (!post.root_id && post.type === '') {
+            threads.push({
+                id: post.id,
+                participants: post.participants,
+                reply_count: post.reply_count,
+                last_reply_at: post.last_reply_at,
+                is_following: post.is_following,
+            } as Thread);
+        }
+    });
+    if (threads.length) {
+        const threadModels = await operator.handleThreads({threads, prepareRecordsOnly: true});
+        if (threadModels.length) {
+            models.push(...threadModels);
+        }
+    }
+
+    return models;
 };
 
 type QueryThreadsInTeamArgs = {
@@ -108,18 +136,4 @@ export const queryThreadsInTeam = ({database, hasReplies = true, isFollowing = t
     }
 
     return database.get<ThreadModel>(THREAD).query(...query);
-};
-
-export const queryUnreadsAndMentionsInTeam = (database: Database, teamId: string) => {
-    return queryThreadsInTeam({database, teamId, onlyUnreads: true}).observeWithColumns(['unread_replies', 'unread_mentions']).pipe(
-        switchMap((threads) => {
-            let unreads = 0;
-            let mentions = 0;
-            threads.forEach((thread) => {
-                unreads += thread.unreadReplies;
-                mentions += thread.unreadMentions;
-            });
-            return of$({unreads, mentions});
-        }),
-    );
 };

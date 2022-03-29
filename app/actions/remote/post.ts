@@ -9,7 +9,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {processPostsFetched, removePost} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
-import {processThreadFromNewPost, processThreadsFromReceivedPosts} from '@actions/local/thread';
+import {createThreadFromNewPost} from '@actions/local/thread';
 import {ActionType, Events, General, Post, ServerErrors} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -21,7 +21,7 @@ import {prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/ser
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
 import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
-import {getIsCRTEnabled} from '@queries/servers/thread';
+import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {queryAllUsers} from '@queries/servers/user';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
@@ -122,7 +122,7 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         initialPostModels.push(...reactionModels);
     }
 
-    operator.batchRecords(initialPostModels);
+    await operator.batchRecords(initialPostModels);
 
     const isCRTEnabled = await getIsCRTEnabled(database);
 
@@ -135,12 +135,12 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
             prepareRecordsOnly: true,
         });
         if (isCRTEnabled) {
-            const {models: threadModels} = await processThreadFromNewPost(serverUrl, created, true);
+            const {models: threadModels} = await createThreadFromNewPost(serverUrl, created, true);
             if (threadModels?.length) {
                 models.push(...threadModels);
             }
         }
-        operator.batchRecords(models);
+        await operator.batchRecords(models);
 
         newPost = created;
     } catch (error: any) {
@@ -169,12 +169,12 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
                 prepareRecordsOnly: true,
             });
             if (isCRTEnabled) {
-                const {models: threadModels} = await processThreadFromNewPost(serverUrl, errorPost, true);
+                const {models: threadModels} = await createThreadFromNewPost(serverUrl, errorPost, true);
                 if (threadModels?.length) {
                     models.push(...threadModels);
                 }
             }
-            operator.batchRecords(models);
+            await operator.batchRecords(models);
         }
     }
 
@@ -254,7 +254,7 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string,
 
             const isCRTEnabled = await getIsCRTEnabled(operator.database);
             if (isCRTEnabled) {
-                const {models: threadModels} = await processThreadsFromReceivedPosts(serverUrl, data.posts, true);
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, data.posts);
                 if (threadModels?.length) {
                     models.push(...threadModels);
                 }
@@ -312,13 +312,13 @@ export const fetchPosts = async (serverUrl: string, channelId: string, page = 0,
                 prepareRecordsOnly: true,
             });
             if (isCRTEnabled) {
-                const {models: threadModels} = await processThreadsFromReceivedPosts(serverUrl, result.posts, true);
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
                 if (threadModels?.length) {
                     models.push(...threadModels);
                 }
             }
             if (models.length) {
-                operator.batchRecords(models);
+                await operator.batchRecords(models);
             }
         }
         return result;
@@ -372,7 +372,7 @@ export const fetchPostsBefore = async (serverUrl: string, channelId: string, pos
                 }
 
                 if (isCRTEnabled) {
-                    const {models: threadModels} = await processThreadsFromReceivedPosts(serverUrl, result.posts, true);
+                    const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
                     if (threadModels?.length) {
                         models.push(...threadModels);
                     }
@@ -419,13 +419,13 @@ export const fetchPostsSince = async (serverUrl: string, channelId: string, sinc
                 prepareRecordsOnly: true,
             });
             if (isCRTEnabled) {
-                const {models: threadModels} = await processThreadsFromReceivedPosts(serverUrl, result.posts, true);
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
                 if (threadModels?.length) {
                     models.push(...threadModels);
                 }
             }
             if (models.length) {
-                operator.batchRecords(models);
+                await operator.batchRecords(models);
             }
         }
         return result;
@@ -578,6 +578,14 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
             });
 
             models.push(...posts);
+
+            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            if (isCRTEnabled) {
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, data.posts);
+                if (threadModels?.length) {
+                    models.push(...threadModels);
+                }
+            }
             await operator.batchRecords(models);
         }
 
@@ -664,7 +672,7 @@ export async function fetchMissingChannelsFromPosts(serverUrl: string, posts: Po
                         return mdls;
                     });
                     if (models.length) {
-                        operator.batchRecords(models);
+                        await operator.batchRecords(models);
                     }
                 }
             }
@@ -711,6 +719,14 @@ export const fetchPostById = async (serverUrl: string, postId: string, fetchOnly
                     prepareRecordsOnly: false,
                 });
                 models.push(...users);
+            }
+
+            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            if (isCRTEnabled) {
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, [post]);
+                if (threadModels?.length) {
+                    models.push(...threadModels);
+                }
             }
 
             await operator.batchRecords(models);
@@ -915,6 +931,11 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
                 prepareRecordsOnly: true,
             }),
         );
+
+        const isCRTEnabled = await getIsCRTEnabled(operator.database);
+        if (isCRTEnabled) {
+            promises.push(prepareThreadsFromReceivedPosts(operator, postsArray));
+        }
 
         const modelArrays = await Promise.all(promises);
         const models = modelArrays.flatMap((mdls) => {

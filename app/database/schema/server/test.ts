@@ -472,6 +472,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         unread_replies: {name: 'unread_replies', type: 'number'},
                         unread_mentions: {name: 'unread_mentions', type: 'number'},
                         loaded_in_global_threads: {name: 'loaded_in_global_threads', type: 'boolean'},
+                        viewed_at: {name: 'viewed_at', type: 'number'},
                     },
                     columnArray: [
                         {name: 'last_reply_at', type: 'number'},
@@ -481,6 +482,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'unread_replies', type: 'number'},
                         {name: 'unread_mentions', type: 'number'},
                         {name: 'loaded_in_global_threads', type: 'boolean'},
+                        {name: 'viewed_at', type: 'number'},
                     ],
                 },
                 [THREAD_PARTICIPANT]: {

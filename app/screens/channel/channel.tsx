@@ -93,10 +93,10 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.PAUSE_KEYBOARD_TRACKING_VIEW, (pause: boolean) => {
             if (pause) {
-                postDraftRef.current?.pauseTracking?.(channelId);
+                postDraftRef.current?.pauseTracking(channelId);
             }
 
-            postDraftRef.current?.resumeTracking?.(channelId);
+            postDraftRef.current?.resumeTracking(channelId);
         });
 
         return () => listener.remove();
