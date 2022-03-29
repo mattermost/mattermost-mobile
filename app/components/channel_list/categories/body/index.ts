@@ -67,13 +67,13 @@ const getSortedChannels = (database: Database, category: CategoryModel, locale: 
         case 'manual': {
             return category.categoryChannelsBySortOrder.observeWithColumns(['sort_order']).pipe(
                 // eslint-disable-next-line max-nested-callbacks
-                switchMap((cc) => from$(Promise.all(cc.map((c) => c.channel.fetch())))),
+                switchMap((cc) => from$(Promise.all(cc.map((c) => c.channel?.fetch())))),
             );
         }
         default:
             return category.myChannels.observeWithColumns(['last_post_at']).pipe(
                 // eslint-disable-next-line max-nested-callbacks
-                switchMap((mc) => from$(Promise.all(mc.map((m) => m.channel.fetch())))),
+                switchMap((mc) => from$(Promise.all(mc.map((m) => m.channel?.fetch())))),
             );
     }
 };

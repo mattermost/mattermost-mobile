@@ -26,7 +26,7 @@ const CategoryBody = ({currentChannelId, sortedChannels, category, hiddenChannel
 
         // Remove all closed gm/dms
         if (hiddenChannelIds.length) {
-            filteredChannels = sortedChannels.filter((item) => !hiddenChannelIds.includes(item.id));
+            filteredChannels = sortedChannels.filter((item) => item && !hiddenChannelIds.includes(item.id));
         }
 
         if (category.type === 'direct_messages' && limit > 0) {

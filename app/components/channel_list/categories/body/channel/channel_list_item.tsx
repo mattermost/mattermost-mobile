@@ -3,8 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet, Text, View} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {switchToChannelById} from '@actions/remote/channel';
@@ -76,7 +75,7 @@ const ChannelListItem = ({channel, isActive, currentUserId, isMuted, myChannel, 
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
-    const isOwnDirectMessage = (channel?.type === General.DM_CHANNEL) && currentUserId === getUserIdFromChannelName(currentUserId, channel.name);
+    const isOwnDirectMessage = (channel.type === General.DM_CHANNEL) && currentUserId === getUserIdFromChannelName(currentUserId, channel.name);
 
     // Make it brighter if it's not muted, and highlighted or has unreads
     const bright = !isMuted && (isActive || (myChannel && (myChannel.isUnread || myChannel.mentionsCount > 0)));
@@ -102,7 +101,7 @@ const ChannelListItem = ({channel, isActive, currentUserId, isMuted, myChannel, 
     }, [myChannel?.id, serverUrl]);
     const membersCount = useMemo(() => {
         if (channel.type === General.GM_CHANNEL) {
-            return channel.displayName?.split(',').length;
+            return channel.displayName.split(',').length;
         }
         return 0;
     }, [channel.type, channel.displayName]);
