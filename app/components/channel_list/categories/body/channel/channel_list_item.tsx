@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, Text, View} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
@@ -15,6 +15,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+import {getUserIdFromChannelName} from '@utils/user';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -61,19 +62,21 @@ const textStyle = StyleSheet.create({
 });
 
 type Props = {
-    channel: Pick<ChannelModel, 'deleteAt' | 'displayName' | 'name' | 'shared' | 'type'>;
+    channel: ChannelModel;
     isActive: boolean;
-    isOwnDirectMessage: boolean;
     isMuted: boolean;
     myChannel?: MyChannelModel;
     collapsed: boolean;
+    currentUserId: string;
 }
 
-const ChannelListItem = ({channel, isActive, isOwnDirectMessage, isMuted, myChannel, collapsed}: Props) => {
+const ChannelListItem = ({channel, isActive, currentUserId, isMuted, myChannel, collapsed}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
+
+    const isOwnDirectMessage = (channel?.type === General.DM_CHANNEL) && currentUserId === getUserIdFromChannelName(currentUserId, channel.name);
 
     // Make it brighter if it's not muted, and highlighted or has unreads
     const bright = !isMuted && (isActive || (myChannel && (myChannel.isUnread || myChannel.mentionsCount > 0)));
@@ -82,7 +85,7 @@ const ChannelListItem = ({channel, isActive, isOwnDirectMessage, isMuted, myChan
 
     useEffect(() => {
         sharedValue.value = collapsed && !bright;
-    }, [collapsed, bright]);
+    }, [collapsed && !bright]);
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
@@ -92,11 +95,11 @@ const ChannelListItem = ({channel, isActive, isOwnDirectMessage, isMuted, myChan
         };
     });
 
-    const switchChannels = () => {
+    const switchChannels = useCallback(() => {
         if (myChannel) {
             switchToChannelById(serverUrl, myChannel.id);
         }
-    };
+    }, [myChannel?.id, serverUrl]);
     const membersCount = useMemo(() => {
         if (channel.type === General.GM_CHANNEL) {
             return channel.displayName?.split(',').length;
