@@ -82,6 +82,11 @@ type TermsOfService = {
     text: string;
 };
 
+type ThreadInTeam = {
+    thread_id: string;
+    team_id: string;
+};
+
 type RawValue =
   | AppInfo
   | Category
@@ -109,6 +114,7 @@ type RawValue =
   | TeamSearchHistory
   | TermsOfService
   | Thread
+  | ThreadInTeam
   | ThreadParticipant
   | UserProfile
   | Pick<ChannelMembership, 'channel_id' | 'user_id'>

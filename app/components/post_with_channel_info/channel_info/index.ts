@@ -16,7 +16,7 @@ const enhance = withObservables(['post'], ({post}: {post: PostModel}) => {
             switchMap((chan) => (chan ? of$(chan.displayName) : '')),
         ),
         teamName: channel.pipe(
-            switchMap((chan) => (chan ? chan.team.observe() : of$(null))),
+            switchMap((chan) => (chan && chan.teamId ? chan.team.observe() : of$(null))),
             switchMap((team) => of$(team?.displayName || null)),
         ),
     };

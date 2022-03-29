@@ -6,7 +6,7 @@ import Fuse from 'fuse.js';
 
 import SystemModel from '@database/models/server/system';
 
-import {Emojis, EmojiIndicesByAlias, EmojiIndicesByUnicode} from './';
+import {Emojis, EmojiIndicesByAlias, EmojiIndicesByUnicode} from '.';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 

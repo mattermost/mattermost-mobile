@@ -91,12 +91,18 @@ export type HandlePostsArgs = {
 export type HandleThreadsArgs = {
   threads: Thread[];
   prepareRecordsOnly?: boolean;
+  teamId: string;
 };
 
 export type HandleThreadParticipantsArgs = {
   prepareRecordsOnly: boolean;
   skipSync?: boolean;
   threadsParticipants: ParticipantsPerThread[];
+};
+
+export type HandleThreadInTeamArgs = {
+  threadsMap: Record<string, Thread[]>;
+  prepareRecordsOnly?: boolean;
 };
 
 export type SanitizeReactionsArgs = {
