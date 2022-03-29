@@ -7,11 +7,12 @@ import DatabaseManager from '@database/manager';
 export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     try {
         const thread = JSON.parse(msg.data.thread) as Thread;
+        const teamId = msg.broadcast.team_id;
 
         // Mark it as following and visible in global threads
         thread.is_following = true;
         thread.loaded_in_global_threads = true;
-        processReceivedThreads(serverUrl, [thread]);
+        processReceivedThreads(serverUrl, [thread], teamId);
     } catch (error) {
         // Do nothing
     }

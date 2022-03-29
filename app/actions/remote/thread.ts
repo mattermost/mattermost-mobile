@@ -104,7 +104,7 @@ export const fetchThreads = async (
                 }
             });
 
-            await processReceivedThreads(serverUrl, threads);
+            await processReceivedThreads(serverUrl, threads, teamId);
         }
 
         return {data};
@@ -125,7 +125,7 @@ export const fetchThread = async (serverUrl: string, teamId: string, threadId: s
     try {
         const thread = await client.getThread('me', teamId, threadId, extended);
 
-        await processReceivedThreads(serverUrl, [thread]);
+        await processReceivedThreads(serverUrl, [thread], teamId);
 
         return {data: thread};
         return {};
