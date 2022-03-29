@@ -11,6 +11,7 @@ import {safeParseJSON} from '@utils/helpers';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type DraftModel from '@typings/database/models/servers/draft';
 import type FileModel from '@typings/database/models/servers/file';
+import type PostModelInterface from '@typings/database/models/servers/post';
 import type PostInThreadModel from '@typings/database/models/servers/posts_in_thread';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type ThreadModel from '@typings/database/models/servers/thread';
@@ -21,7 +22,7 @@ const {CHANNEL, DRAFT, FILE, POST, POSTS_IN_THREAD, REACTION, THREAD, USER} = MM
 /**
  * The Post model is the building block of communication in the Mattermost app.
  */
-export default class PostModel extends Model {
+export default class PostModel extends Model implements PostModelInterface {
     /** table (name) : Post */
     static table = POST;
 

@@ -8,13 +8,14 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelModelInterface from '@typings/database/models/servers/my_channel';
 
 const {CATEGORY_CHANNEL, CHANNEL, MY_CHANNEL} = MM_TABLES.SERVER;
 
 /**
  * MyChannel is an extension of the Channel model but it lists only the Channels the app's user belongs to
  */
-export default class MyChannelModel extends Model {
+export default class MyChannelModel extends Model implements MyChannelModelInterface {
     /** table (name) : MyChannel */
     static table = MY_CHANNEL;
 

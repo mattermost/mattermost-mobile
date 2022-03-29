@@ -7,6 +7,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
+import type SlashCommandModelInterface from '@typings/database/models/servers/slash_command';
 import type TeamModel from '@typings/database/models/servers/team';
 
 const {SLASH_COMMAND, TEAM} = MM_TABLES.SERVER;
@@ -14,7 +15,7 @@ const {SLASH_COMMAND, TEAM} = MM_TABLES.SERVER;
 /**
  * The SlashCommand model describes the commands of the various commands available in each team.
  */
-export default class SlashCommandModel extends Model {
+export default class SlashCommandModel extends Model implements SlashCommandModelInterface {
     /** table (name) : SlashCommand */
     static table = SLASH_COMMAND;
 

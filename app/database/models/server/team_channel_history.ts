@@ -9,6 +9,7 @@ import {MM_TABLES} from '@constants/database';
 import {safeParseJSON} from '@utils/helpers';
 
 import type TeamModel from '@typings/database/models/servers/team';
+import type TeamChannelHistoryModelInterface from '@typings/database/models/servers/team_channel_history';
 
 const {TEAM, TEAM_CHANNEL_HISTORY} = MM_TABLES.SERVER;
 
@@ -16,7 +17,7 @@ const {TEAM, TEAM_CHANNEL_HISTORY} = MM_TABLES.SERVER;
  * The TeamChannelHistory model helps keeping track of the last channel visited
  * by the user.
  */
-export default class TeamChannelHistoryModel extends Model {
+export default class TeamChannelHistoryModel extends Model implements TeamChannelHistoryModelInterface {
     /** table (name) : TeamChannelHistory */
     static table = TEAM_CHANNEL_HISTORY;
 

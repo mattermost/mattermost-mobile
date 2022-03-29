@@ -14,6 +14,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
+import type UserModelInterface from '@typings/database/models/servers/user';
 import type {UserMentionKey} from '@typings/global/markdown';
 
 const {
@@ -31,7 +32,7 @@ const {
  * The User model represents the 'USER' table and its relationship to other
  * shareholders in the app.
  */
-export default class UserModel extends Model {
+export default class UserModel extends Model implements UserModelInterface {
     /** table (name) : User */
     static table = USER;
 
