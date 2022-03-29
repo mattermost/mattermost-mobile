@@ -112,12 +112,6 @@ export type SanitizeReactionsArgs = {
   skipSync?: boolean;
 };
 
-export type SanitizeAddThreadParticipantsArgs = {
-  database: Database;
-  thread_id: $ID<Thread>;
-  rawParticipants: string[];
-}
-
 export type SanitizeThreadParticipantsArgs = {
   database: Database;
   skipSync?: boolean;
