@@ -17,7 +17,8 @@ import {
 
 import {CustomStatusDuration} from '@constants/custom_status';
 import {observeCurrentUser} from '@queries/servers/user';
-import {dismissModal, mergeNavigationOptions, popTopScreen} from '@screens/navigation';
+import {dismissModal, popTopScreen} from '@screens/navigation';
+import {mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ClearAfterMenuItem from './components/clear_after_menu_item';

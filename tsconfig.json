@@ -5,7 +5,7 @@
         "lib": [
             "es6", "ES2019"
         ],
-        "allowJs": true,
+        "allowJs": false,
         "skipLibCheck": true,
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
@@ -59,9 +59,6 @@
             "@utils/*": ["app/utils/*"],
             "@websocket": ["app/client/websocket"],
             "*": ["./*", "node_modules/*"],
-            "react-native-redash/lib/module/v1": [
-                "./node_modules/react-native-redash/lib/typescript/v1/index.d.ts"
-            ]
         }
     },
     "include": ["app/**/*", "share_extensionn/**/*", "test/**/*", "types/**/*"],

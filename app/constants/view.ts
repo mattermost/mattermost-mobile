@@ -13,7 +13,7 @@ export const TEAM_SIDEBAR_WIDTH = 72;
 export const TABLET_HEADER_HEIGHT = 44;
 export const TABLET_SIDEBAR_WIDTH = 320;
 
-export const IOS_DEFAULT_HEADER_HEIGHT = 50;
+export const IOS_DEFAULT_HEADER_HEIGHT = 44;
 export const ANDROID_DEFAULT_HEADER_HEIGHT = 56;
 export const LARGE_HEADER_TITLE = 60;
 export const HEADER_WITH_SEARCH_HEIGHT = -16;

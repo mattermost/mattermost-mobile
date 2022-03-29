@@ -47,7 +47,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const ChannelListScreen = (props: ChannelProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const managedConfig = useManagedConfig();
+    const managedConfig = useManagedConfig<ManagedConfig>();
 
     const isTablet = useIsTablet();
     const route = useRoute();
