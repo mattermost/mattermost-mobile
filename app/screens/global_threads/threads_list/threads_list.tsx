@@ -94,7 +94,7 @@ const ThreadsList = ({
     }, [theme, tab, isLoading]);
 
     const listFooterComponent = useMemo(() => {
-        if (tab === 'unreads') {
+        if (tab === 'unreads' || !threads.length) {
             return null;
         }
 

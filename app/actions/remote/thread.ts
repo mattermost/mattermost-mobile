@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
-
 import {processReceivedThreads, processUpdateTeamThreadsAsRead, processUpdateThreadFollow, processUpdateThreadRead, switchToThread} from '@actions/local/thread';
 import {fetchPostThread} from '@actions/remote/post';
 import {General} from '@constants';
@@ -15,6 +13,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
+import type {Model} from '@nozbe/watermelondb';
 
 export type FetchThreadOptions = {
     before?: string;

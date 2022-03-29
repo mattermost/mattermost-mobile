@@ -28,10 +28,10 @@ type Props = {
 } & WithDatabaseArgs;
 
 const enhanced = withObservables(['tab', 'teamId', 'forceQueryAfterAppState'], ({database, tab, teamId}: Props) => {
-    const getOnlyUnreads = tab !== 'all';
+    const onlyUnreads = tab !== 'all';
 
-    // Get all/unread threads
-    const threads = queryThreadsInTeam({database, teamId, onlyUnreads: getOnlyUnreads, sort: true}).observe();
+    // Get either all or unread threads
+    const threads = queryThreadsInTeam({database, teamId, onlyUnreads, sort: true}).observe();
 
     // Get unreads count
     const unreadsCount = queryThreadsInTeam({database, teamId, onlyUnreads: true}).observeCount(false);
