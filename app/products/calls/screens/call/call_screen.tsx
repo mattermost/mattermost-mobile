@@ -374,6 +374,7 @@ const CallScreen = (props: Props) => {
                                 />
                                 <Text style={style.username}>
                                     {displayUsername(user.profile, props.teammateNameDisplay)}
+                                    {user.id === props.currentParticipant?.id && ' (you)'}
                                 </Text>
                             </View>
                         );
