@@ -6,10 +6,10 @@ import {Alert} from 'react-native';
 
 import {General, Permissions, Preferences} from '@constants';
 import {CustomStatusDuration} from '@constants/custom_status';
-import {UserModel} from '@database/models/server';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import {toTitleCase} from '@utils/helpers';
 
+import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
 
 export function displayUsername(user?: UserProfile | UserModel, locale?: string, teammateDisplayNameSetting?: string, useFallbackUsername = true) {
@@ -51,7 +51,7 @@ export function getFullName(user: UserProfile | UserModel): string {
     let firstName: string;
     let lastName: string;
 
-    if (user instanceof UserModel) {
+    if ('lastName' in user) {
         firstName = user.firstName;
         lastName = user.lastName;
     } else {
@@ -197,7 +197,7 @@ export function isBot(user: UserProfile | UserModel): boolean {
 }
 
 export function isShared(user: UserProfile | UserModel): boolean {
-    return 'remote_id' in user ? Boolean(user.remote_id) : Boolean(user.props?.remote_id);
+    return ('remoteId' in user) ? Boolean(user.remoteId) : Boolean(user.remote_id);
 }
 
 export function removeUserFromList(userId: string, originalList: UserProfile[]): UserProfile[] {
