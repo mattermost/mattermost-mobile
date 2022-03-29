@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Relation} from '@nozbe/watermelondb';
+import {Query, Relation} from '@nozbe/watermelondb';
 import {children, field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
 import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
+import type ChannelModelInterface from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 import type DraftModel from '@typings/database/models/servers/draft';
@@ -35,7 +36,7 @@ const {
 /**
  * The Channel model represents a channel in the Mattermost app.
  */
-export default class ChannelModel extends Model {
+export default class ChannelModel extends Model implements ChannelModelInterface {
     /** table (name) : Channel */
     static table = CHANNEL;
 
@@ -101,16 +102,16 @@ export default class ChannelModel extends Model {
     @field('type') type!: ChannelType;
 
     /** members : Users belonging to this channel */
-    @children(CHANNEL_MEMBERSHIP) members!: ChannelMembershipModel[];
+    @children(CHANNEL_MEMBERSHIP) members!: Query<ChannelMembershipModel>;
 
     /** drafts : All drafts for this channel */
-    @children(DRAFT) drafts!: DraftModel[];
+    @children(DRAFT) drafts!: Query<DraftModel>;
 
     /** posts : All posts made in that channel */
-    @children(POST) posts!: PostModel[];
+    @children(POST) posts!: Query<PostModel>;
 
     /** postsInChannel : a section of the posts for that channel bounded by a range */
-    @children(POSTS_IN_CHANNEL) postsInChannel!: PostsInChannelModel[];
+    @children(POSTS_IN_CHANNEL) postsInChannel!: Query<PostsInChannelModel>;
 
     /** team : The TEAM to which this CHANNEL belongs */
     @immutableRelation(TEAM, 'team_id') team!: Relation<TeamModel>;

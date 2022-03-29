@@ -7,6 +7,8 @@ import {json} from '@nozbe/watermelondb/decorators';
 import {MM_TABLES} from '@constants/database';
 import {safeParseJSON} from '@utils/helpers';
 
+import type GlobalModelInterface from '@typings/database/models/app/global';
+
 const {GLOBAL} = MM_TABLES.APP;
 
 // TODO : add TS definitions to sanitizer function signature.
@@ -15,7 +17,7 @@ const {GLOBAL} = MM_TABLES.APP;
  * The Global model will act as a dictionary of name-value pairs.  The value field can be a JSON object or any other
  * data type.  It will hold information that applies to the whole app ( e.g. sidebar settings for tablets)
  */
-export default class GlobalModel extends Model {
+export default class GlobalModel extends Model implements GlobalModelInterface {
     /** table (name) : global */
     static table = GLOBAL;
 

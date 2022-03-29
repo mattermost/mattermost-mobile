@@ -8,6 +8,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 
 import type TeamModel from '@typings/database/models/servers/team';
+import type TeamSearchHistoryModelInterface from '@typings/database/models/servers/team_search_history';
 
 const {TEAM, TEAM_SEARCH_HISTORY} = MM_TABLES.SERVER;
 
@@ -15,7 +16,7 @@ const {TEAM, TEAM_SEARCH_HISTORY} = MM_TABLES.SERVER;
  * The TeamSearchHistory model holds the term searched within a team.  The searches are performed
  * at team level in the app.
  */
-export default class TeamSearchHistoryModel extends Model {
+export default class TeamSearchHistoryModel extends Model implements TeamSearchHistoryModelInterface {
     /** table (name) : TeamSearchHistory */
     static table = TEAM_SEARCH_HISTORY;
 
