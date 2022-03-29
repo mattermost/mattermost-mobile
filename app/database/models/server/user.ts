@@ -57,7 +57,7 @@ export default class UserModel extends Model implements UserModelInterface {
         /** USER has a 1:N relationship with TEAM_MEMBERSHIP.  A user can join multiple teams */
         [TEAM_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
 
-        /** USER has a 1:N relationship with THREAD_PARTICIPANT. A user can participante in multiple threads */
+        /** USER has a 1:N relationship with THREAD_PARTICIPANT. A user can participate in multiple threads */
         [THREAD_PARTICIPANT]: {type: 'has_many', foreignKey: 'user_id'},
     };
 
@@ -107,7 +107,7 @@ export default class UserModel extends Model implements UserModelInterface {
     @field('username') username!: string;
 
     /** remote_id : The ID of the remote organization that this user belongs to */
-    @field('remote_id') remoteId!: string;
+    @field('remote_id') remoteId!: string | null;
 
     /** notify_props : Notification preferences/configurations */
     @json('notify_props', safeParseJSON) notifyProps!: UserNotifyProps | null;
