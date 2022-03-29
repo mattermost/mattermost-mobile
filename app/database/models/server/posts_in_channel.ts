@@ -8,6 +8,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type PostsInChannelModelInterface from '@typings/database/models/servers/posts_in_channel';
 
 const {CHANNEL, POSTS_IN_CHANNEL} = MM_TABLES.SERVER;
 
@@ -15,7 +16,7 @@ const {CHANNEL, POSTS_IN_CHANNEL} = MM_TABLES.SERVER;
  * PostsInChannel model helps us to combine adjacent posts together without leaving
  * gaps in between for an efficient user reading experience of posts.
  */
-export default class PostsInChannelModel extends Model {
+export default class PostsInChannelModel extends Model implements PostsInChannelModelInterface {
     /** table (name) : PostsInChannel */
     static table = POSTS_IN_CHANNEL;
 

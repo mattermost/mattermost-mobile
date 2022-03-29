@@ -8,6 +8,7 @@ import Model from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type ChannelInfoInterface from '@typings/database/models/servers/channel_info';
 
 const {CHANNEL, CHANNEL_INFO} = MM_TABLES.SERVER;
 
@@ -16,7 +17,7 @@ const {CHANNEL, CHANNEL_INFO} = MM_TABLES.SERVER;
  * In a Separation of Concerns approach, ChannelInfo will provide additional information about a channel but on a more
  * specific level.
  */
-export default class ChannelInfoModel extends Model {
+export default class ChannelInfoModel extends Model implements ChannelInfoInterface {
     /** table (name) : ChannelInfo */
     static table = CHANNEL_INFO;
 

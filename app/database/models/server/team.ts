@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q, Relation} from '@nozbe/watermelondb';
+import {Q, Query, Relation} from '@nozbe/watermelondb';
 import {children, field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
@@ -11,6 +11,7 @@ import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type SlashCommandModel from '@typings/database/models/servers/slash_command';
+import type TeamModelInterface from '@typings/database/models/servers/team';
 import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
 import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
 import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
@@ -32,7 +33,7 @@ const {
 /**
  * A Team houses and enables communication to happen across channels and users.
  */
-export default class TeamModel extends Model {
+export default class TeamModel extends Model implements TeamModelInterface {
     /** table (name) : Team */
     static table = TEAM;
 
@@ -89,25 +90,25 @@ export default class TeamModel extends Model {
     @field('allowed_domains') allowedDomains!: string;
 
     /** categories : All the categories associated with this team */
-    @children(CATEGORY) categories!: CategoryModel[];
+    @children(CATEGORY) categories!: Query<CategoryModel>;
 
     /** channels : All the channels associated with this team */
-    @children(CHANNEL) channels!: ChannelModel[];
+    @children(CHANNEL) channels!: Query<ChannelModel>;
 
     /** myTeam : Retrieves additional information about the team that this user is possibly part of. */
     @immutableRelation(MY_TEAM, 'id') myTeam!: Relation<MyTeamModel>;
 
     /** slashCommands : All the slash commands associated with this team */
-    @children(SLASH_COMMAND) slashCommands!: SlashCommandModel[];
+    @children(SLASH_COMMAND) slashCommands!: Query<SlashCommandModel>;
 
     /** teamChannelHistory : A history of the channels in this team that has been visited,  ordered by the most recent and capped to the last 5 */
     @immutableRelation(TEAM_CHANNEL_HISTORY, 'id') teamChannelHistory!: Relation<TeamChannelHistoryModel>;
 
     /** members : All the users associated with this team */
-    @children(TEAM_MEMBERSHIP) members!: TeamMembershipModel[];
+    @children(TEAM_MEMBERSHIP) members!: Query<TeamMembershipModel>;
 
     /** teamSearchHistories : All the searches performed on this team */
-    @children(TEAM_SEARCH_HISTORY) teamSearchHistories!: TeamSearchHistoryModel[];
+    @children(TEAM_SEARCH_HISTORY) teamSearchHistories!: Query<TeamSearchHistoryModel>;
 
     /** threads : All threads belonging to a team */
     @lazy threads = this.collections.get<ThreadModel>(THREAD).query(
