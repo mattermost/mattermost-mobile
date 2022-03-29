@@ -4,6 +4,7 @@
 import React, {useCallback} from 'react';
 
 import {Theme} from '@mm-redux/types/theme';
+import {useTryCallsFunction} from '@mmproducts/calls/hooks';
 import ChannelInfoRow from '@screens/channel_info/channel_info_row';
 import Separator from '@screens/channel_info/separator';
 import {preventDoubleTap} from '@utils/tap';
@@ -19,7 +20,8 @@ type Props = {
 const EnableDisableCalls = (props: Props) => {
     const {testID, canEnableDisableCalls, theme, onPress, enabled} = props;
 
-    const handleEnableDisableCalls = useCallback(preventDoubleTap(onPress), [onPress]);
+    const [tryOnPress, msgPostfix] = useTryCallsFunction(onPress);
+    const handleEnableDisableCalls = useCallback(preventDoubleTap(tryOnPress), [tryOnPress]);
 
     if (!canEnableDisableCalls) {
         return null;
@@ -31,7 +33,7 @@ const EnableDisableCalls = (props: Props) => {
             <ChannelInfoRow
                 testID={testID}
                 action={handleEnableDisableCalls}
-                defaultMessage={enabled ? 'Disable Calls' : 'Enable Calls'}
+                defaultMessage={(enabled ? 'Disable Calls' : 'Enable Calls') + msgPostfix}
                 icon='phone-outline'
                 theme={theme}
                 rightArrow={false}

@@ -60,7 +60,7 @@ export default class ChannelInfo extends PureComponent {
         isCustomStatusExpirySupported: PropTypes.bool.isRequired,
         isCallsEnabled: PropTypes.bool.isRequired,
         isChannelAdmin: PropTypes.bool.isRequired,
-        callsFeatureEnabled: PropTypes.bool.isRequired,
+        isSupportedServerCalls: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -117,7 +117,7 @@ export default class ChannelInfo extends PureComponent {
     };
 
     actionsRows = (channelIsArchived) => {
-        const {currentChannel, currentUserId, isDirectMessage, isGroupMessage, theme, isCallsEnabled, callsFeatureEnabled, isChannelAdmin} = this.props;
+        const {currentChannel, currentUserId, isDirectMessage, isGroupMessage, theme, isCallsEnabled, isSupportedServerCalls, isChannelAdmin} = this.props;
 
         if (channelIsArchived) {
             return (
@@ -178,7 +178,7 @@ export default class ChannelInfo extends PureComponent {
                     testID='channel_info.edit_channel.action'
                     theme={theme}
                 />
-                {callsFeatureEnabled &&
+                {isSupportedServerCalls &&
                     <>
                         <StartCall
                             testID='channel_info.start_call.action'

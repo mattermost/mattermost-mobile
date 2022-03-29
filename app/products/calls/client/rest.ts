@@ -4,12 +4,25 @@
 import type {ServerChannelState} from '@mmproducts/calls/store/types/calls';
 
 export interface ClientCallsMix {
+    getEnabled: () => Promise<Boolean>;
     getCalls: () => Promise<ServerChannelState[]>;
     enableChannelCalls: (channelId: string) => Promise<ServerChannelState>;
     disableChannelCalls: (channelId: string) => Promise<ServerChannelState>;
 }
 
 const ClientCalls = (superclass: any) => class extends superclass {
+    getEnabled = async () => {
+        try {
+            await this.doFetch(
+                `${this.getCallsRoute()}/version`,
+                {method: 'get'},
+            );
+            return true;
+        } catch (e) {
+            return false;
+        }
+    };
+
     getCalls = async () => {
         return this.doFetch(
             `${this.getCallsRoute()}/channels`,

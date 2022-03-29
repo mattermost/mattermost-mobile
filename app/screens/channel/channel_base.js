@@ -39,7 +39,7 @@ export default class ChannelBase extends PureComponent {
         skipMetrics: PropTypes.bool,
         viewingGlobalThreads: PropTypes.bool,
         collapsedThreadsEnabled: PropTypes.bool.isRequired,
-        callsFeatureEnabled: PropTypes.bool.isRequired,
+        isSupportedServerCalls: PropTypes.bool.isRequired,
         selectedPost: PropTypes.shape({
             id: PropTypes.string.isRequired,
             channel_id: PropTypes.string.isRequired,
@@ -105,7 +105,7 @@ export default class ChannelBase extends PureComponent {
             unsupportedServer(isSystemAdmin, this.context.intl.formatMessage);
         }
 
-        if (this.props.callsFeatureEnabled) {
+        if (this.props.isSupportedServerCalls) {
             this.props.actions.loadCalls();
         }
     }

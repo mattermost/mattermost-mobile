@@ -9,13 +9,12 @@ import {getChannelStats} from '@mm-redux/actions/channels';
 import {getCustomEmojisInText} from '@mm-redux/actions/emojis';
 import {General} from '@mm-redux/constants';
 import {getCurrentChannel, getCurrentChannelStats} from '@mm-redux/selectors/entities/channels';
-import {getFeatureFlagValue} from '@mm-redux/selectors/entities/general';
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserRoles, getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin, displayUsername} from '@mm-redux/utils/user_utils';
 import {joinCall, enableChannelCalls, disableChannelCalls} from '@mmproducts/calls/store/actions/calls';
-import {isCallsEnabled} from '@mmproducts/calls/store/selectors/calls';
+import {isCallsEnabled, isSupportedServer} from '@mmproducts/calls/store/selectors/calls';
 import {makeGetCustomStatus, isCustomStatusEnabled, isCustomStatusExpired, isCustomStatusExpirySupported} from '@selectors/custom_status';
 import {isGuest} from '@utils/users';
 
@@ -61,7 +60,7 @@ function makeMapStateToProps() {
             currentChannelMemberCount = currentChannel.display_name.split(',').length;
         }
 
-        const callsFeatureEnabled = getFeatureFlagValue(state, 'CallsMobile') === 'true';
+        const isSupportedServerCalls = isSupportedServer(state);
 
         return {
             currentChannel,
@@ -79,7 +78,7 @@ function makeMapStateToProps() {
             isCustomStatusExpired: customStatusExpired,
             isCustomStatusExpirySupported: customStatusExpirySupported,
             isCallsEnabled: isCallsEnabled(state),
-            callsFeatureEnabled,
+            isSupportedServerCalls,
             isChannelAdmin,
         };
     };
