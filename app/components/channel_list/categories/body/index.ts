@@ -4,8 +4,8 @@
 import {Database} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {combineLatest, of as of$, from as from$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {combineLatest, of as of$} from 'rxjs';
+import {map, switchMap, concatAll} from 'rxjs/operators';
 
 import {General, Preferences} from '@constants';
 import {queryChannelsByNames, queryMyChannelSettingsByIds} from '@queries/servers/channel';
@@ -16,7 +16,9 @@ import {getDirectChannelName} from '@utils/channel';
 import CategoryBody from './category_body';
 
 import type CategoryModel from '@typings/database/models/servers/category';
+import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
@@ -53,6 +55,10 @@ const observeSettings = (database: Database, channels: ChannelModel[]) => {
     return queryMyChannelSettingsByIds(database, ids).observeWithColumns(['notify_props']);
 };
 
+const getChannelsFromRelation = async (relations: CategoryChannelModel[] | MyChannelModel[]) => {
+    return Promise.all(relations.map((r) => r.channel?.fetch()));
+};
+
 const getSortedChannels = (database: Database, category: CategoryModel, locale: string) => {
     switch (category.sorting) {
         case 'alpha': {
@@ -66,14 +72,14 @@ const getSortedChannels = (database: Database, category: CategoryModel, locale: 
         }
         case 'manual': {
             return category.categoryChannelsBySortOrder.observeWithColumns(['sort_order']).pipe(
-                // eslint-disable-next-line max-nested-callbacks
-                switchMap((cc) => from$(Promise.all(cc.map((c) => c.channel?.fetch())))),
+                map(getChannelsFromRelation),
+                concatAll(),
             );
         }
         default:
             return category.myChannels.observeWithColumns(['last_post_at']).pipe(
-                // eslint-disable-next-line max-nested-callbacks
-                switchMap((mc) => from$(Promise.all(mc.map((m) => m.channel?.fetch())))),
+                map(getChannelsFromRelation),
+                concatAll(),
             );
     }
 };

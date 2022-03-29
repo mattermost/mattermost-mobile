@@ -10,8 +10,8 @@ import TestHelper from '@test/test_helper';
 
 import ChannelListItem from './channel_list_item';
 
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
 describe('components/channel_list/categories/body/channel/item', () => {
     let database: Database;

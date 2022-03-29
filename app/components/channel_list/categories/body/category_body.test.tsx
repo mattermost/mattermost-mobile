@@ -30,7 +30,7 @@ describe('components/channel_list/categories/body', () => {
         category = categories[0];
     });
 
-    it('should match snapshot', () => {
+    it('should match snapshot', (done) => {
         const wrapper = renderWithEverything(
             <CategoryBody
                 category={category}
@@ -40,8 +40,12 @@ describe('components/channel_list/categories/body', () => {
             />,
             {database},
         );
-        expect(wrapper.toJSON()).toMatchSnapshot({
-            props: {data: expect.anything()},
+
+        setTimeout(() => {
+            expect(wrapper.toJSON()).toMatchSnapshot({
+                props: {data: expect.anything()},
+            });
+            done();
         });
     });
 });
