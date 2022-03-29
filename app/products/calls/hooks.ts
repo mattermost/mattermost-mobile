@@ -23,7 +23,7 @@ export const useTryCallsFunction = (fn: (channelId: string) => void) => {
             'Please contact your system administrator to enable the feature.',
             [
                 {
-                    text: 'Ok',
+                    text: 'OK',
                     style: 'cancel',
                 },
             ],

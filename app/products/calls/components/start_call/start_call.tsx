@@ -30,10 +30,11 @@ type Props = {
 const StartCall = (props: Props) => {
     const {testID, canStartCall, theme, actions, currentChannelId, callChannelName, currentChannelName, confirmToJoin, alreadyInTheCall, ongoingCall, intl} = props;
 
-    const [tryLeaveAndJoin, msgPostfix] = useTryCallsFunction(() => {
+    const leaveAndJoin = useCallback(() => {
         leaveAndJoinWithAlert(intl, currentChannelId, callChannelName, currentChannelName, confirmToJoin, actions.joinCall);
-    });
-    const handleStartCall = useCallback(preventDoubleTap(tryLeaveAndJoin), [actions.joinCall, currentChannelId]);
+    }, [intl, currentChannelId, callChannelName, currentChannelName, confirmToJoin, actions.joinCall]);
+    const [tryLeaveAndJoin, msgPostfix] = useTryCallsFunction(leaveAndJoin);
+    const handleStartCall = useCallback(preventDoubleTap(tryLeaveAndJoin), [tryLeaveAndJoin]);
 
     if (!canStartCall) {
         return null;
