@@ -115,9 +115,11 @@ export default class TeamModel extends Model {
     );
 
     /** threads : Threads list belonging to a team */
-    @lazy threadsList = this.threads.extend(
-        Q.where('loadedInGlobalThreads', true),
-        Q.sortBy('last_reply_at', Q.desc),
+    @lazy threadsList = this.collections.get<ThreadModel>(THREAD).query(
+        Q.on(THREADS_IN_TEAM, Q.and(
+            Q.where('team_id', this.id),
+            Q.where('loadedInGlobalThreads', true),
+        )),
     );
 
     /** unreadThreadsList : Unread threads list belonging to a team */

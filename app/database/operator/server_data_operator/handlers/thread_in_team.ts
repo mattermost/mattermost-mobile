@@ -39,6 +39,7 @@ const ThreadInTeamHandler = (superclass: any) => class extends superclass {
                     create.push({
                         thread_id: thread.id,
                         team_id: teamId,
+                        loaded_in_global_threads: thread.loaded_in_global_threads,
                     });
                 }
             }
