@@ -79,7 +79,7 @@ export const appEntry = async (serverUrl: string, since = 0) => {
 
     const {id: currentUserId, locale: currentUserLocale} = meData.user || (await getCurrentUser(database))!;
     const {config, license} = await getCommonSystemValues(database);
-    deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
+    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
 
     if (!since) {
         // Load data from other servers
