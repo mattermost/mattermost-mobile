@@ -4,11 +4,12 @@
 import React, {useState, useEffect, useReducer, useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard} from 'react-native';
-import {Navigation} from 'react-native-navigation';
+import {ImageResource, Navigation} from 'react-native-navigation';
 
 import {patchChannel as handlePatchChannel, createChannel, switchToChannelById} from '@actions/remote/channel';
 import CompassIcon from '@components/compass_icon';
 import {General} from '@constants';
+import {MIN_CHANNEL_NAME_LENGTH} from '@constants/channel';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
@@ -54,7 +55,7 @@ const isDirect = (channel?: ChannelModel): boolean => {
     return channel?.type === General.DM_CHANNEL || channel?.type === General.GM_CHANNEL;
 };
 
-export const makeCloseButton = (icon: any) => {
+const makeCloseButton = (icon: ImageResource) => {
     return buildNavigationButton(CLOSE_BUTTON_ID, 'close.more_direct_messages.button', icon);
 };
 
@@ -131,7 +132,7 @@ const CreateOrEditChannel = ({
 
     useEffect(() => {
         setCanSave(
-            displayName.length >= 2 && (
+            displayName.length >= MIN_CHANNEL_NAME_LENGTH && (
                 displayName !== channel?.displayName ||
                 purpose !== channelInfo?.purpose ||
                 header !== channelInfo?.header ||

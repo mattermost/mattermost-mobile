@@ -259,7 +259,7 @@ export default function ChannelInfoForm({
                                     label={labelDisplayName}
                                     placeholder={placeholderDisplayName}
                                     onChangeText={onDisplayNameChange}
-                                    maxLength={Channel.MAX_CHANNELNAME_LENGTH}
+                                    maxLength={Channel.MAX_CHANNEL_NAME_LENGTH}
                                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                     returnKeyType='next'
                                     showErrorIcon={false}

@@ -53,12 +53,12 @@ export const prepareModels = async ({operator, initialTeamId, removeTeams, remov
     if (chData?.categories?.length) {
         const categoryModels = prepareCategories(operator, chData.categories);
         if (categoryModels) {
-            modelPromises.push(...categoryModels);
+            modelPromises.push(categoryModels);
         }
 
         const categoryChannelModels = prepareCategoryChannels(operator, chData.categories);
         if (categoryChannelModels) {
-            modelPromises.push(...categoryChannelModels);
+            modelPromises.push(categoryChannelModels);
         }
     }
 

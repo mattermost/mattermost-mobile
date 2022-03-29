@@ -12,14 +12,14 @@ import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import NetworkManager from '@init/network_manager';
+import {prepareCategoryChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {prepareMyTeams, getNthLastChannelFromTeam, getMyTeamById, getTeamById, getTeamByName} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
-import {getDirectChannelName} from '@utils/channel';
-import {generateId} from '@utils/general';
-import {cleanUpUrlable, PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
+import {generateChannelNameFromDisplayName, getDirectChannelName} from '@utils/channel';
+import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
 import {fetchPostsForChannel} from './post';
@@ -108,17 +108,9 @@ export const fetchChannelByName = async (serverUrl: string, teamId: string, chan
     }
 };
 
-export function generateChannelNameFromDisplayName(displayName: string) {
-    let name = cleanUpUrlable(displayName);
-    if (name === '') {
-        name = generateId();
-    }
-    return name;
-}
-
 export const createChannel = async (serverUrl: string, displayName: string, purpose: string, header: string, type: ChannelType) => {
-    const {database, operator} = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
@@ -130,6 +122,7 @@ export const createChannel = async (serverUrl: string, displayName: string, purp
     }
 
     try {
+        const {database} = operator;
         const {currentUserId, currentTeamId} = await getCommonSystemValues(database);
         const name = generateChannelNameFromDisplayName(displayName);
         const channel = {
@@ -145,11 +138,22 @@ export const createChannel = async (serverUrl: string, displayName: string, purp
         const channelData = await client.createChannel(channel);
 
         const member = await client.getChannelMember(channelData.id, currentUserId);
+        const categories = await client.getCategories(currentUserId, currentTeamId);
+
+        const models: Model[] = [];
         const channelModels = await prepareMyChannelsForTeam(operator, channelData.team_id, [channelData], [member]);
         if (channelModels?.length) {
-            const models = await Promise.all(channelModels);
+            const resolvedModels = await Promise.all(channelModels);
+            models.push(...resolvedModels.flat());
+        }
+        const categoriesModels = await prepareCategoryChannels(operator, categories.categories);
+        if (categoriesModels?.length) {
+            models.push(...categoriesModels);
+        }
+        if (models.length) {
             await operator.batchRecords(models.flat());
         }
+        fetchChannelStats(serverUrl, channelData.id, false);
         return {channel: channelData};
     } catch (error) {
         return {error};

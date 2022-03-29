@@ -28,12 +28,7 @@ export const queryCategoriesByTeamIds = (database: Database, teamIds: string[]) 
 };
 
 export const prepareCategories = (operator: ServerDataOperator, categories: CategoryWithChannels[]) => {
-    try {
-        const categoryRecords = operator.handleCategories({categories, prepareRecordsOnly: true});
-        return [categoryRecords];
-    } catch {
-        return undefined;
-    }
+    return operator.handleCategories({categories, prepareRecordsOnly: true});
 };
 
 export const prepareCategoryChannels = (
@@ -55,11 +50,10 @@ export const prepareCategoryChannels = (
         });
 
         if (categoryChannels.length) {
-            const categoryChannelRecords = operator.handleCategoryChannels({categoryChannels, prepareRecordsOnly: true});
-            return [categoryChannelRecords];
+            return operator.handleCategoryChannels({categoryChannels, prepareRecordsOnly: true});
         }
 
-        return [];
+        return undefined;
     } catch (e) {
         return undefined;
     }

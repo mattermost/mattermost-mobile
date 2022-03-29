@@ -233,7 +233,7 @@ export const getCurrentChannel = async (database: Database) => {
     return undefined;
 };
 
-export const queryCurrentChannelInfo = async (database: Database) => {
+export const getCurrentChannelInfo = async (database: Database) => {
     const currentChannelId = await getCurrentChannelId(database);
     if (currentChannelId) {
         const info = await getChannelInfo(database, currentChannelId);
