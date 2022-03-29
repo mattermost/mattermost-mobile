@@ -40,7 +40,7 @@ export function displayGroupMessageName(users: Array<UserProfile | UserModel>, l
 
     users.forEach((u) => {
         if (u.id !== excludeUserId) {
-            names.push(displayUsername(u, locale, teammateDisplayNameSetting));
+            names.push(displayUsername(u, locale, teammateDisplayNameSetting, false));
         }
     });
 
