@@ -7,12 +7,14 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 import {safeParseJSON} from '@utils/helpers';
 
+import type DraftModelInterface from '@typings/database/models/servers/draft';
+
 const {CHANNEL, DRAFT, POST} = MM_TABLES.SERVER;
 
 /**
  * The Draft model represents  the draft state of messages in Direct/Group messages and in channels
  */
-export default class DraftModel extends Model {
+export default class DraftModel extends Model implements DraftModelInterface {
     /** table (name) : Draft */
     static table = DRAFT;
 

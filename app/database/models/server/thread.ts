@@ -8,6 +8,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type ThreadModelInterface from '@typings/database/models/servers/thread';
 import type ThreadInTeamModel from '@typings/database/models/servers/thread_in_team';
 import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
 
@@ -16,7 +17,7 @@ const {POST, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM} = MM_TABLES.SERVER;
 /**
  * The Thread model contains thread information of a post.
  */
-export default class ThreadModel extends Model {
+export default class ThreadModel extends Model implements ThreadModelInterface {
     /** table (name) : Thread */
     static table = THREAD;
 

@@ -7,6 +7,8 @@ import {json} from '@nozbe/watermelondb/decorators';
 import {MM_TABLES} from '@constants/database';
 import {safeParseJSON} from '@utils/helpers';
 
+import type SystemModelInterface from '@typings/database/models/servers/system';
+
 const {SYSTEM} = MM_TABLES.SERVER;
 
 /**
@@ -14,7 +16,7 @@ const {SYSTEM} = MM_TABLES.SERVER;
  * will mostly hold configuration information about the client, the licences and some
  * custom data (e.g. recent emoji used)
  */
-export default class SystemModel extends Model {
+export default class SystemModel extends Model implements SystemModelInterface {
     /** table (name) : System */
     static table = SYSTEM;
 

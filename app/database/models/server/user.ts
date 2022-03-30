@@ -14,6 +14,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
+import type UserModelInterface from '@typings/database/models/servers/user';
 import type {UserMentionKey} from '@typings/global/markdown';
 
 const {
@@ -31,7 +32,7 @@ const {
  * The User model represents the 'USER' table and its relationship to other
  * shareholders in the app.
  */
-export default class UserModel extends Model {
+export default class UserModel extends Model implements UserModelInterface {
     /** table (name) : User */
     static table = USER;
 
@@ -56,7 +57,7 @@ export default class UserModel extends Model {
         /** USER has a 1:N relationship with TEAM_MEMBERSHIP.  A user can join multiple teams */
         [TEAM_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
 
-        /** USER has a 1:N relationship with THREAD_PARTICIPANT. A user can participante in multiple threads */
+        /** USER has a 1:N relationship with THREAD_PARTICIPANT. A user can participate in multiple threads */
         [THREAD_PARTICIPANT]: {type: 'has_many', foreignKey: 'user_id'},
     };
 
@@ -104,6 +105,9 @@ export default class UserModel extends Model {
 
     /** username : The user's username */
     @field('username') username!: string;
+
+    /** remote_id : The ID of the remote organization that this user belongs to */
+    @field('remote_id') remoteId!: string | null;
 
     /** notify_props : Notification preferences/configurations */
     @json('notify_props', safeParseJSON) notifyProps!: UserNotifyProps | null;

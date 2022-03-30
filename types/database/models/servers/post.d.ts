@@ -69,7 +69,7 @@ export default class PostModel extends Model {
     /** props : Additional attributes for this props */
     props: any;
 
-    /** drafts  : Every drafts associated with this Post */
+    /** drafts  : Every draft associated with this Post */
     drafts: Query<DraftModel>;
 
     /** files: All the files associated with this Post */

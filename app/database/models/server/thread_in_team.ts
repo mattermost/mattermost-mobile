@@ -9,6 +9,7 @@ import {MM_TABLES} from '@constants/database';
 
 import type TeamModel from '@typings/database/models/servers/team';
 import type ThreadModel from '@typings/database/models/servers/thread';
+import type ThreadInTeamModelInterface from '@typings/database/models/servers/thread_in_team';
 
 const {TEAM, THREAD, THREADS_IN_TEAM} = MM_TABLES.SERVER;
 
@@ -16,7 +17,7 @@ const {TEAM, THREAD, THREADS_IN_TEAM} = MM_TABLES.SERVER;
  * ThreadInTeam model helps us to combine adjacent threads together without leaving
  * gaps in between for an efficient user reading experience for threads.
  */
-export default class ThreadInTeamModel extends Model {
+export default class ThreadInTeamModel extends Model implements ThreadInTeamModelInterface {
     /** table (name) : ThreadsInTeam */
     static table = THREADS_IN_TEAM;
 

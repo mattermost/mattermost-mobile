@@ -6,12 +6,14 @@ import {field} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 
+import type TermsOfServiceModelInterface from '@typings/database/models/servers/terms_of_service';
+
 const {TERMS_OF_SERVICE} = MM_TABLES.SERVER;
 
 /**
  * The model for Terms of Service
  */
-export default class TermsOfServiceModel extends Model {
+export default class TermsOfServiceModel extends Model implements TermsOfServiceModelInterface {
     /** table (name) : TermsOfService */
     static table = TERMS_OF_SERVICE;
 

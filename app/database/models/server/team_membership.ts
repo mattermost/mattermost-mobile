@@ -8,6 +8,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 
 import type TeamModel from '@typings/database/models/servers/team';
+import type TeamMembershipModelInterface from '@typings/database/models/servers/team_membership';
 import type UserModel from '@typings/database/models/servers/user';
 
 const {TEAM, TEAM_MEMBERSHIP, USER} = MM_TABLES.SERVER;
@@ -16,7 +17,7 @@ const {TEAM, TEAM_MEMBERSHIP, USER} = MM_TABLES.SERVER;
  * The TeamMembership model represents the 'association table' where many teams have users and many users are in
  * teams (relationship type N:N)
  */
-export default class TeamMembershipModel extends Model {
+export default class TeamMembershipModel extends Model implements TeamMembershipModelInterface {
     /** table (name) : TeamMembership */
     static table = TEAM_MEMBERSHIP;
 
