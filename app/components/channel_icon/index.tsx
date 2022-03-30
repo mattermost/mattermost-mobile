@@ -196,4 +196,4 @@ const ChannelIcon = ({
     );
 };
 
-export default ChannelIcon;
+export default React.memo(ChannelIcon);
