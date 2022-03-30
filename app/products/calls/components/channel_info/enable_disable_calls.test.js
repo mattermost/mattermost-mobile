@@ -29,11 +29,4 @@ describe('EnableDisableCalls', () => {
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
-
-    test('should be null if you can not enable/disable calls', () => {
-        const props = {...baseProps, canEnableDisableCalls: false};
-        const wrapper = shallow(<EnableDisableCalls {...props}/>);
-
-        expect(wrapper.getElement()).toBeNull();
-    });
 });

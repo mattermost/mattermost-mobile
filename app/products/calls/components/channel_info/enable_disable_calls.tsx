@@ -10,22 +10,17 @@ import Separator from '@screens/channel_info/separator';
 import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
-    testID?: string;
+    testID: string;
     theme: Theme;
     onPress: (channelId: string) => void;
-    canEnableDisableCalls: boolean;
     enabled: boolean;
 }
 
 const EnableDisableCalls = (props: Props) => {
-    const {testID, canEnableDisableCalls, theme, onPress, enabled} = props;
+    const {testID, theme, onPress, enabled} = props;
 
     const [tryOnPress, msgPostfix] = useTryCallsFunction(onPress);
     const handleEnableDisableCalls = useCallback(preventDoubleTap(tryOnPress), [tryOnPress]);
-
-    if (!canEnableDisableCalls) {
-        return null;
-    }
 
     return (
         <>

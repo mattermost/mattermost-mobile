@@ -53,3 +53,15 @@ export type VoiceEventData = {
     channelId: string;
     userId: string;
 }
+
+export type ServerConfig = {
+    ICEServers: string[];
+    AllowEnableCalls: boolean;
+    DefaultEnabled: boolean;
+}
+
+export const DefaultServerConfig = {
+    ICEServers: [],
+    AllowEnableCalls: true,
+    DefaultEnabled: true,
+} as ServerConfig;

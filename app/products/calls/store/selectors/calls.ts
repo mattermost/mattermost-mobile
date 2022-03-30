@@ -20,8 +20,18 @@ export function getCurrentCall(state: GlobalState) {
     return state.entities.calls.calls[currentCall];
 }
 
+// isCallsEnabled returns true if and only if calls has been explicitly enabled in the current channel
 export function isCallsEnabled(state: GlobalState) {
-    return Boolean(state.entities.calls.enabled[getCurrentChannelId(state)]);
+    const currentChannelId = getCurrentChannelId(state);
+    const enabledDict = state.entities.calls.enabled;
+    return enabledDict.hasOwnProperty(currentChannelId) && enabledDict[currentChannelId];
+}
+
+// isCallsEnabled returns true if and only if calls has been explicitly disabled in the current channel
+export function isCallsDisabled(state: GlobalState) {
+    const currentChannelId = getCurrentChannelId(state);
+    const enabledDict = state.entities.calls.enabled;
+    return enabledDict.hasOwnProperty(currentChannelId) && !enabledDict[currentChannelId];
 }
 
 export function getScreenShareURL(state: GlobalState) {
