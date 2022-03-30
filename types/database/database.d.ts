@@ -202,7 +202,7 @@ export type HandleMyChannelArgs = PrepareOnly & {
 };
 
 export type HandleChannelInfoArgs = PrepareOnly &{
-  channelInfos: ChannelInfo[];
+  channelInfos: Array<Partial<ChannelInfo>>;
 };
 
 export type HandleMyChannelSettingsArgs = PrepareOnly & {

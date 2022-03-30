@@ -29,7 +29,6 @@ import {fetchProfilesPerChannels, fetchUsersByIds} from './user';
 
 import type {Client} from '@client/rest';
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
@@ -172,14 +171,11 @@ export const fetchChannelStats = async (serverUrl: string, channelId: string, fe
         if (!fetchOnly) {
             const channel = await getChannelById(operator.database, channelId);
             if (channel) {
-                const channelInfo = await channel.info.fetch() as ChannelInfoModel;
-                const channelInfos: ChannelInfo[] = [{
+                const channelInfos: Array<Partial<ChannelInfo>> = [{
                     guest_count: stats.guest_count,
-                    header: channelInfo.header,
                     id: channelId,
                     member_count: stats.member_count,
                     pinned_post_count: stats.pinnedpost_count,
-                    purpose: channelInfo.purpose,
                 }];
                 await operator.handleChannelInfo({channelInfos, prepareRecordsOnly: false});
             }

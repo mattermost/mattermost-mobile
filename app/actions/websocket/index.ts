@@ -18,7 +18,7 @@ import {getCommonSystemValues, getConfig, getCurrentChannelId, getWebSocketLastD
 import {isTablet} from '@utils/helpers';
 
 import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
-import {handleChannelCreatedEvent,
+import {handleChannelConvertedEvent, handleChannelCreatedEvent,
     handleChannelDeletedEvent,
     handleChannelMemberUpdatedEvent,
     handleChannelUnarchiveEvent,
@@ -270,8 +270,7 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
 
         case WebsocketEvents.CHANNEL_CONVERTED:
-            // covered by CHANNEL_UPDATED
-            // handleChannelConvertedEvent(serverUrl, msg);
+            handleChannelConvertedEvent(serverUrl, msg);
             break;
 
         case WebsocketEvents.CHANNEL_VIEWED:
@@ -282,9 +281,9 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             handleChannelMemberUpdatedEvent(serverUrl, msg);
             break;
 
-            // case WebsocketEvents.CHANNEL_SCHEME_UPDATED:
-            //     handleChannelSchemeUpdatedEvent(serverUrl, msg);
-            //     break;
+        case WebsocketEvents.CHANNEL_SCHEME_UPDATED:
+            // Do nothing, handled by CHANNEL_UPDATED due to changes in the channel scheme.
+            break;
 
         case WebsocketEvents.DIRECT_ADDED:
             handleDirectAddedEvent(serverUrl, msg);

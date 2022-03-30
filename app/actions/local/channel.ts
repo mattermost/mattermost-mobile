@@ -7,7 +7,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {General, Navigation as NavigationConstants, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
-import {prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannel, getMyChannel, getChannelById, queryUsersOnChannel, getChannelInfo} from '@queries/servers/channel';
+import {prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannel, getMyChannel, getChannelById, queryUsersOnChannel} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, removeChannelFromTeamHistory} from '@queries/servers/team';
@@ -303,18 +303,7 @@ export const updateChannelInfoFromChannel = async (serverUrl: string, channel: C
         return {error: `${serverUrl} database not found`};
     }
 
-    const storedInfo = await getChannelInfo(operator.database, channel.id);
-    if (storedInfo) {
-        storedInfo.prepareUpdate((i) => {
-            i.purpose = channel.purpose;
-            i.header = channel.header;
-        });
-        return {model: storedInfo};
-    }
     const newInfo = (await operator.handleChannelInfo({channelInfos: [{
-        guest_count: 0,
-        member_count: 0,
-        pinned_post_count: 0,
         header: channel.header,
         purpose: channel.purpose,
         id: channel.id,

@@ -109,17 +109,17 @@ export const transformMyChannelSettingsRecord = ({action, database, value}: Tran
  * @returns {Promise<ChannelInfoModel>}
  */
 export const transformChannelInfoRecord = ({action, database, value}: TransformerArgs): Promise<ChannelInfoModel> => {
-    const raw = value.raw as ChannelInfo;
+    const raw = value.raw as Partial<ChannelInfo>;
     const record = value.record as ChannelInfoModel;
     const isCreateAction = action === OperationType.CREATE;
 
     const fieldsMapper = (channelInfo: ChannelInfoModel) => {
         channelInfo._raw.id = isCreateAction ? (raw.id || channelInfo.id) : record.id;
-        channelInfo.guestCount = raw.guest_count;
-        channelInfo.header = raw.header;
-        channelInfo.memberCount = raw.member_count;
-        channelInfo.pinnedPostCount = raw.pinned_post_count;
-        channelInfo.purpose = raw.purpose;
+        channelInfo.guestCount = raw.guest_count == null ? channelInfo.guestCount || 0 : raw.guest_count;
+        channelInfo.header = raw.header == null ? channelInfo.header || '' : raw.header;
+        channelInfo.memberCount = raw.member_count == null ? channelInfo.memberCount || 0 : raw.member_count;
+        channelInfo.pinnedPostCount = raw.pinned_post_count == null ? channelInfo.pinnedPostCount || 0 : raw.pinned_post_count;
+        channelInfo.purpose = raw.purpose == null ? channelInfo.purpose || '' : raw.purpose;
     };
 
     return prepareBaseRecord({
