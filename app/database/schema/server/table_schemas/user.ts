@@ -11,7 +11,6 @@ export default tableSchema({
     name: USER,
     columns: [
         {name: 'auth_service', type: 'string'},
-        {name: 'update_at', type: 'number'},
         {name: 'delete_at', type: 'number'},
         {name: 'email', type: 'string'},
         {name: 'first_name', type: 'string'},
@@ -24,10 +23,11 @@ export default tableSchema({
         {name: 'notify_props', type: 'string'},
         {name: 'position', type: 'string'},
         {name: 'props', type: 'string'},
+        {name: 'remote_id', type: 'string', isOptional: true},
         {name: 'roles', type: 'string'},
         {name: 'status', type: 'string'},
         {name: 'timezone', type: 'string'},
+        {name: 'update_at', type: 'number'},
         {name: 'username', type: 'string'},
-        {name: 'remote_id', type: 'string', isOptional: true},
     ],
 });

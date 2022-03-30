@@ -13,6 +13,6 @@ export default tableSchema({
         {name: 'channel_id', type: 'string', isIndexed: true},
         {name: 'files', type: 'string'},
         {name: 'message', type: 'string'},
-        {name: 'root_id', type: 'string', isIndexed: true},
+        {name: 'root_id', type: 'string', isIndexed: true, isOptional: true},
     ],
 });

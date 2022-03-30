@@ -19,3 +19,4 @@ export default tableSchema({
         {name: 'loaded_in_global_threads', type: 'boolean'},
     ],
 });
+

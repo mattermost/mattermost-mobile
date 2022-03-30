@@ -13,7 +13,7 @@ export default tableSchema({
         {name: 'extension', type: 'string'},
         {name: 'height', type: 'number'},
         {name: 'image_thumbnail', type: 'string'},
-        {name: 'local_path', type: 'string'},
+        {name: 'local_path', type: 'string', isOptional: true},
         {name: 'mime_type', type: 'string'},
         {name: 'name', type: 'string'},
         {name: 'post_id', type: 'string', isIndexed: true},

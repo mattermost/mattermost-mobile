@@ -1,260 +1,266 @@
 # Server Data DB
-User
--
-Id PK string
-IsBot bool
-IsGuest bool
-DeleteAt number
-Username string
-AuthService string
-Email string
-Nickname string
-Firstname string
-Lastname string
-Status string
-Roles string # comma separated Role.Name
-Props string # stringified JSON obj
-NotifyProps string # stringified JSON obj
-LastPictureUpdate number
-Locale string
-Position string
-Timezone string # stringified JSON obj
 
-Team
--
-Id PK string
-Name string
-DisplayName string
-Type string
-AllowedDomains string
-AllowOpenInvite bool
-Description string
-LastTeamIconUpdatedAt number
-IsGroupContrained boolean
 
-TeamMembership
+Category
 -
-TeamId string FK >- Team.Id
-UserId string FK  >- User.Id
+id PK string
+collapsed bool
+display_name string
+muted bool
+sort_order number
+sorting string # alpha, recent, manual
+team_id string INDEX
+type string  # 'channels' | 'direct_messages' | 'favorites' | 'custom'
 
-TeamChannelHistory
--
-TeamId string FK >- Team.Id
-ChannelIds string # stringified JSON array; FIFO
 
-TeamSearchHistory
+CategoryChannel
 -
-TeamId string FK >- Team.Id
-Term string
-DisplayTerm string
-CreatedAt number
+category_id string INDEX
+channel_id string INDEX
+sort_order number
 
-MyTeam
--
-TeamId string FK >- Team.Id
-Roles string # comma separated Role.Name
-IsUnread bool
-MentionsCount number
 
 Channel
 -
-Id PK string FK -< MyChannel.Id
-CreateAt number
-DeleteAt number
-TeamId string FK >- Team.Id
-Type string
-Name string
-DisplayName string
-CreatorId string FK >- User.Id
-IsGroupContrained boolean
+id PK string
+create_at string
+creator_id string INDEX
+delete_at number
+display_name string
+is_group_constrained bool
+name string INDEX
+shared bool
+team_id string INDEX
+type string
+update_at number
+
 
 ChannelInfo
 -
-ChannelId string FK - Channel.Id
-Header string
-Purpose string
-MemberCount number
-GuestCount number
-PinnedPostCount number
+id string
+guest_count number
+header string
+member_count number
+pinned_post_count number
+purpose string
 
 ChannelMembership
 -
-ChannelId string FK >- Channel.Id
-UserId string FK  >- User.Id
-
-MyChannel
--
-Id
-Roles string # comma separated Role.Name
-MsgCount number
-MentionsCount number
-LastPostAt number
-LastViewedAt number
-
-MyChannelSettings
--
-ChannelId string FK >- Channel.Id
-NotifyProps string # stringified JSON obj
-
-Post
--
-Id PK string
-OriginalId string
-ChannelId string FK >- Channel.Id
-UserId string FK >- User.Id
-CreateAt number
-DeleteAt number
-EditAt number
-RootId string INDEX
-Message string
-Type string
-Props string # stringified JSON obj
-IsPinned bool
-PendingPostId NULL string
-PreviousPostId NULL string
-
-PostMetadata
--
-PostId string FK >- Post.Id
-Type string #exclude files and reactions
-Data string # stringified JSON obj
-
-PostsInChannel
--
-ChannelId string FK >- Channel.Id
-Earliest number
-Latest number
-
-PostsInThread
--
-PostId string FK >- Post.Id
-Earliest number
-Latest number
-
-File
--
-Id PK string
-PostId string FK >- Post.Id
-Name string
-MimeType string
-Extension string
-Width number
-Height number
-Size number
-ImageThumbnail string #base64 data string
-LocalPath NULL string
-
-Reaction
--
-Id PK string
-PostId string FK >- Post.Id
-UserId string FK >- User.Id
-EmojiName string
-CreateAt number
-
-Role
--
-Id PK string
-Name string
-Permissions string #stringify array
+channel_id string  INDEX
+user_id string  INDEX
 
 CustomEmoji
 -
-Id PK string
-Name string
+id PK string
+name string
 
-Preference
--
-UserId string FK >- User.Id
-Category string
-Name string
-Value string
-
-SlashCommand
--
-Id PK string
-TeamId string FK >- Team.Id
-Token string
-Trigger string
-Method string
-Autocomplete boolean
-Description string
-Hint string
-DisplayName string
-
-TermsOfService
--
-Id PK string
-AcceptedAt number
-
-System
--
-Name string
-Value string # stringify
-# Config
-# ServerVersion
-# License
-# RetentionPolicy
-# DeviceToken
-# Websocket {lastConnectAt, lastDisconnectAt}
-# CurrentTeamID
-# CurrentChannelID
-# CurrentUserID
-# SelectedPostID
-# CurrentFocusedPostID
-# RecentEmojis (array of emojis)
 
 Draft
 -
-ChannelId string FK >- Channel.Id
-RootId NULL string FK >- Post.Id
-Message string
-Files string #stringify (array)
+channel_id  INDEX
+files string #stringify (array)
+message string
+root_id string INDEX NULL
 
-Group
+
+File
 -
-Id PK string
-Name string
-DisplayName string
+id PK string
+extension string
+height number
+image_thumbnail string #base64 data string
+local_path  string NULL
+mime_type string
+name string
+post_id string INDEX
+size number
+width number
 
-GroupMembership
+
+MyChannel
 -
-GroupId string FK >- Group.Id
-UserId string FK >- User.Id
+is_unread boolean
+last_post_at number
+last_viewed_at number
+manually_unread boolean
+mentions_count number
+message_count number
+roles string
+viewed_at number
 
-GroupsInChannel
+
+MyChannelSettings
 -
-GroupId string FK >- Group.Id
-ChannelId string FK >- Channel.Id
-MemberCount number
-TimezoneCount number
+notify_props string
 
-GroupsInTeam
+
+MyTeam
+- 
+roles string
+
+
+
+Post
 -
-GroupId string FK >- Group.Id
-TeamId string FK >- Team.Id
-MemberCount number
-TimezoneCount number
+id PK string
+channel_id string INDEX
+create_at number
+delete_at number
+edit_at number
+is_pinned boolean
+message string
+metadata string NULL
+original_id string
+pending_post_id string INDEX
+previous_post_id string
+props string
+root_id string
+type string
+update_at number
+user_id string INDEX
 
-# Category Tables
-Category
+
+PostsInChannel
 -
-Id PK string
-displayName string
-type string  # 'channels' | 'direct_messages' | 'favorites' | 'custom'
-sortOrder number
-sorting string # alpha, recent, manual
-collapsed bool
-muted bool
-teamId string FK -< Team.Id
+channel_id string  INDEX
+earliest number
+latest number
 
-CategoryChannel
-rel - MyChannel
+
+PostsInThread
 -
-categoryId string FK >- Category.Id
-channelId string FK - Channel.Id
-sortOrder number
+earliest number
+latest number
+root_id string
 
 
+Preference
+-
+id string PK
+category string INDEX
+name string
+user_id string INDEX
+value string
 
-# CRT Tables
+
+Reaction
+-
+id PK string
+create_at number
+emoji_name string
+post_id string INDEX
+user_id string INDEX
+
+
+Role
+-
+id PK string
+name string
+permissions string #stringify array
+
+
+SlashCommand
+-
+id PK string
+description string
+display_name string
+hint string
+is_auto_complete boolean
+method string
+team_id string INDEX
+token string
+trigger string
+update_at number
+
+
+System
+-
+id PK string
+value string # SYSTEM_IDENTIFIERS
+
+
+Team
+-
+id PK string
+allowed_domains string
+description string
+display_name string
+is_allow_open_invite boolean
+is_group_constrained boolean
+last_team_icon_updated_at number
+name string
+type string
+update_at number
+
+
+TeamChannelHistory
+-
+channel_ids string # stringified JSON array; FIFO
+
+
+TeamMembership
+-
+team_id string INDEX
+user_id string INDEX
+
+
+TeamSearchHistory
+-
+created_at number
+display_term string
+team_id string INDEX
+term string
+
+
+TermsOfService
+-
+id PK string
+accepted_at number
+
+
+Thread
+-
+id PK string # root post id only
+last_reply_at number
+last_viewed_at number
+is_following boolean
+reply_count number
+unread_replies number
+unread_mentions number
+loaded_in_global_threads boolean
+
+
+ThreadsInTeam
+-
+team_id string INDEX
+thread_id string INDEX
+
+
+ThreadParticipant
+-
+thread_id string INDEX
+user_id string INDEX
+
+
+User
+-
+id PK string
+auth_service string
+delete_at number
+email string
+first_name string
+is_bot boolean
+is_guest boolean
+last_name string
+last_picture_update number
+locale string
+nickname string
+notify_props string
+position string
+props string
+remote_id string NULL
+roles string
+status string
+timezone string
+update_at number
+username string 
