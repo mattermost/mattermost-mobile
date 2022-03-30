@@ -60,6 +60,7 @@ type ChannelMembership = {
     mention_count_root?: number;
     notify_props: Partial<ChannelNotifyProps>;
     last_post_at?: number;
+    last_root_post_at?: number;
     last_update_at: number;
     scheme_user?: boolean;
     scheme_admin?: boolean;
