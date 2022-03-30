@@ -234,7 +234,6 @@ const CreateOrEditChannel = ({
 
     return (
         <ChannelInfoForm
-            testID='create_or_edit_channel.screen'
             error={appState.error}
             saving={appState.saving}
             channelType={channel?.type}

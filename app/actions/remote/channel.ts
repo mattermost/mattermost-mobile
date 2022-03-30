@@ -12,7 +12,6 @@ import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import NetworkManager from '@init/network_manager';
-import {prepareCategoryChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
@@ -138,7 +137,6 @@ export const createChannel = async (serverUrl: string, displayName: string, purp
         const channelData = await client.createChannel(channel);
 
         const member = await client.getChannelMember(channelData.id, currentUserId);
-        const categories = await client.getCategories(currentUserId, currentTeamId);
 
         const models: Model[] = [];
         const channelModels = await prepareMyChannelsForTeam(operator, channelData.team_id, [channelData], [member]);
@@ -146,7 +144,13 @@ export const createChannel = async (serverUrl: string, displayName: string, purp
             const resolvedModels = await Promise.all(channelModels);
             models.push(...resolvedModels.flat());
         }
-        const categoriesModels = await prepareCategoryChannels(operator, categories.categories);
+        const categoriesModels = await operator.handleCategoryChannels({categoryChannels: [{
+            category_id: `channels_${currentUserId}_${currentTeamId}`,
+            channel_id: channelData.id,
+            sort_order: 0,
+            id: `${currentTeamId}_${channelData.id}`,
+        }],
+        prepareRecordsOnly: true});
         if (categoriesModels?.length) {
             models.push(...categoriesModels);
         }

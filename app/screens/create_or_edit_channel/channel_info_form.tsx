@@ -86,7 +86,6 @@ type Props = {
     purpose: string;
     onPurposeChange: (text: string) => void;
     saving: boolean;
-    testID?: string;
     type?: string;
 }
 
@@ -102,7 +101,6 @@ export default function ChannelInfoForm({
     purpose,
     onPurposeChange,
     saving,
-    testID,
     type,
 }: Props) {
     const intl = useIntl();
@@ -221,7 +219,7 @@ export default function ChannelInfoForm({
             style={styles.container}
         >
             <KeyboardAwareScrollView
-                testID={testID}
+                testID={'edit_channel_info.scrollview'}
 
                 // @ts-expect-error legacy ref
                 ref={scrollViewRef}
