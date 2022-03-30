@@ -68,6 +68,8 @@ const Reaction = ({count, emojiName, highlight, onPress, onLongPress, theme}: Re
         onPress(emojiName, highlight);
     }, [highlight]);
 
+    const fontStyle = useMemo(() => [styles.count, (highlight && styles.countHighlight)], [styles, highlight]);
+
     return (
         <TouchableOpacity
             onPress={handlePress}
@@ -86,7 +88,7 @@ const Reaction = ({count, emojiName, highlight, onPress, onLongPress, theme}: Re
             <View style={styles.countContainer}>
                 <AnimatedNumbers
                     includeComma={false}
-                    fontStyle={[styles.count, (highlight && styles.countHighlight)]}
+                    fontStyle={fontStyle}
                     animateToNumber={count}
                     animationDuration={450}
                 />
@@ -95,4 +97,4 @@ const Reaction = ({count, emojiName, highlight, onPress, onLongPress, theme}: Re
     );
 };
 
-export default Reaction;
+export default React.memo(Reaction);

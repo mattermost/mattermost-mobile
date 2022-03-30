@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, TouchableOpacity, View} from 'react-native';
 
@@ -11,6 +11,7 @@ import {Screens} from '@constants';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
+import useDidUpdate from '@hooks/did_update';
 import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {getEmojiFirstAlias} from '@utils/emoji/helpers';
 import {preventDoubleTap} from '@utils/tap';
@@ -66,7 +67,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
     const [sortedReactions, setSortedReactions] = useState(new Set(reactions.map((r) => getEmojiFirstAlias(r.emojiName))));
     const styles = getStyleSheet(theme);
 
-    useEffect(() => {
+    useDidUpdate(() => {
         // This helps keep the reactions in the same position at all times until unmounted
         const rs = reactions.map((r) => getEmojiFirstAlias(r.emojiName));
         const sorted = new Set([...sortedReactions]);
