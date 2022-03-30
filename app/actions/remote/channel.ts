@@ -286,7 +286,7 @@ export const fetchMissingSidebarInfo = async (serverUrl: string, directChannels:
                 if (data.users.length > 1) {
                     displayNameByChannel[data.channelId] = displayGroupMessageName(data.users, locale, teammateDisplayNameSetting, currentUserId);
                 } else {
-                    displayNameByChannel[data.channelId] = displayUsername(data.users[0], locale, teammateDisplayNameSetting);
+                    displayNameByChannel[data.channelId] = displayUsername(data.users[0], locale, teammateDisplayNameSetting, false);
                 }
             }
         });

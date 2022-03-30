@@ -33,7 +33,7 @@ export const getAllServerCredentials = async (): Promise<ServerCredential[]> => 
 
 export const getActiveServerUrl = async () => {
     let serverUrl = await DatabaseManager.getActiveServerUrl();
-    if (serverUrl) {
+    if (!serverUrl) {
         let serverUrls: string[];
         if (Platform.OS === 'ios') {
             serverUrls = await KeyChain.getAllInternetPasswordServers();

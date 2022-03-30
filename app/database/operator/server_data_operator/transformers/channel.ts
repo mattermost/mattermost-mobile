@@ -43,7 +43,7 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
         // for DM & GM's  channels do not override the display name
         // until we get the new info if there is any
         let displayName;
-        if (raw.type === General.DM_CHANNEL && record?.displayName) {
+        if (raw.type === General.DM_CHANNEL && (record?.displayName || raw.display_name)) {
             displayName = raw.display_name || record?.displayName;
         } else if (raw.type === General.GM_CHANNEL) {
             const rawMembers = raw.display_name.split(',').length;
