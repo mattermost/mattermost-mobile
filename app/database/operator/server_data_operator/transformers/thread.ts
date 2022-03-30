@@ -75,11 +75,14 @@ export const transformThreadParticipantRecord = ({action, database, value}: Tran
 
 export const transformThreadInTeamRecord = ({action, database, value}: TransformerArgs): Promise<ThreadInTeamModel> => {
     const raw = value.raw as ThreadInTeam;
+    const record = value.record as ThreadInTeamModel;
 
     const fieldsMapper = (threadInTeam: ThreadInTeamModel) => {
         threadInTeam.threadId = raw.thread_id;
         threadInTeam.teamId = raw.team_id;
-        threadInTeam.loadedInGlobalThreads = raw.loaded_in_global_threads;
+
+        // if it's already loaded don't change it
+        threadInTeam.loadedInGlobalThreads = record?.loadedInGlobalThreads || raw.loaded_in_global_threads;
     };
 
     return prepareBaseRecord({

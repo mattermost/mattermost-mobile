@@ -500,12 +500,12 @@ describe('*** Test schema for SERVER database ***', () => {
                     columns: {
                         team_id: {name: 'team_id', type: 'string', isIndexed: true},
                         thread_id: {name: 'thread_id', type: 'string', isIndexed: true},
-                        loaded_in_global_threads: {name: 'loaded_in_global_threads', type: 'boolean'},
+                        loaded_in_global_threads: {name: 'loaded_in_global_threads', type: 'boolean', isIndexed: true},
                     },
                     columnArray: [
                         {name: 'team_id', type: 'string', isIndexed: true},
                         {name: 'thread_id', type: 'string', isIndexed: true},
-                        {name: 'loaded_in_global_threads', type: 'boolean'},
+                        {name: 'loaded_in_global_threads', type: 'boolean', isIndexed: true},
                     ],
                 },
                 [USER]: {
