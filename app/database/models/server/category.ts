@@ -32,7 +32,7 @@ export default class CategoryModel extends Model implements CategoryInterface {
     /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
-        /** A CATEGORY has a 1:N relationship with CHANNEL. A CATEGORY can possess multiple channels */
+        /** A CATEGORY has a 1:N relationship with CATEGORY_CHANNEL. A CATEGORY can possess multiple channels */
         [CATEGORY_CHANNEL]: {type: 'has_many', foreignKey: 'category_id'},
 
         /** A TEAM can be associated to CATEGORY (relationship is 1:N) */
