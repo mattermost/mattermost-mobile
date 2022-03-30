@@ -5,7 +5,7 @@ import {Database} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {map, switchMap, concatAll} from 'rxjs/operators';
 
 import {General, Preferences} from '@constants';
 import {queryChannelsByNames, queryMyChannelSettingsByIds} from '@queries/servers/channel';
@@ -16,7 +16,9 @@ import {getDirectChannelName} from '@utils/channel';
 import CategoryBody from './category_body';
 
 import type CategoryModel from '@typings/database/models/servers/category';
+import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
@@ -45,8 +47,7 @@ const buildAlphaData = (channels: ChannelModel[], settings: MyChannelSettingsMod
     });
 
     combined.sort(sortAlpha.bind(null, locale));
-
-    return of$(combined.map((c) => c.id));
+    return of$(combined.map((cdata) => channels.find((c) => c.id === cdata.id)));
 };
 
 const observeSettings = (database: Database, channels: ChannelModel[]) => {
@@ -54,7 +55,11 @@ const observeSettings = (database: Database, channels: ChannelModel[]) => {
     return queryMyChannelSettingsByIds(database, ids).observeWithColumns(['notify_props']);
 };
 
-const getSortedIds = (database: Database, category: CategoryModel, locale: string) => {
+const getChannelsFromRelation = async (relations: CategoryChannelModel[] | MyChannelModel[]) => {
+    return Promise.all(relations.map((r) => r.channel?.fetch()));
+};
+
+const getSortedChannels = (database: Database, category: CategoryModel, locale: string) => {
     switch (category.sorting) {
         case 'alpha': {
             const channels = category.channels.observeWithColumns(['display_name']);
@@ -67,14 +72,14 @@ const getSortedIds = (database: Database, category: CategoryModel, locale: strin
         }
         case 'manual': {
             return category.categoryChannelsBySortOrder.observeWithColumns(['sort_order']).pipe(
-                // eslint-disable-next-line max-nested-callbacks
-                switchMap((cc) => of$(cc.map((c) => c.channelId))),
+                map(getChannelsFromRelation),
+                concatAll(),
             );
         }
         default:
             return category.myChannels.observeWithColumns(['last_post_at']).pipe(
-                // eslint-disable-next-line max-nested-callbacks
-                switchMap((mc) => of$(mc.map((m) => m.id))),
+                map(getChannelsFromRelation),
+                concatAll(),
             );
     }
 };
@@ -87,8 +92,8 @@ type EnhanceProps = {category: CategoryModel; locale: string; currentUserId: str
 
 const enhance = withObservables(['category'], ({category, locale, database, currentUserId}: EnhanceProps) => {
     const observedCategory = category.observe();
-    const sortedIds = observedCategory.pipe(
-        switchMap((c) => getSortedIds(database, c, locale)),
+    const sortedChannels = observedCategory.pipe(
+        switchMap((c) => getSortedChannels(database, c, locale)),
     );
 
     const dmMap = (p: PreferenceModel) => getDirectChannelName(p.name, currentUserId);
@@ -124,7 +129,7 @@ const enhance = withObservables(['category'], ({category, locale, database, curr
     return {
         limit,
         hiddenChannelIds,
-        sortedIds,
+        sortedChannels,
         category: observedCategory,
     };
 });

@@ -3,50 +3,30 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {combineLatest, of as of$} from 'rxjs';
+import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {General} from '@constants';
 import {observeMyChannel} from '@queries/servers/channel';
 import {observeCurrentUserId} from '@queries/servers/system';
-import {getUserIdFromChannelName} from '@utils/user';
+import ChannelModel from '@typings/database/models/servers/channel';
 
 import ChannelListItem from './channel_list_item';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enhance = withObservables(['channelId'], ({channelId, database}: {channelId: string} & WithDatabaseArgs) => {
-    const myChannel = observeMyChannel(database, channelId);
+const enhance = withObservables(['channel'], ({channel, database}: {channel: ChannelModel} & WithDatabaseArgs) => {
+    const myChannel = observeMyChannel(database, channel.id);
     const currentUserId = observeCurrentUserId(database);
 
-    const channel = myChannel.pipe(switchMap((my) => (my ? my.channel.observe() : of$(undefined))));
-    const settings = channel.pipe(switchMap((c) => (c ? c.settings.observe() : of$(undefined))));
+    const settings = channel.settings.observe();
 
-    const isOwnDirectMessage = combineLatest([currentUserId, channel]).pipe(
-        switchMap(([userId, ch]) => {
-            if (ch?.type === General.DM_CHANNEL) {
-                const teammateId = getUserIdFromChannelName(userId, ch.name);
-                return of$(userId === teammateId);
-            }
-
-            return of$(false);
-        }),
-    );
     return {
-        isOwnDirectMessage,
+        currentUserId,
         isMuted: settings.pipe(
             switchMap((s) => of$(s?.notifyProps?.mark_unread === 'mention')),
         ),
         myChannel,
-        channel: channel.pipe(
-            switchMap((c) => of$({
-                deleteAt: c?.deleteAt || 0,
-                displayName: c?.displayName || '',
-                name: c?.name || '',
-                shared: c?.shared || false,
-                type: c?.type || '',
-            })),
-        ),
+        channel: channel.observe(),
     };
 });
 
