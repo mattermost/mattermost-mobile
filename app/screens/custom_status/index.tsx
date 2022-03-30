@@ -22,8 +22,9 @@ import {withServerUrl} from '@context/server';
 import {withTheme} from '@context/theme';
 import {observeConfig, observeRecentCustomStatus} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
-import {dismissModal, goToScreen, mergeNavigationOptions, showModal} from '@screens/navigation';
+import {dismissModal, goToScreen, showModal} from '@screens/navigation';
 import {getCurrentMomentForTimezone, getRoundedTime, isCustomStatusExpirySupported} from '@utils/helpers';
+import {mergeNavigationOptions} from '@utils/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {

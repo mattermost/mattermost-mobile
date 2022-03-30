@@ -6,13 +6,15 @@ import {field} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 
+import type ServersModelInterface from '@typings/database/models/app/servers';
+
 const {SERVERS} = MM_TABLES.APP;
 
 /**
  * The Server model will help us to identify the various servers a user will log in; in the context of
  * multi-server support system.  The db_path field will hold the App-Groups file-path
  */
-export default class ServersModel extends Model {
+export default class ServersModel extends Model implements ServersModelInterface {
     /** table (name) : servers */
     static table = SERVERS;
 

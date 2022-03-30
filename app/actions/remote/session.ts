@@ -3,7 +3,7 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@actions/local/timezone';
+import {getDeviceTimezone, isTimezoneEnabled} from '@actions/local/timezone';
 import {Database, Events} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -17,6 +17,7 @@ import {getCSRFFromCookie} from '@utils/security';
 import {loginEntry} from './entry';
 import {logError} from './error';
 import {fetchDataRetentionPolicy} from './systems';
+import {autoUpdateTimezone} from './user';
 
 import type ClientError from '@client/rest/error';
 import type {LoginArgs} from '@typings/database/database';

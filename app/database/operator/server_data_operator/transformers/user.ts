@@ -7,44 +7,9 @@ import {OperationType} from '@typings/database/enums';
 
 import type {TransformerArgs} from '@typings/database/database';
 import type PreferenceModel from '@typings/database/models/servers/preference';
-import type ReactionModel from '@typings/database/models/servers/reaction';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {
-    PREFERENCE,
-    REACTION,
-    USER,
-} = MM_TABLES.SERVER;
-
-/**
- * transformReactionRecord: Prepares a record of the SERVER database 'Reaction' table for update or create actions.
- * @param {TransformerArgs} operator
- * @param {Database} operator.database
- * @param {RecordPair} operator.value
- * @returns {Promise<ReactionModel>}
- */
-export const transformReactionRecord = ({action, database, value}: TransformerArgs): Promise<ReactionModel> => {
-    const raw = value.raw as Reaction;
-    const record = value.record as ReactionModel;
-    const isCreateAction = action === OperationType.CREATE;
-
-    // id of reaction comes from server response
-    const fieldsMapper = (reaction: ReactionModel) => {
-        reaction._raw.id = isCreateAction ? (raw?.id ?? reaction.id) : record.id;
-        reaction.userId = raw.user_id;
-        reaction.postId = raw.post_id;
-        reaction.emojiName = raw.emoji_name;
-        reaction.createAt = raw.create_at;
-    };
-
-    return prepareBaseRecord({
-        action,
-        database,
-        tableName: REACTION,
-        value,
-        fieldsMapper,
-    }) as Promise<ReactionModel>;
-};
+const {PREFERENCE, USER} = MM_TABLES.SERVER;
 
 /**
  * transformUserRecord: Prepares a record of the SERVER database 'User' table for update or create actions.
@@ -78,6 +43,7 @@ export const transformUserRecord = ({action, database, value}: TransformerArgs):
         user.props = raw.props || null;
         user.timezone = raw.timezone || null;
         user.isBot = raw.is_bot;
+        user.remoteId = raw?.remote_id ?? '';
         if (raw.status) {
             user.status = raw.status;
         }

@@ -3,7 +3,7 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, {DateTimePickerEvent} from '@react-native-community/datetimepicker';
 import moment, {Moment} from 'moment-timezone';
 import React, {useState} from 'react';
 import {View, Button, Platform} from 'react-native';
@@ -54,7 +54,7 @@ const DateTimeSelector = ({timezone, handleChange, isMilitaryTime, theme}: Props
     const [mode, setMode] = useState<AndroidMode>('date');
     const [show, setShow] = useState<boolean>(false);
 
-    const onChange = (_: React.ChangeEvent<HTMLInputElement>, selectedDate: Date) => {
+    const onChange = (_: DateTimePickerEvent, selectedDate: Date) => {
         const currentDate = selectedDate || date;
         setShow(Platform.OS === 'ios');
         if (moment(currentDate).isAfter(minimumDate)) {

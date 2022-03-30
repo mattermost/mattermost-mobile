@@ -533,6 +533,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         status: {name: 'status', type: 'string'},
                         timezone: {name: 'timezone', type: 'string'},
                         username: {name: 'username', type: 'string'},
+                        remote_id: {name: 'remote_id', type: 'string', isOptional: true},
                     },
                     columnArray: [
                         {name: 'auth_service', type: 'string'},
@@ -553,6 +554,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'status', type: 'string'},
                         {name: 'timezone', type: 'string'},
                         {name: 'username', type: 'string'},
+                        {name: 'remote_id', type: 'string', isOptional: true},
                     ],
                 },
             },

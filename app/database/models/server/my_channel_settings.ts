@@ -9,6 +9,7 @@ import {MM_TABLES} from '@constants/database';
 import {safeParseJSON} from '@utils/helpers';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelSettingsModelInterface from '@typings/database/models/servers/my_channel_settings';
 
 const {CHANNEL, MY_CHANNEL_SETTINGS} = MM_TABLES.SERVER;
 
@@ -16,11 +17,11 @@ const {CHANNEL, MY_CHANNEL_SETTINGS} = MM_TABLES.SERVER;
  * The MyChannelSettings model represents the specific user's configuration to
  * the channel this user belongs to.
  */
-export default class MyChannelSettingsModel extends Model {
+export default class MyChannelSettingsModel extends Model implements MyChannelSettingsModelInterface {
     /** table (name) : MyChannelSettings */
     static table = MY_CHANNEL_SETTINGS;
 
-    /** notify_props : Configurations with regards to this channel */
+    /** notify_props : Configurations in regard to this channel */
     @json('notify_props', safeParseJSON) notifyProps!: ChannelNotifyProps;
 
     /** channel : The relation pointing to the CHANNEL table */

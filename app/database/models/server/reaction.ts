@@ -8,6 +8,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type ReactionModelInterface from '@typings/database/models/servers/reaction';
 import type UserModel from '@typings/database/models/servers/user';
 
 const {POST, REACTION, USER} = MM_TABLES.SERVER;
@@ -15,7 +16,7 @@ const {POST, REACTION, USER} = MM_TABLES.SERVER;
 /**
  * The Reaction Model is used to present the reactions a user had on a particular post
  */
-export default class ReactionModel extends Model {
+export default class ReactionModel extends Model implements ReactionModelInterface {
     /** table (name) : Reaction */
     static table = REACTION;
 

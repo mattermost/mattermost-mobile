@@ -3,7 +3,7 @@
 
 import React, {useCallback, useState} from 'react';
 
-import {selectAttachmentMenuAction} from '@actions/local/post';
+import {selectAttachmentMenuAction} from '@actions/remote/post';
 import AutocompleteSelector from '@components/autocomplete_selector';
 import {useServerUrl} from '@context/server';
 

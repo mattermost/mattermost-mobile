@@ -53,7 +53,7 @@ const PostOptions = ({
     post,
     thread,
 }: PostOptionsProps) => {
-    const managedConfig = useManagedConfig();
+    const managedConfig = useManagedConfig<ManagedConfig>();
 
     useEffect(() => {
         const unsubscribe = Navigation.events().registerComponentListener({

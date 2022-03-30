@@ -63,6 +63,7 @@ type ChannelMembership = {
     scheme_admin?: boolean;
     post_root_id?: string;
     is_unread?: boolean;
+    manually_unread?: boolean;
 };
 type ChannelUnread = {
     channel_id: string;

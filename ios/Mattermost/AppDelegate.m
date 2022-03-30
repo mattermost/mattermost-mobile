@@ -14,6 +14,25 @@
 #import "Mattermost-Swift.h"
 #import <os/log.h>
 
+#ifdef FB_SONARKIT_ENABLED
+#import <FlipperKit/FlipperClient.h>
+#import <FlipperKitLayoutPlugin/FlipperKitLayoutPlugin.h>
+#import <FlipperKitUserDefaultsPlugin/FKUserDefaultsPlugin.h>
+#import <FlipperKitNetworkPlugin/FlipperKitNetworkPlugin.h>
+#import <SKIOSNetworkPlugin/SKIOSNetworkAdapter.h>
+#import <FlipperKitReactPlugin/FlipperKitReactPlugin.h>
+
+static void InitializeFlipper(UIApplication *application) {
+  FlipperClient *client = [FlipperClient sharedClient];
+  SKDescriptorMapper *layoutDescriptorMapper = [[SKDescriptorMapper alloc] initWithDefaults];
+  [client addPlugin:[[FlipperKitLayoutPlugin alloc] initWithRootNode:application withDescriptorMapper:layoutDescriptorMapper]];
+  [client addPlugin:[[FKUserDefaultsPlugin alloc] initWithSuiteName:nil]];
+  [client addPlugin:[FlipperKitReactPlugin new]];
+  [client addPlugin:[[FlipperKitNetworkPlugin alloc] initWithNetworkAdapter:[SKIOSNetworkAdapter new]]];
+  [client start];
+}
+#endif
+
 @import Gekidou;
 
 @interface AppDelegate () <RCTBridgeDelegate>
@@ -45,6 +64,10 @@ MattermostBucket* bucket = nil;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+#ifdef FB_SONARKIT_ENABLED
+  InitializeFlipper(application);
+#endif
+
   if (bucket == nil) {
     bucket = [[MattermostBucket alloc] init];
   }
@@ -116,6 +139,56 @@ MattermostBucket* bucket = nil;
   }
 }
 
+// Required for deeplinking
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options{
+  return [RCTLinkingManager application:application openURL:url options:options];
+}
+
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+  return [RCTLinkingManager application:application openURL:url sourceApplication:sourceApplication annotation:annotation];
+}
+
+// Only if your app is using [Universal Links](https://developer.apple.com/library/prerelease/ios/documentation/General/Conceptual/AppSearch/UniversalLinks.html).
+- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity
+ restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> *restorableObjects))restorationHandler
+{
+  return [RCTLinkingManager application:application continueUserActivity:userActivity restorationHandler:restorationHandler];
+}
+
+-(void)applicationDidBecomeActive:(UIApplication *)application {
+  [bucket setPreference:@"ApplicationIsForeground" value:@"true"];
+}
+
+-(void)applicationWillResignActive:(UIApplication *)application {
+  [bucket setPreference:@"ApplicationIsForeground" value:@"false"];
+}
+
+-(void)applicationDidEnterBackground:(UIApplication *)application {
+  [bucket setPreference:@"ApplicationIsForeground" value:@"false"];
+}
+
+-(void)applicationWillTerminate:(UIApplication *)application {
+  [bucket setPreference:@"ApplicationIsForeground" value:@"false"];
+}
+
+- (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window {
+  if (_allowRotation == YES) {
+        return UIInterfaceOrientationMaskAllButUpsideDown;
+    }else{
+        return (UIInterfaceOrientationMaskPortrait);
+    }
+}
+
+- (NSArray<id<RCTBridgeModule>> *)extraModulesForBridge:(RCTBridge *)bridge
+{
+  NSMutableArray<id<RCTBridgeModule>> *extraModules = [NSMutableArray new];
+  [extraModules addObjectsFromArray:[ReactNativeNavigation extraModulesForBridge:bridge]];
+  
+  // You can inject any extra modules that you would like here, more information at:
+  // https://facebook.github.io/react-native/docs/native-modules-ios.html#dependency-injection
+  return extraModules;
+}
+
 -(void)cleanNotificationsFromChannel:(NSString *)channelId {
   if ([UNUserNotificationCenter class]) {
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
@@ -136,32 +209,6 @@ MattermostBucket* bucket = nil;
       [center removeDeliveredNotificationsWithIdentifiers:notificationIds];
     }];
   }
-}
-
-// Required for deeplinking
-- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options{
-  return [RCTLinkingManager application:application openURL:url options:options];
-}
-
-- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
-  return [RCTLinkingManager application:application openURL:url sourceApplication:sourceApplication annotation:annotation];
-}
-
-// Only if your app is using [Universal Links](https://developer.apple.com/library/prerelease/ios/documentation/General/Conceptual/AppSearch/UniversalLinks.html).
-- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity
- restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> *restorableObjects))restorationHandler
-{
-  return [RCTLinkingManager application:application continueUserActivity:userActivity restorationHandler:restorationHandler];
-}
-
-- (NSArray<id<RCTBridgeModule>> *)extraModulesForBridge:(RCTBridge *)bridge
-{
-  NSMutableArray<id<RCTBridgeModule>> *extraModules = [NSMutableArray new];
-  [extraModules addObjectsFromArray:[ReactNativeNavigation extraModulesForBridge:bridge]];
-  
-  // You can inject any extra modules that you would like here, more information at:
-  // https://facebook.github.io/react-native/docs/native-modules-ios.html#dependency-injection
-  return extraModules;
 }
 
 /*
@@ -203,30 +250,6 @@ RNHWKeyboardEvent *hwKeyEvent = nil;
 - (void)sendShiftEnter:(UIKeyCommand *)sender {
   NSString *selected = sender.input;
   [hwKeyEvent sendHWKeyEvent:@"shift-enter"];
-}
-
--(void)applicationDidBecomeActive:(UIApplication *)application {
-  [bucket setPreference:@"ApplicationIsForeground" value:@"true"];
-}
-
--(void)applicationWillResignActive:(UIApplication *)application {
-  [bucket setPreference:@"ApplicationIsForeground" value:@"false"];
-}
-
--(void)applicationDidEnterBackground:(UIApplication *)application {
-  [bucket setPreference:@"ApplicationIsForeground" value:@"false"];
-}
-
--(void)applicationWillTerminate:(UIApplication *)application {
-  [bucket setPreference:@"ApplicationIsForeground" value:@"false"];
-}
-
-- (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window {
-  if (_allowRotation == YES) {
-        return UIInterfaceOrientationMaskAllButUpsideDown;
-    }else{
-        return (UIInterfaceOrientationMaskPortrait);
-    }
 }
 
 @end

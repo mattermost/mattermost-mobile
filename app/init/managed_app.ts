@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Emm, {ManagedConfig} from '@mattermost/react-native-emm';
+import Emm from '@mattermost/react-native-emm';
 import JailMonkey from 'jail-monkey';
 import {Alert, AlertButton, AppState, AppStateStatus, Platform} from 'react-native';
 
@@ -28,7 +28,7 @@ class ManagedApp {
     }
 
     init() {
-        Emm.getManagedConfig().then(this.processConfig);
+        this.processConfig(Emm.getManagedConfig<ManagedConfig>());
     }
 
     setIOSAppGroupIdentifier = () => {

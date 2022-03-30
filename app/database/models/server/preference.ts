@@ -7,6 +7,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
+import type PreferenceModelInterface from '@typings/database/models/servers/preference';
 import type UserModel from '@typings/database/models/servers/user';
 
 const {PREFERENCE, USER} = MM_TABLES.SERVER;
@@ -15,7 +16,7 @@ const {PREFERENCE, USER} = MM_TABLES.SERVER;
  * The Preference model hold information about the user's preference in the app.
  * This includes settings about the account, the themes, etc.
  */
-export default class PreferenceModel extends Model {
+export default class PreferenceModel extends Model implements PreferenceModelInterface {
     /** table (name) : Preference */
     static table = PREFERENCE;
 
