@@ -185,6 +185,7 @@ const AtMention = ({
             setUsersInChannel(receivedUsers!.users);
             setUsersOutOfChannel(receivedUsers!.out_of_channel || emptyList);
         }
+
         setLoading(false);
     }, 200), []);
 
@@ -312,7 +313,8 @@ const AtMention = ({
 
     useEffect(() => {
         const showSpecialMentions = useChannelMentions && matchTerm != null && checkSpecialMentions(matchTerm);
-        const newSections = makeSections(teamMembers, usersInChannel, usersOutOfChannel, groups, showSpecialMentions, isSearch);
+        const buildMemberSection = isSearch || (!channelId && teamMembers.length > 0);
+        const newSections = makeSections(teamMembers, usersInChannel, usersOutOfChannel, groups, showSpecialMentions, buildMemberSection);
         const nSections = newSections.length;
 
         if (!loading && !nSections && noResultsTerm == null) {
@@ -320,7 +322,7 @@ const AtMention = ({
         }
         setSections(newSections);
         onShowingChange(Boolean(nSections));
-    }, [usersInChannel, usersOutOfChannel, teamMembers, groups, loading]);
+    }, [usersInChannel, usersOutOfChannel, teamMembers, groups, loading, channelId]);
 
     if (sections.length === 0 || noResultsTerm != null) {
         // If we are not in an active state or the mention has been completed return null so nothing is rendered
