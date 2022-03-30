@@ -11,6 +11,7 @@ import {
     View,
     NativeSyntheticEvent,
     NativeScrollEvent,
+    Platform,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -166,7 +167,9 @@ export default function ChannelInfoForm({
 
     const onKeyboardDidShow = useCallback((frames: any) => {
         setKeyBoardVisible(true);
-        setKeyboardHeight(frames.endCoordinates.height);
+        if (Platform.OS === 'android') {
+            setKeyboardHeight(frames.endCoordinates.height);
+        }
     }, [scrollHeaderToTop]);
 
     const onKeyboardDidHide = useCallback(() => {
@@ -212,6 +215,8 @@ export default function ChannelInfoForm({
             </SafeAreaView>
         );
     }
+    const platformHeaderHeight = headerHeight.defaultHeight + Platform.select({ios: 10, default: headerHeight.defaultHeight + 10});
+    const postInputTop = (headerPosition + scrollPosition + platformHeaderHeight) - keyboardHeight;
 
     return (
         <SafeAreaView
@@ -325,13 +330,14 @@ export default function ChannelInfoForm({
             </KeyboardAwareScrollView>
             <View>
                 <Autocomplete
-                    postInputTop={(headerPosition + scrollPosition + headerHeight.defaultHeight) - keyboardHeight}
+                    postInputTop={postInputTop}
                     updateValue={onHeaderChange}
                     cursorPosition={header.length}
                     value={header}
                     nestedScrollEnabled={true}
                     maxHeightOverride={isTablet ? 200 : undefined}
                     inPost={false}
+                    fixedBottomPosition={false}
                 />
             </View>
         </SafeAreaView>
