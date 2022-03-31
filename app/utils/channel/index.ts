@@ -1,9 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {IntlShape} from 'react-intl';
 
-import {General, Permissions} from '@constants';
-import {DEFAULT_LOCALE} from '@i18n';
+import {Channel, General, Permissions} from '@constants';
+import {t, DEFAULT_LOCALE} from '@i18n';
 import {hasPermission} from '@utils/role';
+
+import {generateId} from '../general';
+import {cleanUpUrlable} from '../url';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 
@@ -61,4 +65,50 @@ export function sortChannelsModelByDisplayName(locale: string, a: ChannelModel, 
     }
 
     return a.name.toLowerCase().localeCompare(b.name.toLowerCase(), locale, {numeric: true});
+}
+
+const displayNameValidationMessages = {
+    display_name_required: {
+        id: t('mobile.rename_channel.display_name_required'),
+        defaultMessage: 'Channel name is required',
+    },
+    display_name_maxLength: {
+        id: t('mobile.rename_channel.display_name_maxLength'),
+        defaultMessage: 'Channel name must be less than {maxLength, number} characters',
+    },
+    display_name_minLength: {
+        id: t('mobile.rename_channel.display_name_minLength'),
+        defaultMessage: 'Channel name must be {minLength, number} or more characters',
+    },
+};
+
+export const validateDisplayName = (intl: IntlShape, displayName: string): {error: string} => {
+    let errorMessage;
+    switch (true) {
+        case !displayName:
+            errorMessage = intl.formatMessage(displayNameValidationMessages.display_name_required);
+            break;
+        case displayName.length > Channel.MAX_CHANNEL_NAME_LENGTH:
+            errorMessage = intl.formatMessage(
+                displayNameValidationMessages.display_name_maxLength,
+                {maxLength: Channel.MAX_CHANNEL_NAME_LENGTH});
+            break;
+        case displayName.length < Channel.MIN_CHANNEL_NAME_LENGTH:
+            errorMessage = intl.formatMessage(
+                displayNameValidationMessages.display_name_minLength,
+                {minLength: Channel.MIN_CHANNEL_NAME_LENGTH});
+            break;
+
+        default:
+            errorMessage = '';
+    }
+    return {error: errorMessage};
+};
+
+export function generateChannelNameFromDisplayName(displayName: string) {
+    let name = cleanUpUrlable(displayName);
+    if (name === '') {
+        name = generateId();
+    }
+    return name;
 }

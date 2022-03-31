@@ -10,10 +10,10 @@ import {
 } from 'react-native';
 
 import {fetchSuggestions} from '@actions/remote/command';
-import IntegrationsManager from '@app/init/integrations_manager';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import analytics from '@init/analytics';
+import IntegrationsManager from '@init/integrations_manager';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import {AppCommandParser} from './app_command_parser/app_command_parser';

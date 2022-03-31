@@ -4,8 +4,8 @@
 // Note: This file has been adapted from the library https://github.com/csath/react-native-reanimated-text-input
 
 import {debounce} from 'lodash';
-import React, {useState, useEffect, useRef, useImperativeHandle, forwardRef} from 'react';
-import {GestureResponderEvent, NativeSyntheticEvent, Platform, TargetedEvent, Text, TextInput, TextInputFocusEventData, TextInputProps, TextStyle, TouchableWithoutFeedback, View, ViewStyle} from 'react-native';
+import React, {useState, useEffect, useRef, useImperativeHandle, forwardRef, useMemo, useCallback} from 'react';
+import {GestureResponderEvent, LayoutChangeEvent, NativeSyntheticEvent, Platform, StyleProp, TargetedEvent, Text, TextInput, TextInputFocusEventData, TextInputProps, TextStyle, TouchableWithoutFeedback, View, ViewStyle} from 'react-native';
 import Animated, {useCode, interpolateNode, EasingNode, Value, set, Clock} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
@@ -16,6 +16,28 @@ import {timingAnimation} from './animation_utils';
 const DEFAULT_INPUT_HEIGHT = 48;
 const BORDER_DEFAULT_WIDTH = 1;
 const BORDER_FOCUSED_WIDTH = 2;
+
+const getTopStyle = (styles: any, animation: Value<0|1>, inputText?: string) => {
+    if (inputText) {
+        return getLabelPositions(styles.textInput, styles.label, styles.smallLabel)[1];
+    }
+
+    return interpolateNode(animation, {
+        inputRange: [0, 1],
+        outputRange: [...getLabelPositions(styles.textInput, styles.label, styles.smallLabel)],
+    });
+};
+
+const getFontSize = (styles: any, animation: Value<0|1>, inputText?: string) => {
+    if (inputText) {
+        return styles.smallLabel.fontSize;
+    }
+
+    return interpolateNode(animation, {
+        inputRange: [0, 1],
+        outputRange: [styles.textInput.fontSize, styles.smallLabel.fontSize],
+    });
+};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -101,12 +123,15 @@ type FloatingTextInputProps = TextInputProps & {
     errorIcon?: string;
     isKeyboardInput?: boolean;
     label: string;
+    multiline?: boolean;
     onBlur?: (event: NativeSyntheticEvent<TargetedEvent>) => void;
     onFocus?: (e: NativeSyntheticEvent<TargetedEvent>) => void;
     onPress?: (e: GestureResponderEvent) => void;
+    onLayout?: (e: LayoutChangeEvent) => void;
+    placeholder?: string;
     showErrorIcon?: boolean;
-    theme: Theme;
     testID?: string;
+    theme: Theme;
     value: string;
 }
 
@@ -120,7 +145,10 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     onPress = undefined,
     onFocus,
     onBlur,
+    onLayout,
     showErrorIcon = true,
+    placeholder,
+    multiline,
     theme,
     value = '',
     textInputStyle,
@@ -171,86 +199,106 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
         [value],
     );
 
-    const focusStyle = {
-        top: interpolateNode(animation, {
-            inputRange: [0, 1],
-            outputRange: [...getLabelPositions(styles.textInput, styles.label, styles.smallLabel)],
-        }),
-        fontSize: interpolateNode(animation, {
-            inputRange: [0, 1],
-            outputRange: [styles.textInput.fontSize, styles.smallLabel.fontSize],
-        }),
-        backgroundColor: (
-            focusedLabel ? theme.centerChannelBg : 'transparent'
-        ),
-        paddingHorizontal: focusedLabel ? 4 : 0,
-        color: styles.label.color,
-    };
-
-    const onTextInputBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => onExecution(e,
+    const onTextInputBlur = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => onExecution(e,
         () => {
             setIsFocusLabel(Boolean(value));
             setIsFocused(false);
         },
         onBlur,
-    );
+    ), [onBlur]);
 
-    const onTextInputFocus = (e: NativeSyntheticEvent<TextInputFocusEventData>) => onExecution(e,
+    const onTextInputFocus = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => onExecution(e,
         () => {
             setIsFocusLabel(true);
             setIsFocused(true);
         },
         onFocus,
-    );
+    ), [onFocus]);
 
-    const onAnimatedTextPress = () => {
+    const onAnimatedTextPress = useCallback(() => {
         return focused ? null : inputRef?.current?.focus();
-    };
+    }, [focused]);
 
     const shouldShowError = (!focused && error);
     const onPressAction = !isKeyboardInput && editable && onPress ? onPress : undefined;
 
-    let textInputColorStyles;
-    let labelColorStyles;
+    const combinedContainerStyle = useMemo(() => {
+        const res = [styles.container];
+        if (multiline) {
+            res.push({height: 100 + (2 * BORDER_DEFAULT_WIDTH)});
+        }
+        res.push(containerStyle);
+        return res;
+    }, [styles, containerStyle, multiline]);
 
-    if (focused) {
-        textInputColorStyles = {borderColor: theme.buttonBg};
-        labelColorStyles = {color: theme.buttonBg};
-    } else if (shouldShowError) {
-        textInputColorStyles = {borderColor: theme.errorTextColor};
-    }
+    const combinedTextInputStyle = useMemo(() => {
+        const res: StyleProp<TextStyle> = [styles.textInput];
+        res.push({
+            borderWidth: focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH,
+            height: DEFAULT_INPUT_HEIGHT + ((focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH) * 2),
+        });
 
-    const textInputBorder = {
-        borderWidth: focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH,
-        height: DEFAULT_INPUT_HEIGHT + ((focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH) * 2),
-    };
-    const combinedTextInputStyle = [styles.textInput, textInputBorder, textInputColorStyles, textInputStyle];
-    const textAnimatedTextStyle = [styles.label, focusStyle, labelColorStyles, labelTextStyle];
+        if (focused) {
+            res.push({borderColor: theme.buttonBg});
+        } else if (shouldShowError) {
+            res.push({borderColor: theme.errorTextColor});
+        }
 
-    if (error && !focused) {
-        textAnimatedTextStyle.push({color: theme.errorTextColor});
-    }
+        res.push(textInputStyle);
+
+        if (multiline) {
+            res.push({height: 100, textAlignVertical: 'top'});
+        }
+
+        return res;
+    }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, multiline]);
+
+    const textAnimatedTextStyle = useMemo(() => {
+        const res = [styles.label];
+        const inputText = value || placeholder;
+        res.push({
+            top: getTopStyle(styles, animation, inputText),
+            fontSize: getFontSize(styles, animation, inputText),
+            backgroundColor: (
+                focusedLabel || inputText ? theme.centerChannelBg : 'transparent'
+            ),
+            paddingHorizontal: focusedLabel || inputText ? 4 : 0,
+            color: styles.label.color,
+        });
+
+        if (focused) {
+            res.push({color: theme.buttonBg});
+        }
+
+        res.push(labelTextStyle);
+
+        if (shouldShowError) {
+            res.push({color: theme.errorTextColor});
+        }
+
+        return res;
+    }, [theme, styles, focused, shouldShowError, labelTextStyle, placeholder, animation, focusedLabel]);
 
     return (
         <TouchableWithoutFeedback
             onPress={onPressAction}
+            onLayout={onLayout}
         >
-            <View style={[styles.container, containerStyle]}>
-                {
-                    <Animated.Text
-                        onPress={onAnimatedTextPress}
-                        style={textAnimatedTextStyle}
-                        suppressHighlighting={true}
-                    >
-                        {label}
-                    </Animated.Text>
-                }
+            <View style={combinedContainerStyle}>
+                <Animated.Text
+                    onPress={onAnimatedTextPress}
+                    style={textAnimatedTextStyle}
+                    suppressHighlighting={true}
+                >
+                    {label}
+                </Animated.Text>
                 <TextInput
                     {...props}
                     editable={isKeyboardInput && editable}
                     style={combinedTextInputStyle}
-                    placeholder=''
-                    placeholderTextColor='transparent'
+                    placeholder={placeholder}
+                    placeholderTextColor={styles.label.color}
+                    multiline={multiline}
                     value={value}
                     pointerEvents={isKeyboardInput ? 'auto' : 'none'}
                     onFocus={onTextInputFocus}

@@ -12,12 +12,12 @@ import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import NetworkManager from '@init/network_manager';
-import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel} from '@queries/servers/channel';
+import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {prepareMyTeams, getNthLastChannelFromTeam, getMyTeamById, getTeamById, getTeamByName} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
-import {getDirectChannelName} from '@utils/channel';
+import {generateChannelNameFromDisplayName, getDirectChannelName} from '@utils/channel';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
@@ -103,6 +103,104 @@ export const fetchChannelByName = async (serverUrl: string, teamId: string, chan
         return {channel};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const createChannel = async (serverUrl: string, displayName: string, purpose: string, header: string, type: ChannelType) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const {database} = operator;
+        const {currentUserId, currentTeamId} = await getCommonSystemValues(database);
+        const name = generateChannelNameFromDisplayName(displayName);
+        const channel = {
+            creator_id: currentUserId,
+            team_id: currentTeamId,
+            display_name: displayName,
+            header,
+            name,
+            purpose,
+            type,
+        } as Channel;
+
+        const channelData = await client.createChannel(channel);
+
+        const member = await client.getChannelMember(channelData.id, currentUserId);
+
+        const models: Model[] = [];
+        const channelModels = await prepareMyChannelsForTeam(operator, channelData.team_id, [channelData], [member]);
+        if (channelModels?.length) {
+            const resolvedModels = await Promise.all(channelModels);
+            models.push(...resolvedModels.flat());
+        }
+        const categoriesModels = await operator.handleCategoryChannels({categoryChannels: [{
+            category_id: `channels_${currentUserId}_${currentTeamId}`,
+            channel_id: channelData.id,
+            sort_order: 0,
+            id: `${currentTeamId}_${channelData.id}`,
+        }],
+        prepareRecordsOnly: true});
+        if (categoriesModels?.length) {
+            models.push(...categoriesModels);
+        }
+        if (models.length) {
+            await operator.batchRecords(models.flat());
+        }
+        fetchChannelStats(serverUrl, channelData.id, false);
+        return {channel: channelData};
+    } catch (error) {
+        return {error};
+    }
+};
+
+export const patchChannel = async (serverUrl: string, channelPatch: Partial<Channel> & {id: string}) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const channelData = await client.patchChannel(channelPatch.id, channelPatch);
+        const models = [];
+        const channelInfo = (await getChannelInfo(operator.database, channelData.id));
+        if (channelInfo && (channelInfo.purpose !== channelData.purpose || channelInfo.header !== channelData.header)) {
+            channelInfo.prepareUpdate((v) => {
+                v.purpose = channelData.purpose;
+                v.header = channelData.header;
+            });
+            models.push(channelInfo);
+        }
+        const channel = await getChannelById(operator.database, channelData.id);
+        if (channel && (channel.displayName !== channelData.display_name || channel.type !== channelData.type)) {
+            channel.prepareUpdate((v) => {
+                v.displayName = channelData.display_name;
+                v.type = channelData.type;
+            });
+            models.push(channel);
+        }
+        if (models?.length) {
+            await operator.batchRecords(models.flat());
+        }
+        return {channel: channelData};
+    } catch (error) {
         return {error};
     }
 };

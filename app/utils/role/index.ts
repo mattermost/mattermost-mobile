@@ -75,7 +75,8 @@ export async function canManageChannelMembers(post: PostModel, user: UserModel) 
     const rolesArray = [...user.roles.split(' ')];
     const channel = await post.channel.fetch() as ChannelModel | undefined;
 
-    if (!channel || channel.deleteAt !== 0 || [General.DM_CHANNEL, General.GM_CHANNEL].includes(channel.type as any) || channel.name === General.DEFAULT_CHANNEL) {
+    const directTypes: string[] = [General.DM_CHANNEL, General.GM_CHANNEL];
+    if (!channel || channel.deleteAt !== 0 || directTypes.includes(channel.type) || channel.name === General.DEFAULT_CHANNEL) {
         return false;
     }
 
