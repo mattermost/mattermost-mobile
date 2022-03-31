@@ -3,6 +3,7 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import React from 'react';
 import {combineLatest, of as of$, from as from$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
@@ -85,4 +86,4 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
     };
 });
 
-export default withDatabase(enhanced(PostDraft));
+export default React.memo(withDatabase(enhanced(PostDraft)));

@@ -4,40 +4,42 @@
 import React, {useCallback, useMemo} from 'react';
 import {FlatList} from 'react-native';
 
+import ChannelModel from '@typings/database/models/servers/channel';
+
 import ChannelListItem from './channel';
 
 import type CategoryModel from '@typings/database/models/servers/category';
 
 type Props = {
     currentChannelId: string;
-    sortedIds: string[];
+    sortedChannels: ChannelModel[];
     hiddenChannelIds: string[];
     category: CategoryModel;
     limit: number;
 };
 
-const extractKey = (item: string) => item;
+const extractKey = (item: ChannelModel) => item.id;
 
-const CategoryBody = ({currentChannelId, sortedIds, category, hiddenChannelIds, limit}: Props) => {
+const CategoryBody = ({currentChannelId, sortedChannels, category, hiddenChannelIds, limit}: Props) => {
     const ids = useMemo(() => {
-        let filteredIds = sortedIds;
+        let filteredChannels = sortedChannels;
 
         // Remove all closed gm/dms
         if (hiddenChannelIds.length) {
-            filteredIds = sortedIds.filter((id) => !hiddenChannelIds.includes(id));
+            filteredChannels = sortedChannels.filter((item) => item && !hiddenChannelIds.includes(item.id));
         }
 
         if (category.type === 'direct_messages' && limit > 0) {
-            return filteredIds.slice(0, limit - 1);
+            return filteredChannels.slice(0, limit - 1);
         }
-        return filteredIds;
-    }, [category.type, limit, hiddenChannelIds]);
+        return filteredChannels;
+    }, [category.type, limit, hiddenChannelIds, sortedChannels]);
 
-    const ChannelItem = useCallback(({item}: {item: string}) => {
+    const ChannelItem = useCallback(({item}: {item: ChannelModel}) => {
         return (
             <ChannelListItem
-                channelId={item}
-                isActive={item === currentChannelId}
+                channel={item}
+                isActive={item.id === currentChannelId}
                 collapsed={category.collapsed}
             />
         );

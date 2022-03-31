@@ -28,5 +28,6 @@ export default tableSchema({
         {name: 'status', type: 'string'},
         {name: 'timezone', type: 'string'},
         {name: 'username', type: 'string'},
+        {name: 'remote_id', type: 'string', isOptional: true},
     ],
 });

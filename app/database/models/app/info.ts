@@ -5,6 +5,7 @@ import {Model} from '@nozbe/watermelondb';
 import {field} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
+import InfoModelInterface from '@typings/database/models/app/info';
 
 const {INFO} = MM_TABLES.APP;
 
@@ -12,7 +13,7 @@ const {INFO} = MM_TABLES.APP;
  * The App model will hold information - such as the version number, build number and creation date -
  * for the Mattermost mobile app.
  */
-export default class InfoModel extends Model {
+export default class InfoModel extends Model implements InfoModelInterface {
     /** table (name) : info */
     static table = INFO;
 

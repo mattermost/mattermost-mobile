@@ -8,6 +8,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 
 import type ThreadModel from '@typings/database/models/servers/thread';
+import type ThreadParticipantModelInterface from '@typings/database/models/servers/thread_participant';
 import type UserModel from '@typings/database/models/servers/user';
 
 const {THREAD, THREAD_PARTICIPANT, USER} = MM_TABLES.SERVER;
@@ -15,7 +16,7 @@ const {THREAD, THREAD_PARTICIPANT, USER} = MM_TABLES.SERVER;
 /**
  * The Thread Participants model contains participants data of a thread.
  */
-export default class ThreadParticipantModel extends Model {
+export default class ThreadParticipantModel extends Model implements ThreadParticipantModelInterface {
     /** table (name) : ThreadParticipant */
     static table = THREAD_PARTICIPANT;
 
@@ -33,7 +34,7 @@ export default class ThreadParticipantModel extends Model {
     @field('thread_id') threadId!: string;
 
     /** user_id : user id of the participant. */
-    @field('user_id') userId!: number;
+    @field('user_id') userId!: string;
 
     /** thread : The related record of the Thread model */
     @immutableRelation(THREAD, 'thread_id') thread!: Relation<ThreadModel>;

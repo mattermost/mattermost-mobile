@@ -472,7 +472,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         reply_count: {name: 'reply_count', type: 'number'},
                         unread_replies: {name: 'unread_replies', type: 'number'},
                         unread_mentions: {name: 'unread_mentions', type: 'number'},
-                        loaded_in_global_threads: {name: 'loaded_in_global_threads', type: 'boolean'},
                         viewed_at: {name: 'viewed_at', type: 'number'},
                     },
                     columnArray: [
@@ -482,7 +481,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'reply_count', type: 'number'},
                         {name: 'unread_replies', type: 'number'},
                         {name: 'unread_mentions', type: 'number'},
-                        {name: 'loaded_in_global_threads', type: 'boolean'},
                         {name: 'viewed_at', type: 'number'},
                     ],
                 },
@@ -504,10 +502,12 @@ describe('*** Test schema for SERVER database ***', () => {
                     columns: {
                         team_id: {name: 'team_id', type: 'string', isIndexed: true},
                         thread_id: {name: 'thread_id', type: 'string', isIndexed: true},
+                        loaded_in_global_threads: {name: 'loaded_in_global_threads', type: 'boolean', isIndexed: true},
                     },
                     columnArray: [
                         {name: 'team_id', type: 'string', isIndexed: true},
                         {name: 'thread_id', type: 'string', isIndexed: true},
+                        {name: 'loaded_in_global_threads', type: 'boolean', isIndexed: true},
                     ],
                 },
                 [USER]: {
@@ -535,6 +535,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         status: {name: 'status', type: 'string'},
                         timezone: {name: 'timezone', type: 'string'},
                         username: {name: 'username', type: 'string'},
+                        remote_id: {name: 'remote_id', type: 'string', isOptional: true},
                     },
                     columnArray: [
                         {name: 'auth_service', type: 'string'},
@@ -555,6 +556,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'status', type: 'string'},
                         {name: 'timezone', type: 'string'},
                         {name: 'username', type: 'string'},
+                        {name: 'remote_id', type: 'string', isOptional: true},
                     ],
                 },
             },

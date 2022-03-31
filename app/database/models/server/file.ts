@@ -7,6 +7,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
+import type FileModelInterface from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
 
 const {FILE, POST} = MM_TABLES.SERVER;
@@ -14,7 +15,7 @@ const {FILE, POST} = MM_TABLES.SERVER;
 /**
  * The File model works in pair with the Post model.  It hosts information about the files attached to a Post
  */
-export default class FileModel extends Model {
+export default class FileModel extends Model implements FileModelInterface {
     /** table (name) : File */
     static table = FILE;
 
