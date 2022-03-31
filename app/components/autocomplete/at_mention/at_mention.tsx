@@ -152,7 +152,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const emptyList: UserProfile[] = [];
+const emptyProfileList: UserProfile[] = [];
+const empytSectionList: UserMentionSections = [];
+const emptyGroupList: Group[] = [];
 
 const AtMention = ({
     channelId,
@@ -170,20 +172,20 @@ const AtMention = ({
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
-    const [sections, setSections] = useState<UserMentionSections>([]);
-    const [usersInChannel, setUsersInChannel] = useState<UserProfile[]>([]);
-    const [usersOutOfChannel, setUsersOutOfChannel] = useState<UserProfile[]>([]);
-    const [groups, setGroups] = useState<Group[]>([]);
+    const [sections, setSections] = useState<UserMentionSections>(empytSectionList);
+    const [usersInChannel, setUsersInChannel] = useState<UserProfile[]>(emptyProfileList);
+    const [usersOutOfChannel, setUsersOutOfChannel] = useState<UserProfile[]>(emptyProfileList);
+    const [groups, setGroups] = useState<Group[]>(emptyGroupList);
     const [loading, setLoading] = useState(false);
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
     const [localCursorPosition, setLocalCursorPosition] = useState(cursorPosition); // To avoid errors due to delay between value changes and cursor position changes.
 
     const runSearch = useMemo(() => debounce(async (sUrl: string, term: string, cId?: string) => {
         setLoading(true);
-        const {users: receivedUsers, error} = await searchUsers(sUrl, term, cId);
-        if (!error) {
-            setUsersInChannel(receivedUsers!.users);
-            setUsersOutOfChannel(receivedUsers!.out_of_channel || emptyList);
+        const {users: receivedUsers} = await searchUsers(sUrl, term, cId);
+        if (receivedUsers) {
+            setUsersInChannel(receivedUsers.users.length ? receivedUsers.users : emptyProfileList);
+            setUsersOutOfChannel(receivedUsers.out_of_channel?.length ? receivedUsers.out_of_channel : emptyProfileList);
         }
         setLoading(false);
     }, 200), []);
@@ -195,9 +197,9 @@ const AtMention = ({
 
     const matchTerm = getMatchTermForAtMention(value.substring(0, localCursorPosition), isSearch);
     const resetState = () => {
-        setUsersInChannel(emptyList);
-        setUsersOutOfChannel(emptyList);
-        setSections([]);
+        setUsersInChannel(emptyProfileList);
+        setUsersOutOfChannel(emptyProfileList);
+        setSections(empytSectionList);
         runSearch.cancel();
     };
 
@@ -222,7 +224,7 @@ const AtMention = ({
 
         onShowingChange(false);
         setNoResultsTerm(mention);
-        setSections([]);
+        setSections(empytSectionList);
     }, [value, localCursorPosition, isSearch]);
 
     const renderSpecialMentions = useCallback((item: SpecialMention) => {
@@ -286,12 +288,12 @@ const AtMention = ({
     useEffect(() => {
         if (useGroupMentions) {
             getGroupsForAutocomplete(serverUrl, channelId || '').then((res) => {
-                setGroups(res);
+                setGroups(res.length ? res : emptyGroupList);
             }).catch(() => {
-                setGroups([]);
+                setGroups(emptyGroupList);
             });
         } else {
-            setGroups([]);
+            setGroups(emptyGroupList);
         }
     }, [channelId, useGroupMentions]);
 
@@ -318,7 +320,7 @@ const AtMention = ({
         if (!loading && !nSections && noResultsTerm == null) {
             setNoResultsTerm(matchTerm);
         }
-        setSections(newSections);
+        setSections(nSections ? newSections : empytSectionList);
         onShowingChange(Boolean(nSections));
     }, [usersInChannel, usersOutOfChannel, teamMembers, groups, loading]);
 

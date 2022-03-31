@@ -4,6 +4,7 @@
 import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import React from 'react';
 import {AppStateStatus} from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
@@ -47,4 +48,4 @@ const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({dat
     };
 });
 
-export default withDatabase(enhanced(ChannelPostList));
+export default React.memo(withDatabase(enhanced(ChannelPostList)));

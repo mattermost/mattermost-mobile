@@ -3,6 +3,7 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import React from 'react';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
@@ -59,4 +60,4 @@ const enhanced = withObservables([], ({database, channelId, rootId}: WithDatabas
     };
 });
 
-export default withDatabase(enhanced(PostInput));
+export default React.memo(withDatabase(enhanced(PostInput)));

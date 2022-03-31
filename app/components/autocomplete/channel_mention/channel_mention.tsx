@@ -161,6 +161,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
+const emptySections: Array<SectionListData<Channel>> = [];
+const emptyChannels: Channel[] = [];
+
 const ChannelMention = ({
     cursorPosition,
     isSearch,
@@ -175,8 +178,8 @@ const ChannelMention = ({
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
-    const [sections, setSections] = useState<Array<SectionListData<Channel>>>([]);
-    const [channels, setChannels] = useState<Channel[]>([]);
+    const [sections, setSections] = useState<Array<SectionListData<Channel>>>(emptySections);
+    const [channels, setChannels] = useState<Channel[]>(emptyChannels);
     const [loading, setLoading] = useState(false);
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
     const [localCursorPosition, setLocalCursorPosition] = useState(cursorPosition); // To avoid errors due to delay between value changes and cursor position changes.
@@ -187,17 +190,17 @@ const ChannelMention = ({
 
     const runSearch = useMemo(() => debounce(async (sUrl: string, term: string) => {
         setLoading(true);
-        const {channels: receivedChannels, error} = await searchChannels(sUrl, term);
-        if (!error) {
-            setChannels(receivedChannels!);
+        const {channels: receivedChannels} = await searchChannels(sUrl, term);
+        if (receivedChannels) {
+            setChannels(receivedChannels.length ? receivedChannels : emptyChannels);
         }
         setLoading(false);
     }, 200), []);
 
     const matchTerm = getMatchTermForChannelMention(value.substring(0, localCursorPosition), isSearch);
     const resetState = () => {
-        setChannels([]);
-        setSections([]);
+        setChannels(emptyChannels);
+        setSections(emptySections);
         runSearch.cancel();
     };
 
@@ -235,7 +238,7 @@ const ChannelMention = ({
 
         onShowingChange(false);
         setNoResultsTerm(mention);
-        setSections([]);
+        setSections(emptySections);
     }, [value, localCursorPosition, isSearch]);
 
     const renderItem = useCallback(({item}) => {
@@ -286,7 +289,7 @@ const ChannelMention = ({
         if (!loading && !nSections && noResultsTerm == null) {
             setNoResultsTerm(matchTerm);
         }
-        setSections(newSections);
+        setSections(newSections.length ? newSections : emptySections);
         onShowingChange(Boolean(nSections));
     }, [channels, myMembers, loading]);
 
