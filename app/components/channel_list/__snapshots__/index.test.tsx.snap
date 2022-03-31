@@ -245,6 +245,7 @@ exports[`components/channel_list should render team error 1`] = `
           },
         ]
       }
+      testID="channel_list.search_field.find_channels.input"
     />
   </View>
   <View
@@ -260,6 +261,7 @@ exports[`components/channel_list should render team error 1`] = `
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     onStartShouldSetResponderCapture={[Function]}
+    testID="channel_list.threads.button"
   >
     <View
       accessible={true}

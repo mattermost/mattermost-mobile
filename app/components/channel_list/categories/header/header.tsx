@@ -74,14 +74,20 @@ const CategoryHeader = ({category, hasChannels}: Props) => {
     }
 
     return (
-        <TouchableOpacity onPress={toggleCollapse}>
+        <TouchableOpacity
+            onPress={toggleCollapse}
+            testID={`category_header.${category.type}.collapsed.${category.collapsed}`}
+        >
             <View style={styles.container}>
                 <AnimatedCompassIcon
                     name={'chevron-down'}
                     style={[styles.chevron, animatedStyle]}
                     size={20}
                 />
-                <Text style={styles.heading}>
+                <Text
+                    style={styles.heading}
+                    testID={`category_header.${category.type}.display_name`}
+                >
                     {category.displayName.toUpperCase()}
                 </Text>
             </View>

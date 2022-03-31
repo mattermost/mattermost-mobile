@@ -19,16 +19,19 @@ const PlusMenuItem = ({pickerAction, onPress}: PlusMenuItemProps) => {
         browseChannels: {
             icon: 'globe',
             text: intl.formatMessage({id: 'plus_menu.browse_channels.title', defaultMessage: 'Browse Channels'}),
+            testID: 'plus_menu_item.browse_channels',
         },
 
         createNewChannel: {
             icon: 'plus',
             text: intl.formatMessage({id: 'plus_menu.create_new_channel.title', defaultMessage: 'Create New Channel'}),
+            testID: 'plus_menu_item.create_new_channel',
         },
 
         openDirectMessage: {
             icon: 'account-outline',
             text: intl.formatMessage({id: 'plus_menu.open_direct_message.title', defaultMessage: 'Open a Direct Message'}),
+            testID: 'plus_menu_item.open_direct_message',
         },
     };
     const itemType = menuItems[pickerAction];
@@ -38,6 +41,7 @@ const PlusMenuItem = ({pickerAction, onPress}: PlusMenuItemProps) => {
                 text={itemType.text}
                 icon={itemType.icon}
                 onPress={onPress}
+                testID={itemType.testID}
             />
         </View>
     );

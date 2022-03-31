@@ -289,7 +289,7 @@ export default function CreateDirectMessage({
             leftButtons: [{
                 id: CLOSE_BUTTON,
                 icon: closeIcon,
-                testID: 'close.more_direct_messages.button',
+                testID: 'close.create_direct_message.button',
             }],
             rightButtons: [{
                 color: theme.sidebarHeaderTextColor,
@@ -297,7 +297,7 @@ export default function CreateDirectMessage({
                 text: formatMessage({id: 'mobile.create_direct_message.start', defaultMessage: 'Start'}),
                 showAsAction: 'always',
                 enabled: startEnabled,
-                testID: 'more_direct_messages.start.button',
+                testID: 'create_direct_message.start.button',
             }],
         });
     }, [intl.locale, theme]);
@@ -360,10 +360,13 @@ export default function CreateDirectMessage({
     }
 
     return (
-        <SafeAreaView style={style.container}>
+        <SafeAreaView
+            style={style.container}
+            testID='create_direct_message.screen'
+        >
             <View style={style.searchBar}>
                 <SearchBar
-                    testID='more_direct_messages.search_bar'
+                    testID='create_direct_message.search_bar'
                     placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                     cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     backgroundColor='transparent'
@@ -400,6 +403,7 @@ export default function CreateDirectMessage({
                 showNoResults={!loading && page.current !== -1}
                 teammateNameDisplay={teammateNameDisplay}
                 fetchMore={getProfiles}
+                testID='create_direct_message.user_list'
             />
         </SafeAreaView>
     );

@@ -53,6 +53,7 @@ Object {
                   "paddingLeft": 2,
                 }
               }
+              testID="category.test_category.channel_list_item.channel.collapsed.false"
             >
               <View
                 style={
@@ -109,6 +110,7 @@ Object {
                     false,
                   ]
                 }
+                testID="category.test_category.channel_list_item.channel.display_name"
               >
                 Channel
               </Text>

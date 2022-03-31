@@ -9,6 +9,11 @@ class LoginScreen {
     testID = {
         loginScreen: 'login.screen',
         backButton: 'screen.back.button',
+        titleLoginToAccount: 'login_options.title.login_to_account',
+        titleCantLogin: 'login_options.title.cant_login',
+        descriptionEnterCredentials: 'login_options.description.enter_credentials',
+        descriptionSelectOption: 'login_options.description.select_option',
+        descriptionNone: 'login_options.description.none',
         usernameInput: 'login_form.username.input',
         usernameInputError: 'login_form.username.input.error',
         passwordInput: 'login_form.password.input',
@@ -20,6 +25,11 @@ class LoginScreen {
 
     loginScreen = element(by.id(this.testID.loginScreen));
     backButton = element(by.id(this.testID.backButton));
+    titleLoginToAccount = element(by.id(this.testID.titleLoginToAccount));
+    titleCantLogin = element(by.id(this.testID.titleCantLogin));
+    descriptionEnterCredentials = element(by.id(this.testID.descriptionEnterCredentials));
+    descriptionSelectOption = element(by.id(this.testID.descriptionSelectOption));
+    descriptionNone = element(by.id(this.testID.descriptionNone));
     usernameInput = element(by.id(this.testID.usernameInput));
     usernameInputError = element(by.id(this.testID.usernameInputError));
     passwordInput = element(by.id(this.testID.passwordInput));

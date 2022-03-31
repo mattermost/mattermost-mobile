@@ -82,7 +82,7 @@ export default function SelectedUsers({
                     user={selectedIds[id]}
                     teammateNameDisplay={teammateNameDisplay}
                     onRemove={onRemove}
-                    testID='more_direct_messages.selected_user'
+                    testID='create_direct_message.selected_user'
                 />,
             );
         }

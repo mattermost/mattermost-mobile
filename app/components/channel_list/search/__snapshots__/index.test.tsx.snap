@@ -55,6 +55,7 @@ exports[`Search Field should match snapshot 1`] = `
         },
       ]
     }
+    testID="channel_list.search_field.find_channels.input"
   />
 </View>
 `;
