@@ -4,7 +4,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
-import {observeUser} from '@app/queries/servers/user';
+import {observeUser} from '@queries/servers/user';
 import {WithDatabaseArgs} from '@typings/database/database';
 
 import Reactor from './reactor';

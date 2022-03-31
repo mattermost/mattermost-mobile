@@ -39,12 +39,12 @@ export const storeCategories = async (serverUrl: string, categories: CategoryWit
     const modelPromises: Array<Promise<Model[]>> = [];
     const preparedCategories = prepareCategories(operator, categories);
     if (preparedCategories) {
-        modelPromises.push(...preparedCategories);
+        modelPromises.push(preparedCategories);
     }
 
     const preparedCategoryChannels = prepareCategoryChannels(operator, categories);
     if (preparedCategoryChannels) {
-        modelPromises.push(...preparedCategoryChannels);
+        modelPromises.push(preparedCategoryChannels);
     }
 
     const models = await Promise.all(modelPromises);

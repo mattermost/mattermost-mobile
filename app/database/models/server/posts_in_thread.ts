@@ -24,7 +24,7 @@ export default class PostsInThreadModel extends Model implements PostsInThreadMo
     static associations: Associations = {
 
         /** A POST can have a POSTS_IN_THREAD.(relationship is 1:1)*/
-        [POST]: {type: 'belongs_to', key: 'id'},
+        [POST]: {type: 'belongs_to', key: 'root_id'},
     };
 
     /** root_id: Associated root post identifier */

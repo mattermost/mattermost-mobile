@@ -110,19 +110,18 @@ export default class TeamModel extends Model implements TeamModelInterface {
     /** teamSearchHistories : All the searches performed on this team */
     @children(TEAM_SEARCH_HISTORY) teamSearchHistories!: Query<TeamSearchHistoryModel>;
 
-    /** threads : All threads belonging to a team */
-    @lazy threads = this.collections.get<ThreadModel>(THREAD).query(
-        Q.on(THREADS_IN_TEAM, 'team_id', this.id),
-    );
-
     /** threads : Threads list belonging to a team */
-    @lazy threadsList = this.threads.extend(
-        Q.where('loadedInGlobalThreads', true),
+    @lazy threadsList = this.collections.get<ThreadModel>(THREAD).query(
+        Q.on(THREADS_IN_TEAM, Q.and(
+            Q.where('team_id', this.id),
+            Q.where('loadedInGlobalThreads', true),
+        )),
         Q.sortBy('last_reply_at', Q.desc),
     );
 
     /** unreadThreadsList : Unread threads list belonging to a team */
-    @lazy unreadThreadsList = this.threads.extend(
+    @lazy unreadThreadsList = this.collections.get<ThreadModel>(THREAD).query(
+        Q.on(THREADS_IN_TEAM, 'team_id', this.id),
         Q.where('unread_replies', Q.gt(0)),
         Q.sortBy('last_reply_at', Q.desc),
     );

@@ -57,8 +57,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 type Props = {
     cursorPosition: number;
     postInputTop: number;
-    rootId: string;
-    channelId: string;
+    rootId?: string;
+    channelId?: string;
     fixedBottomPosition?: boolean;
     isSearch?: boolean;
     value: string;
@@ -66,8 +66,9 @@ type Props = {
     isAppsEnabled: boolean;
     nestedScrollEnabled?: boolean;
     updateValue: (v: string) => void;
-    hasFilesAttached: boolean;
+    hasFilesAttached?: boolean;
     maxHeightOverride?: number;
+    inPost?: boolean;
 }
 
 const Autocomplete = ({
@@ -85,6 +86,7 @@ const Autocomplete = ({
     nestedScrollEnabled = false,
     updateValue,
     hasFilesAttached,
+    inPost = false,
 }: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -154,7 +156,7 @@ const Autocomplete = ({
                 testID='autocomplete'
                 style={containerStyles}
             >
-                {isAppsEnabled && (
+                {isAppsEnabled && channelId && (
                     <AppSlashSuggestion
                         maxListHeight={maxListHeight}
                         updateValue={updateValue}
@@ -195,9 +197,10 @@ const Autocomplete = ({
                         nestedScrollEnabled={nestedScrollEnabled}
                         rootId={rootId}
                         hasFilesAttached={hasFilesAttached}
+                        inPost={inPost}
                     />
                     }
-                    {showCommands &&
+                    {showCommands && channelId &&
                     <SlashSuggestion
                         maxListHeight={maxListHeight}
                         updateValue={updateValue}
