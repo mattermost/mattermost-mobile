@@ -7,9 +7,9 @@ import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
+import {observePermissionForTeam} from '@queries/servers/role';
 import {observeCurrentTeam} from '@queries/servers/team';
 import {observeCurrentUser} from '@queries/servers/user';
-import {observePermissionForTeam} from '@utils/role';
 
 import ChannelListHeader from './header';
 

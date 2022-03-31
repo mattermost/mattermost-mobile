@@ -8,9 +8,9 @@ import {switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
+import {observePermissionForChannel} from '@queries/servers/role';
 import {observeLicense} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
-import {observePermissionForChannel} from '@utils/role';
 
 import AtMention from './at_mention';
 

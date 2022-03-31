@@ -10,9 +10,9 @@ import {switchMap} from 'rxjs/operators';
 import {General, Permissions} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
 import {queryDraft} from '@queries/servers/drafts';
+import {observePermissionForChannel} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeCurrentChannelId} from '@queries/servers/system';
 import {observeCurrentUser, observeUser} from '@queries/servers/user';
-import {observePermissionForChannel} from '@utils/role';
 import {isSystemAdmin, getUserIdFromChannelName} from '@utils/user';
 
 import PostDraft from './post_draft';

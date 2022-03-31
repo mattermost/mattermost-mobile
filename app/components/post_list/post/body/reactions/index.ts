@@ -7,9 +7,9 @@ import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
+import {observePermissionForPost} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
-import {observePermissionForPost} from '@utils/role';
 import {isSystemAdmin} from '@utils/user';
 
 import Reactions from './reactions';

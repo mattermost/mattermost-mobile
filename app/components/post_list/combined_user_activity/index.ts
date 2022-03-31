@@ -9,10 +9,10 @@ import {map, switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
 import {queryPostsById} from '@queries/servers/post';
+import {observePermissionForPost} from '@queries/servers/role';
 import {observeCurrentUserId} from '@queries/servers/system';
 import {observeUser, queryUsersByIdsOrUsernames} from '@queries/servers/user';
 import {generateCombinedPost, getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
-import {observePermissionForPost} from '@utils/role';
 
 import CombinedUserActivity from './combined_user_activity';
 

@@ -11,11 +11,11 @@ import {Permissions, Preferences} from '@constants';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {queryPostsBetween} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeCanManageChannelMembers, observePermissionForPost} from '@queries/servers/role';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
 import {areConsecutivePosts, isPostEphemeral} from '@utils/post';
-import {observeCanManageChannelMembers, observePermissionForPost} from '@utils/role';
 
 import Post from './post';
 

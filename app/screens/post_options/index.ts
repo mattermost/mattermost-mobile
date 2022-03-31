@@ -10,12 +10,12 @@ import {General, Permissions, Post, Preferences, Screens} from '@constants';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import {observePost} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observePermissionForChannel, observePermissionForPost} from '@queries/servers/role';
 import {observeConfig, observeLicense} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
-import {observePermissionForChannel, observePermissionForPost} from '@utils/role';
 import {isSystemAdmin} from '@utils/user';
 
 import PostOptions from './post_options';
