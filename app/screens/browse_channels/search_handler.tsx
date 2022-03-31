@@ -207,7 +207,6 @@ export default function SearchHandler(props: Props) {
     }
 
     const stopSearch = useCallback(() => {
-        setVisibleChannels(activeChannels);
         setSearchResults(defaultSearchResults);
         setTerm('');
     }, [activeChannels]);
