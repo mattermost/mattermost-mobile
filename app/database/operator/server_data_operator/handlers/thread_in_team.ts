@@ -5,9 +5,9 @@ import {Q, Database} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 import {transformThreadInTeamRecord} from '@database/operator/server_data_operator/transformers/thread';
-import {getRawRecordPairs} from '@database/operator/utils/general';
+import {getRawRecordPairs, getValidRecordsForUpdate} from '@database/operator/utils/general';
 
-import type {HandleThreadInTeamArgs} from '@typings/database/database';
+import type {HandleThreadInTeamArgs, RecordPair} from '@typings/database/database';
 import type ThreadInTeamModel from '@typings/database/models/servers/thread_in_team';
 
 export interface ThreadInTeamHandlerMix {
@@ -22,6 +22,7 @@ const ThreadInTeamHandler = (superclass: any) => class extends superclass {
             return [];
         }
 
+        const update: RecordPair[] = [];
         const create: ThreadInTeam[] = [];
         const teamIds = Object.keys(threadsMap);
         for await (const teamId of teamIds) {
@@ -30,23 +31,33 @@ const ThreadInTeamHandler = (superclass: any) => class extends superclass {
             ).fetch();
 
             for (const thread of threadsMap[teamId]) {
-                const exists = chunks.some((threadInTeam) => {
+                const chunk = chunks.find((threadInTeam) => {
                     return threadInTeam.threadId === thread.id;
                 });
 
-                if (!exists) {
+                const newValue = {
+                    thread_id: thread.id,
+                    team_id: teamId,
+                    loaded_in_global_threads: thread.loaded_in_global_threads,
+                };
+
+                // update record if loaded_in_global_threads is true
+                if (chunk && thread.loaded_in_global_threads) {
+                    update.push(getValidRecordsForUpdate({
+                        tableName: THREADS_IN_TEAM,
+                        newValue,
+                        existingRecord: chunk,
+                    }));
+                } else {
                     // create chunk
-                    create.push({
-                        thread_id: thread.id,
-                        team_id: teamId,
-                    });
+                    create.push(newValue);
                 }
             }
         }
 
         const threadsInTeam = (await this.prepareRecords({
             createRaws: getRawRecordPairs(create),
-            updateRaws: [],
+            updateRaws: update,
             transformer: transformThreadInTeamRecord,
             tableName: THREADS_IN_TEAM,
         })) as ThreadInTeamModel[];
