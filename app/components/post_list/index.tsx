@@ -113,7 +113,7 @@ const PostList = ({
 
     useEffect(() => {
         listRef.current?.scrollToOffset({offset: 0, animated: false});
-    }, [channelId, listRef.current]);
+    }, [channelId]);
 
     useEffect(() => {
         const scrollToBottom = (screen: string) => {
@@ -352,7 +352,6 @@ const PostList = ({
                     keyboardShouldPersistTaps='handled'
                     keyExtractor={keyExtractor}
                     initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
-                    listKey={`postList-${channelId}`}
                     ListFooterComponent={footer}
                     maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
                     maxToRenderPerBatch={10}
