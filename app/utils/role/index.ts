@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {of as of$, combineLatest} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
+
 import {General, Permissions} from '@constants';
 import {queryRolesByNames} from '@queries/servers/role';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
-import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type PostModel from '@typings/database/models/servers/post';
 import type RoleModel from '@typings/database/models/servers/role';
 import type TeamModel from '@typings/database/models/servers/team';
@@ -22,81 +23,50 @@ export function hasPermission(roles: RoleModel[] | Role[], permission: string, d
     return defaultValue === true || exists;
 }
 
-export async function hasPermissionForChannel(channel: ChannelModel, user: UserModel, permission: string, defaultValue: boolean) {
-    const rolesArray = [...user.roles.split(' ')];
+export function observePermissionForChannel(channel: ChannelModel, user: UserModel, permission: string, defaultValue: boolean) {
+    const myChannel = channel.membership.observe();
+    const myTeam = channel.team.observe().pipe(switchMap((t) => (t ? t.myTeam.observe() : of$(undefined))));
 
-    const myChannel = await channel.membership.fetch() as MyChannelModel | undefined;
-    if (myChannel) {
-        rolesArray.push(...myChannel.roles.split(' '));
-    }
+    return combineLatest([myChannel, myTeam]).pipe(switchMap(([mc, mt]) => {
+        const rolesArray = [...user.roles.split(' ')];
+        if (mc) {
+            rolesArray.push(...mc.roles.split(' '));
+        }
+        if (mt) {
+            rolesArray.push(...mt.roles.split(' '));
+        }
+        return queryRolesByNames(user.database, rolesArray).observe().pipe(
+            switchMap((r) => of$(hasPermission(r, permission, defaultValue))),
+        );
+    }));
+}
 
-    const team = await channel.team.fetch() as TeamModel | undefined;
-    if (team) {
-        const myTeam = await team.myTeam.fetch() as MyTeamModel | undefined;
+export function observePermissionForTeam(team: TeamModel, user: UserModel, permission: string, defaultValue: boolean) {
+    return team.myTeam.observe().pipe(switchMap((myTeam) => {
+        const rolesArray = [...user.roles.split(' ')];
+
         if (myTeam) {
             rolesArray.push(...myTeam.roles.split(' '));
         }
-    }
 
-    if (rolesArray.length) {
-        const roles = await queryRolesByNames(user.database, rolesArray).fetch();
-        return hasPermission(roles, permission, defaultValue);
-    }
-
-    return defaultValue;
+        return queryRolesByNames(user.database, rolesArray).observe().pipe(
+            switchMap((roles) => of$(hasPermission(roles, permission, defaultValue))),
+        );
+    }));
 }
 
-export async function hasPermissionForTeam(team: TeamModel, user: UserModel, permission: string, defaultValue: boolean) {
-    const rolesArray = [...user.roles.split(' ')];
-
-    const myTeam = await team.myTeam.fetch() as MyTeamModel | undefined;
-    if (myTeam) {
-        rolesArray.push(...myTeam.roles.split(' '));
-    }
-
-    if (rolesArray.length) {
-        const roles = await queryRolesByNames(user.database, rolesArray).fetch();
-        return hasPermission(roles, permission, defaultValue);
-    }
-
-    return defaultValue;
+export function observePermissionForPost(post: PostModel, user: UserModel, permission: string, defaultValue: boolean) {
+    return post.channel.observe().pipe(switchMap((c) => (c ? observePermissionForChannel(c, user, permission, defaultValue) : of$(defaultValue))));
 }
 
-export async function hasPermissionForPost(post: PostModel, user: UserModel, permission: string, defaultValue: boolean) {
-    const channel = await post.channel.fetch() as ChannelModel | undefined;
-    if (channel) {
-        return hasPermissionForChannel(channel, user, permission, defaultValue);
-    }
-
-    return defaultValue;
-}
-
-export async function canManageChannelMembers(post: PostModel, user: UserModel) {
-    const rolesArray = [...user.roles.split(' ')];
-    const channel = await post.channel.fetch() as ChannelModel | undefined;
-
-    if (!channel || channel.deleteAt !== 0 || [General.DM_CHANNEL, General.GM_CHANNEL].includes(channel.type as any) || channel.name === General.DEFAULT_CHANNEL) {
-        return false;
-    }
-
-    const myChannel = await channel.membership.fetch() as MyChannelModel | undefined;
-    if (myChannel) {
-        rolesArray.push(...myChannel.roles.split(' '));
-    }
-
-    const team = await channel.team.fetch() as TeamModel | undefined;
-    if (team) {
-        const myTeam = await team.myTeam.fetch() as MyTeamModel | undefined;
-        if (myTeam) {
-            rolesArray.push(...myTeam.roles.split(' '));
+export function observeCanManageChannelMembers(post: PostModel, user: UserModel) {
+    return post.channel.observe().pipe((switchMap((c) => {
+        const directTypes: ChannelType[] = [General.DM_CHANNEL, General.GM_CHANNEL];
+        if (!c || c.deleteAt !== 0 || directTypes.includes(c.type) || c.name === General.DEFAULT_CHANNEL) {
+            return of$(false);
         }
-    }
 
-    if (rolesArray.length) {
-        const roles = await queryRolesByNames(post.database, rolesArray).fetch() as RoleModel[];
-        const permission = channel.type === General.OPEN_CHANNEL ? Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS : Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS;
-        return hasPermission(roles, permission, true);
-    }
-
-    return true;
+        const permission = c.type === General.OPEN_CHANNEL ? Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS : Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS;
+        return observePermissionForChannel(c, user, permission, true);
+    })));
 }
