@@ -113,7 +113,7 @@ export const fetchMyTeams = async (serverUrl: string, fetchOnly = false): Promis
 
                 if (modelPromises.length) {
                     const models = await Promise.all(modelPromises);
-                    const flattenedModels = models.flat() as Model[];
+                    const flattenedModels = models.flat();
                     if (flattenedModels?.length > 0) {
                         await operator.batchRecords(flattenedModels);
                     }

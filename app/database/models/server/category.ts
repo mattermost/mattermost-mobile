@@ -35,7 +35,7 @@ export default class CategoryModel extends Model implements CategoryInterface {
         /** A CATEGORY has a 1:N relationship with CATEGORY_CHANNEL. A CATEGORY can possess multiple channels */
         [CATEGORY_CHANNEL]: {type: 'has_many', foreignKey: 'category_id'},
 
-        /** A TEAM can be associated to CATEGORY (relationship is 1:N) */
+        /** A TEAM can be associated to multiple CATEGORY (relationship is 1:N) */
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
     };
 
