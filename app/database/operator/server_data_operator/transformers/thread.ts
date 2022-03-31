@@ -37,7 +37,6 @@ export const transformThreadRecord = ({action, database, value}: TransformerArgs
         thread.isFollowing = raw.is_following ?? record?.isFollowing;
         thread.unreadReplies = raw.unread_replies ?? record?.lastViewedAt ?? 0;
         thread.unreadMentions = raw.unread_mentions ?? record?.lastViewedAt ?? 0;
-        thread.loadedInGlobalThreads = raw.loaded_in_global_threads || record?.loadedInGlobalThreads;
         thread.viewedAt = record?.viewedAt || 0;
     };
 
