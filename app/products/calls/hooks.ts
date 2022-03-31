@@ -3,15 +3,15 @@
 
 import {useEffect, useState} from 'react';
 import {Alert} from 'react-native';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 
 import {Client4} from '@client/rest';
 import {General} from '@mm-redux/constants';
 import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
-import {isAdmin, isChannelAdmin as checkIsChannelAdmin} from '@mm-redux/utils/user_utils';
-import {isCallsDisabled, isCallsEnabled} from '@mmproducts/calls/store/selectors/calls';
-import {DefaultServerConfig} from '@mmproducts/calls/store/types/calls';
+import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin} from '@mm-redux/utils/user_utils';
+import {loadConfig} from '@mmproducts/calls/store/actions/calls';
+import {getConfig, isCallsDisabled, isCallsEnabled} from '@mmproducts/calls/store/selectors/calls';
 
 // Check if calls is enabled. If it is, then run fn; if it isn't, show an alert and set
 // msgPostfix to ' (Not Available)'.
@@ -42,32 +42,28 @@ export const useTryCallsFunction = (fn: (channelId: string) => void) => {
 };
 
 export const useCallsChannelSettings = () => {
+    const dispatch = useDispatch();
+    const config = useSelector(getConfig);
     const currentChannel = useSelector(getCurrentChannel);
     const explicitlyDisabled = useSelector(isCallsDisabled);
     const explicitlyEnabled = useSelector(isCallsEnabled);
     const roles = useSelector(getCurrentUserRoles);
-    const [config, setConfig] = useState(DefaultServerConfig);
 
     useEffect(() => {
-        async function getConfig() {
-            const resp = await Client4.getCallsConfig();
-            setConfig(resp);
-        }
-
-        getConfig();
+        dispatch(loadConfig());
     }, []);
 
     const isDirectMessage = currentChannel.type === General.DM_CHANNEL;
     const isGroupMessage = currentChannel.type === General.GM_CHANNEL;
-    const admin = isAdmin(roles);
-    const isChannelAdmin = admin || checkIsChannelAdmin(roles);
+    const isAdmin = checkIsAdmin(roles);
+    const isChannelAdmin = isAdmin || checkIsChannelAdmin(roles);
 
     const enabled = (explicitlyEnabled || (!explicitlyDisabled && config.DefaultEnabled));
     let canEnableDisable;
     if (config.AllowEnableCalls) {
         canEnableDisable = isDirectMessage || isGroupMessage || isChannelAdmin;
     } else {
-        canEnableDisable = admin;
+        canEnableDisable = isAdmin;
     }
 
     return [enabled, canEnableDisable];

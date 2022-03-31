@@ -10,6 +10,7 @@ export type CallsState = {
     joined: string;
     screenShareURL: string;
     speakerphoneOn: boolean;
+    config: ServerConfig;
 }
 
 export type Call = {
@@ -58,10 +59,12 @@ export type ServerConfig = {
     ICEServers: string[];
     AllowEnableCalls: boolean;
     DefaultEnabled: boolean;
+    last_retrieved_at: number;
 }
 
 export const DefaultServerConfig = {
     ICEServers: [],
-    AllowEnableCalls: true,
-    DefaultEnabled: true,
+    AllowEnableCalls: false,
+    DefaultEnabled: false,
+    last_retrieved_at: 0,
 } as ServerConfig;

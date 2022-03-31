@@ -2,9 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
+import {useSelector} from 'react-redux';
 
+import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {Theme} from '@mm-redux/types/theme';
 import {useTryCallsFunction} from '@mmproducts/calls/hooks';
+import {disableChannelCalls, enableChannelCalls} from '@mmproducts/calls/store/actions/calls';
 import ChannelInfoRow from '@screens/channel_info/channel_info_row';
 import Separator from '@screens/channel_info/separator';
 import {preventDoubleTap} from '@utils/tap';
@@ -12,15 +15,22 @@ import {preventDoubleTap} from '@utils/tap';
 type Props = {
     testID: string;
     theme: Theme;
-    onPress: (channelId: string) => void;
     enabled: boolean;
 }
 
-const EnableDisableCalls = (props: Props) => {
-    const {testID, theme, onPress, enabled} = props;
+const EnableDisableCalls = ({testID, theme, enabled}: Props) => {
+    const currentChannel = useSelector(getCurrentChannel);
 
-    const [tryOnPress, msgPostfix] = useTryCallsFunction(onPress);
-    const handleEnableDisableCalls = useCallback(preventDoubleTap(tryOnPress), [tryOnPress]);
+    const toggleCalls = useCallback(() => {
+        if (enabled) {
+            disableChannelCalls(currentChannel.id);
+        } else {
+            enableChannelCalls(currentChannel.id);
+        }
+    }, [enabled, currentChannel.id]);
+
+    const [tryOnPress, msgPostfix] = useTryCallsFunction(toggleCalls);
+    const handleEnableDisableCalls = preventDoubleTap(tryOnPress);
 
     return (
         <>

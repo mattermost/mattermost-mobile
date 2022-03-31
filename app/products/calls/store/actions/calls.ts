@@ -4,16 +4,48 @@
 import InCallManager from 'react-native-incall-manager';
 
 import {Client4} from '@client/rest';
+import Calls from '@constants/calls';
 import {logError} from '@mm-redux/actions/errors';
 import {forceLogoutIfNecessary} from '@mm-redux/actions/helpers';
 import {GenericAction, ActionFunc, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 import {Dictionary} from '@mm-redux/types/utilities';
 import {newClient} from '@mmproducts/calls/connection';
 import CallsTypes from '@mmproducts/calls/store/action_types/calls';
-
-import type {Call, CallParticipant} from '@mmproducts/calls/store/types/calls';
+import {getConfig} from '@mmproducts/calls/store/selectors/calls';
+import {Call, CallParticipant, DefaultServerConfig} from '@mmproducts/calls/store/types/calls';
 
 export let ws: any = null;
+
+export function loadConfig(force = false): ActionFunc {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        if (!force) {
+            if ((Date.now() - getConfig(getState()).last_retrieved_at) < Calls.RefreshConfigMillis) {
+                return {};
+            }
+        }
+
+        let data;
+        try {
+            data = await Client4.getCallsConfig();
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch, getState);
+            dispatch(logError(error));
+
+            // Reset the config to the default (off) since it looks like Calls is not enabled.
+            dispatch({
+                type: CallsTypes.RECEIVED_CONFIG,
+                data: {...DefaultServerConfig, last_retrieved_at: Date.now()},
+            });
+            return {error};
+        }
+
+        dispatch({
+            type: CallsTypes.RECEIVED_CONFIG,
+            data: {...data, last_retrieved_at: Date.now()},
+        });
+        return {data};
+    };
+}
 
 export function loadCalls(): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {

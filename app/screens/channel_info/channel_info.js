@@ -89,7 +89,7 @@ export default class ChannelInfo extends PureComponent {
         dismissModal();
     };
 
-    startCallHandler = (channelId) => {
+    joinCallHandler = (channelId) => {
         this.props.actions.joinCall(channelId);
         this.close();
     };
@@ -169,7 +169,7 @@ export default class ChannelInfo extends PureComponent {
                 {isSupportedServerCalls &&
                     <CallsChannelInfo
                         theme={theme}
-                        startCall={this.startCallHandler}
+                        joinCall={this.joinCallHandler}
                     />
                 }
                 <Bindings

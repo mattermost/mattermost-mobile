@@ -8,6 +8,10 @@ import {getServerVersion} from '@mm-redux/selectors/entities/general';
 import {GlobalState} from '@mm-redux/types/store';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
+export function getConfig(state: GlobalState) {
+    return state.entities.calls.config;
+}
+
 export function getCalls(state: GlobalState) {
     return state.entities.calls.calls;
 }

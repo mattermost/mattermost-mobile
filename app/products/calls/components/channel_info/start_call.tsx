@@ -5,7 +5,7 @@ import React, {useCallback} from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
 import {useSelector} from 'react-redux';
 
-import {getChannel} from '@mm-redux/selectors/entities/channels';
+import {getChannel, getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {GlobalState} from '@mm-redux/types/store';
 import {Theme} from '@mm-redux/types/theme';
 import leaveAndJoinWithAlert from '@mmproducts/calls/components/leave_and_join_alert';
@@ -18,27 +18,24 @@ import {preventDoubleTap} from '@utils/tap';
 type Props = {
     testID: string;
     theme: Theme;
-    currentChannelId: string;
-    currentChannelName: string;
     intl: typeof IntlShape;
     joinCall: (channelId: string) => void;
 }
 
-const StartCall = (props: Props) => {
-    const {testID, theme, currentChannelId, currentChannelName, intl, joinCall} = props;
-
-    const call = useSelector(getCalls)[currentChannelId];
+const StartCall = ({testID, theme, intl, joinCall}: Props) => {
+    const currentChannel = useSelector(getCurrentChannel);
+    const call = useSelector(getCalls)[currentChannel.id];
     const currentCall = useSelector(getCurrentCall);
     const currentCallChannelId = currentCall?.channelId || '';
     const callChannelName = useSelector((state: GlobalState) => getChannel(state, currentCallChannelId)?.display_name) || '';
 
-    const confirmToJoin = Boolean(currentCall && currentCall.channelId !== currentChannelId);
+    const confirmToJoin = Boolean(currentCall && currentCall.channelId !== currentChannel.id);
     const alreadyInTheCall = Boolean(currentCall && call && currentCall.channelId === call.channelId);
     const ongoingCall = Boolean(call);
 
     const leaveAndJoin = useCallback(() => {
-        leaveAndJoinWithAlert(intl, currentChannelId, callChannelName, currentChannelName, confirmToJoin, joinCall);
-    }, [intl, currentChannelId, callChannelName, currentChannelName, confirmToJoin, joinCall]);
+        leaveAndJoinWithAlert(intl, currentChannel.id, callChannelName, currentChannel.display_name, confirmToJoin, joinCall);
+    }, [intl, currentChannel.id, callChannelName, currentChannel.display_name, confirmToJoin, joinCall]);
     const [tryLeaveAndJoin, msgPostfix] = useTryCallsFunction(leaveAndJoin);
     const handleStartCall = useCallback(preventDoubleTap(tryLeaveAndJoin), [tryLeaveAndJoin]);
 

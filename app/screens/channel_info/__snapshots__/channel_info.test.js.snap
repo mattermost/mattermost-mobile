@@ -1118,7 +1118,7 @@ exports[`channelInfo should match snapshot on calls supported and calls disabled
           }
         />
         <CallsChannelInfo
-          startCall={[Function]}
+          joinCall={[Function]}
           theme={
             Object {
               "awayIndicator": "#ffbc1f",
@@ -1764,7 +1764,7 @@ exports[`channelInfo should match snapshot on calls supported and calls enabled 
           }
         />
         <CallsChannelInfo
-          startCall={[Function]}
+          joinCall={[Function]}
           theme={
             Object {
               "awayIndicator": "#ffbc1f",
@@ -2410,7 +2410,7 @@ exports[`channelInfo should match snapshot on calls supported, user is not admin
           }
         />
         <CallsChannelInfo
-          startCall={[Function]}
+          joinCall={[Function]}
           theme={
             Object {
               "awayIndicator": "#ffbc1f",
