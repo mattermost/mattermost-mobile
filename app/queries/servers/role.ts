@@ -35,7 +35,7 @@ export const queryRolesByNames = (database: Database, names: string[]) => {
 
 export function observePermissionForChannel(channel: ChannelModel, user: UserModel, permission: string, defaultValue: boolean) {
     const myChannel = channel.membership.observe();
-    const myTeam = channel.team.observe().pipe(switchMap((t) => (t ? t.myTeam.observe() : of$(undefined))));
+    const myTeam = channel.teamId ? channel.team.observe().pipe(switchMap((t) => (t ? t.myTeam.observe() : of$(undefined)))) : of$(undefined);
 
     return combineLatest([myChannel, myTeam]).pipe(switchMap(([mc, mt]) => {
         const rolesArray = [...user.roles.split(' ')];
