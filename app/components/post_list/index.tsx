@@ -348,7 +348,6 @@ const PostList = ({
                     keyboardShouldPersistTaps='handled'
                     keyExtractor={keyExtractor}
                     initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
-                    listKey={`postList-${channelId}`}
                     ListFooterComponent={footer}
                     maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
                     maxToRenderPerBatch={10}
