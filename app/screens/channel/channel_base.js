@@ -25,6 +25,7 @@ export default class ChannelBase extends PureComponent {
             selectDefaultTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
             loadCalls: PropTypes.func.isRequired,
+            loadConfig: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string,
@@ -107,6 +108,7 @@ export default class ChannelBase extends PureComponent {
 
         if (this.props.isSupportedServerCalls) {
             this.props.actions.loadCalls();
+            this.props.actions.loadConfig();
         }
     }
 
