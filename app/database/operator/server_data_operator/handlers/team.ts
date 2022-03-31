@@ -197,7 +197,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
     handleMyTeam = ({myTeams, prepareRecordsOnly = true}: HandleMyTeamArgs): Promise<MyTeamModel[]> => {
         if (!myTeams.length) {
             throw new DataOperatorException(
-                'An empty "myTeams" array has been passed to the handleSlashCommand method',
+                'An empty "myTeams" array has been passed to the handleMyTeam method',
             );
         }
 
