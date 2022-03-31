@@ -226,6 +226,11 @@ export default class EditChannel extends PureComponent {
                 messages.name_maxLength,
                 {maxLength: ViewTypes.MAX_CHANNELNAME_LENGTH},
             )};
+        } else if (channelURL.length < ViewTypes.MIN_CHANNELNAME_LENGTH) {
+            return {error: formatMessage(
+                messages.name_minLength,
+                {maxLength: ViewTypes.MIN_CHANNELNAME_LENGTH},
+            )};
         }
 
         const cleanedName = cleanUpUrlable(channelURL);
