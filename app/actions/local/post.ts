@@ -155,27 +155,3 @@ export const markPostAsDeleted = async (serverUrl: string, post: Post, prepareRe
     }
     return {model};
 };
-
-export const processPostsFetched = async (serverUrl: string, actionType: string, data: PostResponse, fetchOnly = false) => {
-    const order = data.order;
-    const posts = Object.values(data.posts) as Post[];
-    const previousPostId = data.prev_post_id;
-
-    if (!fetchOnly) {
-        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-        if (operator) {
-            await operator.handlePosts({
-                actionType,
-                order,
-                posts,
-                previousPostId,
-            });
-        }
-    }
-
-    return {
-        posts,
-        order,
-        previousPostId,
-    };
-};

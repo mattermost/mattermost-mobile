@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {markTeamThreadsAsRead, processReceivedThreads, toggleFollowThread, updateThreadRead} from '@actions/local/thread';
+import {markTeamThreadsAsRead, processReceivedThreads, updateThread} from '@actions/local/thread';
 import DatabaseManager from '@database/manager';
 
 export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
@@ -9,9 +9,8 @@ export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocket
         const thread = JSON.parse(msg.data.thread) as Thread;
         const teamId = msg.broadcast.team_id;
 
-        // Mark it as following and visible in global threads
+        // Mark it as following
         thread.is_following = true;
-        thread.loaded_in_global_threads = true;
         processReceivedThreads(serverUrl, [thread], teamId);
     } catch (error) {
         // Do nothing
@@ -28,7 +27,11 @@ export async function handleThreadReadChangedEvent(serverUrl: string, msg: WebSo
         if (operator) {
             const {thread_id, timestamp, unread_mentions, unread_replies} = msg.data as ThreadReadChangedData;
             if (thread_id) {
-                await updateThreadRead(serverUrl, thread_id, timestamp, unread_mentions, unread_replies);
+                await updateThread(serverUrl, thread_id, {
+                    last_viewed_at: timestamp,
+                    unread_mentions,
+                    unread_replies,
+                });
             } else {
                 await markTeamThreadsAsRead(serverUrl, msg.broadcast.team_id);
             }
@@ -51,7 +54,10 @@ export async function handleThreadFollowChangedEvent(serverUrl: string, msg: Web
                 state: boolean;
                 thread_id: string;
             };
-            await toggleFollowThread(serverUrl, thread_id, state, reply_count);
+            await updateThread(serverUrl, thread_id, {
+                is_following: state,
+                reply_count,
+            });
         }
     } catch (error) {
         // Do nothing

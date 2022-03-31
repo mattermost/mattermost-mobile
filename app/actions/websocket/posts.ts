@@ -6,7 +6,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed, updateLastPostAt} from '@actions/local/channel';
 import {markPostAsDeleted} from '@actions/local/post';
-import {createThreadFromNewPost, updateThreadReplyCount} from '@actions/local/thread';
+import {createThreadFromNewPost, updateThread} from '@actions/local/thread';
 import {fetchMyChannel, markChannelAsRead} from '@actions/remote/channel';
 import {fetchPostAuthors, fetchPostById} from '@actions/remote/post';
 import {fetchThread} from '@actions/remote/thread';
@@ -234,7 +234,7 @@ export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage
             if (isCRTEnabled) {
                 // Update reply_count of the thread;
                 // Note: reply_count includes current deleted count, So subtract 1 from reply_count
-                const {model: threadModel} = await updateThreadReplyCount(serverUrl, post.root_id, post.reply_count - 1, true);
+                const {model: threadModel} = await updateThread(serverUrl, post.root_id, {reply_count: post.reply_count - 1}, true);
                 if (threadModel) {
                     models.push(threadModel);
                 }

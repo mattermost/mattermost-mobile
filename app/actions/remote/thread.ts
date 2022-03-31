@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {markTeamThreadsAsRead, processReceivedThreads, switchToThread, toggleFollowThread as localToggleFollowThread, updateThreadRead as localUpdateThreadRead} from '@actions/local/thread';
+import {markTeamThreadsAsRead, processReceivedThreads, switchToThread, updateThread} from '@actions/local/thread';
 import {fetchPostThread} from '@actions/remote/post';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -75,8 +75,8 @@ export const fetchThreads = async (
         since: 0,
     },
 ): Promise<FetchThreadsRequest> => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
         return {error: `${serverUrl} database not found`};
     }
 
@@ -88,7 +88,6 @@ export const fetchThreads = async (
     }
 
     try {
-        const {database} = operator;
         const {config} = await getCommonSystemValues(database);
 
         const data = await client.getThreads('me', teamId, before, after, perPage, deleted, unread, since, config.Version);
@@ -99,9 +98,6 @@ export const fetchThreads = async (
             // Mark all fetched threads as following
             threads.forEach((thread: Thread) => {
                 thread.is_following = true;
-                if (!unread) {
-                    thread.loaded_in_global_threads = true;
-                }
             });
 
             await processReceivedThreads(serverUrl, threads, teamId);
@@ -167,7 +163,9 @@ export const updateThreadRead = async (serverUrl: string, teamId: string, thread
         const data = await client.updateThreadRead('me', teamId, threadId, timestamp);
 
         // Update locally
-        await localUpdateThreadRead(serverUrl, threadId, timestamp);
+        await updateThread(serverUrl, threadId, {
+            last_viewed_at: timestamp,
+        });
 
         return {data};
     } catch (error) {
@@ -176,7 +174,7 @@ export const updateThreadRead = async (serverUrl: string, teamId: string, thread
     }
 };
 
-export const toggleThreadFollow = async (serverUrl: string, teamId: string, threadId: string, state: boolean) => {
+export const updateThreadFollowing = async (serverUrl: string, teamId: string, threadId: string, state: boolean) => {
     let client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -188,7 +186,7 @@ export const toggleThreadFollow = async (serverUrl: string, teamId: string, thre
         const data = await client.updateThreadFollow('me', teamId, threadId, state);
 
         // Update locally
-        await localToggleFollowThread(serverUrl, threadId, state);
+        await updateThread(serverUrl, threadId, {is_following: state});
 
         return {data};
     } catch (error) {

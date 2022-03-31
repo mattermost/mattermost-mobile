@@ -4,7 +4,7 @@
 import React from 'react';
 import {Platform, StyleSheet, TouchableOpacity, View} from 'react-native';
 
-import {toggleThreadFollow} from '@actions/remote/thread';
+import {updateThreadFollowing} from '@actions/remote/thread';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -56,7 +56,7 @@ function ThreadFollow({teamId, thread}: Props) {
     const serverUrl = useServerUrl();
 
     const onPress = preventDoubleTap(() => {
-        toggleThreadFollow(serverUrl, teamId, thread.id, !thread.isFollowing);
+        updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing);
     });
 
     const containerStyle = [styles.container];

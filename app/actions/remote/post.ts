@@ -7,7 +7,7 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
-import {processPostsFetched, removePost} from '@actions/local/post';
+import {removePost} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
 import {createThreadFromNewPost} from '@actions/local/thread';
 import {ActionType, Events, General, Post, ServerErrors} from '@constants';
@@ -24,6 +24,7 @@ import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {queryAllUsers} from '@queries/servers/user';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
+import {processPostsFetched} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import {forceLogoutIfNecessary} from './session';
@@ -304,7 +305,7 @@ export const fetchPosts = async (serverUrl: string, channelId: string, page = 0,
     try {
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
         const data = await client.getPosts(channelId, page, perPage, isCRTEnabled, isCRTEnabled);
-        const result = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_IN_CHANNEL, data, true);
+        const result = await processPostsFetched(data);
         if (!fetchOnly) {
             const models = await operator.handlePosts({
                 ...result,
@@ -349,7 +350,7 @@ export const fetchPostsBefore = async (serverUrl: string, channelId: string, pos
         }
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
         const data = await client.getPostsBefore(channelId, postId, 0, perPage, isCRTEnabled, isCRTEnabled);
-        const result = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_BEFORE, data, true);
+        const result = await processPostsFetched(data);
 
         if (activeServerUrl === serverUrl) {
             DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, false);
@@ -411,7 +412,7 @@ export const fetchPostsSince = async (serverUrl: string, channelId: string, sinc
     try {
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
         const data = await client.getPostsSince(channelId, since, isCRTEnabled, isCRTEnabled);
-        const result = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_SINCE, data, true);
+        const result = await processPostsFetched(data);
         if (!fetchOnly) {
             const models = await operator.handlePosts({
                 ...result,
@@ -507,6 +508,11 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
 };
 
 export const fetchPostThread = async (serverUrl: string, postId: string, fetchOnly = false): Promise<PostsRequest> => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -516,7 +522,25 @@ export const fetchPostThread = async (serverUrl: string, postId: string, fetchOn
 
     try {
         const data = await client.getPostThread(postId);
-        return processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_IN_THREAD, data, fetchOnly);
+        const result = processPostsFetched(data);
+        if (!fetchOnly) {
+            const models = await operator.handlePosts({
+                ...result,
+                actionType: ActionType.POSTS.RECEIVED_IN_THREAD,
+                prepareRecordsOnly: true,
+            });
+            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            if (isCRTEnabled) {
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
+                if (threadModels?.length) {
+                    models.push(...threadModels);
+                }
+            }
+            if (models.length) {
+                await operator.batchRecords(models);
+            }
+        }
+        return result;
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -552,7 +576,7 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
             order: [],
         };
 
-        const data = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_AROUND, preData, true);
+        const data = processPostsFetched(preData);
 
         let posts: Model[] = [];
         const models: Model[] = [];

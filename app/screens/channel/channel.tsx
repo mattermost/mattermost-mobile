@@ -94,6 +94,7 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
         const listener = DeviceEventEmitter.addListener(Events.PAUSE_KEYBOARD_TRACKING_VIEW, (pause: boolean) => {
             if (pause) {
                 postDraftRef.current?.pauseTracking(channelId);
+                return;
             }
 
             postDraftRef.current?.resumeTracking(channelId);

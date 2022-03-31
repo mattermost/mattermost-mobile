@@ -143,7 +143,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             screen = withServerDatabase(require('@screens/thread').default);
             break;
         case Screens.THREAD_FOLLOW_BUTTON:
-            Navigation.registerComponent('ThreadFollowButton', () => withServerDatabase(
+            Navigation.registerComponent(Screens.THREAD_FOLLOW_BUTTON, () => withServerDatabase(
                 require('@screens/thread/thread_follow_button').default,
             ));
             break;

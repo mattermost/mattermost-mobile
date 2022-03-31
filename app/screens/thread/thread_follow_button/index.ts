@@ -4,18 +4,15 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
-import {MM_TABLES} from '@constants/database';
+import {observeThreadById} from '@queries/servers/thread';
 
 import ThreadFollowButton from './thread_follow_button';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type ThreadModel from '@typings/database/models/servers/thread';
-
-const {SERVER: {THREAD}} = MM_TABLES;
 
 const enhanced = withObservables(['threadId'], ({threadId, database}: {threadId: string} & WithDatabaseArgs) => {
     return {
-        thread: database.get<ThreadModel>(THREAD).findAndObserve(threadId),
+        thread: observeThreadById(database, threadId),
     };
 });
 

@@ -142,7 +142,7 @@ export const queryPostsBetween = (database: Database, earliest: number, latest: 
         andClauses.push(Q.where('user_id', userId));
     }
 
-    if (rootId !== undefined) {
+    if (rootId !== null && rootId !== undefined) {
         andClauses.push(Q.where('root_id', rootId));
     }
 

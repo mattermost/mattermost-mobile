@@ -13,6 +13,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {changeOpacity} from '@utils/theme';
 
 import type Model from '@nozbe/watermelondb/Model';
+import type ThreadModel from '@typings/database/models/servers/thread';
 
 export const switchToThread = async (serverUrl: string, rootId: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -50,7 +51,7 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
                 id: 'thread-follow-button',
                 component: {
                     id: post.id,
-                    name: 'ThreadFollowButton',
+                    name: Screens.THREAD_FOLLOW_BUTTON,
                     passProps: {
                         teamId: channel.teamId,
                         threadId: post.id,
@@ -105,7 +106,7 @@ export const createThreadFromNewPost = async (serverUrl: string, post: Post, pre
     const models: Model[] = [];
     if (post.root_id) {
         // Update the thread data: `reply_count`
-        const {model: threadModel} = await updateThreadReplyCount(serverUrl, post.root_id, post.reply_count, true);
+        const {model: threadModel} = await updateThread(serverUrl, post.root_id, {reply_count: post.reply_count}, true);
         if (threadModel) {
             models.push(threadModel);
         }
@@ -201,7 +202,7 @@ export const markTeamThreadsAsRead = async (serverUrl: string, teamId: string, p
     }
     try {
         const {database} = operator;
-        const threads = await queryThreadsInTeam({database, teamId, onlyUnreads: true}).fetch();
+        const threads = await queryThreadsInTeam(database, teamId, true).fetch();
         const models = threads.map((thread) => thread.prepareUpdate((record) => {
             record.unreadMentions = 0;
             record.unreadReplies = 0;
@@ -216,7 +217,7 @@ export const markTeamThreadsAsRead = async (serverUrl: string, teamId: string, p
     }
 };
 
-export const toggleFollowThread = async (serverUrl: string, threadId: string, state: boolean, replyCount?: number, prepareRecordsOnly = false) => {
+export const updateThread = async (serverUrl: string, threadId: string, updatedThread: Partial<Thread>, prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -227,60 +228,12 @@ export const toggleFollowThread = async (serverUrl: string, threadId: string, st
         const thread = await getThreadById(database, threadId);
         if (thread) {
             const model = thread.prepareUpdate((record) => {
-                record.replyCount = replyCount ?? record.replyCount;
-                record.isFollowing = state;
-            });
-            if (!prepareRecordsOnly) {
-                await operator.batchRecords([model]);
-            }
-            return {model};
-        }
-        return {error: 'Thread not found'};
-    } catch (error) {
-        return {error};
-    }
-};
+                record.isFollowing = updatedThread.is_following ?? record.isFollowing;
+                record.replyCount = updatedThread.reply_count ?? record.replyCount;
 
-// Updates - "lastViewedAt"
-// Optionally updates - "unreadMentions, unreadReplies"
-export const updateThreadRead = async (serverUrl: string, threadId: string, lastViewedAt: number, unreadMentions?: number, unreadReplies?: number, prepareRecordsOnly = false) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    try {
-        const {database} = operator;
-        const thread = await getThreadById(database, threadId);
-        if (thread) {
-            const model = thread.prepareUpdate((record) => {
-                record.lastViewedAt = lastViewedAt;
-                record.unreadMentions = unreadMentions ?? record.unreadMentions;
-                record.unreadReplies = unreadReplies ?? record.unreadReplies;
-            });
-            if (!prepareRecordsOnly) {
-                await operator.batchRecords([model]);
-            }
-            return {model};
-        }
-        return {error: 'Thread not found'};
-    } catch (error) {
-        return {error};
-    }
-};
-
-export const updateThreadReplyCount = async (serverUrl: string, threadId: string, replyCount: number, prepareRecordsOnly = false) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    try {
-        const {database} = operator;
-        const thread = await getThreadById(database, threadId);
-        if (thread) {
-            const model = thread.prepareUpdate((record) => {
-                record.replyCount = replyCount;
+                record.lastViewedAt = updatedThread.last_viewed_at ?? record.lastViewedAt;
+                record.unreadMentions = updatedThread.unread_mentions ?? record.unreadMentions;
+                record.unreadReplies = updatedThread.unread_replies ?? record.unreadReplies;
             });
             if (!prepareRecordsOnly) {
                 await operator.batchRecords([model]);
