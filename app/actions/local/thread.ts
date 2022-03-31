@@ -13,7 +13,6 @@ import EphemeralStore from '@store/ephemeral_store';
 import {changeOpacity} from '@utils/theme';
 
 import type Model from '@nozbe/watermelondb/Model';
-import type ThreadModel from '@typings/database/models/servers/thread';
 
 export const switchToThread = async (serverUrl: string, rootId: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
