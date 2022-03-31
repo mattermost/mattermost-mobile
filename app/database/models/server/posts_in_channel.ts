@@ -24,7 +24,7 @@ export default class PostsInChannelModel extends Model implements PostsInChannel
     static associations: Associations = {
 
         /** A CHANNEL can have multiple POSTS_IN_CHANNEL. (relationship is 1:N)*/
-        [CHANNEL]: {type: 'belongs_to', key: 'id'},
+        [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
     };
 
     /** channel_id: Associated channel identifier */
