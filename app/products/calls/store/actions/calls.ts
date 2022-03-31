@@ -7,7 +7,7 @@ import {Client4} from '@client/rest';
 import Calls from '@constants/calls';
 import {logError} from '@mm-redux/actions/errors';
 import {forceLogoutIfNecessary} from '@mm-redux/actions/helpers';
-import {GenericAction, ActionFunc, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
+import {GenericAction, ActionFunc, DispatchFunc, GetStateFunc, batchActions} from '@mm-redux/types/actions';
 import {Dictionary} from '@mm-redux/types/utilities';
 import {newClient} from '@mmproducts/calls/connection';
 import CallsTypes from '@mmproducts/calls/store/action_types/calls';
@@ -17,10 +17,10 @@ import {Call, CallParticipant, DefaultServerConfig} from '@mmproducts/calls/stor
 export let ws: any = null;
 
 export function loadConfig(force = false): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc): Promise<GenericAction> => {
         if (!force) {
             if ((Date.now() - getConfig(getState()).last_retrieved_at) < Calls.RefreshConfigMillis) {
-                return {};
+                return {} as GenericAction;
             }
         }
 
@@ -32,30 +32,28 @@ export function loadConfig(force = false): ActionFunc {
             dispatch(logError(error));
 
             // Reset the config to the default (off) since it looks like Calls is not enabled.
-            dispatch({
+            return {
                 type: CallsTypes.RECEIVED_CONFIG,
                 data: {...DefaultServerConfig, last_retrieved_at: Date.now()},
-            });
-            return {error};
+            };
         }
 
-        dispatch({
+        return {
             type: CallsTypes.RECEIVED_CONFIG,
             data: {...data, last_retrieved_at: Date.now()},
-        });
-        return {data};
+        };
     };
 }
 
 export function loadCalls(): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc): Promise<GenericAction> => {
         let resp = [];
         try {
             resp = await Client4.getCalls();
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
             dispatch(logError(error));
-            return {error};
+            return {} as GenericAction;
         }
 
         const callsResults: Dictionary<Call> = {};
@@ -86,9 +84,18 @@ export function loadCalls(): ActionFunc {
             enabled: enabledChannels,
         };
 
-        dispatch({type: CallsTypes.RECEIVED_CALLS, data});
+        return {type: CallsTypes.RECEIVED_CALLS, data};
+    };
+}
 
-        return {data};
+export function batchLoadCalls(forceConfig = false): ActionFunc {
+    return async (dispatch: DispatchFunc) => {
+        const promises = [dispatch(loadConfig(forceConfig)), dispatch(loadCalls())];
+        Promise.all(promises).then((actions: Array<Awaited<GenericAction>>) => {
+            dispatch(batchActions(actions, 'BATCH_LOAD_CALLS'));
+        });
+
+        return {};
     };
 }
 
