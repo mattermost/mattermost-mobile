@@ -30,7 +30,6 @@ const {
     TEAM_CHANNEL_HISTORY,
     TEAM_MEMBERSHIP,
     TEAM_SEARCH_HISTORY,
-    TERMS_OF_SERVICE,
     THREAD,
     THREAD_PARTICIPANT,
     THREADS_IN_TEAM,
@@ -426,14 +425,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'team_id', type: 'string', isIndexed: true},
                         {name: 'term', type: 'string'},
                     ],
-                },
-                [TERMS_OF_SERVICE]: {
-                    name: TERMS_OF_SERVICE,
-                    unsafeSql: undefined,
-                    columns: {
-                        accepted_at: {name: 'accepted_at', type: 'number'},
-                    },
-                    columnArray: [{name: 'accepted_at', type: 'number'}],
                 },
                 [THREAD]: {
                     name: THREAD,

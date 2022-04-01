@@ -15,7 +15,7 @@ import {CategoryModel, CategoryChannelModel, ChannelModel, ChannelInfoModel, Cha
     MyChannelModel, MyChannelSettingsModel, MyTeamModel,
     PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
     SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
-    TermsOfServiceModel, ThreadModel, ThreadParticipantModel, ThreadInTeamModel, UserModel,
+    ThreadModel, ThreadParticipantModel, ThreadInTeamModel, UserModel,
 } from '@database/models/server';
 import AppDataOperator from '@database/operator/app_data_operator';
 import ServerDataOperator from '@database/operator/server_data_operator';
@@ -51,7 +51,7 @@ class DatabaseManager {
             MyChannelModel, MyChannelSettingsModel, MyTeamModel,
             PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
             SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
-            TermsOfServiceModel, ThreadModel, ThreadParticipantModel, ThreadInTeamModel, UserModel,
+            ThreadModel, ThreadParticipantModel, ThreadInTeamModel, UserModel,
         ];
         this.databaseDirectory = '';
     }
