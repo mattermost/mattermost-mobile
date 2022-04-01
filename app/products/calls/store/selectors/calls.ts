@@ -8,6 +8,10 @@ import {getServerVersion} from '@mm-redux/selectors/entities/general';
 import {GlobalState} from '@mm-redux/types/store';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
+export function getConfig(state: GlobalState) {
+    return state.entities.calls.config;
+}
+
 export function getCalls(state: GlobalState) {
     return state.entities.calls.calls;
 }
@@ -20,8 +24,20 @@ export function getCurrentCall(state: GlobalState) {
     return state.entities.calls.calls[currentCall];
 }
 
-export function isCallsEnabled(state: GlobalState) {
-    return Boolean(state.entities.calls.enabled[getCurrentChannelId(state)]);
+// isCallsExplicitlyEnabled returns true if and only if calls has been explicitly enabled in the current channel
+// Both this and isCallsExplicitlyDisabled can be false if the channel has never had a call in it.
+export function isCallsExplicitlyEnabled(state: GlobalState) {
+    const currentChannelId = getCurrentChannelId(state);
+    const enabledDict = state.entities.calls.enabled;
+    return enabledDict.hasOwnProperty(currentChannelId) && enabledDict[currentChannelId];
+}
+
+// isCallsExplicitlyEnabled returns true if and only if calls has been explicitly disabled in the current channel
+// Both this and isCallsExplicitlyEnabled can be false if the channel has never had a call in it.
+export function isCallsExplicitlyDisabled(state: GlobalState) {
+    const currentChannelId = getCurrentChannelId(state);
+    const enabledDict = state.entities.calls.enabled;
+    return enabledDict.hasOwnProperty(currentChannelId) && !enabledDict[currentChannelId];
 }
 
 export function getScreenShareURL(state: GlobalState) {

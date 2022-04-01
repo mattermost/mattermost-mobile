@@ -55,7 +55,7 @@ describe('Selectors.Calls', () => {
     });
 
     it('isCallsEnabled', () => {
-        assert.equal(Selectors.isCallsEnabled(testState), true);
+        assert.equal(Selectors.isCallsExplicitlyEnabled(testState), true);
         let newState = {
             ...testState,
             entities: {
@@ -63,7 +63,7 @@ describe('Selectors.Calls', () => {
                 channels: {currentChannelId: 'channel-2'},
             },
         };
-        assert.equal(Selectors.isCallsEnabled(newState), false);
+        assert.equal(Selectors.isCallsExplicitlyEnabled(newState), false);
         newState = {
             ...testState,
             entities: {
@@ -71,7 +71,7 @@ describe('Selectors.Calls', () => {
                 channels: {currentChannelId: 'not-valid-channel'},
             },
         };
-        assert.equal(Selectors.isCallsEnabled(newState), false);
+        assert.equal(Selectors.isCallsExplicitlyEnabled(newState), false);
     });
 
     it('getScreenShareURL', () => {

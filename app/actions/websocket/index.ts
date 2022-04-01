@@ -24,7 +24,7 @@ import {TeamMembership} from '@mm-redux/types/teams';
 import {WebSocketMessage} from '@mm-redux/types/websocket';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {removeUserFromList} from '@mm-redux/utils/user_utils';
-import {loadCalls} from '@mmproducts/calls/store/actions/calls';
+import {batchLoadCalls} from '@mmproducts/calls/store/actions/calls';
 import {
     handleCallStarted,
     handleCallUserConnected,
@@ -171,7 +171,7 @@ export function doReconnect(now: number) {
 
             if (!me.error) {
                 if (isSupportedServerCalls) {
-                    dispatch(loadCalls());
+                    dispatch(batchLoadCalls(true));
                 }
 
                 const roles = [];

@@ -24,7 +24,7 @@ export default class ChannelBase extends PureComponent {
             loadChannelsForTeam: PropTypes.func.isRequired,
             selectDefaultTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
-            loadCalls: PropTypes.func.isRequired,
+            batchLoadCalls: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string,
@@ -106,7 +106,7 @@ export default class ChannelBase extends PureComponent {
         }
 
         if (this.props.isSupportedServerCalls) {
-            this.props.actions.loadCalls();
+            this.props.actions.batchLoadCalls();
         }
     }
 
