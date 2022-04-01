@@ -27,7 +27,6 @@ export const MM_TABLES = {
         PREFERENCE: 'Preference',
         REACTION: 'Reaction',
         ROLE: 'Role',
-        SLASH_COMMAND: 'SlashCommand',
         SYSTEM: 'System',
         TEAM: 'Team',
         TEAM_CHANNEL_HISTORY: 'TeamChannelHistory',
