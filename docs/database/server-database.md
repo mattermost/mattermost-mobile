@@ -130,8 +130,8 @@ user_id string INDEX
 
 PostsInChannel
 -
-id PK string # auto-generated
-channel_id string  INDEX FK >- Channel.id #
+id PK string FK >- Channel.id # auto-generated
+channel_id string  INDEX  
 earliest number
 latest number
 
