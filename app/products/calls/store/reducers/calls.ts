@@ -5,7 +5,7 @@ import {combineReducers} from 'redux';
 import {GenericAction} from '@mm-redux/types/actions';
 import {Dictionary} from '@mm-redux/types/utilities';
 import CallsTypes from '@mmproducts/calls/store/action_types/calls';
-import {Call} from '@mmproducts/calls/store/types/calls';
+import {Call, DefaultServerConfig} from '@mmproducts/calls/store/types/calls';
 
 function calls(state: Dictionary<Call> = {}, action: GenericAction) {
     switch (action.type) {
@@ -147,6 +147,16 @@ function calls(state: Dictionary<Call> = {}, action: GenericAction) {
     }
 }
 
+function config(state = DefaultServerConfig, action: GenericAction) {
+    switch (action.type) {
+    case CallsTypes.RECEIVED_CONFIG: {
+        return action.data;
+    }
+    default:
+        return state;
+    }
+}
+
 function joined(state = '', action: GenericAction) {
     switch (action.type) {
     case CallsTypes.RECEIVED_MYSELF_JOINED_CALL: {
@@ -212,4 +222,5 @@ export default combineReducers({
     joined,
     screenShareURL,
     speakerphoneOn,
+    config,
 });

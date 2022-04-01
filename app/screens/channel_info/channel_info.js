@@ -13,8 +13,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {dismissModal} from '@actions/navigation';
 import StatusBar from '@components/status_bar';
-import EnableDisableCalls from '@mmproducts/calls/components/enable_disable_calls';
-import StartCall from '@mmproducts/calls/components/start_call';
+import CallsChannelInfo from '@mmproducts/calls/components/channel_info/calls_channel_info';
 import {alertErrorWithFallback} from '@utils/general';
 import {t} from '@utils/i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -51,15 +50,12 @@ export default class ChannelInfo extends PureComponent {
         currentUserId: PropTypes.string,
         isTeammateGuest: PropTypes.bool.isRequired,
         isDirectMessage: PropTypes.bool.isRequired,
-        isGroupMessage: PropTypes.bool.isRequired,
         teammateId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         customStatus: PropTypes.object,
         isCustomStatusEnabled: PropTypes.bool.isRequired,
         isCustomStatusExpired: PropTypes.bool.isRequired,
         isCustomStatusExpirySupported: PropTypes.bool.isRequired,
-        isCallsEnabled: PropTypes.bool.isRequired,
-        isChannelAdmin: PropTypes.bool.isRequired,
         isSupportedServerCalls: PropTypes.bool.isRequired,
     };
 
@@ -93,17 +89,9 @@ export default class ChannelInfo extends PureComponent {
         dismissModal();
     };
 
-    startCallHandler = (channelId) => {
+    joinCallHandler = (channelId) => {
         this.props.actions.joinCall(channelId);
         this.close();
-    };
-
-    toggleCalls = () => {
-        if (this.props.isCallsEnabled) {
-            this.props.actions.disableChannelCalls(this.props.currentChannel.id);
-        } else {
-            this.props.actions.enableChannelCalls(this.props.currentChannel.id);
-        }
     };
 
     permalinkBadTeam = () => {
@@ -117,7 +105,7 @@ export default class ChannelInfo extends PureComponent {
     };
 
     actionsRows = (channelIsArchived) => {
-        const {currentChannel, currentUserId, isDirectMessage, isGroupMessage, theme, isCallsEnabled, isSupportedServerCalls, isChannelAdmin} = this.props;
+        const {currentChannel, currentUserId, isDirectMessage, theme, isSupportedServerCalls} = this.props;
 
         if (channelIsArchived) {
             return (
@@ -179,23 +167,11 @@ export default class ChannelInfo extends PureComponent {
                     theme={theme}
                 />
                 {isSupportedServerCalls &&
-                    <>
-                        <StartCall
-                            testID='channel_info.start_call.action'
-                            theme={theme}
-                            currentChannelId={currentChannel.id}
-                            currentChannelName={currentChannel.display_name}
-                            joinCall={this.startCallHandler}
-                            canStartCall={isCallsEnabled}
-                        />
-                        <EnableDisableCalls
-                            testID='channel_info.start_call.action'
-                            theme={theme}
-                            onPress={this.toggleCalls}
-                            canEnableDisableCalls={isDirectMessage || isGroupMessage || isChannelAdmin}
-                            enabled={isCallsEnabled}
-                        />
-                    </>}
+                    <CallsChannelInfo
+                        theme={theme}
+                        joinCall={this.joinCallHandler}
+                    />
+                }
                 <Bindings
                     theme={theme}
                 />

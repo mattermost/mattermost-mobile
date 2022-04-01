@@ -23,4 +23,5 @@ export default keyMirror({
     RECEIVED_UNRAISE_HAND: null,
     SET_SCREENSHARE_URL: null,
     SET_SPEAKERPHONE: null,
+    RECEIVED_CONFIG: null,
 });
