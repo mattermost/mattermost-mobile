@@ -8,6 +8,7 @@ export const APP_FORM = 'AppForm';
 export const BOTTOM_SHEET = 'BottomSheet';
 export const BROWSE_CHANNELS = 'BrowseChannels';
 export const CHANNEL = 'Channel';
+export const CREATE_OR_EDIT_CHANNEL = 'CreateOrEditChannel';
 export const CHANNEL_ADD_PEOPLE = 'ChannelAddPeople';
 export const CHANNEL_DETAILS = 'ChannelDetails';
 export const CHANNEL_EDIT = 'ChannelEdit';
@@ -44,6 +45,7 @@ export default {
     BOTTOM_SHEET,
     BROWSE_CHANNELS,
     CHANNEL,
+    CREATE_OR_EDIT_CHANNEL,
     CHANNEL_ADD_PEOPLE,
     CHANNEL_EDIT,
     CHANNEL_DETAILS,

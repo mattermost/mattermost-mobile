@@ -3,6 +3,7 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import React from 'react';
 import {combineLatest, from as from$, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
@@ -54,4 +55,4 @@ const withCombinedPosts = withObservables(['postId'], ({database, postId}: WithD
     };
 });
 
-export default withDatabase(withCombinedPosts(CombinedUserActivity));
+export default React.memo(withDatabase(withCombinedPosts(CombinedUserActivity)));

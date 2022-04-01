@@ -32,8 +32,11 @@ const PlusMenuList = ({canCreateChannels, canJoinChannels}: Props) => {
     }, [intl, theme]);
 
     const createNewChannel = useCallback(async () => {
-        // To be added
-    }, [intl, theme]);
+        await dismissBottomSheet();
+
+        const title = intl.formatMessage({id: 'mobile.create_channel.title', defaultMessage: 'New channel'});
+        showModal(Screens.CREATE_OR_EDIT_CHANNEL, title);
+    }, [intl]);
 
     const openDirectMessage = useCallback(async () => {
         await dismissBottomSheet();

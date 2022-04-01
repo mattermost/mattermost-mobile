@@ -472,7 +472,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         reply_count: {name: 'reply_count', type: 'number'},
                         unread_replies: {name: 'unread_replies', type: 'number'},
                         unread_mentions: {name: 'unread_mentions', type: 'number'},
-                        loaded_in_global_threads: {name: 'loaded_in_global_threads', type: 'boolean'},
                     },
                     columnArray: [
                         {name: 'last_reply_at', type: 'number'},
@@ -481,7 +480,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'reply_count', type: 'number'},
                         {name: 'unread_replies', type: 'number'},
                         {name: 'unread_mentions', type: 'number'},
-                        {name: 'loaded_in_global_threads', type: 'boolean'},
                     ],
                 },
                 [THREAD_PARTICIPANT]: {
@@ -502,10 +500,12 @@ describe('*** Test schema for SERVER database ***', () => {
                     columns: {
                         team_id: {name: 'team_id', type: 'string', isIndexed: true},
                         thread_id: {name: 'thread_id', type: 'string', isIndexed: true},
+                        loaded_in_global_threads: {name: 'loaded_in_global_threads', type: 'boolean', isIndexed: true},
                     },
                     columnArray: [
                         {name: 'team_id', type: 'string', isIndexed: true},
                         {name: 'thread_id', type: 'string', isIndexed: true},
+                        {name: 'loaded_in_global_threads', type: 'boolean', isIndexed: true},
                     ],
                 },
                 [USER]: {

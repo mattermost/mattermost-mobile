@@ -68,7 +68,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default function Uploads({
+function Uploads({
     currentUserId,
     files,
     uploadFileError,
@@ -174,3 +174,5 @@ export default function Uploads({
         </GalleryInit>
     );
 }
+
+export default React.memo(Uploads);

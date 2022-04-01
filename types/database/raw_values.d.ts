@@ -85,6 +85,7 @@ type TermsOfService = {
 type ThreadInTeam = {
     thread_id: string;
     team_id: string;
+    loaded_in_global_threads: boolean;
 };
 
 type RawValue =

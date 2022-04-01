@@ -184,6 +184,15 @@ export const queryChannelsById = (database: Database, channelIds: string[]) => {
     return database.get<ChannelModel>(CHANNEL).query(Q.where('id', Q.oneOf(channelIds)));
 };
 
+export const getChannelInfo = async (database: Database, channelId: string) => {
+    try {
+        const info = await database.get<ChannelInfoModel>(CHANNEL_INFO).find(channelId);
+        return info;
+    } catch {
+        return undefined;
+    }
+};
+
 export const getDefaultChannelForTeam = async (database: Database, teamId: string) => {
     let channel: ChannelModel|undefined;
     let canIJoinPublicChannelsInTeam = false;
@@ -219,6 +228,16 @@ export const getCurrentChannel = async (database: Database) => {
     const currentChannelId = await getCurrentChannelId(database);
     if (currentChannelId) {
         return getChannelById(database, currentChannelId);
+    }
+
+    return undefined;
+};
+
+export const getCurrentChannelInfo = async (database: Database) => {
+    const currentChannelId = await getCurrentChannelId(database);
+    if (currentChannelId) {
+        const info = await getChannelInfo(database, currentChannelId);
+        return info;
     }
 
     return undefined;

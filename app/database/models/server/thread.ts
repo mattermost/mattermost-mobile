@@ -52,9 +52,6 @@ export default class ThreadModel extends Model implements ThreadModelInterface {
     /** unread_mentions : The number of mentions that have not been read by the user. */
     @field('unread_mentions') unreadMentions!: number;
 
-    /** loaded_in_global_threads : Flag to differentiate the unread threads loaded for showing unread counts/mentions */
-    @field('loaded_in_global_threads') loadedInGlobalThreads!: boolean;
-
     /** participants : All the participants associated with this Thread */
     @children(THREAD_PARTICIPANT) participants!: Query<ThreadParticipantModel>;
 
