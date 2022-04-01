@@ -23,6 +23,11 @@ export function getDirectChannelName(id: string, otherId: string): string {
     return handle;
 }
 
+export function isDMorGM(channel: Channel | ChannelModel): boolean {
+    const directTypes: string[] = [General.GM_CHANNEL, General.DM_CHANNEL];
+    return directTypes.includes(channel.type);
+}
+
 export function selectDefaultChannelForTeam<T extends Channel|ChannelModel>(channels: T[], memberships: ChannelMembership[], teamId: string, roles?: Role[], locale = DEFAULT_LOCALE) {
     let channel: T|undefined;
     let canIJoinPublicChannelsInTeam = false;

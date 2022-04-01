@@ -50,7 +50,7 @@ export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, 
     }
 }
 
-export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[]) => {
+export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[]): Promise<Array<Promise<Model[]>>> => {
     const allChannelsForTeam = await queryAllChannelsForTeam(operator.database, teamId).fetch();
     const channelInfos: ChannelInfo[] = [];
     const memberships = channelMembers.map((cm) => ({...cm, id: cm.channel_id}));
@@ -92,7 +92,7 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
 
         return [channelRecords, channelInfoRecords, membershipRecords, myChannelRecords, myChannelSettingsRecords];
     } catch {
-        return undefined;
+        return [];
     }
 };
 
@@ -314,15 +314,6 @@ export const observeChannelInfo = (database: Database, channelId: string) => {
     return database.get<ChannelInfoModel>(CHANNEL_INFO).query(Q.where('id', channelId), Q.take(1)).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
     );
-};
-
-export const getChannelInfo = (database: Database, channelId: string) => {
-    try {
-        const info = database.get<ChannelInfoModel>(CHANNEL_INFO).find(channelId);
-        return info;
-    } catch {
-        return undefined;
-    }
 };
 
 export const queryMyChannelSettingsByIds = (database: Database, ids: string[]) => {

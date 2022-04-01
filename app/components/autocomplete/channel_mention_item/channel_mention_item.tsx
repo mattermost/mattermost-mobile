@@ -8,8 +8,8 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import ChannelIcon from '@components/channel_icon';
 import {BotTag, GuestTag} from '@components/tag';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {General} from '@constants';
 import {useTheme} from '@context/theme';
+import {isDMorGM} from '@utils/channel';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -59,7 +59,7 @@ const ChannelMentionItem = ({
     const theme = useTheme();
 
     const completeMention = () => {
-        if (channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL) {
+        if (isDMorGM(channel)) {
             onPress('@' + displayName?.replace(/ /g, ''));
         } else {
             onPress(channel.name);
@@ -78,7 +78,7 @@ const ChannelMentionItem = ({
 
     const isArchived = ('delete_at' in channel ? channel.delete_at : channel.deleteAt) > 0;
 
-    if (channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL) {
+    if (isDMorGM(channel)) {
         if (!displayName) {
             return null;
         }

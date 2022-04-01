@@ -4,8 +4,8 @@
 import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
-import {storeCategories} from '@actions/local/category';
 import {
+    addChannelToDefaultCategory,
     markChannelAsViewed,
     removeCurrentUserFromChannel,
     setChannelDeleteAt,
@@ -46,6 +46,10 @@ export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
                 const flattenedModels = prepareModels.flat();
                 if (flattenedModels?.length > 0) {
                     models.push(...flattenedModels);
+                }
+                const categoryModels = await addChannelToDefaultCategory(serverUrl, channels[0], true);
+                if (categoryModels.models?.length) {
+                    models.push(...categoryModels.models);
                 }
             }
         }
@@ -150,8 +154,8 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
 
     try {
         const {channel_id: channelId} = msg.broadcast;
-        const {channels, categories, memberships} = await fetchMyChannel(serverUrl, '', channelId, true);
-        if (!channels || !categories || !memberships) {
+        const {channels, memberships} = await fetchMyChannel(serverUrl, '', channelId, true);
+        if (!channels || !memberships) {
             return;
         }
         const user = await getCurrentUser(database);
@@ -164,8 +168,19 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
             return;
         }
 
-        await storeMyChannelsForTeam(serverUrl, '', directChannels, memberships);
-        await storeCategories(serverUrl, categories, false, false);
+        const models: Model[] = [];
+        const channelModels = await storeMyChannelsForTeam(serverUrl, '', directChannels, memberships);
+        if (channelModels.models?.length) {
+            models.push(...channelModels.models);
+        }
+        const categoryModels = await addChannelToDefaultCategory(serverUrl, channels[0], false);
+        if (categoryModels.models?.length) {
+            models.push(...categoryModels.models);
+        }
+
+        if (models.length) {
+            operator.batchRecords(models);
+        }
     } catch {
         // do nothing
     }
@@ -187,8 +202,8 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
 
     try {
         if (userId === currentUser?.id) {
-            const {channels, memberships, categories} = await fetchMyChannel(serverUrl, teamId, channelId, true);
-            if (channels && memberships && categories) {
+            const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
+            if (channels && memberships) {
                 const prepare = await prepareMyChannelsForTeam(operator, teamId, channels, memberships);
                 if (prepare) {
                     const prepareModels = await Promise.all(prepare);
@@ -198,7 +213,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
                     }
                 }
 
-                const categoriesModels = await storeCategories(serverUrl, categories, false, true);
+                const categoriesModels = await addChannelToDefaultCategory(serverUrl, channels[0], true);
                 if (categoriesModels.models?.length) {
                     models.push(...categoriesModels.models);
                 }

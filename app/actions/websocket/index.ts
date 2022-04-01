@@ -8,13 +8,14 @@ import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchTeamsChannelsAndUnreadPosts} from '@actions/remote/team';
 import {fetchStatusByIds, updateAllUsersSince} from '@actions/remote/user';
-import {General, WebsocketEvents} from '@constants';
+import {WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {queryChannelsById, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
 import {getCommonSystemValues, getConfig, getCurrentChannelId, getWebSocketLastDisconnected, resetWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {isDMorGM} from '@utils/channel';
 import {isTablet} from '@utils/helpers';
 
 import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
@@ -113,7 +114,7 @@ async function doReconnect(serverUrl: string) {
         const teammateDisplayNameSetting = getTeammateNameDisplaySetting(prefData.preferences || [], config, license);
         let directChannels: Channel[];
         [chData.channels, directChannels] = chData.channels.reduce(([others, direct], c: Channel) => {
-            if (c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL) {
+            if (isDMorGM(c)) {
                 direct.push(c);
             } else {
                 others.push(c);

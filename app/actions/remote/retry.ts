@@ -1,17 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {General, Preferences} from '@constants';
+import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
 import NetworkManager from '@init/network_manager';
+import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {prepareMyPreferences, queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {prepareCommonSystemValues, getCommonSystemValues} from '@queries/servers/system';
 import {prepareMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
-import {selectDefaultChannelForTeam} from '@utils/channel';
+import {isDMorGM, selectDefaultChannelForTeam} from '@utils/channel';
 
 import {fetchMissingSidebarInfo, fetchMyChannelsForTeam, MyChannelsRequest} from './channel';
 import {fetchPostsForChannel} from './post';
@@ -23,10 +24,12 @@ import {fetchMyTeams, MyTeamsRequest} from './team';
 import type {Model} from '@nozbe/watermelondb';
 
 export const retryInitialTeamAndChannel = async (serverUrl: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+
+    const {database} = operator;
 
     try {
         NetworkManager.getClient(serverUrl);
@@ -95,42 +98,26 @@ export const retryInitialTeamAndChannel = async (serverUrl: string) => {
             return {error: true};
         }
 
-        const modelPromises: Array<Promise<Model[]>> = [];
-        const {operator} = DatabaseManager.serverDatabases[serverUrl];
+        const models: Model[] = (await Promise.all([
+            prepareMyPreferences(operator, prefData.preferences!),
+            ...prepareMyTeams(operator, teamData.teams!, teamData.memberships!),
+            ...await prepareMyChannelsForTeam(operator, initialTeam.id, chData!.channels!, chData!.memberships!),
+            prepareCategories(operator, chData!.categories!),
+            prepareCategoryChannels(operator, chData!.categories!),
+            prepareCommonSystemValues(
+                operator,
+                {
+                    config: clData.config!,
+                    license: clData.license!,
+                    currentTeamId: initialTeam?.id,
+                    currentChannelId: initialChannel?.id,
+                },
+            ),
+        ])).flat();
 
-        const prefModel = prepareMyPreferences(operator, prefData.preferences!);
-        if (prefModel) {
-            modelPromises.push(prefModel);
-        }
+        await operator.batchRecords(models);
 
-        const teamModels = prepareMyTeams(operator, teamData.teams!, teamData.memberships!);
-        if (teamModels) {
-            modelPromises.push(...teamModels);
-        }
-
-        const channelModels = await prepareMyChannelsForTeam(operator, initialTeam!.id, chData!.channels!, chData!.memberships!);
-        if (channelModels) {
-            modelPromises.push(...channelModels);
-        }
-
-        const systemModels = prepareCommonSystemValues(
-            operator,
-            {
-                config: clData.config!,
-                license: clData.license!,
-                currentTeamId: initialTeam?.id,
-                currentChannelId: initialChannel?.id,
-            },
-        );
-
-        if (systemModels) {
-            modelPromises.push(systemModels);
-        }
-
-        const models = await Promise.all(modelPromises);
-        await operator.batchRecords(models.flat());
-
-        const directChannels = chData!.channels!.filter((c) => c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL);
+        const directChannels = chData!.channels!.filter(isDMorGM);
         const channelsToFetchProfiles = new Set<Channel>(directChannels);
         if (channelsToFetchProfiles.size) {
             const teammateDisplayNameSetting = getTeammateNameDisplaySetting(prefData.preferences || [], clData.config, clData.license);
@@ -146,10 +133,12 @@ export const retryInitialTeamAndChannel = async (serverUrl: string) => {
 };
 
 export const retryInitialChannel = async (serverUrl: string, teamId: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+
+    const {database} = operator;
 
     try {
         NetworkManager.getClient(serverUrl);
@@ -198,29 +187,16 @@ export const retryInitialChannel = async (serverUrl: string, teamId: string) => 
             return {error: true};
         }
 
-        const modelPromises: Array<Promise<Model[]>> = [];
-        const {operator} = DatabaseManager.serverDatabases[serverUrl];
+        const models: Model[] = (await Promise.all([
+            ...await prepareMyChannelsForTeam(operator, teamId, chData!.channels!, chData!.memberships!),
+            prepareCategories(operator, chData!.categories!),
+            prepareCategoryChannels(operator, chData!.categories!),
+            prepareCommonSystemValues(operator, {currentChannelId: initialChannel?.id}),
+        ])).flat();
 
-        const channelModels = await prepareMyChannelsForTeam(operator, teamId, chData!.channels!, chData!.memberships!);
-        if (channelModels) {
-            modelPromises.push(...channelModels);
-        }
+        await operator.batchRecords(models);
 
-        const systemModels = prepareCommonSystemValues(
-            operator,
-            {
-                currentChannelId: initialChannel?.id,
-            },
-        );
-
-        if (systemModels) {
-            modelPromises.push(systemModels);
-        }
-
-        const models = await Promise.all(modelPromises);
-        await operator.batchRecords(models.flat());
-
-        const directChannels = chData!.channels!.filter((c) => c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL);
+        const directChannels = chData!.channels!.filter(isDMorGM);
         const channelsToFetchProfiles = new Set<Channel>(directChannels);
         if (channelsToFetchProfiles.size) {
             const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config, license);

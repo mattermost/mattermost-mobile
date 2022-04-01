@@ -183,7 +183,7 @@ export const getDefaultTeamId = async (database: Database) => {
     return defaultTeam?.id;
 };
 
-export const prepareMyTeams = (operator: ServerDataOperator, teams: Team[], memberships: TeamMembership[]) => {
+export function prepareMyTeams(operator: ServerDataOperator, teams: Team[], memberships: TeamMembership[]): Array<Promise<Model[]>> {
     try {
         const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams});
         const teamMemberships = memberships.filter((m) => teams.find((t) => t.id === m.team_id) && m.delete_at === 0);
@@ -198,9 +198,9 @@ export const prepareMyTeams = (operator: ServerDataOperator, teams: Team[], memb
 
         return [teamRecords, teamMembershipRecords, myTeamRecords];
     } catch {
-        return undefined;
+        return [];
     }
-};
+}
 
 export const deleteMyTeams = async (operator: ServerDataOperator, myTeams: MyTeamModel[]) => {
     try {

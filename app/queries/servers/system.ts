@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Q} from '@nozbe/watermelondb';
+import {Database, Model, Q} from '@nozbe/watermelondb';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
@@ -262,8 +262,8 @@ export const patchTeamHistory = (operator: ServerDataOperator, value: string[], 
     prepareRecordsOnly});
 };
 
-export const prepareCommonSystemValues = (
-    operator: ServerDataOperator, values: PrepareCommonSystemValuesArgs) => {
+export async function prepareCommonSystemValues(
+    operator: ServerDataOperator, values: PrepareCommonSystemValuesArgs): Promise<Model[]> {
     try {
         const {config, currentChannelId, currentTeamId, currentUserId, license} = values;
         const systems: IdValue[] = [];
@@ -307,9 +307,9 @@ export const prepareCommonSystemValues = (
             prepareRecordsOnly: true,
         });
     } catch {
-        return undefined;
+        return [];
     }
-};
+}
 
 export const setCurrentChannelId = async (operator: ServerDataOperator, channelId: string) => {
     try {

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Q} from '@nozbe/watermelondb';
+import {Database, Model, Q} from '@nozbe/watermelondb';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
@@ -58,17 +58,17 @@ export const queryUsersByUsername = (database: Database, usernames: string[]) =>
     return database.get<UserModel>(USER).query(Q.where('username', Q.oneOf(usernames)));
 };
 
-export const prepareUsers = (operator: ServerDataOperator, users: UserProfile[]) => {
+export async function prepareUsers(operator: ServerDataOperator, users: UserProfile[]): Promise<Model[]> {
     try {
         if (users.length) {
             return operator.handleUsers({users, prepareRecordsOnly: true});
         }
 
-        return undefined;
+        return [];
     } catch {
-        return undefined;
+        return [];
     }
-};
+}
 
 export const observeTeammateNameDisplay = (database: Database) => {
     const config = observeConfig(database);

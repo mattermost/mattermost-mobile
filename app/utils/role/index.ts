@@ -4,6 +4,8 @@
 import {General, Permissions} from '@constants';
 import {queryRolesByNames} from '@queries/servers/role';
 
+import {isDMorGM} from '../channel';
+
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
@@ -75,8 +77,7 @@ export async function canManageChannelMembers(post: PostModel, user: UserModel) 
     const rolesArray = [...user.roles.split(' ')];
     const channel = await post.channel.fetch() as ChannelModel | undefined;
 
-    const directTypes: string[] = [General.DM_CHANNEL, General.GM_CHANNEL];
-    if (!channel || channel.deleteAt !== 0 || directTypes.includes(channel.type) || channel.name === General.DEFAULT_CHANNEL) {
+    if (!channel || channel.deleteAt !== 0 || isDMorGM(channel) || channel.name === General.DEFAULT_CHANNEL) {
         return false;
     }
 
