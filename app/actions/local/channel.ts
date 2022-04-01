@@ -328,7 +328,7 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
         if (channel.type === General.DM_CHANNEL) {
             const otherUserId = getUserIdFromChannelName(currentUser.id, channel.name);
             const user = users.find((u) => u.id === otherUserId);
-            newDisplayName = displayUsername(user, currentUser.locale, displaySettings);
+            newDisplayName = displayUsername(user, currentUser.locale, displaySettings, false);
         } else {
             const dbProfiles = await queryUsersOnChannel(database, channel.id).fetch();
             const profileIds = dbProfiles.map((p) => p.id);

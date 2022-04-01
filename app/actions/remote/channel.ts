@@ -402,7 +402,7 @@ export const fetchMissingSidebarInfo = async (serverUrl: string, directChannels:
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
         if (ownDirectChannel && database) {
             const currentUser = await getCurrentUser(database);
-            ownDirectChannel.display_name = displayUsername(currentUser, locale, teammateDisplayNameSetting);
+            ownDirectChannel.display_name = displayUsername(currentUser, locale, teammateDisplayNameSetting, false);
         }
     }
 
