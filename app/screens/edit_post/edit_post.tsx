@@ -8,7 +8,7 @@ import {Navigation} from 'react-native-navigation';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {deletePost, editPost} from '@actions/remote/post';
-import AutoComplete from '@components/autocomplete';
+import Autocomplete from '@components/autocomplete';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -287,7 +287,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                 </View>
             </SafeAreaView>
             <Animated.View style={animatedStyle}>
-                <AutoComplete
+                <Autocomplete
                     channelId={post.channelId}
                     hasFilesAttached={hasFilesAttached}
                     nestedScrollEnabled={true}
@@ -298,6 +298,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                     postInputTop={1}
                     fixedBottomPosition={true}
                     maxHeightOverride={isTablet ? 200 : undefined}
+                    inPost={false}
                 />
             </Animated.View>
 

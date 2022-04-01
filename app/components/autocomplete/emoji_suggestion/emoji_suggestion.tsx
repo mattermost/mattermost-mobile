@@ -70,11 +70,12 @@ type Props = {
     maxListHeight: number;
     updateValue: (v: string) => void;
     onShowingChange: (c: boolean) => void;
-    rootId: string;
+    rootId?: string;
     value: string;
     nestedScrollEnabled: boolean;
     skinTone: string;
-    hasFilesAttached: boolean;
+    hasFilesAttached?: boolean;
+    inPost?: boolean;
 }
 const EmojiSuggestion = ({
     cursorPosition,
@@ -86,7 +87,8 @@ const EmojiSuggestion = ({
     value,
     nestedScrollEnabled,
     skinTone,
-    hasFilesAttached,
+    hasFilesAttached = false,
+    inPost = true,
 }: Props) => {
     const insets = useSafeAreaInsets();
     const theme = useTheme();
@@ -121,7 +123,7 @@ const EmojiSuggestion = ({
     const showingElements = Boolean(data.length);
 
     const completeSuggestion = useCallback((emoji: string) => {
-        if (!hasFilesAttached) {
+        if (!hasFilesAttached && inPost) {
             const match = value.match(REACTION_REGEX);
             if (match) {
                 handleReactionToLatestPost(serverUrl, emoji, match[1] === '+', rootId);

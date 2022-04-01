@@ -10,6 +10,7 @@ import TestHelper from '@test/test_helper';
 
 import ChannelListItem from './channel_list_item';
 
+import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
 describe('components/channel_list/categories/body/channel/item', () => {
@@ -30,12 +31,12 @@ describe('components/channel_list/categories/body/channel/item', () => {
     it('should match snapshot', () => {
         const wrapper = renderWithIntlAndTheme(
             <ChannelListItem
-                channel={{displayName: 'Hello!', type: 'G', shared: false, name: 'hello', deleteAt: 0}}
+                channel={{displayName: 'Hello!', type: 'G', shared: false, name: 'hello', deleteAt: 0} as ChannelModel}
                 isActive={false}
-                isOwnDirectMessage={false}
                 myChannel={myChannel}
                 isMuted={false}
                 collapsed={false}
+                currentUserId={'id'}
             />,
         );
 

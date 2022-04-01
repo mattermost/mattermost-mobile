@@ -12,5 +12,6 @@ export default tableSchema({
     columns: [
         {name: 'team_id', type: 'string', isIndexed: true},
         {name: 'thread_id', type: 'string', isIndexed: true},
+        {name: 'loaded_in_global_threads', type: 'boolean', isIndexed: true},
     ],
 });
