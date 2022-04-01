@@ -43,10 +43,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     container: {
         alignItems: 'center',
+        marginHorizontal: 20,
     },
     message: {
         color: theme.centerChannelColor,
-        marginTop: 16,
+        marginTop: 8,
         textAlign: 'center',
         ...typography('Body', 200, 'Regular'),
     },
