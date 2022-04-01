@@ -331,11 +331,11 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
             newDisplayName = displayUsername(user, currentUser.locale, displaySettings, false);
         } else {
             const dbProfiles = await queryUsersOnChannel(database, channel.id).fetch();
-            const profileIds = dbProfiles.map((p) => p.id);
-            const gmUsers = users.filter((u) => profileIds.includes(u.id));
+            const profileIds = new Set(dbProfiles.map((p) => p.id));
+            const gmUsers = users.filter((u) => profileIds.has(u.id));
             if (gmUsers.length) {
-                const uIds = gmUsers.map((u) => u.id);
-                const newProfiles: Array<UserModel|UserProfile> = dbProfiles.filter((u) => !uIds.includes(u.id));
+                const uIds = new Set(gmUsers.map((u) => u.id));
+                const newProfiles: Array<UserModel|UserProfile> = dbProfiles.filter((u) => !uIds.has(u.id));
                 newProfiles.push(...gmUsers);
                 newDisplayName = displayGroupMessageName(newProfiles, currentUser.locale, displaySettings, currentUser.id);
             }

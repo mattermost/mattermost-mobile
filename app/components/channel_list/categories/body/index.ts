@@ -123,7 +123,7 @@ const enhance = withObservables(['category'], ({category, locale, database, curr
     }
 
     const hiddenChannelIds = combineLatest([hiddenDmIds, hiddenGmIds]).pipe(switchMap(
-        ([a, b]) => of$(a.concat(b)),
+        ([a, b]) => of$(new Set(a.concat(b))),
     ));
 
     return {

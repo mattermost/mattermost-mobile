@@ -113,8 +113,9 @@ export function setNavigatorStyles(componentId: string, theme: Theme, additional
 }
 
 export function setNavigationStackStyles(theme: Theme) {
+    const controlledScreens = new Set(appearanceControlledScreens);
     EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
-        if (!appearanceControlledScreens.includes(componentId)) {
+        if (!controlledScreens.has(componentId)) {
             setNavigatorStyles(componentId, theme);
         }
     });

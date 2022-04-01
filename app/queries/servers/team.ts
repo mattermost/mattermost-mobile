@@ -148,7 +148,8 @@ export const getLastTeam = async (database: Database) => {
 export const syncTeamTable = async (operator: ServerDataOperator, teams: Team[]) => {
     try {
         const deletedTeams = teams.filter((t) => t.delete_at > 0).map((t) => t.id);
-        const availableTeams = teams.filter((a) => !deletedTeams.includes(a.id));
+        const deletedSet = new Set(deletedTeams);
+        const availableTeams = teams.filter((a) => !deletedSet.has(a.id));
         const models = [];
 
         if (deletedTeams.length) {

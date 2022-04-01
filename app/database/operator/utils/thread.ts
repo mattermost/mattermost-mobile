@@ -25,7 +25,7 @@ export const sanitizeThreadParticipants = async ({database, thread_id, rawPartic
         fetch()) as ThreadParticipantModel[];
 
     // similarObjects: Contains objects that are in both the RawParticipant array and in the ThreadParticipant table
-    const similarObjects: ThreadParticipantModel[] = [];
+    const similarObjects = new Set<ThreadParticipantModel>();
 
     const createParticipants: RecordPair[] = [];
     const participantsMap = participants.reduce((result, participant) => {
@@ -40,7 +40,7 @@ export const sanitizeThreadParticipants = async ({database, thread_id, rawPartic
         const exists = participantsMap[rawParticipant.id];
 
         if (exists) {
-            similarObjects.push(exists);
+            similarObjects.add(exists);
         } else {
             createParticipants.push({raw: rawParticipant});
         }
@@ -48,7 +48,7 @@ export const sanitizeThreadParticipants = async ({database, thread_id, rawPartic
 
     // finding out elements to delete using array subtract
     const deleteParticipants = participants.
-        filter((participant) => !similarObjects.includes(participant)).
+        filter((participant) => !similarObjects.has(participant)).
         map((outCast) => outCast.prepareDestroyPermanently());
 
     return {createParticipants, deleteParticipants};

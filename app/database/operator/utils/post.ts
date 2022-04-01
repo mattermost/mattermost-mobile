@@ -13,9 +13,10 @@ import type {ChainPostsArgs, SanitizePostsArgs} from '@typings/database/database
 export const sanitizePosts = ({posts, orders}: SanitizePostsArgs) => {
     const orderedPosts: Post[] = [];
     const unOrderedPosts: Post[] = [];
+    const ordersSet = new Set(orders);
 
     posts.forEach((post) => {
-        if (post?.id && orders.includes(post.id)) {
+        if (post?.id && ordersSet.has(post.id)) {
             orderedPosts.push(post);
         } else {
             unOrderedPosts.push(post);

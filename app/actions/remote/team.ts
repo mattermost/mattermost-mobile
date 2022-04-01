@@ -94,21 +94,19 @@ export const fetchMyTeams = async (serverUrl: string, fetchOnly = false): Promis
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             const modelPromises: Array<Promise<Model[]>> = [];
             if (operator) {
-                const removeTeamIds = memberships.filter((m) => m.delete_at > 0).map((m) => m.team_id);
-                const remainingTeams = teams.filter((t) => !removeTeamIds.includes(t.id));
+                const removeTeamIds = new Set(memberships.filter((m) => m.delete_at > 0).map((m) => m.team_id));
+                const remainingTeams = teams.filter((t) => !removeTeamIds.has(t.id));
                 const prepare = prepareMyTeams(operator, remainingTeams, memberships);
                 if (prepare) {
                     modelPromises.push(...prepare);
                 }
 
-                if (removeTeamIds.length) {
-                    if (removeTeamIds?.length) {
-                        // Immediately delete myTeams so that the UI renders only teams the user is a member of.
-                        const removeTeams = await queryTeamsById(operator.database, removeTeamIds).fetch();
-                        removeTeams.forEach((team) => {
-                            modelPromises.push(prepareDeleteTeam(team));
-                        });
-                    }
+                if (removeTeamIds.size) {
+                    // Immediately delete myTeams so that the UI renders only teams the user is a member of.
+                    const removeTeams = await queryTeamsById(operator.database, Array.from(removeTeamIds)).fetch();
+                    removeTeams.forEach((team) => {
+                        modelPromises.push(prepareDeleteTeam(team));
+                    });
                 }
 
                 if (modelPromises.length) {

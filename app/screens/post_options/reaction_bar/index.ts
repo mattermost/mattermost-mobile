@@ -22,7 +22,8 @@ const DEFAULT_EMOJIS = [
 ];
 
 const mergeRecentWithDefault = (recentEmojis: string[]) => {
-    const filterUsed = DEFAULT_EMOJIS.filter((e) => !recentEmojis.includes(e));
+    const emojisSet = new Set(recentEmojis);
+    const filterUsed = DEFAULT_EMOJIS.filter((e) => !emojisSet.has(e));
     return recentEmojis.concat(filterUsed).splice(0, 6);
 };
 
