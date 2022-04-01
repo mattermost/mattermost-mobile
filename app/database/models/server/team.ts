@@ -55,6 +55,9 @@ export default class TeamModel extends Model implements TeamModelInterface {
 
         /** A TEAM has a 1:N relationship with THREADS_IN_TEAM. A TEAM can possess multiple threads */
         [THREADS_IN_TEAM]: {type: 'has_many', foreignKey: 'team_id'},
+
+        /** A TEAM has a 1:1 relationship with TEAM_CHANNEL_HISTORY. */
+        [TEAM_CHANNEL_HISTORY]: {type: 'has_many', foreignKey: 'id'},
     };
 
     /** is_allow_open_invite : Boolean flag indicating if this team is open to the public */

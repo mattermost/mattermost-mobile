@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Query} from '@nozbe/watermelondb';
 import {children, field, json} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
@@ -121,25 +122,25 @@ export default class UserModel extends Model implements UserModelInterface {
     @json('timezone', safeParseJSON) timezone!: UserTimezone | null;
 
     /** channelsCreated : All the channels that this user created */
-    @children(CHANNEL) channelsCreated!: ChannelModel[];
+    @children(CHANNEL) channelsCreated!: Query<ChannelModel>;
 
     /** channels : All the channels that this user is part of  */
-    @children(CHANNEL_MEMBERSHIP) channels!: ChannelMembershipModel[];
+    @children(CHANNEL_MEMBERSHIP) channels!: Query<ChannelMembershipModel>;
 
     /** posts :  All the posts that this user has written*/
-    @children(POST) posts!: PostModel[];
+    @children(POST) posts!: Query<PostModel>;
 
     /** preferences : All user preferences */
-    @children(PREFERENCE) preferences!: PreferenceModel[];
+    @children(PREFERENCE) preferences!: Query<PreferenceModel>;
 
     /** reactions : All the reactions to posts that this user had */
-    @children(REACTION) reactions!: ReactionModel[];
+    @children(REACTION) reactions!: Query<ReactionModel>;
 
     /** teams : All the team that this user is part of  */
-    @children(TEAM_MEMBERSHIP) teams!: TeamMembershipModel[];
+    @children(TEAM_MEMBERSHIP) teams!: Query<TeamMembershipModel>;
 
     /** threadParticipations : All the thread participations this user is part of  */
-    @children(THREAD_PARTICIPANT) threadParticipations!: ThreadParticipantsModel[];
+    @children(THREAD_PARTICIPANT) threadParticipations!: Query<ThreadParticipantsModel>;
 
     prepareStatus = (status: string) => {
         this.prepareUpdate((u) => {

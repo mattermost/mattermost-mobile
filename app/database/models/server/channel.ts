@@ -46,7 +46,7 @@ export default class ChannelModel extends Model implements ChannelModelInterface
         /** A CHANNEL can be associated with multiple CHANNEL_MEMBERSHIP (relationship is 1:N) */
         [CHANNEL_MEMBERSHIP]: {type: 'has_many', foreignKey: 'channel_id'},
 
-        /** A CHANNEL can be associated with multiple CATEGORY_CHANNEL (relationship is 1:N) */
+        /** A CHANNEL can be associated with one CATEGORY_CHANNEL per team (relationship is 1:1) */
         [CATEGORY_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
 
         /** A CHANNEL can be associated with multiple DRAFT (relationship is 1:N) */
@@ -66,6 +66,12 @@ export default class ChannelModel extends Model implements ChannelModelInterface
 
         /** A USER can create multiple CHANNEL (relationship is 1:N) */
         [USER]: {type: 'belongs_to', key: 'creator_id'},
+
+        /** A CHANNEL is associated with one CHANNEL_INFO**/
+        [CHANNEL_INFO]: {type: 'has_many', foreignKey: 'id'},
+
+        /** A CHANNEL is associated with one MY_CHANNEL_SETTINGS **/
+        [CHANNEL]: {type: 'has_many', foreignKey: 'id'},
     };
 
     /** create_at : The creation date for this channel */

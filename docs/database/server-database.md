@@ -27,20 +27,20 @@ Channel
 -
 id PK string FK - CategoryChannel.channel_id # server-generated
 create_at string
-creator_id string INDEX
+creator_id string INDEX FK >- User.id
 delete_at number
 display_name string
 is_group_constrained bool
 name string INDEX
 shared bool
-team_id string INDEX
+team_id string INDEX FK >- Team.id
 type string
 update_at number
 
 
 ChannelInfo
 -
-id PK string # same value as Channel.id
+id PK string FK - Channel.id# same value as Channel.id
 guest_count number
 header string
 member_count number
@@ -51,7 +51,7 @@ ChannelMembership
 -
 id PK string # composition ID Channel.id-User.id
 channel_id string INDEX FK >- Channel.id
-user_id string INDEX
+user_id string INDEX FK >- User.id
 
 CustomEmoji
 -
@@ -65,7 +65,7 @@ id PK string # auto-generated
 channel_id  INDEX FK >- Channel.id
 files string #stringify (array)
 message string
-root_id string INDEX NULL
+root_id string INDEX NULL FK >- Post.id
 
 
 File
@@ -77,14 +77,14 @@ image_thumbnail string #base64 data string or filepath for video thumbnails
 local_path  string NULL
 mime_type string
 name string
-post_id string INDEX
+post_id string INDEX FK >- Post.id
 size number
 width number
 
 
 MyChannel
 -
-id PK string # same as Channel.id
+id PK string FK - Channel.id # same as Channel.id
 is_unread boolean
 last_post_at number
 last_viewed_at number
@@ -97,13 +97,13 @@ viewed_at number
 
 MyChannelSettings
 -
-id PK string # same as Channel.id
+id PK string FK - Channel.id # same as Channel.id
 notify_props string
 
 
 MyTeam
 - 
-id PK string # same as Team.id
+id PK string FK - Team.id # same as Team.id
 roles string
 
 
@@ -125,13 +125,13 @@ props string
 root_id string
 type string
 update_at number
-user_id string INDEX
+user_id string INDEX  FK >- User.id
 
 
 PostsInChannel
 -
-id PK string FK >- Channel.id # auto-generated
-channel_id string  INDEX  
+id PK string  # auto-generated
+channel_id string INDEX FK >- Channel.id
 earliest number
 latest number
 
@@ -141,7 +141,7 @@ PostsInThread
 id PK string # auto-generated
 earliest number
 latest number
-root_id string
+root_id string FK >- Post.id
 
 
 Preference
@@ -149,7 +149,7 @@ Preference
 id string PK # server-generated
 category string INDEX
 name string
-user_id string INDEX
+user_id string INDEX FK >- User.id
 value string
 
 
@@ -158,8 +158,8 @@ Reaction
 id PK string # server-generated
 create_at number
 emoji_name string
-post_id string INDEX
-user_id string INDEX
+post_id string INDEX FK >- Post.id
+user_id string INDEX FK >- User.id
 
 
 Role
@@ -167,20 +167,6 @@ Role
 id PK string # server-generated
 name string
 permissions string #stringify array
-
-
-SlashCommand ## do we need it ?
--
-id PK string
-description string
-display_name string
-hint string
-is_auto_complete boolean
-method string
-team_id string INDEX
-token string
-trigger string
-update_at number
 
 
 System
@@ -205,26 +191,27 @@ update_at number
 
 TeamChannelHistory
 -
-id PK string # same as Team.id
+id PK string FK - Team.id # same as Team.id
 channel_ids string # stringified JSON array; FIFO
 
 
 TeamMembership
 -
 id PK string # auto-generated
-team_id string INDEX
-user_id string INDEX
+team_id string INDEX FK >- Team.id
+user_id string INDEX FK >- User.id
 
 
 TeamSearchHistory
 -
-id PK string # same as Team.id
+id PK string # auto-generated
 created_at number
 display_term string
+team_id string FK >- Team.id
 term string
 
 
-TermsOfService ## ???
+TermsOfService ## Verify if PR #6117 is merged and if yes, delete this <<
 -
 id PK string
 accepted_at number
@@ -232,7 +219,7 @@ accepted_at number
 
 Thread
 -
-id PK string # similar to Post.id but for root post only
+id PK string FK - Post.id # similar to Post.id but for root post only
 last_reply_at number
 last_viewed_at number
 is_following boolean
@@ -244,15 +231,15 @@ unread_mentions number
 ThreadsInTeam
 -
 id PK string # auto-generated
-team_id string INDEX
+team_id string INDEX FK >- Team.id
 thread_id string INDEX
 loaded_in_global_threads boolean
 
 ThreadParticipant # who is participating in this conversation
 -
 id PK string # auto-generated
-thread_id string INDEX
-user_id string INDEX
+thread_id string INDEX FK >- Thread.id
+user_id string INDEX FK >- User.id
 
 
 User
