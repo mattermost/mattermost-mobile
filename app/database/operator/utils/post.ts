@@ -39,8 +39,12 @@ export const sanitizePosts = ({posts, orders}: SanitizePostsArgs) => {
  * @returns {Post[]}
  */
 export const createPostsChain = ({order, posts, previousPostId = ''}: ChainPostsArgs) => {
+    const postsByIds = posts.reduce((result, p) => {
+        result[p.id] = p;
+        return result;
+    }, {} as Record<string, Post>);
     return order.reduce((result, id, index) => {
-        const post = posts.find((p) => p.id === id);
+        const post = postsByIds[id];
 
         if (post) {
             if (index === order.length - 1) {

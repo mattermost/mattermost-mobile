@@ -84,9 +84,10 @@ const CombinedUserActivity = ({
     const getUsernames = (userIds: string[]) => {
         const someone = intl.formatMessage({id: 'channel_loader.someone', defaultMessage: 'Someone'});
         const you = intl.formatMessage({id: 'combined_system_message.you', defaultMessage: 'You'});
+        const usernamesValues = Object.values(usernamesById);
         const usernames = userIds.reduce((acc: string[], id: string) => {
             if (id !== currentUserId && id !== currentUsername) {
-                const name = usernamesById[id] ?? Object.values(usernamesById).find((n) => n === id);
+                const name = usernamesById[id] ?? usernamesValues.find((n) => n === id);
                 acc.push(name ? `@${name}` : someone);
             }
             return acc;

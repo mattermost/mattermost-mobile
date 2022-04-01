@@ -37,8 +37,18 @@ const sortAlpha = (locale: string, a: ChannelData, b: ChannelData) => {
 };
 
 const buildAlphaData = (channels: ChannelModel[], settings: MyChannelSettingsModel[], locale: string) => {
+    const settingsById = settings.reduce((result, s) => {
+        result[s.id] = s;
+        return result;
+    }, {} as Record<string, MyChannelSettingsModel>);
+
+    const chanelsById = channels.reduce((result, c) => {
+        result[c.id] = c;
+        return result;
+    }, {} as Record<string, ChannelModel>);
+
     const combined = channels.map((c) => {
-        const s = settings.find((setting) => setting.id === c.id);
+        const s = settingsById[c.id];
         return {
             id: c.id,
             displayName: c.displayName,
@@ -47,7 +57,7 @@ const buildAlphaData = (channels: ChannelModel[], settings: MyChannelSettingsMod
     });
 
     combined.sort(sortAlpha.bind(null, locale));
-    return of$(combined.map((cdata) => channels.find((c) => c.id === cdata.id)));
+    return of$(combined.map((cdata) => chanelsById[cdata.id]));
 };
 
 const observeSettings = (database: Database, channels: ChannelModel[]) => {

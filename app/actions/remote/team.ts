@@ -195,7 +195,8 @@ export const fetchTeamsChannelsAndUnreadPosts = async (serverUrl: string, since:
         return {error: `${serverUrl} database not found`};
     }
 
-    const myTeams = teams.filter((t) => memberships.find((m) => m.team_id === t.id && t.id !== excludeTeamId));
+    const membershipSet = new Set(memberships.map((m) => m.team_id));
+    const myTeams = teams.filter((t) => membershipSet.has(t.id) && t.id !== excludeTeamId);
 
     for await (const team of myTeams) {
         const {channels, memberships: members} = await fetchMyChannelsForTeam(serverUrl, team.id, since > 0, since, false, true);

@@ -187,7 +187,8 @@ export const getDefaultTeamId = async (database: Database) => {
 export const prepareMyTeams = (operator: ServerDataOperator, teams: Team[], memberships: TeamMembership[]) => {
     try {
         const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams});
-        const teamMemberships = memberships.filter((m) => teams.find((t) => t.id === m.team_id) && m.delete_at === 0);
+        const teamIds = new Set(teams.map((t) => t.id));
+        const teamMemberships = memberships.filter((m) => teamIds.has(m.team_id) && m.delete_at === 0);
         const teamMembershipRecords = operator.handleTeamMemberships({prepareRecordsOnly: true, teamMemberships});
         const myTeams: MyTeam[] = teamMemberships.map((tm) => {
             return {id: tm.team_id, roles: tm.roles ?? ''};
