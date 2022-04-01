@@ -176,14 +176,14 @@ const CombinedUserActivity = ({
 
     for (const message of messageData) {
         const {postType, actorId} = message;
-        let userIds = message.userIds;
+        const userIds = new Set<string>(message.userIds);
 
-        if (!showJoinLeave && actorId !== currentUserId) {
-            const affectsCurrentUser = userIds.indexOf(currentUserId) !== -1;
+        if (!showJoinLeave && currentUserId && actorId !== currentUserId) {
+            const affectsCurrentUser = userIds.has(currentUserId);
 
             if (affectsCurrentUser) {
                 // Only show the message that the current user was added, etc
-                userIds = [currentUserId];
+                userIds.add(currentUserId);
             } else {
                 // Not something the current user did or was affected by
                 continue;
@@ -191,15 +191,15 @@ const CombinedUserActivity = ({
         }
 
         if (postType === PostConstants.POST_TYPES.REMOVE_FROM_CHANNEL) {
-            removedUserIds.push(...userIds);
+            removedUserIds.push(...Array.from(userIds));
             continue;
         }
 
-        content.push(renderMessage(postType, userIds, actorId));
+        content.push(renderMessage(postType, Array.from(userIds), actorId));
     }
 
     if (removedUserIds.length > 0) {
-        const uniqueRemovedUserIds = removedUserIds.filter((id, index, arr) => arr.indexOf(id) === index);
+        const uniqueRemovedUserIds = [...new Set(removedUserIds)];
         content.push(renderMessage(PostConstants.POST_TYPES.REMOVE_FROM_CHANNEL, uniqueRemovedUserIds, currentUserId || ''));
     }
 

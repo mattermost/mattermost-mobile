@@ -7,13 +7,14 @@ export const getNeededAtMentionedUsernames = (usernames: Set<string>, posts: Pos
     const usernamesToLoad = new Set<string>();
 
     const pattern = /\B@(([a-z0-9_.-]*[a-z0-9_])[.-]*)/gi;
+    const spcialMentions = new Set<string>(General.SPECIAL_MENTIONS);
 
     posts.forEach((p) => {
         let match;
         while ((match = pattern.exec(p.message)) !== null) {
             // match[1] is the matched mention including trailing punctuation
             // match[2] is the matched mention without trailing punctuation
-            if (General.SPECIAL_MENTIONS.indexOf(match[2]) !== -1) {
+            if (spcialMentions.has(match[2])) {
                 continue;
             }
 
