@@ -127,7 +127,7 @@ Appearance.addChangeListener(() => {
         for (const screen of screens) {
             if (appearanceControlledScreens.includes(screen)) {
                 Navigation.updateProps(screen, {theme});
-                setNavigatorStyles(screen, theme, loginAnimationOptions(), theme.centerChannelBg);
+                setNavigatorStyles(screen, theme, loginAnimationOptions(), theme.sidebarBg);
             }
         }
     }
@@ -207,7 +207,7 @@ export function resetToHome(passProps: LaunchProps = {launchType: LaunchType.Nor
 
 export function resetToSelectServer(passProps: LaunchProps) {
     const theme = getDefaultThemeByAppearance();
-    const isDark = tinyColor(theme.centerChannelBg).isDark();
+    const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
     EphemeralStore.clearNavigationComponents();
