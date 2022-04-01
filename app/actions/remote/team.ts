@@ -48,19 +48,16 @@ export const addUserToTeam = async (serverUrl: string, teamId: string, userId: s
                     roles: member.roles,
                 }];
 
-                const models: Model[][] = await Promise.all([
+                const models: Model[] = (await Promise.all([
                     operator.handleMyTeam({myTeams, prepareRecordsOnly: true}),
                     operator.handleTeamMemberships({teamMemberships: [member], prepareRecordsOnly: true}),
                     ...await prepareMyChannelsForTeam(operator, teamId, channels || [], channelMembers || []),
                     prepareCategories(operator, categories || []),
                     prepareCategoryChannels(operator, categories || []),
-                ]);
+                ])).flat();
 
                 if (models.length) {
-                    const flattenedModels: Model[] = models.flat();
-                    if (flattenedModels?.length > 0) {
-                        await operator.batchRecords(flattenedModels);
-                    }
+                    await operator.batchRecords(models);
                 }
 
                 if (await isTablet()) {

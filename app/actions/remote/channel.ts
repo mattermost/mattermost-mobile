@@ -358,7 +358,7 @@ export const fetchMyChannel = async (serverUrl: string, teamId: string, channelI
             channels: [channel],
             memberships: [member],
         };
-    } catch (error: any) {
+    } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
