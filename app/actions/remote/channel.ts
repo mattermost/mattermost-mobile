@@ -148,7 +148,7 @@ export const createChannel = async (serverUrl: string, displayName: string, purp
             models.push(...categoriesModels.models);
         }
         if (models.length) {
-            await operator.batchRecords(models.flat());
+            await operator.batchRecords(models);
         }
         fetchChannelStats(serverUrl, channelData.id, false);
         return {channel: channelData};

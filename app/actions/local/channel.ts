@@ -402,7 +402,7 @@ export async function addChannelToDefaultCategory(serverUrl: string, channel: Ch
 
     const {database} = operator;
 
-    const teamId = 'teamId' in channel ? channel.teamId : channel.id;
+    const teamId = 'teamId' in channel ? channel.teamId : channel.team_id;
     const userId = await getCurrentUserId(database);
     if (!userId) {
         return {error: 'no current user id'};
