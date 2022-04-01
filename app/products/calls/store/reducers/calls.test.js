@@ -4,6 +4,7 @@
 import assert from 'assert';
 
 import CallsTypes from '@mmproducts/calls/store/action_types/calls';
+import {DefaultServerConfig} from '@mmproducts/calls/store/types/calls';
 
 import callsReducer from './calls';
 
@@ -388,5 +389,22 @@ describe('Reducers.calls.screenShareURL', () => {
         };
         const state = callsReducer(initialState, testAction);
         assert.deepEqual(state.screenShareURL, 'new-url');
+    });
+});
+
+describe('Reducers.calls.config', () => {
+    it('RECEIVED_CONFIG', async () => {
+        const initialState = {config: DefaultServerConfig};
+        const testAction = {
+            type: CallsTypes.RECEIVED_CONFIG,
+            data: {
+                ICEServers: ['google.com'],
+                AllowEnableCalls: true,
+                DefaultEnabled: true,
+                last_retrieved_at: 123,
+            },
+        };
+        const state = callsReducer(initialState, testAction);
+        assert.deepEqual(state.config, testAction.data);
     });
 });

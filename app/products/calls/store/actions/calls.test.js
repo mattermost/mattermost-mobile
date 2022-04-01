@@ -31,6 +31,12 @@ jest.mock('@client/rest', () => ({
                 enabled: true,
             },
         ]),
+        getCallsConfig: jest.fn(() => ({
+            ICEServers: ['mattermost.com'],
+            AllowEnableCalls: true,
+            DefaultEnabled: true,
+            last_retrieved_at: 1234,
+        })),
         enableChannelCalls: jest.fn(() => null),
         disableChannelCalls: jest.fn(() => null),
     },
@@ -72,6 +78,7 @@ describe('Actions.Calls', () => {
         newClient.mockClear();
         Client4.setUrl.mockClear();
         Client4.getCalls.mockClear();
+        Client4.getCallsConfig.mockClear();
         Client4.enableChannelCalls.mockClear();
         Client4.disableChannelCalls.mockClear();
         store = await configureStore();
@@ -123,8 +130,29 @@ describe('Actions.Calls', () => {
     });
 
     it('loadCalls', async () => {
-        await store.dispatch(CallsActions.loadCalls());
+        await store.dispatch(await store.dispatch(CallsActions.loadCalls()));
         expect(Client4.getCalls).toBeCalledWith();
+        assert.equal(store.getState().entities.calls.calls['channel-1'].channelId, 'channel-1');
+        assert.equal(store.getState().entities.calls.enabled['channel-1'], true);
+    });
+
+    it('loadConfig', async () => {
+        await store.dispatch(await store.dispatch(CallsActions.loadConfig()));
+        expect(Client4.getCallsConfig).toBeCalledWith();
+        assert.equal(store.getState().entities.calls.config.DefaultEnabled, true);
+        assert.equal(store.getState().entities.calls.config.AllowEnableCalls, true);
+    });
+
+    it('batchLoadConfig', async () => {
+        await store.dispatch(CallsActions.batchLoadCalls());
+        expect(Client4.getCallsConfig).toBeCalledWith();
+        expect(Client4.getCalls).toBeCalledWith();
+
+        // For some reason the above await is not working. This helps us:
+        await store.dispatch(CallsActions.enableChannelCalls('channel-1'));
+
+        assert.equal(store.getState().entities.calls.config.DefaultEnabled, true);
+        assert.equal(store.getState().entities.calls.config.AllowEnableCalls, true);
         assert.equal(store.getState().entities.calls.calls['channel-1'].channelId, 'channel-1');
         assert.equal(store.getState().entities.calls.enabled['channel-1'], true);
     });
