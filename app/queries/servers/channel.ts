@@ -16,6 +16,7 @@ import {observeCurrentChannelId, getCurrentChannelId} from './system';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
+import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 import type UserModel from '@typings/database/models/servers/user';
@@ -278,6 +279,19 @@ export const addChannelMembership = async (operator: ServerDataOperator, userId:
 
 export const queryUsersOnChannel = (database: Database, channelId: string) => {
     return database.get<UserModel>(USER).query(Q.on(CHANNEL_MEMBERSHIP, Q.where('channel_id', channelId)));
+};
+
+export const getMembersCountByChannelsId = async (database: Database, channelsId: string[]) => {
+    const q = await database.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(Q.where('channel_id', Q.oneOf(channelsId))).fetch();
+    return q.reduce((r, m) => {
+        if (r[m.channelId]) {
+            r[m.channelId] += 1;
+            return r;
+        }
+
+        r[m.channelId] = 1;
+        return r;
+    }, {} as Record<string, number>);
 };
 
 export const queryChannelsByTypes = (database: Database, channelTypes: ChannelType[]) => {
