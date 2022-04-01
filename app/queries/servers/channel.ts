@@ -51,25 +51,49 @@ export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, 
     }
 }
 
-export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[]) => {
-    const allChannelsForTeam = await queryAllChannelsForTeam(operator.database, teamId).fetch();
-    const channelInfos: ChannelInfo[] = [];
-    const memberships = channelMembers.map((cm) => ({...cm, id: cm.channel_id}));
+type MembershipWithId = ChannelMembership & {id: string};
 
-    for await (const c of channels) {
-        const storedChannel = allChannelsForTeam.find((sc) => sc.id === c.id);
-        let storedInfo: ChannelInfoModel;
+type MembershipReduce = {
+    memberships: MembershipWithId[];
+    membershipsMap: Record<string, MembershipWithId>;
+}
+
+export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[]) => {
+    const {database} = operator;
+    const allChannelsForTeam = (await queryAllChannelsForTeam(database, teamId).fetch()).reduce((map, channel) => {
+        map[channel.id] = channel;
+        return map;
+    }, {} as Record<string, ChannelModel>);
+
+    const allChannelsInfoForTeam = (await queryAllChannelsInfoForTeam(database, teamId).fetch()).reduce((map, info) => {
+        map[info.id] = info;
+        return map;
+    }, {} as Record<string, ChannelInfoModel>);
+
+    const channelInfos: ChannelInfo[] = [];
+    const {memberships, membershipsMap} = channelMembers.reduce((result, cm) => {
+        const value = {...cm, id: cm.channel_id};
+        result.memberships.push(value);
+        result.membershipsMap[value.id] = value;
+        return result;
+    }, {memberships: [], membershipsMap: {}} as MembershipReduce);
+
+    for (const c of channels) {
+        const storedChannel = allChannelsForTeam[c.id];
+        let storedInfo: ChannelInfoModel | undefined;
         let member_count = 0;
         let guest_count = 0;
         let pinned_post_count = 0;
         if (storedChannel) {
-            storedInfo = (await storedChannel.info.fetch()) as ChannelInfoModel;
-            member_count = storedInfo.memberCount;
-            guest_count = storedInfo.guestCount;
-            pinned_post_count = storedInfo.pinnedPostCount;
+            storedInfo = allChannelsInfoForTeam[c.id];
+            if (storedInfo) {
+                member_count = storedInfo.memberCount;
+                guest_count = storedInfo.guestCount;
+                pinned_post_count = storedInfo.pinnedPostCount;
+            }
         }
 
-        const member = memberships.find((m) => m.channel_id === c.id);
+        const member = membershipsMap[c.id];
         if (member) {
             member.last_post_at = c.last_post_at;
         }
@@ -135,6 +159,12 @@ export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model
 
 export const queryAllChannelsForTeam = (database: Database, teamId: string) => {
     return database.get<ChannelModel>(CHANNEL).query(Q.where('team_id', teamId));
+};
+
+export const queryAllChannelsInfoForTeam = (database: Database, teamId: string) => {
+    return database.get<ChannelInfoModel>(CHANNEL_INFO).query(
+        Q.on(CHANNEL, Q.where('team_id', teamId)),
+    );
 };
 
 export const queryAllMyChannel = (database: Database) => {

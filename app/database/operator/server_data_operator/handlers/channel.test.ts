@@ -3,11 +3,8 @@
 
 import DatabaseManager from '@database/manager';
 import {
-    isRecordChannelEqualToRaw,
-    isRecordChannelInfoEqualToRaw,
-    isRecordChannelMembershipEqualToRaw,
-    isRecordMyChannelEqualToRaw,
-    isRecordMyChannelSettingsEqualToRaw,
+    buildChannelMembershipKey,
+    buildMyChannelKey,
 } from '@database/operator/server_data_operator/comparators';
 import {
     transformChannelInfoRecord,
@@ -63,7 +60,6 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             createOrUpdateRawValues: channels,
             tableName: 'Channel',
             prepareRecordsOnly: false,
-            findMatchingRecordBy: isRecordChannelEqualToRaw,
             transformer: transformChannelRecord,
         });
     });
@@ -103,7 +99,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             createOrUpdateRawValues: settings,
             tableName: 'MyChannelSettings',
             prepareRecordsOnly: false,
-            findMatchingRecordBy: isRecordMyChannelSettingsEqualToRaw,
+            buildKeyRecordBy: buildMyChannelKey,
             transformer: transformMyChannelSettingsRecord,
         });
     });
@@ -135,7 +131,6 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             createOrUpdateRawValues: channelInfos,
             tableName: 'ChannelInfo',
             prepareRecordsOnly: false,
-            findMatchingRecordBy: isRecordChannelInfoEqualToRaw,
             transformer: transformChannelInfoRecord,
         });
     });
@@ -196,7 +191,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             createOrUpdateRawValues: myChannels,
             tableName: 'MyChannel',
             prepareRecordsOnly: false,
-            findMatchingRecordBy: isRecordMyChannelEqualToRaw,
+            buildKeyRecordBy: buildMyChannelKey,
             transformer: transformMyChannelRecord,
         });
     });
@@ -257,7 +252,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             createOrUpdateRawValues: channelMemberships,
             tableName: 'ChannelMembership',
             prepareRecordsOnly: false,
-            findMatchingRecordBy: isRecordChannelMembershipEqualToRaw,
+            buildKeyRecordBy: buildChannelMembershipKey,
             transformer: transformChannelMembershipRecord,
         });
     });

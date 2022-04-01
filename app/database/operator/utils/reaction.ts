@@ -30,11 +30,14 @@ export const sanitizeReactions = async ({database, post_id, rawReactions, skipSy
 
     const createReactions: RecordPair[] = [];
 
+    const reactionsMap = reactions.reduce((result, reaction) => {
+        result[`${reaction.userId}-${reaction.emojiName}`] = reaction;
+        return result;
+    }, {} as Record<string, ReactionModel>);
+
     for (const raw of rawReactions) {
         // If the reaction is not present let's add it to the db
-        const exists = reactions.find((r) => (
-            r.userId === raw.user_id &&
-            r.emojiName === raw.emoji_name));
+        const exists = reactionsMap[`${raw.user_id}-${raw.emoji_name}`];
 
         if (exists) {
             similarObjects.push(exists);

@@ -5,7 +5,6 @@ import Model from '@nozbe/watermelondb/Model';
 
 import {Database} from '@constants';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
-import {isRecordThreadEqualToRaw} from '@database/operator/server_data_operator/comparators';
 import {
     transformThreadRecord,
     transformThreadParticipantRecord,
@@ -65,7 +64,6 @@ const ThreadHandler = (superclass: any) => class extends superclass {
         // Get thread models to be created and updated
         const preparedThreads = await this.handleRecords({
             fieldName: 'id',
-            findMatchingRecordBy: isRecordThreadEqualToRaw,
             transformer: transformThreadRecord,
             prepareRecordsOnly: true,
             createOrUpdateRawValues: uniqueThreads,

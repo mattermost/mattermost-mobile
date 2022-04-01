@@ -28,12 +28,16 @@ export const sanitizeThreadParticipants = async ({database, thread_id, rawPartic
     const similarObjects: ThreadParticipantModel[] = [];
 
     const createParticipants: RecordPair[] = [];
+    const participantsMap = participants.reduce((result, participant) => {
+        result[participant.userId] = participant;
+        return result;
+    }, {} as Record<string, ThreadParticipantModel>);
 
     for (let i = 0; i < rawParticipants.length; i++) {
         const rawParticipant = rawParticipants[i];
 
         // If the participant is not present let's add them to the db
-        const exists = participants.find((participant) => participant.userId === rawParticipant.id);
+        const exists = participantsMap[rawParticipant.id];
 
         if (exists) {
             similarObjects.push(exists);
