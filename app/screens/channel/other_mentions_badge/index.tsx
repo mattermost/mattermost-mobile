@@ -86,6 +86,7 @@ const OtherMentionsBadge = ({channelId}: Props) => {
             subscriptions.forEach((unreads) => {
                 unreads.subscription?.unsubscribe();
             });
+            subscriptions.clear();
         };
     }, []);
 
