@@ -236,7 +236,6 @@ export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
 
         const associatedChildren: Array<Query<Model>|undefined> = [
             team.members,
-            team.slashCommands,
             team.teamSearchHistories,
         ];
         await Promise.all(associatedChildren.map(async (children) => {
