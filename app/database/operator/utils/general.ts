@@ -10,7 +10,7 @@ import type SlashCommandModel from '@typings/database/models/servers/slash_comma
 import type TeamModel from '@typings/database/models/servers/team';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {CHANNEL, POST, SLASH_COMMAND, TEAM, USER} = MM_TABLES.SERVER;
+const {CHANNEL, POST, TEAM, USER} = MM_TABLES.SERVER;
 
 /**
  * getValidRecordsForUpdate: Database Operations on some tables are expensive.  As such, we would like to operate if and only if we are
@@ -22,7 +22,7 @@ const {CHANNEL, POST, SLASH_COMMAND, TEAM, USER} = MM_TABLES.SERVER;
  * @returns {boolean}
  */
 export const getValidRecordsForUpdate = ({tableName, newValue, existingRecord}: IdenticalRecordArgs) => {
-    const guardTables = [CHANNEL, POST, SLASH_COMMAND, TEAM, USER];
+    const guardTables = [CHANNEL, POST, TEAM, USER];
     if (guardTables.includes(tableName)) {
         type Raw = Post | UserProfile | Team | SlashCommand | Channel;
         type ExistingRecord = PostModel | UserModel | TeamModel | SlashCommandModel | ChannelModel;

@@ -5,7 +5,6 @@ import {MM_TABLES} from '@constants/database';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {
     isRecordMyTeamEqualToRaw,
-    isRecordSlashCommandEqualToRaw,
     isRecordTeamChannelHistoryEqualToRaw,
     isRecordTeamEqualToRaw,
     isRecordTeamMembershipEqualToRaw,
@@ -13,7 +12,6 @@ import {
 } from '@database/operator/server_data_operator/comparators';
 import {
     transformMyTeamRecord,
-    transformSlashCommandRecord,
     transformTeamChannelHistoryRecord,
     transformTeamMembershipRecord,
     transformTeamRecord,
@@ -34,7 +32,6 @@ import type TeamSearchHistoryModel from '@typings/database/models/servers/team_s
 
 const {
     MY_TEAM,
-    SLASH_COMMAND,
     TEAM,
     TEAM_CHANNEL_HISTORY,
     TEAM_MEMBERSHIP,
@@ -156,33 +153,6 @@ const TeamHandler = (superclass: any) => class extends superclass {
             prepareRecordsOnly,
             createOrUpdateRawValues,
             tableName: TEAM_SEARCH_HISTORY,
-        });
-    };
-
-    /**
-     * handleSlashCommand: Handler responsible for the Create/Update operations occurring on the SLASH_COMMAND table from the 'Server' schema
-     * @param {HandleSlashCommandArgs} slashCommandsArgs
-     * @param {SlashCommand[]} slashCommandsArgs.slashCommands
-     * @param {boolean} slashCommandsArgs.prepareRecordsOnly
-     * @throws DataOperatorException
-     * @returns {Promise<SlashCommandModel[]>}
-     */
-    handleSlashCommand = ({slashCommands, prepareRecordsOnly = true}: HandleSlashCommandArgs): Promise<SlashCommandModel[]> => {
-        if (!slashCommands.length) {
-            throw new DataOperatorException(
-                'An empty "slashCommands" array has been passed to the handleSlashCommand method',
-            );
-        }
-
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: slashCommands, key: 'id'});
-
-        return this.handleRecords({
-            fieldName: 'id',
-            findMatchingRecordBy: isRecordSlashCommandEqualToRaw,
-            transformer: transformSlashCommandRecord,
-            prepareRecordsOnly,
-            createOrUpdateRawValues,
-            tableName: SLASH_COMMAND,
         });
     };
 
