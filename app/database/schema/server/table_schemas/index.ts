@@ -18,7 +18,6 @@ export {default as PostsInChannelSchema} from './posts_in_channel';
 export {default as PreferenceSchema} from './preference';
 export {default as ReactionSchema} from './reaction';
 export {default as RoleSchema} from './role';
-export {default as SlashCommandSchema} from './slash_command';
 export {default as SystemSchema} from './system';
 export {default as TeamChannelHistorySchema} from './team_channel_history';
 export {default as TeamMembershipSchema} from './team_membership';
