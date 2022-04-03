@@ -101,7 +101,6 @@ commands:
     steps:
       - node/install:
           node-version: '16.14.2'
-          install-npm: false
       - restore_cache:
           name: Restore npm cache
           key: v2-npm-{{ checksum "package.json" }}-{{ arch }}
