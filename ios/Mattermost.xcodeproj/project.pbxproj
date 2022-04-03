@@ -939,7 +939,6 @@
 				);
 				OTHER_CFLAGS = (
 					"$(inherited)",
-					"-DFB_SONARKIT_ENABLED=1",
 				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -1042,7 +1041,6 @@
 				MTL_FAST_MATH = YES;
 				OTHER_CFLAGS = (
 					"$(inherited)",
-					"-DFB_SONARKIT_ENABLED=1",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.mattermost.rnbeta.MattermostShare;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1137,7 +1135,6 @@
 				MTL_FAST_MATH = YES;
 				OTHER_CFLAGS = (
 					"$(inherited)",
-					"-DFB_SONARKIT_ENABLED=1",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.mattermost.rnbeta.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
