@@ -37,26 +37,26 @@ const LOAD = 'load';
 const STOP = 'stop';
 
 const filterChannelsByType = (channels: Channel[], joinedChannels: MyChannelModel[], channelType: string) => {
-    const ids = joinedChannels.map((c) => c.id);
+    const ids = new Set(joinedChannels.map((c) => c.id));
     let filter: (c: Channel) => boolean;
     switch (channelType) {
         case ARCHIVED:
             filter = (c) => c.delete_at !== 0;
             break;
         case SHARED:
-            filter = (c) => c.delete_at === 0 && c.shared && !ids.includes(c.id);
+            filter = (c) => c.delete_at === 0 && c.shared && !ids.has(c.id);
             break;
         case PUBLIC:
         default:
-            filter = (c) => c.delete_at === 0 && !c.shared && !ids.includes(c.id);
+            filter = (c) => c.delete_at === 0 && !c.shared && !ids.has(c.id);
             break;
     }
     return channels.filter(filter);
 };
 
 const filterJoinedChannels = (joinedChannels: MyChannelModel[], allChannels: Channel[] | undefined) => {
-    const ids = joinedChannels.map((c) => c.id);
-    return allChannels?.filter((c) => !ids.includes(c.id));
+    const ids = new Set(joinedChannels.map((c) => c.id));
+    return allChannels?.filter((c) => !ids.has(c.id));
 };
 
 type State = {
@@ -207,7 +207,6 @@ export default function SearchHandler(props: Props) {
     }
 
     const stopSearch = useCallback(() => {
-        setVisibleChannels(activeChannels);
         setSearchResults(defaultSearchResults);
         setTerm('');
     }, [activeChannels]);

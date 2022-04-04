@@ -23,7 +23,7 @@ const PlusMenuList = ({canCreateChannels, canJoinChannels}: Props) => {
     const browseChannels = useCallback(async () => {
         await dismissBottomSheet();
 
-        const title = intl.formatMessage({id: 'browse_channels.title', defaultMessage: 'More Channels'});
+        const title = intl.formatMessage({id: 'browse_channels.title', defaultMessage: 'Browse channels'});
         const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
 
         showModal(Screens.BROWSE_CHANNELS, title, {

@@ -436,6 +436,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         reply_count: {name: 'reply_count', type: 'number'},
                         unread_replies: {name: 'unread_replies', type: 'number'},
                         unread_mentions: {name: 'unread_mentions', type: 'number'},
+                        viewed_at: {name: 'viewed_at', type: 'number'},
                     },
                     columnArray: [
                         {name: 'last_reply_at', type: 'number'},
@@ -444,6 +445,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'reply_count', type: 'number'},
                         {name: 'unread_replies', type: 'number'},
                         {name: 'unread_mentions', type: 'number'},
+                        {name: 'viewed_at', type: 'number'},
                     ],
                 },
                 [THREAD_PARTICIPANT]: {

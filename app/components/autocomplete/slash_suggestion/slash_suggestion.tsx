@@ -23,9 +23,9 @@ import SlashSuggestionItem from './slash_suggestion_item';
 const COMMANDS_TO_IMPLEMENT_LATER = ['collapse', 'expand', 'join', 'open', 'leave', 'logout', 'msg', 'grpmsg'];
 const NON_MOBILE_COMMANDS = ['rename', 'invite_people', 'shortcuts', 'search', 'help', 'settings', 'remove'];
 
-const COMMANDS_TO_HIDE_ON_MOBILE = [...COMMANDS_TO_IMPLEMENT_LATER, ...NON_MOBILE_COMMANDS];
+const COMMANDS_TO_HIDE_ON_MOBILE = new Set([...COMMANDS_TO_IMPLEMENT_LATER, ...NON_MOBILE_COMMANDS]);
 
-const commandFilter = (v: Command) => !COMMANDS_TO_HIDE_ON_MOBILE.includes(v.trigger);
+const commandFilter = (v: Command) => !COMMANDS_TO_HIDE_ON_MOBILE.has(v.trigger);
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {

@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {processPostsFetched} from '@actions/local/post';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {prepareMissingChannelsForAllTeams} from '@queries/servers/channel';
 import {getCurrentUser} from '@queries/servers/user';
+import {processPostsFetched} from '@utils/post';
 
 import {fetchPostAuthors, fetchMissingChannelsFromPosts} from './post';
 import {forceLogoutIfNecessary} from './session';
@@ -67,7 +67,7 @@ export async function fetchRecentMentions(serverUrl: string): Promise<PostSearch
 
         if (postsArray.length) {
             const {authors} = await fetchPostAuthors(serverUrl, postsArray, true);
-            const {channels, channelMemberships} = await fetchMissingChannelsFromPosts(serverUrl, postsArray, true) as {channels: Channel[]; channelMemberships: ChannelMembership[]};
+            const {channels, channelMemberships} = await fetchMissingChannelsFromPosts(serverUrl, postsArray, true);
 
             if (authors?.length) {
                 promises.push(
@@ -79,8 +79,8 @@ export async function fetchRecentMentions(serverUrl: string): Promise<PostSearch
             }
 
             if (channels?.length && channelMemberships?.length) {
-                const channelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships) as Array<Promise<Model[]>>;
-                if (channelPromises && channelPromises.length) {
+                const channelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships);
+                if (channelPromises.length) {
                     promises.push(...channelPromises);
                 }
             }
@@ -119,6 +119,12 @@ export async function fetchRecentMentions(serverUrl: string): Promise<PostSearch
 }
 
 export const searchPosts = async (serverUrl: string, params: PostSearchParams): Promise<PostSearchRequest> => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -134,5 +140,11 @@ export const searchPosts = async (serverUrl: string, params: PostSearchParams): 
         return {error};
     }
 
-    return processPostsFetched(serverUrl, '', data, false);
+    const result = processPostsFetched(data);
+    await operator.handlePosts({
+        ...result,
+        actionType: '',
+    });
+
+    return result;
 };

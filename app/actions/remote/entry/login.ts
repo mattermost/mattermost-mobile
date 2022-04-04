@@ -96,14 +96,14 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
         if (!clData.error && !prefData.error && !teamData.error) {
             const teamOrderPreference = getPreferenceValue(prefData.preferences!, Preferences.TEAMS_ORDER, '', '') as string;
             const teamRoles: string[] = [];
-            const teamMembers: string[] = [];
+            const teamMembers = new Set<string>();
 
             teamData.memberships?.forEach((tm) => {
                 teamRoles.push(...tm.roles.split(' '));
-                teamMembers.push(tm.team_id);
+                teamMembers.add(tm.team_id);
             });
 
-            myTeams = teamData.teams!.filter((t) => teamMembers?.includes(t.id));
+            myTeams = teamData.teams!.filter((t) => teamMembers.has(t.id));
             initialTeam = selectDefaultTeam(myTeams, user.locale, teamOrderPreference, clData.config?.ExperimentalPrimaryTeam);
 
             if (initialTeam) {

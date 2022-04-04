@@ -4,10 +4,6 @@
 import {MM_TABLES} from '@constants/database';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {
-    isRecordCategoryChannelEqualToRaw,
-    isRecordCategoryEqualToRaw,
-} from '@database/operator/server_data_operator/comparators';
-import {
     transformCategoryChannelRecord,
     transformCategoryRecord,
 } from '@database/operator/server_data_operator/transformers/category';
@@ -50,7 +46,6 @@ const CategoryHandler = (superclass: any) => class extends superclass {
 
         return this.handleRecords({
             fieldName: 'id',
-            findMatchingRecordBy: isRecordCategoryEqualToRaw,
             transformer: transformCategoryRecord,
             createOrUpdateRawValues,
             tableName: CATEGORY,
@@ -77,7 +72,6 @@ const CategoryHandler = (superclass: any) => class extends superclass {
 
         return this.handleRecords({
             fieldName: 'id',
-            findMatchingRecordBy: isRecordCategoryChannelEqualToRaw,
             transformer: transformCategoryChannelRecord,
             createOrUpdateRawValues,
             tableName: CATEGORY_CHANNEL,

@@ -14,7 +14,7 @@ import type PreferenceModel from '@typings/database/models/servers/preference';
 
 const {SERVER: {PREFERENCE}} = MM_TABLES;
 
-export const prepareMyPreferences = (operator: ServerDataOperator, preferences: PreferenceType[], sync = false) => {
+export async function prepareMyPreferences(operator: ServerDataOperator, preferences: PreferenceType[], sync = false): Promise<PreferenceModel[]> {
     try {
         return operator.handlePreferences({
             prepareRecordsOnly: true,
@@ -22,9 +22,9 @@ export const prepareMyPreferences = (operator: ServerDataOperator, preferences: 
             sync,
         });
     } catch {
-        return undefined;
+        return [];
     }
-};
+}
 
 export const queryPreferencesByCategoryAndName = (database: Database, category: string, name?: string, value?: string) => {
     const clauses = [Q.where('category', category)];

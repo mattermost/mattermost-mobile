@@ -4,10 +4,6 @@
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {
-    isRecordCategoryEqualToRaw,
-    isRecordCategoryChannelEqualToRaw,
-} from '@database/operator/server_data_operator/comparators';
-import {
     transformCategoryRecord,
     transformCategoryChannelRecord,
 } from '@database/operator/server_data_operator/transformers/category';
@@ -49,7 +45,6 @@ describe('*** Operator: Category Handlers tests ***', () => {
             createOrUpdateRawValues: categories,
             tableName: MM_TABLES.SERVER.CATEGORY,
             prepareRecordsOnly: false,
-            findMatchingRecordBy: isRecordCategoryEqualToRaw,
             transformer: transformCategoryRecord,
         });
     });
@@ -78,7 +73,6 @@ describe('*** Operator: Category Handlers tests ***', () => {
             createOrUpdateRawValues: categoryChannels,
             tableName: MM_TABLES.SERVER.CATEGORY_CHANNEL,
             prepareRecordsOnly: false,
-            findMatchingRecordBy: isRecordCategoryChannelEqualToRaw,
             transformer: transformCategoryChannelRecord,
         });
     });

@@ -4,6 +4,7 @@
 import React, {useCallback, useMemo} from 'react';
 import {FlatList} from 'react-native';
 
+import {DMS_CATEGORY} from '@constants/categories';
 import ChannelModel from '@typings/database/models/servers/channel';
 
 import ChannelListItem from './channel';
@@ -13,7 +14,7 @@ import type CategoryModel from '@typings/database/models/servers/category';
 type Props = {
     currentChannelId: string;
     sortedChannels: ChannelModel[];
-    hiddenChannelIds: string[];
+    hiddenChannelIds: Set<string>;
     category: CategoryModel;
     limit: number;
 };
@@ -25,11 +26,11 @@ const CategoryBody = ({currentChannelId, sortedChannels, category, hiddenChannel
         let filteredChannels = sortedChannels;
 
         // Remove all closed gm/dms
-        if (hiddenChannelIds.length) {
-            filteredChannels = sortedChannels.filter((item) => item && !hiddenChannelIds.includes(item.id));
+        if (hiddenChannelIds.size) {
+            filteredChannels = sortedChannels.filter((item) => item && !hiddenChannelIds.has(item.id));
         }
 
-        if (category.type === 'direct_messages' && limit > 0) {
+        if (category.type === DMS_CATEGORY && limit > 0) {
             return filteredChannels.slice(0, limit - 1);
         }
         return filteredChannels;

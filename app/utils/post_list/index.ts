@@ -134,16 +134,16 @@ function extractUserActivityData(userActivities: any) {
 
     messageData.sort(comparePostTypes);
 
-    function reduceUsers(acc: string[], curr: string) {
-        if (!acc.includes(curr)) {
-            acc.push(curr);
+    function reduceUsers(acc: Set<string>, curr: string) {
+        if (!acc.has(curr)) {
+            acc.add(curr);
         }
         return acc;
     }
 
     return {
-        allUserIds: allUserIds.reduce(reduceUsers, []),
-        allUsernames: allUsernames.reduce(reduceUsers, []),
+        allUserIds: Array.from(allUserIds.reduce(reduceUsers, new Set<string>())),
+        allUsernames: Array.from(allUsernames.reduce(reduceUsers, new Set<string>())),
         messageData,
     };
 }

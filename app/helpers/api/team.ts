@@ -26,24 +26,25 @@ export const sortTeamsByUserPreference = (teams: Team[], locale: string, teamsOr
         return [];
     }
 
-    const teamsOrderList = teamsOrder.split(',').filter((t) => t);
+    const teamsOrderArray = teamsOrder.split(',').filter((t) => t);
+    const teamsOrderList = new Set(teamsOrderArray);
 
-    if (!teamsOrderList.length) {
+    if (!teamsOrderList.size) {
         return [...teams].sort(sortTeamsWithLocale(locale));
     }
 
     const customSortedTeams = teams.filter((team) => {
         if (team !== null) {
-            return teamsOrderList.includes(team.id);
+            return teamsOrderList.has(team.id);
         }
         return false;
     }).sort((a, b) => {
-        return teamsOrderList.indexOf(a.id) - teamsOrderList.indexOf(b.id);
+        return teamsOrderArray.indexOf(a.id) - teamsOrderArray.indexOf(b.id);
     });
 
     const otherTeams = teams.filter((team) => {
         if (team !== null) {
-            return !teamsOrderList.includes(team.id);
+            return !teamsOrderList.has(team.id);
         }
         return false;
     }).sort(sortTeamsWithLocale(locale));

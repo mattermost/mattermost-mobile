@@ -332,6 +332,7 @@ export function getFileType(file: FileInfo): string {
         'patch',
         'zip',
     ];
+
     return fileTypes.find((fileType) => {
         const constForFileTypeExtList = `${fileType}_types`.toUpperCase();
         const fileTypeExts = Files[constForFileTypeExtList];
