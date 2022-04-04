@@ -7,8 +7,8 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap, concatAll} from 'rxjs/operators';
 
-import {DMS_CATEGORY} from '@constants/categories';
 import {General, Preferences} from '@constants';
+import {DMS_CATEGORY} from '@constants/categories';
 import {queryChannelsByNames, queryMyChannelSettingsByIds} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {WithDatabaseArgs} from '@typings/database/database';
