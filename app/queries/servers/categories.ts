@@ -8,6 +8,7 @@ import {makeCategoryChannelId} from '@utils/categories';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type CategoryModel from '@typings/database/models/servers/category';
+import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
 
 const {SERVER: {CATEGORY}} = MM_TABLES;
 
@@ -35,7 +36,7 @@ export const prepareCategories = (operator: ServerDataOperator, categories: Cate
 export async function prepareCategoryChannels(
     operator: ServerDataOperator,
     categories: CategoryWithChannels[],
-): Promise<Model[]> {
+): Promise<CategoryChannelModel[]> {
     try {
         const categoryChannels: CategoryChannel[] = [];
 
@@ -63,12 +64,12 @@ export async function prepareCategoryChannels(
 export const prepareDeleteCategory = async (category: CategoryModel): Promise<Model[]> => {
     const preparedModels: Model[] = [category.prepareDestroyPermanently()];
 
-    const associatedChildren: Array<Query<Model>|undefined> = [
+    const associatedChildren: Array<Query<Model>> = [
         category.categoryChannels,
     ];
     await Promise.all(associatedChildren.map(async (children) => {
-        const models = await children?.fetch();
-        models?.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
+        const models = await children.fetch();
+        models.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
     }));
 
     return preparedModels;

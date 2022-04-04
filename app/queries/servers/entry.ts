@@ -43,8 +43,8 @@ export const prepareModels = async ({operator, initialTeamId, removeTeams, remov
         });
     }
 
-    if (teamData?.teams?.length) {
-        modelPromises.push(...prepareMyTeams(operator, teamData.teams, teamData.memberships || []));
+    if (teamData?.teams?.length && teamData.memberships?.length) {
+        modelPromises.push(...prepareMyTeams(operator, teamData.teams, teamData.memberships));
     }
 
     if (chData?.categories?.length) {
@@ -52,8 +52,8 @@ export const prepareModels = async ({operator, initialTeamId, removeTeams, remov
         modelPromises.push(prepareCategoryChannels(operator, chData.categories));
     }
 
-    if (initialTeamId && chData?.channels?.length) {
-        modelPromises.push(...await prepareMyChannelsForTeam(operator, initialTeamId, chData.channels, chData.memberships || []));
+    if (initialTeamId && chData?.channels?.length && chData.memberships?.length) {
+        modelPromises.push(...await prepareMyChannelsForTeam(operator, initialTeamId, chData.channels, chData.memberships));
     }
 
     if (prefData?.preferences?.length) {

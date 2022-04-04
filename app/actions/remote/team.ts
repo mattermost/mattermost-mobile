@@ -92,15 +92,11 @@ export const fetchMyTeams = async (serverUrl: string, fetchOnly = false): Promis
 
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-            const modelPromises: Array<Promise<Model[]>> = [];
+
             if (operator) {
                 const removeTeamIds = memberships.filter((m) => m.delete_at > 0).map((m) => m.team_id);
                 const remainingTeams = teams.filter((t) => !removeTeamIds.includes(t.id));
-                const prepare = prepareMyTeams(operator, remainingTeams, memberships);
-                if (prepare) {
-                    modelPromises.push(...prepare);
-                }
-
+                const modelPromises = prepareMyTeams(operator, remainingTeams, memberships);
                 if (removeTeamIds.length) {
                     if (removeTeamIds?.length) {
                         // Immediately delete myTeams so that the UI renders only teams the user is a member of.
@@ -113,8 +109,8 @@ export const fetchMyTeams = async (serverUrl: string, fetchOnly = false): Promis
 
                 if (modelPromises.length) {
                     const models = await Promise.all(modelPromises);
-                    const flattenedModels = models.flat() as Model[];
-                    if (flattenedModels?.length > 0) {
+                    const flattenedModels = models.flat();
+                    if (flattenedModels.length > 0) {
                         await operator.batchRecords(flattenedModels);
                     }
                 }
@@ -143,15 +139,11 @@ export const fetchMyTeam = async (serverUrl: string, teamId: string, fetchOnly =
         ]);
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-            const modelPromises: Array<Promise<Model[]>> = [];
             if (operator) {
-                const prepare = prepareMyTeams(operator, [team], [membership]);
-                if (prepare) {
-                    modelPromises.push(...prepare);
-                }
+                const modelPromises = prepareMyTeams(operator, [team], [membership]);
                 if (modelPromises.length) {
                     const models = await Promise.all(modelPromises);
-                    const flattenedModels = models.flat() as Model[];
+                    const flattenedModels = models.flat();
                     if (flattenedModels?.length > 0) {
                         await operator.batchRecords(flattenedModels);
                     }

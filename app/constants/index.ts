@@ -3,6 +3,7 @@
 
 import ActionType from './action_type';
 import Apps from './apps';
+import Categories from './categories';
 import Channel from './channel';
 import {CustomStatusDuration} from './custom_status';
 import Database from './database';
@@ -30,6 +31,7 @@ import WebsocketEvents from './websocket';
 export {
     ActionType,
     Apps,
+    Categories,
     CustomStatusDuration,
     Channel,
     Database,

@@ -4,6 +4,7 @@
 import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
+import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@app/constants/categories';
 import {General, Navigation as NavigationConstants, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
@@ -255,20 +256,22 @@ export const storeMyChannelsForTeam = async (serverUrl: string, teamId: string, 
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
-    const modelPromises: Array<Promise<Model[]>> = [];
-    const prepare = await prepareMyChannelsForTeam(operator, teamId, channels, memberships);
-    if (prepare) {
-        modelPromises.push(...prepare);
-    }
+    const modelPromises: Array<Promise<Model[]>> = [
+        ...await prepareMyChannelsForTeam(operator, teamId, channels, memberships),
+    ];
 
     const models = await Promise.all(modelPromises);
+    if (!models.length) {
+        return {models: []};
+    }
+
     const flattenedModels = models.flat() as Model[];
 
     if (prepareRecordsOnly) {
         return {models: flattenedModels};
     }
 
-    if (flattenedModels?.length > 0) {
+    if (flattenedModels.length) {
         try {
             await operator.batchRecords(flattenedModels);
         } catch (error) {
@@ -410,7 +413,7 @@ export async function addChannelToDefaultCategory(serverUrl: string, channel: Ch
 
     if (!isDMorGM(channel)) {
         const models = await operator.handleCategoryChannels({categoryChannels: [{
-            category_id: makeCategoryId('channels', userId, teamId),
+            category_id: makeCategoryId(CHANNELS_CATEGORY, userId, teamId),
             channel_id: channel.id,
             sort_order: 0,
             id: makeCategoryChannelId(teamId, channel.id),
@@ -425,7 +428,7 @@ export async function addChannelToDefaultCategory(serverUrl: string, channel: Ch
         await Promise.all(
             allTeams.map(
                 (t) => operator.handleCategoryChannels({categoryChannels: [{
-                    category_id: makeCategoryId('direct_messages', userId, t.id),
+                    category_id: makeCategoryId(DMS_CATEGORY, userId, t.id),
                     channel_id: channel.id,
                     sort_order: 0,
                     id: makeCategoryChannelId(t.id, channel.id),

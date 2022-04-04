@@ -139,7 +139,7 @@ export const createChannel = async (serverUrl: string, displayName: string, purp
 
         const models: Model[] = [];
         const channelModels = await prepareMyChannelsForTeam(operator, channelData.team_id, [channelData], [member]);
-        if (channelModels?.length) {
+        if (channelModels.length) {
             const resolvedModels = await Promise.all(channelModels);
             models.push(...resolvedModels.flat());
         }
@@ -447,12 +447,7 @@ export const joinChannel = async (serverUrl: string, userId: string, teamId: str
         if (channel && member && !fetchOnly) {
             fetchRolesIfNeeded(serverUrl, member.roles.split(' '));
 
-            const modelPromises: Array<Promise<Model[]>> = [];
-            const prepare = await prepareMyChannelsForTeam(operator, teamId, [channel], [member]);
-            if (prepare) {
-                modelPromises.push(...prepare);
-            }
-
+            const modelPromises: Array<Promise<Model[]>> = await prepareMyChannelsForTeam(operator, teamId, [channel], [member]);
             if (modelPromises.length) {
                 const models = await Promise.all(modelPromises);
                 const flattenedModels: Model[] = models.flat();
@@ -592,10 +587,7 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
         const modelPromises: Array<Promise<Model[]>> = [];
         const {operator} = DatabaseManager.serverDatabases[serverUrl];
         if (!(team instanceof Model)) {
-            const prepT = prepareMyTeams(operator, [team], [(myTeam as TeamMembership)]);
-            if (prepT) {
-                modelPromises.push(...prepT);
-            }
+            modelPromises.push(...prepareMyTeams(operator, [team], [(myTeam as TeamMembership)]));
         } else if (!(myTeam instanceof Model)) {
             const mt: MyTeam[] = [{
                 id: myTeam.team_id,
@@ -608,10 +600,7 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
         }
 
         if (!(myChannel instanceof Model)) {
-            const prepCh = await prepareMyChannelsForTeam(operator, team.id, [channel], [myChannel]);
-            if (prepCh) {
-                modelPromises.push(...prepCh);
-            }
+            modelPromises.push(...await prepareMyChannelsForTeam(operator, team.id, [channel], [myChannel]));
         }
 
         let teamId;
@@ -694,7 +683,7 @@ export const createDirectChannel = async (serverUrl: string, userId: string, dis
 
         const models = [];
         const channelPromises = await prepareMyChannelsForTeam(operator, '', [created], [member, {...member, user_id: userId}]);
-        if (channelPromises) {
+        if (channelPromises.length) {
             const channelModels = await Promise.all(channelPromises);
             const flattenedChannelModels = channelModels.flat();
             if (flattenedChannelModels.length) {
@@ -828,7 +817,7 @@ export const createGroupChannel = async (serverUrl: string, userIds: string[]) =
 
         if (directChannels?.length) {
             const channelPromises = await prepareMyChannelsForTeam(operator, '', directChannels, members);
-            if (channelPromises) {
+            if (channelPromises.length) {
                 const channelModels = await Promise.all(channelPromises);
                 const models: Model[] = channelModels.flat();
                 const categoryModels = await addChannelToDefaultCategory(serverUrl, created, true);
@@ -943,10 +932,8 @@ export async function getOrCreateDirectChannel(serverUrl: string, otherUserId: s
 
             const member = await client.getMyChannelMember(newChannel.id);
 
-            const modelPromises: Array<Promise<Model[]>> = [];
-            const prepare = await prepareMyChannelsForTeam(operator, '', [newChannel], [member]);
-            if (prepare?.length) {
-                modelPromises.push(...prepare);
+            const modelPromises: Array<Promise<Model[]>> = [...await prepareMyChannelsForTeam(operator, '', [newChannel], [member])];
+            if (modelPromises.length) {
                 const channelModels = await Promise.all(modelPromises);
                 const models: Model[] = channelModels.flat();
                 const categoryModels = await addChannelToDefaultCategory(serverUrl, newChannel, true);

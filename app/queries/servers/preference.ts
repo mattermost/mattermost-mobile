@@ -14,7 +14,7 @@ import type PreferenceModel from '@typings/database/models/servers/preference';
 
 const {SERVER: {PREFERENCE}} = MM_TABLES;
 
-export async function prepareMyPreferences(operator: ServerDataOperator, preferences: PreferenceType[], sync = false): Promise<Model[]> {
+export async function prepareMyPreferences(operator: ServerDataOperator, preferences: PreferenceType[], sync = false): Promise<PreferenceModel[]> {
     try {
         return operator.handlePreferences({
             prepareRecordsOnly: true,

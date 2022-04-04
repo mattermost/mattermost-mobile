@@ -41,7 +41,7 @@ export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
         const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
         if (channels && memberships) {
             const prepare = await prepareMyChannelsForTeam(operator, teamId, channels, memberships);
-            if (prepare) {
+            if (prepare.length) {
                 const prepareModels = await Promise.all(prepare);
                 const flattenedModels = prepareModels.flat();
                 if (flattenedModels?.length > 0) {
@@ -205,7 +205,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
             const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
             if (channels && memberships) {
                 const prepare = await prepareMyChannelsForTeam(operator, teamId, channels, memberships);
-                if (prepare) {
+                if (prepare.length) {
                     const prepareModels = await Promise.all(prepare);
                     const flattenedModels = prepareModels.flat();
                     if (flattenedModels?.length > 0) {
