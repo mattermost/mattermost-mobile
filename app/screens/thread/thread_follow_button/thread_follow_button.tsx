@@ -10,6 +10,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type ThreadModel from '@typings/database/models/servers/thread';
 
@@ -43,8 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         text: {
             color: theme.sidebarHeaderTextColor,
-            fontWeight: '600',
-            fontSize: 12,
+            ...typography('Heading', 75, 'SemiBold'),
         },
     };
 });
