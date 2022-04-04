@@ -7,8 +7,9 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
-import {processPostsFetched, removePost} from '@actions/local/post';
+import {removePost} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
+import {createThreadFromNewPost} from '@actions/local/thread';
 import {ActionType, Events, General, Post, ServerErrors} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -20,8 +21,10 @@ import {prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/ser
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
 import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
+import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {queryAllUsers} from '@queries/servers/user';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
+import {processPostsFetched} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import {forceLogoutIfNecessary} from './session';
@@ -62,11 +65,13 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         return {error};
     }
 
-    const currentUserId = await getCurrentUserId(operator.database);
+    const {database} = operator;
+
+    const currentUserId = await getCurrentUserId(database);
     const timestamp = Date.now();
     const pendingPostId = post.pending_post_id || `${currentUserId}:${timestamp}`;
 
-    const existing = await getPostById(operator.database, pendingPostId);
+    const existing = await getPostById(database, pendingPostId);
     if (existing && !existing.props.failed) {
         return {data: false};
     }
@@ -111,22 +116,33 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         initialPostModels.push(...postModels);
     }
 
-    const customEmojis = await queryAllCustomEmojis(operator.database).fetch();
+    const customEmojis = await queryAllCustomEmojis(database).fetch();
     const emojisInMessage = matchEmoticons(newPost.message);
     const reactionModels = await addRecentReaction(serverUrl, getValidEmojis(emojisInMessage, customEmojis), true);
     if (!('error' in reactionModels) && reactionModels.length) {
         initialPostModels.push(...reactionModels);
     }
 
-    operator.batchRecords(initialPostModels);
+    await operator.batchRecords(initialPostModels);
+
+    const isCRTEnabled = await getIsCRTEnabled(database);
 
     try {
         const created = await client.createPost(newPost);
-        await operator.handlePosts({
+        const models: Model[] = await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_NEW,
             order: [created.id],
             posts: [created],
+            prepareRecordsOnly: true,
         });
+        if (isCRTEnabled) {
+            const {models: threadModels} = await createThreadFromNewPost(serverUrl, created, true);
+            if (threadModels?.length) {
+                models.push(...threadModels);
+            }
+        }
+        await operator.batchRecords(models);
+
         newPost = created;
     } catch (error: any) {
         const errorPost = {
@@ -147,11 +163,19 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         ) {
             await removePost(serverUrl, databasePost);
         } else {
-            await operator.handlePosts({
+            const models: Model[] = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: [errorPost.id],
                 posts: [errorPost],
+                prepareRecordsOnly: true,
             });
+            if (isCRTEnabled) {
+                const {models: threadModels} = await createThreadFromNewPost(serverUrl, errorPost, true);
+                if (threadModels?.length) {
+                    models.push(...threadModels);
+                }
+            }
+            await operator.batchRecords(models);
         }
     }
 
@@ -229,6 +253,14 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string,
                 models.push(memberModel);
             }
 
+            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            if (isCRTEnabled) {
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, data.posts);
+                if (threadModels?.length) {
+                    models.push(...threadModels);
+                }
+            }
+
             if (models.length) {
                 await operator.batchRecords(models);
             }
@@ -259,6 +291,10 @@ export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: C
 };
 
 export const fetchPosts = async (serverUrl: string, channelId: string, page = 0, perPage = General.POST_CHUNK_SIZE, fetchOnly = false): Promise<PostsRequest> => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -267,8 +303,26 @@ export const fetchPosts = async (serverUrl: string, channelId: string, page = 0,
     }
 
     try {
-        const data = await client.getPosts(channelId, page, perPage);
-        return processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_IN_CHANNEL, data, fetchOnly);
+        const isCRTEnabled = await getIsCRTEnabled(operator.database);
+        const data = await client.getPosts(channelId, page, perPage, isCRTEnabled, isCRTEnabled);
+        const result = await processPostsFetched(data);
+        if (!fetchOnly) {
+            const models = await operator.handlePosts({
+                ...result,
+                actionType: ActionType.POSTS.RECEIVED_SINCE,
+                prepareRecordsOnly: true,
+            });
+            if (isCRTEnabled) {
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
+                if (threadModels?.length) {
+                    models.push(...threadModels);
+                }
+            }
+            if (models.length) {
+                await operator.batchRecords(models);
+            }
+        }
+        return result;
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -294,8 +348,9 @@ export const fetchPostsBefore = async (serverUrl: string, channelId: string, pos
         if (activeServerUrl === serverUrl) {
             DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, true);
         }
-        const data = await client.getPostsBefore(channelId, postId, 0, perPage);
-        const result = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_BEFORE, data, true);
+        const isCRTEnabled = await getIsCRTEnabled(operator.database);
+        const data = await client.getPostsBefore(channelId, postId, 0, perPage, isCRTEnabled, isCRTEnabled);
+        const result = await processPostsFetched(data);
 
         if (activeServerUrl === serverUrl) {
             DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, false);
@@ -317,6 +372,13 @@ export const fetchPostsBefore = async (serverUrl: string, channelId: string, pos
                     models.push(...userModels);
                 }
 
+                if (isCRTEnabled) {
+                    const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
+                    if (threadModels?.length) {
+                        models.push(...threadModels);
+                    }
+                }
+
                 await operator.batchRecords(models);
             } catch (error) {
                 // eslint-disable-next-line no-console
@@ -335,6 +397,11 @@ export const fetchPostsBefore = async (serverUrl: string, channelId: string, pos
 };
 
 export const fetchPostsSince = async (serverUrl: string, channelId: string, since: number, fetchOnly = false): Promise<PostsRequest> => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -343,8 +410,26 @@ export const fetchPostsSince = async (serverUrl: string, channelId: string, sinc
     }
 
     try {
-        const data = await client.getPostsSince(channelId, since);
-        return processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_SINCE, data, fetchOnly);
+        const isCRTEnabled = await getIsCRTEnabled(operator.database);
+        const data = await client.getPostsSince(channelId, since, isCRTEnabled, isCRTEnabled);
+        const result = await processPostsFetched(data);
+        if (!fetchOnly) {
+            const models = await operator.handlePosts({
+                ...result,
+                actionType: ActionType.POSTS.RECEIVED_SINCE,
+                prepareRecordsOnly: true,
+            });
+            if (isCRTEnabled) {
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
+                if (threadModels?.length) {
+                    models.push(...threadModels);
+                }
+            }
+            if (models.length) {
+                await operator.batchRecords(models);
+            }
+        }
+        return result;
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -423,6 +508,11 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
 };
 
 export const fetchPostThread = async (serverUrl: string, postId: string, fetchOnly = false): Promise<PostsRequest> => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -432,7 +522,25 @@ export const fetchPostThread = async (serverUrl: string, postId: string, fetchOn
 
     try {
         const data = await client.getPostThread(postId);
-        return processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_IN_THREAD, data, fetchOnly);
+        const result = processPostsFetched(data);
+        if (!fetchOnly) {
+            const models = await operator.handlePosts({
+                ...result,
+                actionType: ActionType.POSTS.RECEIVED_IN_THREAD,
+                prepareRecordsOnly: true,
+            });
+            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            if (isCRTEnabled) {
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
+                if (threadModels?.length) {
+                    models.push(...threadModels);
+                }
+            }
+            if (models.length) {
+                await operator.batchRecords(models);
+            }
+        }
+        return result;
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -468,7 +576,7 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
             order: [],
         };
 
-        const data = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_AROUND, preData, true);
+        const data = processPostsFetched(preData);
 
         let posts: Model[] = [];
         const models: Model[] = [];
@@ -494,6 +602,14 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
             });
 
             models.push(...posts);
+
+            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            if (isCRTEnabled) {
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, data.posts);
+                if (threadModels?.length) {
+                    models.push(...threadModels);
+                }
+            }
             await operator.batchRecords(models);
         }
 
@@ -579,9 +695,8 @@ export async function fetchMissingChannelsFromPosts(serverUrl: string, posts: Po
                         }
                         return mdls;
                     });
-
-                    if (models) {
-                        operator.batchRecords(models);
+                    if (models.length) {
+                        await operator.batchRecords(models);
                     }
                 }
             }
@@ -628,6 +743,14 @@ export const fetchPostById = async (serverUrl: string, postId: string, fetchOnly
                     prepareRecordsOnly: false,
                 });
                 models.push(...users);
+            }
+
+            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            if (isCRTEnabled) {
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, [post]);
+                if (threadModels?.length) {
+                    models.push(...threadModels);
+                }
             }
 
             await operator.batchRecords(models);
@@ -832,6 +955,11 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
                 prepareRecordsOnly: true,
             }),
         );
+
+        const isCRTEnabled = await getIsCRTEnabled(operator.database);
+        if (isCRTEnabled) {
+            promises.push(prepareThreadsFromReceivedPosts(operator, postsArray));
+        }
 
         const modelArrays = await Promise.all(promises);
         const models = modelArrays.flatMap((mdls) => {
