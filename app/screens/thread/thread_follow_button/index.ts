@@ -3,6 +3,8 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import {observeThreadById} from '@queries/servers/thread';
 
@@ -12,7 +14,9 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables(['threadId'], ({threadId, database}: {threadId: string} & WithDatabaseArgs) => {
     return {
-        thread: observeThreadById(database, threadId),
+        isFollowing: observeThreadById(database, threadId).pipe(
+            switchMap((thread) => of$(thread?.isFollowing)),
+        ),
     };
 });
 

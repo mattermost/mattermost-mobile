@@ -12,11 +12,10 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import type ThreadModel from '@typings/database/models/servers/thread';
-
 type Props = {
+    isFollowing: boolean;
     teamId: string;
-    thread: ThreadModel;
+    threadId: string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -49,14 +48,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-function ThreadFollow({teamId, thread}: Props) {
+function ThreadFollow({isFollowing, teamId, threadId}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     const serverUrl = useServerUrl();
 
     const onPress = preventDoubleTap(() => {
-        updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing);
+        updateThreadFollowing(serverUrl, teamId, threadId, !isFollowing);
     });
 
     const containerStyle = [styles.container];
@@ -64,7 +63,7 @@ function ThreadFollow({teamId, thread}: Props) {
         id: 'threads.follow',
         defaultMessage: 'Follow',
     };
-    if (thread.isFollowing) {
+    if (isFollowing) {
         containerStyle.push(styles.containerActive);
         followTextProps = {
             id: 'threads.following',
