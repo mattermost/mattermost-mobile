@@ -123,9 +123,10 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
         <CompassIcon
             color={changeOpacity(props.searchIconColor || theme.centerChannelColor, Platform.select({android: 0.56, default: 0.72}))}
             name='magnify'
+            onPress={searchRef.current?.focus}
             size={24}
         />
-    ), [theme]);
+    ), [searchRef.current, theme]);
 
     const cancelIcon = useMemo(() => (
         <CompassIcon
