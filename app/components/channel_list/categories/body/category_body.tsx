@@ -4,7 +4,7 @@
 import React, {useCallback, useMemo} from 'react';
 import {FlatList} from 'react-native';
 
-import {DMS_CATEGORY} from '@app/constants/categories';
+import {DMS_CATEGORY} from '@constants/categories';
 import ChannelModel from '@typings/database/models/servers/channel';
 
 import ChannelListItem from './channel';

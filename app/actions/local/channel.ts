@@ -4,7 +4,7 @@
 import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
-import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@app/constants/categories';
+import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@constants/categories';
 import {General, Navigation as NavigationConstants, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
