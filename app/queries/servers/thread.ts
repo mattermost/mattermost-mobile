@@ -68,9 +68,10 @@ type QueryThreadsInTeamArgs = {
     onlyUnreads?: boolean;
     sort?: boolean;
     teamId?: string;
+    includeDmGm?: boolean;
 };
 
-export const queryThreadsInTeam = ({database, hasReplies = true, isFollowing = true, onlyUnreads, sort, teamId}: QueryThreadsInTeamArgs): Query<ThreadModel> => {
+export const queryThreadsInTeam = ({database, hasReplies = true, isFollowing = true, onlyUnreads, sort, teamId, includeDmGm = true}: QueryThreadsInTeamArgs): Query<ThreadModel> => {
     const query: Q.Clause[] = [];
 
     if (isFollowing) {
@@ -82,20 +83,20 @@ export const queryThreadsInTeam = ({database, hasReplies = true, isFollowing = t
         query.push(Q.where('reply_count', Q.gt(0)));
     }
 
-    // If teamId is specified, only get threads in that team and DM
+    // If teamId is specified, only get threads in that team
     if (teamId) {
+        let condition: Q.Condition = Q.where('team_id', teamId);
+
+        if (includeDmGm) {
+            condition = Q.or(
+                Q.where('team_id', teamId),
+                Q.where('team_id', ''),
+            );
+        }
+
         query.push(
             Q.experimentalNestedJoin(POST, CHANNEL),
-            Q.on(
-                POST,
-                Q.on(
-                    CHANNEL,
-                    Q.or(
-                        Q.where('team_id', teamId),
-                        Q.where('team_id', ''),
-                    ),
-                ),
-            ),
+            Q.on(POST, Q.on(CHANNEL, condition)),
         );
     }
 
@@ -111,7 +112,7 @@ export const queryThreadsInTeam = ({database, hasReplies = true, isFollowing = t
 };
 
 export const queryUnreadsAndMentionsInTeam = (database: Database, teamId: string) => {
-    return queryThreadsInTeam({database, teamId, onlyUnreads: true}).observeWithColumns(['unread_replies', 'unread_mentions']).pipe(
+    return queryThreadsInTeam({database, teamId, onlyUnreads: true, includeDmGm: false}).observeWithColumns(['unread_replies', 'unread_mentions']).pipe(
         switchMap((threads) => {
             let unreads = 0;
             let mentions = 0;

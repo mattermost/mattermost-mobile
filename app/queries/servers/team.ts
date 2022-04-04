@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {of as of$, map as map$, Observable} from 'rxjs';
+import {switchMap, distinctUntilChanged, combineLatestWith} from 'rxjs/operators';
 
 import {Database as DatabaseConstants, Preferences} from '@constants';
 import {getPreferenceValue} from '@helpers/api/preference';
@@ -14,16 +14,24 @@ import {prepareDeleteCategory} from './categories';
 import {prepareDeleteChannel, getDefaultChannelForTeam} from './channel';
 import {queryPreferencesByCategoryAndName} from './preference';
 import {patchTeamHistory, getConfig, getTeamHistory, observeCurrentTeamId} from './system';
+import {observeIsCRTEnabled, queryUnreadsAndMentionsInTeam} from './thread';
 import {getCurrentUser} from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
 import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
 
-const {MY_TEAM, TEAM, TEAM_CHANNEL_HISTORY, MY_CHANNEL} = DatabaseConstants.MM_TABLES.SERVER;
+const {
+    CHANNEL,
+    MY_CHANNEL,
+    MY_TEAM,
+    TEAM,
+    TEAM_CHANNEL_HISTORY,
+} = DatabaseConstants.MM_TABLES.SERVER;
 
 export const addChannelToTeamHistory = async (operator: ServerDataOperator, teamId: string, channelId: string, prepareRecordsOnly = false) => {
     let tch: TeamChannelHistory|undefined;
@@ -370,3 +378,48 @@ export const observeCurrentTeam = (database: Database) => {
         switchMap((id) => observeTeam(database, id)),
     );
 };
+
+function observeMyChannelMentionCount(database: Database, teamId: string): Observable<number> {
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.on(CHANNEL, Q.and(
+            Q.where('team_id', Q.eq(teamId)),
+            Q.where('delete_at', Q.eq(0)),
+        )),
+    ).
+        observeWithColumns(['mentions_count', 'is_unread']).
+        pipe(
+            switchMap((val) => of$(val.reduce((acc, v) => {
+                if (v.isUnread) {
+                    return acc + v.mentionsCount;
+                }
+                return acc;
+            }, 0))),
+            distinctUntilChanged(),
+        );
+}
+
+function observeThreadMentionCount(database: Database, teamId: string): Observable<number> {
+    return queryUnreadsAndMentionsInTeam(database, teamId).pipe(
+        switchMap(({mentions}) => of$(mentions)),
+        distinctUntilChanged(),
+    );
+}
+
+export function observeTeamMentionCount(database: Database, teamId: string): Observable<number> {
+    const channelMentionCountObservable = observeMyChannelMentionCount(database, teamId);
+
+    const threadMentionCountObservable = observeIsCRTEnabled(database).pipe(
+        switchMap((isCrtEnabled) => {
+            if (isCrtEnabled) {
+                return observeThreadMentionCount(database, teamId);
+            }
+            return of$(0);
+        }),
+    );
+
+    return channelMentionCountObservable.pipe(
+        combineLatestWith(threadMentionCountObservable),
+        map$(([ccount, tcount]) => ccount + tcount),
+        distinctUntilChanged(),
+    );
+}
