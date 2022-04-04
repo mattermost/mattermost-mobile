@@ -17,8 +17,6 @@ import {patchTeamHistory, getConfig, getTeamHistory, observeCurrentTeamId} from 
 import {getCurrentUser} from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
-import type CategoryModel from '@typings/database/models/servers/category';
-import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
 import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
@@ -183,7 +181,7 @@ export const getDefaultTeamId = async (database: Database) => {
     return defaultTeam?.id;
 };
 
-export const prepareMyTeams = (operator: ServerDataOperator, teams: Team[], memberships: TeamMembership[]) => {
+export function prepareMyTeams(operator: ServerDataOperator, teams: Team[], memberships: TeamMembership[]): Array<Promise<Model[]>> {
     try {
         const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams});
         const teamMemberships = memberships.filter((m) => teams.find((t) => t.id === m.team_id) && m.delete_at === 0);
@@ -198,9 +196,9 @@ export const prepareMyTeams = (operator: ServerDataOperator, teams: Team[], memb
 
         return [teamRecords, teamMembershipRecords, myTeamRecords];
     } catch {
-        return undefined;
+        return [];
     }
-};
+}
 
 export const deleteMyTeams = async (operator: ServerDataOperator, myTeams: MyTeamModel[]) => {
     try {
@@ -247,8 +245,8 @@ export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
             }
         }));
 
-        const categories = await team.categories?.fetch() as CategoryModel[] | undefined;
-        if (categories?.length) {
+        const categories = await team.categories?.fetch();
+        if (categories.length) {
             for await (const category of categories) {
                 try {
                     const preparedCategory = await prepareDeleteCategory(category);
@@ -259,8 +257,8 @@ export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
             }
         }
 
-        const channels = await team.channels?.fetch() as ChannelModel[] | undefined;
-        if (channels?.length) {
+        const channels = await team.channels?.fetch();
+        if (channels.length) {
             for await (const channel of channels) {
                 try {
                     const preparedChannel = await prepareDeleteChannel(channel);

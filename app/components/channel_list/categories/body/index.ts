@@ -8,6 +8,7 @@ import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap, concatAll} from 'rxjs/operators';
 
 import {General, Preferences} from '@constants';
+import {DMS_CATEGORY} from '@constants/categories';
 import {queryChannelsByNames, queryMyChannelSettingsByIds} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {WithDatabaseArgs} from '@typings/database/database';
@@ -114,7 +115,7 @@ const enhance = withObservables(['category'], ({category, locale, database, curr
         observe().pipe(switchMap(mapPrefName));
 
     let limit = of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
-    if (category.type === 'direct_messages') {
+    if (category.type === DMS_CATEGORY) {
         limit = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_LIMIT_DMS).observe().pipe(
             switchMap((val) => {
                 return val[0] ? of$(parseInt(val[0].value, 10)) : of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);

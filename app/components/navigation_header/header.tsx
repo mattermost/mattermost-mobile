@@ -57,6 +57,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         lineHeight: 12,
         marginBottom: 8,
         marginTop: 2,
+        height: 13,
     },
     titleContainer: {
         alignItems: Platform.select({android: 'flex-start', ios: 'center'}),

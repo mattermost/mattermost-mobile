@@ -22,7 +22,7 @@ import type UserModel from '@typings/database/models/servers/user';
 
 const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP, MY_CHANNEL_SETTINGS, CHANNEL_INFO, USER}} = MM_TABLES;
 
-export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, channels: Channel[], channelMembers: ChannelMembership[]): Array<Promise<Model[]>> | undefined {
+export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, channels: Channel[], channelMembers: ChannelMembership[]): Array<Promise<Model[]>> {
     const channelInfos: ChannelInfo[] = [];
     const memberships = channelMembers.map((cm) => ({...cm, id: cm.channel_id}));
 
@@ -38,19 +38,19 @@ export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, 
     }
 
     try {
-        const channelRecords: Promise<Model[]> = operator.handleChannel({channels, prepareRecordsOnly: true});
-        const channelInfoRecords: Promise<Model[]> = operator.handleChannelInfo({channelInfos, prepareRecordsOnly: true});
-        const membershipRecords: Promise<Model[]> = operator.handleChannelMembership({channelMemberships: memberships, prepareRecordsOnly: true});
-        const myChannelRecords: Promise<Model[]> = operator.handleMyChannel({channels, myChannels: memberships, prepareRecordsOnly: true});
-        const myChannelSettingsRecords: Promise<Model[]> = operator.handleMyChannelSettings({settings: memberships, prepareRecordsOnly: true});
+        const channelRecords = operator.handleChannel({channels, prepareRecordsOnly: true});
+        const channelInfoRecords = operator.handleChannelInfo({channelInfos, prepareRecordsOnly: true});
+        const membershipRecords = operator.handleChannelMembership({channelMemberships: memberships, prepareRecordsOnly: true});
+        const myChannelRecords = operator.handleMyChannel({channels, myChannels: memberships, prepareRecordsOnly: true});
+        const myChannelSettingsRecords = operator.handleMyChannelSettings({settings: memberships, prepareRecordsOnly: true});
 
         return [channelRecords, channelInfoRecords, membershipRecords, myChannelRecords, myChannelSettingsRecords];
     } catch {
-        return undefined;
+        return [];
     }
 }
 
-export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[]) => {
+export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[]): Promise<Array<Promise<Model[]>>> => {
     const allChannelsForTeam = await queryAllChannelsForTeam(operator.database, teamId).fetch();
     const channelInfos: ChannelInfo[] = [];
     const memberships = channelMembers.map((cm) => ({...cm, id: cm.channel_id}));
@@ -92,7 +92,7 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
 
         return [channelRecords, channelInfoRecords, membershipRecords, myChannelRecords, myChannelSettingsRecords];
     } catch {
-        return undefined;
+        return [];
     }
 };
 
@@ -292,7 +292,7 @@ export const queryUserChannelsByTypes = (database: Database, userId: string, cha
 };
 
 export const queryTeamDefaultChannel = (database: Database, teamId: string) => {
-    return database.get<ChannelModel>(MM_TABLES.SERVER.CHANNEL).query(
+    return database.get<ChannelModel>(CHANNEL).query(
         Q.where('team_id', teamId),
         Q.where('name', General.DEFAULT_CHANNEL),
     );

@@ -67,7 +67,7 @@ export async function fetchRecentMentions(serverUrl: string): Promise<PostSearch
 
         if (postsArray.length) {
             const {authors} = await fetchPostAuthors(serverUrl, postsArray, true);
-            const {channels, channelMemberships} = await fetchMissingChannelsFromPosts(serverUrl, postsArray, true) as {channels: Channel[]; channelMemberships: ChannelMembership[]};
+            const {channels, channelMemberships} = await fetchMissingChannelsFromPosts(serverUrl, postsArray, true);
 
             if (authors?.length) {
                 promises.push(
@@ -79,8 +79,8 @@ export async function fetchRecentMentions(serverUrl: string): Promise<PostSearch
             }
 
             if (channels?.length && channelMemberships?.length) {
-                const channelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships) as Array<Promise<Model[]>>;
-                if (channelPromises && channelPromises.length) {
+                const channelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships);
+                if (channelPromises.length) {
                     promises.push(...channelPromises);
                 }
             }

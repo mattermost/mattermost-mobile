@@ -4,6 +4,7 @@
 import React, {useCallback, useMemo} from 'react';
 import {FlatList} from 'react-native';
 
+import {DMS_CATEGORY} from '@constants/categories';
 import ChannelModel from '@typings/database/models/servers/channel';
 
 import ChannelListItem from './channel';
@@ -29,7 +30,7 @@ const CategoryBody = ({currentChannelId, sortedChannels, category, hiddenChannel
             filteredChannels = sortedChannels.filter((item) => item && !hiddenChannelIds.includes(item.id));
         }
 
-        if (category.type === 'direct_messages' && limit > 0) {
+        if (category.type === DMS_CATEGORY && limit > 0) {
             return filteredChannels.slice(0, limit - 1);
         }
         return filteredChannels;

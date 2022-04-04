@@ -7,7 +7,7 @@ import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preferen
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
 import {fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
-import {General, Preferences} from '@constants';
+import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
@@ -17,6 +17,7 @@ import {queryAllServers} from '@queries/app/servers';
 import {queryAllChannelsForTeam} from '@queries/servers/channel';
 import {getConfig} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
+import {isDMorGM} from '@utils/channel';
 
 import type ClientError from '@client/rest/error';
 
@@ -192,7 +193,7 @@ export const deferredAppEntryActions = async (
 
     // defer sidebar DM & GM profiles
     if (chData?.channels?.length && chData.memberships?.length) {
-        const directChannels = chData.channels.filter((c) => c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL);
+        const directChannels = chData.channels.filter(isDMorGM);
         const channelsToFetchProfiles = new Set<Channel>(directChannels);
         if (channelsToFetchProfiles.size) {
             const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config, license);

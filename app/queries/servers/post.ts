@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
+import {Database, Model, Q, Query} from '@nozbe/watermelondb';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
@@ -15,16 +15,12 @@ const {SERVER: {POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD}} = MM_TABLES;
 
 export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
     const preparedModels: Model[] = [post.prepareDestroyPermanently()];
-    const relations: Array<Relation<Model> | Query<Model>> = [post.drafts, post.postsInThread];
+    const relations: Array<Query<Model>> = [post.drafts, post.postsInThread];
     for await (const relation of relations) {
         try {
-            const model = await relation?.fetch();
+            const model = await relation.fetch();
             if (model) {
-                if (Array.isArray(model)) {
-                    model.forEach((m) => preparedModels.push(m.prepareDestroyPermanently()));
-                } else {
-                    preparedModels.push(model.prepareDestroyPermanently());
-                }
+                model.forEach((m) => preparedModels.push(m.prepareDestroyPermanently()));
             }
         } catch {
             // Record not found, do nothing

@@ -685,8 +685,8 @@ export async function fetchMissingChannelsFromPosts(serverUrl: string, posts: Po
         const channelMemberships = await Promise.all(userPromises);
 
         if (!fetchOnly && channels.length && channelMemberships.length) {
-            const modelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships) as Array<Promise<Model[]>>;
-            if (modelPromises && modelPromises.length) {
+            const modelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships);
+            if (modelPromises.length) {
                 const channelModelsArray = await Promise.all(modelPromises);
                 if (channelModelsArray.length) {
                     const models = channelModelsArray.flatMap((mdls) => {
@@ -928,7 +928,7 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
         const promises: Array<Promise<Model[]>> = [];
 
         const {authors} = await fetchPostAuthors(serverUrl, postsArray, true);
-        const {channels, channelMemberships} = await fetchMissingChannelsFromPosts(serverUrl, postsArray, true) as {channels: Channel[]; channelMemberships: ChannelMembership[]};
+        const {channels, channelMemberships} = await fetchMissingChannelsFromPosts(serverUrl, postsArray, true);
 
         if (authors?.length) {
             promises.push(
@@ -940,8 +940,8 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
         }
 
         if (channels?.length && channelMemberships?.length) {
-            const channelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships) as Array<Promise<Model[]>>;
-            if (channelPromises && channelPromises.length) {
+            const channelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships);
+            if (channelPromises.length) {
                 promises.push(...channelPromises);
             }
         }

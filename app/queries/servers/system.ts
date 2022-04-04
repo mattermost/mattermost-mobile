@@ -262,8 +262,8 @@ export const patchTeamHistory = (operator: ServerDataOperator, value: string[], 
     prepareRecordsOnly});
 };
 
-export const prepareCommonSystemValues = (
-    operator: ServerDataOperator, values: PrepareCommonSystemValuesArgs) => {
+export async function prepareCommonSystemValues(
+    operator: ServerDataOperator, values: PrepareCommonSystemValuesArgs): Promise<SystemModel[]> {
     try {
         const {config, currentChannelId, currentTeamId, currentUserId, license} = values;
         const systems: IdValue[] = [];
@@ -307,9 +307,9 @@ export const prepareCommonSystemValues = (
             prepareRecordsOnly: true,
         });
     } catch {
-        return undefined;
+        return [];
     }
-};
+}
 
 export const setCurrentChannelId = async (operator: ServerDataOperator, channelId: string) => {
     try {
