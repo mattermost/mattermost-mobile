@@ -53,7 +53,7 @@ export default class ChannelModel extends Model {
     teamId: string;
 
     /** type : The type of the channel ( e.g. G: group messages, D: direct messages, P: private channel and O: public channel) */
-    type: string;
+    type: ChannelType;
 
     /** members : Users belonging to this channel */
     members: Query<ChannelMembershipModel>;

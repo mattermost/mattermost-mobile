@@ -3,14 +3,14 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {of as of$, from as from$, combineLatest, Observable} from 'rxjs';
+import {of as of$, combineLatest, Observable} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
+import {observePermissionForChannel} from '@queries/servers/role';
 import {observeLicense} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
-import {hasPermissionForChannel} from '@utils/role';
 
 import AtMention from './at_mention';
 
@@ -28,9 +28,9 @@ const enhanced = withObservables([], ({database, channelId}: WithDatabaseArgs & 
     let useGroupMentions: Observable<boolean>;
     if (channelId) {
         const currentChannel = observeChannel(database, channelId);
-        useChannelMentions = combineLatest([currentUser, currentChannel]).pipe(switchMap(([u, c]) => (u && c ? from$(hasPermissionForChannel(c, u, Permissions.USE_CHANNEL_MENTIONS, false)) : of$(false))));
+        useChannelMentions = combineLatest([currentUser, currentChannel]).pipe(switchMap(([u, c]) => (u && c ? observePermissionForChannel(c, u, Permissions.USE_CHANNEL_MENTIONS, false) : of$(false))));
         useGroupMentions = combineLatest([currentUser, currentChannel, hasLicense]).pipe(
-            switchMap(([u, c, lcs]) => (lcs && u && c ? from$(hasPermissionForChannel(c, u, Permissions.USE_GROUP_MENTIONS, false)) : of$(false))),
+            switchMap(([u, c, lcs]) => (lcs && u && c ? observePermissionForChannel(c, u, Permissions.USE_GROUP_MENTIONS, false) : of$(false))),
         );
     } else {
         useChannelMentions = of$(false);

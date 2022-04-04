@@ -3,13 +3,13 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {combineLatest, from as from$, of as of$} from 'rxjs';
+import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
+import {observePermissionForPost} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
-import {hasPermissionForPost} from '@utils/role';
 import {isSystemAdmin} from '@utils/user';
 
 import Reactions from './reactions';
@@ -34,8 +34,8 @@ const withReactions = withObservables(['post'], ({database, post}: WithReactions
         map(([u, c, readOnly]) => ((c && c.deleteAt > 0) || (c?.name === General.DEFAULT_CHANNEL && !isSystemAdmin(u?.roles || '') && readOnly))),
     );
 
-    const canAddReaction = currentUser.pipe(switchMap((u) => (u ? from$(hasPermissionForPost(post, u, Permissions.ADD_REACTION, true)) : of$(true))));
-    const canRemoveReaction = currentUser.pipe(switchMap((u) => (u ? from$(hasPermissionForPost(post, u, Permissions.REMOVE_REACTION, true)) : of$(true))));
+    const canAddReaction = currentUser.pipe(switchMap((u) => (u ? observePermissionForPost(post, u, Permissions.ADD_REACTION, true) : of$(true))));
+    const canRemoveReaction = currentUser.pipe(switchMap((u) => (u ? observePermissionForPost(post, u, Permissions.REMOVE_REACTION, true) : of$(true))));
 
     return {
         canAddReaction,

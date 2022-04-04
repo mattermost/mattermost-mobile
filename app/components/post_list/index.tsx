@@ -99,7 +99,7 @@ const PostList = ({
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
     const scrolledToHighlighted = useRef(false);
-    const [offsetY, setOffsetY] = useState(0);
+    const [enableRefreshControl, setEnableRefreshControl] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -145,13 +145,9 @@ const PostList = ({
     const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
         if (Platform.OS === 'android') {
             const {y} = event.nativeEvent.contentOffset;
-            if (y === 0) {
-                setOffsetY(y);
-            } else if (offsetY === 0 && y !== 0) {
-                setOffsetY(y);
-            }
+            setEnableRefreshControl(y === 0);
         }
-    }, [offsetY]);
+    }, []);
 
     const onScrollToIndexFailed = useCallback((info: ScrollIndexFailed) => {
         const index = Math.min(info.highestMeasuredFrameIndex, info.index);
@@ -340,7 +336,7 @@ const PostList = ({
     return (
         <>
             <PostListRefreshControl
-                enabled={offsetY === 0}
+                enabled={enableRefreshControl}
                 refreshing={refreshing}
                 onRefresh={onRefresh}
                 style={styles.container}

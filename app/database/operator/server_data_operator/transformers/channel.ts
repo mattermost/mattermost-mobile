@@ -50,7 +50,7 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
             case General.GM_CHANNEL: {
                 const rawMembers = raw.display_name.split(',').length;
                 const recordMembers = record?.displayName.split(',').length || rawMembers;
-                if (recordMembers < rawMembers && record.displayName) {
+                if (recordMembers < rawMembers && record?.displayName) {
                     displayName = record.displayName;
                 } else {
                     displayName = raw.display_name;
