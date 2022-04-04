@@ -89,7 +89,7 @@ const Intro = ({channel, loading = false, roles}: Props) => {
     }
 
     return (
-        <View style={[styles.container]}>
+        <View style={styles.container}>
             {element}
         </View>
     );

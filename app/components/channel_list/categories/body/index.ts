@@ -37,15 +37,15 @@ const sortAlpha = (locale: string, a: ChannelData, b: ChannelData) => {
 };
 
 const buildAlphaData = (channels: ChannelModel[], settings: MyChannelSettingsModel[], locale: string) => {
-    const settingsById = settings.reduce((result, s) => {
+    const settingsById = settings.reduce((result: Record<string, MyChannelSettingsModel>, s) => {
         result[s.id] = s;
         return result;
-    }, {} as Record<string, MyChannelSettingsModel>);
+    }, {});
 
-    const chanelsById = channels.reduce((result, c) => {
+    const chanelsById = channels.reduce((result: Record<string, ChannelModel>, c) => {
         result[c.id] = c;
         return result;
-    }, {} as Record<string, ChannelModel>);
+    }, {});
 
     const combined = channels.map((c) => {
         const s = settingsById[c.id];

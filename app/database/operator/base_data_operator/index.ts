@@ -78,12 +78,12 @@ export default class BaseDataOperator {
 
         // for create or update flow
         const createOrUpdateRaws = await getRecords(createOrUpdateRawValues);
-        const recordsByKeys = createOrUpdateRaws.reduce((result, record) => {
+        const recordsByKeys = createOrUpdateRaws.reduce((result: Record<string, Model>, record) => {
             // @ts-expect-error object with string key
             const key = buildKeyRecordBy?.(record) || record[fieldName];
             result[key] = record;
             return result;
-        }, {} as Record<string, Model>);
+        }, {});
 
         if (createOrUpdateRawValues.length > 0) {
             for (const newElement of createOrUpdateRawValues) {

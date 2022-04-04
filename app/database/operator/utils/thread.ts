@@ -28,10 +28,10 @@ export const sanitizeThreadParticipants = async ({database, thread_id, rawPartic
     const similarObjects = new Set<ThreadParticipantModel>();
 
     const createParticipants: RecordPair[] = [];
-    const participantsMap = participants.reduce((result, participant) => {
+    const participantsMap = participants.reduce((result: Record<string, ThreadParticipantModel>, participant) => {
         result[participant.userId] = participant;
         return result;
-    }, {} as Record<string, ThreadParticipantModel>);
+    }, {});
 
     for (let i = 0; i < rawParticipants.length; i++) {
         const rawParticipant = rawParticipants[i];

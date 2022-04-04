@@ -29,10 +29,10 @@ const ThreadInTeamHandler = (superclass: any) => class extends superclass {
             const chunks = await (this.database as Database).get<ThreadInTeamModel>(THREADS_IN_TEAM).query(
                 Q.where('team_id', teamId),
             ).fetch();
-            const chunksMap = chunks.reduce((result, chunk) => {
+            const chunksMap = chunks.reduce((result: Record<string, ThreadInTeamModel>, chunk) => {
                 result[chunk.threadId] = chunk;
                 return result;
-            }, {} as Record<string, ThreadInTeamModel>);
+            }, {});
 
             for (const thread of threadsMap[teamId]) {
                 const chunk = chunksMap[thread.id];

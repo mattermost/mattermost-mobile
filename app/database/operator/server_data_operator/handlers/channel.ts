@@ -137,10 +137,10 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const channelMap = channels.reduce((result, channel) => {
+        const channelMap = channels.reduce((result: Record<string, Channel>, channel) => {
             result[channel.id] = channel;
             return result;
-        }, {} as Record<string, Channel>);
+        }, {});
         for (const my of myChannels) {
             const channel = channelMap[my.channel_id];
             if (channel) {

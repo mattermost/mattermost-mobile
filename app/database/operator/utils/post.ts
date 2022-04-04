@@ -39,10 +39,10 @@ export const sanitizePosts = ({posts, orders}: SanitizePostsArgs) => {
  * @returns {Post[]}
  */
 export const createPostsChain = ({order, posts, previousPostId = ''}: ChainPostsArgs) => {
-    const postsByIds = posts.reduce((result, p) => {
+    const postsByIds = posts.reduce((result: Record<string, Post>, p) => {
         result[p.id] = p;
         return result;
-    }, {} as Record<string, Post>);
+    }, {});
     return order.reduce((result, id, index) => {
         const post = postsByIds[id];
 

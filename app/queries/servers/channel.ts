@@ -60,15 +60,17 @@ type MembershipReduce = {
 
 export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[]) => {
     const {database} = operator;
-    const allChannelsForTeam = (await queryAllChannelsForTeam(database, teamId).fetch()).reduce((map, channel) => {
-        map[channel.id] = channel;
-        return map;
-    }, {} as Record<string, ChannelModel>);
+    const allChannelsForTeam = (await queryAllChannelsForTeam(database, teamId).fetch()).
+        reduce((map: Record<string, ChannelModel>, channel) => {
+            map[channel.id] = channel;
+            return map;
+        }, {});
 
-    const allChannelsInfoForTeam = (await queryAllChannelsInfoForTeam(database, teamId).fetch()).reduce((map, info) => {
-        map[info.id] = info;
-        return map;
-    }, {} as Record<string, ChannelInfoModel>);
+    const allChannelsInfoForTeam = (await queryAllChannelsInfoForTeam(database, teamId).fetch()).
+        reduce((map: Record<string, ChannelInfoModel>, info) => {
+            map[info.id] = info;
+            return map;
+        }, {});
 
     const channelInfos: ChannelInfo[] = [];
     const {memberships, membershipsMap} = channelMembers.reduce((result, cm) => {
@@ -313,7 +315,7 @@ export const queryUsersOnChannel = (database: Database, channelId: string) => {
 
 export const getMembersCountByChannelsId = async (database: Database, channelsId: string[]) => {
     const q = await database.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(Q.where('channel_id', Q.oneOf(channelsId))).fetch();
-    return q.reduce((r, m) => {
+    return q.reduce((r: Record<string, number>, m) => {
         if (r[m.channelId]) {
             r[m.channelId] += 1;
             return r;
@@ -321,7 +323,7 @@ export const getMembersCountByChannelsId = async (database: Database, channelsId
 
         r[m.channelId] = 1;
         return r;
-    }, {} as Record<string, number>);
+    }, {});
 };
 
 export const queryChannelsByTypes = (database: Database, channelTypes: ChannelType[]) => {

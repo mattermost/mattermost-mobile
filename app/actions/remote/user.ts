@@ -233,10 +233,10 @@ export const fetchStatusByIds = async (serverUrl: string, userIds: string[], fet
             const {database, operator} = DatabaseManager.serverDatabases[serverUrl];
             if (operator) {
                 const users = await queryUsersById(database, userIds).fetch();
-                const userStatuses = statuses.reduce((result, s) => {
+                const userStatuses = statuses.reduce((result: Record<string, UserStatus>, s) => {
                     result[s.user_id] = s;
                     return result;
-                }, {} as Record<string, UserStatus>);
+                }, {});
 
                 for (const user of users) {
                     const status = userStatuses[user.id];
@@ -276,10 +276,10 @@ export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetc
         if (userIds.includes(currentUser!.id)) {
             existingUsers.push(currentUser!);
         }
-        const exisitingUsersMap = existingUsers.reduce((result, u) => {
+        const exisitingUsersMap = existingUsers.reduce((result: Record<string, UserModel>, u) => {
             result[u.id] = u;
             return result;
-        }, {} as Record<string, UserModel>);
+        }, {});
         const usersToLoad = new Set(userIds.filter((id) => !exisitingUsersMap[id]));
         if (usersToLoad.size === 0) {
             return {users: [], existingUsers};
@@ -318,10 +318,10 @@ export const fetchUsersByUsernames = async (serverUrl: string, usernames: string
     try {
         const currentUser = await getCurrentUser(operator.database);
         const existingUsers = await queryUsersByUsername(operator.database, usernames).fetch();
-        const exisitingUsersMap = existingUsers.reduce((result, u) => {
+        const exisitingUsersMap = existingUsers.reduce((result: Record<string, UserModel>, u) => {
             result[u.username] = u;
             return result;
-        }, {} as Record<string, UserModel>);
+        }, {});
         const usersToLoad = usernames.filter((username) => (username !== currentUser?.username && !exisitingUsersMap[username]));
         const users = await client.getProfilesByUsernames([...new Set(usersToLoad)]);
 

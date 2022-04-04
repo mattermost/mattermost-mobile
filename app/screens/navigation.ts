@@ -123,10 +123,10 @@ Navigation.setDefaultOptions({
 Appearance.addChangeListener(() => {
     const theme = getThemeFromState();
     const screens = EphemeralStore.getAllNavigationComponents();
-    const controlledScreens = new Set(appearanceControlledScreens);
+
     if (screens.includes(Screens.SERVER)) {
         for (const screen of screens) {
-            if (controlledScreens.has(screen)) {
+            if (appearanceControlledScreens.has(screen)) {
                 Navigation.updateProps(screen, {theme});
                 setNavigatorStyles(screen, theme, loginAnimationOptions(), theme.sidebarBg);
             }

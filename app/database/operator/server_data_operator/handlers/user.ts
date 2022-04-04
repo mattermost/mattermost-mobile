@@ -44,10 +44,10 @@ const UserHandler = (superclass: any) => class extends superclass {
         const deleteValues: PreferenceModel[] = [];
         if (sync) {
             const stored = await this.database.get(PREFERENCE).query().fetch() as PreferenceModel[];
-            const preferenceMap = preferences.reduce((r, p) => {
+            const preferenceMap = preferences.reduce((r: Record<string, boolean>, p) => {
                 r[`${p.category}-${p.name}`] = true;
                 return r;
-            }, {} as Record<string, boolean>);
+            }, {});
             for (const pref of stored) {
                 const exists = preferenceMap[`${pref.category}-${pref.name}`];
                 if (!exists) {
