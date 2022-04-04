@@ -8,6 +8,7 @@ import {General, Navigation as NavigationConstants, Preferences, Screens} from '
 import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@constants/categories';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import {extractChannelDisplayName} from '@helpers/database';
 import {prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannel, getMyChannel, getChannelById, queryUsersOnChannel} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
@@ -369,14 +370,14 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
         if (channel.type === General.DM_CHANNEL) {
             const otherUserId = getUserIdFromChannelName(currentUser.id, channel.name);
             const user = users.find((u) => u.id === otherUserId);
-            newDisplayName = displayUsername(user, currentUser.locale, displaySettings);
+            newDisplayName = displayUsername(user, currentUser.locale, displaySettings, false);
         } else {
             const dbProfiles = await queryUsersOnChannel(database, channel.id).fetch();
-            const profileIds = dbProfiles.map((p) => p.id);
-            const gmUsers = users.filter((u) => profileIds.includes(u.id));
+            const profileIds = new Set(dbProfiles.map((p) => p.id));
+            const gmUsers = users.filter((u) => profileIds.has(u.id));
             if (gmUsers.length) {
-                const uIds = gmUsers.map((u) => u.id);
-                const newProfiles: Array<UserModel|UserProfile> = dbProfiles.filter((u) => !uIds.includes(u.id));
+                const uIds = new Set(gmUsers.map((u) => u.id));
+                const newProfiles: Array<UserModel|UserProfile> = dbProfiles.filter((u) => !uIds.has(u.id));
                 newProfiles.push(...gmUsers);
                 newDisplayName = displayGroupMessageName(newProfiles, currentUser.locale, displaySettings, currentUser.id);
             }
@@ -384,7 +385,7 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
 
         if (channel.displayName !== newDisplayName) {
             channel.prepareUpdate((c) => {
-                c.displayName = newDisplayName;
+                c.displayName = extractChannelDisplayName({type: c.type, display_name: newDisplayName}, c);
             });
             models.push(channel);
         }

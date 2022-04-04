@@ -92,19 +92,21 @@ export const fetchMyTeams = async (serverUrl: string, fetchOnly = false): Promis
 
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-
+            const modelPromises: Array<Promise<Model[]>> = [];
             if (operator) {
-                const removeTeamIds = memberships.filter((m) => m.delete_at > 0).map((m) => m.team_id);
-                const remainingTeams = teams.filter((t) => !removeTeamIds.includes(t.id));
-                const modelPromises = prepareMyTeams(operator, remainingTeams, memberships);
-                if (removeTeamIds.length) {
-                    if (removeTeamIds?.length) {
-                        // Immediately delete myTeams so that the UI renders only teams the user is a member of.
-                        const removeTeams = await queryTeamsById(operator.database, removeTeamIds).fetch();
-                        removeTeams.forEach((team) => {
-                            modelPromises.push(prepareDeleteTeam(team));
-                        });
-                    }
+                const removeTeamIds = new Set(memberships.filter((m) => m.delete_at > 0).map((m) => m.team_id));
+                const remainingTeams = teams.filter((t) => !removeTeamIds.has(t.id));
+                const prepare = prepareMyTeams(operator, remainingTeams, memberships);
+                if (prepare) {
+                    modelPromises.push(...prepare);
+                }
+
+                if (removeTeamIds.size) {
+                    // Immediately delete myTeams so that the UI renders only teams the user is a member of.
+                    const removeTeams = await queryTeamsById(operator.database, Array.from(removeTeamIds)).fetch();
+                    removeTeams.forEach((team) => {
+                        modelPromises.push(prepareDeleteTeam(team));
+                    });
                 }
 
                 if (modelPromises.length) {
@@ -189,7 +191,8 @@ export const fetchTeamsChannelsAndUnreadPosts = async (serverUrl: string, since:
         return {error: `${serverUrl} database not found`};
     }
 
-    const myTeams = teams.filter((t) => memberships.find((m) => m.team_id === t.id && t.id !== excludeTeamId));
+    const membershipSet = new Set(memberships.map((m) => m.team_id));
+    const myTeams = teams.filter((t) => membershipSet.has(t.id) && t.id !== excludeTeamId);
 
     for await (const team of myTeams) {
         const {channels, memberships: members} = await fetchMyChannelsForTeam(serverUrl, team.id, since > 0, since, false, true);

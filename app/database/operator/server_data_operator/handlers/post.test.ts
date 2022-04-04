@@ -5,7 +5,7 @@ import {Q} from '@nozbe/watermelondb';
 
 import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
-import {isRecordDraftEqualToRaw} from '@database/operator/server_data_operator/comparators';
+import {buildDraftKey} from '@database/operator/server_data_operator/comparators';
 import {transformDraftRecord} from '@database/operator/server_data_operator/transformers/post';
 import {createPostsChain} from '@database/operator/utils/post';
 
@@ -55,7 +55,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
         await operator.handleDraft({drafts, prepareRecordsOnly: false});
 
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            findMatchingRecordBy: isRecordDraftEqualToRaw,
+            buildKeyRecordBy: buildDraftKey,
             fieldName: 'channel_id',
             transformer: transformDraftRecord,
             createOrUpdateRawValues: drafts,

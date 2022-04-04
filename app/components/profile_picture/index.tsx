@@ -86,7 +86,6 @@ const ProfilePicture = ({
             return {
                 width: size + (buffer - 1),
                 height: size + (buffer - 1),
-                backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
                 borderRadius: (size + buffer) / 2,
             };
         }

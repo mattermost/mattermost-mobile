@@ -110,23 +110,29 @@ async function doReconnect(serverUrl: string) {
 
     const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData as AppEntryData;
     const rolesData = await fetchRoles(serverUrl, teamData.memberships, chData?.memberships, meData.user, true);
+    const profiles: UserProfile[] = [];
 
     if (chData?.channels?.length) {
         const teammateDisplayNameSetting = getTeammateNameDisplaySetting(prefData.preferences || [], config, license);
-        let directChannels: Channel[];
-        [chData.channels, directChannels] = chData.channels.reduce(([others, direct], c: Channel) => {
+        let direct: Channel[];
+        [chData.channels, direct] = chData.channels.reduce(([others, channels], c: Channel) => {
             if (isDMorGM(c)) {
-                direct.push(c);
+                channels.push(c);
             } else {
                 others.push(c);
             }
 
-            return [others, direct];
+            return [others, channels];
         }, [[], []] as Channel[][]);
 
-        if (directChannels.length) {
-            await fetchMissingSidebarInfo(serverUrl, directChannels, meData.user?.locale, teammateDisplayNameSetting, system.currentUserId, true);
-            chData.channels.push(...directChannels);
+        if (direct.length) {
+            const {directChannels, users} = await fetchMissingSidebarInfo(serverUrl, direct, meData.user?.locale, teammateDisplayNameSetting, system.currentUserId, true);
+            if (directChannels?.length) {
+                chData.channels.push(...directChannels);
+            }
+            if (users?.length) {
+                profiles.push(...users);
+            }
         }
     }
 
@@ -156,6 +162,10 @@ async function doReconnect(serverUrl: string) {
     const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData});
     if (rolesData.roles?.length) {
         modelPromises.push(operator.handleRole({roles: rolesData.roles, prepareRecordsOnly: true}));
+    }
+
+    if (profiles.length) {
+        modelPromises.push(operator.handleUsers({users: profiles, prepareRecordsOnly: true}));
     }
 
     if (modelPromises.length) {

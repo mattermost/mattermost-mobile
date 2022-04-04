@@ -372,10 +372,12 @@ export const fetchMissingSidebarInfo = async (serverUrl: string, directChannels:
     }
 
     const displayNameByChannel: Record<string, string> = {};
+    const users: UserProfile[] = [];
 
     if (result.data) {
         result.data.forEach((data) => {
             if (data.users) {
+                users.push(...data.users);
                 if (data.users.length > 1) {
                     displayNameByChannel[data.channelId] = displayGroupMessageName(data.users, locale, teammateDisplayNameSetting, currentUserId);
                 } else {
@@ -392,23 +394,38 @@ export const fetchMissingSidebarInfo = async (serverUrl: string, directChannels:
         }
     });
 
+    const filteredUserIds = new Set(users.map((u) => u.id));
     if (currentUserId) {
         const ownDirectChannel = directChannels.find((dm) => dm.name === getDirectChannelName(currentUserId, currentUserId));
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
         if (ownDirectChannel && database) {
             const currentUser = await getCurrentUser(database);
-            ownDirectChannel.display_name = displayUsername(currentUser, locale, teammateDisplayNameSetting);
+            ownDirectChannel.display_name = displayUsername(currentUser, locale, teammateDisplayNameSetting, false);
         }
+        filteredUserIds.add(currentUserId);
     }
+
+    const profiles = users.reduce((acc: UserProfile[], u) => {
+        if (!filteredUserIds.has(u.id)) {
+            acc.push(u);
+        }
+        return acc;
+    }, []);
 
     if (!fetchOnly) {
         const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
         if (operator) {
-            await operator.handleChannel({channels: directChannels, prepareRecordsOnly: false});
+            const modelPromises: Array<Promise<Model[]>> = [];
+            if (users.length) {
+                modelPromises.push(operator.handleUsers({users: profiles, prepareRecordsOnly: true}));
+            }
+            modelPromises.push(operator.handleChannel({channels: directChannels, prepareRecordsOnly: true}));
+            const models = await Promise.all(modelPromises);
+            await operator.batchRecords(models.flat());
         }
     }
 
-    return {directChannels};
+    return {directChannels, users: profiles};
 };
 
 export const joinChannel = async (serverUrl: string, userId: string, teamId: string, channelId?: string, channelName?: string, fetchOnly = false) => {
@@ -657,6 +674,7 @@ export const createDirectChannel = async (serverUrl: string, userId: string, dis
             return {error: 'Cannot get the current user'};
         }
         const created = await client.createDirectChannel([userId, currentUser.id]);
+        const profiles: UserProfile[] = [];
 
         if (displayName) {
             created.display_name = displayName;
@@ -664,8 +682,11 @@ export const createDirectChannel = async (serverUrl: string, userId: string, dis
             const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT).fetch();
             const system = await getCommonSystemValues(database);
             const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], system.config, system.license);
-            const {directChannels} = await fetchMissingSidebarInfo(serverUrl, [created], currentUser.locale, teammateDisplayNameSetting, currentUser.id, true);
+            const {directChannels, users} = await fetchMissingSidebarInfo(serverUrl, [created], currentUser.locale, teammateDisplayNameSetting, currentUser.id, true);
             created.display_name = directChannels?.[0].display_name || created.display_name;
+            if (users?.length) {
+                profiles.push(...users);
+            }
         }
 
         const member = {
@@ -693,6 +714,11 @@ export const createDirectChannel = async (serverUrl: string, userId: string, dis
             if (categoryModels.models?.length) {
                 models.push(...categoryModels.models);
             }
+        }
+
+        if (profiles.length) {
+            const userModels = await operator.handleUsers({users: profiles, prepareRecordsOnly: true});
+            models.push(...userModels);
         }
 
         if (models.length) {
@@ -796,7 +822,7 @@ export const createGroupChannel = async (serverUrl: string, userIds: string[]) =
         const preferences = await queryPreferencesByCategoryAndName(operator.database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT).fetch();
         const system = await getCommonSystemValues(operator.database);
         const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], system.config, system.license);
-        const {directChannels} = await fetchMissingSidebarInfo(serverUrl, [created], currentUser.locale, teammateDisplayNameSetting, currentUser.id, true);
+        const {directChannels, users} = await fetchMissingSidebarInfo(serverUrl, [created], currentUser.locale, teammateDisplayNameSetting, currentUser.id, true);
 
         const member = {
             channel_id: created.id,
@@ -823,6 +849,10 @@ export const createGroupChannel = async (serverUrl: string, userIds: string[]) =
                 const categoryModels = await addChannelToDefaultCategory(serverUrl, created, true);
                 if (categoryModels.models?.length) {
                     models.push(...categoryModels.models);
+                }
+                if (users?.length) {
+                    const userModels = await operator.handleUsers({users, prepareRecordsOnly: true});
+                    models.push(...userModels);
                 }
                 if (models.length) {
                     operator.batchRecords(models);

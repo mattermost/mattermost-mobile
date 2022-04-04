@@ -18,7 +18,7 @@ import {apiUploadFile, getResponseFromError} from './common';
 // - return value defined by `@return`
 // ****************************************************************
 
-const prepackagedPlugins = [
+const prepackagedPlugins = new Set([
     'antivirus',
     'mattermost-autolink',
     'com.mattermost.aws-sns',
@@ -32,7 +32,7 @@ const prepackagedPlugins = [
     'com.mattermost.nps',
     'com.mattermost.welcomebot',
     'zoom',
-];
+]);
 
 /**
  * Disable non-prepackaged plugins.
@@ -44,7 +44,7 @@ export const apiDisableNonPrepackagedPlugins = async (baseUrl: string): Promise<
         return;
     }
     plugins.active.forEach(async (plugin: any) => {
-        if (!prepackagedPlugins.includes(plugin.id)) {
+        if (!prepackagedPlugins.has(plugin.id)) {
             await apiDisablePluginById(baseUrl, plugin.id);
         }
     });

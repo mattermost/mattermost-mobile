@@ -5,11 +5,6 @@ import {MM_TABLES} from '@constants/database';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
 import BaseDataOperator from '@database/operator/base_data_operator';
 import {
-    isRecordCustomEmojiEqualToRaw,
-    isRecordRoleEqualToRaw,
-    isRecordSystemEqualToRaw,
-} from '@database/operator/server_data_operator/comparators';
-import {
     transformCustomEmojiRecord,
     transformRoleRecord,
     transformSystemRecord,
@@ -34,7 +29,6 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
 
         return this.handleRecords({
             fieldName: 'id',
-            findMatchingRecordBy: isRecordRoleEqualToRaw,
             transformer: transformRoleRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: roles, key: 'id'}),
@@ -51,7 +45,6 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
 
         return this.handleRecords({
             fieldName: 'name',
-            findMatchingRecordBy: isRecordCustomEmojiEqualToRaw,
             transformer: transformCustomEmojiRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: emojis, key: 'name'}),
@@ -68,7 +61,6 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
 
         return this.handleRecords({
             fieldName: 'id',
-            findMatchingRecordBy: isRecordSystemEqualToRaw,
             transformer: transformSystemRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: systems, key: 'id'}),

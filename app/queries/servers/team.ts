@@ -146,7 +146,8 @@ export const getLastTeam = async (database: Database) => {
 export const syncTeamTable = async (operator: ServerDataOperator, teams: Team[]) => {
     try {
         const deletedTeams = teams.filter((t) => t.delete_at > 0).map((t) => t.id);
-        const availableTeams = teams.filter((a) => !deletedTeams.includes(a.id));
+        const deletedSet = new Set(deletedTeams);
+        const availableTeams = teams.filter((a) => !deletedSet.has(a.id));
         const models = [];
 
         if (deletedTeams.length) {
@@ -184,7 +185,8 @@ export const getDefaultTeamId = async (database: Database) => {
 export function prepareMyTeams(operator: ServerDataOperator, teams: Team[], memberships: TeamMembership[]): Array<Promise<Model[]>> {
     try {
         const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams});
-        const teamMemberships = memberships.filter((m) => teams.find((t) => t.id === m.team_id) && m.delete_at === 0);
+        const teamIds = new Set(teams.map((t) => t.id));
+        const teamMemberships = memberships.filter((m) => teamIds.has(m.team_id) && m.delete_at === 0);
         const teamMembershipRecords = operator.handleTeamMemberships({prepareRecordsOnly: true, teamMemberships});
         const myTeams: MyTeam[] = teamMemberships.map((tm) => {
             return {id: tm.team_id, roles: tm.roles ?? ''};

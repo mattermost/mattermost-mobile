@@ -72,7 +72,7 @@ export default function ChannelDropdown({
             items += 1;
         }
 
-        const itemsSnap = ((items + 1) * ITEM_HEIGHT) + (insets.bottom * 2) + TITLE_HEIGHT;
+        const itemsSnap = ((items + 1) * ITEM_HEIGHT) + (insets.bottom * 3) + TITLE_HEIGHT;
         bottomSheet({
             title: intl.formatMessage({id: 'browse_channels.dropdownTitle', defaultMessage: 'Show'}),
             renderContent,

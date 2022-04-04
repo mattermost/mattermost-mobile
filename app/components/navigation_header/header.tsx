@@ -38,6 +38,8 @@ type Props = {
     top: number;
 }
 
+const hitSlop = {top: 20, bottom: 20, left: 20, right: 20};
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         alignItems: 'center',
@@ -133,24 +135,25 @@ const Header = ({
 
     return (
         <Animated.View style={containerStyle}>
-            <Animated.View style={styles.leftContainer}>
-                {showBackButton &&
-                <TouchableWithFeedback
-                    borderlessRipple={true}
-                    onPress={onBackPress}
-                    rippleRadius={20}
-                    type={Platform.select({android: 'native', default: 'opacity'})}
-                    testID='navigation.header.back'
-                >
+            {showBackButton &&
+            <TouchableWithFeedback
+                borderlessRipple={true}
+                onPress={onBackPress}
+                rippleRadius={20}
+                type={Platform.select({android: 'native', default: 'opacity'})}
+                testID='navigation.header.back'
+                hitSlop={hitSlop}
+            >
+                <Animated.View style={styles.leftContainer}>
                     <CompassIcon
                         size={24}
                         name={Platform.select({android: 'arrow-left', ios: 'arrow-back-ios'})!}
                         color={theme.sidebarHeaderTextColor}
                     />
-                </TouchableWithFeedback>
-                }
-                {leftComponent}
-            </Animated.View>
+                    {leftComponent}
+                </Animated.View>
+            </TouchableWithFeedback>
+            }
             <Animated.View style={[styles.titleContainer, additionalTitleStyle]}>
                 <TouchableWithFeedback
                     disabled={!onTitlePress}

@@ -147,11 +147,11 @@ export type ProcessRecordsArgs = {
   deleteRawValues: RawValue[];
   tableName: string;
   fieldName: string;
-  findMatchingRecordBy: (existing: Model, newElement: RawValue) => boolean;
+  buildKeyRecordBy?: (obj: Record<string, any>) => string;
 };
 
 export type HandleRecordsArgs = {
-  findMatchingRecordBy: (existing: Model, newElement: RawValue) => boolean;
+  buildKeyRecordBy?: (obj: Record<string, any>) => string;
   fieldName: string;
   transformer: (TransformerArgs) => Promise<Model>;
   createOrUpdateRawValues: RawValue[];
@@ -194,10 +194,6 @@ export type HandleSystemArgs = PrepareOnly & {
     systems: IdValue[];
 }
 
-export type HandleTOSArgs = PrepareOnly & {
-    termOfService: TermsOfService[];
-}
-
 export type HandleMyChannelArgs = PrepareOnly & {
   channels: Channel[];
   myChannels: ChannelMembership[];
@@ -225,10 +221,6 @@ export type HandleCategoryChannelArgs = PrepareOnly & {
 
 export type HandleMyTeamArgs = PrepareOnly & {
   myTeams: MyTeam[];
-};
-
-export type HandleSlashCommandArgs = PrepareOnly & {
-    slashCommands: SlashCommand[];
 };
 
 export type HandleTeamSearchHistoryArgs = PrepareOnly &{

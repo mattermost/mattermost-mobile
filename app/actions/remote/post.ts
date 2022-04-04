@@ -668,14 +668,14 @@ export async function fetchMissingChannelsFromPosts(serverUrl: string, posts: Po
     }
 
     try {
-        const channelIds = await queryAllMyChannel(operator.database).fetchIds();
+        const channelIds = new Set(await queryAllMyChannel(operator.database).fetchIds());
         const channelPromises: Array<Promise<Channel>> = [];
         const userPromises: Array<Promise<ChannelMembership>> = [];
 
         posts.forEach((post) => {
             const id = post.channel_id;
 
-            if (channelIds.indexOf(id) === -1) {
+            if (!channelIds.has(id)) {
                 channelPromises.push(client.getChannel(id));
                 userPromises.push(client.getMyChannelMember(id));
             }

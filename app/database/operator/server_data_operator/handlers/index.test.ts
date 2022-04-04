@@ -4,11 +4,6 @@
 import DataOperatorException from '@database/exceptions/data_operator_exception';
 import DatabaseManager from '@database/manager';
 import {
-    isRecordCustomEmojiEqualToRaw,
-    isRecordRoleEqualToRaw,
-    isRecordSystemEqualToRaw,
-} from '@database/operator/server_data_operator/comparators';
-import {
     transformCustomEmojiRecord,
     transformRoleRecord,
     transformSystemRecord,
@@ -45,7 +40,6 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'id',
             transformer: transformRoleRecord,
-            findMatchingRecordBy: isRecordRoleEqualToRaw,
             createOrUpdateRawValues: roles,
             tableName: 'Role',
             prepareRecordsOnly: false,
@@ -78,7 +72,6 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
             createOrUpdateRawValues: emojis,
             tableName: 'CustomEmoji',
             prepareRecordsOnly: false,
-            findMatchingRecordBy: isRecordCustomEmojiEqualToRaw,
             transformer: transformCustomEmojiRecord,
         });
     });
@@ -96,7 +89,6 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
         });
 
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            findMatchingRecordBy: isRecordSystemEqualToRaw,
             fieldName: 'id',
             transformer: transformSystemRecord,
             createOrUpdateRawValues: systems,
@@ -113,17 +105,12 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
         expect(appDatabase).toBeTruthy();
         expect(appOperator).toBeTruthy();
 
-        const findMatchingRecordBy = (existing: Model, newRecord: any) => {
-            return existing === newRecord;
-        };
-
         const transformer = async (model: Model) => model;
 
         await expect(
             operator?.handleRecords({
                 fieldName: 'invalidField',
                 tableName: 'INVALID_TABLE_NAME',
-                findMatchingRecordBy,
                 transformer,
                 createOrUpdateRawValues: [{id: 'tos-1', value: '1'}],
                 prepareRecordsOnly: false,

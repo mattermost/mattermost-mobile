@@ -4,11 +4,8 @@
 import {MM_TABLES} from '@constants/database';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {
-    isRecordChannelEqualToRaw,
-    isRecordChannelInfoEqualToRaw,
-    isRecordChannelMembershipEqualToRaw,
-    isRecordMyChannelEqualToRaw,
-    isRecordMyChannelSettingsEqualToRaw,
+    buildMyChannelKey,
+    buildChannelMembershipKey,
 } from '@database/operator/server_data_operator/comparators';
 import {
     transformChannelInfoRecord,
@@ -62,7 +59,6 @@ const ChannelHandler = (superclass: any) => class extends superclass {
 
         return this.handleRecords({
             fieldName: 'id',
-            findMatchingRecordBy: isRecordChannelEqualToRaw,
             transformer: transformChannelRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues,
@@ -89,7 +85,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
 
         return this.handleRecords({
             fieldName: 'id',
-            findMatchingRecordBy: isRecordMyChannelSettingsEqualToRaw,
+            buildKeyRecordBy: buildMyChannelKey,
             transformer: transformMyChannelSettingsRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues,
@@ -119,7 +115,6 @@ const ChannelHandler = (superclass: any) => class extends superclass {
 
         return this.handleRecords({
             fieldName: 'id',
-            findMatchingRecordBy: isRecordChannelInfoEqualToRaw,
             transformer: transformChannelInfoRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues,
@@ -142,14 +137,18 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        myChannels.forEach((my) => {
-            const channel = channels.find((c) => c.id === my.channel_id);
+        const channelMap = channels.reduce((result: Record<string, Channel>, channel) => {
+            result[channel.id] = channel;
+            return result;
+        }, {});
+        for (const my of myChannels) {
+            const channel = channelMap[my.channel_id];
             if (channel) {
                 const msgCount = Math.max(0, channel.total_msg_count - my.msg_count);
                 my.msg_count = msgCount;
                 my.is_unread = msgCount > 0;
             }
-        });
+        }
 
         const createOrUpdateRawValues = getUniqueRawsBy({
             raws: myChannels,
@@ -158,7 +157,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
 
         return this.handleRecords({
             fieldName: 'id',
-            findMatchingRecordBy: isRecordMyChannelEqualToRaw,
+            buildKeyRecordBy: buildMyChannelKey,
             transformer: transformMyChannelRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues,
@@ -190,7 +189,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
 
         return this.handleRecords({
             fieldName: 'user_id',
-            findMatchingRecordBy: isRecordChannelMembershipEqualToRaw,
+            buildKeyRecordBy: buildChannelMembershipKey,
             transformer: transformChannelMembershipRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues,

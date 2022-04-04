@@ -38,10 +38,10 @@ const withCombinedPosts = withObservables(['postId'], ({database, postId}: WithD
                     // eslint-disable-next-line max-nested-callbacks
                     switchMap((users) => {
                         // eslint-disable-next-line max-nested-callbacks
-                        return of$(users.reduce((acc, user) => {
+                        return of$(users.reduce((acc: Record<string, string>, user) => {
                             acc[user.id] = user.username;
                             return acc;
-                        }, {} as Record<string, string>));
+                        }, {}));
                     }),
                 ),
         ),

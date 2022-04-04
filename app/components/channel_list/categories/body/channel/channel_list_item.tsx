@@ -45,7 +45,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     badge: {
         position: 'relative',
-        borderWidth: 0,
         left: 0,
         top: 0,
         alignSelf: undefined,

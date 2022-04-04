@@ -36,12 +36,13 @@ export function selectDefaultChannelForTeam<T extends Channel|ChannelModel>(chan
         canIJoinPublicChannelsInTeam = hasPermission(roles, Permissions.JOIN_PUBLIC_CHANNELS, true);
     }
     const defaultChannel = channels?.find((c) => c.name === General.DEFAULT_CHANNEL);
-    const iAmMemberOfTheTeamDefaultChannel = Boolean(defaultChannel && memberships?.find((m) => m.channel_id === defaultChannel.id));
+    const membershipIds = new Set(memberships.map((m) => m.channel_id));
+    const iAmMemberOfTheTeamDefaultChannel = Boolean(defaultChannel && membershipIds.has(defaultChannel.id));
     const myFirstTeamChannel = channels?.filter((c) =>
         (('team_id' in c) ? c.team_id : c.teamId) === teamId &&
         c.type === General.OPEN_CHANNEL &&
-        Boolean(memberships?.find((m) => c.id === m.channel_id),
-        )).sort(sortChannelsByDisplayName.bind(null, locale))[0];
+        membershipIds.has(c.id),
+    ).sort(sortChannelsByDisplayName.bind(null, locale))[0];
 
     if (iAmMemberOfTheTeamDefaultChannel || canIJoinPublicChannelsInTeam) {
         channel = defaultChannel;

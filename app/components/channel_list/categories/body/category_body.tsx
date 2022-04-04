@@ -14,7 +14,7 @@ import type CategoryModel from '@typings/database/models/servers/category';
 type Props = {
     currentChannelId: string;
     sortedChannels: ChannelModel[];
-    hiddenChannelIds: string[];
+    hiddenChannelIds: Set<string>;
     category: CategoryModel;
     limit: number;
 };
@@ -26,8 +26,8 @@ const CategoryBody = ({currentChannelId, sortedChannels, category, hiddenChannel
         let filteredChannels = sortedChannels;
 
         // Remove all closed gm/dms
-        if (hiddenChannelIds.length) {
-            filteredChannels = sortedChannels.filter((item) => item && !hiddenChannelIds.includes(item.id));
+        if (hiddenChannelIds.size) {
+            filteredChannels = sortedChannels.filter((item) => item && !hiddenChannelIds.has(item.id));
         }
 
         if (category.type === DMS_CATEGORY && limit > 0) {
