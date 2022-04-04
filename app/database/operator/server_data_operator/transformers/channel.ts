@@ -45,7 +45,7 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
         let displayName = '';
         switch (raw.type) {
             case General.DM_CHANNEL:
-                displayName = raw.display_name || record?.displayName;
+                displayName = raw.display_name.trim() || record?.displayName;
                 break;
             case General.GM_CHANNEL: {
                 const rawMembers = raw.display_name.split(',').length;
