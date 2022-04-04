@@ -236,7 +236,6 @@ export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
 
         const associatedChildren: Array<Query<Model>|undefined> = [
             team.members,
-            team.slashCommands,
             team.teamSearchHistories,
         ];
         await Promise.all(associatedChildren.map(async (children) => {
@@ -285,6 +284,12 @@ export const getMyTeamById = async (database: Database, teamId: string) => {
     } catch (err) {
         return undefined;
     }
+};
+
+export const observeMyTeam = (database: Database, teamId: string) => {
+    return database.get<MyTeamModel>(MY_TEAM).query(Q.where('id', teamId), Q.take(1)).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+    );
 };
 
 export const getTeamById = async (database: Database, teamId: string) => {

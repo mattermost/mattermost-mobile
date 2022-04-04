@@ -3,16 +3,16 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {combineLatest, of as of$, from as from$} from 'rxjs';
+import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
 import {observeChannel, observeCurrentChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
+import {observePermissionForChannel} from '@queries/servers/role';
 import {observeConfig, observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
-import {hasPermissionForChannel} from '@utils/role';
 
 import SendHandler from './send_handler';
 
@@ -59,7 +59,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
                 return of$(true);
             }
 
-            return u ? from$(hasPermissionForChannel(c, u, Permissions.USE_CHANNEL_MENTIONS, false)) : of$(false);
+            return u ? observePermissionForChannel(c, u, Permissions.USE_CHANNEL_MENTIONS, false) : of$(false);
         }),
     );
 

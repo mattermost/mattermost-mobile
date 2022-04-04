@@ -7,13 +7,11 @@ import {
     isRecordCustomEmojiEqualToRaw,
     isRecordRoleEqualToRaw,
     isRecordSystemEqualToRaw,
-    isRecordTermsOfServiceEqualToRaw,
 } from '@database/operator/server_data_operator/comparators';
 import {
     transformCustomEmojiRecord,
     transformRoleRecord,
     transformSystemRecord,
-    transformTermsOfServiceRecord,
 } from '@database/operator/server_data_operator/transformers/general';
 
 import type ServerDataOperator from '..';
@@ -103,36 +101,6 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
             transformer: transformSystemRecord,
             createOrUpdateRawValues: systems,
             tableName: 'System',
-            prepareRecordsOnly: false,
-        });
-    });
-
-    it('=> HandleTermsOfService: should write to the TERMS_OF_SERVICE table', async () => {
-        expect.assertions(1);
-
-        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-
-        const termOfService: TermsOfService[] = [
-            {
-                id: 'tos-1',
-                accepted_at: 1,
-                create_at: 1613667352029,
-                user_id: 'user1613667352029',
-                text: '',
-            },
-        ];
-
-        await operator.handleTermOfService({
-            termOfService,
-            prepareRecordsOnly: false,
-        });
-
-        expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            findMatchingRecordBy: isRecordTermsOfServiceEqualToRaw,
-            fieldName: 'id',
-            transformer: transformTermsOfServiceRecord,
-            createOrUpdateRawValues: termOfService,
-            tableName: 'TermsOfService',
             prepareRecordsOnly: false,
         });
     });
