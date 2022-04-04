@@ -52,6 +52,9 @@ export default class ThreadModel extends Model implements ThreadModelInterface {
     /** unread_mentions : The number of mentions that have not been read by the user. */
     @field('unread_mentions') unreadMentions!: number;
 
+    /** viewed_at : The timestamp showing when the user's last opened this thread (this is used for the new line message indicator) */
+    @field('viewed_at') viewedAt!: number;
+
     /** participants : All the participants associated with this Thread */
     @children(THREAD_PARTICIPANT) participants!: Query<ThreadParticipantModel>;
 

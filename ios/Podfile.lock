@@ -271,7 +271,7 @@ PODS:
     - React-Core
   - react-native-document-picker (8.0.0):
     - React-Core
-  - react-native-emm (1.2.0):
+  - react-native-emm (1.2.1):
     - React-Core
   - react-native-hw-keyboard-event (0.0.4):
     - React
@@ -783,7 +783,7 @@ SPEC CHECKSUMS:
   react-native-cameraroll: 2957f2bce63ae896a848fbe0d5352c1bd4d20866
   react-native-cookies: 7e14e823f32bd7c868134c7e207c89a46fa28f98
   react-native-document-picker: 429972f7ece4463aa5bcdd789622b3a674a3c5d1
-  react-native-emm: 547137d1ca5f7b73d64608b57cc3540734b78974
+  react-native-emm: 3dec2bc8e93eff704f52db3bfbd6ec2adfd49b0f
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-image-picker: 4e6008ad8c2321622affa2c85432a5ebd02d480c
   react-native-netinfo: e922cb2e3eaf9ccdf16b8d4744a89657377aa4a1

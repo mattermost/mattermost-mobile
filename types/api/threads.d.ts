@@ -18,3 +18,10 @@ type ThreadParticipant = {
     id: $ID<User>;
     thread_id: $ID<Thread>;
 };
+
+type GetUserThreadsResponse = {
+    threads: Thread[];
+    total: number;
+    total_unread_mentions: number;
+    total_unread_threads: number;
+};

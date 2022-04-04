@@ -6,7 +6,7 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {AppStateStatus} from 'react-native';
-import {of as of$} from 'rxjs';
+import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
@@ -15,6 +15,7 @@ import {observeMyChannel} from '@queries/servers/channel';
 import {queryPostsBetween, queryPostsInChannel} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeConfigBooleanValue} from '@queries/servers/system';
+import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 import {getTimezone} from '@utils/user';
 
@@ -25,21 +26,25 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({database, channelId}: {channelId: string; forceQueryAfterAppState: AppStateStatus} & WithDatabaseArgs) => {
     const currentUser = observeCurrentUser(database);
 
+    const isCRTEnabledObserver = observeIsCRTEnabled(database);
+    const postsInChannelObserver = queryPostsInChannel(database, channelId).observeWithColumns(['earliest', 'latest']);
+
     return {
         currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
         currentUsername: currentUser.pipe((switchMap((user) => of$(user?.username)))),
+        isCRTEnabled: isCRTEnabledObserver,
         isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
         lastViewedAt: observeMyChannel(database, channelId).pipe(
             switchMap((myChannel) => of$(myChannel?.viewedAt)),
         ),
-        posts: queryPostsInChannel(database, channelId).observeWithColumns(['earliest', 'latest']).pipe(
-            switchMap((postsInChannel) => {
+        posts: combineLatest([isCRTEnabledObserver, postsInChannelObserver]).pipe(
+            switchMap(([isCRTEnabled, postsInChannel]) => {
                 if (!postsInChannel.length) {
                     return of$([]);
                 }
 
                 const {earliest, latest} = postsInChannel[0];
-                return queryPostsBetween(database, earliest, latest, Q.desc, '', channelId).observe();
+                return queryPostsBetween(database, earliest, latest, Q.desc, '', channelId, isCRTEnabled ? '' : undefined).observe();
             }),
         ),
         shouldShowJoinLeaveMessages: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE).observe().pipe(

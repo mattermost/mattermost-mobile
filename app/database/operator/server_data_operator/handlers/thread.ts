@@ -23,7 +23,7 @@ const {
 } = Database.MM_TABLES.SERVER;
 
 export interface ThreadHandlerMix {
-    handleThreads: ({threads, prepareRecordsOnly}: HandleThreadsArgs) => Promise<Model[]>;
+    handleThreads: ({threads, teamId, prepareRecordsOnly}: HandleThreadsArgs) => Promise<Model[]>;
     handleThreadParticipants: ({threadsParticipants, prepareRecordsOnly}: HandleThreadParticipantsArgs) => Promise<ThreadParticipantModel[]>;
 }
 
@@ -77,11 +77,13 @@ const ThreadHandler = (superclass: any) => class extends superclass {
         const threadParticipants = (await this.handleThreadParticipants({threadsParticipants, prepareRecordsOnly: true})) as ThreadParticipantModel[];
         batch.push(...threadParticipants);
 
-        const threadsInTeam = await this.handleThreadInTeam({
-            threadsMap: {[teamId]: threads},
-            prepareRecordsOnly: true,
-        }) as ThreadInTeamModel[];
-        batch.push(...threadsInTeam);
+        if (teamId) {
+            const threadsInTeam = await this.handleThreadInTeam({
+                threadsMap: {[teamId]: threads},
+                prepareRecordsOnly: true,
+            }) as ThreadInTeamModel[];
+            batch.push(...threadsInTeam);
+        }
 
         if (batch.length && !prepareRecordsOnly) {
             await this.batchRecords(batch);
@@ -95,10 +97,11 @@ const ThreadHandler = (superclass: any) => class extends superclass {
      * @param {HandleThreadParticipantsArgs} handleThreadParticipants
      * @param {ParticipantsPerThread[]} handleThreadParticipants.threadsParticipants
      * @param {boolean} handleThreadParticipants.prepareRecordsOnly
+     * @param {boolean} handleThreadParticipants.skipSync
      * @throws DataOperatorException
      * @returns {Promise<Array<ThreadParticipantModel>>}
      */
-    handleThreadParticipants = async ({threadsParticipants, prepareRecordsOnly}: HandleThreadParticipantsArgs): Promise<ThreadParticipantModel[]> => {
+    handleThreadParticipants = async ({threadsParticipants, prepareRecordsOnly, skipSync = false}: HandleThreadParticipantsArgs): Promise<ThreadParticipantModel[]> => {
         const batchRecords: ThreadParticipantModel[] = [];
 
         if (!threadsParticipants.length) {
@@ -117,6 +120,7 @@ const ThreadHandler = (superclass: any) => class extends superclass {
                 database: this.database,
                 thread_id,
                 rawParticipants: rawValues,
+                skipSync,
             });
 
             if (createParticipants?.length) {

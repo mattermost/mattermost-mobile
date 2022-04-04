@@ -109,7 +109,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({
-            raws: channelInfos,
+            raws: channelInfos as ChannelInfo[],
             key: 'id',
         });
 

@@ -80,7 +80,11 @@ export async function handleTeamMemberRoleUpdatedEvent(serverUrl: string, msg: W
     }
 
     try {
-        const member = JSON.parse(msg.data.member);
+        const member: TeamMembership = JSON.parse(msg.data.member);
+
+        if (member.delete_at > 0) {
+            return;
+        }
 
         const currentUserId = await getCurrentUserId(operator.database);
         if (currentUserId !== member.user_id) {

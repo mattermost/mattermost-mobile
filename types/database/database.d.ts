@@ -91,11 +91,12 @@ export type HandlePostsArgs = {
 export type HandleThreadsArgs = {
   threads: Thread[];
   prepareRecordsOnly?: boolean;
-  teamId: string;
+  teamId?: string;
 };
 
 export type HandleThreadParticipantsArgs = {
   prepareRecordsOnly: boolean;
+  skipSync?: boolean;
   threadsParticipants: ParticipantsPerThread[];
 };
 
@@ -113,6 +114,7 @@ export type SanitizeReactionsArgs = {
 
 export type SanitizeThreadParticipantsArgs = {
   database: Database;
+  skipSync?: boolean;
   thread_id: $ID<Thread>;
   rawParticipants: ThreadParticipant[];
 }
@@ -198,7 +200,7 @@ export type HandleMyChannelArgs = PrepareOnly & {
 };
 
 export type HandleChannelInfoArgs = PrepareOnly &{
-  channelInfos: ChannelInfo[];
+  channelInfos: Array<Partial<ChannelInfo>>;
 };
 
 export type HandleMyChannelSettingsArgs = PrepareOnly & {
