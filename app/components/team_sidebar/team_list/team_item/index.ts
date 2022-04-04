@@ -29,7 +29,7 @@ const enhance = withObservables(['myTeam'], ({myTeam, database}: WithTeamsArgs) 
     return {
         currentTeamId: observeCurrentTeamId(database),
         team: myTeam.team.observe(),
-        mentionCount: observeTeamMentionCount(database, myTeam.id),
+        mentionCount: observeTeamMentionCount(database, myTeam.id, false),
         hasUnreads,
     };
 });

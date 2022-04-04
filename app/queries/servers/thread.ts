@@ -111,8 +111,8 @@ export const queryThreadsInTeam = ({database, hasReplies = true, isFollowing = t
     return database.get<ThreadModel>(THREAD).query(...query);
 };
 
-export const queryUnreadsAndMentionsInTeam = (database: Database, teamId: string) => {
-    return queryThreadsInTeam({database, teamId, onlyUnreads: true, includeDmGm: false}).observeWithColumns(['unread_replies', 'unread_mentions']).pipe(
+export const queryUnreadsAndMentionsInTeam = (database: Database, teamId: string, includeDmGm: boolean) => {
+    return queryThreadsInTeam({database, teamId, onlyUnreads: true, includeDmGm}).observeWithColumns(['unread_replies', 'unread_mentions']).pipe(
         switchMap((threads) => {
             let unreads = 0;
             let mentions = 0;

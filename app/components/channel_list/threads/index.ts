@@ -31,7 +31,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
                     if (!isCRTEnabled) {
                         return of$({unreads: 0, mentions: 0});
                     }
-                    return queryUnreadsAndMentionsInTeam(database, teamId);
+                    return queryUnreadsAndMentionsInTeam(database, teamId, true);
                 },
             ),
         ),
