@@ -68,7 +68,7 @@ index a3aafb2..141f0cd 100644
    namespace Animated {
      type Nullable<T> = T | null | undefined;
 diff --git a/node_modules/react-native-reanimated/src/createAnimatedComponent.tsx b/node_modules/react-native-reanimated/src/createAnimatedComponent.tsx
-index 6bead55..1cf0c3f 100644
+index 6bead55..7ae12ba 100644
 --- a/node_modules/react-native-reanimated/src/createAnimatedComponent.tsx
 +++ b/node_modules/react-native-reanimated/src/createAnimatedComponent.tsx
 @@ -161,7 +161,7 @@ interface ComponentRef extends Component {
@@ -80,6 +80,52 @@ index 6bead55..1cf0c3f 100644
    ref?: Ref<Component>;
    collapsable?: boolean;
  }
+@@ -195,6 +195,7 @@ export default function createAnimatedComponent(
+     _isFirstRender = true;
+     animatedStyle: { value: StyleProps } = { value: {} };
+     initialStyle = {};
++    _lastSentStyle?: StyleProps;
+     sv: SharedValue<null | Record<string, unknown>> | null;
+     _propsAnimated?: PropsAnimated;
+     _component: ComponentRef | null = null;
+@@ -580,17 +581,24 @@ export default function createAnimatedComponent(
+ 
+     _filterNonAnimatedStyle(inputStyle: StyleProps) {
+       const style: StyleProps = {};
++      let changed = false;
+       for (const key in inputStyle) {
+         const value = inputStyle[key];
+         if (!hasAnimatedNodes(value)) {
+           style[key] = value;
++          changed = changed || style[key] !== this._lastSentStyle?.[key];
+         } else if (value instanceof AnimatedValue) {
+           // if any style in animated component is set directly to the `Value` we set those styles to the first value of `Value` node in order
+           // to avoid flash of default styles when `Value` is being asynchrounously sent via bridge and initialized in the native side.
+           style[key] = value._startingValue;
++          changed = changed || style[key] !== this._lastSentStyle?.[key]
+         }
+       }
+-      return style;
++      if (changed) {
++        return style;
++      } else {
++        return this._lastSentStyle;
++      }
+     }
+ 
+     _filterNonAnimatedProps(
+@@ -617,9 +625,11 @@ export default function createAnimatedComponent(
+               return style;
+             }
+           });
++
+           props[key] = this._filterNonAnimatedStyle(
+             StyleSheet.flatten(processedStyle)
+           );
++          this._lastSentStyle = props[key]
+         } else if (key === 'animatedProps') {
+           const animatedProp = inputProps.animatedProps as Partial<
+             AnimatedComponentProps<AnimatedProps>
 diff --git a/node_modules/react-native-reanimated/src/reanimated2/component/FlatList.tsx b/node_modules/react-native-reanimated/src/reanimated2/component/FlatList.tsx
 index f02fc16..32bf952 100644
 --- a/node_modules/react-native-reanimated/src/reanimated2/component/FlatList.tsx

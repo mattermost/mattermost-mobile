@@ -8,24 +8,21 @@ import {
     isRecordCustomEmojiEqualToRaw,
     isRecordRoleEqualToRaw,
     isRecordSystemEqualToRaw,
-    isRecordTermsOfServiceEqualToRaw,
 } from '@database/operator/server_data_operator/comparators';
 import {
     transformCustomEmojiRecord,
     transformRoleRecord,
     transformSystemRecord,
-    transformTermsOfServiceRecord,
 } from '@database/operator/server_data_operator/transformers/general';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 
 import type {Model} from '@nozbe/watermelondb';
-import type {HandleCustomEmojiArgs, HandleRoleArgs, HandleSystemArgs, HandleTOSArgs, OperationArgs} from '@typings/database/database';
+import type {HandleCustomEmojiArgs, HandleRoleArgs, HandleSystemArgs, OperationArgs} from '@typings/database/database';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type RoleModel from '@typings/database/models/servers/role';
 import type SystemModel from '@typings/database/models/servers/system';
-import type TermsOfServiceModel from '@typings/database/models/servers/terms_of_service';
 
-const {SERVER: {CUSTOM_EMOJI, ROLE, SYSTEM, TERMS_OF_SERVICE}} = MM_TABLES;
+const {SERVER: {CUSTOM_EMOJI, ROLE, SYSTEM}} = MM_TABLES;
 
 export default class ServerDataOperatorBase extends BaseDataOperator {
     handleRole = ({roles, prepareRecordsOnly = true}: HandleRoleArgs) => {
@@ -77,23 +74,6 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
             createOrUpdateRawValues: getUniqueRawsBy({raws: systems, key: 'id'}),
             tableName: SYSTEM,
         }) as Promise<SystemModel[]>;
-    };
-
-    handleTermOfService = ({termOfService, prepareRecordsOnly = true}: HandleTOSArgs) => {
-        if (!termOfService.length) {
-            throw new DataOperatorException(
-                'An empty "values" array has been passed to the handleTermOfService',
-            );
-        }
-
-        return this.handleRecords({
-            fieldName: 'id',
-            findMatchingRecordBy: isRecordTermsOfServiceEqualToRaw,
-            transformer: transformTermsOfServiceRecord,
-            prepareRecordsOnly,
-            createOrUpdateRawValues: getUniqueRawsBy({raws: termOfService, key: 'id'}),
-            tableName: TERMS_OF_SERVICE,
-        }) as Promise<TermsOfServiceModel[]>;
     };
 
     /**

@@ -4,6 +4,7 @@ import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
+import type {Clause} from '@nozbe/watermelondb/QueryDescription';
 import type {RecordPair, SanitizeThreadParticipantsArgs} from '@typings/database/database';
 import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
 
@@ -18,10 +19,20 @@ const {THREAD_PARTICIPANT} = MM_TABLES.SERVER;
  * @param {UserProfile[]} sanitizeThreadParticipants.rawParticipants
  * @returns {Promise<{createParticipants: ThreadParticipant[],  deleteParticipants: ThreadParticipantModel[]}>}
  */
-export const sanitizeThreadParticipants = async ({database, thread_id, rawParticipants}: SanitizeThreadParticipantsArgs) => {
+export const sanitizeThreadParticipants = async ({database, skipSync, thread_id, rawParticipants}: SanitizeThreadParticipantsArgs) => {
+    const clauses: Clause[] = [Q.where('thread_id', thread_id)];
+
+    // Check if we already have the participants
+    if (skipSync) {
+        clauses.push(
+            Q.where('user_id', Q.oneOf(
+                rawParticipants.map((participant) => participant.id),
+            )),
+        );
+    }
     const participants = (await database.collections.
         get(THREAD_PARTICIPANT).
-        query(Q.where('thread_id', thread_id)).
+        query(...clauses).
         fetch()) as ThreadParticipantModel[];
 
     // similarObjects: Contains objects that are in both the RawParticipant array and in the ThreadParticipant table
@@ -40,6 +51,10 @@ export const sanitizeThreadParticipants = async ({database, thread_id, rawPartic
         } else {
             createParticipants.push({raw: rawParticipant});
         }
+    }
+
+    if (skipSync) {
+        return {createParticipants, deleteParticipants: []};
     }
 
     // finding out elements to delete using array subtract

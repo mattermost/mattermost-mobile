@@ -4,7 +4,6 @@
 import DatabaseManager from '@database/manager';
 import {
     isRecordMyTeamEqualToRaw,
-    isRecordSlashCommandEqualToRaw,
     isRecordTeamChannelHistoryEqualToRaw,
     isRecordTeamEqualToRaw,
     isRecordTeamMembershipEqualToRaw,
@@ -12,7 +11,6 @@ import {
 } from '@database/operator/server_data_operator/comparators';
 import {
     transformMyTeamRecord,
-    transformSlashCommandRecord,
     transformTeamChannelHistoryRecord,
     transformTeamMembershipRecord,
     transformTeamRecord,
@@ -182,48 +180,6 @@ describe('*** Operator: Team Handlers tests ***', () => {
             prepareRecordsOnly: false,
             findMatchingRecordBy: isRecordTeamSearchHistoryEqualToRaw,
             transformer: transformTeamSearchHistoryRecord,
-        });
-    });
-
-    it('=> HandleSlashCommand: should write to the SLASH_COMMAND table', async () => {
-        expect.assertions(2);
-
-        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const slashCommands = [
-            {
-                id: 'command_1',
-                auto_complete: true,
-                auto_complete_desc: 'mock_command',
-                auto_complete_hint: 'hint',
-                create_at: 1445538153952,
-                creator_id: 'creator_id',
-                delete_at: 1445538153952,
-                description: 'description',
-                display_name: 'display_name',
-                icon_url: 'display_name',
-                method: 'get',
-                team_id: 'teamA',
-                token: 'token',
-                trigger: 'trigger',
-                update_at: 1445538153953,
-                url: 'url',
-                username: 'userA',
-            },
-        ];
-
-        await operator.handleSlashCommand({
-            slashCommands,
-            prepareRecordsOnly: false,
-        });
-
-        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            fieldName: 'id',
-            createOrUpdateRawValues: slashCommands,
-            tableName: 'SlashCommand',
-            prepareRecordsOnly: false,
-            findMatchingRecordBy: isRecordSlashCommandEqualToRaw,
-            transformer: transformSlashCommandRecord,
         });
     });
 });

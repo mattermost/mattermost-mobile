@@ -19,7 +19,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import UploadItem from './upload_item';
 
 const CONTAINER_HEIGHT_MAX = 67;
-const CONATINER_HEIGHT_MIN = 0;
+const CONTAINER_HEIGHT_MIN = 0;
 const ERROR_HEIGHT_MAX = 20;
 const ERROR_HEIGHT_MIN = 0;
 
@@ -80,7 +80,7 @@ function Uploads({
     const style = getStyleSheet(theme);
 
     const errorHeight = useSharedValue(ERROR_HEIGHT_MIN);
-    const containerHeight = useSharedValue(CONTAINER_HEIGHT_MAX);
+    const containerHeight = useSharedValue(files.length ? CONTAINER_HEIGHT_MAX : CONTAINER_HEIGHT_MIN);
     const filesForGallery = useRef(files.filter((f) => !f.failed && !DraftUploadManager.isUploading(f.clientId!)));
 
     const errorAnimatedStyle = useAnimatedStyle(() => {
@@ -116,7 +116,7 @@ function Uploads({
             containerHeight.value = CONTAINER_HEIGHT_MAX;
             return;
         }
-        containerHeight.value = CONATINER_HEIGHT_MIN;
+        containerHeight.value = CONTAINER_HEIGHT_MIN;
     }, [files.length > 0]);
 
     const openGallery = useCallback((file: FileInfo) => {

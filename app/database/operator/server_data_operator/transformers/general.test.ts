@@ -5,7 +5,6 @@ import {
     transformCustomEmojiRecord,
     transformRoleRecord,
     transformSystemRecord,
-    transformTermsOfServiceRecord,
 } from '@database/operator/server_data_operator/transformers/general';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
 import {OperationType} from '@typings/database/enums';
@@ -53,33 +52,6 @@ describe('*** System Prepare Records Test ***', () => {
 
         expect(preparedRecords).toBeTruthy();
         expect(preparedRecords!.collection.modelClass.name).toBe('SystemModel');
-    });
-});
-
-describe('*** TOS Prepare Records Test ***', () => {
-    it('=> transformTermsOfServiceRecord: should return an array of type TermsOfService', async () => {
-        expect.assertions(3);
-
-        const database = await createTestConnection({databaseName: 'isolated_prepare_records', setActive: true});
-        expect(database).toBeTruthy();
-
-        const preparedRecords = await transformTermsOfServiceRecord({
-            action: OperationType.CREATE,
-            database: database!,
-            value: {
-                record: undefined,
-                raw: {
-                    id: 'tos-1',
-                    accepted_at: 1,
-                    create_at: 1613667352029,
-                    user_id: 'user1613667352029',
-                    text: '',
-                },
-            },
-        });
-
-        expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('TermsOfServiceModel');
     });
 });
 

@@ -4,15 +4,15 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
-import {combineLatest, from as from$, of as of$} from 'rxjs';
+import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
 import {queryPostsById} from '@queries/servers/post';
+import {observePermissionForPost} from '@queries/servers/role';
 import {observeCurrentUserId} from '@queries/servers/system';
 import {observeUser, queryUsersByIdsOrUsernames} from '@queries/servers/user';
 import {generateCombinedPost, getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
-import {hasPermissionForPost} from '@utils/role';
 
 import CombinedUserActivity from './combined_user_activity';
 
@@ -28,7 +28,7 @@ const withCombinedPosts = withObservables(['postId'], ({database, postId}: WithD
     const posts = queryPostsById(database, postIds).observe();
     const post = posts.pipe(map((ps) => generateCombinedPost(postId, ps)));
     const canDelete = combineLatest([posts, currentUser]).pipe(
-        switchMap(([ps, u]) => (u ? from$(hasPermissionForPost(ps[0], u, Permissions.DELETE_OTHERS_POSTS, false)) : of$(false))),
+        switchMap(([ps, u]) => (u ? observePermissionForPost(ps[0], u, Permissions.DELETE_OTHERS_POSTS, false) : of$(false))),
     );
 
     const usernamesById = post.pipe(

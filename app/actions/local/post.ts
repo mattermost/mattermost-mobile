@@ -132,7 +132,7 @@ export const removePost = async (serverUrl: string, post: PostModel | Post) => {
     return {post};
 };
 
-export const markPostAsDeleted = async (serverUrl: string, post: Post) => {
+export const markPostAsDeleted = async (serverUrl: string, post: Post, prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -140,41 +140,18 @@ export const markPostAsDeleted = async (serverUrl: string, post: Post) => {
 
     const dbPost = await getPostById(operator.database, post.id);
     if (!dbPost) {
-        return {};
+        return {error: 'Post not found'};
     }
 
-    dbPost.prepareUpdate((p) => {
+    const model = dbPost.prepareUpdate((p) => {
         p.deleteAt = Date.now();
         p.message = '';
         p.metadata = null;
         p.props = undefined;
     });
 
-    operator.batchRecords([dbPost]);
-
-    return {post: dbPost};
-};
-
-export const processPostsFetched = async (serverUrl: string, actionType: string, data: PostResponse, fetchOnly = false) => {
-    const order = data.order;
-    const posts = Object.values(data.posts) as Post[];
-    const previousPostId = data.prev_post_id;
-
-    if (!fetchOnly) {
-        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-        if (operator) {
-            await operator.handlePosts({
-                actionType,
-                order,
-                posts,
-                previousPostId,
-            });
-        }
+    if (!prepareRecordsOnly) {
+        operator.batchRecords([dbPost]);
     }
-
-    return {
-        posts,
-        order,
-        previousPostId,
-    };
+    return {model};
 };
