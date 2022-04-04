@@ -163,7 +163,7 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
             return;
         }
 
-        const {directChannels} = await fetchMissingSidebarInfo(serverUrl, channels, user.locale, '', user.id, true);
+        const {directChannels, users} = await fetchMissingSidebarInfo(serverUrl, channels, user.locale, '', user.id, true);
         if (!directChannels?.[0]) {
             return;
         }
@@ -176,6 +176,11 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
         const categoryModels = await addChannelToDefaultCategory(serverUrl, channels[0], false);
         if (categoryModels.models?.length) {
             models.push(...categoryModels.models);
+        }
+
+        if (users?.length) {
+            const userModels = await operator.handleUsers({users, prepareRecordsOnly: true});
+            models.push(...userModels);
         }
 
         if (models.length) {

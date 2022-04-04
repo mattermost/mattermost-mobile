@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {General} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
+import {extractChannelDisplayName} from '@helpers/database';
 import {OperationType} from '@typings/database/enums';
 
 import type {TransformerArgs} from '@typings/database/database';
@@ -40,29 +40,7 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
         channel.creatorId = raw.creator_id;
         channel.deleteAt = raw.delete_at;
 
-        // for DM & GM's  channels do not override the display name
-        // until we get the new info if there is any
-        let displayName = '';
-        switch (raw.type) {
-            case General.DM_CHANNEL:
-                displayName = raw.display_name.trim() || record?.displayName;
-                break;
-            case General.GM_CHANNEL: {
-                const rawMembers = raw.display_name.split(',').length;
-                const recordMembers = record?.displayName.split(',').length || rawMembers;
-                if (recordMembers < rawMembers && record?.displayName) {
-                    displayName = record.displayName;
-                } else {
-                    displayName = raw.display_name;
-                }
-                break;
-            }
-            default:
-                displayName = raw.display_name;
-                break;
-        }
-
-        channel.displayName = displayName;
+        channel.displayName = extractChannelDisplayName(raw, record);
         channel.isGroupConstrained = Boolean(raw.group_constrained);
         channel.name = raw.name;
         channel.shared = Boolean(raw.shared);

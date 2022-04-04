@@ -8,6 +8,7 @@ import {General, Navigation as NavigationConstants, Preferences, Screens} from '
 import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@constants/categories';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import {extractChannelDisplayName} from '@helpers/database';
 import {prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannel, getMyChannel, getChannelById, queryUsersOnChannel} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
@@ -384,7 +385,7 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
 
         if (channel.displayName !== newDisplayName) {
             channel.prepareUpdate((c) => {
-                c.displayName = newDisplayName;
+                c.displayName = extractChannelDisplayName({type: c.type, display_name: newDisplayName}, c);
             });
             models.push(channel);
         }
