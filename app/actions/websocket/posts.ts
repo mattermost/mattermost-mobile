@@ -255,11 +255,17 @@ export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage
 }
 
 export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage) {
-    const {team_id: teamId, channel_id: channelId} = msg.broadcast;
+    const {channel_id: channelId} = msg.broadcast;
     const {mention_count: mentionCount, msg_count: msgCount, last_viewed_at: lastViewedAt} = msg.data;
-    const {channels} = await fetchMyChannel(serverUrl, teamId, channelId, true);
-    const channel = channels?.[0];
-    const postNumber = channel?.total_msg_count;
-    const delta = postNumber ? postNumber - msgCount : msgCount;
-    markChannelAsUnread(serverUrl, channelId, delta, mentionCount, lastViewedAt);
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return;
+    }
+
+    const myChannel = await getMyChannel(database, channelId);
+    if (!myChannel?.manuallyUnread) {
+        // We used to fetch the channel to get the delta on the message count
+        // We just need to identify that there are unread messages, the exact number is uninportant
+        markChannelAsUnread(serverUrl, channelId, msgCount, mentionCount, lastViewedAt);
+    }
 }

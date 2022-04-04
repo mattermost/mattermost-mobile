@@ -21,7 +21,7 @@ import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
 import {deleteChannelMembership, getChannelById, prepareMyChannelsForTeam, getCurrentChannel} from '@queries/servers/channel';
-import {prepareCommonSystemValues, getConfig, setCurrentChannelId} from '@queries/servers/system';
+import {prepareCommonSystemValues, getConfig, setCurrentChannelId, getCurrentChannelId} from '@queries/servers/system';
 import {getNthLastChannelFromTeam} from '@queries/servers/team';
 import {getCurrentUser, getUserById} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
@@ -105,9 +105,19 @@ export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
 
 export async function handleChannelViewedEvent(serverUrl: string, msg: any) {
     try {
+        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+        if (!database) {
+            return;
+        }
+
         const {channel_id: channelId} = msg.data;
 
-        await markChannelAsViewed(serverUrl, channelId, false);
+        const activeServerUrl = await DatabaseManager.getActiveServerUrl();
+        const currentChannelId = await getCurrentChannelId(database);
+
+        if (activeServerUrl !== serverUrl || currentChannelId !== channelId) {
+            await markChannelAsViewed(serverUrl, channelId, false);
+        }
     } catch {
         // do nothing
     }
