@@ -52,8 +52,8 @@ export const observeThreadById = (database: Database, threadId: string) => {
     );
 };
 
-export const observeUnreadsAndMentionsInTeam = (database: Database, teamId: string) => {
-    return queryThreadsInTeam(database, teamId, true).observeWithColumns(['unread_replies', 'unread_mentions']).pipe(
+export const observeUnreadsAndMentionsInTeam = (database: Database, teamId: string, includeDmGm: boolean) => {
+    return queryThreadsInTeam(database, teamId, true, true, true, false, includeDmGm).observeWithColumns(['unread_replies', 'unread_mentions']).pipe(
         switchMap((threads) => {
             let unreads = 0;
             let mentions = 0;
@@ -91,7 +91,7 @@ export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperat
     return models;
 };
 
-export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnreads?: boolean, hasReplies?: boolean, isFollowing?: boolean, sort?: boolean): Query<ThreadModel> => {
+export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnreads?: boolean, hasReplies?: boolean, isFollowing?: boolean, sort?: boolean, includeDmGm?: boolean): Query<ThreadModel> => {
     const query: Q.Clause[] = [
         Q.experimentalNestedJoin(POST, CHANNEL),
     ];
@@ -112,17 +112,18 @@ export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnrea
         query.push(Q.sortBy('last_reply_at', Q.desc));
     }
 
+    let joinCondition: Q.Condition = Q.where('team_id', teamId);
+
+    if (includeDmGm) {
+        joinCondition = Q.or(
+            Q.where('team_id', teamId),
+            Q.where('team_id', ''),
+        );
+    }
+
     query.push(
-        Q.on(
-            POST,
-            Q.on(
-                CHANNEL,
-                Q.or(
-                    Q.where('team_id', teamId),
-                    Q.where('team_id', ''),
-                ),
-            ),
-        ),
+        Q.experimentalNestedJoin(POST, CHANNEL),
+        Q.on(POST, Q.on(CHANNEL, joinCondition)),
     );
 
     return database.get<ThreadModel>(THREAD).query(...query);

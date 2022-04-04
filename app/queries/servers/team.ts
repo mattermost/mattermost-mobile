@@ -403,20 +403,20 @@ function observeMyChannelMentionCount(database: Database, teamId: string): Obser
         );
 }
 
-function observeThreadMentionCount(database: Database, teamId: string): Observable<number> {
-    return observeUnreadsAndMentionsInTeam(database, teamId).pipe(
+function observeThreadMentionCount(database: Database, teamId: string, includeDmGm: boolean): Observable<number> {
+    return observeUnreadsAndMentionsInTeam(database, teamId, includeDmGm).pipe(
         switchMap(({mentions}) => of$(mentions)),
         distinctUntilChanged(),
     );
 }
 
-export function observeTeamMentionCount(database: Database, teamId: string): Observable<number> {
+export function observeTeamMentionCount(database: Database, teamId: string, includeDmGm: boolean): Observable<number> {
     const channelMentionCountObservable = observeMyChannelMentionCount(database, teamId);
 
     const threadMentionCountObservable = observeIsCRTEnabled(database).pipe(
         switchMap((isCrtEnabled) => {
             if (isCrtEnabled) {
-                return observeThreadMentionCount(database, teamId);
+                return observeThreadMentionCount(database, teamId, includeDmGm);
             }
             return of$(0);
         }),
