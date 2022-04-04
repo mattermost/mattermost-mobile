@@ -286,6 +286,12 @@ export const getMyTeamById = async (database: Database, teamId: string) => {
     }
 };
 
+export const observeMyTeam = (database: Database, teamId: string) => {
+    return database.get<MyTeamModel>(MY_TEAM).query(Q.where('id', teamId), Q.take(1)).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+    );
+};
+
 export const getTeamById = async (database: Database, teamId: string) => {
     try {
         const team = (await database.get<TeamModel>(TEAM).find(teamId));
