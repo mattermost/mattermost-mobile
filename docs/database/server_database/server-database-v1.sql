@@ -4,7 +4,10 @@
 
 -- Server Database - Schema Version 1
 -- Please bump the version by 1, any time the schema changes.
--- Don't forget to write a migration in the code.
+-- Also, include the migration plan under app/database/migration/server,
+-- update all models, relationships and types.
+-- Lastly, export all PNGs, SVGs, etc under the source project (./docs/database)
+-- If you have any question/queries that you would like to clarify, please reach out to the Mobile Platform Team.
 
 SET XACT_ABORT ON
 
@@ -291,23 +294,16 @@ CREATE TABLE [TeamSearchHistory] (
     )
 )
 
-CREATE TABLE [TermsOfService] (
-    [id] string  NOT NULL ,
-    [accepted_at] number  NOT NULL ,
-    CONSTRAINT [PK_TermsOfService] PRIMARY KEY CLUSTERED (
-        [id] ASC
-    )
-)
-
 CREATE TABLE [Thread] (
     -- similar to Post.id but for root post only
     [id] string  NOT NULL ,
+    [is_following] boolean  NOT NULL ,
     [last_reply_at] number  NOT NULL ,
     [last_viewed_at] number  NOT NULL ,
-    [is_following] boolean  NOT NULL ,
     [reply_count] number  NOT NULL ,
-    [unread_replies] number  NOT NULL ,
     [unread_mentions] number  NOT NULL ,
+    [unread_replies] number  NOT NULL ,
+    [viewed_at] number  NOT NULL ,
     CONSTRAINT [PK_Thread] PRIMARY KEY CLUSTERED (
         [id] ASC
     )
@@ -316,9 +312,9 @@ CREATE TABLE [Thread] (
 CREATE TABLE [ThreadsInTeam] (
     -- auto-generated
     [id] string  NOT NULL ,
+    [loaded_in_global_threads] boolean  NOT NULL ,
     [team_id] string  NOT NULL ,
     [thread_id] string  NOT NULL ,
-    [loaded_in_global_threads] boolean  NOT NULL ,
     CONSTRAINT [PK_ThreadsInTeam] PRIMARY KEY CLUSTERED (
         [id] ASC
     )

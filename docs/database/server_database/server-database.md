@@ -1,6 +1,9 @@
 # Server Database - Schema Version 1
 # Please bump the version by 1, any time the schema changes.
-# Don't forget to write a migration in the code.
+# Also, include the migration plan under app/database/migration/server,
+# update all models, relationships and types.
+# Lastly, export all PNGs, SVGs, etc under the source project (./docs/database)
+# If you have any question/queries that you would like to clarify, please reach out to the Mobile Platform Team.
 
 
 Category
@@ -62,7 +65,7 @@ name string
 Draft
 -
 id PK string # auto-generated
-channel_id  INDEX FK >- Channel.id
+channel_id string  INDEX FK >- Channel.id
 files string #stringify (array)
 message string
 root_id string INDEX NULL FK >- Post.id
@@ -211,29 +214,25 @@ team_id string FK >- Team.id
 term string
 
 
-TermsOfService ## Verify if PR #6117 is merged and if yes, delete this <<
--
-id PK string
-accepted_at number
-
-
 Thread
 -
 id PK string FK - Post.id # similar to Post.id but for root post only
+is_following boolean
 last_reply_at number
 last_viewed_at number
-is_following boolean
 reply_count number
-unread_replies number
 unread_mentions number
+unread_replies number  
+viewed_at number
 
 
 ThreadsInTeam
 -
 id PK string # auto-generated
+loaded_in_global_threads boolean
 team_id string INDEX FK >- Team.id
 thread_id string INDEX
-loaded_in_global_threads boolean
+
 
 ThreadParticipant # who is participating in this conversation
 -
