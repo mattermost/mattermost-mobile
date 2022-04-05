@@ -22,7 +22,7 @@ CategoryChannel
 -
 id PK string # composition ID Team.id_Channel.id
 category_id string INDEX FK >- Category.id
-channel_id string INDEX
+channel_id string INDEX FK - MyChannel.id
 sort_order number
 
 

@@ -10,8 +10,9 @@ import {MM_TABLES} from '@constants/database';
 import type CategoryModel from '@typings/database/models/servers/category';
 import type CategoryChannelInterface from '@typings/database/models/servers/category_channel';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
-const {CATEGORY_CHANNEL, CATEGORY, CHANNEL} = MM_TABLES.SERVER;
+const {CATEGORY_CHANNEL, CATEGORY, MY_CHANNEL, CHANNEL} = MM_TABLES.SERVER;
 
 /**
  * The CategoryChannel model represents the 'association table' where many categories have channels and many channels are in
@@ -29,6 +30,9 @@ export default class CategoryChannelModel extends Model implements CategoryChann
 
         /** A CategoryChannel has a Channel */
         [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
+
+        /** A CategoryChannel has a MyChannel */
+        [MY_CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
     };
 
     /** category_id : The foreign key to the related Category record */
@@ -45,4 +49,7 @@ export default class CategoryChannelModel extends Model implements CategoryChann
 
     /** channel : The related channel */
     @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<ChannelModel>;
+
+    /** myChannel : The related myChannel */
+    @immutableRelation(MY_CHANNEL, 'channel_id') myChannel!: Relation<MyChannelModel>;
 }

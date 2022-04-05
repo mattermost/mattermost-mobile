@@ -6,6 +6,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import type CategoryModel from './category';
 import type ChannelModel from './channel';
+import type MyChannelModel from './my_channel';
 
 /**
  * The CategoryChannel model represents the 'association table' where many categories have channels and many channels are in
@@ -32,4 +33,7 @@ export default class CategoryChannelModel extends Model {
 
     /** channel : The related channel */
     channel: Relation<ChannelModel>;
+
+    /** myChannel : The related myChannel */
+    myChannel: Relation<MyChannelModel>;
 }
