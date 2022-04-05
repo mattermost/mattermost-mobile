@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, View} from 'react-native';
+import {Keyboard, Platform, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -11,7 +11,7 @@ import {makeDirectChannel, makeGroupChannel} from '@actions/remote/channel';
 import {fetchProfiles, fetchProfilesInTeam, searchProfiles} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
-import SearchBar from '@components/search_bar';
+import Search from '@components/search';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -51,14 +51,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
         },
         searchBar: {
-            marginHorizontal: 12,
-            borderRadius: 8,
-            marginTop: 12,
-            marginBottom: 12,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-        },
-        searchBarInput: {
-            color: theme.centerChannelColor,
+            marginLeft: 12,
+            marginRight: Platform.select({ios: 4, default: 12}),
+            marginVertical: 12,
         },
         loadingContainer: {
             alignItems: 'center',
@@ -268,6 +263,10 @@ export default function CreateDirectMessage({
         setLoading(false);
     }, [restrictDirectMessage, serverUrl, currentTeamId]);
 
+    const search = useCallback(() => {
+        searchUsers(term);
+    }, [searchUsers, term]);
+
     const onSearch = useCallback((text: string) => {
         if (text) {
             setTerm(text);
@@ -276,12 +275,12 @@ export default function CreateDirectMessage({
             }
 
             searchTimeoutId.current = setTimeout(() => {
-                searchUsers(text);
+                search();
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             clearSearch();
         }
-    }, [searchUsers, clearSearch]);
+    }, [search, clearSearch]);
 
     const updateNavigationButtons = useCallback(async (startEnabled: boolean) => {
         const closeIcon = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
@@ -362,20 +361,14 @@ export default function CreateDirectMessage({
     return (
         <SafeAreaView style={style.container}>
             <View style={style.searchBar}>
-                <SearchBar
-                    testID='more_direct_messages.search_bar'
-                    placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                    cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                    backgroundColor='transparent'
-                    inputHeight={33}
-                    inputStyle={style.searchBarInput}
+                <Search
+                    testID='create_direct_message.search_bar'
+                    placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                    cancelButtonTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
-                    tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
-                    titleCancelColor={theme.centerChannelColor}
                     onChangeText={onSearch}
-                    onSearchButtonPress={onSearch}
-                    onCancelButtonPress={clearSearch}
+                    onSubmitEditing={search}
+                    onCancel={clearSearch}
                     autoCapitalize='none'
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     value={term}

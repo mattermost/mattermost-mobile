@@ -49,10 +49,11 @@ const getMatchTermForChannelMention = (() => {
 })();
 
 const reduceChannelsForSearch = (channels: Channel[], members: MyChannelModel[]) => {
+    const memberIds = new Set(members.map((m) => m.id));
     return channels.reduce<Channel[][]>(([pubC, priC, dms], c) => {
         switch (c.type) {
             case General.OPEN_CHANNEL:
-                if (members.find((m) => c.id === m.id)) {
+                if (memberIds.has(c.id)) {
                     pubC.push(c);
                 }
                 break;
@@ -68,8 +69,9 @@ const reduceChannelsForSearch = (channels: Channel[], members: MyChannelModel[])
 };
 
 const reduceChannelsForAutocomplete = (channels: Channel[], members: MyChannelModel[]) => {
+    const memberIds = new Set(members.map((m) => m.id));
     return channels.reduce<Channel[][]>(([myC, otherC], c) => {
-        if (members.find((m) => c.id === m.id)) {
+        if (memberIds.has(c.id)) {
             myC.push(c);
         } else {
             otherC.push(c);

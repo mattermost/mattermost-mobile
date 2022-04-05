@@ -8,6 +8,7 @@ import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap, concatAll} from 'rxjs/operators';
 
 import {General, Preferences} from '@constants';
+import {DMS_CATEGORY} from '@constants/categories';
 import {queryChannelsByNames, queryMyChannelSettingsByIds} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {WithDatabaseArgs} from '@typings/database/database';
@@ -37,8 +38,18 @@ const sortAlpha = (locale: string, a: ChannelData, b: ChannelData) => {
 };
 
 const buildAlphaData = (channels: ChannelModel[], settings: MyChannelSettingsModel[], locale: string) => {
+    const settingsById = settings.reduce((result: Record<string, MyChannelSettingsModel>, s) => {
+        result[s.id] = s;
+        return result;
+    }, {});
+
+    const chanelsById = channels.reduce((result: Record<string, ChannelModel>, c) => {
+        result[c.id] = c;
+        return result;
+    }, {});
+
     const combined = channels.map((c) => {
-        const s = settings.find((setting) => setting.id === c.id);
+        const s = settingsById[c.id];
         return {
             id: c.id,
             displayName: c.displayName,
@@ -47,7 +58,7 @@ const buildAlphaData = (channels: ChannelModel[], settings: MyChannelSettingsMod
     });
 
     combined.sort(sortAlpha.bind(null, locale));
-    return of$(combined.map((cdata) => channels.find((c) => c.id === cdata.id)));
+    return of$(combined.map((cdata) => chanelsById[cdata.id]));
 };
 
 const observeSettings = (database: Database, channels: ChannelModel[]) => {
@@ -114,7 +125,7 @@ const enhance = withObservables(['category'], ({category, locale, database, curr
         observe().pipe(switchMap(mapPrefName));
 
     let limit = of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
-    if (category.type === 'direct_messages') {
+    if (category.type === DMS_CATEGORY) {
         limit = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_LIMIT_DMS).observe().pipe(
             switchMap((val) => {
                 return val[0] ? of$(parseInt(val[0].value, 10)) : of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
@@ -123,7 +134,7 @@ const enhance = withObservables(['category'], ({category, locale, database, curr
     }
 
     const hiddenChannelIds = combineLatest([hiddenDmIds, hiddenGmIds]).pipe(switchMap(
-        ([a, b]) => of$(a.concat(b)),
+        ([a, b]) => of$(new Set(a.concat(b))),
     ));
 
     return {

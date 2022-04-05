@@ -108,12 +108,10 @@ type RawValue =
   | PreferenceType
   | Reaction
   | Role
-  | SlashCommand
   | Team
   | TeamChannelHistory
   | TeamMembership
   | TeamSearchHistory
-  | TermsOfService
   | Thread
   | ThreadInTeam
   | ThreadParticipant

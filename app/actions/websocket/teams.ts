@@ -112,10 +112,7 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
     }
 
     if (teams && teamMemberships) {
-        const preparedTeamModels = prepareMyTeams(database.operator, teams, teamMemberships);
-        if (preparedTeamModels) {
-            modelPromises.push(...preparedTeamModels);
-        }
+        modelPromises.push(...prepareMyTeams(database.operator, teams, teamMemberships));
     }
 
     if (modelPromises.length) {

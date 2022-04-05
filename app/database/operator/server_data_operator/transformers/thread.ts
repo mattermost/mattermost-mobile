@@ -32,11 +32,12 @@ export const transformThreadRecord = ({action, database, value}: TransformerArgs
     const fieldsMapper = (thread: ThreadModel) => {
         thread._raw.id = isCreateAction ? (raw?.id ?? thread.id) : record.id;
         thread.lastReplyAt = raw.last_reply_at;
-        thread.lastViewedAt = raw.last_viewed_at;
+        thread.lastViewedAt = raw.last_viewed_at ?? record?.lastViewedAt ?? 0;
         thread.replyCount = raw.reply_count;
         thread.isFollowing = raw.is_following ?? record?.isFollowing;
-        thread.unreadReplies = raw.unread_replies;
-        thread.unreadMentions = raw.unread_mentions;
+        thread.unreadReplies = raw.unread_replies ?? record?.lastViewedAt ?? 0;
+        thread.unreadMentions = raw.unread_mentions ?? record?.lastViewedAt ?? 0;
+        thread.viewedAt = record?.viewedAt || 0;
     };
 
     return prepareBaseRecord({

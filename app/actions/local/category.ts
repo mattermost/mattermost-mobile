@@ -52,7 +52,7 @@ export const storeCategories = async (serverUrl: string, categories: CategoryWit
 
     if (prune && categories.length) {
         const {database} = operator;
-        const remoteCategoryIds = categories.map((cat) => cat.id);
+        const remoteCategoryIds = new Set(categories.map((cat) => cat.id));
 
         // If the passed categories have more than one team, we want to update across teams
         const teamIds = pluckUnique('team_id')(categories) as string[];
@@ -61,7 +61,7 @@ export const storeCategories = async (serverUrl: string, categories: CategoryWit
         localCategories.
             filter((category) => category.type === 'custom').
             forEach((localCategory) => {
-                if (!remoteCategoryIds.includes(localCategory.id)) {
+                if (!remoteCategoryIds.has(localCategory.id)) {
                     localCategory.prepareDestroyPermanently();
                     flattenedModels.push(localCategory);
                 }

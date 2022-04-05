@@ -63,7 +63,7 @@ const CustomStatusSuggestions = ({
     theme,
 }: Props) => {
     const style = getStyleSheet(theme);
-    const recentCustomStatusTexts = recentCustomStatuses.map((status: UserCustomStatus) => status.text);
+    const recentCustomStatusTexts = new Set(recentCustomStatuses.map((status: UserCustomStatus) => status.text));
 
     const customStatusSuggestions = defaultCustomStatusSuggestions.
         map((status) => ({
@@ -71,7 +71,7 @@ const CustomStatusSuggestions = ({
             text: intl.formatMessage({id: status.message, defaultMessage: status.messageDefault}),
             duration: status.durationDefault,
         })).
-        filter((status: UserCustomStatus) => !recentCustomStatusTexts.includes(status.text)).
+        filter((status: UserCustomStatus) => !recentCustomStatusTexts.has(status.text)).
         map((status: UserCustomStatus, index: number, arr: UserCustomStatus[]) => (
             <CustomStatusSuggestion
                 key={status.text}

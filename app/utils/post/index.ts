@@ -71,3 +71,15 @@ export const sortPostsByNewest = (posts: PostModel[]) => {
         return -1;
     });
 };
+
+export const processPostsFetched = (data: PostResponse) => {
+    const order = data.order;
+    const posts = Object.values(data.posts) as Post[];
+    const previousPostId = data.prev_post_id;
+
+    return {
+        posts,
+        order,
+        previousPostId,
+    };
+};

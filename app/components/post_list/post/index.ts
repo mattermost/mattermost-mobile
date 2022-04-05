@@ -4,18 +4,18 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
-import {from as from$, of as of$} from 'rxjs';
+import {of as of$, combineLatest} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Permissions, Preferences} from '@constants';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {queryPostsBetween} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeCanManageChannelMembers, observePermissionForPost} from '@queries/servers/role';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
 import {areConsecutivePosts, isPostEphemeral} from '@utils/post';
-import {canManageChannelMembers, hasPermissionForPost} from '@utils/role';
 
 import Post from './post';
 
@@ -33,35 +33,47 @@ type PropsInput = WithDatabaseArgs & {
     previousPost: PostModel | undefined;
 }
 
-async function shouldHighlightReplyBar(currentUser: UserModel, post: PostModel, postsInThread: PostsInThreadModel) {
-    let commentsNotifyLevel = Preferences.COMMENTS_NEVER;
-    let threadCreatedByCurrentUser = false;
-    let rootPost: PostModel | undefined;
-    const myPosts = await queryPostsBetween(postsInThread.database, postsInThread.earliest, postsInThread.latest, null, currentUser.id, '', post.rootId || post.id).fetch();
+function observeShouldHighlightReplyBar(currentUser: UserModel, post: PostModel, postsInThread: PostsInThreadModel) {
+    const myPostsCount = queryPostsBetween(postsInThread.database, postsInThread.earliest, postsInThread.latest, null, currentUser.id, '', post.rootId || post.id).observeCount();
+    const root = post.root.observe().pipe(switchMap((rl) => (rl.length ? rl[0].observe() : of$(undefined))));
 
-    const threadRepliedToByCurrentUser = myPosts.length > 0;
-    const root = await post.root.fetch();
-    if (root.length) {
-        rootPost = root[0];
+    return combineLatest([myPostsCount, root]).pipe(
+        switchMap(([mpc, r]) => {
+            const threadRepliedToByCurrentUser = mpc > 0;
+            let threadCreatedByCurrentUser = false;
+            if (r?.userId === currentUser.id) {
+                threadCreatedByCurrentUser = true;
+            }
+            let commentsNotifyLevel = Preferences.COMMENTS_NEVER;
+            if (currentUser.notifyProps?.comments) {
+                commentsNotifyLevel = currentUser.notifyProps.comments;
+            }
+
+            const notCurrentUser = post.userId !== currentUser.id || Boolean(post.props?.from_webhook);
+            if (notCurrentUser) {
+                if (commentsNotifyLevel === Preferences.COMMENTS_ANY && (threadCreatedByCurrentUser || threadRepliedToByCurrentUser)) {
+                    return of$(true);
+                } else if (commentsNotifyLevel === Preferences.COMMENTS_ROOT && threadCreatedByCurrentUser) {
+                    return of$(true);
+                }
+            }
+
+            return of$(false);
+        }),
+    );
+}
+
+function observeHasReplies(post: PostModel) {
+    if (!post.rootId) {
+        return post.postsInThread.observe().pipe(switchMap((c) => of$(c.length > 0)));
     }
 
-    if (rootPost?.userId === currentUser.id) {
-        threadCreatedByCurrentUser = true;
-    }
-    if (currentUser.notifyProps?.comments) {
-        commentsNotifyLevel = currentUser.notifyProps.comments;
-    }
-
-    const notCurrentUser = post.userId !== currentUser.id || Boolean(post.props?.from_webhook);
-    if (notCurrentUser) {
-        if (commentsNotifyLevel === Preferences.COMMENTS_ANY && (threadCreatedByCurrentUser || threadRepliedToByCurrentUser)) {
-            return true;
-        } else if (commentsNotifyLevel === Preferences.COMMENTS_ROOT && threadCreatedByCurrentUser) {
-            return true;
+    return post.root.observe().pipe(switchMap((rl) => {
+        if (rl.length) {
+            return rl[0].postsInThread.observe().pipe(switchMap((c) => of$(c.length > 0)));
         }
-    }
-
-    return false;
+        return of$(false);
+    }));
 }
 
 function isFirstReply(post: PostModel, previousPost?: PostModel) {
@@ -87,20 +99,20 @@ const withPost = withObservables(
         let isPostAddChannelMember = of$(false);
         const isOwner = currentUser.id === post.userId;
         const author = post.userId ? post.author.observe() : of$(null);
-        const canDelete = from$(hasPermissionForPost(post, currentUser, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false));
+        const canDelete = observePermissionForPost(post, currentUser, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false);
         const isEphemeral = of$(isPostEphemeral(post));
         const isSaved = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, post.id).observe().pipe(
             switchMap((pref) => of$(Boolean(pref.length))),
         );
 
         if (post.props?.add_channel_member && isPostEphemeral(post)) {
-            isPostAddChannelMember = from$(canManageChannelMembers(post, currentUser));
+            isPostAddChannelMember = observeCanManageChannelMembers(post, currentUser);
         }
 
         const highlightReplyBar = post.postsInThread.observe().pipe(
             switchMap((postsInThreads: PostsInThreadModel[]) => {
                 if (postsInThreads.length) {
-                    return from$(shouldHighlightReplyBar(currentUser, post, postsInThreads[0]));
+                    return observeShouldHighlightReplyBar(currentUser, post, postsInThreads[0]);
                 }
                 return of$(false);
             }));
@@ -118,7 +130,7 @@ const withPost = withObservables(
                 ),
             );
         }
-        const hasReplies = from$(post.hasReplies());
+        const hasReplies = observeHasReplies(post);
         const isConsecutivePost = author.pipe(
             switchMap((user) => of$(Boolean(post && previousPost && !user?.isBot && areConsecutivePosts(post, previousPost)))),
         );

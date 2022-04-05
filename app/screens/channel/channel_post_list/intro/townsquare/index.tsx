@@ -10,7 +10,7 @@ import {hasPermission} from '@utils/role';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import PublicChannel from '../illustration/public';
+import TownSquareIllustration from '../illustration/town_square';
 import IntroOptions from '../options';
 
 import type RoleModel from '@typings/database/models/servers/role';
@@ -25,6 +25,7 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         alignItems: 'center',
+        marginHorizontal: 20,
     },
     message: {
         color: theme.centerChannelColor,
@@ -44,7 +45,7 @@ const TownSquare = ({channelId, displayName, roles, theme}: Props) => {
     const styles = getStyleSheet(theme);
     return (
         <View style={styles.container}>
-            <PublicChannel theme={theme}/>
+            <TownSquareIllustration theme={theme}/>
             <Text style={styles.title}>
                 {displayName}
             </Text>

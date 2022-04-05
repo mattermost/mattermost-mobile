@@ -43,44 +43,25 @@ export const prepareModels = async ({operator, initialTeamId, removeTeams, remov
         });
     }
 
-    if (teamData?.teams?.length) {
-        const teamModels = prepareMyTeams(operator, teamData.teams, teamData.memberships || []);
-        if (teamModels) {
-            modelPromises.push(...teamModels);
-        }
+    if (teamData?.teams?.length && teamData.memberships?.length) {
+        modelPromises.push(...prepareMyTeams(operator, teamData.teams, teamData.memberships));
     }
 
     if (chData?.categories?.length) {
-        const categoryModels = prepareCategories(operator, chData.categories);
-        if (categoryModels) {
-            modelPromises.push(categoryModels);
-        }
-
-        const categoryChannelModels = prepareCategoryChannels(operator, chData.categories);
-        if (categoryChannelModels) {
-            modelPromises.push(categoryChannelModels);
-        }
+        modelPromises.push(prepareCategories(operator, chData.categories));
+        modelPromises.push(prepareCategoryChannels(operator, chData.categories));
     }
 
-    if (initialTeamId && chData?.channels?.length) {
-        const channelModels = await prepareMyChannelsForTeam(operator, initialTeamId, chData.channels, chData.memberships || []);
-        if (channelModels) {
-            modelPromises.push(...channelModels);
-        }
+    if (initialTeamId && chData?.channels?.length && chData.memberships?.length) {
+        modelPromises.push(...await prepareMyChannelsForTeam(operator, initialTeamId, chData.channels, chData.memberships));
     }
 
     if (prefData?.preferences?.length) {
-        const prefModel = prepareMyPreferences(operator, prefData.preferences, true);
-        if (prefModel) {
-            modelPromises.push(prefModel);
-        }
+        modelPromises.push(prepareMyPreferences(operator, prefData.preferences, true));
     }
 
     if (meData?.user) {
-        const userModels = prepareUsers(operator, [meData.user]);
-        if (userModels) {
-            modelPromises.push(userModels);
-        }
+        modelPromises.push(prepareUsers(operator, [meData.user]));
     }
 
     return modelPromises;

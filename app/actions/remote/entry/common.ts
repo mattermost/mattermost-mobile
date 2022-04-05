@@ -7,7 +7,7 @@ import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preferen
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
 import {fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
-import {General, Preferences} from '@constants';
+import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
@@ -17,6 +17,7 @@ import {queryAllServers} from '@queries/app/servers';
 import {queryAllChannelsForTeam} from '@queries/servers/channel';
 import {getConfig} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
+import {isDMorGM} from '@utils/channel';
 
 import type ClientError from '@client/rest/error';
 
@@ -83,8 +84,8 @@ export const fetchAppEntryData = async (serverUrl: string, since: number, initia
         // If no initial team was set in the database but got teams in the response
         const config = await getConfig(database);
         const teamOrderPreference = getPreferenceValue(prefData.preferences || [], Preferences.TEAMS_ORDER, '', '') as string;
-        const teamMembers = teamData.memberships.filter((m) => m.delete_at === 0).map((m) => m.team_id);
-        const myTeams = teamData.teams!.filter((t) => teamMembers?.includes(t.id));
+        const teamMembers = new Set(teamData.memberships.filter((m) => m.delete_at === 0).map((m) => m.team_id));
+        const myTeams = teamData.teams!.filter((t) => teamMembers.has(t.id));
         const defaultTeam = selectDefaultTeam(myTeams, meData.user?.locale || DEFAULT_LOCALE, teamOrderPreference, config?.ExperimentalPrimaryTeam);
         if (defaultTeam?.id) {
             chData = await fetchMyChannelsForTeam(serverUrl, defaultTeam.id, includeDeletedChannels, since, fetchOnly);
@@ -136,11 +137,11 @@ export const fetchAppEntryData = async (serverUrl: string, since: number, initia
 
     if (data.chData?.channels) {
         const removeChannelIds: string[] = [];
-        const fetchedChannelIds = data.chData.channels.map((channel) => channel.id);
+        const fetchedChannelIds = new Set(data.chData.channels.map((channel) => channel.id));
 
         const channels = await queryAllChannelsForTeam(database, initialTeamId).fetch();
         for (const channel of channels) {
-            if (!fetchedChannelIds.includes(channel.id)) {
+            if (!fetchedChannelIds.has(channel.id)) {
                 removeChannelIds.push(channel.id);
             }
         }
@@ -192,7 +193,7 @@ export const deferredAppEntryActions = async (
 
     // defer sidebar DM & GM profiles
     if (chData?.channels?.length && chData.memberships?.length) {
-        const directChannels = chData.channels.filter((c) => c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL);
+        const directChannels = chData.channels.filter(isDMorGM);
         const channelsToFetchProfiles = new Set<Channel>(directChannels);
         if (channelsToFetchProfiles.size) {
             const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config, license);

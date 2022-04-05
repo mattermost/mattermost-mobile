@@ -6,7 +6,6 @@ import {MM_TABLES} from '@constants/database';
 import type {IdenticalRecordArgs, RangeOfValueArgs, RecordPair, RetrieveRecordsArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
-import type SlashCommandModel from '@typings/database/models/servers/slash_command';
 import type TeamModel from '@typings/database/models/servers/team';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -25,7 +24,7 @@ export const getValidRecordsForUpdate = ({tableName, newValue, existingRecord}: 
     const guardTables = [CHANNEL, POST, TEAM, USER];
     if (guardTables.includes(tableName)) {
         type Raw = Post | UserProfile | Team | SlashCommand | Channel;
-        type ExistingRecord = PostModel | UserModel | TeamModel | SlashCommandModel | ChannelModel;
+        type ExistingRecord = PostModel | UserModel | TeamModel | ChannelModel;
 
         const shouldUpdate = (newValue as Raw).update_at === (existingRecord as ExistingRecord).updateAt;
 

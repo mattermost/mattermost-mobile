@@ -14,7 +14,7 @@ import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
 import NetworkManager from '@init/network_manager';
-import {queryChannelsByTypes} from '@queries/servers/channel';
+import {getMembersCountByChannelsId, queryChannelsByTypes} from '@queries/servers/channel';
 import {getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {getCurrentUser, getUserById, prepareUsers, queryAllUsers, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
 import {removeUserFromList} from '@utils/user';
@@ -116,9 +116,21 @@ export const fetchProfilesInChannel = async (serverUrl: string, channelId: strin
 
 export const fetchProfilesPerChannels = async (serverUrl: string, channelIds: string[], excludeUserId?: string, fetchOnly = false): Promise<ProfilesPerChannelRequest> => {
     try {
+        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+        if (!operator) {
+            return {error: `${serverUrl} database not found`};
+        }
+
+        const {database} = operator;
+
+        // let's filter those channels that we already have the users
+        const membersCount = await getMembersCountByChannelsId(database, channelIds);
+        const channelsToFetch = channelIds.filter((c) => membersCount[c] <= 1);
+
         // Batch fetching profiles per channel by chunks of 50
-        const channels = chunk(channelIds, 50);
+        const channels = chunk(channelsToFetch, 50);
         const data: ProfilesInChannelRequest[] = [];
+
         for await (const cIds of channels) {
             const requests = cIds.map((id) => fetchProfilesInChannel(serverUrl, id, excludeUserId, true));
             const response = await Promise.all(requests);
@@ -126,32 +138,29 @@ export const fetchProfilesPerChannels = async (serverUrl: string, channelIds: st
         }
 
         if (!fetchOnly) {
-            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-            if (operator) {
-                const modelPromises: Array<Promise<Model[]>> = [];
-                const users = new Set<UserProfile>();
-                const memberships: Array<{channel_id: string; user_id: string}> = [];
-                for (const item of data) {
-                    if (item.users?.length) {
-                        item.users.forEach((u) => {
-                            users.add(u);
-                            memberships.push({channel_id: item.channelId, user_id: u.id});
-                        });
-                    }
+            const modelPromises: Array<Promise<Model[]>> = [];
+            const users = new Set<UserProfile>();
+            const memberships: Array<{channel_id: string; user_id: string}> = [];
+            for (const item of data) {
+                if (item.users?.length) {
+                    item.users.forEach((u) => {
+                        users.add(u);
+                        memberships.push({channel_id: item.channelId, user_id: u.id});
+                    });
                 }
-                modelPromises.push(operator.handleChannelMembership({
-                    channelMemberships: memberships,
-                    prepareRecordsOnly: true,
-                }));
-                const prepare = prepareUsers(operator, Array.from(users).filter((u) => u.id !== excludeUserId));
-                if (prepare) {
-                    modelPromises.push(prepare);
-                }
+            }
+            modelPromises.push(operator.handleChannelMembership({
+                channelMemberships: memberships,
+                prepareRecordsOnly: true,
+            }));
+            const prepare = prepareUsers(operator, Array.from(users).filter((u) => u.id !== excludeUserId));
+            if (prepare) {
+                modelPromises.push(prepare);
+            }
 
-                if (modelPromises.length) {
-                    const models = await Promise.all(modelPromises);
-                    await operator.batchRecords(models.flat());
-                }
+            if (modelPromises.length) {
+                const models = await Promise.all(modelPromises);
+                await operator.batchRecords(models.flat());
             }
         }
 
@@ -162,9 +171,8 @@ export const fetchProfilesPerChannels = async (serverUrl: string, channelIds: st
 };
 
 export const updateMe = async (serverUrl: string, user: Partial<UserProfile>) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!database) {
+    if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
@@ -225,8 +233,13 @@ export const fetchStatusByIds = async (serverUrl: string, userIds: string[], fet
             const {database, operator} = DatabaseManager.serverDatabases[serverUrl];
             if (operator) {
                 const users = await queryUsersById(database, userIds).fetch();
+                const userStatuses = statuses.reduce((result: Record<string, UserStatus>, s) => {
+                    result[s.user_id] = s;
+                    return result;
+                }, {});
+
                 for (const user of users) {
-                    const status = statuses.find((s) => s.user_id === user.id);
+                    const status = userStatuses[user.id];
                     user.prepareStatus(status?.status || General.OFFLINE);
                 }
 
@@ -263,7 +276,11 @@ export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetc
         if (userIds.includes(currentUser!.id)) {
             existingUsers.push(currentUser!);
         }
-        const usersToLoad = new Set(userIds.filter((id) => (!existingUsers.find((u) => u.id === id))));
+        const exisitingUsersMap = existingUsers.reduce((result: Record<string, UserModel>, u) => {
+            result[u.id] = u;
+            return result;
+        }, {});
+        const usersToLoad = new Set(userIds.filter((id) => !exisitingUsersMap[id]));
         if (usersToLoad.size === 0) {
             return {users: [], existingUsers};
         }
@@ -300,8 +317,12 @@ export const fetchUsersByUsernames = async (serverUrl: string, usernames: string
 
     try {
         const currentUser = await getCurrentUser(operator.database);
-        const exisingUsers = await queryUsersByUsername(operator.database, usernames).fetch();
-        const usersToLoad = usernames.filter((username) => (username !== currentUser?.username && !exisingUsers.find((u) => u.username === username)));
+        const existingUsers = await queryUsersByUsername(operator.database, usernames).fetch();
+        const exisitingUsersMap = existingUsers.reduce((result: Record<string, UserModel>, u) => {
+            result[u.username] = u;
+            return result;
+        }, {});
+        const usersToLoad = usernames.filter((username) => (username !== currentUser?.username && !exisitingUsersMap[username]));
         const users = await client.getProfilesByUsernames([...new Set(usersToLoad)]);
 
         if (!fetchOnly) {

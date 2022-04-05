@@ -3,23 +3,19 @@
 
 import React, {useCallback, useEffect, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
-import {Keyboard, View} from 'react-native';
+import {Keyboard, Platform, StyleSheet, View} from 'react-native';
 import {ImageResource, Navigation, OptionsTopBarButton} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {joinChannel, switchToChannelById} from '@actions/remote/channel';
 import Loading from '@components/loading';
-import SearchBar from '@components/search_bar';
+import Search from '@components/search';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
-import {
-    changeOpacity,
-    makeStyleSheetFromTheme,
-    getKeyboardAppearanceFromTheme,
-} from '@utils/theme';
+import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 import ChannelDropdown from './channel_dropdown';
 import ChannelList from './channel_list';
@@ -55,31 +51,25 @@ const close = () => {
     dismissModal();
 };
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            flex: 1,
-        },
-        searchBar: {
-            marginHorizontal: 12,
-            borderRadius: 8,
-            marginTop: 12,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-        },
-        searchBarInput: {
-            color: theme.centerChannelColor,
-        },
-        loadingContainer: {
-            flex: 1,
-            justifyContent: 'center' as const,
-            alignItems: 'center' as const,
-        },
-        loading: {
-            height: 32,
-            width: 32,
-            justifyContent: 'center' as const,
-        },
-    };
+const style = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    searchBar: {
+        marginLeft: 12,
+        marginRight: Platform.select({ios: 4, default: 12}),
+        marginTop: 12,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center' as const,
+        alignItems: 'center' as const,
+    },
+    loading: {
+        height: 32,
+        width: 32,
+        justifyContent: 'center' as const,
+    },
 });
 
 type Props = {
@@ -130,7 +120,6 @@ export default function BrowseChannels(props: Props) {
     } = props;
     const intl = useIntl();
     const theme = useTheme();
-    const style = getStyleFromTheme(theme);
     const serverUrl = useServerUrl();
 
     const [adding, setAdding] = useState(false);
@@ -173,6 +162,10 @@ export default function BrowseChannels(props: Props) {
             close();
         }
     }, [setHeaderButtons, intl.locale]);
+
+    const onSearch = useCallback(() => {
+        searchChannels(term);
+    }, [term, searchChannels]);
 
     useEffect(() => {
         const unsubscribe = Navigation.events().registerComponentListener({
@@ -235,20 +228,14 @@ export default function BrowseChannels(props: Props) {
                     testID='browse_channels.screen'
                     style={style.searchBar}
                 >
-                    <SearchBar
+                    <Search
                         testID='browse_channels.search_bar'
                         placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                        cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                        backgroundColor='transparent'
-                        inputHeight={33}
+                        cancelButtonTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                        tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
-                        tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
-                        titleCancelColor={theme.centerChannelColor}
-                        inputStyle={style.searchBarInput}
                         onChangeText={searchChannels}
-                        onSearchButtonPress={searchChannels}
-                        onCancelButtonPress={stopSearch}
+                        onSubmitEditing={onSearch}
+                        onCancel={stopSearch}
                         autoCapitalize='none'
                         keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         value={term}

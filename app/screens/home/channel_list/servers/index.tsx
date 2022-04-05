@@ -87,8 +87,8 @@ export default function Servers() {
         registeredServers.current = sortServers(servers, intl);
 
         // unsubscribe mentions from servers that were removed
-        const allUrls = servers.map((s) => s.url);
-        const subscriptionsToRemove = [...subscriptions].filter(([key]) => allUrls.indexOf(key) === -1);
+        const allUrls = new Set(servers.map((s) => s.url));
+        const subscriptionsToRemove = [...subscriptions].filter(([key]) => !allUrls.has(key));
         for (const [key, map] of subscriptionsToRemove) {
             map.subscription?.unsubscribe();
             subscriptions.delete(key);
@@ -144,6 +144,7 @@ export default function Servers() {
             subscriptions.forEach((unreads) => {
                 unreads.subscription?.unsubscribe();
             });
+            subscriptions.clear();
         };
     }, []);
 

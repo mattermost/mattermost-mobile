@@ -1,14 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {FlatList, Platform, ScrollView, SectionList, VirtualizedList} from 'react-native';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 
 import Search, {SearchProps} from '@components/search';
 import {ANDROID_HEADER_SEARCH_INSET, IOS_HEADER_SEARCH_INSET, SEARCH_INPUT_HEIGHT, TABLET_HEADER_SEARCH_INSET} from '@constants/view';
 import {useIsTablet} from '@hooks/device';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type Props = SearchProps & {
     defaultHeight: number;
@@ -29,6 +30,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         width: '100%',
         zIndex: 10,
     },
+    inputContainerStyle: {
+        backgroundColor: changeOpacity(theme.sidebarText, 0.12),
+    },
+    inputStyle: {
+        color: theme.sidebarText,
+    },
 }));
 
 const NavigationSearch = ({
@@ -42,6 +49,14 @@ const NavigationSearch = ({
 }: Props) => {
     const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
+
+    const cancelButtonProps: SearchProps['cancelButtonProps'] = useMemo(() => ({
+        buttonTextStyle: {
+            color: changeOpacity(theme.sidebarText, 0.72),
+            ...typography('Body', 100, 'Regular'),
+        },
+        color: theme.sidebarText,
+    }), [theme]);
 
     const searchTop = useAnimatedStyle(() => {
         return {marginTop: Math.max((-(scrollValue?.value || 0) + largeHeight), top)};
@@ -67,7 +82,14 @@ const NavigationSearch = ({
         <Animated.View style={[styles.container, searchTop]}>
             <Search
                 {...searchProps}
+                cancelButtonProps={cancelButtonProps}
+                clearIconColor={theme.sidebarText}
+                inputContainerStyle={styles.inputContainerStyle}
+                inputStyle={styles.inputStyle}
                 onFocus={onFocus}
+                placeholderTextColor={changeOpacity(theme.sidebarText, Platform.select({android: 0.56, default: 0.72}))}
+                searchIconColor={theme.sidebarText}
+                selectionColor={theme.sidebarText}
             />
         </Animated.View>
     );

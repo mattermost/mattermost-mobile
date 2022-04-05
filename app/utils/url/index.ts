@@ -239,7 +239,7 @@ export function cleanUrlForLogging(baseUrl: string, apiUrl: string): string {
     // be enough left over for debugging.
     //
     // Note that new API routes don't need to be added here since this shouldn't be happening for newly added routes.
-    const whitelist = [
+    const whitelist = new Set([
         'api', 'v4', 'users', 'teams', 'scheme', 'name', 'members', 'channels', 'posts', 'reactions', 'commands',
         'files', 'preferences', 'hooks', 'incoming', 'outgoing', 'oauth', 'apps', 'emoji', 'brand', 'image',
         'data_retention', 'jobs', 'plugins', 'roles', 'system', 'timezones', 'schemes', 'redirect_location', 'patch',
@@ -252,10 +252,10 @@ export function cleanUrlForLogging(baseUrl: string, apiUrl: string): string {
         'autocomplete', 'execute', 'regen_secret', 'policy', 'type', 'cancel', 'reload', 'environment', 's3_test', 'file',
         'caches', 'invalidate', 'database', 'recycle', 'compliance', 'reports', 'cluster', 'ldap', 'test', 'sync', 'saml',
         'certificate', 'public', 'private', 'idp', 'elasticsearch', 'purge_indexes', 'analytics', 'old', 'webapp', 'fake',
-    ];
+    ]);
 
     url = url.split('/').map((part) => {
-        if (part !== '' && whitelist.indexOf(part) === -1) {
+        if (part !== '' && !whitelist.has(part)) {
             return '<filtered>';
         }
 

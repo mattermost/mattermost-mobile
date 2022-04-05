@@ -22,8 +22,6 @@ export default class ChannelInfoModel extends Model implements ChannelInfoInterf
     static table = CHANNEL_INFO;
 
     static associations: Associations = {
-
-        /** A CHANNEL is associated with one CHANNEL_INFO **/
         [CHANNEL]: {type: 'belongs_to', key: 'id'},
     };
 

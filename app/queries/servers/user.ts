@@ -58,17 +58,17 @@ export const queryUsersByUsername = (database: Database, usernames: string[]) =>
     return database.get<UserModel>(USER).query(Q.where('username', Q.oneOf(usernames)));
 };
 
-export const prepareUsers = (operator: ServerDataOperator, users: UserProfile[]) => {
+export async function prepareUsers(operator: ServerDataOperator, users: UserProfile[]): Promise<UserModel[]> {
     try {
         if (users.length) {
             return operator.handleUsers({users, prepareRecordsOnly: true});
         }
 
-        return undefined;
+        return [];
     } catch {
-        return undefined;
+        return [];
     }
-};
+}
 
 export const observeTeammateNameDisplay = (database: Database) => {
     const config = observeConfig(database);

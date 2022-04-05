@@ -6,7 +6,7 @@ import {Q} from '@nozbe/watermelondb';
 import {ActionType} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
-import {isRecordDraftEqualToRaw, isRecordFileEqualToRaw, isRecordPostEqualToRaw} from '@database/operator/server_data_operator/comparators';
+import {buildDraftKey} from '@database/operator/server_data_operator/comparators';
 import {
     transformDraftRecord,
     transformFileRecord,
@@ -59,7 +59,7 @@ const PostHandler = (superclass: any) => class extends superclass {
 
         return this.handleRecords({
             fieldName: 'channel_id',
-            findMatchingRecordBy: isRecordDraftEqualToRaw,
+            buildKeyRecordBy: buildDraftKey,
             transformer: transformDraftRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues,
@@ -165,7 +165,6 @@ const PostHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues: uniquePosts.filter((p) => p.delete_at === 0),
             deleteRawValues: pendingPostsToDelete,
             tableName,
-            findMatchingRecordBy: isRecordPostEqualToRaw,
             fieldName: 'id',
         })) as ProcessRecordResults;
 
@@ -237,7 +236,6 @@ const PostHandler = (superclass: any) => class extends superclass {
         const processedFiles = (await this.processRecords({
             createOrUpdateRawValues: files,
             tableName: FILE,
-            findMatchingRecordBy: isRecordFileEqualToRaw,
             fieldName: 'id',
         })) as ProcessRecordResults;
 

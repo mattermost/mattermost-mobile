@@ -152,6 +152,7 @@ export function hasJumboEmojiOnly(message: string, customEmojis: string[]) {
         return false;
     }
 
+    const emojisSet = new Set(customEmojis);
     for (const chunk of chunks) {
         if (doesMatchNamedEmoji(chunk)) {
             const emojiName = chunk.substring(1, chunk.length - 1);
@@ -160,7 +161,7 @@ export function hasJumboEmojiOnly(message: string, customEmojis: string[]) {
                 continue;
             }
 
-            if (customEmojis && customEmojis.includes(emojiName)) {
+            if (emojisSet.has(emojiName)) {
                 emojiCount++;
                 continue;
             }
