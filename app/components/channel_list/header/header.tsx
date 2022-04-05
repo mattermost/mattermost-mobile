@@ -122,7 +122,10 @@ const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, ico
                         >
                             {displayName}
                         </Text>
-                        <View style={styles.chevronButton}>
+                        <View
+                            style={styles.chevronButton}
+                            testID='channel_list_header.chevron.button'
+                        >
                             <CompassIcon
                                 style={styles.chevronIcon}
                                 name={'chevron-down'}
@@ -133,6 +136,7 @@ const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, ico
                 <TouchableWithFeedback
                     onPress={onPress}
                     style={styles.plusButton}
+                    testID='channel_list_header.plus.button'
                     type='opacity'
                 >
                     <CompassIcon

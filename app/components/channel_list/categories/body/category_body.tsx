@@ -42,6 +42,7 @@ const CategoryBody = ({currentChannelId, sortedChannels, category, hiddenChannel
                 channel={item}
                 isActive={item.id === currentChannelId}
                 collapsed={category.collapsed}
+                testID={`category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_list_item`}
             />
         );
     }, [currentChannelId, category.collapsed]);

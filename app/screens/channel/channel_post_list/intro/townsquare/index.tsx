@@ -46,7 +46,10 @@ const TownSquare = ({channelId, displayName, roles, theme}: Props) => {
     return (
         <View style={styles.container}>
             <TownSquareIllustration theme={theme}/>
-            <Text style={styles.title}>
+            <Text
+                style={styles.title}
+                testID='channel_post_list.intro.display_name'
+            >
                 {displayName}
             </Text>
             <FormattedText

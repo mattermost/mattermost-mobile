@@ -72,8 +72,8 @@ export default function ChannelListRow({
         );
     }
 
-    const itemTestID = `${testID}.${channel.id}`;
-    const channelDisplayNameTestID = `${testID}.display_name`;
+    const itemTestID = `${testID}.${channel.name}`;
+    const channelDisplayNameTestID = `${itemTestID}.display_name`;
     let icon = 'globe';
     if (channel.delete_at) {
         icon = 'archive-outline';

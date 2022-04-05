@@ -149,14 +149,17 @@ export default function UserListRow({
     const showTeammateDisplay = teammateDisplay !== username;
 
     const itemTestID = `${testID}.${id}`;
-    const displayUsernameTestID = `${testID}.display_username`;
+    const displayNameTestID = `${itemTestID}.display_name`;
     const profilePictureTestID = `${itemTestID}.profile_picture`;
 
     return (
         <TouchableWithFeedback
             onPress={handlePress}
         >
-            <View style={style.container}>
+            <View
+                style={style.container}
+                testID={itemTestID}
+            >
                 <View style={style.profileContainer}>
                     <ProfilePicture
                         author={user}
@@ -165,17 +168,14 @@ export default function UserListRow({
                         testID={profilePictureTestID}
                     />
                 </View>
-                <View
-                    style={style.textContainer}
-                    testID={itemTestID}
-                >
+                <View style={style.textContainer}>
                     <View>
                         <View style={style.indicatorContainer}>
                             <Text
                                 style={style.username}
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
-                                testID={displayUsernameTestID}
+                                testID={displayNameTestID}
                             >
                                 {usernameDisplay}
                             </Text>

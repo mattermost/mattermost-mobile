@@ -190,10 +190,8 @@ class TestHelper {
     };
 
     fakeChannel = (teamId: string): Channel => {
-        const name = this.generateId();
-
         return {
-            name,
+            name: 'channel',
             team_id: teamId,
 
             // @to-do: Make tests more detriministic;

@@ -46,6 +46,7 @@ exports[`components/channel_list/categories/body/channel/item should match snaps
           "paddingLeft": 2,
         }
       }
+      testID="channel_list_item.hello.collapsed.false"
     >
       <View
         style={
@@ -125,6 +126,7 @@ exports[`components/channel_list/categories/body/channel/item should match snaps
             false,
           ]
         }
+        testID="channel_list_item.hello.display_name"
       >
         Hello!
       </Text>

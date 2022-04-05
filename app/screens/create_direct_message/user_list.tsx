@@ -167,7 +167,7 @@ export default function UserList({
                 selectable={canAdd}
                 selected={selected}
                 enabled={canAdd}
-                testID='more_direct_messages.user_list.user_item'
+                testID='create_direct_message.user_list.user_item'
                 teammateNameDisplay={teammateNameDisplay}
                 user={item}
             />
@@ -233,7 +233,7 @@ export default function UserList({
                 renderItem={renderItem}
                 scrollEventThrottle={SCROLL_EVENT_THROTTLE}
                 style={style.list}
-                testID={testID}
+                testID={`${testID}.flat_list`}
             />
         );
     };
@@ -257,7 +257,7 @@ export default function UserList({
                 sections={data}
                 style={style.list}
                 stickySectionHeadersEnabled={false}
-                testID={testID}
+                testID={`${testID}.section_list`}
                 onEndReached={fetchMore}
             />
         );

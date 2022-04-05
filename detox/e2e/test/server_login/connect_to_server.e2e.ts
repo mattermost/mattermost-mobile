@@ -38,12 +38,12 @@ describe('Server Login - Connect to Server', () => {
 
     it('MM-T4676_1 - should match elements on server screen', async () => {
         // * Verify basic elements on server screen
-        await expect(headerTitleConnectToServer).toBeVisible();
-        await expect(headerWelcome).toBeVisible();
-        await expect(headerDescription).toBeVisible();
+        await expect(headerWelcome).toHaveText('Welcome');
+        await expect(headerTitleConnectToServer).toHaveText('Let’s Connect to a Server');
+        await expect(headerDescription).toHaveText('A Server is your team\'s communication hub which is accessed through a unique URL');
         await expect(serverUrlInput).toBeVisible();
         await expect(serverDisplayNameInput).toBeVisible();
-        await expect(displayHelp).toBeVisible();
+        await expect(displayHelp).toHaveText('Choose a display name for your server');
         await expect(connectButtonDisabled).toBeVisible();
     });
 

@@ -66,9 +66,10 @@ type Props = {
     myChannel?: MyChannelModel;
     collapsed: boolean;
     currentUserId: string;
+    testID?: string;
 }
 
-const ChannelListItem = ({channel, isActive, currentUserId, isMuted, myChannel, collapsed}: Props) => {
+const ChannelListItem = ({channel, isActive, currentUserId, isMuted, myChannel, collapsed, testID}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -124,7 +125,10 @@ const ChannelListItem = ({channel, isActive, currentUserId, isMuted, myChannel, 
     return (
         <Animated.View style={animatedStyle}>
             <TouchableOpacity onPress={switchChannels}>
-                <View style={styles.container}>
+                <View
+                    style={styles.container}
+                    testID={`${testID}.${channel.name}.collapsed.${collapsed && !isActive}`}
+                >
                     <ChannelIcon
                         isActive={isActive}
                         isArchived={channel.deleteAt > 0}
@@ -139,6 +143,7 @@ const ChannelListItem = ({channel, isActive, currentUserId, isMuted, myChannel, 
                         ellipsizeMode='tail'
                         numberOfLines={1}
                         style={textStyles}
+                        testID={`${testID}.${channel.name}.display_name`}
                     >
                         {displayName}
                     </Text>

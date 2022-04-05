@@ -48,21 +48,37 @@ describe('Server Login - Server List', () => {
         await LoginScreen.login(serverOneUser);
     });
 
+    beforeEach(async () => {
+        // * Verify on channel list screen
+        await ChannelListScreen.toBeVisible();
+    });
+
     afterAll(async () => {
         // # Log out
         await HomeScreen.logout();
     });
 
-    it('MM-T4691_1 - should be able to add and log in to new servers', async () => {
+    it('MM-T4691_1 - should match elements on server list screen', async () => {
+        // # Open server list screen
+        await ServerListScreen.open();
+
+        // * Verify basic elements on server list screen
+        await expect(ServerListScreen.serverListTitle).toHaveText('Your servers');
+        await expect(ServerListScreen.getServerItemActive(serverOneDisplayName)).toBeVisible();
+        await expect(ServerListScreen.addServerButton).toBeVisible();
+
+        // # Go back to channel list screen
+        await ServerListScreen.getServerItemActive(serverOneDisplayName).tap();
+    });
+
+    it('MM-T4691_2 - should be able to add and log in to new servers', async () => {
         // * Verify on channel list screen of the first server
-        await ChannelListScreen.toBeVisible();
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
         // # Open server list screen
         await ServerListScreen.open();
 
         // * Verify first server is active
-        await ServerListScreen.toBeVisible();
         await expect(ServerListScreen.getServerItemActive(serverOneDisplayName)).toBeVisible();
 
         // # Add a second server and log in to the second server
@@ -81,7 +97,6 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.open();
 
         // * Verify second server is active and first server is inactive
-        await ServerListScreen.toBeVisible();
         await expect(ServerListScreen.getServerItemActive(serverTwoDisplayName)).toBeVisible();
         await expect(ServerListScreen.getServerItemInactive(serverOneDisplayName)).toBeVisible();
 
@@ -101,7 +116,6 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.open();
 
         // * Verify third server is active, and first and second servers are inactive
-        await ServerListScreen.toBeVisible();
         await expect(ServerListScreen.getServerItemActive(serverThreeDisplayName)).toBeVisible();
         await expect(ServerListScreen.getServerItemInactive(serverOneDisplayName)).toBeVisible();
         await expect(ServerListScreen.getServerItemInactive(serverTwoDisplayName)).toBeVisible();
@@ -110,9 +124,8 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemInactive(serverOneDisplayName).tap();
     });
 
-    it('MM-T4691_2 - should be able to switch to another existing server', async () => {
+    it('MM-T4691_3 - should be able to switch to another existing server', async () => {
         // * Verify on channel list screen of the first server
-        await ChannelListScreen.toBeVisible();
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
         // # Open server list screen and tap on third server
@@ -128,9 +141,8 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemInactive(serverOneDisplayName).tap();
     });
 
-    it('MM-T4691_3 - should be able to edit server display name of active and inactive servers', async () => {
+    it('MM-T4691_4 - should be able to edit server display name of active and inactive servers', async () => {
         // * Verify on channel list screen of the first server
-        await ChannelListScreen.toBeVisible();
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
         // # Open server list screen, swipe left on first server and tap on edit option
@@ -168,9 +180,8 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemActive(serverOneDisplayName).tap();
     });
 
-    it('MM-T4691_4 - should be able to remove a server from the list', async () => {
+    it('MM-T4691_5 - should be able to remove a server from the list', async () => {
         // * Verify on channel list screen of the first server
-        await ChannelListScreen.toBeVisible();
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
         // # Open server list screen, swipe left on first server and tap on remove option
@@ -196,9 +207,8 @@ describe('Server Login - Server List', () => {
         await LoginScreen.login(serverOneUser);
     });
 
-    it('MM-T4691_5 - should be able to log out a server from the list', async () => {
+    it('MM-T4691_6 - should be able to log out a server from the list', async () => {
         // * Verify on channel list screen of the first server
-        await ChannelListScreen.toBeVisible();
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
         // # Open server list screen, swipe left on first server and tap on logout option
@@ -224,9 +234,8 @@ describe('Server Login - Server List', () => {
         await LoginScreen.login(serverOneUser);
     });
 
-    it('MM-T4691_6 - should not be able to add server for an already existing server', async () => {
+    it('MM-T4691_7 - should not be able to add server for an already existing server', async () => {
         // * Verify on channel list screen of the first server
-        await ChannelListScreen.toBeVisible();
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
         // # Open server list screen, attempt to add a server already logged in and with inactive session
@@ -250,6 +259,6 @@ describe('Server Login - Server List', () => {
         await expect(ServerScreen.serverDisplayNameInputError).toHaveText(sameNameServerError);
 
         // # Close server screen to go back to first server
-        await ServerScreen.closeButton.tap();
+        await ServerScreen.close();
     });
 });
