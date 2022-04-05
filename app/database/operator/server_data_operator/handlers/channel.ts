@@ -152,7 +152,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
                 const myMsgCount = isCRTEnabled ? my.msg_count_root! : my.msg_count;
                 const msgCount = Math.max(0, total - myMsgCount);
                 my.msg_count = msgCount;
-                my.is_unread = my.notify_props.mark_unread === 'all' && msgCount > 0;
+                my.is_unread = msgCount > 0;
             }
         }
 

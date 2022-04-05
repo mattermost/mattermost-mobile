@@ -390,10 +390,7 @@ export function observeMyChannelMentionCount(database: Database, teamId?: string
         observeWithColumns(columns).
         pipe(
             switchMap((val) => of$(val.reduce((acc, v) => {
-                if (v.isUnread) {
-                    return acc + v.mentionsCount;
-                }
-                return acc;
+                return acc + v.mentionsCount;
             }, 0))),
             distinctUntilChanged(),
         );
