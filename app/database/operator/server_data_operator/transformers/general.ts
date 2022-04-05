@@ -9,13 +9,11 @@ import type {TransformerArgs} from '@typings/database/database';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type RoleModel from '@typings/database/models/servers/role';
 import type SystemModel from '@typings/database/models/servers/system';
-import type TermsOfServiceModel from '@typings/database/models/servers/terms_of_service';
 
 const {
     CUSTOM_EMOJI,
     ROLE,
     SYSTEM,
-    TERMS_OF_SERVICE,
 } = MM_TABLES.SERVER;
 
 /**
@@ -96,31 +94,4 @@ export const transformSystemRecord = ({action, database, value}: TransformerArgs
         value,
         fieldsMapper,
     }) as Promise<SystemModel>;
-};
-
-/**
- * transformTermsOfServiceRecord: Prepares a record of the SERVER database 'TermsOfService' table for update or create actions.
- * @param {TransformerArgs} operator
- * @param {Database} operator.database
- * @param {RecordPair} operator.value
- * @returns {Promise<TermsOfServiceModel>}
- */
-export const transformTermsOfServiceRecord = ({action, database, value}: TransformerArgs): Promise<TermsOfServiceModel> => {
-    const raw = value.raw as TermsOfService;
-    const record = value.record as TermsOfServiceModel;
-    const isCreateAction = action === OperationType.CREATE;
-
-    // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
-    const fieldsMapper = (tos: TermsOfServiceModel) => {
-        tos._raw.id = isCreateAction ? (raw?.id ?? tos.id) : record.id;
-        tos.acceptedAt = raw?.accepted_at;
-    };
-
-    return prepareBaseRecord({
-        action,
-        database,
-        tableName: TERMS_OF_SERVICE,
-        value,
-        fieldsMapper,
-    }) as Promise<TermsOfServiceModel>;
 };
