@@ -10,6 +10,6 @@ const {CUSTOM_EMOJI} = MM_TABLES.SERVER;
 export default tableSchema({
     name: CUSTOM_EMOJI,
     columns: [
-        {name: 'name', type: 'string'},
+        {name: 'name', type: 'string', isIndexed: true},
     ],
 });
