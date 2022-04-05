@@ -153,7 +153,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             if (viewedAt) {
                 models.push(viewedAt);
             }
-        } else {
+        } else if (!isCRTEnabled || !post.root_id) {
             const hasMentions = msg.data.mentions?.includes(currentUserId);
             preparedMyChannelHack(myChannel);
             const {member: unreadAt} = await markChannelAsUnread(
@@ -256,16 +256,33 @@ export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage
 
 export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage) {
     const {channel_id: channelId} = msg.broadcast;
-    const {mention_count: mentionCount, msg_count: msgCount, last_viewed_at: lastViewedAt} = msg.data;
+    const {
+        mention_count: mentionCount,
+        mention_count_root: mentionCountRoot,
+        msg_count: msgCount,
+        msg_count_root: msgCountRoot,
+        last_viewed_at: lastViewedAt,
+    } = msg.data;
+
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return;
     }
+    const [myChannel, isCRTEnabled] = await Promise.all([
+        getMyChannel(database, channelId),
+        getIsCRTEnabled(database),
+    ]);
 
-    const myChannel = await getMyChannel(database, channelId);
+    let messages = msgCount;
+    let mentions = mentionCount;
+    if (isCRTEnabled) {
+        messages = msgCountRoot;
+        mentions = mentionCountRoot;
+    }
+
     if (!myChannel?.manuallyUnread) {
         // We used to fetch the channel to get the delta on the message count
         // We just need to identify that there are unread messages, the exact number is uninportant
-        markChannelAsUnread(serverUrl, channelId, msgCount, mentionCount, lastViewedAt);
+        markChannelAsUnread(serverUrl, channelId, messages, mentions, lastViewedAt);
     }
 }

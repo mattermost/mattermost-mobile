@@ -226,6 +226,8 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string,
         }
 
         if (!fetchOnly) {
+            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+
             const models = [];
             const postModels = await operator.handlePosts({
                 actionType,
@@ -246,14 +248,15 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string,
 
             let lastPostAt = 0;
             for (const post of data.posts) {
-                lastPostAt = post.create_at > lastPostAt ? post.create_at : lastPostAt;
+                if (!isCRTEnabled || post.root_id) {
+                    lastPostAt = post.create_at > lastPostAt ? post.create_at : lastPostAt;
+                }
             }
             const {member: memberModel} = await updateLastPostAt(serverUrl, channelId, lastPostAt, true);
             if (memberModel) {
                 models.push(memberModel);
             }
 
-            const isCRTEnabled = await getIsCRTEnabled(operator.database);
             if (isCRTEnabled) {
                 const threadModels = await prepareThreadsFromReceivedPosts(operator, data.posts);
                 if (threadModels?.length) {
@@ -849,8 +852,18 @@ export const markPostAsUnread = async (serverUrl: string, postId: string) => {
                 client.getChannelMember(channelId, userId),
             ]);
             if (channel && channelMember) {
-                const messageCount = channel.total_msg_count - channelMember.msg_count;
-                const mentionCount = channelMember.mention_count;
+                const isCRTEnabled = await getIsCRTEnabled(database);
+                let totalMessages = channel.total_msg_count;
+                let messages = channelMember.msg_count;
+                let mentionCount = channelMember.mention_count;
+
+                if (isCRTEnabled) {
+                    totalMessages = channel.total_msg_count_root!;
+                    messages = channelMember.msg_count_root!;
+                    mentionCount = channelMember.mention_count_root!;
+                }
+
+                const messageCount = totalMessages - messages;
                 await markChannelAsUnread(serverUrl, channelId, messageCount, mentionCount, post.createAt);
                 return {
                     post,
