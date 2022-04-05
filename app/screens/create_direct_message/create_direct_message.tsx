@@ -249,9 +249,9 @@ export default function CreateDirectMessage({
         let results;
 
         if (restrictDirectMessage) {
-            results = await searchProfiles(serverUrl, lowerCasedTerm);
+            results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
         } else {
-            results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId});
+            results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
         }
 
         let data: UserProfile[] = [];
@@ -275,12 +275,12 @@ export default function CreateDirectMessage({
             }
 
             searchTimeoutId.current = setTimeout(() => {
-                search();
+                searchUsers(text);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             clearSearch();
         }
-    }, [search, clearSearch]);
+    }, [searchUsers, clearSearch]);
 
     const updateNavigationButtons = useCallback(async (startEnabled: boolean) => {
         const closeIcon = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
