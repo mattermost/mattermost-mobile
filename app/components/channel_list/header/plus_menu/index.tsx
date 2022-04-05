@@ -28,7 +28,7 @@ const PlusMenuList = ({canCreateChannels, canJoinChannels}: Props) => {
 
         showModal(Screens.BROWSE_CHANNELS, title, {
             closeButton,
-        });
+        }, {modal: {swipeToDismiss: false}});
     }, [intl, theme]);
 
     const createNewChannel = useCallback(async () => {
@@ -45,7 +45,7 @@ const PlusMenuList = ({canCreateChannels, canJoinChannels}: Props) => {
         const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
         showModal(Screens.CREATE_DIRECT_MESSAGE, title, {
             closeButton,
-        });
+        }, {modal: {swipeToDismiss: false}});
     }, [intl, theme]);
 
     return (
