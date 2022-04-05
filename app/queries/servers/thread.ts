@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q, Query} from '@nozbe/watermelondb';
-import {combineLatest, of as of$} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import {combineLatest, of as of$, Observable} from 'rxjs';
+import {map, switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
@@ -52,8 +52,8 @@ export const observeThreadById = (database: Database, threadId: string) => {
     );
 };
 
-export const observeUnreadsAndMentionsInTeam = (database: Database, teamId: string, includeDmGm: boolean) => {
-    return queryThreadsInTeam(database, teamId, true, true, true, false, includeDmGm).observeWithColumns(['unread_replies', 'unread_mentions']).pipe(
+export const observeUnreadsAndMentionsInTeam = (database: Database, teamId?: string, includeDmGm?: boolean) => {
+    return queryThreads(database, teamId, true, includeDmGm).observeWithColumns(['unread_replies', 'unread_mentions']).pipe(
         switchMap((threads) => {
             let unreads = 0;
             let mentions = 0;
@@ -125,6 +125,50 @@ export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnrea
         Q.experimentalNestedJoin(POST, CHANNEL),
         Q.on(POST, Q.on(CHANNEL, joinCondition)),
     );
+
+    return database.get<ThreadModel>(THREAD).query(...query);
+};
+
+export function observeThreadMentionCount(database: Database, teamId?: string, includeDmGm?: boolean): Observable<number> {
+    return observeUnreadsAndMentionsInTeam(database, teamId, includeDmGm).pipe(
+        switchMap(({mentions}) => of$(mentions)),
+        distinctUntilChanged(),
+    );
+}
+
+export const queryThreads = (database: Database, teamId?: string, onlyUnreads = false, includeDmGm = true): Query<ThreadModel> => {
+    const query: Q.Clause[] = [
+        Q.where('is_following', true),
+        Q.where('reply_count', Q.gt(0)),
+    ];
+
+    // If teamId is specified, only get threads in that team
+    if (teamId) {
+        let condition: Q.Condition = Q.where('team_id', teamId);
+
+        if (includeDmGm) {
+            condition = Q.or(
+                Q.where('team_id', teamId),
+                Q.where('team_id', ''),
+            );
+        }
+
+        query.push(
+            Q.experimentalNestedJoin(POST, CHANNEL),
+            Q.on(POST, Q.on(CHANNEL, condition)),
+        );
+    } else if (!includeDmGm) {
+        // fetching all threads from all teams
+        // excluding DM/GM channels
+        query.push(
+            Q.experimentalNestedJoin(POST, CHANNEL),
+            Q.on(POST, Q.on(CHANNEL, Q.where('team_id', Q.notEq('')))),
+        );
+    }
+
+    if (onlyUnreads) {
+        query.push(Q.where('unread_replies', Q.gt(0)));
+    }
 
     return database.get<ThreadModel>(THREAD).query(...query);
 };

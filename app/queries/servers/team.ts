@@ -11,20 +11,18 @@ import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
 
 import {prepareDeleteCategory} from './categories';
-import {prepareDeleteChannel, getDefaultChannelForTeam} from './channel';
+import {prepareDeleteChannel, getDefaultChannelForTeam, observeMyChannelMentionCount} from './channel';
 import {queryPreferencesByCategoryAndName} from './preference';
 import {patchTeamHistory, getConfig, getTeamHistory, observeCurrentTeamId} from './system';
-import {observeIsCRTEnabled, observeUnreadsAndMentionsInTeam} from './thread';
+import {observeIsCRTEnabled, observeThreadMentionCount} from './thread';
 import {getCurrentUser} from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
 import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
 
 const {
-    CHANNEL,
     MY_CHANNEL,
     MY_TEAM,
     TEAM,
@@ -384,33 +382,7 @@ export const observeCurrentTeam = (database: Database) => {
     );
 };
 
-function observeMyChannelMentionCount(database: Database, teamId: string): Observable<number> {
-    return database.get<MyChannelModel>(MY_CHANNEL).query(
-        Q.on(CHANNEL, Q.and(
-            Q.where('team_id', Q.eq(teamId)),
-            Q.where('delete_at', Q.eq(0)),
-        )),
-    ).
-        observeWithColumns(['mentions_count', 'is_unread']).
-        pipe(
-            switchMap((val) => of$(val.reduce((acc, v) => {
-                if (v.isUnread) {
-                    return acc + v.mentionsCount;
-                }
-                return acc;
-            }, 0))),
-            distinctUntilChanged(),
-        );
-}
-
-function observeThreadMentionCount(database: Database, teamId: string, includeDmGm: boolean): Observable<number> {
-    return observeUnreadsAndMentionsInTeam(database, teamId, includeDmGm).pipe(
-        switchMap(({mentions}) => of$(mentions)),
-        distinctUntilChanged(),
-    );
-}
-
-export function observeTeamMentionCount(database: Database, teamId: string, includeDmGm: boolean): Observable<number> {
+export function observeMentionCount(database: Database, teamId?: string, includeDmGm?: boolean): Observable<number> {
     const channelMentionCountObservable = observeMyChannelMentionCount(database, teamId);
 
     const threadMentionCountObservable = observeIsCRTEnabled(database).pipe(
