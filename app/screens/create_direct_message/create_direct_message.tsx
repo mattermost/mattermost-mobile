@@ -364,6 +364,7 @@ export default function CreateDirectMessage({
             testID='create_direct_message.screen'
         >
             <View style={style.searchBar}>
+                <Search
                     testID='create_direct_message.search_bar'
                     placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                     cancelButtonTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
