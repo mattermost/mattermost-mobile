@@ -23,7 +23,7 @@ export default class MyChannelSettingsModel extends Model implements MyChannelSe
 
     static associations: Associations = {
 
-        /** A CHANNEL is associated with one MY_CHANNEL_SETTINGS **/
+        /** A CHANNEL is associated with one MY_CHANNEL_SETTINGS (relationship is 1:1) **/
         [CHANNEL]: {type: 'belongs_to', key: 'id'},
     };
 

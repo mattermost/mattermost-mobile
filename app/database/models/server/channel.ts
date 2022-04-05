@@ -70,8 +70,8 @@ export default class ChannelModel extends Model implements ChannelModelInterface
         /** A CHANNEL is associated with one CHANNEL_INFO**/
         [CHANNEL_INFO]: {type: 'has_many', foreignKey: 'id'},
 
-        /** A CHANNEL is associated with one MY_CHANNEL_SETTINGS **/
-        [CHANNEL]: {type: 'has_many', foreignKey: 'id'},
+        /** A CHANNEL is associated with one MY_CHANNEL_SETTINGS (relationship is 1:1) **/
+        [MY_CHANNEL_SETTINGS]: {type: 'has_many', foreignKey: 'id'},
     };
 
     /** create_at : The creation date for this channel */
