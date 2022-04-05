@@ -26,7 +26,7 @@ export default {
         SHOW_NICKNAME_FULLNAME: 'nickname_full_name',
         SHOW_FULLNAME: 'full_name',
     },
-    SPECIAL_MENTIONS: ['all', 'channel', 'here'],
+    SPECIAL_MENTIONS: new Set(['all', 'channel', 'here']),
     MAX_USERS_IN_GM: 8,
     MIN_USERS_IN_GM: 3,
     MAX_GROUP_CHANNELS_FOR_PROFILES: 50,

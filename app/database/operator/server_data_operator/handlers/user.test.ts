@@ -3,10 +3,7 @@
 
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
-import {
-    isRecordPreferenceEqualToRaw,
-    isRecordUserEqualToRaw,
-} from '@database/operator/server_data_operator/comparators';
+import {buildPreferenceKey} from '@database/operator/server_data_operator/comparators';
 import {
     transformPreferenceRecord,
     transformUserRecord,
@@ -103,7 +100,6 @@ describe('*** Operator: User Handlers tests ***', () => {
             createOrUpdateRawValues: users,
             tableName: 'User',
             prepareRecordsOnly: false,
-            findMatchingRecordBy: isRecordUserEqualToRaw,
             transformer: transformUserRecord,
         });
     });
@@ -151,7 +147,7 @@ describe('*** Operator: User Handlers tests ***', () => {
             createOrUpdateRawValues: preferences,
             tableName: 'Preference',
             prepareRecordsOnly: true,
-            findMatchingRecordBy: isRecordPreferenceEqualToRaw,
+            buildKeyRecordBy: buildPreferenceKey,
             transformer: transformPreferenceRecord,
         });
     });

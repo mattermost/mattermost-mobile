@@ -2,10 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import {
-    isRecordInfoEqualToRaw,
-    isRecordGlobalEqualToRaw,
-} from '@database/operator/app_data_operator/comparator';
+import {buildAppInfoKey} from '@database/operator/app_data_operator/comparator';
 import {
     transformInfoRecord,
     transformGlobalRecord,
@@ -44,7 +41,7 @@ describe('** APP DATA OPERATOR **', () => {
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'version_number',
             transformer: transformInfoRecord,
-            findMatchingRecordBy: isRecordInfoEqualToRaw,
+            buildKeyRecordBy: buildAppInfoKey,
             createOrUpdateRawValues: [
                 {
                     build_number: 'build-10x',
@@ -77,7 +74,6 @@ describe('** APP DATA OPERATOR **', () => {
         });
 
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            findMatchingRecordBy: isRecordGlobalEqualToRaw,
             fieldName: 'id',
             transformer: transformGlobalRecord,
             createOrUpdateRawValues: global,

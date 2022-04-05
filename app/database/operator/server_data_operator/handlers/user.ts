@@ -3,10 +3,7 @@
 
 import {MM_TABLES} from '@constants/database';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
-import {
-    isRecordPreferenceEqualToRaw,
-    isRecordUserEqualToRaw,
-} from '@database/operator/server_data_operator/comparators';
+import {buildPreferenceKey} from '@database/operator/server_data_operator/comparators';
 import {
     transformPreferenceRecord,
     transformUserRecord,
@@ -47,8 +44,12 @@ const UserHandler = (superclass: any) => class extends superclass {
         const deleteValues: PreferenceModel[] = [];
         if (sync) {
             const stored = await this.database.get(PREFERENCE).query().fetch() as PreferenceModel[];
+            const preferenceMap = preferences.reduce((r: Record<string, boolean>, p) => {
+                r[`${p.category}-${p.name}`] = true;
+                return r;
+            }, {});
             for (const pref of stored) {
-                const exists = preferences.findIndex((p) => p.category === pref.category && p.name === pref.name) > -1;
+                const exists = preferenceMap[`${pref.category}-${pref.name}`];
                 if (!exists) {
                     pref.prepareDestroyPermanently();
                     deleteValues.push(pref);
@@ -58,7 +59,7 @@ const UserHandler = (superclass: any) => class extends superclass {
 
         const records: PreferenceModel[] = await this.handleRecords({
             fieldName: 'user_id',
-            findMatchingRecordBy: isRecordPreferenceEqualToRaw,
+            buildKeyRecordBy: buildPreferenceKey,
             transformer: transformPreferenceRecord,
             prepareRecordsOnly: true,
             createOrUpdateRawValues: preferences,
@@ -95,7 +96,6 @@ const UserHandler = (superclass: any) => class extends superclass {
 
         return this.handleRecords({
             fieldName: 'id',
-            findMatchingRecordBy: isRecordUserEqualToRaw,
             transformer: transformUserRecord,
             createOrUpdateRawValues,
             tableName: USER,

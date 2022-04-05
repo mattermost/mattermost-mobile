@@ -31,6 +31,7 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         alignItems: 'center',
+        marginHorizontal: 20,
     },
     created: {
         color: changeOpacity(theme.centerChannelColor, 0.64),
@@ -47,7 +48,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     title: {
         color: theme.centerChannelColor,
-        marginTop: 16,
+        marginTop: 8,
         marginBottom: 8,
         ...typography('Heading', 700, 'SemiBold'),
     },

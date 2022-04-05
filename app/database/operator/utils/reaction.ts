@@ -26,18 +26,21 @@ export const sanitizeReactions = async ({database, post_id, rawReactions, skipSy
         fetch());
 
     // similarObjects: Contains objects that are in both the RawReaction array and in the Reaction table
-    const similarObjects: ReactionModel[] = [];
+    const similarObjects = new Set<ReactionModel>();
 
     const createReactions: RecordPair[] = [];
 
+    const reactionsMap = reactions.reduce((result: Record<string, ReactionModel>, reaction) => {
+        result[`${reaction.userId}-${reaction.emojiName}`] = reaction;
+        return result;
+    }, {});
+
     for (const raw of rawReactions) {
         // If the reaction is not present let's add it to the db
-        const exists = reactions.find((r) => (
-            r.userId === raw.user_id &&
-            r.emojiName === raw.emoji_name));
+        const exists = reactionsMap[`${raw.user_id}-${raw.emoji_name}`];
 
         if (exists) {
-            similarObjects.push(exists);
+            similarObjects.add(exists);
         } else {
             createReactions.push({raw});
         }
@@ -49,7 +52,7 @@ export const sanitizeReactions = async ({database, post_id, rawReactions, skipSy
 
     // finding out elements to delete
     const deleteReactions = reactions.
-        filter((reaction) => !similarObjects.includes(reaction));
+        filter((reaction) => !similarObjects.has(reaction));
 
     return {createReactions, deleteReactions};
 };

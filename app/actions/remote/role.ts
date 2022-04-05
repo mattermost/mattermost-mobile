@@ -28,12 +28,12 @@ export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string
     const operator = DatabaseManager.serverDatabases[serverUrl].operator;
     const existingRoles = await queryRoles(database).fetch();
 
-    const roleNames = existingRoles.map((role) => {
+    const roleNames = new Set(existingRoles.map((role) => {
         return role.name;
-    });
+    }));
 
     const newRoles = updatedRoles.filter((newRole) => {
-        return !roleNames.includes(newRole);
+        return !roleNames.has(newRole);
     });
 
     if (!newRoles.length) {

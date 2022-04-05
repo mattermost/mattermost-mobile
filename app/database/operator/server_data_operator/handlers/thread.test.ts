@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import {isRecordThreadEqualToRaw} from '@database/operator/server_data_operator/comparators';
 import {transformThreadRecord, transformThreadParticipantRecord, transformThreadInTeamRecord} from '@database/operator/server_data_operator/transformers/thread';
 
 import ServerDataOperator from '..';
@@ -55,7 +54,6 @@ describe('*** Operator: Thread Handlers tests ***', () => {
         await operator.handleThreads({threads, prepareRecordsOnly: false, teamId: 'team_id_1'});
 
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            findMatchingRecordBy: isRecordThreadEqualToRaw,
             fieldName: 'id',
             transformer: transformThreadRecord,
             createOrUpdateRawValues: threads,

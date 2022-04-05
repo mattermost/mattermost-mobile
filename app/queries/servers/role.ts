@@ -6,6 +6,7 @@ import {of as of$, combineLatest} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Database as DatabaseConstants, General, Permissions} from '@constants';
+import {isDMorGM} from '@utils/channel';
 import {hasPermission} from '@utils/role';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -71,8 +72,7 @@ export function observePermissionForPost(post: PostModel, user: UserModel, permi
 
 export function observeCanManageChannelMembers(post: PostModel, user: UserModel) {
     return post.channel.observe().pipe((switchMap((c) => {
-        const directTypes: ChannelType[] = [General.DM_CHANNEL, General.GM_CHANNEL];
-        if (!c || c.deleteAt !== 0 || directTypes.includes(c.type) || c.name === General.DEFAULT_CHANNEL) {
+        if (!c || c.deleteAt !== 0 || isDMorGM(c) || c.name === General.DEFAULT_CHANNEL) {
             return of$(false);
         }
 

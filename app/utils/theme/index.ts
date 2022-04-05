@@ -114,7 +114,7 @@ export function setNavigatorStyles(componentId: string, theme: Theme, additional
 
 export function setNavigationStackStyles(theme: Theme) {
     EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
-        if (!appearanceControlledScreens.includes(componentId)) {
+        if (!appearanceControlledScreens.has(componentId)) {
             setNavigatorStyles(componentId, theme);
         }
     });

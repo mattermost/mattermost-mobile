@@ -87,6 +87,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                 },
             }),
         },
+        loadingContainer: {
+            marginHorizontal: 20,
+        },
         loadingText: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
         },

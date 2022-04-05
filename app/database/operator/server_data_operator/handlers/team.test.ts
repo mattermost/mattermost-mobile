@@ -3,11 +3,8 @@
 
 import DatabaseManager from '@database/manager';
 import {
-    isRecordMyTeamEqualToRaw,
-    isRecordTeamChannelHistoryEqualToRaw,
-    isRecordTeamEqualToRaw,
-    isRecordTeamMembershipEqualToRaw,
-    isRecordTeamSearchHistoryEqualToRaw,
+    buildTeamMembershipKey,
+    buildTeamSearchHistoryKey,
 } from '@database/operator/server_data_operator/comparators';
 import {
     transformMyTeamRecord,
@@ -62,7 +59,6 @@ describe('*** Operator: Team Handlers tests ***', () => {
             createOrUpdateRawValues: teams,
             tableName: 'Team',
             prepareRecordsOnly: false,
-            findMatchingRecordBy: isRecordTeamEqualToRaw,
             transformer: transformTeamRecord,
         });
     });
@@ -95,7 +91,7 @@ describe('*** Operator: Team Handlers tests ***', () => {
             createOrUpdateRawValues: teamMemberships,
             tableName: 'TeamMembership',
             prepareRecordsOnly: false,
-            findMatchingRecordBy: isRecordTeamMembershipEqualToRaw,
+            buildKeyRecordBy: buildTeamMembershipKey,
             transformer: transformTeamMembershipRecord,
         });
     });
@@ -122,7 +118,6 @@ describe('*** Operator: Team Handlers tests ***', () => {
             createOrUpdateRawValues: myTeams,
             tableName: 'MyTeam',
             prepareRecordsOnly: false,
-            findMatchingRecordBy: isRecordMyTeamEqualToRaw,
             transformer: transformMyTeamRecord,
         });
     });
@@ -149,7 +144,6 @@ describe('*** Operator: Team Handlers tests ***', () => {
             createOrUpdateRawValues: teamChannelHistories,
             tableName: 'TeamChannelHistory',
             prepareRecordsOnly: false,
-            findMatchingRecordBy: isRecordTeamChannelHistoryEqualToRaw,
             transformer: transformTeamChannelHistoryRecord,
         });
     });
@@ -178,7 +172,7 @@ describe('*** Operator: Team Handlers tests ***', () => {
             createOrUpdateRawValues: teamSearchHistories,
             tableName: 'TeamSearchHistory',
             prepareRecordsOnly: false,
-            findMatchingRecordBy: isRecordTeamSearchHistoryEqualToRaw,
+            buildKeyRecordBy: buildTeamSearchHistoryKey,
             transformer: transformTeamSearchHistoryRecord,
         });
     });

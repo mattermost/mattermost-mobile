@@ -18,7 +18,7 @@ import {queryAllUsers} from '@queries/servers/user';
 import type {ServerCredential} from '@typings/credentials';
 
 const WAIT_TO_CLOSE = 15 * 1000;
-const WAIT_UNTIL_NEXT = 5 * 1000;
+const WAIT_UNTIL_NEXT = 20 * 1000;
 
 class WebsocketManager {
     private clients: Record<string, WebSocketClient> = {};
