@@ -10,7 +10,7 @@ import {MM_TABLES} from '@constants/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModelInterface from '@typings/database/models/servers/my_channel';
 
-const {CATEGORY_CHANNEL, CHANNEL, MY_CHANNEL} = MM_TABLES.SERVER;
+const {CHANNEL, MY_CHANNEL} = MM_TABLES.SERVER;
 
 /**
  * MyChannel is an extension of the Channel model but it lists only the Channels the app's user belongs to
@@ -21,7 +21,6 @@ export default class MyChannelModel extends Model implements MyChannelModelInter
 
     static associations: Associations = {
         [CHANNEL]: {type: 'belongs_to', key: 'id'},
-        [CATEGORY_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
     };
 
     /** last_post_at : The timestamp for any last post on this channel */

@@ -368,11 +368,6 @@ REFERENCES [Category] ([id])
 
 ALTER TABLE [CategoryChannel] CHECK CONSTRAINT [FK_CategoryChannel_category_id]
 
-ALTER TABLE [CategoryChannel] WITH CHECK ADD CONSTRAINT [FK_CategoryChannel_channel_id] FOREIGN KEY([channel_id])
-REFERENCES [MyChannel] ([id])
-
-ALTER TABLE [CategoryChannel] CHECK CONSTRAINT [FK_CategoryChannel_channel_id]
-
 ALTER TABLE [Channel] WITH CHECK ADD CONSTRAINT [FK_Channel_id] FOREIGN KEY([id])
 REFERENCES [CategoryChannel] ([channel_id])
 
