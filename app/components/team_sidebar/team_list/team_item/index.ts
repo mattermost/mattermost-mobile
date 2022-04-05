@@ -8,7 +8,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {queryMyChannelsByTeam} from '@queries/servers/channel';
 import {observeCurrentTeamId} from '@queries/servers/system';
-import {observeTeamMentionCount} from '@queries/servers/team';
+import {observeMentionCount} from '@queries/servers/team';
 
 import TeamItem from './team_item';
 
@@ -29,7 +29,7 @@ const enhance = withObservables(['myTeam'], ({myTeam, database}: WithTeamsArgs) 
     return {
         currentTeamId: observeCurrentTeamId(database),
         team: myTeam.team.observe(),
-        mentionCount: observeTeamMentionCount(database, myTeam.id, false),
+        mentionCount: observeMentionCount(database, myTeam.id, false),
         hasUnreads,
     };
 });

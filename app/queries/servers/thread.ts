@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q, Query} from '@nozbe/watermelondb';
-import {combineLatest, of as of$} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import {combineLatest, of as of$, Observable} from 'rxjs';
+import {map, switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -98,6 +98,13 @@ export const queryThreadsInTeam = ({database, hasReplies = true, isFollowing = t
             Q.experimentalNestedJoin(POST, CHANNEL),
             Q.on(POST, Q.on(CHANNEL, condition)),
         );
+    } else if (!includeDmGm) {
+        // fetching all threads from all teams
+        // excluding DM/GM channels
+        query.push(
+            Q.experimentalNestedJoin(POST, CHANNEL),
+            Q.on(POST, Q.on(CHANNEL, Q.where('team_id', Q.notEq('')))),
+        );
     }
 
     if (onlyUnreads) {
@@ -111,7 +118,7 @@ export const queryThreadsInTeam = ({database, hasReplies = true, isFollowing = t
     return database.get<ThreadModel>(THREAD).query(...query);
 };
 
-export const queryUnreadsAndMentionsInTeam = (database: Database, teamId: string, includeDmGm: boolean) => {
+export const queryUnreadsAndMentionsInTeam = (database: Database, teamId?: string, includeDmGm?: boolean) => {
     return queryThreadsInTeam({database, teamId, onlyUnreads: true, includeDmGm}).observeWithColumns(['unread_replies', 'unread_mentions']).pipe(
         switchMap((threads) => {
             let unreads = 0;
@@ -124,3 +131,10 @@ export const queryUnreadsAndMentionsInTeam = (database: Database, teamId: string
         }),
     );
 };
+
+export function observeThreadMentionCount(database: Database, teamId?: string, includeDmGm?: boolean): Observable<number> {
+    return queryUnreadsAndMentionsInTeam(database, teamId, includeDmGm).pipe(
+        switchMap(({mentions}) => of$(mentions)),
+        distinctUntilChanged(),
+    );
+}

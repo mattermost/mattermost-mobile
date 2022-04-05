@@ -37,7 +37,7 @@ const OtherMentionsBadge = ({channelId}: Props) => {
         setCount(mentions);
     };
 
-    const unreadsSubscription = (serverUrl: string, myChannels: MyChannelModel[]) => {
+    const unreadsSubscription = (serverUrl: string, {myChannels, threadMentionCount}: {myChannels: MyChannelModel[]; threadMentionCount: number}) => {
         const unreads = subscriptions.get(serverUrl);
         if (unreads) {
             let mentions = 0;
@@ -47,7 +47,7 @@ const OtherMentionsBadge = ({channelId}: Props) => {
                 }
             }
 
-            unreads.mentions = mentions;
+            unreads.mentions = mentions + threadMentionCount;
             subscriptions.set(serverUrl, unreads);
             updateCount();
         }
