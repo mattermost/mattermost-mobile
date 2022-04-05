@@ -10,7 +10,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {joinChannel, switchToChannelById} from '@actions/remote/channel';
 import Loading from '@components/loading';
 import Search from '@components/search';
-import {General} from '@constants';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
@@ -76,7 +76,6 @@ type Props = {
 
     // Screen Props (do not change during the lifetime of the screen)
     componentId: string;
-    categoryId?: string;
     closeButton: ImageResource;
 
     // Properties not changing during the lifetime of the screen)
@@ -108,7 +107,6 @@ export default function BrowseChannels(props: Props) {
         currentUserId,
         currentTeamId,
         canShowArchivedChannels,
-        categoryId,
         typeOfChannels,
         changeChannelType: changeTypeOfChannels,
         term,
@@ -175,16 +173,9 @@ export default function BrowseChannels(props: Props) {
                         close();
                         break;
                     case CREATE_BUTTON_ID: {
-                        // TODO part of https://mattermost.atlassian.net/browse/MM-39733
-                        // Update this to use the proper constant and the proper props.
-                        const screen = 'CreateChannel';
-                        const title = intl.formatMessage({id: 'mobile.create_channel.public', defaultMessage: 'New Public Channel'});
-                        const passProps = {
-                            channelType: General.OPEN_CHANNEL,
-                            categoryId,
-                        };
-
-                        goToScreen(screen, title, passProps);
+                        const screen = Screens.CREATE_OR_EDIT_CHANNEL;
+                        const title = intl.formatMessage({id: 'mobile.create_channel.title', defaultMessage: 'New channel'});
+                        goToScreen(screen, title);
                         break;
                     }
                 }
@@ -193,7 +184,7 @@ export default function BrowseChannels(props: Props) {
         return () => {
             unsubscribe.remove();
         };
-    }, [intl.locale, categoryId]);
+    }, [intl.locale]);
 
     useEffect(() => {
         // Update header buttons in case anything related to the header changes
