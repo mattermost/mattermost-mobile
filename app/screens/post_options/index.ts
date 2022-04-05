@@ -12,7 +12,7 @@ import {observePost} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observePermissionForChannel, observePermissionForPost} from '@queries/servers/role';
 import {observeConfig, observeLicense} from '@queries/servers/system';
-import {observeIsCRTEnabled, queryThreadById} from '@queries/servers/thread';
+import {observeIsCRTEnabled, observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
@@ -143,7 +143,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
 
     const getThread = (enabled: boolean) => {
         if (enabled) {
-            return queryThreadById(database, post.id);
+            return observeThreadById(database, post.id);
         }
 
         return of$(undefined);

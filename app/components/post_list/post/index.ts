@@ -7,13 +7,13 @@ import React from 'react';
 import {of as of$, combineLatest} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {queryThreadById} from '@app/queries/servers/thread';
 import {Permissions, Preferences} from '@constants';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {queryPostsBetween} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCanManageChannelMembers, observePermissionForPost} from '@queries/servers/role';
 import {observeConfigBooleanValue} from '@queries/servers/system';
+import {observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
 import {areConsecutivePosts, isPostEphemeral} from '@utils/post';
@@ -153,7 +153,7 @@ const withPost = withObservables(
             isLastReply,
             isPostAddChannelMember,
             post: post.observe(),
-            thread: queryThreadById(database, post.id),
+            thread: observeThreadById(database, post.id),
             reactionsCount: post.reactions.observeCount(),
         };
     });

@@ -96,7 +96,7 @@ const PostOptions = ({
         />,
     ];
 
-    const managedConfig = useManagedConfig();
+    const managedConfig = useManagedConfig<ManagedConfig>();
     const canCopyLink = managedConfig?.copyAndPasteProtection !== 'true';
     if (canCopyLink) {
         options.push(

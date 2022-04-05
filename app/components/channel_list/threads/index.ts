@@ -7,7 +7,7 @@ import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {observeIsCRTEnabled, queryUnreadsAndMentionsInTeam} from '@queries/servers/thread';
+import {observeIsCRTEnabled, observeUnreadsAndMentionsInTeam} from '@queries/servers/thread';
 
 import Threads from './threads';
 
@@ -31,7 +31,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
                     if (!isCRTEnabled) {
                         return of$({unreads: 0, mentions: 0});
                     }
-                    return queryUnreadsAndMentionsInTeam(database, teamId);
+                    return observeUnreadsAndMentionsInTeam(database, teamId);
                 },
             ),
         ),

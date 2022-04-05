@@ -10,9 +10,9 @@ import {
     transformThreadParticipantRecord,
 } from '@database/operator/server_data_operator/transformers/thread';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
-import {sanitizeAddThreadParticipants, sanitizeThreadParticipants} from '@database/operator/utils/thread';
+import {sanitizeThreadParticipants} from '@database/operator/utils/thread';
 
-import type {HandleAddThreadParticipantsArgs, HandleThreadsArgs, HandleThreadParticipantsArgs} from '@typings/database/database';
+import type {HandleThreadsArgs, HandleThreadParticipantsArgs} from '@typings/database/database';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type ThreadInTeamModel from '@typings/database/models/servers/thread_in_team';
 import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
@@ -25,53 +25,9 @@ const {
 export interface ThreadHandlerMix {
     handleThreads: ({threads, teamId, prepareRecordsOnly}: HandleThreadsArgs) => Promise<Model[]>;
     handleThreadParticipants: ({threadsParticipants, prepareRecordsOnly}: HandleThreadParticipantsArgs) => Promise<ThreadParticipantModel[]>;
-    handleAddThreadParticipants: ({threadId, participants, prepareRecordsOnly}: HandleAddThreadParticipantsArgs) => Promise<ThreadParticipantModel[]>;
 }
 
 const ThreadHandler = (superclass: any) => class extends superclass {
-    /**
-     * handleAddThreadParticipants: Handler responsible for adding participants to the ThreadParticipants table from the 'Server' schema
-     * @param {HandleAddThreadParticipantsArgs} handleAddThreadParticipants
-     * @param {threadId} HandleAddThreadParticipantsArgs.threadId
-     * @param {participants} HandleAddThreadParticipantsArgs.participants
-     * @param {boolean} HandleAddThreadParticipantsArgs.prepareRecordsOnly
-     * @throws DataOperatorException
-     * @returns {Promise<Array<ThreadParticipantModel>>}
-     */
-    handleAddThreadParticipants = async ({threadId, participants, prepareRecordsOnly}: HandleAddThreadParticipantsArgs): Promise<ThreadParticipantModel[]> => {
-        const batchRecords: ThreadParticipantModel[] = [];
-
-        if (!participants.length) {
-            throw new DataOperatorException(
-                'An empty "thread participants" array has been passed to the handleAddThreadParticipants method',
-            );
-        }
-
-        const createParticipants = await sanitizeAddThreadParticipants({
-            database: this.database,
-            thread_id: threadId,
-            rawParticipants: [...new Set(participants)], // removes duplicates
-        });
-
-        if (createParticipants?.length) {
-            const participantsRecords = (await this.prepareRecords({
-                createRaws: createParticipants,
-                transformer: transformThreadParticipantRecord,
-                tableName: THREAD_PARTICIPANT,
-            })) as ThreadParticipantModel[];
-            batchRecords.push(...participantsRecords);
-        }
-        if (prepareRecordsOnly) {
-            return batchRecords;
-        }
-
-        if (batchRecords.length) {
-            await this.batchRecords(batchRecords);
-        }
-
-        return batchRecords;
-    };
-
     /**
      * handleThreads: Handler responsible for the Create/Update operations occurring on the Thread table from the 'Server' schema
      * @param {HandleThreadsArgs} handleThreads

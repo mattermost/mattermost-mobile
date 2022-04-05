@@ -11,7 +11,6 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 
-import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {

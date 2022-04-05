@@ -6,7 +6,7 @@ import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useMemo} from 'react';
 import {Platform, StyleSheet, TouchableOpacity, View} from 'react-native';
 
-import {updateThreadFollow} from '@actions/remote/thread';
+import {updateThreadFollowing} from '@actions/remote/thread';
 import FormattedText from '@components/formatted_text';
 import {MM_TABLES} from '@constants/database';
 import {useServerUrl} from '@context/server';
@@ -62,7 +62,7 @@ function ThreadFollow({teamId, thread}: Props) {
     const serverUrl = useServerUrl();
 
     const onPress = useCallback(preventDoubleTap(() => {
-        updateThreadFollow(serverUrl, teamId, thread.id, !thread.isFollowing);
+        updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing);
     }), [teamId, thread.isFollowing]);
 
     const [containerStyle, followTextProps] = useMemo(() => {

@@ -127,8 +127,6 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
 
     const isCRTEnabled = await getIsCRTEnabled(database);
 
-    const isCRTEnabled = await getIsCRTEnabled(database);
-
     try {
         const created = await client.createPost(newPost);
         const models: Model[] = await operator.handlePosts({
@@ -602,14 +600,6 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
                 ...data,
                 prepareRecordsOnly: true,
             });
-
-            const isCRTEnabled = await getIsCRTEnabled(operator.database);
-            if (isCRTEnabled) {
-                const {models: threadModels} = await processThreadsFromReceivedPosts(serverUrl, data.posts, true);
-                if (threadModels?.length) {
-                    models.push(...threadModels);
-                }
-            }
 
             models.push(...posts);
 

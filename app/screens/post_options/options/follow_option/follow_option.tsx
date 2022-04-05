@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import {updateThreadFollow} from '@actions/remote/thread';
+import {updateThreadFollowing} from '@actions/remote/thread';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
@@ -46,7 +46,7 @@ const FollowThreadOption = ({thread, teamId}: FollowThreadOptionProps) => {
     const serverUrl = useServerUrl();
 
     const handleToggleFollow = () => {
-        updateThreadFollow(serverUrl, teamId, thread.id, !thread.isFollowing);
+        updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing);
         dismissBottomSheet(Screens.POST_OPTIONS);
     };
 

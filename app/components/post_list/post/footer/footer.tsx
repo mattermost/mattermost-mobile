@@ -4,7 +4,7 @@
 import React, {useCallback, useMemo} from 'react';
 import {TouchableOpacity, View} from 'react-native';
 
-import {updateThreadFollow} from '@actions/remote/thread';
+import {updateThreadFollowing} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import UserAvatarsStack from '@components/user_avatars_stack';
@@ -84,11 +84,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const Footer = ({currentUserId, participants, serverUrl, teamId, teammateNameDisplay, testID, theme, thread}: Props) => {
     const styles = getStyleSheet(theme);
     const onUnfollow = useCallback(preventDoubleTap(() => {
-        updateThreadFollow(serverUrl, teamId, thread.id, false);
+        updateThreadFollowing(serverUrl, teamId, thread.id, false);
     }), []);
 
     const onFollow = useCallback(preventDoubleTap(() => {
-        updateThreadFollow(serverUrl, teamId, thread.id, true);
+        updateThreadFollowing(serverUrl, teamId, thread.id, true);
     }), []);
 
     let repliesComponent;

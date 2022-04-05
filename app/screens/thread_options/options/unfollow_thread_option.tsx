@@ -3,7 +3,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import React, {useCallback} from 'react';
 
-import {updateThreadFollow} from '@actions/remote/thread';
+import {updateThreadFollowing} from '@actions/remote/thread';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
@@ -18,7 +18,7 @@ const UnfollowThreadOption = ({teamId, threadId}: Props) => {
     const serverUrl = useServerUrl();
 
     const onHandlePress = useCallback(async () => {
-        updateThreadFollow(serverUrl, teamId, threadId, false);
+        updateThreadFollowing(serverUrl, teamId, threadId, false);
         await dismissBottomSheet(Screens.THREAD_OPTIONS);
     }, [serverUrl, teamId, threadId]);
 

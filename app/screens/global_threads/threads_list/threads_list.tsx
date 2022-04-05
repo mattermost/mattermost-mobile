@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useMemo, useState, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, Platform, StyleSheet} from 'react-native';
 
-import {getThreads} from '@actions/remote/thread';
+import {fetchThreads} from '@actions/remote/thread';
 import {General} from '@app/constants';
 import Loading from '@components/loading';
 
@@ -66,7 +66,7 @@ const ThreadsList = ({
         // this is to be called only when there are no threads
         if (tab === 'all' && noThreads && !hasCalled.current) {
             setIsLoading(true);
-            getThreads(serverUrl, teamId).finally(() => {
+            fetchThreads(serverUrl, teamId).finally(() => {
                 hasCalled.current = true;
                 setIsLoading(false);
             });
@@ -125,7 +125,7 @@ const ThreadsList = ({
         };
 
         setIsLoading(true);
-        getThreads(serverUrl, teamId, options).then((response) => {
+        fetchThreads(serverUrl, teamId, options).then((response) => {
             if ('data' in response) {
                 setEndReached(response.data.threads.length < General.CRT_CHUNK_SIZE);
             }

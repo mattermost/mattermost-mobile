@@ -91,7 +91,7 @@ export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperat
     return models;
 };
 
-export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnreads?: boolean, hasReplies?: boolean, isFollowing?: boolean, sort?: boolean): Query<ThreadModel> => {
+export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnreads?: boolean, hasReplies?: boolean, isFollowing = true, sort?: boolean): Query<ThreadModel> => {
     const query: Q.Clause[] = [
         Q.experimentalNestedJoin(POST, CHANNEL),
     ];
