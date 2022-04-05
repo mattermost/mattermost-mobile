@@ -255,7 +255,7 @@ export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage
 }
 
 export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage) {
-    const {channel_id: channelId} = msg.broadcast;
+    const {channel_id: channelId, team_id: teamId} = msg.broadcast;
     const {
         mention_count: mentionCount,
         mention_count_root: mentionCountRoot,
@@ -281,8 +281,11 @@ export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage)
     }
 
     if (!myChannel?.manuallyUnread) {
-        // We used to fetch the channel to get the delta on the message count
-        // We just need to identify that there are unread messages, the exact number is uninportant
-        markChannelAsUnread(serverUrl, channelId, messages, mentions, lastViewedAt);
+        const {channels} = await fetchMyChannel(serverUrl, teamId, channelId, true);
+        const channel = channels?.[0];
+        const postNumber = isCRTEnabled ? channel?.total_msg_count_root : channel?.total_msg_count;
+        const delta = postNumber ? postNumber - messages : messages;
+
+        markChannelAsUnread(serverUrl, channelId, delta, mentions, lastViewedAt);
     }
 }
