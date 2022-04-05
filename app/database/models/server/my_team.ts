@@ -21,7 +21,7 @@ export default class MyTeamModel extends Model implements MyTeamModelInterface {
 
     static associations: Associations = {
 
-        /** A TEAM can be associated to one MY_TEAM (relationship is 1:1) */
+        /** A TEAM is associated to one MY_TEAM (relationship is 1:1) */
         [TEAM]: {type: 'belongs_to', key: 'id'},
     };
 

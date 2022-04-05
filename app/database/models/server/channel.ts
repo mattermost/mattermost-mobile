@@ -46,7 +46,7 @@ export default class ChannelModel extends Model implements ChannelModelInterface
         /** A CHANNEL can be associated with multiple CHANNEL_MEMBERSHIP (relationship is 1:N) */
         [CHANNEL_MEMBERSHIP]: {type: 'has_many', foreignKey: 'channel_id'},
 
-        /** A CHANNEL can be associated with one CATEGORY_CHANNEL per team (relationship is 1:1) */
+        /** A CHANNEL can be associated with one CATEGORY_CHANNEL per team (relationship is 1:1)  */
         [CATEGORY_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
 
         /** A CHANNEL can be associated with multiple DRAFT (relationship is 1:N) */
