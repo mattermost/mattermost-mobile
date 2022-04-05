@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {postActionWithCookie} from '@actions/remote/post';
 import {ActionType, Post} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPostById, prepareDeletePost} from '@queries/servers/post';
@@ -133,10 +132,6 @@ export const removePost = async (serverUrl: string, post: PostModel | Post) => {
     return {post};
 };
 
-export const selectAttachmentMenuAction = (serverUrl: string, postId: string, actionId: string, selectedOption: string) => {
-    return postActionWithCookie(serverUrl, postId, actionId, '', selectedOption);
-};
-
 export const markPostAsDeleted = async (serverUrl: string, post: Post, prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -156,31 +151,7 @@ export const markPostAsDeleted = async (serverUrl: string, post: Post, prepareRe
     });
 
     if (!prepareRecordsOnly) {
-        operator.batchRecords([dbPost]);
+        await operator.batchRecords([dbPost]);
     }
     return {model};
-};
-
-export const processPostsFetched = async (serverUrl: string, actionType: string, data: PostResponse, fetchOnly = false) => {
-    const order = data.order;
-    const posts = Object.values(data.posts) as Post[];
-    const previousPostId = data.prev_post_id;
-
-    if (!fetchOnly) {
-        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-        if (operator) {
-            await operator.handlePosts({
-                actionType,
-                order,
-                posts,
-                previousPostId,
-            });
-        }
-    }
-
-    return {
-        posts,
-        order,
-        previousPostId,
-    };
 };

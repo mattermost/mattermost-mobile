@@ -7,13 +7,14 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {observeRecentReactions} from '@queries/servers/system';
+import {getEmojiFirstAlias} from '@utils/emoji/helpers';
 
 import ReactionBar from './reaction_bar';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const DEFAULT_EMOJIS = [
-    'thumbsup',
+    '+1',
     'smiley',
     'white_check_mark',
     'heart',
@@ -22,8 +23,10 @@ const DEFAULT_EMOJIS = [
 ];
 
 const mergeRecentWithDefault = (recentEmojis: string[]) => {
-    const filterUsed = DEFAULT_EMOJIS.filter((e) => !recentEmojis.includes(e));
-    return recentEmojis.concat(filterUsed).splice(0, 6);
+    const emojiAliases = recentEmojis.slice(0, 6).map((emoji) => getEmojiFirstAlias(emoji));
+    const emojisSet = new Set(emojiAliases);
+    const filterUsed = DEFAULT_EMOJIS.filter((e) => !emojisSet.has(e));
+    return emojiAliases.concat(filterUsed).splice(0, 6);
 };
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({

@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {updateThreadRead} from '@actions/remote/thread';
 import {ActionType, General, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getTranslations, t} from '@i18n';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
-import {getIsCRTEnabled, getThreadById, queryThreadsInTeam} from '@queries/servers/thread';
+import {getIsCRTEnabled, getThreadById, prepareThreadsFromReceivedPosts, queryThreadsInTeam} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import {goToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -46,25 +45,15 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
 
         const isCRTEnabled = await getIsCRTEnabled(database);
         if (isCRTEnabled) {
-            const thread = await post.thread.fetch();
-            if (!thread) {
-                return {error: 'Thread not found'};
-            }
-
-            // CRT: Mark thread as read if we have unreads
-            if (thread.unreadReplies || thread.unreadMentions) {
-                updateThreadRead(serverUrl, channel.teamId, thread.id, Date.now());
-            }
-
             // CRT: Add follow/following button
             rightButtons.push({
                 id: 'thread-follow-button',
                 component: {
-                    id: thread.id,
-                    name: 'ThreadFollow',
+                    id: post.id,
+                    name: Screens.THREAD_FOLLOW_BUTTON,
                     passProps: {
                         teamId: channel.teamId,
-                        threadId: thread.id,
+                        threadId: post.id,
                     },
                 },
             });
@@ -107,7 +96,7 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
 // When new post arrives:
 // 1. If a reply, then update the reply_count, add user as the participant
 // 2. Else add the post as a thread
-export const processThreadFromNewPost = async (serverUrl: string, post: Post, prepareRecordsOnly = false) => {
+export const createThreadFromNewPost = async (serverUrl: string, post: Post, prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -116,58 +105,29 @@ export const processThreadFromNewPost = async (serverUrl: string, post: Post, pr
     const models: Model[] = [];
     if (post.root_id) {
         // Update the thread data: `reply_count`
-        const {model: threadModel} = await processUpdateThreadReplyCount(serverUrl, post.root_id, post.reply_count, true);
+        const {model: threadModel} = await updateThread(serverUrl, post.root_id, {reply_count: post.reply_count}, true);
         if (threadModel) {
             models.push(threadModel);
         }
 
-        // Add current user as a participant to the thread
-        const threadParticipantModels = await operator.handleAddThreadParticipants({
-            threadId: post.root_id,
-            participants: [post.user_id],
+        // Add user as a participant to the thread
+        const threadParticipantModels = await operator.handleThreadParticipants({
+            threadsParticipants: [{
+                thread_id: post.root_id,
+                participants: [{
+                    thread_id: post.root_id,
+                    id: post.user_id,
+                }],
+            }],
             prepareRecordsOnly: true,
+            skipSync: true,
         });
         if (threadParticipantModels?.length) {
             models.push(...threadParticipantModels);
         }
     } else { // If the post is a root post, then we need to add it to the thread table
-        const {models: threadModels} = await processThreadsFromReceivedPosts(serverUrl, [post], true);
+        const threadModels = await prepareThreadsFromReceivedPosts(operator, [post]);
         if (threadModels?.length) {
-            models.push(...threadModels);
-        }
-    }
-
-    if (models.length && !prepareRecordsOnly) {
-        await operator.batchRecords(models);
-    }
-
-    return {models};
-};
-
-// On receiving "posts", Save the "root posts" as "threads"
-export const processThreadsFromReceivedPosts = async (serverUrl: string, posts: Post[], prepareRecordsOnly = false) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    const models: Model[] = [];
-
-    const threads: Thread[] = [];
-    posts.forEach((post: Post) => {
-        if (!post.root_id && post.type === '') {
-            threads.push({
-                id: post.id,
-                participants: post.participants,
-                reply_count: post.reply_count,
-                last_reply_at: post.last_reply_at,
-                is_following: post.is_following,
-            } as Thread);
-        }
-    });
-    if (threads.length) {
-        const threadModels = await operator.handleThreads({threads, prepareRecordsOnly: true});
-        if (threadModels.length) {
             models.push(...threadModels);
         }
     }
@@ -234,18 +194,18 @@ export const processReceivedThreads = async (serverUrl: string, threads: Thread[
     return {models};
 };
 
-export const processUpdateTeamThreadsAsRead = async (serverUrl: string, teamId: string, prepareRecordsOnly = false) => {
+export const markTeamThreadsAsRead = async (serverUrl: string, teamId: string, prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
     try {
         const {database} = operator;
-        const threads = await queryThreadsInTeam({database, teamId, onlyUnreads: true}).fetch();
+        const threads = await queryThreadsInTeam(database, teamId, true).fetch();
         const models = threads.map((thread) => thread.prepareUpdate((record) => {
             record.unreadMentions = 0;
             record.unreadReplies = 0;
-            record.lastViewedAt = new Date().getTime();
+            record.lastViewedAt = Date.now();
         }));
         if (!prepareRecordsOnly) {
             await operator.batchRecords(models);
@@ -256,7 +216,7 @@ export const processUpdateTeamThreadsAsRead = async (serverUrl: string, teamId: 
     }
 };
 
-export const processUpdateThreadFollow = async (serverUrl: string, threadId: string, state: boolean, replyCount?: number, prepareRecordsOnly = false) => {
+export const updateThread = async (serverUrl: string, threadId: string, updatedThread: Partial<Thread>, prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -267,58 +227,12 @@ export const processUpdateThreadFollow = async (serverUrl: string, threadId: str
         const thread = await getThreadById(database, threadId);
         if (thread) {
             const model = thread.prepareUpdate((record) => {
-                record.replyCount = replyCount ?? record.replyCount;
-                record.isFollowing = state;
-            });
-            if (!prepareRecordsOnly) {
-                await operator.batchRecords([model]);
-            }
-            return {model};
-        }
-        return {error: 'Thread not found'};
-    } catch (error) {
-        return {error};
-    }
-};
+                record.isFollowing = updatedThread.is_following ?? record.isFollowing;
+                record.replyCount = updatedThread.reply_count ?? record.replyCount;
 
-export const processUpdateThreadRead = async (serverUrl: string, threadId: string, lastViewedAt: number, unreadMentions?: number, unreadReplies?: number, prepareRecordsOnly = false) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    try {
-        const {database} = operator;
-        const thread = await getThreadById(database, threadId);
-        if (thread) {
-            const model = thread.prepareUpdate((record) => {
-                record.lastViewedAt = lastViewedAt;
-                record.unreadMentions = unreadMentions ?? record.unreadMentions;
-                record.unreadReplies = unreadReplies ?? record.unreadReplies;
-            });
-            if (!prepareRecordsOnly) {
-                await operator.batchRecords([model]);
-            }
-            return {model};
-        }
-        return {error: 'Thread not found'};
-    } catch (error) {
-        return {error};
-    }
-};
-
-export const processUpdateThreadReplyCount = async (serverUrl: string, threadId: string, replyCount: number, prepareRecordsOnly = false) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    try {
-        const {database} = operator;
-        const thread = await getThreadById(database, threadId);
-        if (thread) {
-            const model = thread.prepareUpdate((record) => {
-                record.replyCount = replyCount;
+                record.lastViewedAt = updatedThread.last_viewed_at ?? record.lastViewedAt;
+                record.unreadMentions = updatedThread.unread_mentions ?? record.unreadMentions;
+                record.unreadReplies = updatedThread.unread_replies ?? record.unreadReplies;
             });
             if (!prepareRecordsOnly) {
                 await operator.batchRecords([model]);

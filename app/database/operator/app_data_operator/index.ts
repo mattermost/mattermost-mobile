@@ -3,7 +3,7 @@
 
 import {MM_TABLES} from '@constants/database';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
-import {isRecordInfoEqualToRaw, isRecordGlobalEqualToRaw} from '@database/operator/app_data_operator/comparator';
+import {buildAppInfoKey} from '@database/operator/app_data_operator/comparator';
 import {transformInfoRecord, transformGlobalRecord} from '@database/operator/app_data_operator/transformers';
 import BaseDataOperator from '@database/operator/base_data_operator';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
@@ -22,7 +22,7 @@ export default class AppDataOperator extends BaseDataOperator {
 
         return this.handleRecords({
             fieldName: 'version_number',
-            findMatchingRecordBy: isRecordInfoEqualToRaw,
+            buildKeyRecordBy: buildAppInfoKey,
             transformer: transformInfoRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: info, key: 'version_number'}),
@@ -39,7 +39,6 @@ export default class AppDataOperator extends BaseDataOperator {
 
         return this.handleRecords({
             fieldName: 'id',
-            findMatchingRecordBy: isRecordGlobalEqualToRaw,
             transformer: transformGlobalRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: global, key: 'id'}),

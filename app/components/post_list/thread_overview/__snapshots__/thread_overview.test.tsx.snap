@@ -53,6 +53,8 @@ exports[`ThreadOverview should match snapshot when post is not saved and 0 repli
     <RNGestureHandlerButton
       collapsable={false}
       exclusive={true}
+      handlerTag={1}
+      handlerType="NativeViewGestureHandler"
       onGestureEvent={[Function]}
       onGestureHandlerEvent={[Function]}
       onGestureHandlerStateChange={[Function]}
@@ -80,6 +82,8 @@ exports[`ThreadOverview should match snapshot when post is not saved and 0 repli
     <RNGestureHandlerButton
       collapsable={false}
       exclusive={true}
+      handlerTag={2}
+      handlerType="NativeViewGestureHandler"
       onGestureEvent={[Function]}
       onGestureHandlerEvent={[Function]}
       onGestureHandlerStateChange={[Function]}
@@ -158,6 +162,8 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
     <RNGestureHandlerButton
       collapsable={false}
       exclusive={true}
+      handlerTag={3}
+      handlerType="NativeViewGestureHandler"
       onGestureEvent={[Function]}
       onGestureHandlerEvent={[Function]}
       onGestureHandlerStateChange={[Function]}
@@ -185,6 +191,8 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
     <RNGestureHandlerButton
       collapsable={false}
       exclusive={true}
+      handlerTag={4}
+      handlerType="NativeViewGestureHandler"
       onGestureEvent={[Function]}
       onGestureHandlerEvent={[Function]}
       onGestureHandlerStateChange={[Function]}

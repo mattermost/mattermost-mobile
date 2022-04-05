@@ -323,12 +323,17 @@ const ClientUsers = (superclass: any) => class extends superclass {
     autocompleteUsers = async (name: string, teamId: string, channelId?: string, options = {
         limit: General.AUTOCOMPLETE_LIMIT_DEFAULT,
     }) => {
-        return this.doFetch(`${this.getUsersRoute()}/autocomplete${buildQueryString({
+        const query: Dictionary<any> = {
             in_team: teamId,
-            in_channel: channelId,
             name,
-            limit: options.limit,
-        })}`, {
+        };
+        if (channelId) {
+            query.in_channel = channelId;
+        }
+        if (options.limit) {
+            query.limit = options.limit;
+        }
+        return this.doFetch(`${this.getUsersRoute()}/autocomplete${buildQueryString(query)}`, {
             method: 'get',
         });
     };

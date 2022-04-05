@@ -94,14 +94,9 @@ export type HandleThreadsArgs = {
   teamId?: string;
 };
 
-export type HandleAddThreadParticipantsArgs = {
-  prepareRecordsOnly: boolean;
-  threadId: string;
-  participants: string[];
-};
-
 export type HandleThreadParticipantsArgs = {
   prepareRecordsOnly: boolean;
+  skipSync?: boolean;
   threadsParticipants: ParticipantsPerThread[];
 };
 
@@ -117,14 +112,9 @@ export type SanitizeReactionsArgs = {
   skipSync?: boolean;
 };
 
-export type SanitizeAddThreadParticipantsArgs = {
-  database: Database;
-  thread_id: $ID<Thread>;
-  rawParticipants: string[];
-}
-
 export type SanitizeThreadParticipantsArgs = {
   database: Database;
+  skipSync?: boolean;
   thread_id: $ID<Thread>;
   rawParticipants: ThreadParticipant[];
 }
@@ -157,11 +147,11 @@ export type ProcessRecordsArgs = {
   deleteRawValues: RawValue[];
   tableName: string;
   fieldName: string;
-  findMatchingRecordBy: (existing: Model, newElement: RawValue) => boolean;
+  buildKeyRecordBy?: (obj: Record<string, any>) => string;
 };
 
 export type HandleRecordsArgs = {
-  findMatchingRecordBy: (existing: Model, newElement: RawValue) => boolean;
+  buildKeyRecordBy?: (obj: Record<string, any>) => string;
   fieldName: string;
   transformer: (TransformerArgs) => Promise<Model>;
   createOrUpdateRawValues: RawValue[];
@@ -204,17 +194,13 @@ export type HandleSystemArgs = PrepareOnly & {
     systems: IdValue[];
 }
 
-export type HandleTOSArgs = PrepareOnly & {
-    termOfService: TermsOfService[];
-}
-
 export type HandleMyChannelArgs = PrepareOnly & {
   channels: Channel[];
   myChannels: ChannelMembership[];
 };
 
 export type HandleChannelInfoArgs = PrepareOnly &{
-  channelInfos: ChannelInfo[];
+  channelInfos: Array<Partial<ChannelInfo>>;
 };
 
 export type HandleMyChannelSettingsArgs = PrepareOnly & {
@@ -235,10 +221,6 @@ export type HandleCategoryChannelArgs = PrepareOnly & {
 
 export type HandleMyTeamArgs = PrepareOnly & {
   myTeams: MyTeam[];
-};
-
-export type HandleSlashCommandArgs = PrepareOnly & {
-    slashCommands: SlashCommand[];
 };
 
 export type HandleTeamSearchHistoryArgs = PrepareOnly &{

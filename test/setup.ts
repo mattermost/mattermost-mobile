@@ -3,7 +3,6 @@
 
 /* eslint-disable react/no-multi-comp */
 
-import MockAsyncStorage from 'mock-async-storage';
 import * as ReactNative from 'react-native';
 import mockSafeAreaContext from 'react-native-safe-area-context/jest/mock';
 
@@ -13,7 +12,6 @@ require('react-native-reanimated/lib/reanimated2/jestUtils').setUpTests();
 require('isomorphic-fetch');
 
 /* eslint-disable no-console */
-jest.mock('@react-native-async-storage/async-storage', () => new MockAsyncStorage());
 jest.mock('@database/manager');
 jest.doMock('react-native', () => {
     const {

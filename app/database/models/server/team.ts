@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q, Relation} from '@nozbe/watermelondb';
+import {Q, Query, Relation} from '@nozbe/watermelondb';
 import {children, field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
@@ -10,7 +10,7 @@ import {MM_TABLES} from '@constants/database';
 import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
-import type SlashCommandModel from '@typings/database/models/servers/slash_command';
+import type TeamModelInterface from '@typings/database/models/servers/team';
 import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
 import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
 import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
@@ -21,7 +21,6 @@ const {
     CHANNEL,
     TEAM,
     MY_TEAM,
-    SLASH_COMMAND,
     TEAM_CHANNEL_HISTORY,
     TEAM_MEMBERSHIP,
     TEAM_SEARCH_HISTORY,
@@ -32,7 +31,7 @@ const {
 /**
  * A Team houses and enables communication to happen across channels and users.
  */
-export default class TeamModel extends Model {
+export default class TeamModel extends Model implements TeamModelInterface {
     /** table (name) : Team */
     static table = TEAM;
 
@@ -47,9 +46,6 @@ export default class TeamModel extends Model {
 
         /** A TEAM can be associated to one MY_TEAM (relationship is 1:1) */
         [MY_TEAM]: {type: 'has_many', foreignKey: 'id'},
-
-        /** A TEAM has a 1:N relationship with SLASH_COMMAND. A TEAM can possess multiple slash commands */
-        [SLASH_COMMAND]: {type: 'has_many', foreignKey: 'team_id'},
 
         /** A TEAM has a 1:N relationship with TEAM_MEMBERSHIP. A TEAM can regroup multiple users */
         [TEAM_MEMBERSHIP]: {type: 'has_many', foreignKey: 'team_id'},
@@ -89,39 +85,35 @@ export default class TeamModel extends Model {
     @field('allowed_domains') allowedDomains!: string;
 
     /** categories : All the categories associated with this team */
-    @children(CATEGORY) categories!: CategoryModel[];
+    @children(CATEGORY) categories!: Query<CategoryModel>;
 
     /** channels : All the channels associated with this team */
-    @children(CHANNEL) channels!: ChannelModel[];
+    @children(CHANNEL) channels!: Query<ChannelModel>;
 
     /** myTeam : Retrieves additional information about the team that this user is possibly part of. */
     @immutableRelation(MY_TEAM, 'id') myTeam!: Relation<MyTeamModel>;
-
-    /** slashCommands : All the slash commands associated with this team */
-    @children(SLASH_COMMAND) slashCommands!: SlashCommandModel[];
 
     /** teamChannelHistory : A history of the channels in this team that has been visited,  ordered by the most recent and capped to the last 5 */
     @immutableRelation(TEAM_CHANNEL_HISTORY, 'id') teamChannelHistory!: Relation<TeamChannelHistoryModel>;
 
     /** members : All the users associated with this team */
-    @children(TEAM_MEMBERSHIP) members!: TeamMembershipModel[];
+    @children(TEAM_MEMBERSHIP) members!: Query<TeamMembershipModel>;
 
     /** teamSearchHistories : All the searches performed on this team */
-    @children(TEAM_SEARCH_HISTORY) teamSearchHistories!: TeamSearchHistoryModel[];
-
-    /** threads : All threads belonging to a team */
-    @lazy threads = this.collections.get<ThreadModel>(THREAD).query(
-        Q.on(THREADS_IN_TEAM, 'team_id', this.id),
-    );
+    @children(TEAM_SEARCH_HISTORY) teamSearchHistories!: Query<TeamSearchHistoryModel>;
 
     /** threads : Threads list belonging to a team */
-    @lazy threadsList = this.threads.extend(
-        Q.where('loadedInGlobalThreads', true),
+    @lazy threadsList = this.collections.get<ThreadModel>(THREAD).query(
+        Q.on(THREADS_IN_TEAM, Q.and(
+            Q.where('team_id', this.id),
+            Q.where('loadedInGlobalThreads', true),
+        )),
         Q.sortBy('last_reply_at', Q.desc),
     );
 
     /** unreadThreadsList : Unread threads list belonging to a team */
-    @lazy unreadThreadsList = this.threads.extend(
+    @lazy unreadThreadsList = this.collections.get<ThreadModel>(THREAD).query(
+        Q.on(THREADS_IN_TEAM, 'team_id', this.id),
         Q.where('unread_replies', Q.gt(0)),
         Q.sortBy('last_reply_at', Q.desc),
     );

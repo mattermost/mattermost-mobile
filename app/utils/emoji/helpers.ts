@@ -6,7 +6,7 @@ import Fuse from 'fuse.js';
 
 import SystemModel from '@database/models/server/system';
 
-import {Emojis, EmojiIndicesByAlias, EmojiIndicesByUnicode} from './';
+import {Emojis, EmojiIndicesByAlias, EmojiIndicesByUnicode} from '.';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 
@@ -152,6 +152,7 @@ export function hasJumboEmojiOnly(message: string, customEmojis: string[]) {
         return false;
     }
 
+    const emojisSet = new Set(customEmojis);
     for (const chunk of chunks) {
         if (doesMatchNamedEmoji(chunk)) {
             const emojiName = chunk.substring(1, chunk.length - 1);
@@ -160,7 +161,7 @@ export function hasJumboEmojiOnly(message: string, customEmojis: string[]) {
                 continue;
             }
 
-            if (customEmojis && customEmojis.includes(emojiName)) {
+            if (emojisSet.has(emojiName)) {
                 emojiCount++;
                 continue;
             }

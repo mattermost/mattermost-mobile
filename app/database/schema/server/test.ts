@@ -25,13 +25,11 @@ const {
     PREFERENCE,
     REACTION,
     ROLE,
-    SLASH_COMMAND,
     SYSTEM,
     TEAM,
     TEAM_CHANNEL_HISTORY,
     TEAM_MEMBERSHIP,
     TEAM_SEARCH_HISTORY,
-    TERMS_OF_SERVICE,
     THREAD,
     THREAD_PARTICIPANT,
     THREADS_IN_TEAM,
@@ -345,32 +343,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'permissions', type: 'string'},
                     ],
                 },
-                [SLASH_COMMAND]: {
-                    name: SLASH_COMMAND,
-                    unsafeSql: undefined,
-                    columns: {
-                        is_auto_complete: {name: 'is_auto_complete', type: 'boolean'},
-                        description: {name: 'description', type: 'string'},
-                        display_name: {name: 'display_name', type: 'string'},
-                        hint: {name: 'hint', type: 'string'},
-                        method: {name: 'method', type: 'string'},
-                        team_id: {name: 'team_id', type: 'string', isIndexed: true},
-                        token: {name: 'token', type: 'string'},
-                        trigger: {name: 'trigger', type: 'string'},
-                        update_at: {name: 'update_at', type: 'number'},
-                    },
-                    columnArray: [
-                        {name: 'is_auto_complete', type: 'boolean'},
-                        {name: 'description', type: 'string'},
-                        {name: 'display_name', type: 'string'},
-                        {name: 'hint', type: 'string'},
-                        {name: 'method', type: 'string'},
-                        {name: 'team_id', type: 'string', isIndexed: true},
-                        {name: 'token', type: 'string'},
-                        {name: 'trigger', type: 'string'},
-                        {name: 'update_at', type: 'number'},
-                    ],
-                },
                 [SYSTEM]: {
                     name: SYSTEM,
                     unsafeSql: undefined,
@@ -454,14 +426,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'term', type: 'string'},
                     ],
                 },
-                [TERMS_OF_SERVICE]: {
-                    name: TERMS_OF_SERVICE,
-                    unsafeSql: undefined,
-                    columns: {
-                        accepted_at: {name: 'accepted_at', type: 'number'},
-                    },
-                    columnArray: [{name: 'accepted_at', type: 'number'}],
-                },
                 [THREAD]: {
                     name: THREAD,
                     unsafeSql: undefined,
@@ -472,7 +436,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         reply_count: {name: 'reply_count', type: 'number'},
                         unread_replies: {name: 'unread_replies', type: 'number'},
                         unread_mentions: {name: 'unread_mentions', type: 'number'},
-                        loaded_in_global_threads: {name: 'loaded_in_global_threads', type: 'boolean'},
+                        viewed_at: {name: 'viewed_at', type: 'number'},
                     },
                     columnArray: [
                         {name: 'last_reply_at', type: 'number'},
@@ -481,7 +445,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'reply_count', type: 'number'},
                         {name: 'unread_replies', type: 'number'},
                         {name: 'unread_mentions', type: 'number'},
-                        {name: 'loaded_in_global_threads', type: 'boolean'},
+                        {name: 'viewed_at', type: 'number'},
                     ],
                 },
                 [THREAD_PARTICIPANT]: {
@@ -502,10 +466,12 @@ describe('*** Test schema for SERVER database ***', () => {
                     columns: {
                         team_id: {name: 'team_id', type: 'string', isIndexed: true},
                         thread_id: {name: 'thread_id', type: 'string', isIndexed: true},
+                        loaded_in_global_threads: {name: 'loaded_in_global_threads', type: 'boolean', isIndexed: true},
                     },
                     columnArray: [
                         {name: 'team_id', type: 'string', isIndexed: true},
                         {name: 'thread_id', type: 'string', isIndexed: true},
+                        {name: 'loaded_in_global_threads', type: 'boolean', isIndexed: true},
                     ],
                 },
                 [USER]: {
@@ -533,6 +499,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         status: {name: 'status', type: 'string'},
                         timezone: {name: 'timezone', type: 'string'},
                         username: {name: 'username', type: 'string'},
+                        remote_id: {name: 'remote_id', type: 'string', isOptional: true},
                     },
                     columnArray: [
                         {name: 'auth_service', type: 'string'},
@@ -553,6 +520,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'status', type: 'string'},
                         {name: 'timezone', type: 'string'},
                         {name: 'username', type: 'string'},
+                        {name: 'remote_id', type: 'string', isOptional: true},
                     ],
                 },
             },

@@ -96,7 +96,7 @@ class NetworkManager {
         };
 
         if (ManagedApp.enabled) {
-            const managedConfig = await Emm.getManagedConfig();
+            const managedConfig = Emm.getManagedConfig<ManagedConfig>();
             if (managedConfig?.useVPN === 'true') {
                 config.sessionConfiguration.waitsForConnectivity = true;
             }

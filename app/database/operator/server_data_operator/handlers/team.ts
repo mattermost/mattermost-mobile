@@ -4,16 +4,11 @@
 import {MM_TABLES} from '@constants/database';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {
-    isRecordMyTeamEqualToRaw,
-    isRecordSlashCommandEqualToRaw,
-    isRecordTeamChannelHistoryEqualToRaw,
-    isRecordTeamEqualToRaw,
-    isRecordTeamMembershipEqualToRaw,
-    isRecordTeamSearchHistoryEqualToRaw,
+    buildTeamMembershipKey,
+    buildTeamSearchHistoryKey,
 } from '@database/operator/server_data_operator/comparators';
 import {
     transformMyTeamRecord,
-    transformSlashCommandRecord,
     transformTeamChannelHistoryRecord,
     transformTeamMembershipRecord,
     transformTeamRecord,
@@ -22,11 +17,10 @@ import {
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 
 import type {
-    HandleMyTeamArgs, HandleSlashCommandArgs, HandleTeamArgs,
+    HandleMyTeamArgs, HandleTeamArgs,
     HandleTeamChannelHistoryArgs, HandleTeamMembershipArgs, HandleTeamSearchHistoryArgs,
 } from '@typings/database/database';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
-import type SlashCommandModel from '@typings/database/models/servers/slash_command';
 import type TeamModel from '@typings/database/models/servers/team';
 import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
 import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
@@ -34,7 +28,6 @@ import type TeamSearchHistoryModel from '@typings/database/models/servers/team_s
 
 const {
     MY_TEAM,
-    SLASH_COMMAND,
     TEAM,
     TEAM_CHANNEL_HISTORY,
     TEAM_MEMBERSHIP,
@@ -46,7 +39,6 @@ export interface TeamHandlerMix {
   handleTeam: ({teams, prepareRecordsOnly}: HandleTeamArgs) => Promise<TeamModel[]>;
   handleTeamChannelHistory: ({teamChannelHistories, prepareRecordsOnly}: HandleTeamChannelHistoryArgs) => Promise<TeamChannelHistoryModel[]>;
   handleTeamSearchHistory: ({teamSearchHistories, prepareRecordsOnly}: HandleTeamSearchHistoryArgs) => Promise<TeamSearchHistoryModel[]>;
-  handleSlashCommand: ({slashCommands, prepareRecordsOnly}: HandleSlashCommandArgs) => Promise<SlashCommandModel[]>;
   handleMyTeam: ({myTeams, prepareRecordsOnly}: HandleMyTeamArgs) => Promise<MyTeamModel[]>;
 }
 
@@ -70,7 +62,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
 
         return this.handleRecords({
             fieldName: 'user_id',
-            findMatchingRecordBy: isRecordTeamMembershipEqualToRaw,
+            buildKeyRecordBy: buildTeamMembershipKey,
             transformer: transformTeamMembershipRecord,
             createOrUpdateRawValues,
             tableName: TEAM_MEMBERSHIP,
@@ -97,7 +89,6 @@ const TeamHandler = (superclass: any) => class extends superclass {
 
         return this.handleRecords({
             fieldName: 'id',
-            findMatchingRecordBy: isRecordTeamEqualToRaw,
             transformer: transformTeamRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues,
@@ -124,7 +115,6 @@ const TeamHandler = (superclass: any) => class extends superclass {
 
         return this.handleRecords({
             fieldName: 'id',
-            findMatchingRecordBy: isRecordTeamChannelHistoryEqualToRaw,
             transformer: transformTeamChannelHistoryRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues,
@@ -151,38 +141,11 @@ const TeamHandler = (superclass: any) => class extends superclass {
 
         return this.handleRecords({
             fieldName: 'team_id',
-            findMatchingRecordBy: isRecordTeamSearchHistoryEqualToRaw,
+            buildKeyRecordBy: buildTeamSearchHistoryKey,
             transformer: transformTeamSearchHistoryRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues,
             tableName: TEAM_SEARCH_HISTORY,
-        });
-    };
-
-    /**
-     * handleSlashCommand: Handler responsible for the Create/Update operations occurring on the SLASH_COMMAND table from the 'Server' schema
-     * @param {HandleSlashCommandArgs} slashCommandsArgs
-     * @param {SlashCommand[]} slashCommandsArgs.slashCommands
-     * @param {boolean} slashCommandsArgs.prepareRecordsOnly
-     * @throws DataOperatorException
-     * @returns {Promise<SlashCommandModel[]>}
-     */
-    handleSlashCommand = ({slashCommands, prepareRecordsOnly = true}: HandleSlashCommandArgs): Promise<SlashCommandModel[]> => {
-        if (!slashCommands.length) {
-            throw new DataOperatorException(
-                'An empty "slashCommands" array has been passed to the handleSlashCommand method',
-            );
-        }
-
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: slashCommands, key: 'id'});
-
-        return this.handleRecords({
-            fieldName: 'id',
-            findMatchingRecordBy: isRecordSlashCommandEqualToRaw,
-            transformer: transformSlashCommandRecord,
-            prepareRecordsOnly,
-            createOrUpdateRawValues,
-            tableName: SLASH_COMMAND,
         });
     };
 
@@ -205,7 +168,6 @@ const TeamHandler = (superclass: any) => class extends superclass {
 
         return this.handleRecords({
             fieldName: 'id',
-            findMatchingRecordBy: isRecordMyTeamEqualToRaw,
             transformer: transformMyTeamRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues,

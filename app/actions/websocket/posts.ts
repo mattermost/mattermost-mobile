@@ -6,10 +6,10 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed, updateLastPostAt} from '@actions/local/channel';
 import {markPostAsDeleted} from '@actions/local/post';
-import {processThreadFromNewPost, processUpdateThreadReplyCount} from '@actions/local/thread';
+import {createThreadFromNewPost, updateThread} from '@actions/local/thread';
 import {fetchMyChannel, markChannelAsRead} from '@actions/remote/channel';
 import {fetchPostAuthors, fetchPostById} from '@actions/remote/post';
-import {getThread} from '@actions/remote/thread';
+import {fetchThread} from '@actions/remote/thread';
 import {ActionType, Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
@@ -42,7 +42,6 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     } catch {
         return;
     }
-
     const currentUserId = await getCurrentUserId(database);
 
     const existing = await getPostById(database, post.pending_post_id);
@@ -66,7 +65,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
 
     const isCRTEnabled = await getIsCRTEnabled(database);
     if (isCRTEnabled) {
-        const {models: threadModels} = await processThreadFromNewPost(serverUrl, post, true);
+        const {models: threadModels} = await createThreadFromNewPost(serverUrl, post, true);
         if (threadModels?.length) {
             models.push(...threadModels);
         }
@@ -100,6 +99,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     // If we don't have the root post for this post, fetch it from the server
     if (post.root_id) {
         const rootPost = await getPostById(database, post.root_id);
+
         if (!rootPost) {
             fetchPostById(serverUrl, post.root_id);
         }
@@ -234,20 +234,20 @@ export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage
             if (isCRTEnabled) {
                 // Update reply_count of the thread;
                 // Note: reply_count includes current deleted count, So subtract 1 from reply_count
-                const {model: threadModel} = await processUpdateThreadReplyCount(serverUrl, post.root_id, post.reply_count - 1, true);
+                const {model: threadModel} = await updateThread(serverUrl, post.root_id, {reply_count: post.reply_count - 1}, true);
                 if (threadModel) {
                     models.push(threadModel);
                 }
 
                 const channel = await getChannelById(database, post.channel_id);
                 if (channel) {
-                    getThread(serverUrl, channel.teamId, post.root_id);
+                    fetchThread(serverUrl, channel.teamId, post.root_id);
                 }
             }
         }
 
         if (models.length) {
-            operator.batchRecords(models);
+            await operator.batchRecords(models);
         }
     } catch {
         // Do nothing
@@ -255,11 +255,17 @@ export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage
 }
 
 export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage) {
-    const {team_id: teamId, channel_id: channelId} = msg.broadcast;
+    const {channel_id: channelId} = msg.broadcast;
     const {mention_count: mentionCount, msg_count: msgCount, last_viewed_at: lastViewedAt} = msg.data;
-    const {channels} = await fetchMyChannel(serverUrl, teamId, channelId, true);
-    const channel = channels?.[0];
-    const postNumber = channel?.total_msg_count;
-    const delta = postNumber ? postNumber - msgCount : msgCount;
-    markChannelAsUnread(serverUrl, channelId, delta, mentionCount, lastViewedAt);
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return;
+    }
+
+    const myChannel = await getMyChannel(database, channelId);
+    if (!myChannel?.manuallyUnread) {
+        // We used to fetch the channel to get the delta on the message count
+        // We just need to identify that there are unread messages, the exact number is uninportant
+        markChannelAsUnread(serverUrl, channelId, msgCount, mentionCount, lastViewedAt);
+    }
 }

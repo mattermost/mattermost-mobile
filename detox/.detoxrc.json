@@ -1,6 +1,6 @@
 {
   "testRunner": "jest --forceExit --detectOpenHandles",
-  "runnerConfig": "e2e/config.json",
+  "runnerConfig": "e2e/config.js",
   "configurations": {
     "ios.sim.debug": {
       "binaryPath": "../ios/Build/Products/Debug-iphonesimulator/Mattermost.app",

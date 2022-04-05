@@ -7,9 +7,9 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
-import {processPostsFetched, removePost} from '@actions/local/post';
+import {removePost} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
-import {processThreadFromNewPost, processThreadsFromReceivedPosts} from '@actions/local/thread';
+import {createThreadFromNewPost} from '@actions/local/thread';
 import {ActionType, Events, General, Post, ServerErrors} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -21,9 +21,10 @@ import {prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/ser
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
 import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
-import {getIsCRTEnabled} from '@queries/servers/thread';
+import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {queryAllUsers} from '@queries/servers/user';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
+import {processPostsFetched} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import {forceLogoutIfNecessary} from './session';
@@ -122,7 +123,9 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         initialPostModels.push(...reactionModels);
     }
 
-    operator.batchRecords(initialPostModels);
+    await operator.batchRecords(initialPostModels);
+
+    const isCRTEnabled = await getIsCRTEnabled(database);
 
     const isCRTEnabled = await getIsCRTEnabled(database);
 
@@ -135,12 +138,12 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
             prepareRecordsOnly: true,
         });
         if (isCRTEnabled) {
-            const {models: threadModels} = await processThreadFromNewPost(serverUrl, created, true);
+            const {models: threadModels} = await createThreadFromNewPost(serverUrl, created, true);
             if (threadModels?.length) {
                 models.push(...threadModels);
             }
         }
-        operator.batchRecords(models);
+        await operator.batchRecords(models);
 
         newPost = created;
     } catch (error: any) {
@@ -169,12 +172,12 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
                 prepareRecordsOnly: true,
             });
             if (isCRTEnabled) {
-                const {models: threadModels} = await processThreadFromNewPost(serverUrl, errorPost, true);
+                const {models: threadModels} = await createThreadFromNewPost(serverUrl, errorPost, true);
                 if (threadModels?.length) {
                     models.push(...threadModels);
                 }
             }
-            operator.batchRecords(models);
+            await operator.batchRecords(models);
         }
     }
 
@@ -254,7 +257,7 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string,
 
             const isCRTEnabled = await getIsCRTEnabled(operator.database);
             if (isCRTEnabled) {
-                const {models: threadModels} = await processThreadsFromReceivedPosts(serverUrl, data.posts, true);
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, data.posts);
                 if (threadModels?.length) {
                     models.push(...threadModels);
                 }
@@ -304,7 +307,7 @@ export const fetchPosts = async (serverUrl: string, channelId: string, page = 0,
     try {
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
         const data = await client.getPosts(channelId, page, perPage, isCRTEnabled, isCRTEnabled);
-        const result = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_IN_CHANNEL, data, true);
+        const result = await processPostsFetched(data);
         if (!fetchOnly) {
             const models = await operator.handlePosts({
                 ...result,
@@ -312,13 +315,13 @@ export const fetchPosts = async (serverUrl: string, channelId: string, page = 0,
                 prepareRecordsOnly: true,
             });
             if (isCRTEnabled) {
-                const {models: threadModels} = await processThreadsFromReceivedPosts(serverUrl, result.posts, true);
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
                 if (threadModels?.length) {
                     models.push(...threadModels);
                 }
             }
             if (models.length) {
-                operator.batchRecords(models);
+                await operator.batchRecords(models);
             }
         }
         return result;
@@ -349,7 +352,7 @@ export const fetchPostsBefore = async (serverUrl: string, channelId: string, pos
         }
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
         const data = await client.getPostsBefore(channelId, postId, 0, perPage, isCRTEnabled, isCRTEnabled);
-        const result = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_BEFORE, data, true);
+        const result = await processPostsFetched(data);
 
         if (activeServerUrl === serverUrl) {
             DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, false);
@@ -372,7 +375,7 @@ export const fetchPostsBefore = async (serverUrl: string, channelId: string, pos
                 }
 
                 if (isCRTEnabled) {
-                    const {models: threadModels} = await processThreadsFromReceivedPosts(serverUrl, result.posts, true);
+                    const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
                     if (threadModels?.length) {
                         models.push(...threadModels);
                     }
@@ -411,7 +414,7 @@ export const fetchPostsSince = async (serverUrl: string, channelId: string, sinc
     try {
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
         const data = await client.getPostsSince(channelId, since, isCRTEnabled, isCRTEnabled);
-        const result = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_SINCE, data, true);
+        const result = await processPostsFetched(data);
         if (!fetchOnly) {
             const models = await operator.handlePosts({
                 ...result,
@@ -419,13 +422,13 @@ export const fetchPostsSince = async (serverUrl: string, channelId: string, sinc
                 prepareRecordsOnly: true,
             });
             if (isCRTEnabled) {
-                const {models: threadModels} = await processThreadsFromReceivedPosts(serverUrl, result.posts, true);
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
                 if (threadModels?.length) {
                     models.push(...threadModels);
                 }
             }
             if (models.length) {
-                operator.batchRecords(models);
+                await operator.batchRecords(models);
             }
         }
         return result;
@@ -507,6 +510,11 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
 };
 
 export const fetchPostThread = async (serverUrl: string, postId: string, fetchOnly = false): Promise<PostsRequest> => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -516,7 +524,25 @@ export const fetchPostThread = async (serverUrl: string, postId: string, fetchOn
 
     try {
         const data = await client.getPostThread(postId);
-        return processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_IN_THREAD, data, fetchOnly);
+        const result = processPostsFetched(data);
+        if (!fetchOnly) {
+            const models = await operator.handlePosts({
+                ...result,
+                actionType: ActionType.POSTS.RECEIVED_IN_THREAD,
+                prepareRecordsOnly: true,
+            });
+            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            if (isCRTEnabled) {
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
+                if (threadModels?.length) {
+                    models.push(...threadModels);
+                }
+            }
+            if (models.length) {
+                await operator.batchRecords(models);
+            }
+        }
+        return result;
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -552,7 +578,7 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
             order: [],
         };
 
-        const data = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_AROUND, preData, true);
+        const data = processPostsFetched(preData);
 
         let posts: Model[] = [];
         const models: Model[] = [];
@@ -586,6 +612,14 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
             }
 
             models.push(...posts);
+
+            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            if (isCRTEnabled) {
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, data.posts);
+                if (threadModels?.length) {
+                    models.push(...threadModels);
+                }
+            }
             await operator.batchRecords(models);
         }
 
@@ -644,14 +678,14 @@ export async function fetchMissingChannelsFromPosts(serverUrl: string, posts: Po
     }
 
     try {
-        const channelIds = await queryAllMyChannel(operator.database).fetchIds();
+        const channelIds = new Set(await queryAllMyChannel(operator.database).fetchIds());
         const channelPromises: Array<Promise<Channel>> = [];
         const userPromises: Array<Promise<ChannelMembership>> = [];
 
         posts.forEach((post) => {
             const id = post.channel_id;
 
-            if (channelIds.indexOf(id) === -1) {
+            if (!channelIds.has(id)) {
                 channelPromises.push(client.getChannel(id));
                 userPromises.push(client.getMyChannelMember(id));
             }
@@ -661,8 +695,8 @@ export async function fetchMissingChannelsFromPosts(serverUrl: string, posts: Po
         const channelMemberships = await Promise.all(userPromises);
 
         if (!fetchOnly && channels.length && channelMemberships.length) {
-            const modelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships) as Array<Promise<Model[]>>;
-            if (modelPromises && modelPromises.length) {
+            const modelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships);
+            if (modelPromises.length) {
                 const channelModelsArray = await Promise.all(modelPromises);
                 if (channelModelsArray.length) {
                     const models = channelModelsArray.flatMap((mdls) => {
@@ -672,7 +706,7 @@ export async function fetchMissingChannelsFromPosts(serverUrl: string, posts: Po
                         return mdls;
                     });
                     if (models.length) {
-                        operator.batchRecords(models);
+                        await operator.batchRecords(models);
                     }
                 }
             }
@@ -719,6 +753,14 @@ export const fetchPostById = async (serverUrl: string, postId: string, fetchOnly
                     prepareRecordsOnly: false,
                 });
                 models.push(...users);
+            }
+
+            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            if (isCRTEnabled) {
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, [post]);
+                if (threadModels?.length) {
+                    models.push(...threadModels);
+                }
             }
 
             await operator.batchRecords(models);
@@ -896,7 +938,7 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
         const promises: Array<Promise<Model[]>> = [];
 
         const {authors} = await fetchPostAuthors(serverUrl, postsArray, true);
-        const {channels, channelMemberships} = await fetchMissingChannelsFromPosts(serverUrl, postsArray, true) as {channels: Channel[]; channelMemberships: ChannelMembership[]};
+        const {channels, channelMemberships} = await fetchMissingChannelsFromPosts(serverUrl, postsArray, true);
 
         if (authors?.length) {
             promises.push(
@@ -908,8 +950,8 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
         }
 
         if (channels?.length && channelMemberships?.length) {
-            const channelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships) as Array<Promise<Model[]>>;
-            if (channelPromises && channelPromises.length) {
+            const channelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships);
+            if (channelPromises.length) {
                 promises.push(...channelPromises);
             }
         }
@@ -923,6 +965,11 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
                 prepareRecordsOnly: true,
             }),
         );
+
+        const isCRTEnabled = await getIsCRTEnabled(operator.database);
+        if (isCRTEnabled) {
+            promises.push(prepareThreadsFromReceivedPosts(operator, postsArray));
+        }
 
         const modelArrays = await Promise.all(promises);
         const models = modelArrays.flatMap((mdls) => {
@@ -945,3 +992,7 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
         return {error};
     }
 }
+
+export const selectAttachmentMenuAction = (serverUrl: string, postId: string, actionId: string, selectedOption: string) => {
+    return postActionWithCookie(serverUrl, postId, actionId, '', selectedOption);
+};

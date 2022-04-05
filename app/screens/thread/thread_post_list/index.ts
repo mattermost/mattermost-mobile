@@ -46,6 +46,9 @@ const enhanced = withObservables(['forceQueryAfterAppState', 'rootPost'], ({data
                 return queryPostsChunk(database, rootPost.id, earliest, latest, true).observe();
             }),
         ),
+        teamId: rootPost.channel.observe().pipe(
+            switchMap((channel) => of$(channel?.teamId)),
+        ),
     };
 });
 

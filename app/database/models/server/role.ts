@@ -7,10 +7,12 @@ import {field, json} from '@nozbe/watermelondb/decorators';
 import {MM_TABLES} from '@constants/database';
 import {safeParseJSON} from '@utils/helpers';
 
+import type RoleModelInterface from '@typings/database/models/servers/role';
+
 const {ROLE} = MM_TABLES.SERVER;
 
 /**  The Role model will describe the set of permissions for each role */
-export default class RoleModel extends Model {
+export default class RoleModel extends Model implements RoleModelInterface {
     /** table (name) : Role */
     static table = ROLE;
 

@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import {isRecordThreadEqualToRaw} from '@database/operator/server_data_operator/comparators';
 import {transformThreadRecord, transformThreadParticipantRecord, transformThreadInTeamRecord} from '@database/operator/server_data_operator/transformers/thread';
 
 import ServerDataOperator from '..';
@@ -47,6 +46,7 @@ describe('*** Operator: Thread Handlers tests ***', () => {
                 is_following: true,
                 unread_replies: 0,
                 unread_mentions: 0,
+                loaded_in_global_threads: false,
             },
         ] as Thread[];
 
@@ -54,7 +54,6 @@ describe('*** Operator: Thread Handlers tests ***', () => {
         await operator.handleThreads({threads, prepareRecordsOnly: false, teamId: 'team_id_1'});
 
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            findMatchingRecordBy: isRecordThreadEqualToRaw,
             fieldName: 'id',
             transformer: transformThreadRecord,
             createOrUpdateRawValues: threads,
@@ -126,6 +125,7 @@ describe('*** Operator: Thread Handlers tests ***', () => {
                 is_following: true,
                 unread_replies: 0,
                 unread_mentions: 0,
+                loaded_in_global_threads: true,
             },
             {
                 id: 'thread-2',
@@ -138,6 +138,7 @@ describe('*** Operator: Thread Handlers tests ***', () => {
                 is_following: true,
                 unread_replies: 0,
                 unread_mentions: 0,
+                loaded_in_global_threads: true,
             },
         ] as Thread[];
 
@@ -151,8 +152,9 @@ describe('*** Operator: Thread Handlers tests ***', () => {
                     id: 'user-1',
                 }],
                 is_following: true,
-                unread_replies: 0,
+                unread_replies: 2,
                 unread_mentions: 0,
+                loaded_in_global_threads: false,
             },
         ] as Thread[];
 
@@ -165,12 +167,16 @@ describe('*** Operator: Thread Handlers tests ***', () => {
 
         expect(spyOnPrepareRecords).toHaveBeenCalledWith({
             createRaws: [{
-                raw: {team_id: 'team_id_1', thread_id: 'thread-2'},
+                raw: {team_id: 'team_id_1', thread_id: 'thread-2', loaded_in_global_threads: true},
             }, {
-                raw: {team_id: 'team_id_2', thread_id: 'thread-2'},
+                raw: {team_id: 'team_id_2', thread_id: 'thread-2', loaded_in_global_threads: false},
             }],
             transformer: transformThreadInTeamRecord,
-            updateRaws: [],
+            updateRaws: [
+                expect.objectContaining({
+                    raw: {team_id: 'team_id_1', thread_id: 'thread-1', loaded_in_global_threads: true},
+                }),
+            ],
             tableName: 'ThreadsInTeam',
         });
     });

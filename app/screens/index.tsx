@@ -70,6 +70,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CHANNEL:
             screen = withServerDatabase(require('@screens/channel').default);
             break;
+        case Screens.CREATE_OR_EDIT_CHANNEL:
+            screen = withServerDatabase(require('@screens/create_or_edit_channel').default);
+            break;
         case Screens.CUSTOM_STATUS:
             screen = withServerDatabase(
                 require('@screens/custom_status').default,
@@ -145,9 +148,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.THREAD:
             screen = withServerDatabase(require('@screens/thread').default);
             break;
-        case Screens.THREAD_FOLLOW:
-            Navigation.registerComponent('ThreadFollow', () => withServerDatabase(
-                require('@screens/thread/thread_follow').default,
+        case Screens.THREAD_FOLLOW_BUTTON:
+            Navigation.registerComponent(Screens.THREAD_FOLLOW_BUTTON, () => withServerDatabase(
+                require('@screens/thread/thread_follow_button').default,
             ));
             break;
         case Screens.THREAD_OPTIONS:
@@ -158,13 +161,13 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     }
 
     if (screen) {
-        Navigation.registerComponent(screenName, () => withGestures(withSafeAreaInsets(withManagedConfig(screen)), extraStyles));
+        Navigation.registerComponent(screenName, () => withGestures(withSafeAreaInsets(withManagedConfig<ManagedConfig>(screen)), extraStyles));
     }
 });
 
 export function registerScreens() {
     const homeScreen = require('@screens/home').default;
     const serverScreen = require('@screens/server').default;
-    Navigation.registerComponent(Screens.SERVER, () => withGestures(withIntl(withManagedConfig(serverScreen)), undefined));
-    Navigation.registerComponent(Screens.HOME, () => withGestures(withSafeAreaInsets(withServerDatabase(withManagedConfig(homeScreen))), undefined));
+    Navigation.registerComponent(Screens.SERVER, () => withGestures(withIntl(withManagedConfig<ManagedConfig>(serverScreen)), undefined));
+    Navigation.registerComponent(Screens.HOME, () => withGestures(withSafeAreaInsets(withServerDatabase(withManagedConfig<ManagedConfig>(homeScreen))), undefined));
 }

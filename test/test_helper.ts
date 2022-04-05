@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import assert from 'assert';
 
 import {random} from 'lodash';
@@ -12,13 +14,27 @@ import DatabaseManager from '@database/manager';
 import {prepareCommonSystemValues} from '@queries/servers/system';
 import {generateId} from '@utils/general';
 
+import type {APIClientInterface} from '@mattermost/react-native-network-client';
+
 const PASSWORD = 'password1';
 const DEFAULT_LOCALE = 'en';
 
 class TestHelper {
+    basicClient: Client | null;
+    basicUser: UserProfile | null;
+    basicTeam: Team | null;
+    basicTeamMember: TeamMembership | null;
+    basicCategory: Category | null;
+    basicCategoryChannel: CategoryChannel | null;
+    basicChannel: Channel | null;
+    basicChannelMember: ChannelMembership | null;
+    basicMyChannel: ChannelMembership | null;
+    basicMyChannelSettings: ChannelMembership | null;
+    basicPost: Post | null;
+    basicRoles: Record<string, Role> | null;
+
     constructor() {
         this.basicClient = null;
-        this.basicClient4 = null;
 
         this.basicUser = null;
         this.basicTeam = null;
@@ -31,7 +47,6 @@ class TestHelper {
         this.basicMyChannelSettings = null;
         this.basicPost = null;
         this.basicRoles = null;
-        this.basicScheme = null;
     }
 
     setupServerDatabase = async () => {
@@ -43,51 +58,53 @@ class TestHelper {
 
         // Add current user
         await operator.handleUsers({
-            users: [this.basicUser],
+            users: [this.basicUser!],
             prepareRecordsOnly: false,
         });
 
         // Add one team
         await operator.handleTeam({
-            teams: [this.basicTeam],
+            teams: [this.basicTeam!],
             prepareRecordsOnly: false,
         });
         await operator.handleMyTeam({
-            myTeams: [this.basicTeamMember],
+            myTeams: [{id: this.basicTeamMember!.id!, roles: this.basicTeamMember!.roles}],
             prepareRecordsOnly: false,
         });
 
         // Add a category and associated channel entities
         await operator.handleCategories({
-            categories: [this.basicCategory],
+            categories: [this.basicCategory!],
             prepareRecordsOnly: false,
         });
         await operator.handleCategoryChannels({
-            categoryChannels: [this.basicCategoryChannel],
+            categoryChannels: [this.basicCategoryChannel!],
             prepareRecordsOnly: false,
         });
         await operator.handleChannel({
-            channels: [this.basicChannel],
+            channels: [this.basicChannel!],
             prepareRecordsOnly: false,
         });
         await operator.handleMyChannel({
             prepareRecordsOnly: false,
-            channels: [this.basicChannel],
-            myChannels: [this.basicMyChannel],
+            channels: [this.basicChannel!],
+            myChannels: [this.basicMyChannel!],
         });
         await operator.handleMyChannelSettings({
             prepareRecordsOnly: false,
-            settings: [this.basicMyChannelSettings],
+            settings: [this.basicMyChannelSettings!],
         });
 
         const systems = await prepareCommonSystemValues(operator, {
-            config: {},
-            license: {},
+            config: {} as ClientConfig,
+            license: {} as ClientLicense,
             currentChannelId: '',
-            currentTeamId: this.basicTeam.id,
-            currentUserId: this.basicUser.id,
+            currentTeamId: this.basicTeam!.id,
+            currentUserId: this.basicUser!.id,
         });
-        await operator.batchRecords(systems);
+        if (systems?.length) {
+            await operator.batchRecords(systems);
+        }
 
         return {database, operator};
     };
@@ -98,7 +115,7 @@ class TestHelper {
         }
     }
 
-    assertStatusOkay = (data) => {
+    assertStatusOkay = (data: {status: string}) => {
         assert(data);
         assert(data.status === 'OK');
     };
@@ -108,7 +125,7 @@ class TestHelper {
     };
 
     createClient = () => {
-        const mockApiClient = {
+        const mockApiClient: APIClientInterface = {
             baseUrl: 'https://community.mattermost.com',
             delete: jest.fn(),
             head: jest.fn(),
@@ -117,13 +134,27 @@ class TestHelper {
             post: jest.fn(),
             put: jest.fn(),
             upload: jest.fn(),
+            config: {
+                headers: undefined,
+                sessionConfiguration: undefined,
+                retryPolicyConfiguration: undefined,
+                requestAdapterConfiguration: undefined,
+                clientP12Configuration: undefined,
+            },
+            onClientError: jest.fn(),
+            download: jest.fn(),
+            getHeaders: jest.fn(),
+            addHeaders: jest.fn(),
+            importClientP12: jest.fn(),
+            invalidate: jest.fn(),
         };
 
         return new Client(mockApiClient, mockApiClient.baseUrl);
     };
 
-    fakeCategory = (teamId) => {
+    fakeCategory = (teamId: string): Category => {
         return {
+            id: '',
             display_name: 'Test Category',
             type: 'custom',
             sort_order: 0,
@@ -134,14 +165,14 @@ class TestHelper {
         };
     };
 
-    fakeCategoryWithId = (teamId) => {
+    fakeCategoryWithId = (teamId: string): Category => {
         return {
             ...this.fakeCategory(teamId),
             id: this.generateId(),
         };
     };
 
-    fakeCategoryChannel = (categoryId, channelId) => {
+    fakeCategoryChannel = (categoryId: string, channelId: string): CategoryChannel => {
         return {
             category_id: categoryId,
             channel_id: channelId,
@@ -149,7 +180,7 @@ class TestHelper {
         };
     };
 
-    fakeCategoryChannelWithId = (teamId, categoryId, channelId) => {
+    fakeCategoryChannelWithId = (teamId: string, categoryId: string, channelId: string): CategoryChannel => {
         return {
             id: teamId + channelId,
             category_id: categoryId,
@@ -158,7 +189,7 @@ class TestHelper {
         };
     };
 
-    fakeChannel = (teamId) => {
+    fakeChannel = (teamId: string): Channel => {
         const name = this.generateId();
 
         return {
@@ -169,24 +200,31 @@ class TestHelper {
             // https://jestjs.io/docs/snapshot-testing#2-tests-should-be-deterministic
             // display_name: `Unit Test ${name}`,
             display_name: 'Channel',
-            type: 'O',
+            type: 'O' as ChannelType,
             delete_at: 0,
             total_msg_count: 0,
             scheme_id: this.generateId(),
+            header: '',
+            purpose: '',
+            last_post_at: 0,
+            extra_update_at: 0,
+            creator_id: this.generateId(),
+            group_constrained: false,
+            shared: false,
+            create_at: 1507840900004,
+            update_at: 1507840900004,
+            id: '',
         };
     };
 
-    fakeChannelWithId = (teamId) => {
+    fakeChannelWithId = (teamId: string): Channel => {
         return {
             ...this.fakeChannel(teamId),
             id: this.generateId(),
-            create_at: 1507840900004,
-            update_at: 1507840900004,
-            delete_at: 0,
         };
     };
 
-    fakeDmChannel = (userId, otherUserId) => {
+    fakeDmChannel = (userId: string, otherUserId: string): Partial<Channel> => {
         return {
             name: userId > otherUserId ? otherUserId + '__' + userId : userId + '__' + otherUserId,
             team_id: '',
@@ -199,7 +237,7 @@ class TestHelper {
         };
     };
 
-    fakeChannelMember = (userId, channelId) => {
+    fakeChannelMember = (userId: string, channelId: string): ChannelMembership => {
         return {
             id: channelId,
             user_id: userId,
@@ -210,35 +248,38 @@ class TestHelper {
             mention_count: 0,
             scheme_user: false,
             scheme_admin: false,
+            last_viewed_at: 0,
+            last_update_at: 0,
         };
     };
 
-    fakeMyChannel = (channelId) => {
+    fakeMyChannel = (userId: string, channelId: string): ChannelMembership => {
         return {
             id: channelId,
             channel_id: channelId,
             last_post_at: 0,
             last_viewed_at: 0,
             manually_unread: false,
-            mentions_count: 0,
-            message_count: 0,
+            mention_count: 0,
+            msg_count: 0,
             is_unread: false,
             roles: '',
-            viewed_at: 0,
+            user_id: userId,
+            notify_props: {},
+            last_update_at: 0,
         };
     };
 
-    fakeMyChannelSettings = (channelId) => {
+    fakeMyChannelSettings = (userId: string, channelId: string): ChannelMembership => {
         return {
-            id: channelId,
-            channel_id: channelId,
-            notify_props: JSON.stringify({
+            ...this.fakeMyChannel(userId, channelId),
+            notify_props: {
                 desktop: 'default',
                 email: 'default',
                 mark_unread: 'all',
                 push: 'default',
                 ignore_channel_mentions: 'default',
-            }),
+            },
         };
     };
 
@@ -246,7 +287,7 @@ class TestHelper {
         return 'success' + this.generateId() + '@simulator.amazonses.com';
     };
 
-    fakePost = (channelId) => {
+    fakePost = (channelId: string) => {
         const time = Date.now();
 
         return {
@@ -259,7 +300,7 @@ class TestHelper {
         };
     };
 
-    fakePostWithId = (channelId) => {
+    fakePostWithId = (channelId: string) => {
         return {
             ...this.fakePost(channelId),
             id: this.generateId(),
@@ -279,15 +320,20 @@ class TestHelper {
         return {
             name,
             display_name: `Unit Test ${name}`,
-            type: 'O',
+            type: 'O' as const,
             email: this.fakeEmail(),
             allowed_domains: '',
             invite_id: inviteId,
             scheme_id: this.generateId(),
+            company_name: '',
+            description: '',
+            allow_open_invite: true,
+            group_constrained: false,
+            last_team_icon_update: 0,
         };
     };
 
-    fakeTeamWithId = () => {
+    fakeTeamWithId = (): Team => {
         return {
             ...this.fakeTeam(),
             id: this.generateId(),
@@ -297,7 +343,7 @@ class TestHelper {
         };
     };
 
-    fakeTeamMember = (userId, teamId) => {
+    fakeTeamMember = (userId: string, teamId: string): TeamMembership => {
         return {
             id: teamId,
             user_id: userId,
@@ -306,6 +352,8 @@ class TestHelper {
             delete_at: 0,
             scheme_user: false,
             scheme_admin: false,
+            msg_count: 0,
+            mention_count: 0,
         };
     };
 
@@ -324,30 +372,47 @@ class TestHelper {
         };
     };
 
-    fakeUserWithId = (id = this.generateId()) => {
+    fakeUserWithId = (id = this.generateId()): UserProfile => {
         return {
             ...this.fakeUser(),
             id,
             create_at: 1507840900004,
             update_at: 1507840900004,
             delete_at: 0,
+            auth_service: '',
+            nickname: '',
+            notify_props: {
+                desktop: 'default',
+                desktop_sound: 'true',
+                email: 'true',
+                mark_unread: 'all',
+                push: 'default',
+                push_status: 'away',
+                comments: 'any',
+                first_name: 'true',
+                channel: 'true',
+                mention_keys: '',
+            },
+            last_picture_update: 0,
+            position: '',
+            is_bot: false,
         };
     };
 
-    fakeOutgoingHook = (teamId) => {
+    fakeOutgoingHook = (teamId: string) => {
         return {
             team_id: teamId,
         };
     };
 
-    fakeOutgoingHookWithId = (teamId) => {
+    fakeOutgoingHookWithId = (teamId: string) => {
         return {
             ...this.fakeOutgoingHook(teamId),
             id: this.generateId(),
         };
     };
 
-    fakeFiles = (count) => {
+    fakeFiles = (count: number) => {
         const files = [];
         while (files.length < count) {
             files.push({
@@ -390,25 +455,25 @@ class TestHelper {
     };
 
     mockLogin = () => {
-        nock(this.basicClient4.getBaseRoute()).
+        nock(this.basicClient?.getBaseRoute()).
             post('/users/login').
-            reply(200, this.basicUser, {'X-Version-Id': 'Server Version'});
+            reply(200, this.basicUser!, {'X-Version-Id': 'Server Version'});
 
-        nock(this.basicClient4.getBaseRoute()).
+        nock(this.basicClient?.getBaseRoute()).
             get('/users/me/teams/members').
             reply(200, [this.basicTeamMember]);
 
-        nock(this.basicClient4.getBaseRoute()).
+        nock(this.basicClient?.getBaseRoute()).
             get('/users/me/teams/unread').
-            reply(200, [{team_id: this.basicTeam.id, msg_count: 0, mention_count: 0}]);
+            reply(200, [{team_id: this.basicTeam!.id, msg_count: 0, mention_count: 0}]);
 
-        nock(this.basicClient4.getBaseRoute()).
+        nock(this.basicClient?.getBaseRoute()).
             get('/users/me/teams').
             reply(200, [this.basicTeam]);
 
-        nock(this.basicClient4.getBaseRoute()).
+        nock(this.basicClient?.getBaseRoute()).
             get('/users/me/preferences').
-            reply(200, [{user_id: this.basicUser.id, category: 'tutorial_step', name: this.basicUser.id, value: '999'}]);
+            reply(200, [{user_id: this.basicUser!.id, category: 'tutorial_step', name: this.basicUser!.id, value: '999'}]);
     };
 
     initMockEntities = () => {
@@ -420,9 +485,9 @@ class TestHelper {
         this.basicChannel = this.fakeChannelWithId(this.basicTeam.id);
         this.basicCategoryChannel = this.fakeCategoryChannelWithId(this.basicTeam.id, this.basicCategory.id, this.basicChannel.id);
         this.basicChannelMember = this.fakeChannelMember(this.basicUser.id, this.basicChannel.id);
-        this.basicMyChannel = this.fakeMyChannel(this.basicChannel.id);
-        this.basicMyChannelSettings = this.fakeMyChannelSettings(this.basicChannel.id);
-        this.basicPost = {...this.fakePostWithId(this.basicChannel.id), create_at: 1507841118796};
+        this.basicMyChannel = this.fakeMyChannel(this.basicUser.id, this.basicChannel.id);
+        this.basicMyChannelSettings = this.fakeMyChannelSettings(this.basicUser.id, this.basicChannel.id);
+        this.basicPost = {...this.fakePostWithId(this.basicChannel.id), create_at: 1507841118796} as Post;
         this.basicRoles = {
             system_admin: {
                 id: this.generateId(),
@@ -491,20 +556,17 @@ class TestHelper {
                 built_in: true,
             },
         };
-        this.basicScheme = this.mockSchemeWithId();
     };
 
     initBasic = async (client = this.createClient()) => {
         client.setUrl(Config.TestServerUrl || Config.DefaultServerUrl);
         this.basicClient = client;
-        this.basicClient4 = client;
 
         this.initMockEntities();
         this.activateMocking();
 
         return {
             client: this.basicClient,
-            client4: this.basicClient4,
             user: this.basicUser,
             team: this.basicTeam,
             channel: this.basicChannel,
@@ -538,9 +600,9 @@ class TestHelper {
             create_at: 1507840900004,
             update_at: 1507840900004,
             delete_at: 0,
-            user_id: this.basicUser.id,
-            channel_id: this.basicChannel.id,
-            team_id: this.basicTeam.id,
+            user_id: this.basicUser!.id,
+            channel_id: this.basicChannel!.id,
+            team_id: this.basicTeam!.id,
             display_name: 'test',
             description: 'test',
         };
@@ -553,9 +615,9 @@ class TestHelper {
             create_at: 1507841118796,
             update_at: 1507841118796,
             delete_at: 0,
-            creator_id: this.basicUser.id,
-            channel_id: this.basicChannel.id,
-            team_id: this.basicTeam.id,
+            creator_id: this.basicUser!.id,
+            channel_id: this.basicChannel!.id,
+            team_id: this.basicTeam!.id,
             trigger_words: ['testword'],
             trigger_when: 0,
             callback_urls: ['http://localhost/notarealendpoint'],
@@ -565,14 +627,14 @@ class TestHelper {
         };
     };
 
-    testCommand = (teamId) => {
+    testCommand = (teamId: string) => {
         return {
             trigger: this.generateId(),
             method: 'P',
             create_at: 1507841118796,
             update_at: 1507841118796,
             delete_at: 0,
-            creator_id: this.basicUser.id,
+            creator_id: this.basicUser!.id,
             team_id: teamId,
             username: 'test',
             icon_url: 'http://localhost/notarealendpoint',
@@ -589,7 +651,6 @@ class TestHelper {
         nock.restore();
 
         this.basicClient = null;
-        this.basicClient4 = null;
         this.basicUser = null;
         this.basicTeam = null;
         this.basicTeamMember = null;
@@ -598,7 +659,7 @@ class TestHelper {
         this.basicPost = null;
     };
 
-    wait = (time) => new Promise((resolve) => setTimeout(resolve, time));
+    wait = (time: number) => new Promise((resolve) => setTimeout(resolve, time));
 }
 
 export default new TestHelper();

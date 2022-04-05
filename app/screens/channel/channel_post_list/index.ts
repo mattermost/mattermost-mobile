@@ -4,6 +4,7 @@
 import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import React from 'react';
 import {AppStateStatus} from 'react-native';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
@@ -43,7 +44,7 @@ const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({dat
                 }
 
                 const {earliest, latest} = postsInChannel[0];
-                return queryPostsBetween(database, earliest, latest, Q.desc, '', channelId, '', isCRTEnabled).observe();
+                return queryPostsBetween(database, earliest, latest, Q.desc, '', channelId, isCRTEnabled ? '' : undefined).observe();
             }),
         ),
         shouldShowJoinLeaveMessages: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE).observe().pipe(
@@ -52,4 +53,4 @@ const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({dat
     };
 });
 
-export default withDatabase(enhanced(ChannelPostList));
+export default React.memo(withDatabase(enhanced(ChannelPostList)));

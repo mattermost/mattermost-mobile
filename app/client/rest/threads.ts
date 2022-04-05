@@ -6,7 +6,7 @@ import {buildQueryString, isMinimumServerVersion} from '@utils/helpers';
 import {PER_PAGE_DEFAULT} from './constants';
 
 export interface ClientThreadsMix {
-    getThreads: (serverVersion: string, userId: string, teamId: string, before?: string, after?: string, pageSize?: number, deleted?: boolean, unread?: boolean, since?: number) => Promise<GetUserThreadsResponse>;
+    getThreads: (userId: string, teamId: string, before?: string, after?: string, pageSize?: number, deleted?: boolean, unread?: boolean, since?: number, serverVersion?: string) => Promise<GetUserThreadsResponse>;
     getThread: (userId: string, teamId: string, threadId: string, extended?: boolean) => Promise<any>;
     updateTeamThreadsAsRead: (userId: string, teamId: string) => Promise<any>;
     updateThreadRead: (userId: string, teamId: string, threadId: string, timestamp: number) => Promise<any>;
@@ -14,7 +14,7 @@ export interface ClientThreadsMix {
 }
 
 const ClientThreads = (superclass: any) => class extends superclass {
-    getThreads = async (serverVersion: string, userId: string, teamId: string, before = '', after = '', pageSize = PER_PAGE_DEFAULT, deleted = false, unread = false, since = 0) => {
+    getThreads = async (userId: string, teamId: string, before = '', after = '', pageSize = PER_PAGE_DEFAULT, deleted = false, unread = false, since = 0, serverVersion = '') => {
         const queryStringObj: Record<string, any> = {
             extended: 'true',
             before,
@@ -23,7 +23,7 @@ const ClientThreads = (superclass: any) => class extends superclass {
             unread,
             since,
         };
-        if (isMinimumServerVersion(serverVersion, 6, 0)) {
+        if (serverVersion && isMinimumServerVersion(serverVersion, 6, 0)) {
             queryStringObj.per_page = pageSize;
         } else {
             queryStringObj.pageSize = pageSize;

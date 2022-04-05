@@ -10,10 +10,11 @@ export const BROWSE_CHANNELS = 'BrowseChannels';
 export const CHANNEL = 'Channel';
 export const CHANNEL_ADD_PEOPLE = 'ChannelAddPeople';
 export const CHANNEL_DETAILS = 'ChannelDetails';
-export const CREATE_DIRECT_MESSAGE = 'CreateDirectMessage';
 export const CHANNEL_EDIT = 'ChannelEdit';
-export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
+export const CREATE_DIRECT_MESSAGE = 'CreateDirectMessage';
+export const CREATE_OR_EDIT_CHANNEL = 'CreateOrEditChannel';
 export const CUSTOM_STATUS = 'CustomStatus';
+export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
 export const EDIT_POST = 'EditPost';
 export const EDIT_PROFILE = 'EditProfile';
 export const EDIT_SERVER = 'EditServer';
@@ -36,7 +37,7 @@ export const SERVER = 'Server';
 export const SETTINGS_SIDEBAR = 'SettingsSidebar';
 export const SSO = 'SSO';
 export const THREAD = 'Thread';
-export const THREAD_FOLLOW = 'ThreadFollow';
+export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
 export const THREAD_OPTIONS = 'ThreadOptions';
 export const USER_PROFILE = 'UserProfile';
 
@@ -48,6 +49,7 @@ export default {
     BOTTOM_SHEET,
     BROWSE_CHANNELS,
     CHANNEL,
+    CREATE_OR_EDIT_CHANNEL,
     CHANNEL_ADD_PEOPLE,
     CHANNEL_EDIT,
     CHANNEL_DETAILS,
@@ -76,7 +78,7 @@ export default {
     SETTINGS_SIDEBAR,
     SSO,
     THREAD,
-    THREAD_FOLLOW,
+    THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
     USER_PROFILE,
 };

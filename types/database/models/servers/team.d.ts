@@ -4,7 +4,6 @@
 import type CategoryModel from './category';
 import type ChannelModel from './channel';
 import type MyTeamModel from './my_team';
-import type SlashCommandModel from './slash_command';
 import type TeamChannelHistoryModel from './team_channel_history';
 import type TeamMembershipModel from './team_membership';
 import type TeamSearchHistoryModel from './team_search_history';
@@ -56,9 +55,6 @@ export default class TeamModel extends Model {
 
     /** myTeam : Retrieves additional information about the team that this user is possibly part of.  This query might yield no result if the user isn't part of a team. */
     myTeam: Relation<MyTeamModel>;
-
-    /** slashCommands : All the slash commands associated with this team */
-    slashCommands: Query<SlashCommandModel>;
 
     /** teamChannelHistory : A history of the channels in this team that has been visited,  ordered by the most recent and capped to the last 5 */
     teamChannelHistory: Relation<TeamChannelHistoryModel>;

@@ -32,12 +32,12 @@ export const transformThreadRecord = ({action, database, value}: TransformerArgs
     const fieldsMapper = (thread: ThreadModel) => {
         thread._raw.id = isCreateAction ? (raw?.id ?? thread.id) : record.id;
         thread.lastReplyAt = raw.last_reply_at;
-        thread.lastViewedAt = raw.last_viewed_at;
+        thread.lastViewedAt = raw.last_viewed_at ?? record?.lastViewedAt ?? 0;
         thread.replyCount = raw.reply_count;
         thread.isFollowing = raw.is_following ?? record?.isFollowing;
-        thread.unreadReplies = raw.unread_replies;
-        thread.unreadMentions = raw.unread_mentions;
-        thread.loadedInGlobalThreads = raw.loaded_in_global_threads || record?.loadedInGlobalThreads;
+        thread.unreadReplies = raw.unread_replies ?? record?.lastViewedAt ?? 0;
+        thread.unreadMentions = raw.unread_mentions ?? record?.lastViewedAt ?? 0;
+        thread.viewedAt = record?.viewedAt || 0;
     };
 
     return prepareBaseRecord({
@@ -76,10 +76,14 @@ export const transformThreadParticipantRecord = ({action, database, value}: Tran
 
 export const transformThreadInTeamRecord = ({action, database, value}: TransformerArgs): Promise<ThreadInTeamModel> => {
     const raw = value.raw as ThreadInTeam;
+    const record = value.record as ThreadInTeamModel;
 
     const fieldsMapper = (threadInTeam: ThreadInTeamModel) => {
         threadInTeam.threadId = raw.thread_id;
         threadInTeam.teamId = raw.team_id;
+
+        // if it's already loaded don't change it
+        threadInTeam.loadedInGlobalThreads = record?.loadedInGlobalThreads || raw.loaded_in_global_threads;
     };
 
     return prepareBaseRecord({

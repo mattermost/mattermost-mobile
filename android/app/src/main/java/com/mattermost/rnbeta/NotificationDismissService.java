@@ -10,7 +10,6 @@ import com.mattermost.helpers.CustomPushNotificationHelper;
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 
 public class NotificationDismissService extends IntentService {
-    private Context mContext;
     public NotificationDismissService() {
             super("notificationDismissService");
     }

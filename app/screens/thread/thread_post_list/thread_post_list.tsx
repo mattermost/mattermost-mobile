@@ -15,7 +15,6 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
-    channel: ChannelModel;
     currentTimezone: string | null;
     currentUsername: string;
     isCRTEnabled: boolean;
@@ -24,6 +23,7 @@ type Props = {
     nativeID: string;
     posts: PostModel[];
     rootPost: PostModel;
+    teamId: string;
 }
 
 const edges: Edge[] = ['bottom'];
@@ -35,8 +35,8 @@ const styles = StyleSheet.create({
 });
 
 const ThreadPostList = ({
-    channel, currentTimezone, currentUsername,
-    isCRTEnabled, isTimezoneEnabled, lastViewedAt, nativeID, posts, rootPost,
+    currentTimezone, currentUsername,
+    isCRTEnabled, isTimezoneEnabled, lastViewedAt, nativeID, posts, rootPost, teamId,
 }: Props) => {
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
@@ -50,13 +50,13 @@ const ThreadPostList = ({
     useEffect(() => {
         if (isCRTEnabled && oldPostsCount.current < posts.length) {
             oldPostsCount.current = posts.length;
-            updateThreadRead(serverUrl, channel.teamId, rootPost.id, Date.now());
+            updateThreadRead(serverUrl, teamId, rootPost.id, Date.now());
         }
-    }, [channel, isCRTEnabled, posts, rootPost, serverUrl]);
+    }, [isCRTEnabled, posts, rootPost, serverUrl, teamId]);
 
     const postList = (
         <PostList
-            channelId={channel.id}
+            channelId={rootPost.channelId}
             contentContainerStyle={styles.container}
             currentTimezone={currentTimezone}
             currentUsername={currentUsername}

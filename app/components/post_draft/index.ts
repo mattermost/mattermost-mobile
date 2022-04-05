@@ -3,15 +3,16 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {combineLatest, of as of$, from as from$} from 'rxjs';
+import React from 'react';
+import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
 import {queryDraft} from '@queries/servers/drafts';
+import {observePermissionForChannel} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeCurrentChannelId} from '@queries/servers/system';
 import {observeCurrentUser, observeUser} from '@queries/servers/user';
-import {hasPermissionForChannel} from '@utils/role';
 import {isSystemAdmin, getUserIdFromChannelName} from '@utils/user';
 
 import PostDraft from './post_draft';
@@ -49,7 +50,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         switchMap((id) => observeChannel(database, id!)),
     );
 
-    const canPost = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => (c && u ? from$(hasPermissionForChannel(c, u, Permissions.CREATE_POST, false)) : of$(false))));
+    const canPost = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => (c && u ? observePermissionForChannel(c, u, Permissions.CREATE_POST, false) : of$(false))));
     const channelIsArchived = channel.pipe(switchMap((c) => (ownProps.channelIsArchived ? of$(true) : of$(c?.deleteAt !== 0))));
 
     const experimentalTownSquareIsReadOnly = observeConfigBooleanValue(database, 'ExperimentalTownSquareIsReadOnly');
@@ -85,4 +86,4 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
     };
 });
 
-export default withDatabase(enhanced(PostDraft));
+export default React.memo(withDatabase(enhanced(PostDraft)));

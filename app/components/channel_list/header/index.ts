@@ -3,13 +3,13 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {combineLatest, of as of$, from as from$} from 'rxjs';
+import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
+import {observePermissionForTeam} from '@queries/servers/role';
 import {observeCurrentTeam} from '@queries/servers/team';
 import {observeCurrentUser} from '@queries/servers/user';
-import {hasPermissionForTeam} from '@utils/role';
 
 import ChannelListHeader from './header';
 
@@ -21,15 +21,15 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentUser = observeCurrentUser(database);
 
     const canJoinChannels = combineLatest([currentUser, team]).pipe(
-        switchMap(([u, t]) => (t && u ? from$(hasPermissionForTeam(t, u, Permissions.JOIN_PUBLIC_CHANNELS, true)) : of$(false))),
+        switchMap(([u, t]) => (t && u ? observePermissionForTeam(t, u, Permissions.JOIN_PUBLIC_CHANNELS, true) : of$(false))),
     );
 
     const canCreatePublicChannels = combineLatest([currentUser, team]).pipe(
-        switchMap(([u, t]) => (t && u ? from$(hasPermissionForTeam(t, u, Permissions.CREATE_PUBLIC_CHANNEL, true)) : of$(false))),
+        switchMap(([u, t]) => (t && u ? observePermissionForTeam(t, u, Permissions.CREATE_PUBLIC_CHANNEL, true) : of$(false))),
     );
 
     const canCreatePrivateChannels = combineLatest([currentUser, team]).pipe(
-        switchMap(([u, t]) => (t && u ? from$(hasPermissionForTeam(t, u, Permissions.CREATE_PRIVATE_CHANNEL, false)) : of$(false))),
+        switchMap(([u, t]) => (t && u ? observePermissionForTeam(t, u, Permissions.CREATE_PRIVATE_CHANNEL, false) : of$(false))),
     );
 
     const canCreateChannels = combineLatest([canCreatePublicChannels, canCreatePrivateChannels]).pipe(

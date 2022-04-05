@@ -17,8 +17,6 @@ import {patchTeamHistory, getConfig, getTeamHistory, observeCurrentTeamId} from 
 import {getCurrentUser} from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
-import type CategoryModel from '@typings/database/models/servers/category';
-import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
 import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
@@ -148,7 +146,8 @@ export const getLastTeam = async (database: Database) => {
 export const syncTeamTable = async (operator: ServerDataOperator, teams: Team[]) => {
     try {
         const deletedTeams = teams.filter((t) => t.delete_at > 0).map((t) => t.id);
-        const availableTeams = teams.filter((a) => !deletedTeams.includes(a.id));
+        const deletedSet = new Set(deletedTeams);
+        const availableTeams = teams.filter((a) => !deletedSet.has(a.id));
         const models = [];
 
         if (deletedTeams.length) {
@@ -183,10 +182,11 @@ export const getDefaultTeamId = async (database: Database) => {
     return defaultTeam?.id;
 };
 
-export const prepareMyTeams = (operator: ServerDataOperator, teams: Team[], memberships: TeamMembership[]) => {
+export function prepareMyTeams(operator: ServerDataOperator, teams: Team[], memberships: TeamMembership[]): Array<Promise<Model[]>> {
     try {
         const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams});
-        const teamMemberships = memberships.filter((m) => teams.find((t) => t.id === m.team_id) && m.delete_at === 0);
+        const teamIds = new Set(teams.map((t) => t.id));
+        const teamMemberships = memberships.filter((m) => teamIds.has(m.team_id) && m.delete_at === 0);
         const teamMembershipRecords = operator.handleTeamMemberships({prepareRecordsOnly: true, teamMemberships});
         const myTeams: MyTeam[] = teamMemberships.map((tm) => {
             return {id: tm.team_id, roles: tm.roles ?? ''};
@@ -198,9 +198,9 @@ export const prepareMyTeams = (operator: ServerDataOperator, teams: Team[], memb
 
         return [teamRecords, teamMembershipRecords, myTeamRecords];
     } catch {
-        return undefined;
+        return [];
     }
-};
+}
 
 export const deleteMyTeams = async (operator: ServerDataOperator, myTeams: MyTeamModel[]) => {
     try {
@@ -236,7 +236,6 @@ export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
 
         const associatedChildren: Array<Query<Model>|undefined> = [
             team.members,
-            team.slashCommands,
             team.teamSearchHistories,
         ];
         await Promise.all(associatedChildren.map(async (children) => {
@@ -248,8 +247,8 @@ export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
             }
         }));
 
-        const categories = await team.categories?.fetch() as CategoryModel[] | undefined;
-        if (categories?.length) {
+        const categories = await team.categories?.fetch();
+        if (categories.length) {
             for await (const category of categories) {
                 try {
                     const preparedCategory = await prepareDeleteCategory(category);
@@ -260,8 +259,8 @@ export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
             }
         }
 
-        const channels = await team.channels?.fetch() as ChannelModel[] | undefined;
-        if (channels?.length) {
+        const channels = await team.channels?.fetch();
+        if (channels.length) {
             for await (const channel of channels) {
                 try {
                     const preparedChannel = await prepareDeleteChannel(channel);
@@ -285,6 +284,12 @@ export const getMyTeamById = async (database: Database, teamId: string) => {
     } catch (err) {
         return undefined;
     }
+};
+
+export const observeMyTeam = (database: Database, teamId: string) => {
+    return database.get<MyTeamModel>(MY_TEAM).query(Q.where('id', teamId), Q.take(1)).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+    );
 };
 
 export const getTeamById = async (database: Database, teamId: string) => {
