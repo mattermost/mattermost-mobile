@@ -202,13 +202,13 @@ describe('*** Test schema for SERVER database ***', () => {
                         channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
                         files: {name: 'files', type: 'string'},
                         message: {name: 'message', type: 'string'},
-                        root_id: {name: 'root_id', type: 'string', isIndexed: true, isOptional: true},
+                        root_id: {name: 'root_id', type: 'string', isIndexed: true},
                     },
                     columnArray: [
                         {name: 'channel_id', type: 'string', isIndexed: true},
                         {name: 'files', type: 'string'},
                         {name: 'message', type: 'string'},
-                        {name: 'root_id', type: 'string', isIndexed: true, isOptional: true},
+                        {name: 'root_id', type: 'string', isIndexed: true},
                     ],
                 },
                 [FILE]: {
