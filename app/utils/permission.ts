@@ -75,7 +75,7 @@ const getMicrophonePermissionDeniedMessage = (intl: typeof intlShape) => {
         }, {applicationName}),
         text: formatMessage({
             id: 'mobile.microphone_permission_denied_description',
-            defaultMessage: 'Send your voice to calls participants. Open Settings to grant Mattermost access to your microphone.',
+            defaultMessage: 'To participate in this call, open Settings to grant Mattermost access to your microphone.',
         }),
     };
 };
