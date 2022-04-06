@@ -60,6 +60,7 @@ const SearchField = () => {
                 style={[textStyles, styles.input]}
                 placeholder='Find Channels'
                 placeholderTextColor={changeOpacity(theme.sidebarText, 0.72)}
+                testID='channel_list.search_field.find_channels.input'
             />
         </View>
     );

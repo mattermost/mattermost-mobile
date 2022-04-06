@@ -37,6 +37,7 @@ describe('components/channel_list/categories/body/channel/item', () => {
                 isMuted={false}
                 collapsed={false}
                 currentUserId={'id'}
+                testID='channel_list_item'
             />,
         );
 

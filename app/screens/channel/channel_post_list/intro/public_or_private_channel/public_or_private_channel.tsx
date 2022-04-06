@@ -116,7 +116,10 @@ const PublicOrPrivateChannel = ({channel, creator, roles, theme}: Props) => {
     return (
         <View style={styles.container}>
             {illustration}
-            <Text style={styles.title}>
+            <Text
+                style={styles.title}
+                testID='channel_post_list.intro.display_name'
+            >
                 {channel.displayName}
             </Text>
             <View style={{flexDirection: 'row'}}>

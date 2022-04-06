@@ -55,6 +55,7 @@ const IntroOptions = ({channelId, header, favorite, people, theme}: Props) => {
                 iconName='account-plus-outline'
                 label={formatMessage({id: 'intro.add_people', defaultMessage: 'Add People'})}
                 onPress={onAddPeople}
+                testID='channel_post_list.intro.option_item.add_people'
                 theme={theme}
             />
             }
@@ -64,6 +65,7 @@ const IntroOptions = ({channelId, header, favorite, people, theme}: Props) => {
                 iconName='pencil-outline'
                 label={formatMessage({id: 'intro.set_header', defaultMessage: 'Set Header'})}
                 onPress={onSetHeader}
+                testID='channel_post_list.intro.option_item.set_header'
                 theme={theme}
             />
             }
@@ -77,6 +79,7 @@ const IntroOptions = ({channelId, header, favorite, people, theme}: Props) => {
                 iconName='information-outline'
                 label={formatMessage({id: 'intro.channel_details', defaultMessage: 'Details'})}
                 onPress={onDetails}
+                testID='channel_post_list.intro.option_item.channel_details'
                 theme={theme}
             />
         </View>

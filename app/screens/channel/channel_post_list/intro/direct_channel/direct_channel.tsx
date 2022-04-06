@@ -128,7 +128,10 @@ const DirectChannel = ({channel, currentUserId, isBot, members, theme}: Props) =
                 {profiles}
             </View>
             <View style={{flexDirection: 'row'}}>
-                <Text style={[styles.title, channel.type === General.GM_CHANNEL ? styles.titleGroup : undefined]}>
+                <Text
+                    style={[styles.title, channel.type === General.GM_CHANNEL ? styles.titleGroup : undefined]}
+                    testID='channel_post_list.intro.display_name'
+                >
                     {channel.displayName}
                 </Text>
                 {isBot &&

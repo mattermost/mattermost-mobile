@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {timeouts} from '@support/utils';
+import {expect} from 'detox';
 
 class ServerScreen {
     testID = {
@@ -46,6 +47,11 @@ class ServerScreen {
         await this.serverUrlInput.replaceText(serverUrl);
         await this.serverDisplayNameInput.replaceText(serverDisplayName);
         await this.connectButton.tap();
+    };
+
+    close = async () => {
+        await this.closeButton.tap();
+        await expect(this.serverScreen).not.toBeVisible();
     };
 }
 

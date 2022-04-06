@@ -26,7 +26,7 @@ import {
 } from '@support/ui/screen';
 import {expect} from 'detox';
 
-describe('Server Login', () => {
+describe('Smoke Test - Server Login', () => {
     const serverOneDisplayName = 'Server 1';
     const serverTwoDisplayName = 'Server 2';
 

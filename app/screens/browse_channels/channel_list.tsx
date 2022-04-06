@@ -125,7 +125,7 @@ export default function ChannelList({
         <FlatList
             data={channels}
             renderItem={renderItem}
-            testID='browse_channels.flat_list'
+            testID='browse_channels.channel_list.flat_list'
             ListEmptyComponent={loading ? renderLoading : renderNoResults}
             onEndReached={onEndReached}
             ListFooterComponent={loading && channels.length ? renderLoading : null}

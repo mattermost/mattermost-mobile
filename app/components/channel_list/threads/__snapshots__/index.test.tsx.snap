@@ -14,6 +14,7 @@ exports[`Threads Component should match snapshot 1`] = `
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
   onStartShouldSetResponderCapture={[Function]}
+  testID="channel_list.threads.button"
 >
   <View
     accessible={true}
