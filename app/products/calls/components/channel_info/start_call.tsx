@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {injectIntl, IntlShape} from 'react-intl';
+import {injectIntl, intlShape, IntlShape} from 'react-intl';
 import {useSelector} from 'react-redux';
 
 import {getChannel, getCurrentChannel} from '@mm-redux/selectors/entities/channels';
@@ -19,7 +19,7 @@ type Props = {
     testID: string;
     theme: Theme;
     intl: typeof IntlShape;
-    joinCall: (channelId: string) => void;
+    joinCall: (channelId: string, intl: typeof intlShape) => void;
 }
 
 const StartCall = ({testID, theme, intl, joinCall}: Props) => {

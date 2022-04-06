@@ -18,7 +18,7 @@ import type {Call} from '@mmproducts/calls/store/types/calls';
 
 type Props = {
     actions: {
-        joinCall: (channelId: string) => any;
+        joinCall: (channelId: string, intl: typeof IntlShape) => void;
     };
     theme: Theme;
     call: Call;
