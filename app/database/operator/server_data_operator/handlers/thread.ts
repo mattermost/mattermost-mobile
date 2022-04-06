@@ -23,7 +23,7 @@ const {
 } = Database.MM_TABLES.SERVER;
 
 export interface ThreadHandlerMix {
-    handleThreads: ({threads, teamId, prepareRecordsOnly}: HandleThreadsArgs) => Promise<Model[]>;
+    handleThreads: ({threads, teamId, prepareRecordsOnly, loadedInGlobalThreads}: HandleThreadsArgs) => Promise<Model[]>;
     handleThreadParticipants: ({threadsParticipants, prepareRecordsOnly}: HandleThreadParticipantsArgs) => Promise<ThreadParticipantModel[]>;
 }
 
@@ -35,7 +35,7 @@ const ThreadHandler = (superclass: any) => class extends superclass {
      * @param {boolean | undefined} handleThreads.prepareRecordsOnly
      * @returns {Promise<void>}
      */
-    handleThreads = async ({threads, teamId, prepareRecordsOnly = false}: HandleThreadsArgs): Promise<Model[]> => {
+    handleThreads = async ({threads, teamId, loadedInGlobalThreads, prepareRecordsOnly = false}: HandleThreadsArgs): Promise<Model[]> => {
         if (!threads.length) {
             throw new DataOperatorException(
                 'An empty "threads" array has been passed to the handleThreads method',
@@ -81,6 +81,7 @@ const ThreadHandler = (superclass: any) => class extends superclass {
             const threadsInTeam = await this.handleThreadInTeam({
                 threadsMap: {[teamId]: threads},
                 prepareRecordsOnly: true,
+                loadedInGlobalThreads,
             }) as ThreadInTeamModel[];
             batch.push(...threadsInTeam);
         }

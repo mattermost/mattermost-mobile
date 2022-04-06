@@ -92,6 +92,7 @@ export type HandleThreadsArgs = {
   threads: Thread[];
   prepareRecordsOnly?: boolean;
   teamId?: string;
+  loadedInGlobalThreads?: boolean;
 };
 
 export type HandleThreadParticipantsArgs = {
@@ -103,6 +104,7 @@ export type HandleThreadParticipantsArgs = {
 export type HandleThreadInTeamArgs = {
   threadsMap: Record<string, Thread[]>;
   prepareRecordsOnly?: boolean;
+  loadedInGlobalThreads?: boolean;
 };
 
 export type SanitizeReactionsArgs = {

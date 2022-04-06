@@ -108,13 +108,21 @@ export default class TeamModel extends Model implements TeamModelInterface {
             Q.where('team_id', this.id),
             Q.where('loadedInGlobalThreads', true),
         )),
+        Q.and(
+            Q.where('reply_count', Q.gt(0)),
+            Q.where('is_following', true),
+        ),
         Q.sortBy('last_reply_at', Q.desc),
     );
 
     /** unreadThreadsList : Unread threads list belonging to a team */
     @lazy unreadThreadsList = this.collections.get<ThreadModel>(THREAD).query(
         Q.on(THREADS_IN_TEAM, 'team_id', this.id),
-        Q.where('unread_replies', Q.gt(0)),
+        Q.and(
+            Q.where('reply_count', Q.gt(0)),
+            Q.where('is_following', true),
+            Q.where('unread_replies', Q.gt(0)),
+        ),
         Q.sortBy('last_reply_at', Q.desc),
     );
 }
