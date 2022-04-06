@@ -26,7 +26,7 @@ export default class FileModel extends Model {
     imageThumbnail: string;
 
     /** local_path : Local path of the file that has been uploaded to server */
-    localPath: string;
+    localPath: string | null;
 
     /** mime_type : The media type */
     mimeType: string;
