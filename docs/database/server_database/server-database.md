@@ -22,7 +22,7 @@ CategoryChannel
 -
 id PK string # composition ID Team.id_Channel.id
 category_id string INDEX FK >- Category.id
-channel_id string INDEX FK - MyChannel.id
+channel_id string INDEX
 sort_order number
 
 
@@ -100,7 +100,7 @@ viewed_at number
 
 MyChannelSettings
 -
-id PK string FK - Channel.id # same as Channel.id
+id PK string FK - MyChannel.id # same as Channel.id
 notify_props string
 
 
