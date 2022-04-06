@@ -95,7 +95,7 @@ export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
         const models: Model[] = await operator.handleChannel({channels: [updatedChannel], prepareRecordsOnly: true});
         const infoModel = await updateChannelInfoFromChannel(serverUrl, updatedChannel, true);
         if (infoModel.model) {
-            models.push(infoModel.model);
+            models.push(...infoModel.model);
         }
         operator.batchRecords(models);
     } catch {
@@ -188,14 +188,12 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
             models.push(...categoryModels.models);
         }
 
-        if (users?.length) {
+        if (users.length) {
             const userModels = await operator.handleUsers({users, prepareRecordsOnly: true});
             models.push(...userModels);
         }
 
-        if (models.length) {
-            operator.batchRecords(models);
-        }
+        operator.batchRecords(models);
     } catch {
         // do nothing
     }
@@ -235,7 +233,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
             }
 
             const {posts, order, authors, actionType, previousPostId} = await fetchPostsForChannel(serverUrl, channelId, true);
-            if (posts?.length && order && actionType) {
+            if (actionType) {
                 models.push(...await operator.handlePosts({
                     actionType,
                     order,
@@ -253,9 +251,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
             if (!addedUser) {
                 // TODO Potential improvement https://mattermost.atlassian.net/browse/MM-40581
                 const {users} = await fetchUsersByIds(serverUrl, [userId], true);
-                if (users) {
-                    models.push(...await operator.handleUsers({users, prepareRecordsOnly: true}));
-                }
+                models.push(...await operator.handleUsers({users, prepareRecordsOnly: true}));
             }
             const channel = await getChannelById(database, channelId);
             if (channel) {

@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {
     buildTeamMembershipKey,
     buildTeamSearchHistoryKey,
@@ -52,10 +51,12 @@ const TeamHandler = (superclass: any) => class extends superclass {
      * @returns {Promise<TeamMembershipModel[]>}
      */
     handleTeamMemberships = ({teamMemberships, prepareRecordsOnly = true}: HandleTeamMembershipArgs): Promise<TeamMembershipModel[]> => {
-        if (!teamMemberships.length) {
-            throw new DataOperatorException(
-                'An empty "teamMemberships" array has been passed to the handleTeamMemberships method',
+        if (!teamMemberships?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "teamMemberships" array has been passed to the handleTeamMemberships method',
             );
+            return Promise.resolve([]);
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: teamMemberships, key: 'team_id'});
@@ -79,10 +80,12 @@ const TeamHandler = (superclass: any) => class extends superclass {
      * @returns {Promise<TeamModel[]>}
      */
     handleTeam = ({teams, prepareRecordsOnly = true}: HandleTeamArgs): Promise<TeamModel[]> => {
-        if (!teams.length) {
-            throw new DataOperatorException(
-                'An empty "teams" array has been passed to the handleTeam method',
+        if (!teams?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "teams" array has been passed to the handleTeam method',
             );
+            return Promise.resolve([]);
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: teams, key: 'id'});
@@ -105,10 +108,12 @@ const TeamHandler = (superclass: any) => class extends superclass {
      * @returns {Promise<TeamChannelHistoryModel[]>}
      */
     handleTeamChannelHistory = ({teamChannelHistories, prepareRecordsOnly = true}: HandleTeamChannelHistoryArgs): Promise<TeamChannelHistoryModel[]> => {
-        if (!teamChannelHistories.length) {
-            throw new DataOperatorException(
-                'An empty "teamChannelHistories" array has been passed to the handleTeamChannelHistory method',
+        if (!teamChannelHistories?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "teamChannelHistories" array has been passed to the handleTeamChannelHistory method',
             );
+            return Promise.resolve([]);
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: teamChannelHistories, key: 'id'});
@@ -131,10 +136,12 @@ const TeamHandler = (superclass: any) => class extends superclass {
      * @returns {Promise<TeamSearchHistoryModel[]>}
      */
     handleTeamSearchHistory = ({teamSearchHistories, prepareRecordsOnly = true}: HandleTeamSearchHistoryArgs): Promise<TeamSearchHistoryModel[]> => {
-        if (!teamSearchHistories.length) {
-            throw new DataOperatorException(
-                'An empty "teamSearchHistories" array has been passed to the handleTeamSearchHistory method',
+        if (!teamSearchHistories?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "teamSearchHistories" array has been passed to the handleTeamSearchHistory method',
             );
+            return Promise.resolve([]);
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: teamSearchHistories, key: 'term'});
@@ -158,10 +165,12 @@ const TeamHandler = (superclass: any) => class extends superclass {
      * @returns {Promise<MyTeamModel[]>}
      */
     handleMyTeam = ({myTeams, prepareRecordsOnly = true}: HandleMyTeamArgs): Promise<MyTeamModel[]> => {
-        if (!myTeams.length) {
-            throw new DataOperatorException(
-                'An empty "myTeams" array has been passed to the handleSlashCommand method',
+        if (!myTeams?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "myTeams" array has been passed to the handleMyTeam method',
             );
+            return Promise.resolve([]);
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: myTeams, key: 'id'});

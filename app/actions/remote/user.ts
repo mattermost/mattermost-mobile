@@ -96,14 +96,10 @@ export const fetchProfilesInChannel = async (serverUrl: string, channelId: strin
                     prepareRecordsOnly: true,
                 }));
                 const prepare = prepareUsers(operator, filteredUsers);
-                if (prepare) {
-                    modelPromises.push(prepare);
-                }
+                modelPromises.push(prepare);
 
-                if (modelPromises.length) {
-                    const models = await Promise.all(modelPromises);
-                    await operator.batchRecords(models.flat());
-                }
+                const models = await Promise.all(modelPromises);
+                await operator.batchRecords(models.flat());
             }
         }
 
@@ -154,14 +150,10 @@ export const fetchProfilesPerChannels = async (serverUrl: string, channelIds: st
                 prepareRecordsOnly: true,
             }));
             const prepare = prepareUsers(operator, Array.from(users).filter((u) => u.id !== excludeUserId));
-            if (prepare) {
-                modelPromises.push(prepare);
-            }
+            modelPromises.push(prepare);
 
-            if (modelPromises.length) {
-                const models = await Promise.all(modelPromises);
-                await operator.batchRecords(models.flat());
-            }
+            const models = await Promise.all(modelPromises);
+            await operator.batchRecords(models.flat());
         }
 
         return {data};
@@ -195,9 +187,7 @@ export const updateMe = async (serverUrl: string, user: Partial<UserProfile>) =>
         operator.handleUsers({prepareRecordsOnly: false, users: [data]});
 
         const updatedRoles: string[] = data.roles.split(' ');
-        if (updatedRoles.length) {
-            await fetchRolesIfNeeded(serverUrl, updatedRoles);
-        }
+        await fetchRolesIfNeeded(serverUrl, updatedRoles);
     }
 
     return {data};
@@ -507,9 +497,7 @@ export const updateAllUsersSince = async (serverUrl: string, since: number, fetc
                 modelsToBatch.push(...models);
             }
 
-            if (modelsToBatch.length) {
-                await operator.batchRecords(modelsToBatch);
-            }
+            await operator.batchRecords(modelsToBatch);
         }
     } catch {
         // Do nothing

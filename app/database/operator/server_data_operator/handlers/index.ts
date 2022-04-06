@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import DataOperatorException from '@database/exceptions/data_operator_exception';
 import BaseDataOperator from '@database/operator/base_data_operator';
 import {
     transformCustomEmojiRecord,
@@ -21,10 +20,12 @@ const {SERVER: {CUSTOM_EMOJI, ROLE, SYSTEM}} = MM_TABLES;
 
 export default class ServerDataOperatorBase extends BaseDataOperator {
     handleRole = ({roles, prepareRecordsOnly = true}: HandleRoleArgs) => {
-        if (!roles.length) {
-            throw new DataOperatorException(
-                'An empty "values" array has been passed to the handleRole',
+        if (!roles?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "roles" array has been passed to the handleRole',
             );
+            return Promise.resolve([]);
         }
 
         return this.handleRecords({
@@ -37,10 +38,12 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
     };
 
     handleCustomEmojis = ({emojis, prepareRecordsOnly = true}: HandleCustomEmojiArgs) => {
-        if (!emojis.length) {
-            throw new DataOperatorException(
-                'An empty "values" array has been passed to the handleCustomEmojis',
+        if (!emojis?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "emojis" array has been passed to the handleCustomEmojis',
             );
+            return Promise.resolve([]);
         }
 
         return this.handleRecords({
@@ -53,10 +56,12 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
     };
 
     handleSystem = ({systems, prepareRecordsOnly = true}: HandleSystemArgs) => {
-        if (!systems.length) {
-            throw new DataOperatorException(
-                'An empty "values" array has been passed to the handleSystem',
+        if (!systems?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "systems" array has been passed to the handleSystem',
             );
+            return Promise.resolve([]);
         }
 
         return this.handleRecords({
