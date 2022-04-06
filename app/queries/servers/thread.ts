@@ -97,7 +97,7 @@ export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperat
     return models;
 };
 
-export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnreads?: boolean, hasReplies?: boolean, isFollowing?: boolean, sort?: boolean, includeDmGm?: boolean): Query<ThreadModel> => {
+export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnreads?: boolean, hasReplies?: boolean, isFollowing?: boolean, sort?: boolean): Query<ThreadModel> => {
     const query: Q.Clause[] = [
         Q.experimentalNestedJoin(POST, CHANNEL),
     ];
@@ -118,18 +118,17 @@ export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnrea
         query.push(Q.sortBy('last_reply_at', Q.desc));
     }
 
-    let joinCondition: Q.Condition = Q.where('team_id', teamId);
-
-    if (includeDmGm) {
-        joinCondition = Q.or(
-            Q.where('team_id', teamId),
-            Q.where('team_id', ''),
-        );
-    }
-
     query.push(
         Q.experimentalNestedJoin(POST, CHANNEL),
-        Q.on(POST, Q.on(CHANNEL, joinCondition)),
+        Q.on(
+            POST,
+            Q.on(
+                CHANNEL,
+                Q.or(
+                    Q.where('team_id', teamId),
+                    Q.where('team_id', ''),
+                ),
+            )),
     );
 
     return database.get<ThreadModel>(THREAD).query(...query);
