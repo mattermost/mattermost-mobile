@@ -125,6 +125,10 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
             return;
         }
 
+        if (await InCallManager.checkRecordPermission() !== 'granted') {
+            await InCallManager.requestRecordPermission();
+        }
+
         InCallManager.start({media: 'audio'});
         peer = new Peer(null, config.ICEServers);
         peer.on('signal', (data: any) => {
