@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {intlShape} from 'react-intl';
 
 import {Theme} from '@mm-redux/types/theme';
 import EnableDisableCalls from '@mmproducts/calls/components/channel_info/enable_disable_calls';
@@ -10,7 +11,7 @@ import {useCallsChannelSettings} from '@mmproducts/calls/hooks';
 
 type Props = {
     theme: Theme;
-    joinCall: (channelId: string) => void;
+    joinCall: (channelId: string, intl: typeof intlShape) => void;
 }
 
 const CallsChannelInfo = ({theme, joinCall}: Props) => {
