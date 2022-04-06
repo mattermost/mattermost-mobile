@@ -3,10 +3,12 @@
 
 import assert from 'assert';
 
+import {IntlProvider} from 'react-intl';
 import InCallManager from 'react-native-incall-manager';
 
 import {Client4} from '@client/rest';
 import configureStore from '@test/test_store';
+import * as PermissionUtils from '@utils/permission';
 
 import CallsTypes from '../action_types/calls';
 
@@ -73,6 +75,9 @@ describe('Actions.Calls', () => {
     let store;
     const {newClient} = require('@mmproducts/calls/connection');
     InCallManager.setSpeakerphoneOn = jest.fn();
+    const intlProvider = new IntlProvider({locale: 'en'}, {});
+    const {intl} = intlProvider.getChildContext();
+    jest.spyOn(PermissionUtils, 'hasMicrophonePermission').mockReturnValue(true);
 
     beforeEach(async () => {
         newClient.mockClear();
@@ -86,7 +91,7 @@ describe('Actions.Calls', () => {
 
     it('joinCall', async () => {
         await store.dispatch(addFakeCall('channel-id'));
-        const response = await store.dispatch(CallsActions.joinCall('channel-id'));
+        const response = await store.dispatch(CallsActions.joinCall('channel-id', intl));
         const result = store.getState().entities.calls.joined;
         assert.equal('channel-id', result);
         assert.equal(response.data, 'channel-id');
@@ -99,7 +104,7 @@ describe('Actions.Calls', () => {
         await store.dispatch(addFakeCall('channel-id'));
         expect(CallsActions.ws).toBe(null);
 
-        await store.dispatch(CallsActions.joinCall('channel-id'));
+        await store.dispatch(CallsActions.joinCall('channel-id', intl));
         let result = store.getState().entities.calls.joined;
         assert.equal('channel-id', result);
 
@@ -115,7 +120,7 @@ describe('Actions.Calls', () => {
 
     it('muteMyself', async () => {
         await store.dispatch(addFakeCall('channel-id'));
-        await store.dispatch(CallsActions.joinCall('channel-id'));
+        await store.dispatch(CallsActions.joinCall('channel-id', intl));
         await store.dispatch(CallsActions.muteMyself());
         expect(CallsActions.ws.mute).toBeCalled();
         await store.dispatch(CallsActions.leaveCall());
