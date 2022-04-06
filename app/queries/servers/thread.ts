@@ -104,16 +104,23 @@ export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnrea
 
     if (onlyUnreads) {
         query.push(Q.where('unread_replies', Q.gt(0)));
-    } else {
-        query.push(Q.where('loaded_in_global_threads', true));
     }
 
     if (sort) {
         query.push(Q.sortBy('last_reply_at', Q.desc));
     }
 
+    let joinCondition: Q.Condition = Q.where('team_id', teamId);
+
+    if (!onlyUnreads) {
+        joinCondition = Q.and(
+            Q.where('team_id', teamId),
+            Q.where('loaded_in_global_threads', true),
+        );
+    }
+
     query.push(
-        Q.on(THREADS_IN_TEAM, 'team_id', teamId),
+        Q.on(THREADS_IN_TEAM, joinCondition),
     );
 
     if (limit) {
