@@ -394,7 +394,6 @@ export const fetchMissingSidebarInfo = async (serverUrl: string, directChannels:
         }
     });
 
-    const filteredUserIds = new Set(users.map((u) => u.id));
     if (currentUserId) {
         const ownDirectChannel = directChannels.find((dm) => dm.name === getDirectChannelName(currentUserId, currentUserId));
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -402,22 +401,14 @@ export const fetchMissingSidebarInfo = async (serverUrl: string, directChannels:
             const currentUser = await getCurrentUser(database);
             ownDirectChannel.display_name = displayUsername(currentUser, locale, teammateDisplayNameSetting, false);
         }
-        filteredUserIds.add(currentUserId);
     }
-
-    const profiles = users.reduce((acc: UserProfile[], u) => {
-        if (!filteredUserIds.has(u.id)) {
-            acc.push(u);
-        }
-        return acc;
-    }, []);
 
     if (!fetchOnly) {
         const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
         if (operator) {
             const modelPromises: Array<Promise<Model[]>> = [];
             if (users.length) {
-                modelPromises.push(operator.handleUsers({users: profiles, prepareRecordsOnly: true}));
+                modelPromises.push(operator.handleUsers({users, prepareRecordsOnly: true}));
             }
             modelPromises.push(operator.handleChannel({channels: directChannels, prepareRecordsOnly: true}));
             const models = await Promise.all(modelPromises);
@@ -425,7 +416,7 @@ export const fetchMissingSidebarInfo = async (serverUrl: string, directChannels:
         }
     }
 
-    return {directChannels, users: profiles};
+    return {directChannels, users};
 };
 
 export const joinChannel = async (serverUrl: string, userId: string, teamId: string, channelId?: string, channelName?: string, fetchOnly = false) => {
