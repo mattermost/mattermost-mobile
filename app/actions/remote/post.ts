@@ -252,9 +252,12 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string,
                     lastPostAt = post.create_at > lastPostAt ? post.create_at : lastPostAt;
                 }
             }
-            const {member: memberModel} = await updateLastPostAt(serverUrl, channelId, lastPostAt, true);
-            if (memberModel) {
-                models.push(memberModel);
+
+            if (lastPostAt) {
+                const {member: memberModel} = await updateLastPostAt(serverUrl, channelId, lastPostAt, true);
+                if (memberModel) {
+                    models.push(memberModel);
+                }
             }
 
             if (isCRTEnabled) {

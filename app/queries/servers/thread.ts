@@ -52,17 +52,23 @@ export const observeThreadById = (database: Database, threadId: string) => {
     );
 };
 
-export const observeUnreadsAndMentionsInTeam = (database: Database, teamId?: string, includeDmGm?: boolean) => {
-    return queryThreads(database, teamId, true, includeDmGm).observeWithColumns(['unread_replies', 'unread_mentions']).pipe(
-        switchMap((threads) => {
-            let unreads = 0;
-            let mentions = 0;
-            threads.forEach((thread) => {
-                unreads += thread.unreadReplies;
-                mentions += thread.unreadMentions;
-            });
-            return of$({unreads, mentions});
-        }),
+export const observeUnreadsAndMentionsInTeam = (database: Database, teamId?: string, includeDmGm?: boolean): Observable<{unreads: number; mentions: number}> => {
+    const observeThreads = () => queryThreads(database, teamId, true, includeDmGm).
+        observeWithColumns(['unread_replies', 'unread_mentions']).
+        pipe(
+            switchMap((threads) => {
+                let unreads = 0;
+                let mentions = 0;
+                threads.forEach((thread) => {
+                    unreads += thread.unreadReplies;
+                    mentions += thread.unreadMentions;
+                });
+                return of$({unreads, mentions});
+            }),
+        );
+
+    return observeIsCRTEnabled(database).pipe(
+        switchMap((hasCRT) => (hasCRT ? observeThreads() : of$({unreads: 0, mentions: 0}))),
     );
 };
 

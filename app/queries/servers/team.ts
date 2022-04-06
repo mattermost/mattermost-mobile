@@ -14,7 +14,7 @@ import {prepareDeleteCategory} from './categories';
 import {prepareDeleteChannel, getDefaultChannelForTeam, observeMyChannelMentionCount} from './channel';
 import {queryPreferencesByCategoryAndName} from './preference';
 import {patchTeamHistory, getConfig, getTeamHistory, observeCurrentTeamId} from './system';
-import {observeIsCRTEnabled, observeThreadMentionCount} from './thread';
+import {observeThreadMentionCount} from './thread';
 import {getCurrentUser} from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -384,15 +384,7 @@ export const observeCurrentTeam = (database: Database) => {
 
 export function observeMentionCount(database: Database, teamId?: string, includeDmGm?: boolean): Observable<number> {
     const channelMentionCountObservable = observeMyChannelMentionCount(database, teamId);
-
-    const threadMentionCountObservable = observeIsCRTEnabled(database).pipe(
-        switchMap((isCrtEnabled) => {
-            if (isCrtEnabled) {
-                return observeThreadMentionCount(database, teamId, includeDmGm);
-            }
-            return of$(0);
-        }),
-    );
+    const threadMentionCountObservable = observeThreadMentionCount(database, teamId, includeDmGm);
 
     return channelMentionCountObservable.pipe(
         combineLatestWith(threadMentionCountObservable),
