@@ -65,6 +65,21 @@ const getStoragePermissionDeniedMessage = (intl: typeof intlShape) => {
     };
 };
 
+const getMicrophonePermissionDeniedMessage = (intl: typeof intlShape) => {
+    const {formatMessage} = intl;
+    const applicationName = DeviceInfo.getApplicationName();
+    return {
+        title: formatMessage({
+            id: 'mobile.microphone_permission_denied_title',
+            defaultMessage: '{applicationName} would like to access your microphone',
+        }, {applicationName}),
+        text: formatMessage({
+            id: 'mobile.microphone_permission_denied_description',
+            defaultMessage: 'Send your voice to calls participants. Open Settings to grant Mattermost access to your microphone.',
+        }),
+    };
+};
+
 export const hasCameraPermission = async (intl: typeof intlShape) => {
     const {formatMessage} = intl;
     const targetSource = Platform.OS === 'ios' ? Permissions.PERMISSIONS.IOS.CAMERA : Permissions.PERMISSIONS.ANDROID.CAMERA;
@@ -87,6 +102,49 @@ export const hasCameraPermission = async (intl: typeof intlShape) => {
         };
 
         const {title, text} = getCameraPermissionDeniedMessage(intl);
+
+        Alert.alert(
+            title,
+            text,
+            [
+                grantOption,
+                {
+                    text: formatMessage({
+                        id: 'mobile.permission_denied_dismiss',
+                        defaultMessage: 'Don\'t Allow',
+                    }),
+                },
+            ],
+        );
+        return false;
+    }
+    }
+
+    return true;
+};
+
+export const hasMicrophonePermission = async (intl: typeof intlShape) => {
+    const {formatMessage} = intl;
+    const targetSource = Platform.OS === 'ios' ? Permissions.PERMISSIONS.IOS.MICROPHONE : Permissions.PERMISSIONS.ANDROID.RECORD_AUDIO;
+    const hasPermission = await Permissions.check(targetSource);
+
+    switch (hasPermission) {
+    case Permissions.RESULTS.DENIED:
+    case Permissions.RESULTS.UNAVAILABLE: {
+        const permissionRequest = await Permissions.request(targetSource);
+
+        return permissionRequest === Permissions.RESULTS.GRANTED;
+    }
+    case Permissions.RESULTS.BLOCKED: {
+        const grantOption = {
+            text: formatMessage({
+                id: 'mobile.permission_denied_retry',
+                defaultMessage: 'Settings',
+            }),
+            onPress: () => Permissions.openSettings(),
+        };
+
+        const {title, text} = getMicrophonePermissionDeniedMessage(intl);
 
         Alert.alert(
             title,

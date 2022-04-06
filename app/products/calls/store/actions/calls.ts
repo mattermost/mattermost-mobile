@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {intlShape} from 'react-intl';
 import InCallManager from 'react-native-incall-manager';
 
 import {Client4} from '@client/rest';
@@ -13,6 +14,7 @@ import {newClient} from '@mmproducts/calls/connection';
 import CallsTypes from '@mmproducts/calls/store/action_types/calls';
 import {getConfig} from '@mmproducts/calls/store/selectors/calls';
 import {Call, CallParticipant, DefaultServerConfig} from '@mmproducts/calls/store/types/calls';
+import {hasMicrophonePermission} from '@utils/permission';
 
 export let ws: any = null;
 
@@ -131,8 +133,13 @@ export function disableChannelCalls(channelId: string): ActionFunc {
     };
 }
 
-export function joinCall(channelId: string): ActionFunc {
+export function joinCall(channelId: string, intl: typeof intlShape): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        const hasPermission = await hasMicrophonePermission(intl);
+        if (!hasPermission) {
+            return {error: 'no permissions to microphone, unable to start call'};
+        }
+
         const setScreenShareURL = (url: string) => {
             dispatch({
                 type: CallsTypes.SET_SCREENSHARE_URL,
