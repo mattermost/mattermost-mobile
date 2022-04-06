@@ -119,7 +119,6 @@ export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnrea
     }
 
     query.push(
-        Q.experimentalNestedJoin(POST, CHANNEL),
         Q.on(
             POST,
             Q.on(
@@ -128,7 +127,8 @@ export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnrea
                     Q.where('team_id', teamId),
                     Q.where('team_id', ''),
                 ),
-            )),
+            ),
+        ),
     );
 
     return database.get<ThreadModel>(THREAD).query(...query);
