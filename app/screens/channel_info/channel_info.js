@@ -89,8 +89,8 @@ export default class ChannelInfo extends PureComponent {
         dismissModal();
     };
 
-    joinCallHandler = (channelId) => {
-        this.props.actions.joinCall(channelId);
+    joinCallHandler = (channelId, intl) => {
+        this.props.actions.joinCall(channelId, intl);
         this.close();
     };
 
