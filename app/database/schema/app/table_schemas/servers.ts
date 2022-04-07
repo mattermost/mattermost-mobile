@@ -17,3 +17,4 @@ export default tableSchema({
         {name: 'identifier', type: 'string', isIndexed: true},
     ],
 });
+
