@@ -19,10 +19,7 @@ const TabletView: Record<string, React.ReactNode> = {
 };
 
 const ChannelTabletView = () => {
-    const [selected, setSelected] = useState<SelectedView>({
-        id: Screens.CHANNEL,
-        Component: Channel,
-    });
+    const [selected, setSelected] = useState<SelectedView>();
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, (id: string) => {

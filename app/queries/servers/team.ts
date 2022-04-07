@@ -5,7 +5,7 @@ import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {Database as DatabaseConstants, Preferences} from '@constants';
+import {Database as DatabaseConstants, Preferences, Screens} from '@constants';
 import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
@@ -23,13 +23,17 @@ import type TeamChannelHistoryModel from '@typings/database/models/servers/team_
 
 const {MY_TEAM, TEAM, TEAM_CHANNEL_HISTORY, MY_CHANNEL} = DatabaseConstants.MM_TABLES.SERVER;
 
+// Saves channels & GLOBAL_THREADS to team history
 export const addChannelToTeamHistory = async (operator: ServerDataOperator, teamId: string, channelId: string, prepareRecordsOnly = false) => {
     let tch: TeamChannelHistory|undefined;
 
     try {
-        const myChannel = (await operator.database.get(MY_CHANNEL).find(channelId));
-        if (!myChannel) {
-            return [];
+        // Exlude GLOBAL_THREADS from channel check
+        if (channelId !== Screens.GLOBAL_THREADS) {
+            const myChannel = (await operator.database.get(MY_CHANNEL).find(channelId));
+            if (!myChannel) {
+                return [];
+            }
         }
         const teamChannelHistory = await getTeamChannelHistory(operator.database, teamId);
         const channelIdSet = new Set(teamChannelHistory);
@@ -43,7 +47,7 @@ export const addChannelToTeamHistory = async (operator: ServerDataOperator, team
             id: teamId,
             channel_ids: channelIds.slice(0, 5),
         };
-    } catch {
+    } catch (e) {
         tch = {
             id: teamId,
             channel_ids: [channelId],

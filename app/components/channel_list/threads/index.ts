@@ -7,6 +7,7 @@ import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {observeCurrentChannelId} from '@queries/servers/system';
 import {observeIsCRTEnabled, observeUnreadsAndMentionsInTeam} from '@queries/servers/thread';
 
 import Threads from './threads';
@@ -24,6 +25,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const isCRTEnabledObserver = observeIsCRTEnabled(database);
 
     return {
+        currentChannelId: observeCurrentChannelId(database),
         isCRTEnabled: isCRTEnabledObserver,
         unreadsAndMentions: combineLatest([isCRTEnabledObserver, currentTeamId]).pipe(
             switchMap(

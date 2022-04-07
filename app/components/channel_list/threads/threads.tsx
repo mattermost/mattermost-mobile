@@ -2,15 +2,15 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {DeviceEventEmitter, TouchableOpacity, View} from 'react-native';
+import {TouchableOpacity, View} from 'react-native';
 
+import {switchToGlobalThreads} from '@actions/local/thread';
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
-import {Navigation, Screens} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -48,6 +48,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type Props = {
+    currentChannelId: string;
     isCRTEnabled: boolean;
     unreadsAndMentions: {
         unreads: number;
@@ -55,30 +56,32 @@ type Props = {
     };
 };
 
-const ThreadsButton = ({isCRTEnabled, unreadsAndMentions}: Props) => {
+const ThreadsButton = ({currentChannelId, isCRTEnabled, unreadsAndMentions}: Props) => {
     const isTablet = useIsTablet();
+    const serverUrl = useServerUrl();
+
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     const handlePress = useCallback(preventDoubleTap(() => {
-        if (isTablet) {
-            DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_THREADS);
-            return;
-        }
-        goToScreen(Screens.GLOBAL_THREADS, '', {}, {topBar: {visible: false}});
-    }), [isTablet]);
+        switchToGlobalThreads(serverUrl);
+    }), [isTablet, serverUrl]);
 
     const {unreads, mentions} = unreadsAndMentions;
 
     const [iconStyle, textStyle] = useMemo(() => {
         const icon = [styles.icon];
         const text = [styles.text];
-        if (unreads) {
+
+        // Highlight the menu if:
+        // 1. There are unreads
+        // 2. No channel is selected and it's a tablet, which means thread screen is selected
+        if (unreads || (!currentChannelId && isTablet)) {
             icon.push(styles.iconHighlight);
             text.push(styles.textHighlight);
         }
         return [icon, text];
-    }, [styles, unreads]);
+    }, [currentChannelId, isTablet, styles, unreads]);
 
     if (!isCRTEnabled) {
         return null;

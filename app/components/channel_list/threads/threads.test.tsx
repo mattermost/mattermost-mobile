@@ -10,6 +10,7 @@ import Threads from './threads';
 test('Threads Component should match snapshot', () => {
     const {toJSON} = renderWithIntlAndTheme(
         <Threads
+            currentChannelId='someChannelId'
             isCRTEnabled={true}
             unreadsAndMentions={{
                 unreads: 0,
