@@ -10,8 +10,8 @@ const {THREADS_IN_TEAM} = MM_TABLES.SERVER;
 export default tableSchema({
     name: THREADS_IN_TEAM,
     columns: [
+        {name: 'loaded_in_global_threads', type: 'boolean', isIndexed: true},
         {name: 'team_id', type: 'string', isIndexed: true},
         {name: 'thread_id', type: 'string', isIndexed: true},
-        {name: 'loaded_in_global_threads', type: 'boolean', isIndexed: true},
     ],
 });

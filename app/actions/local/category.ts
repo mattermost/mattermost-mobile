@@ -48,7 +48,7 @@ export const storeCategories = async (serverUrl: string, categories: CategoryWit
     }
 
     const models = await Promise.all(modelPromises);
-    const flattenedModels = models.flat() as Model[];
+    const flattenedModels = models.flat();
 
     if (prune && categories.length) {
         const {database} = operator;

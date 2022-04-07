@@ -72,11 +72,11 @@ const PostHandler = (superclass: any) => class extends superclass {
      * handlePosts: Handler responsible for the Create/Update operations occurring on the Post table from the 'Server' schema
      * @param {HandlePostsArgs} handlePosts
      * @param {string} handlePosts.actionType
-     * @param {string[]} handlePosts.orders
-     * @param {RawPost[]} handlePosts.values
+     * @param {string[]} handlePosts.order
+     * @param {RawPost[]} handlePosts.posts
      * @param {string | undefined} handlePosts.previousPostId
      * @param {boolean | undefined} handlePosts.prepareRecordsOnly
-     * @returns {Promise<void>}
+     * @returns {Promise<Model[]>}
      */
     handlePosts = async ({actionType, order, posts, previousPostId = '', prepareRecordsOnly = false}: HandlePostsArgs): Promise<Model[]> => {
         const tableName = POST;
