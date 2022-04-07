@@ -5,9 +5,9 @@ import React, {useCallback} from 'react';
 import {KeyboardTypeOptions} from 'react-native';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
-import BoolSetting from '@components/widgets/settings/bool_setting';
-import RadioSetting from '@components/widgets/settings/radio_setting';
-import TextSetting from '@components/widgets/settings/text_setting';
+import BoolSetting from '@components/settings/bool_setting';
+import RadioSetting from '@components/settings/radio_setting';
+import TextSetting from '@components/settings/text_setting';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;

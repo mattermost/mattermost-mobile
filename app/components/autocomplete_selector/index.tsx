@@ -8,9 +8,9 @@ import {IntlShape, useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import CompasIcon from '@components/compass_icon';
+import Footer from '@components/settings/footer';
+import Label from '@components/settings/label';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import Footer from '@components/widgets/settings/footer';
-import Label from '@components/widgets/settings/label';
 import {Screens, View as ViewConstants} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';

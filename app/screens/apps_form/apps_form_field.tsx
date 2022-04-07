@@ -6,8 +6,8 @@ import {KeyboardTypeOptions, View} from 'react-native';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
 import Markdown from '@components/markdown';
-import BoolSetting from '@components/widgets/settings/bool_setting';
-import TextSetting from '@components/widgets/settings/text_setting';
+import BoolSetting from '@components/settings/bool_setting';
+import TextSetting from '@components/settings/text_setting';
 import {View as ViewConstants} from '@constants';
 import {AppFieldTypes} from '@constants/apps';
 import {useTheme} from '@context/theme';
