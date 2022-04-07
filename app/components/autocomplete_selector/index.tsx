@@ -190,9 +190,9 @@ function AutoCompleteSelector({
 
     return (
         <View style={style.container}>
-            {label && (
+            {Boolean(label) && (
                 <Label
-                    label={label}
+                    label={label!}
                     optional={optional}
                     testID={testID}
                 />

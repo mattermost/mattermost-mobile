@@ -46,9 +46,9 @@ function Label({
     const style = getStyleSheet(theme);
 
     return (
-        <View style={style.titleContainer}>
+        <View style={style.labelContainer}>
             <Text
-                style={style.title}
+                style={style.label}
                 testID={`${testID}.label`}
             >
                 {label}

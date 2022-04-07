@@ -22,6 +22,7 @@ export const FORGOT_PASSWORD = 'ForgotPassword';
 export const GALLERY = 'Gallery';
 export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
+export const INTERACTIVE_DIALOG = 'InteractiveDialog';
 export const IN_APP_NOTIFICATION = 'InAppNotification';
 export const LOGIN = 'Login';
 export const MENTIONS = 'Mentions';
@@ -61,6 +62,7 @@ export default {
     GALLERY,
     HOME,
     INTEGRATION_SELECTOR,
+    INTERACTIVE_DIALOG,
     IN_APP_NOTIFICATION,
     LOGIN,
     MENTIONS,

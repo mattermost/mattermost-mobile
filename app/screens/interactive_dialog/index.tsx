@@ -23,6 +23,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
+            flex: 1,
         },
         errorContainer: {
             marginTop: 15,
@@ -227,19 +228,19 @@ function InteractiveDialog({
                 ref={scrollView}
                 style={style.scrollView}
             >
-                {error && (
+                {Boolean(error) && (
                     <ErrorText
                         testID='interactive_dialog.error.text'
                         textStyle={style.errorContainer}
                         error={error}
                     />
                 )}
-                {introductionText &&
+                {Boolean(introductionText) &&
                     <DialogIntroductionText
                         value={introductionText}
                     />
                 }
-                {elements && elements.map((e) => {
+                {Boolean(elements) && elements.map((e) => {
                     return (
                         <DialogElement
                             key={'dialogelement' + e.name}

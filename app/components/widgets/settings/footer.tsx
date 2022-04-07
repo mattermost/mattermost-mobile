@@ -49,7 +49,7 @@ function Label({
 
     return (
         <>
-            {disabled && disabledText && (
+            {disabled && Boolean(disabledText) && (
                 <View style={style.helpTextContainer} >
                     <Markdown
                         baseTextStyle={style.helpText}
@@ -60,7 +60,7 @@ function Label({
                     />
                 </View>
             )}
-            {helpText && (
+            {Boolean(helpText) && (
                 <View style={style.helpTextContainer} >
                     <Markdown
                         baseTextStyle={style.helpText}
@@ -71,7 +71,7 @@ function Label({
                     />
                 </View>
             )}
-            {errorText && (
+            {Boolean(errorText) && (
                 <View style={style.errorTextContainer} >
                     <Markdown
                         baseTextStyle={style.errorText}
