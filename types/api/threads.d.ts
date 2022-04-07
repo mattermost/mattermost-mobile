@@ -11,7 +11,6 @@ type Thread = {
     is_following?: boolean;
     unread_replies: number;
     unread_mentions: number;
-    loaded_in_global_threads: boolean;
 };
 
 type ThreadParticipant = {

@@ -28,7 +28,7 @@ export default class ThreadInTeamModel extends Model implements ThreadInTeamMode
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
 
         /** A THREAD can have many THREADS_IN_TEAM. (relationship is N:1)*/
-        [THREAD]: {type: 'belongs_to', key: 'team_id'},
+        [THREAD]: {type: 'belongs_to', key: 'thread_id'},
     };
 
     /** thread_id: Associated thread identifier */
