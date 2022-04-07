@@ -14,7 +14,6 @@ const Preferences: Record<string, any> = {
     COLLAPSED_REPLY_THREADS: 'collapsed_reply_threads',
     COLLAPSED_REPLY_THREADS_OFF: 'off',
     COLLAPSED_REPLY_THREADS_ON: 'on',
-    COLLAPSED_REPLY_THREADS_FALLBACK_DEFAULT: 'off',
     COMMENTS: 'comments',
     COMMENTS_ANY: 'any',
     COMMENTS_ROOT: 'root',
