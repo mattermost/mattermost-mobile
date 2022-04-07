@@ -104,9 +104,7 @@ export async function fetchRecentMentions(serverUrl: string): Promise<PostSearch
             return mdls;
         });
 
-        if (models.length) {
-            await operator.batchRecords(models);
-        }
+        await operator.batchRecords(models);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};

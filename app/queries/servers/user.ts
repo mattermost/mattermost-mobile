@@ -59,15 +59,7 @@ export const queryUsersByUsername = (database: Database, usernames: string[]) =>
 };
 
 export async function prepareUsers(operator: ServerDataOperator, users: UserProfile[]): Promise<UserModel[]> {
-    try {
-        if (users.length) {
-            return operator.handleUsers({users, prepareRecordsOnly: true});
-        }
-
-        return [];
-    } catch {
-        return [];
-    }
+    return operator.handleUsers({users, prepareRecordsOnly: true});
 }
 
 export const observeTeammateNameDisplay = (database: Database) => {

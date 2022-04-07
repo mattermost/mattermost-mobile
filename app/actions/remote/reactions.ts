@@ -52,9 +52,7 @@ export const addReaction = async (serverUrl: string, postId: string, emojiName: 
                 models.push(...recent);
             }
 
-            if (models.length) {
-                await operator.batchRecords(models);
-            }
+            await operator.batchRecords(models);
 
             return {reaction};
         }

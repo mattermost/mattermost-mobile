@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {transformReactionRecord} from '@database/operator/server_data_operator/transformers/reaction';
 import {sanitizeReactions} from '@database/operator/utils/reaction';
 
@@ -29,10 +28,12 @@ const ReactionHandler = (superclass: any) => class extends superclass {
     handleReactions = async ({postsReactions, prepareRecordsOnly, skipSync}: HandleReactionsArgs): Promise<ReactionModel[]> => {
         const batchRecords: ReactionModel[] = [];
 
-        if (!postsReactions.length) {
-            throw new DataOperatorException(
-                'An empty "reactions" array has been passed to the handleReactions method',
+        if (!postsReactions?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "postsReactions" array has been passed to the handleReactions method',
             );
+            return [];
         }
 
         for await (const postReactions of postsReactions) {
