@@ -8,6 +8,7 @@ import {updateThreadFollowing} from '@actions/remote/thread';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {t} from '@i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -60,13 +61,13 @@ function ThreadFollow({isFollowing, teamId, threadId}: Props) {
 
     const containerStyle = [styles.container];
     let followTextProps = {
-        id: 'threads.follow',
+        id: t('threads.follow'),
         defaultMessage: 'Follow',
     };
     if (isFollowing) {
         containerStyle.push(styles.containerActive);
         followTextProps = {
-            id: 'threads.following',
+            id: t('threads.following'),
             defaultMessage: 'Following',
         };
     }
