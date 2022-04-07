@@ -91,6 +91,7 @@ exports[`components/channel_list should render channels error 1`] = `
                 "marginLeft": 4,
               }
             }
+            testID="channel_list_header.chevron.button"
           >
             <Icon
               name="chevron-down"
@@ -126,6 +127,7 @@ exports[`components/channel_list should render channels error 1`] = `
             "width": 28,
           }
         }
+        testID="channel_list_header.plus.button"
       >
         <Icon
           name="plus"
@@ -407,6 +409,7 @@ exports[`components/channel_list should render team error 1`] = `
           },
         ]
       }
+      testID="channel_list.search_field.find_channels.input"
     />
   </View>
   <View
@@ -422,6 +425,7 @@ exports[`components/channel_list should render team error 1`] = `
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     onStartShouldSetResponderCapture={[Function]}
+    testID="channel_list.threads.button"
   >
     <View
       accessible={true}

@@ -71,6 +71,7 @@ exports[`components/channel_list/header Channel List Header Component should mat
               "marginLeft": 4,
             }
           }
+          testID="channel_list_header.chevron.button"
         >
           <Icon
             name="chevron-down"
@@ -106,6 +107,7 @@ exports[`components/channel_list/header Channel List Header Component should mat
           "width": 28,
         }
       }
+      testID="channel_list_header.plus.button"
     >
       <Icon
         name="plus"

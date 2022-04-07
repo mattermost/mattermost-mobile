@@ -85,7 +85,7 @@ export default function SelectedUser({
         >
             <Text
                 style={style.text}
-                testID={`${testID}.${user.id}.display_username`}
+                testID={`${testID}.${user.id}.display_name`}
             >
                 {displayUsername(user, intl.locale, teammateNameDisplay)}
             </Text>

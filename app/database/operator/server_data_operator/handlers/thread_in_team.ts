@@ -11,13 +11,13 @@ import type {HandleThreadInTeamArgs, RecordPair} from '@typings/database/databas
 import type ThreadInTeamModel from '@typings/database/models/servers/thread_in_team';
 
 export interface ThreadInTeamHandlerMix {
-    handleThreadInTeam: ({threadsMap, prepareRecordsOnly}: HandleThreadInTeamArgs) => Promise<ThreadInTeamModel[]>;
+    handleThreadInTeam: ({threadsMap, loadedInGlobalThreads, prepareRecordsOnly}: HandleThreadInTeamArgs) => Promise<ThreadInTeamModel[]>;
 }
 
 const {THREADS_IN_TEAM} = MM_TABLES.SERVER;
 
 const ThreadInTeamHandler = (superclass: any) => class extends superclass {
-    handleThreadInTeam = async ({threadsMap, prepareRecordsOnly = false}: HandleThreadInTeamArgs): Promise<ThreadInTeamModel[]> => {
+    handleThreadInTeam = async ({threadsMap, loadedInGlobalThreads, prepareRecordsOnly = false}: HandleThreadInTeamArgs): Promise<ThreadInTeamModel[]> => {
         if (!Object.keys(threadsMap).length) {
             return [];
         }
@@ -40,11 +40,11 @@ const ThreadInTeamHandler = (superclass: any) => class extends superclass {
                 const newValue = {
                     thread_id: thread.id,
                     team_id: teamId,
-                    loaded_in_global_threads: thread.loaded_in_global_threads,
+                    loaded_in_global_threads: Boolean(loadedInGlobalThreads),
                 };
 
-                // update record if loaded_in_global_threads is true
-                if (chunk && thread.loaded_in_global_threads) {
+                // update record only if loaded_in_global_threads is true
+                if (chunk && loadedInGlobalThreads) {
                     update.push(getValidRecordsForUpdate({
                         tableName: THREADS_IN_TEAM,
                         newValue,
