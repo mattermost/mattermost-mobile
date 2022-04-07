@@ -493,6 +493,11 @@ REFERENCES [Team] ([id])
 
 ALTER TABLE [ThreadsInTeam] CHECK CONSTRAINT [FK_ThreadsInTeam_team_id]
 
+ALTER TABLE [ThreadsInTeam] WITH CHECK ADD CONSTRAINT [FK_ThreadsInTeam_thread_id] FOREIGN KEY([thread_id])
+REFERENCES [Thread] ([id])
+
+ALTER TABLE [ThreadsInTeam] CHECK CONSTRAINT [FK_ThreadsInTeam_thread_id]
+
 ALTER TABLE [ThreadParticipant] WITH CHECK ADD CONSTRAINT [FK_ThreadParticipant_thread_id] FOREIGN KEY([thread_id])
 REFERENCES [Thread] ([id])
 
