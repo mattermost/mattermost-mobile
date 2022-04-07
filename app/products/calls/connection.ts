@@ -56,7 +56,12 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
         if (peer) {
             peer.destroy();
         }
-        InCallManager.stop();
+
+        // Allow time for the peer to be destroyed, which avoids the following error that can cause problems with accessing the audio system:
+        // AVAudioSession_iOS.mm:1243  Deactivating an audio session that has running I/O. All I/O should be stopped or paused prior to deactivating the audio session.
+        setTimeout(() => {
+            InCallManager.stop();
+        }, 1000);
 
         if (closeCb) {
             closeCb();

@@ -421,7 +421,12 @@ export default class Peer extends stream.Duplex {
         this.isNegotiating = true;
     }
 
-    _destroy(err: Error | null, cb: (error: Error | null) => void) {
+    destroy(err?: Error, cb?: (error: Error | null) => void): this {
+        this._destroy(err, cb);
+        return this;
+    }
+
+    _destroy(err?: Error | null, cb?: (error: Error | null) => void) {
         if (this.destroyed || this.destroying) {
             return;
         }
@@ -491,7 +496,7 @@ export default class Peer extends stream.Duplex {
                 this.emit('error', err);
             }
             this.emit('close');
-            cb(null);
+            cb?.(null);
         }, 0);
     }
 
