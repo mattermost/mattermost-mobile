@@ -46,12 +46,11 @@ describe('*** Operator: Thread Handlers tests ***', () => {
                 is_following: true,
                 unread_replies: 0,
                 unread_mentions: 0,
-                loaded_in_global_threads: false,
             },
         ] as Thread[];
 
         const threadsMap = {team_id_1: threads};
-        await operator.handleThreads({threads, prepareRecordsOnly: false, teamId: 'team_id_1'});
+        await operator.handleThreads({threads, loadedInGlobalThreads: false, prepareRecordsOnly: false, teamId: 'team_id_1'});
 
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'id',
@@ -76,6 +75,7 @@ describe('*** Operator: Thread Handlers tests ***', () => {
         expect(spyOnHandleThreadInTeam).toHaveBeenCalledWith({
             threadsMap,
             prepareRecordsOnly: true,
+            loadedInGlobalThreads: false,
         });
 
         // Only one batch operation for both tables
@@ -125,7 +125,6 @@ describe('*** Operator: Thread Handlers tests ***', () => {
                 is_following: true,
                 unread_replies: 0,
                 unread_mentions: 0,
-                loaded_in_global_threads: true,
             },
             {
                 id: 'thread-2',
@@ -138,7 +137,6 @@ describe('*** Operator: Thread Handlers tests ***', () => {
                 is_following: true,
                 unread_replies: 0,
                 unread_mentions: 0,
-                loaded_in_global_threads: true,
             },
         ] as Thread[];
 
@@ -154,7 +152,6 @@ describe('*** Operator: Thread Handlers tests ***', () => {
                 is_following: true,
                 unread_replies: 2,
                 unread_mentions: 0,
-                loaded_in_global_threads: false,
             },
         ] as Thread[];
 
@@ -163,13 +160,13 @@ describe('*** Operator: Thread Handlers tests ***', () => {
             team_id_2: team2Threads,
         };
 
-        await operator.handleThreadInTeam({threadsMap, prepareRecordsOnly: false});
+        await operator.handleThreadInTeam({threadsMap, loadedInGlobalThreads: true, prepareRecordsOnly: false});
 
         expect(spyOnPrepareRecords).toHaveBeenCalledWith({
             createRaws: [{
                 raw: {team_id: 'team_id_1', thread_id: 'thread-2', loaded_in_global_threads: true},
             }, {
-                raw: {team_id: 'team_id_2', thread_id: 'thread-2', loaded_in_global_threads: false},
+                raw: {team_id: 'team_id_2', thread_id: 'thread-2', loaded_in_global_threads: true},
             }],
             transformer: transformThreadInTeamRecord,
             updateRaws: [
