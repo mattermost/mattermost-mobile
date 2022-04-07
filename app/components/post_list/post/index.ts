@@ -13,6 +13,7 @@ import {queryPostsBetween} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCanManageChannelMembers, observePermissionForPost} from '@queries/servers/role';
 import {observeConfigBooleanValue} from '@queries/servers/system';
+import {observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
 import {areConsecutivePosts, isPostEphemeral} from '@utils/post';
@@ -28,6 +29,7 @@ import type UserModel from '@typings/database/models/servers/user';
 type PropsInput = WithDatabaseArgs & {
     appsEnabled: boolean;
     currentUser: UserModel;
+    isCRTEnabled?: boolean;
     nextPost: PostModel | undefined;
     post: PostModel;
     previousPost: PostModel | undefined;
@@ -138,6 +140,7 @@ const withPost = withObservables(
         return {
             appsEnabled: of$(appsEnabled),
             canDelete,
+            channel: post.channel.observe(),
             differentThreadSequence: of$(differentThreadSequence),
             filesCount: post.files.observeCount(),
             hasReplies,
@@ -150,6 +153,7 @@ const withPost = withObservables(
             isLastReply,
             isPostAddChannelMember,
             post: post.observe(),
+            thread: observeThreadById(database, post.id),
             reactionsCount: post.reactions.observeCount(),
         };
     });

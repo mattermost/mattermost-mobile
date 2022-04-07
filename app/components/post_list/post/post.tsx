@@ -21,16 +21,21 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Avatar from './avatar';
 import Body from './body';
+import Footer from './footer';
 import Header from './header';
 import PreHeader from './pre_header';
 import SystemMessage from './system_message';
+import UnreadDot from './unread_dot';
 
+import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
+import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 
 type PostProps = {
     appsEnabled: boolean;
     canDelete: boolean;
+    channel: ChannelModel;
     currentUser: UserModel;
     differentThreadSequence: boolean;
     filesCount: number;
@@ -39,6 +44,7 @@ type PostProps = {
     highlightPinnedOrSaved?: boolean;
     highlightReplyBar: boolean;
     isConsecutivePost?: boolean;
+    isCRTEnabled?: boolean;
     isEphemeral: boolean;
     isFirstReply?: boolean;
     isSaved?: boolean;
@@ -47,6 +53,7 @@ type PostProps = {
     isPostAddChannelMember: boolean;
     location: string;
     post: PostModel;
+    thread: ThreadModel;
     previousPost?: PostModel;
     reactionsCount: number;
     shouldRenderReplyButton?: boolean;
@@ -96,10 +103,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Post = ({
-    appsEnabled, canDelete, currentUser, differentThreadSequence, filesCount, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
-    isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
+    appsEnabled, canDelete, channel, currentUser, differentThreadSequence, filesCount, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
+    isCRTEnabled, isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
     location, post, reactionsCount, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
-    testID, previousPost,
+    testID, thread, previousPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
     const intl = useIntl();
@@ -223,6 +230,7 @@ const Post = ({
                     currentUser={currentUser}
                     differentThreadSequence={differentThreadSequence}
                     isAutoResponse={isAutoResponder}
+                    isCRTEnabled={isCRTEnabled}
                     isEphemeral={isEphemeral}
                     isPendingOrFailed={isPendingOrFailed}
                     isSystemPost={isSystemPost}
@@ -264,6 +272,30 @@ const Post = ({
         );
     }
 
+    let unreadDot;
+    let footer;
+    if (isCRTEnabled && thread) {
+        if (thread.replyCount > 0 || thread.isFollowing) {
+            footer = (
+                <Footer
+                    currentUserId={currentUser.id}
+                    serverUrl={serverUrl}
+                    teamId={channel?.teamId}
+                    testID={`${itemTestID}.footer`}
+                    theme={theme}
+                    thread={thread}
+                />
+            );
+        }
+        unreadDot = (
+            <UnreadDot
+                testID={`${itemTestID}.badge`}
+                theme={theme}
+                thread={thread}
+            />
+        );
+    }
+
     return (
         <View
             testID={testID}
@@ -289,7 +321,9 @@ const Post = ({
                         <View style={rightColumnStyle}>
                             {header}
                             {body}
+                            {footer}
                         </View>
+                        {unreadDot}
                     </View>
                 </>
             </TouchableHighlight>

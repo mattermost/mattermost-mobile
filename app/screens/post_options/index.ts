@@ -12,6 +12,7 @@ import {observePost} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observePermissionForChannel, observePermissionForPost} from '@queries/servers/role';
 import {observeConfig, observeLicense} from '@queries/servers/system';
+import {observeIsCRTEnabled, observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
@@ -140,6 +141,18 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
         return of$(permission && !isArchived && !isReadOnly && canPost);
     }));
 
+    const getThread = (enabled: boolean) => {
+        if (enabled) {
+            return observeThreadById(database, post.id);
+        }
+
+        return of$(undefined);
+    };
+
+    const thread = observeIsCRTEnabled(database).pipe(
+        switchMap(getThread),
+    );
+
     return {
         canMarkAsUnread,
         canAddReaction,
@@ -150,8 +163,8 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
         isSaved,
         canEdit,
         post,
+        thread,
     };
 });
 
 export default withDatabase(withPost(enhanced(PostOptions)));
-
