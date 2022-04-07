@@ -13,7 +13,7 @@ import NavigationHeader from '@components/navigation_header';
 import {Database} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useAppState} from '@hooks/device';
+import {useAppState, useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {popTopScreen} from '@screens/navigation';
 
@@ -43,6 +43,7 @@ const GlobalThreads = ({componentId, currentTeamId}: Props) => {
     const appState = useAppState();
     const intl = useIntl();
     const insets = useSafeAreaInsets();
+    const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
 
     const theme = useTheme();
@@ -68,6 +69,7 @@ const GlobalThreads = ({componentId, currentTeamId}: Props) => {
             testID='global_threads'
         >
             <NavigationHeader
+                showBackButton={!isTablet}
                 isLargeTitle={false}
                 onBackPress={onBackPress}
                 title={
