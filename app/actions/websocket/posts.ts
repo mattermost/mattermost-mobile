@@ -59,9 +59,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         prepareRecordsOnly: true,
     });
 
-    if (postModels?.length) {
-        models.push(...postModels);
-    }
+    models.push(...postModels);
 
     const isCRTEnabled = await getIsCRTEnabled(database);
     if (isCRTEnabled) {
@@ -120,9 +118,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     const {authors} = await fetchPostAuthors(serverUrl, [post], true);
     if (authors?.length) {
         const authorsModels = await operator.handleUsers({users: authors, prepareRecordsOnly: true});
-        if (authorsModels.length) {
-            models.push(...authorsModels);
-        }
+        models.push(...authorsModels);
     }
 
     if (!shouldIgnorePost(post)) {
@@ -191,9 +187,7 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     const {authors} = await fetchPostAuthors(serverUrl, [post], true);
     if (authors?.length) {
         const authorsModels = await operator.handleUsers({users: authors, prepareRecordsOnly: true});
-        if (authorsModels.length) {
-            models.push(...authorsModels);
-        }
+        models.push(...authorsModels);
     }
 
     const postModels = await operator.handlePosts({
@@ -202,13 +196,9 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
         posts: [post],
         prepareRecordsOnly: true,
     });
-    if (postModels.length) {
-        models.push(...postModels);
-    }
+    models.push(...postModels);
 
-    if (models.length) {
-        operator.batchRecords(models);
-    }
+    operator.batchRecords(models);
 }
 
 export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage) {
@@ -255,7 +245,7 @@ export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage
 }
 
 export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage) {
-    const {channel_id: channelId} = msg.broadcast;
+    const {channel_id: channelId, team_id: teamId} = msg.broadcast;
     const {mention_count: mentionCount, msg_count: msgCount, last_viewed_at: lastViewedAt} = msg.data;
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
@@ -264,8 +254,10 @@ export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage)
 
     const myChannel = await getMyChannel(database, channelId);
     if (!myChannel?.manuallyUnread) {
-        // We used to fetch the channel to get the delta on the message count
-        // We just need to identify that there are unread messages, the exact number is uninportant
-        markChannelAsUnread(serverUrl, channelId, msgCount, mentionCount, lastViewedAt);
+        const {channels} = await fetchMyChannel(serverUrl, teamId, channelId, true);
+        const channel = channels?.[0];
+        const postNumber = channel?.total_msg_count;
+        const delta = postNumber ? postNumber - msgCount : msgCount;
+        markChannelAsUnread(serverUrl, channelId, delta, mentionCount, lastViewedAt);
     }
 }

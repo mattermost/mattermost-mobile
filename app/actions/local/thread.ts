@@ -122,17 +122,13 @@ export const createThreadFromNewPost = async (serverUrl: string, post: Post, pre
             prepareRecordsOnly: true,
             skipSync: true,
         });
-        if (threadParticipantModels?.length) {
-            models.push(...threadParticipantModels);
-        }
+        models.push(...threadParticipantModels);
     } else { // If the post is a root post, then we need to add it to the thread table
         const threadModels = await prepareThreadsFromReceivedPosts(operator, [post]);
-        if (threadModels?.length) {
-            models.push(...threadModels);
-        }
+        models.push(...threadModels);
     }
 
-    if (models.length && !prepareRecordsOnly) {
+    if (!prepareRecordsOnly) {
         await operator.batchRecords(models);
     }
 
@@ -140,13 +136,11 @@ export const createThreadFromNewPost = async (serverUrl: string, post: Post, pre
 };
 
 // On receiving threads, Along with the "threads" & "thread participants", extract and save "posts" & "users"
-export const processReceivedThreads = async (serverUrl: string, threads: Thread[], teamId: string, prepareRecordsOnly = false) => {
+export const processReceivedThreads = async (serverUrl: string, threads: Thread[], teamId: string, prepareRecordsOnly = false, loadedInGlobalThreads = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
-
-    const models: Model[] = [];
 
     const posts: Post[] = [];
     const users: UserProfile[] = [];
@@ -165,30 +159,21 @@ export const processReceivedThreads = async (serverUrl: string, threads: Thread[
         prepareRecordsOnly: true,
     });
 
-    if (postModels.length) {
-        models.push(...postModels);
-    }
-
     const threadModels = await operator.handleThreads({
         threads,
         teamId,
         prepareRecordsOnly: true,
+        loadedInGlobalThreads,
     });
-
-    if (threadModels.length) {
-        models.push(...threadModels);
-    }
 
     const userModels = await operator.handleUsers({
         users,
         prepareRecordsOnly: true,
     });
 
-    if (userModels.length) {
-        models.push(...userModels);
-    }
+    const models = [...postModels, ...threadModels, ...userModels];
 
-    if (models.length && !prepareRecordsOnly) {
+    if (!prepareRecordsOnly) {
         await operator.batchRecords(models);
     }
     return {models};

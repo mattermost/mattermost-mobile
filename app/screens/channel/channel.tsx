@@ -117,6 +117,7 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
                 style={styles.flex}
                 mode='margin'
                 edges={edges}
+                testID='channel.screen'
             >
                 <NavigationHeader
                     isLargeTitle={false}

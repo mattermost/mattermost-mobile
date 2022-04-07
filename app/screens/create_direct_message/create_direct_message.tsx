@@ -249,9 +249,9 @@ export default function CreateDirectMessage({
         let results;
 
         if (restrictDirectMessage) {
-            results = await searchProfiles(serverUrl, lowerCasedTerm);
+            results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
         } else {
-            results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId});
+            results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
         }
 
         let data: UserProfile[] = [];
@@ -275,12 +275,12 @@ export default function CreateDirectMessage({
             }
 
             searchTimeoutId.current = setTimeout(() => {
-                search();
+                searchUsers(text);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             clearSearch();
         }
-    }, [search, clearSearch]);
+    }, [searchUsers, clearSearch]);
 
     const updateNavigationButtons = useCallback(async (startEnabled: boolean) => {
         const closeIcon = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
@@ -288,7 +288,7 @@ export default function CreateDirectMessage({
             leftButtons: [{
                 id: CLOSE_BUTTON,
                 icon: closeIcon,
-                testID: 'close.more_direct_messages.button',
+                testID: 'close.create_direct_message.button',
             }],
             rightButtons: [{
                 color: theme.sidebarHeaderTextColor,
@@ -296,7 +296,7 @@ export default function CreateDirectMessage({
                 text: formatMessage({id: 'mobile.create_direct_message.start', defaultMessage: 'Start'}),
                 showAsAction: 'always',
                 enabled: startEnabled,
-                testID: 'more_direct_messages.start.button',
+                testID: 'create_direct_message.start.button',
             }],
         });
     }, [intl.locale, theme]);
@@ -359,7 +359,10 @@ export default function CreateDirectMessage({
     }
 
     return (
-        <SafeAreaView style={style.container}>
+        <SafeAreaView
+            style={style.container}
+            testID='create_direct_message.screen'
+        >
             <View style={style.searchBar}>
                 <Search
                     testID='create_direct_message.search_bar'
@@ -393,6 +396,7 @@ export default function CreateDirectMessage({
                 showNoResults={!loading && page.current !== -1}
                 teammateNameDisplay={teammateNameDisplay}
                 fetchMore={getProfiles}
+                testID='create_direct_message.user_list'
             />
         </SafeAreaView>
     );

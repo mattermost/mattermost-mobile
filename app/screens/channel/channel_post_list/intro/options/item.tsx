@@ -14,6 +14,7 @@ type Props = {
     iconName: string;
     label: string;
     onPress: () => void;
+    testID?: string;
     theme: Theme;
 }
 
@@ -40,7 +41,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const IntroItem = ({applyMargin, color, iconName, label, onPress, theme}: Props) => {
+const IntroItem = ({applyMargin, color, iconName, label, onPress, testID, theme}: Props) => {
     const styles = getStyleSheet(theme);
     const pressedStyle = useCallback(({pressed}: PressableStateCallbackType) => {
         const style = [styles.container];
@@ -59,6 +60,7 @@ const IntroItem = ({applyMargin, color, iconName, label, onPress, theme}: Props)
         <Pressable
             onPress={onPress}
             style={pressedStyle}
+            testID={testID}
         >
             {({pressed}) => (
                 <>
@@ -67,7 +69,10 @@ const IntroItem = ({applyMargin, color, iconName, label, onPress, theme}: Props)
                         color={pressed ? theme.linkColor : color || changeOpacity(theme.centerChannelColor, 0.56)}
                         size={24}
                     />
-                    <Text style={[styles.label, {color: pressed ? theme.linkColor : color || changeOpacity(theme.centerChannelColor, 0.56)}]}>
+                    <Text
+                        style={[styles.label, {color: pressed ? theme.linkColor : color || changeOpacity(theme.centerChannelColor, 0.56)}]}
+                        testID={`${testID}.label`}
+                    >
                         {label}
                     </Text>
                 </>

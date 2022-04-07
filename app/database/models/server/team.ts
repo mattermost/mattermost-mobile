@@ -55,6 +55,9 @@ export default class TeamModel extends Model implements TeamModelInterface {
 
         /** A TEAM has a 1:N relationship with THREADS_IN_TEAM. A TEAM can possess multiple threads */
         [THREADS_IN_TEAM]: {type: 'has_many', foreignKey: 'team_id'},
+
+        /** A TEAM has a 1:1 relationship with TEAM_CHANNEL_HISTORY. */
+        [TEAM_CHANNEL_HISTORY]: {type: 'has_many', foreignKey: 'id'},
     };
 
     /** is_allow_open_invite : Boolean flag indicating if this team is open to the public */
@@ -106,15 +109,23 @@ export default class TeamModel extends Model implements TeamModelInterface {
     @lazy threadsList = this.collections.get<ThreadModel>(THREAD).query(
         Q.on(THREADS_IN_TEAM, Q.and(
             Q.where('team_id', this.id),
-            Q.where('loadedInGlobalThreads', true),
+            Q.where('loaded_in_global_threads', true),
         )),
+        Q.and(
+            Q.where('reply_count', Q.gt(0)),
+            Q.where('is_following', true),
+        ),
         Q.sortBy('last_reply_at', Q.desc),
     );
 
     /** unreadThreadsList : Unread threads list belonging to a team */
     @lazy unreadThreadsList = this.collections.get<ThreadModel>(THREAD).query(
         Q.on(THREADS_IN_TEAM, 'team_id', this.id),
-        Q.where('unread_replies', Q.gt(0)),
+        Q.and(
+            Q.where('reply_count', Q.gt(0)),
+            Q.where('is_following', true),
+            Q.where('unread_replies', Q.gt(0)),
+        ),
         Q.sortBy('last_reply_at', Q.desc),
     );
 }

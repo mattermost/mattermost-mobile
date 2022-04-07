@@ -100,7 +100,7 @@ export const fetchThreads = async (
                 thread.is_following = true;
             });
 
-            await processReceivedThreads(serverUrl, threads, teamId);
+            await processReceivedThreads(serverUrl, threads, teamId, false, !unread);
         }
 
         return {data};
@@ -121,7 +121,7 @@ export const fetchThread = async (serverUrl: string, teamId: string, threadId: s
     try {
         const thread = await client.getThread('me', teamId, threadId, extended);
 
-        await processReceivedThreads(serverUrl, [thread], teamId);
+        await processReceivedThreads(serverUrl, [thread], teamId, false, false);
 
         return {data: thread};
     } catch (error) {

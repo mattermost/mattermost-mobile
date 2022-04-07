@@ -56,8 +56,12 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
         return result;
     };
 
-    handleReceivedPostsInChannel = async (posts: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
-        if (!posts.length) {
+    handleReceivedPostsInChannel = async (posts?: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
+        if (!posts?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "posts" array has been passed to the handleReceivedPostsInChannel method',
+            );
             return [];
         }
 
@@ -120,7 +124,11 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
     };
 
     handleReceivedPostsInChannelSince = async (posts: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
-        if (!posts.length) {
+        if (!posts?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "posts" array has been passed to the handleReceivedPostsInChannelSince method',
+            );
             return [];
         }
 
@@ -167,7 +175,11 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
     };
 
     handleReceivedPostsInChannelBefore = async (posts: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
-        if (!posts.length) {
+        if (!posts?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "posts" array has been passed to the handleReceivedPostsInChannelBefore method',
+            );
             return [];
         }
 
@@ -217,7 +229,11 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
     };
 
     handleReceivedPostForChannel = async (posts: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
-        if (!posts.length) {
+        if (!posts?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "posts" array has been passed to the handleReceivedPostForChannel method',
+            );
             return [];
         }
 

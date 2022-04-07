@@ -24,6 +24,8 @@ type Props = {
     componentId: string;
     channel?: ChannelModel;
     channelInfo?: ChannelInfoModel;
+    headerOnly?: boolean;
+    isModal: boolean;
 }
 
 const CLOSE_BUTTON_ID = 'close-channel';
@@ -63,6 +65,8 @@ const CreateOrEditChannel = ({
     componentId,
     channel,
     channelInfo,
+    headerOnly,
+    isModal,
 }: Props) => {
     const intl = useIntl();
     const {formatMessage} = intl;
@@ -124,11 +128,13 @@ const CreateOrEditChannel = ({
     }, [rightButton, componentId]);
 
     useEffect(() => {
-        const icon = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        setButtons(componentId, {
-            leftButtons: [makeCloseButton(icon)],
-        });
-    }, [theme]);
+        if (isModal) {
+            const icon = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
+            setButtons(componentId, {
+                leftButtons: [makeCloseButton(icon)],
+            });
+        }
+    }, [theme, isModal]);
 
     useEffect(() => {
         setCanSave(
@@ -243,6 +249,7 @@ const CreateOrEditChannel = ({
             displayName={displayName}
             onDisplayNameChange={setDisplayName}
             header={header}
+            headerOnly={headerOnly}
             onHeaderChange={setHeader}
             purpose={purpose}
             onPurposeChange={setPurpose}
