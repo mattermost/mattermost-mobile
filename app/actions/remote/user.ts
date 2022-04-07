@@ -145,12 +145,16 @@ export const fetchProfilesPerChannels = async (serverUrl: string, channelIds: st
                     });
                 }
             }
-            modelPromises.push(operator.handleChannelMembership({
-                channelMemberships: memberships,
-                prepareRecordsOnly: true,
-            }));
-            const prepare = prepareUsers(operator, Array.from(users).filter((u) => u.id !== excludeUserId));
-            modelPromises.push(prepare);
+            if (memberships.length) {
+                modelPromises.push(operator.handleChannelMembership({
+                    channelMemberships: memberships,
+                    prepareRecordsOnly: true,
+                }));
+            }
+            if (users.size) {
+                const prepare = prepareUsers(operator, Array.from(users).filter((u) => u.id !== excludeUserId));
+                modelPromises.push(prepare);
+            }
 
             const models = await Promise.all(modelPromises);
             await operator.batchRecords(models.flat());
@@ -313,6 +317,10 @@ export const fetchUsersByUsernames = async (serverUrl: string, usernames: string
             return result;
         }, {});
         const usersToLoad = usernames.filter((username) => (username !== currentUser?.username && !exisitingUsersMap[username]));
+        if (!usersToLoad.length) {
+            return {users: []};
+        }
+
         const users = await client.getProfilesByUsernames([...new Set(usersToLoad)]);
 
         if (!fetchOnly) {
