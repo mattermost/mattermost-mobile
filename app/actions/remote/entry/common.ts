@@ -215,12 +215,12 @@ export const deferredAppEntryActions = async (
         await fetchTeamsChannelsAndUnreadPosts(serverUrl, since, teamData.teams, teamData.memberships, initialTeamId);
     }
 
-    if (initialTeamId) {
-        await fetchNewThreads(serverUrl, initialTeamId, false);
-    }
-
     if (isCRTEnabled) {
-        if (teamData.teams?.length && teamData.memberships?.length) {
+        if (initialTeamId) {
+            await fetchNewThreads(serverUrl, initialTeamId, false);
+        }
+
+        if (teamData.teams?.length) {
             for await (const team of teamData.teams) {
                 if (team.id !== initialTeamId) {
                     // need to await here since GM/DM threads in different teams overlap

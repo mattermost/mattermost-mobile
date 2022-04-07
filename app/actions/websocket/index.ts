@@ -7,6 +7,7 @@ import {fetchPostsForUnreadChannels, fetchPostsSince} from '@actions/remote/post
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchTeamsChannelsAndUnreadPosts} from '@actions/remote/team';
+import {fetchNewThreads} from '@actions/remote/thread';
 import {fetchStatusByIds, updateAllUsersSince} from '@actions/remote/user';
 import {WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -15,6 +16,7 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {queryChannelsById, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
 import {getCommonSystemValues, getConfig, getCurrentChannelId, getWebSocketLastDisconnected, resetWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {getIsCRTEnabled} from '@queries/servers/thread';
 import {isDMorGM} from '@utils/channel';
 import {isTablet} from '@utils/helpers';
 
@@ -195,6 +197,22 @@ async function doReconnect(serverUrl: string) {
     // defer fetch channels and unread posts for other teams
     if (teamData.teams?.length && teamData.memberships?.length) {
         await fetchTeamsChannelsAndUnreadPosts(serverUrl, lastDisconnectedAt, teamData.teams, teamData.memberships, initialTeamId);
+    }
+
+    const isCRTEnabled = await getIsCRTEnabled(database);
+    if (isCRTEnabled) {
+        if (initialTeamId) {
+            await fetchNewThreads(serverUrl, initialTeamId, false);
+        }
+
+        if (teamData.teams?.length) {
+            for await (const team of teamData.teams) {
+                if (team.id !== initialTeamId) {
+                    // need to await here since GM/DM threads in different teams overlap
+                    await fetchNewThreads(serverUrl, team.id, false);
+                }
+            }
+        }
     }
 
     fetchAllTeams(serverUrl);
