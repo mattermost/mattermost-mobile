@@ -151,7 +151,7 @@ export const markPostAsDeleted = async (serverUrl: string, post: Post, prepareRe
     });
 
     if (!prepareRecordsOnly) {
-        operator.batchRecords([dbPost]);
+        await operator.batchRecords([dbPost]);
     }
     return {model};
 };

@@ -5,11 +5,17 @@ import React from 'react';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
-import Threads from './index';
+import Threads from './threads';
 
 test('Threads Component should match snapshot', () => {
     const {toJSON} = renderWithIntlAndTheme(
-        <Threads/>,
+        <Threads
+            isCRTEnabled={true}
+            unreadsAndMentions={{
+                unreads: 0,
+                mentions: 0,
+            }}
+        />,
     );
 
     expect(toJSON()).toMatchSnapshot();

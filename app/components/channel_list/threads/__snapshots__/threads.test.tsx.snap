@@ -1,0 +1,67 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Threads Component should match snapshot 1`] = `
+<View
+  accessible={true}
+  collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    Object {
+      "opacity": 1,
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "display": "flex",
+        "flexDirection": "row",
+        "paddingLeft": 3,
+      }
+    }
+  >
+    <Icon
+      name="message-text-outline"
+      style={
+        Array [
+          Object {
+            "color": "rgba(255,255,255,0.5)",
+            "fontSize": 24,
+          },
+        ]
+      }
+    />
+    <View
+      style={
+        Object {
+          "flex": 1,
+        }
+      }
+    >
+      <Text
+        style={
+          Array [
+            Object {
+              "color": "rgba(255,255,255,0.72)",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+              "paddingLeft": 9,
+            },
+          ]
+        }
+      >
+        Threads
+      </Text>
+    </View>
+  </View>
+</View>
+`;

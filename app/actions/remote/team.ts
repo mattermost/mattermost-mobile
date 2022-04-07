@@ -274,6 +274,7 @@ export const handleTeamChange = async (serverUrl: string, teamId: string) => {
         channelId = await getNthLastChannelFromTeam(database, teamId);
         if (channelId) {
             await switchToChannelById(serverUrl, channelId, teamId);
+            completeTeamChange(serverUrl, teamId, channelId);
             return;
         }
     }
@@ -290,6 +291,15 @@ export const handleTeamChange = async (serverUrl: string, teamId: string) => {
 
     if (models.length) {
         await operator.batchRecords(models);
+    }
+
+    completeTeamChange(serverUrl, teamId, channelId);
+};
+
+const completeTeamChange = async (serverUrl: string, teamId: string, channelId: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return;
     }
 
     // If WebSocket is not disconnected we fetch everything since this moment
