@@ -103,7 +103,7 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
             const serverRoles = await fetchRolesIfNeeded(serverUrl, Array.from(rolesToLoad), true);
             if (serverRoles.roles?.length) {
                 const preparedRoleModels = database.operator.handleRole({
-                    roles: serverRoles.roles!,
+                    roles: serverRoles.roles,
                     prepareRecordsOnly: true,
                 });
                 modelPromises.push(preparedRoleModels);
