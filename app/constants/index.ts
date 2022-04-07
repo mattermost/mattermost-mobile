@@ -14,6 +14,7 @@ import Emoji from './emoji';
 import Events from './events';
 import Files from './files';
 import General from './general';
+import Integrations from './integrations';
 import List from './list';
 import Navigation from './navigation';
 import Network from './network';
@@ -43,6 +44,7 @@ export {
     Events,
     Files,
     General,
+    Integrations,
     List,
     Navigation,
     Network,
