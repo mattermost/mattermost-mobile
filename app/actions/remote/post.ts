@@ -102,9 +102,7 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
     const initialPostModels: Model[] = [];
 
     const filesModels = await operator.handleFiles({files, prepareRecordsOnly: true});
-    if (filesModels.length) {
-        initialPostModels.push(...filesModels);
-    }
+    initialPostModels.push(...filesModels);
 
     const postModels = await operator.handlePosts({
         actionType: ActionType.POSTS.RECEIVED_NEW,
@@ -112,9 +110,7 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         posts: [databasePost],
         prepareRecordsOnly: true,
     });
-    if (postModels.length) {
-        initialPostModels.push(...postModels);
-    }
+    initialPostModels.push(...postModels);
 
     const customEmojis = await queryAllCustomEmojis(database).fetch();
     const emojisInMessage = matchEmoticons(newPost.message);
@@ -129,7 +125,7 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
 
     try {
         const created = await client.createPost(newPost);
-        const models: Model[] = await operator.handlePosts({
+        const models = await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_NEW,
             order: [created.id],
             posts: [created],
@@ -163,7 +159,7 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         ) {
             await removePost(serverUrl, databasePost);
         } else {
-            const models: Model[] = await operator.handlePosts({
+            const models = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: [errorPost.id],
                 posts: [errorPost],
@@ -234,14 +230,11 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string,
                 previousPostId: data.previousPostId,
                 prepareRecordsOnly: true,
             });
-            if (postModels) {
-                models.push(...postModels);
-            }
+            models.push(...postModels);
+
             if (authors.length) {
                 const userModels = await operator.handleUsers({users: authors, prepareRecordsOnly: true});
-                if (userModels.length) {
-                    models.push(...userModels);
-                }
+                models.push(...userModels);
             }
 
             let lastPostAt = 0;
@@ -318,9 +311,7 @@ export const fetchPosts = async (serverUrl: string, channelId: string, page = 0,
                     models.push(...threadModels);
                 }
             }
-            if (models.length) {
-                await operator.batchRecords(models);
-            }
+            await operator.batchRecords(models);
         }
         return result;
     } catch (error) {
@@ -425,9 +416,7 @@ export const fetchPostsSince = async (serverUrl: string, channelId: string, sinc
                     models.push(...threadModels);
                 }
             }
-            if (models.length) {
-                await operator.batchRecords(models);
-            }
+            await operator.batchRecords(models);
         }
         return result;
     } catch (error) {
@@ -536,9 +525,7 @@ export const fetchPostThread = async (serverUrl: string, postId: string, fetchOn
                     models.push(...threadModels);
                 }
             }
-            if (models.length) {
-                await operator.batchRecords(models);
-            }
+            await operator.batchRecords(models);
         }
         return result;
     } catch (error) {
@@ -737,6 +724,7 @@ export const fetchPostById = async (serverUrl: string, postId: string, fetchOnly
                 prepareRecordsOnly: true,
             });
             models.push(...posts);
+
             if (authors?.length) {
                 const users = await operator.handleUsers({
                     users: authors,
@@ -969,9 +957,7 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
             return mdls;
         });
 
-        if (models.length) {
-            await operator.batchRecords(models);
-        }
+        await operator.batchRecords(models);
 
         return {
             order,

@@ -60,12 +60,10 @@ export const addMembersToChannel = async (serverUrl: string, channelId: string, 
 
         if (!fetchOnly) {
             const modelPromises: Array<Promise<Model[]>> = [];
-            if (users) {
-                modelPromises.push(operator.handleUsers({
-                    users,
-                    prepareRecordsOnly: true,
-                }));
-            }
+            modelPromises.push(operator.handleUsers({
+                users,
+                prepareRecordsOnly: true,
+            }));
             modelPromises.push(operator.handleChannelMembership({
                 channelMemberships,
                 prepareRecordsOnly: true,
@@ -376,7 +374,7 @@ export const fetchMissingSidebarInfo = async (serverUrl: string, directChannels:
 
     if (result.data) {
         result.data.forEach((data) => {
-            if (data.users) {
+            if (data.users?.length) {
                 users.push(...data.users);
                 if (data.users.length > 1) {
                     displayNameByChannel[data.channelId] = displayGroupMessageName(data.users, locale, teammateDisplayNameSetting, currentUserId);
@@ -394,7 +392,6 @@ export const fetchMissingSidebarInfo = async (serverUrl: string, directChannels:
         }
     });
 
-    const filteredUserIds = new Set(users.map((u) => u.id));
     if (currentUserId) {
         const ownDirectChannel = directChannels.find((dm) => dm.name === getDirectChannelName(currentUserId, currentUserId));
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -402,30 +399,23 @@ export const fetchMissingSidebarInfo = async (serverUrl: string, directChannels:
             const currentUser = await getCurrentUser(database);
             ownDirectChannel.display_name = displayUsername(currentUser, locale, teammateDisplayNameSetting, false);
         }
-        filteredUserIds.add(currentUserId);
     }
-
-    const profiles = users.reduce((acc: UserProfile[], u) => {
-        if (!filteredUserIds.has(u.id)) {
-            acc.push(u);
-        }
-        return acc;
-    }, []);
 
     if (!fetchOnly) {
         const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
         if (operator) {
             const modelPromises: Array<Promise<Model[]>> = [];
             if (users.length) {
-                modelPromises.push(operator.handleUsers({users: profiles, prepareRecordsOnly: true}));
+                modelPromises.push(operator.handleUsers({users, prepareRecordsOnly: true}));
+                modelPromises.push(operator.handleChannel({channels: directChannels, prepareRecordsOnly: true}));
             }
-            modelPromises.push(operator.handleChannel({channels: directChannels, prepareRecordsOnly: true}));
+
             const models = await Promise.all(modelPromises);
             await operator.batchRecords(models.flat());
         }
     }
 
-    return {directChannels, users: profiles};
+    return {directChannels, users};
 };
 
 export const joinChannel = async (serverUrl: string, userId: string, teamId: string, channelId?: string, channelName?: string, fetchOnly = false) => {
@@ -721,9 +711,7 @@ export const createDirectChannel = async (serverUrl: string, userId: string, dis
             models.push(...userModels);
         }
 
-        if (models.length) {
-            await operator.batchRecords(models);
-        }
+        await operator.batchRecords(models);
         fetchRolesIfNeeded(serverUrl, member.roles.split(' '));
         return {data: created};
     } catch (error) {
@@ -846,17 +834,14 @@ export const createGroupChannel = async (serverUrl: string, userIds: string[]) =
             if (channelPromises.length) {
                 const channelModels = await Promise.all(channelPromises);
                 const models: Model[] = channelModels.flat();
+                const userModels = await operator.handleUsers({users, prepareRecordsOnly: true});
                 const categoryModels = await addChannelToDefaultCategory(serverUrl, created, true);
                 if (categoryModels.models?.length) {
                     models.push(...categoryModels.models);
                 }
-                if (users?.length) {
-                    const userModels = await operator.handleUsers({users, prepareRecordsOnly: true});
-                    models.push(...userModels);
-                }
-                if (models.length) {
-                    operator.batchRecords(models);
-                }
+
+                models.push(...userModels);
+                operator.batchRecords(models);
             }
         }
         fetchRolesIfNeeded(serverUrl, member.roles.split(' '));

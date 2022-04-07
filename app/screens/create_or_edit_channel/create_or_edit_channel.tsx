@@ -24,6 +24,7 @@ type Props = {
     componentId: string;
     channel?: ChannelModel;
     channelInfo?: ChannelInfoModel;
+    headerOnly?: boolean;
     isModal: boolean;
 }
 
@@ -64,6 +65,7 @@ const CreateOrEditChannel = ({
     componentId,
     channel,
     channelInfo,
+    headerOnly,
     isModal,
 }: Props) => {
     const intl = useIntl();
@@ -247,6 +249,7 @@ const CreateOrEditChannel = ({
             displayName={displayName}
             onDisplayNameChange={setDisplayName}
             header={header}
+            headerOnly={headerOnly}
             onHeaderChange={setHeader}
             purpose={purpose}
             onPurposeChange={setPurpose}

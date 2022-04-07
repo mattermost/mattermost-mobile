@@ -3,7 +3,6 @@
 
 import {Database, Q} from '@nozbe/watermelondb';
 
-import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {
     getRangeOfValues,
     getValidRecordsForUpdate,
@@ -52,7 +51,7 @@ export default class BaseDataOperator {
             const columnValues: string[] = getRangeOfValues({fieldName, raws: rawValues});
 
             if (!columnValues.length && rawValues.length) {
-                throw new DataOperatorException(
+                throw new Error(
                     `Invalid "fieldName" or "tableName" has been passed to the processRecords method for tableName ${tableName} fieldName ${fieldName}`,
                 );
             }
@@ -131,7 +130,9 @@ export default class BaseDataOperator {
      */
     prepareRecords = async ({tableName, createRaws, deleteRaws, updateRaws, transformer}: OperationArgs): Promise<Model[]> => {
         if (!this.database) {
-            throw new DataOperatorException('Database not defined');
+            // eslint-disable-next-line no-console
+            console.warn('Database not defined in prepareRecords');
+            return [];
         }
 
         let preparedRecords: Array<Promise<Model>> = [];
@@ -194,7 +195,8 @@ export default class BaseDataOperator {
                 });
             }
         } catch (e) {
-            throw new DataOperatorException('batchRecords error ', e as Error);
+            // eslint-disable-next-line no-console
+            console.warn('batchRecords error ', e as Error);
         }
     };
 
@@ -211,9 +213,11 @@ export default class BaseDataOperator {
      */
     handleRecords = async ({buildKeyRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues = [], tableName, prepareRecordsOnly = true}: HandleRecordsArgs): Promise<Model[]> => {
         if (!createOrUpdateRawValues.length) {
-            throw new DataOperatorException(
+            // eslint-disable-next-line no-console
+            console.warn(
                 `An empty "rawValues" array has been passed to the handleRecords method for tableName ${tableName}`,
             );
+            return [];
         }
 
         const {createRaws, deleteRaws, updateRaws} = await this.processRecords({

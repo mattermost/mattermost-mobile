@@ -12,7 +12,7 @@ export const storeDeviceToken = async (token: string, prepareRecordsOnly = false
     }
 
     return operator.handleGlobal({
-        global: [{id: GLOBAL_IDENTIFIERS.DEVICE_TOKEN, value: token}],
+        globals: [{id: GLOBAL_IDENTIFIERS.DEVICE_TOKEN, value: token}],
         prepareRecordsOnly,
     });
 };
@@ -25,7 +25,7 @@ export const storeMultiServerTutorial = async (prepareRecordsOnly = false) => {
     }
 
     return operator.handleGlobal({
-        global: [{id: GLOBAL_IDENTIFIERS.MULTI_SERVER_TUTORIAL, value: 'true'}],
+        globals: [{id: GLOBAL_IDENTIFIERS.MULTI_SERVER_TUTORIAL, value: 'true'}],
         prepareRecordsOnly,
     });
 };

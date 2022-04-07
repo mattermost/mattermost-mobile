@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
-
 import {fetchMyChannelsForTeam, MyChannelsRequest} from '@actions/remote/channel';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRolesIfNeeded, RolesRequest} from '@actions/remote/role';
@@ -167,9 +165,7 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
         }
 
         const models = await Promise.all(modelPromises);
-        if (models.length) {
-            await operator.batchRecords(models.flat() as Model[]);
-        }
+        await operator.batchRecords(models.flat());
 
         const config = clData.config || {} as ClientConfig;
         const license = clData.license || {} as ClientLicense;

@@ -309,14 +309,14 @@ export const updateChannelInfoFromChannel = async (serverUrl: string, channel: C
         return {error: `${serverUrl} database not found`};
     }
 
-    const newInfo = (await operator.handleChannelInfo({channelInfos: [{
+    const newInfo = await operator.handleChannelInfo({channelInfos: [{
         header: channel.header,
         purpose: channel.purpose,
         id: channel.id,
     }],
-    prepareRecordsOnly: true}))[0];
+    prepareRecordsOnly: true});
     if (!prepareRecordsOnly) {
-        operator.batchRecords([newInfo]);
+        operator.batchRecords(newInfo);
     }
     return {model: newInfo};
 };
