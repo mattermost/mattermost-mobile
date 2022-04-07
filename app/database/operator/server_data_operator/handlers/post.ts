@@ -306,7 +306,7 @@ const PostHandler = (superclass: any) => class extends superclass {
         if (!posts.length || !permittedActions.includes(actionType)) {
             // eslint-disable-next-line no-console
             console.warn(
-                'An empty or undefined "posts" array or an non-suppoerted actionType has been passed to the handlePostsInChannel method',
+                'An empty or undefined "posts" array or an non-supported actionType has been passed to the handlePostsInChannel method',
             );
             return [];
         }
