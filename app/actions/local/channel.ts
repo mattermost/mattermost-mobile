@@ -15,9 +15,11 @@ import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSyste
 import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, queryMyTeams, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {makeCategoryChannelId, makeCategoryId} from '@utils/categories';
 import {isDMorGM} from '@utils/channel';
 import {isTablet} from '@utils/helpers';
+import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
 import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from '@utils/user';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -82,6 +84,18 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
 
                 if (models.length && !prepareRecordsOnly) {
                     await operator.batchRecords(models);
+                }
+
+                if (!EphemeralStore.theme) {
+                    // When opening the app from a push notification the theme may not be set in the EphemeralStore
+                    // causing the goToScreen to use the Appearance theme instead and that causes the screen background color to potentially
+                    // not match the theme
+                    const themes = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_THEME, toTeamId).fetch();
+                    let theme = Preferences.THEMES.denim;
+                    if (themes.length) {
+                        theme = setThemeDefaults(JSON.parse(themes[0].value) as Theme);
+                    }
+                    updateThemeIfNeeded(theme, true);
                 }
 
                 if (isTabletDevice) {
