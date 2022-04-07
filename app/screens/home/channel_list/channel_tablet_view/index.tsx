@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import withObservables from '@nozbe/with-observables';
 import React, {useEffect, useState} from 'react';
 import {DeviceEventEmitter} from 'react-native';
 
