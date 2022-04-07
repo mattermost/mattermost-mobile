@@ -96,7 +96,8 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
                 postDraftRef.current?.pauseTracking(channelId);
                 return;
             }
-
+            
+            postDraftRef.current?.resumeTracking(channelId);
         });
 
         return () => listener.remove();
