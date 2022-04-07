@@ -15,8 +15,9 @@ import {getConfig, observeConfig} from './system';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type Model from '@nozbe/watermelondb/Model';
 import type ThreadModel from '@typings/database/models/servers/thread';
+import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {CHANNEL, POST, THREAD}} = MM_TABLES;
+const {SERVER: {CHANNEL, POST, THREAD, THREAD_PARTICIPANT, USER}} = MM_TABLES;
 
 export const getIsCRTEnabled = async (database: Database): Promise<boolean> => {
     const config = await getConfig(database);
@@ -126,4 +127,10 @@ export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnrea
     );
 
     return database.get<ThreadModel>(THREAD).query(...query);
+};
+
+export const queryThreadParticipants = (database: Database, threadId: string) => {
+    return database.get<UserModel>(USER).query(
+        Q.on(THREAD_PARTICIPANT, Q.where('thread_id', threadId)),
+    );
 };

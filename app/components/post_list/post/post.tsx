@@ -27,7 +27,6 @@ import PreHeader from './pre_header';
 import SystemMessage from './system_message';
 import UnreadDot from './unread_dot';
 
-import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
@@ -35,7 +34,6 @@ import type UserModel from '@typings/database/models/servers/user';
 type PostProps = {
     appsEnabled: boolean;
     canDelete: boolean;
-    channel: ChannelModel;
     currentUser: UserModel;
     differentThreadSequence: boolean;
     filesCount: number;
@@ -53,7 +51,6 @@ type PostProps = {
     isPostAddChannelMember: boolean;
     location: string;
     post: PostModel;
-    thread: ThreadModel;
     previousPost?: PostModel;
     reactionsCount: number;
     shouldRenderReplyButton?: boolean;
@@ -61,7 +58,9 @@ type PostProps = {
     skipSavedHeader?: boolean;
     skipPinnedHeader?: boolean;
     style?: StyleProp<ViewStyle>;
+    teamId: string;
     testID?: string;
+    thread: ThreadModel | undefined;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -103,10 +102,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Post = ({
-    appsEnabled, canDelete, channel, currentUser, differentThreadSequence, filesCount, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
+    appsEnabled, canDelete, currentUser, differentThreadSequence, filesCount, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
     isCRTEnabled, isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
     location, post, reactionsCount, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
-    testID, thread, previousPost,
+    teamId, testID, thread, previousPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
     const intl = useIntl();
@@ -280,7 +279,7 @@ const Post = ({
                 <Footer
                     currentUserId={currentUser.id}
                     serverUrl={serverUrl}
-                    teamId={channel?.teamId}
+                    teamId={teamId}
                     testID={`${itemTestID}.footer`}
                     theme={theme}
                     thread={thread}

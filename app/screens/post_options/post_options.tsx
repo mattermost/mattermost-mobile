@@ -95,8 +95,8 @@ const PostOptions = ({
                 {canReply && <ReplyOption post={post}/>}
                 {shouldRenderFollow &&
                     <FollowThreadOption
+                        post={post}
                         thread={thread}
-                        channelId={post.channelId}
                     />
                 }
                 {canMarkAsUnread && !isSystemPost &&

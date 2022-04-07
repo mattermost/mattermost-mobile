@@ -10,6 +10,7 @@ import FormattedText from '@components/formatted_text';
 import UserAvatarsStack from '@components/user_avatars_stack';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
@@ -49,9 +50,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         replies: {
             alignSelf: 'center',
             color: changeOpacity(theme.centerChannelColor, 0.64),
-            fontSize: 12,
-            fontWeight: '600',
             marginRight: 12,
+            ...typography('Heading', 75),
         },
         notFollowingButtonContainer: {
             ...followingButtonContainerBase,
@@ -59,8 +59,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         notFollowing: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
-            fontWeight: '600',
-            fontSize: 12,
+            ...typography('Heading', 75),
         },
         followingButtonContainer: {
             ...followingButtonContainerBase,
@@ -69,8 +68,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         following: {
             color: theme.buttonBg,
-            fontWeight: '600',
-            fontSize: 12,
+            ...typography('Heading', 75),
         },
         followSeparator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.16),
@@ -150,8 +148,8 @@ const Footer = ({currentUserId, participants, serverUrl, teamId, teammateNameDis
 
     const participantsList = useMemo(() => {
         if (participants?.length) {
-            const filteredParticipantsList = [...participants].reverse();
-            return filteredParticipantsList;
+            const orderedParticipantsList = [...participants].reverse();
+            return orderedParticipantsList;
         }
         return [];
     }, [participants]);
