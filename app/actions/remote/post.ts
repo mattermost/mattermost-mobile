@@ -521,7 +521,8 @@ export const fetchPostThread = async (serverUrl: string, postId: string, fetchOn
     }
 
     try {
-        const data = await client.getPostThread(postId);
+        const isCRTEnabled = await getIsCRTEnabled(operator.database);
+        const data = await client.getPostThread(postId, isCRTEnabled, isCRTEnabled);
         const result = processPostsFetched(data);
         if (!fetchOnly) {
             const models = await operator.handlePosts({
@@ -529,7 +530,6 @@ export const fetchPostThread = async (serverUrl: string, postId: string, fetchOn
                 actionType: ActionType.POSTS.RECEIVED_IN_THREAD,
                 prepareRecordsOnly: true,
             });
-            const isCRTEnabled = await getIsCRTEnabled(operator.database);
             if (isCRTEnabled) {
                 const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
                 if (threadModels?.length) {
