@@ -83,9 +83,7 @@ export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperat
     });
     if (threads.length) {
         const threadModels = await operator.handleThreads({threads, prepareRecordsOnly: true});
-        if (threadModels.length) {
-            models.push(...threadModels);
-        }
+        models.push(...threadModels);
     }
 
     return models;

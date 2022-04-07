@@ -73,9 +73,7 @@ export const appEntry = async (serverUrl: string, since = 0) => {
         modelPromises.push(operator.handleRole({roles: rolesData.roles, prepareRecordsOnly: true}));
     }
     const models = await Promise.all(modelPromises);
-    if (models.length) {
-        await operator.batchRecords(models.flat());
-    }
+    await operator.batchRecords(models.flat());
 
     const {id: currentUserId, locale: currentUserLocale} = meData.user || (await getCurrentUser(database))!;
     const {config, license} = await getCommonSystemValues(database);

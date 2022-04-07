@@ -56,9 +56,7 @@ export const addUserToTeam = async (serverUrl: string, teamId: string, userId: s
                     prepareCategoryChannels(operator, categories || []),
                 ])).flat();
 
-                if (models.length) {
-                    await operator.batchRecords(models);
-                }
+                await operator.batchRecords(models);
 
                 if (await isTablet()) {
                     const channel = await getDefaultChannelForTeam(operator.database, teamId);
@@ -219,10 +217,8 @@ export const fetchTeamByName = async (serverUrl: string, teamName: string, fetch
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             if (operator) {
-                const model = await operator.handleTeam({teams: [team], prepareRecordsOnly: true});
-                if (model) {
-                    await operator.batchRecords(model);
-                }
+                const models = await operator.handleTeam({teams: [team], prepareRecordsOnly: true});
+                await operator.batchRecords(models);
             }
         }
 

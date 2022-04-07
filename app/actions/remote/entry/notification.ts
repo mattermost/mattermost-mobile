@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
-
 import {switchToChannel} from '@actions/local/channel';
 import {markChannelAsRead} from '@actions/remote/channel';
 import {fetchRoles} from '@actions/remote/role';
@@ -130,9 +128,7 @@ export const pushNotificationEntry = async (serverUrl: string, notification: Not
     }
 
     const models = await Promise.all(modelPromises);
-    if (models.length) {
-        await operator.batchRecords(models.flat() as Model[]);
-    }
+    await operator.batchRecords(models.flat());
 
     const {id: currentUserId, locale: currentUserLocale} = meData.user || (await getCurrentUser(operator.database))!;
     const {config, license} = await getCommonSystemValues(operator.database);

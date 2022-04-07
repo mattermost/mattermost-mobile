@@ -54,9 +54,7 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
             prepareRecordsOnly: true,
         });
 
-        if (preparedRoleModels.length) {
-            models.push(...preparedRoleModels);
-        }
+        models.push(...preparedRoleModels);
     }
 
     // update User Table record
@@ -68,9 +66,7 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
         models.push(user);
     }
 
-    if (models?.length) {
-        await operator.batchRecords(models);
-    }
+    await operator.batchRecords(models);
 }
 
 export async function handleTeamMemberRoleUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
@@ -113,13 +109,9 @@ export async function handleTeamMemberRoleUpdatedEvent(serverUrl: string, msg: W
             myTeams,
         });
 
-        if (myTeamRecords.length) {
-            models.push(...myTeamRecords);
-        }
+        models.push(...myTeamRecords);
 
-        if (models?.length) {
-            await operator.batchRecords(models);
-        }
+        await operator.batchRecords(models);
     } catch {
         // do nothing
     }

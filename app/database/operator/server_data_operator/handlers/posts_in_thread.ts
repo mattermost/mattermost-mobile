@@ -19,7 +19,11 @@ const {POSTS_IN_THREAD} = Database.MM_TABLES.SERVER;
 
 const PostsInThreadHandler = (superclass: any) => class extends superclass {
     handleReceivedPostsInThread = async (postsMap: Record<string, Post[]>, prepareRecordsOnly = false): Promise<PostsInThreadModel[]> => {
-        if (!Object.keys(postsMap).length) {
+        if (!postsMap || !Object.keys(postsMap).length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "postsMap" object has been passed to the handleReceivedPostsInThread method',
+            );
             return [];
         }
 

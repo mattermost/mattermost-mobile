@@ -23,12 +23,10 @@ export const fetchCustomEmojis = async (serverUrl: string, page = 0, perPage = G
 
     try {
         const data = await client.getCustomEmojis(page, perPage, sort);
-        if (data.length) {
-            await operator.handleCustomEmojis({
-                emojis: data,
-                prepareRecordsOnly: false,
-            });
-        }
+        await operator.handleCustomEmojis({
+            emojis: data,
+            prepareRecordsOnly: false,
+        });
 
         return {data};
     } catch (error) {
@@ -57,12 +55,10 @@ export const searchCustomEmojis = async (serverUrl: string, term: string) => {
             const exist = await queryCustomEmojisByName(operator.database, names).fetch();
             const existingNames = new Set(exist.map((e) => e.name));
             const emojis = data.filter((d) => !existingNames.has(d.name));
-            if (emojis.length) {
-                await operator.handleCustomEmojis({
-                    emojis,
-                    prepareRecordsOnly: false,
-                });
-            }
+            await operator.handleCustomEmojis({
+                emojis,
+                prepareRecordsOnly: false,
+            });
         }
         return {data};
     } catch (error) {
