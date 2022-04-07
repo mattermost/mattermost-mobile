@@ -59,10 +59,11 @@ export const observeUnreadsAndMentionsInTeam = (database: Database, teamId?: str
             switchMap((threads) => {
                 let unreads = 0;
                 let mentions = 0;
-                threads.forEach((thread) => {
+                for (const thread of threads) {
                     unreads += thread.unreadReplies;
                     mentions += thread.unreadMentions;
-                });
+                }
+
                 return of$({unreads, mentions});
             }),
         );
