@@ -19,13 +19,13 @@ import type SystemModel from '@typings/database/models/servers/system';
 const {SERVER: {CUSTOM_EMOJI, ROLE, SYSTEM}} = MM_TABLES;
 
 export default class ServerDataOperatorBase extends BaseDataOperator {
-    handleRole = ({roles, prepareRecordsOnly = true}: HandleRoleArgs) => {
+    handleRole = async ({roles, prepareRecordsOnly = true}: HandleRoleArgs) => {
         if (!roles?.length) {
             // eslint-disable-next-line no-console
             console.warn(
                 'An empty or undefined "roles" array has been passed to the handleRole',
             );
-            return Promise.resolve([]);
+            return [];
         }
 
         return this.handleRecords({
@@ -37,13 +37,13 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
         }) as Promise<RoleModel[]>;
     };
 
-    handleCustomEmojis = ({emojis, prepareRecordsOnly = true}: HandleCustomEmojiArgs) => {
+    handleCustomEmojis = async ({emojis, prepareRecordsOnly = true}: HandleCustomEmojiArgs) => {
         if (!emojis?.length) {
             // eslint-disable-next-line no-console
             console.warn(
                 'An empty or undefined "emojis" array has been passed to the handleCustomEmojis',
             );
-            return Promise.resolve([]);
+            return [];
         }
 
         return this.handleRecords({
@@ -55,13 +55,13 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
         }) as Promise<CustomEmojiModel[]>;
     };
 
-    handleSystem = ({systems, prepareRecordsOnly = true}: HandleSystemArgs) => {
+    handleSystem = async ({systems, prepareRecordsOnly = true}: HandleSystemArgs) => {
         if (!systems?.length) {
             // eslint-disable-next-line no-console
             console.warn(
                 'An empty or undefined "systems" array has been passed to the handleSystem',
             );
-            return Promise.resolve([]);
+            return [];
         }
 
         return this.handleRecords({

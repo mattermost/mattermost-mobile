@@ -47,13 +47,13 @@ const ChannelHandler = (superclass: any) => class extends superclass {
      * @throws DataOperatorException
      * @returns {Promise<ChannelModel[]>}
      */
-    handleChannel = ({channels, prepareRecordsOnly = true}: HandleChannelArgs): Promise<ChannelModel[]> => {
+    handleChannel = async ({channels, prepareRecordsOnly = true}: HandleChannelArgs): Promise<ChannelModel[]> => {
         if (!channels?.length) {
             // eslint-disable-next-line no-console
             console.warn(
                 'An empty or undefined "channels" array has been passed to the handleChannel method',
             );
-            return Promise.resolve([]);
+            return [];
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: channels, key: 'id'});
@@ -75,14 +75,14 @@ const ChannelHandler = (superclass: any) => class extends superclass {
      * @throws DataOperatorException
      * @returns {Promise<MyChannelSettingsModel[]>}
      */
-    handleMyChannelSettings = ({settings, prepareRecordsOnly = true}: HandleMyChannelSettingsArgs): Promise<MyChannelSettingsModel[]> => {
+    handleMyChannelSettings = async ({settings, prepareRecordsOnly = true}: HandleMyChannelSettingsArgs): Promise<MyChannelSettingsModel[]> => {
         if (!settings?.length) {
             // eslint-disable-next-line no-console
             console.warn(
                 'An empty or undefined "settings" array has been passed to the handleMyChannelSettings method',
             );
 
-            return Promise.resolve([]);
+            return [];
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: settings, key: 'id'});
@@ -105,14 +105,14 @@ const ChannelHandler = (superclass: any) => class extends superclass {
      * @throws DataOperatorException
      * @returns {Promise<ChannelInfoModel[]>}
      */
-    handleChannelInfo = ({channelInfos, prepareRecordsOnly = true}: HandleChannelInfoArgs): Promise<ChannelInfoModel[]> => {
+    handleChannelInfo = async ({channelInfos, prepareRecordsOnly = true}: HandleChannelInfoArgs): Promise<ChannelInfoModel[]> => {
         if (!channelInfos?.length) {
             // eslint-disable-next-line no-console
             console.warn(
                 'An empty "channelInfos" array has been passed to the handleMyChannelSettings method',
             );
 
-            return Promise.resolve([]);
+            return [];
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({
@@ -137,14 +137,14 @@ const ChannelHandler = (superclass: any) => class extends superclass {
      * @throws DataOperatorException
      * @returns {Promise<MyChannelModel[]>}
      */
-    handleMyChannel = ({channels, myChannels, prepareRecordsOnly = true}: HandleMyChannelArgs): Promise<MyChannelModel[]> => {
+    handleMyChannel = async ({channels, myChannels, prepareRecordsOnly = true}: HandleMyChannelArgs): Promise<MyChannelModel[]> => {
         if (!myChannels?.length) {
             // eslint-disable-next-line no-console
             console.warn(
                 'An empty or undefined "myChannels" array has been passed to the handleMyChannel method',
             );
 
-            return Promise.resolve([]);
+            return [];
         }
 
         if (!channels?.length) {
@@ -153,7 +153,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
                 'An empty or undefined "channels" array has been passed to the handleMyChannel method',
             );
 
-            return Promise.resolve([]);
+            return [];
         }
 
         const channelMap = channels.reduce((result: Record<string, Channel>, channel) => {
@@ -192,14 +192,14 @@ const ChannelHandler = (superclass: any) => class extends superclass {
      * @throws DataOperatorException
      * @returns {Promise<ChannelMembershipModel[]>}
      */
-    handleChannelMembership = ({channelMemberships, prepareRecordsOnly = true}: HandleChannelMembershipArgs): Promise<ChannelMembershipModel[]> => {
+    handleChannelMembership = async ({channelMemberships, prepareRecordsOnly = true}: HandleChannelMembershipArgs): Promise<ChannelMembershipModel[]> => {
         if (!channelMemberships?.length) {
             // eslint-disable-next-line no-console
             console.warn(
                 'An empty "channelMemberships" array has been passed to the handleChannelMembership method',
             );
 
-            return Promise.resolve([]);
+            return [];
         }
 
         const memberships: ChannelMember[] = channelMemberships.map((m) => ({

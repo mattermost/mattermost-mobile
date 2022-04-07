@@ -372,11 +372,9 @@ export const fetchMissingSidebarInfo = async (serverUrl: string, directChannels:
     const displayNameByChannel: Record<string, string> = {};
     const users: UserProfile[] = [];
 
-    let shouldUpdate = false;
     if (result.data) {
         result.data.forEach((data) => {
             if (data.users?.length) {
-                shouldUpdate = true;
                 users.push(...data.users);
                 if (data.users.length > 1) {
                     displayNameByChannel[data.channelId] = displayGroupMessageName(data.users, locale, teammateDisplayNameSetting, currentUserId);
@@ -409,9 +407,6 @@ export const fetchMissingSidebarInfo = async (serverUrl: string, directChannels:
             const modelPromises: Array<Promise<Model[]>> = [];
             if (users.length) {
                 modelPromises.push(operator.handleUsers({users, prepareRecordsOnly: true}));
-            }
-
-            if (shouldUpdate) {
                 modelPromises.push(operator.handleChannel({channels: directChannels, prepareRecordsOnly: true}));
             }
 
@@ -839,15 +834,13 @@ export const createGroupChannel = async (serverUrl: string, userIds: string[]) =
             if (channelPromises.length) {
                 const channelModels = await Promise.all(channelPromises);
                 const models: Model[] = channelModels.flat();
+                const userModels = await operator.handleUsers({users, prepareRecordsOnly: true});
                 const categoryModels = await addChannelToDefaultCategory(serverUrl, created, true);
                 if (categoryModels.models?.length) {
                     models.push(...categoryModels.models);
                 }
-                if (users.length) {
-                    const userModels = await operator.handleUsers({users, prepareRecordsOnly: true});
-                    models.push(...userModels);
-                }
 
+                models.push(...userModels);
                 operator.batchRecords(models);
             }
         }

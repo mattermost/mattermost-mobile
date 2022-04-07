@@ -47,13 +47,13 @@ const PostHandler = (superclass: any) => class extends superclass {
      * @throws DataOperatorException
      * @returns {Promise<DraftModel[]>}
      */
-    handleDraft = ({drafts, prepareRecordsOnly = true}: HandleDraftArgs): Promise<DraftModel[]> => {
+    handleDraft = async ({drafts, prepareRecordsOnly = true}: HandleDraftArgs): Promise<DraftModel[]> => {
         if (!drafts?.length) {
             // eslint-disable-next-line no-console
             console.warn(
                 'An empty or undefined "drafts" array has been passed to the handleDraft method',
             );
-            return Promise.resolve([]);
+            return [];
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: drafts, key: 'channel_id'});

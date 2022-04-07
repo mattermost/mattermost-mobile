@@ -12,13 +12,13 @@ import type {HandleInfoArgs, HandleGlobalArgs} from '@typings/database/database'
 const {APP: {INFO, GLOBAL}} = MM_TABLES;
 
 export default class AppDataOperator extends BaseDataOperator {
-    handleInfo = ({info, prepareRecordsOnly = true}: HandleInfoArgs) => {
+    handleInfo = async ({info, prepareRecordsOnly = true}: HandleInfoArgs) => {
         if (!info?.length) {
             // eslint-disable-next-line no-console
             console.warn(
                 'An empty or undefined "info" array has been passed to the handleInfo',
             );
-            return Promise.resolve([]);
+            return [];
         }
 
         return this.handleRecords({
@@ -37,7 +37,7 @@ export default class AppDataOperator extends BaseDataOperator {
             console.warn(
                 'An empty or undefined "globals" array has been passed to the handleGlobal',
             );
-            return Promise.resolve([]);
+            return [];
         }
 
         return this.handleRecords({

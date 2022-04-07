@@ -142,8 +142,6 @@ export const processReceivedThreads = async (serverUrl: string, threads: Thread[
         return {error: `${serverUrl} database not found`};
     }
 
-    const models: Model[] = [];
-
     const posts: Post[] = [];
     const users: UserProfile[] = [];
 
@@ -173,9 +171,7 @@ export const processReceivedThreads = async (serverUrl: string, threads: Thread[
         prepareRecordsOnly: true,
     });
 
-    models.push(...postModels);
-    models.push(...threadModels);
-    models.push(...userModels);
+    const models = [...postModels, ...threadModels, ...userModels];
 
     if (!prepareRecordsOnly) {
         await operator.batchRecords(models);

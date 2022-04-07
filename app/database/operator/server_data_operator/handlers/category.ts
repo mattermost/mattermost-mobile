@@ -40,7 +40,7 @@ const CategoryHandler = (superclass: any) => class extends superclass {
             console.warn(
                 'An empty or undefined "categories" array has been passed to the handleCategories method',
             );
-            return Promise.resolve([]);
+            return [];
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: categories, key: 'id'});
@@ -69,7 +69,7 @@ const CategoryHandler = (superclass: any) => class extends superclass {
                 'An empty or undefined "categoryChannels" array has been passed to the handleCategories method',
             );
 
-            return Promise.resolve([]);
+            return [];
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: categoryChannels, key: 'id'});
