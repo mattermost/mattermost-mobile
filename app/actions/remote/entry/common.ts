@@ -194,9 +194,6 @@ export const deferredAppEntryActions = async (
         fetchChannelStats(serverUrl, initialChannelId);
     }
 
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    const isCRTEnabled = await getIsCRTEnabled(database);
-
     // defer sidebar DM & GM profiles
     if (chData?.channels?.length && chData.memberships?.length) {
         const directChannels = chData.channels.filter(isDMorGM);
@@ -215,16 +212,21 @@ export const deferredAppEntryActions = async (
         await fetchTeamsChannelsAndUnreadPosts(serverUrl, since, teamData.teams, teamData.memberships, initialTeamId);
     }
 
-    if (isCRTEnabled) {
-        if (initialTeamId) {
-            await fetchNewThreads(serverUrl, initialTeamId, false);
-        }
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (database) {
+        const isCRTEnabled = await getIsCRTEnabled(database);
 
-        if (teamData.teams?.length) {
-            for await (const team of teamData.teams) {
-                if (team.id !== initialTeamId) {
-                    // need to await here since GM/DM threads in different teams overlap
-                    await fetchNewThreads(serverUrl, team.id, false);
+        if (isCRTEnabled) {
+            if (initialTeamId) {
+                await fetchNewThreads(serverUrl, initialTeamId, false);
+            }
+
+            if (teamData.teams?.length) {
+                for await (const team of teamData.teams) {
+                    if (team.id !== initialTeamId) {
+                        // need to await here since GM/DM threads in different teams overlap
+                        await fetchNewThreads(serverUrl, team.id, false);
+                    }
                 }
             }
         }

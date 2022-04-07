@@ -233,7 +233,7 @@ async function fetchBatchThreads(
 
     const currentUser = await getCurrentUser(operator.database);
     if (!currentUser) {
-        return {error: true};
+        return {error: 'currentUser not found'};
     }
 
     const {config} = await getCommonSystemValues(operator.database);
