@@ -667,7 +667,7 @@ export async function createDirectChannel(serverUrl: string, userId: string, dis
         if (!currentUser) {
             return {error: 'Cannot get the current user'};
         }
-        EphemeralStore.creatingChannel = true;
+        EphemeralStore.creatingDMorGMTeammates = [userId];
         const created = await client.createDirectChannel([userId, currentUser.id]);
         const profiles: UserProfile[] = [];
 
@@ -717,11 +717,11 @@ export async function createDirectChannel(serverUrl: string, userId: string, dis
         }
 
         await operator.batchRecords(models);
-        EphemeralStore.creatingChannel = false;
+        EphemeralStore.creatingDMorGMTeammates = [];
         fetchRolesIfNeeded(serverUrl, member.roles.split(' '));
         return {data: created};
     } catch (error) {
-        EphemeralStore.creatingChannel = false;
+        EphemeralStore.creatingDMorGMTeammates = [];
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
@@ -807,7 +807,7 @@ export async function createGroupChannel(serverUrl: string, userIds: string[]) {
         if (!currentUser) {
             return {error: 'Cannot get the current user'};
         }
-        EphemeralStore.creatingChannel = true;
+        EphemeralStore.creatingDMorGMTeammates = userIds;
         const created = await client.createGroupChannel(userIds);
 
         // Check the channel previous existency: if the channel already have
@@ -854,11 +854,11 @@ export async function createGroupChannel(serverUrl: string, userIds: string[]) {
                 operator.batchRecords(models);
             }
         }
-        EphemeralStore.creatingChannel = false;
+        EphemeralStore.creatingDMorGMTeammates = [];
         fetchRolesIfNeeded(serverUrl, member.roles.split(' '));
         return {data: created};
     } catch (error) {
-        EphemeralStore.creatingChannel = false;
+        EphemeralStore.creatingDMorGMTeammates = [];
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }

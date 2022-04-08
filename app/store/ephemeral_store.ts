@@ -8,6 +8,7 @@ class EphemeralStore {
     theme: Theme | undefined;
     visibleTab = 'Home';
     creatingChannel = false;
+    creatingDMorGMTeammates: string[] = [];
 
     addNavigationComponentId = (componentId: string) => {
         this.addToNavigationComponentIdStack(componentId);

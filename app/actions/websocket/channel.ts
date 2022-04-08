@@ -34,13 +34,19 @@ export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
     if (!operator) {
         return;
     }
+    const {database} = operator;
 
     const {team_id: teamId, channel_id: channelId} = msg.data;
-
     if (EphemeralStore.creatingChannel) {
         return; // We probably don't need to handle this WS because we provoked it
     }
+
     try {
+        const channel = await getChannelById(database, channelId);
+        if (channel) {
+            return; // We already have this channel
+        }
+
         const models: Model[] = [];
         const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
         if (channels && memberships) {
@@ -158,7 +164,7 @@ export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: an
     }
 }
 
-export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
+export async function handleDirectAddedEvent(serverUrl: string, msg: WebSocketMessage) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return;
@@ -166,9 +172,25 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
 
     const {database} = operator;
 
-    if (EphemeralStore.creatingChannel) {
-        return; // We probably don't need to handle this WS because we provoked it
+    if (EphemeralStore.creatingDMorGMTeammates.length) {
+        let userList: string[] | undefined;
+        if ('teammate_ids' in msg.data) { // GM
+            try {
+                userList = JSON.parse(msg.data.teammate_ids);
+            } catch {
+                // Do nothing
+            }
+        } else if (msg.data.teammate_id) { // DM
+            userList = [msg.data.teammate_id];
+        }
+        if (userList?.length === EphemeralStore.creatingDMorGMTeammates.length) {
+            const usersSet = new Set(userList);
+            if (EphemeralStore.creatingDMorGMTeammates.every((v) => usersSet.has(v))) {
+                return; // We are adding this channel
+            }
+        }
     }
+
     try {
         const {channel_id: channelId} = msg.broadcast;
         const channel = await getChannelById(database, channelId);
@@ -196,7 +218,7 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
         if (channelModels.models?.length) {
             models.push(...channelModels.models);
         }
-        const categoryModels = await addChannelToDefaultCategory(serverUrl, channels[0], false);
+        const categoryModels = await addChannelToDefaultCategory(serverUrl, channels[0], true);
         if (categoryModels.models?.length) {
             models.push(...categoryModels.models);
         }
