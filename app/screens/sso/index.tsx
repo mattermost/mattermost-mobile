@@ -9,13 +9,11 @@ import {resetToChannel} from '@actions/navigation';
 import {scheduleExpiredNotification} from '@actions/views/session';
 import {ssoLogin} from '@actions/views/user';
 import {Client4} from '@client/rest';
-import {ViewTypes} from '@constants';
+import {Sso} from '@constants';
 import emmProvider from '@init/emm_provider';
-import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {DispatchFunc} from '@mm-redux/types/actions';
 import {ErrorApi} from '@mm-redux/types/client4';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
 import SSOWithWebView from './sso_with_webview';
@@ -28,8 +26,7 @@ interface SSOProps {
 }
 
 function SSO({intl, ssoType}: SSOProps) {
-    const [config, serverUrl, theme] = useSelector((state: GlobalState) => ([
-        getConfig(state),
+    const [serverUrl, theme] = useSelector((state: GlobalState) => ([
         state.views.selectServer.serverUrl,
         getTheme(state),
     ]), shallowEqual);
@@ -42,27 +39,27 @@ function SSO({intl, ssoType}: SSOProps) {
     let completeUrlPath = '';
     let loginUrl = '';
     switch (ssoType) {
-    case ViewTypes.GOOGLE: {
+    case Sso.GOOGLE: {
         completeUrlPath = '/signup/google/complete';
         loginUrl = `${serverUrl}/oauth/google/mobile_login`;
         break;
     }
-    case ViewTypes.GITLAB: {
+    case Sso.GITLAB: {
         completeUrlPath = '/signup/gitlab/complete';
         loginUrl = `${serverUrl}/oauth/gitlab/mobile_login`;
         break;
     }
-    case ViewTypes.SAML: {
+    case Sso.SAML: {
         completeUrlPath = '/login/sso/saml';
         loginUrl = `${serverUrl}/login/sso/saml?action=mobile`;
         break;
     }
-    case ViewTypes.OFFICE365: {
+    case Sso.OFFICE365: {
         completeUrlPath = '/signup/office365/complete';
         loginUrl = `${serverUrl}/oauth/office365/mobile_login`;
         break;
     }
-    case ViewTypes.OPENID: {
+    case Sso.OPENID: {
         completeUrlPath = '/signup/openid/complete';
         loginUrl = `${serverUrl}/oauth/openid/mobile_login`;
         break;
@@ -100,8 +97,6 @@ function SSO({intl, ssoType}: SSOProps) {
         dispatch(scheduleExpiredNotification(intl));
     };
 
-    const isSSOWithRedirectURLAvailable = isMinimumServerVersion(config.Version, 5, 33, 0);
-
     const props = {
         intl,
         loginError,
@@ -112,7 +107,7 @@ function SSO({intl, ssoType}: SSOProps) {
         theme,
     };
 
-    if (!isSSOWithRedirectURLAvailable || emmProvider.inAppSessionAuth === true) {
+    if (emmProvider.inAppSessionAuth === true) {
         return (
             <SSOWithWebView
                 {...props}
