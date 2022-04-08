@@ -17,7 +17,7 @@ import {fetchMissingSidebarInfo, fetchMyChannel, fetchChannelStats, fetchChannel
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
-import ephemeral_store from '@app/store/ephemeral_store';
+import EphemeralStore from '@app/store/ephemeral_store';
 import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
@@ -37,7 +37,7 @@ export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
 
     const {team_id: teamId, channel_id: channelId} = msg.data;
 
-    if (ephemeral_store.creatingChannel) {
+    if (EphemeralStore.creatingChannel) {
         return; // We probably don't need to handle this WS because we provoked it
     }
     try {
@@ -166,7 +166,7 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
 
     const {database} = operator;
 
-    if (ephemeral_store.creatingChannel) {
+    if (EphemeralStore.creatingChannel) {
         return; // We probably don't need to handle this WS because we provoked it
     }
     try {

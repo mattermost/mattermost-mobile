@@ -7,7 +7,7 @@ import {IntlShape} from 'react-intl';
 
 import {storeCategories} from '@actions/local/category';
 import {addChannelToDefaultCategory, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
-import ephemeral_store from '@app/store/ephemeral_store';
+import EphemeralStore from '@app/store/ephemeral_store';
 import {General, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
@@ -132,7 +132,7 @@ export async function createChannel(serverUrl: string, displayName: string, purp
             type,
         } as Channel;
 
-        ephemeral_store.creatingChannel = true;
+        EphemeralStore.creatingChannel = true;
         const channelData = await client.createChannel(channel);
 
         const member = await client.getChannelMember(channelData.id, currentUserId);
@@ -151,10 +151,10 @@ export async function createChannel(serverUrl: string, displayName: string, purp
             await operator.batchRecords(models);
         }
         fetchChannelStats(serverUrl, channelData.id, false);
-        ephemeral_store.creatingChannel = false;
+        EphemeralStore.creatingChannel = false;
         return {channel: channelData};
     } catch (error) {
-        ephemeral_store.creatingChannel = false;
+        EphemeralStore.creatingChannel = false;
         return {error};
     }
 }
@@ -667,7 +667,7 @@ export async function createDirectChannel(serverUrl: string, userId: string, dis
         if (!currentUser) {
             return {error: 'Cannot get the current user'};
         }
-        ephemeral_store.creatingChannel = true;
+        EphemeralStore.creatingChannel = true;
         const created = await client.createDirectChannel([userId, currentUser.id]);
         const profiles: UserProfile[] = [];
 
@@ -717,11 +717,11 @@ export async function createDirectChannel(serverUrl: string, userId: string, dis
         }
 
         await operator.batchRecords(models);
-        ephemeral_store.creatingChannel = false;
+        EphemeralStore.creatingChannel = false;
         fetchRolesIfNeeded(serverUrl, member.roles.split(' '));
         return {data: created};
     } catch (error) {
-        ephemeral_store.creatingChannel = false;
+        EphemeralStore.creatingChannel = false;
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
@@ -807,13 +807,13 @@ export async function createGroupChannel(serverUrl: string, userIds: string[]) {
         if (!currentUser) {
             return {error: 'Cannot get the current user'};
         }
-        ephemeral_store.creatingChannel = true;
+        EphemeralStore.creatingChannel = true;
         const created = await client.createGroupChannel(userIds);
 
         // Check the channel previous existency: if the channel already have
         // posts is because it existed before.
         if (created.total_msg_count > 0) {
-            ephemeral_store.creatingChannel = false;
+            EphemeralStore.creatingChannel = false;
             return {data: created};
         }
 
@@ -854,11 +854,11 @@ export async function createGroupChannel(serverUrl: string, userIds: string[]) {
                 operator.batchRecords(models);
             }
         }
-        ephemeral_store.creatingChannel = false;
+        EphemeralStore.creatingChannel = false;
         fetchRolesIfNeeded(serverUrl, member.roles.split(' '));
         return {data: created};
     } catch (error) {
-        ephemeral_store.creatingChannel = false;
+        EphemeralStore.creatingChannel = false;
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }

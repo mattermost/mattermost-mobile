@@ -194,7 +194,7 @@ export default class BaseDataOperator {
                     await writer.batch(...models);
                 });
             }
-        } catch (e: any) {
+        } catch (e) {
             // eslint-disable-next-line no-console
             console.warn('batchRecords error ', e as Error);
         }
