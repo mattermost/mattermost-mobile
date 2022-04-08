@@ -3,13 +3,13 @@
 
 import {PastedFile} from '@mattermost/react-native-paste-input';
 import Model from '@nozbe/watermelondb/Model';
-import * as FileSystem from 'expo-file-system';
 import mimeDB from 'mime-db';
 import {IntlShape} from 'react-intl';
 import {Alert, Platform} from 'react-native';
 import AndroidOpenSettings from 'react-native-android-open-settings';
 import DeviceInfo from 'react-native-device-info';
 import {DocumentPickerResponse} from 'react-native-document-picker';
+import FileSystem from 'react-native-fs';
 import {Asset} from 'react-native-image-picker';
 import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
@@ -95,61 +95,22 @@ function populateMaps() {
     });
 }
 
-const vectorIconsDir = 'vectorIcons';
-const dirsToExclude = ['Cache.db', 'WebKit', 'WebView', vectorIconsDir];
-async function getDirectorySize(fileStats: FileSystem.FileInfo) {
-    if (fileStats?.exists) {
-        let total = 0;
-        if (fileStats.isDirectory) {
-            const exclude = dirsToExclude.find((f) => fileStats.uri.includes(f));
-            if (!exclude) {
-                const paths = await FileSystem.readDirectoryAsync(fileStats.uri);
-                for await (const path of paths) {
-                    const info = await FileSystem.getInfoAsync(`${fileStats.uri}/${path}`, {size: true});
-                    if (info.isDirectory) {
-                        const dirSize = await getDirectorySize(info);
-                        total += dirSize;
-                    } else {
-                        total += (info.size || 0);
-                    }
-                }
-            }
-        } else {
-            total = fileStats.size;
-        }
-
-        return total;
-    }
-
-    return 0;
-}
-
-export async function getFileCacheSize() {
-    if (FileSystem.cacheDirectory) {
-        const cacheStats = await FileSystem.getInfoAsync(FileSystem.cacheDirectory);
-        const size = await getDirectorySize(cacheStats);
-
-        return size;
-    }
-
-    return 0;
-}
-
 export async function deleteV1Data() {
-    const dir = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupSharedDirectory : FileSystem.documentDirectory;
+    const dir = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupSharedDirectory : FileSystem.DocumentDirectoryPath;
 
     try {
-        const mmkvDirInfo = await FileSystem.getInfoAsync(`${dir}/mmkv`);
-        if (mmkvDirInfo.exists) {
-            await FileSystem.deleteAsync(mmkvDirInfo.uri, {idempotent: true});
+        const directory = `${dir}/mmkv`;
+        const mmkvDirInfo = await FileSystem.exists(directory);
+        if (mmkvDirInfo) {
+            await FileSystem.unlink(directory);
         }
     } catch {
         // do nothing
     }
 
     try {
-        const entitiesInfo = await FileSystem.getInfoAsync(`${dir}/entities`);
-        if (entitiesInfo.exists) {
+        const entitiesInfo = await FileSystem.exists(`${dir}/entities`);
+        if (entitiesInfo) {
             deleteEntititesFile();
         }
     } catch (e) {
@@ -159,17 +120,17 @@ export async function deleteV1Data() {
 
 export async function deleteFileCache(serverUrl: string) {
     const serverDir = hashCode(serverUrl);
-    const cacheDir = `${FileSystem.cacheDirectory}/${serverDir}`;
+    const cacheDir = `${FileSystem.CachesDirectoryPath}/${serverDir}`;
     if (cacheDir) {
-        const cacheDirInfo = await FileSystem.getInfoAsync(cacheDir);
-        if (cacheDirInfo.exists) {
+        const cacheDirInfo = await FileSystem.exists(cacheDir);
+        if (cacheDirInfo) {
             if (Platform.OS === 'ios') {
-                await FileSystem.deleteAsync(cacheDir, {idempotent: true});
-                await FileSystem.makeDirectoryAsync(cacheDir, {intermediates: true});
+                await FileSystem.unlink(cacheDir);
+                await FileSystem.mkdir(cacheDir);
             } else {
-                const lstat = await FileSystem.readDirectoryAsync(cacheDir);
-                lstat.forEach((stat: string) => {
-                    FileSystem.deleteAsync(stat, {idempotent: true});
+                const lstat = await FileSystem.readDir(cacheDir);
+                lstat.forEach((stat: FileSystem.ReadDirItem) => {
+                    FileSystem.unlink(stat.path);
                 });
             }
         }
@@ -363,9 +324,9 @@ export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | Fil
                 }
             }
 
-            return `${FileSystem.cacheDirectory}${server}/${filename}-${hashCode(file.id!)}.${extension}`;
+            return `${FileSystem.CachesDirectoryPath}/${server}/${filename}-${hashCode(file.id!)}.${extension}`;
         } else if (file?.id && file?.extension) {
-            return `${FileSystem.cacheDirectory}${server}/${file.id}.${file.extension}`;
+            return `${FileSystem.CachesDirectoryPath}/${server}/${file.id}.${file.extension}`;
         }
     }
 
@@ -397,10 +358,9 @@ export async function extractFileInfo(files: Array<Asset | DocumentPickerRespons
             });
             let fileInfo;
             try {
-                fileInfo = await FileSystem.getInfoAsync(path);
-                const uri = fileInfo.uri;
+                fileInfo = await FileSystem.stat(path);
                 outFile.size = fileInfo.size || 0;
-                outFile.name = uri.substring(uri.lastIndexOf('/') + 1);
+                outFile.name = path.substring(path.lastIndexOf('/') + 1);
             } catch (e) {
                 return;
             }
@@ -446,8 +406,7 @@ export function uploadDisabledWarning(intl: IntlShape) {
 export const fileExists = async (path: string) => {
     try {
         const filePath = Platform.select({ios: path.replace('file://', ''), default: path});
-        const info = await FileSystem.getInfoAsync(filePath);
-        return info.exists;
+        return FileSystem.exists(filePath);
     } catch {
         return false;
     }

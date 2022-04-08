@@ -8,8 +8,7 @@ import {Appearance, EventSubscription} from 'react-native';
 import {Preferences} from '@constants';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCurrentTeamId} from '@queries/servers/system';
-import EphemeralStore from '@store/ephemeral_store';
-import {setNavigationStackStyles, setThemeDefaults} from '@utils/theme';
+import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
 
 import type {PreferenceModel} from '@database/models/server';
 import type Database from '@nozbe/watermelondb/Database';
@@ -33,15 +32,6 @@ export function getDefaultThemeByAppearance(): Theme {
 
 export const ThemeContext = createContext(getDefaultThemeByAppearance());
 const {Consumer, Provider} = ThemeContext;
-
-const updateThemeIfNeeded = (theme: Theme) => {
-    if (theme !== EphemeralStore.theme) {
-        EphemeralStore.theme = theme;
-        requestAnimationFrame(() => {
-            setNavigationStackStyles(theme);
-        });
-    }
-};
 
 const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
     const getTheme = (): Theme => {

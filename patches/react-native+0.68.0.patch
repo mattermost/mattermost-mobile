@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js b/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
-index b121da3..82c1c24 100644
+index 7cee521..e490d09 100644
 --- a/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
 +++ b/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
-@@ -1777,9 +1777,15 @@ class ScrollView extends React.Component<Props, State> {
+@@ -1784,9 +1784,15 @@ class ScrollView extends React.Component<Props, State> {
          // Note: we should split props.style on the inner and outer props
          // however, the ScrollView still needs the baseStyle to be scrollable
          const {outer, inner} = splitLayoutProps(flattenStyle(props.style));
@@ -20,7 +20,7 @@ index b121da3..82c1c24 100644
              {...props}
              style={StyleSheet.compose(baseStyle, inner)}
 diff --git a/node_modules/react-native/Libraries/Components/ScrollView/ScrollViewStickyHeader.js b/node_modules/react-native/Libraries/Components/ScrollView/ScrollViewStickyHeader.js
-index ea21ce2..05e0def 100644
+index a6826f3..a7b904b 100644
 --- a/node_modules/react-native/Libraries/Components/ScrollView/ScrollViewStickyHeader.js
 +++ b/node_modules/react-native/Libraries/Components/ScrollView/ScrollViewStickyHeader.js
 @@ -170,7 +170,9 @@ class ScrollViewStickyHeader extends React.Component<Props, State> {
@@ -35,7 +35,7 @@ index ea21ce2..05e0def 100644
      }
    };
 diff --git a/node_modules/react-native/Libraries/Lists/FlatList.js b/node_modules/react-native/Libraries/Lists/FlatList.js
-index 5e49715..88f8896 100644
+index f78ca22..8e81037 100644
 --- a/node_modules/react-native/Libraries/Lists/FlatList.js
 +++ b/node_modules/react-native/Libraries/Lists/FlatList.js
 @@ -26,6 +26,7 @@ import type {
@@ -57,7 +57,7 @@ index 5e49715..88f8896 100644
  |};
  
  /**
-@@ -579,9 +584,14 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
+@@ -578,9 +583,14 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
      };
    }
  
@@ -75,7 +75,7 @@ index 5e49715..88f8896 100644
  
      let virtualizedListRenderKey = ListItemComponent
        ? 'ListItemComponent'
-@@ -606,7 +616,7 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
+@@ -605,7 +615,7 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
         * This comment suppresses an error found when Flow v0.111 was deployed.
         * To see the error, delete this comment and run Flow. */
        [virtualizedListRenderKey]: (info: RenderItemProps<ItemT>) => {
@@ -84,7 +84,7 @@ index 5e49715..88f8896 100644
            const {item, index} = info;
            invariant(
              Array.isArray(item),
-@@ -617,7 +627,7 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
+@@ -616,7 +626,7 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
                {item.map((it, kk) => {
                  const element = renderer({
                    item: it,
@@ -93,7 +93,7 @@ index 5e49715..88f8896 100644
                    separators: info.separators,
                  });
                  return element != null ? (
-@@ -633,14 +643,19 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
+@@ -632,14 +642,19 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
      };
    };
  
@@ -113,7 +113,7 @@ index 5e49715..88f8896 100644
      return (
        <VirtualizedList
          {...restProps}
-@@ -652,7 +667,13 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
+@@ -651,7 +666,13 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
          removeClippedSubviews={removeClippedSubviewsOrDefault(
            _removeClippedSubviews,
          )}
@@ -129,7 +129,7 @@ index 5e49715..88f8896 100644
      );
    }
 diff --git a/node_modules/react-native/Libraries/Lists/VirtualizedList.js b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
-index 2648cc3..fa2511d 100644
+index 6de43b7..2c18c92 100644
 --- a/node_modules/react-native/Libraries/Lists/VirtualizedList.js
 +++ b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
 @@ -16,6 +16,7 @@ const ScrollView = require('../Components/ScrollView/ScrollView');
@@ -148,7 +148,7 @@ index 2648cc3..fa2511d 100644
  import {
    VirtualizedListCellContextProvider,
    VirtualizedListContext,
-@@ -794,12 +796,17 @@ class VirtualizedList extends React.PureComponent<Props, State> {
+@@ -796,12 +798,17 @@ class VirtualizedList extends React.PureComponent<Props, State> {
      const {
        CellRendererComponent,
        ItemSeparatorComponent,
@@ -167,7 +167,7 @@ index 2648cc3..fa2511d 100644
      const end = getItemCount(data) - 1;
      let prevCellKey;
      last = Math.min(end, last);
-@@ -814,27 +821,30 @@ class VirtualizedList extends React.PureComponent<Props, State> {
+@@ -816,27 +823,30 @@ class VirtualizedList extends React.PureComponent<Props, State> {
          <CellRenderer
            CellRendererComponent={CellRendererComponent}
            ItemSeparatorComponent={ii < end ? ItemSeparatorComponent : undefined}
@@ -201,7 +201,7 @@ index 2648cc3..fa2511d 100644
    _onUpdateSeparators = (keys: Array<?string>, newProps: Object) => {
      keys.forEach(key => {
        const ref = key != null && this._cellRefs[key];
-@@ -1269,7 +1279,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
+@@ -1268,7 +1278,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
      }
    };
  
@@ -210,7 +210,7 @@ index 2648cc3..fa2511d 100644
      const layout = e.nativeEvent.layout;
      const next = {
        offset: this._selectOffset(layout),
-@@ -1302,7 +1312,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
+@@ -1301,7 +1311,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
  
      this._computeBlankness();
      this._updateViewableItems(this.props.data);
@@ -219,7 +219,7 @@ index 2648cc3..fa2511d 100644
  
    _onCellUnmount = (cellKey: string) => {
      const curr = this._frames[cellKey];
-@@ -1381,7 +1391,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
+@@ -1380,7 +1390,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
      }
    }
  
@@ -228,7 +228,7 @@ index 2648cc3..fa2511d 100644
      if (this._isNestedWithSameOrientation()) {
        // Need to adjust our scroll metrics to be relative to our containing
        // VirtualizedList before we can make claims about list item viewability
-@@ -1396,7 +1406,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
+@@ -1395,7 +1405,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
      this._maybeCallOnEndReached();
    };
  
@@ -237,7 +237,7 @@ index 2648cc3..fa2511d 100644
      this.props.onLayout && this.props.onLayout(e);
    };
  
-@@ -1404,12 +1414,12 @@ class VirtualizedList extends React.PureComponent<Props, State> {
+@@ -1403,12 +1413,12 @@ class VirtualizedList extends React.PureComponent<Props, State> {
      return this._getCellKey() + '-footer';
    }
  
@@ -252,7 +252,7 @@ index 2648cc3..fa2511d 100644
      this._headerLength = this._selectLength(e.nativeEvent.layout);
    };
  
-@@ -1898,32 +1908,29 @@ type CellRendererProps = {
+@@ -1888,32 +1898,29 @@ type CellRendererProps = {
    ItemSeparatorComponent: ?React.ComponentType<
      any | {highlighted: boolean, leadingItem: ?Item},
    >,
@@ -298,7 +298,7 @@ index 2648cc3..fa2511d 100644
    ...
  };
  
-@@ -1935,7 +1942,7 @@ type CellRendererState = {
+@@ -1925,7 +1932,7 @@ type CellRendererState = {
    ...
  };
  
@@ -307,7 +307,7 @@ index 2648cc3..fa2511d 100644
    CellRendererProps,
    CellRendererState,
  > {
-@@ -1950,12 +1957,16 @@ class CellRenderer extends React.Component<
+@@ -1940,12 +1947,16 @@ class CellRenderer extends React.Component<
      props: CellRendererProps,
      prevState: CellRendererState,
    ): ?CellRendererState {
@@ -330,7 +330,7 @@ index 2648cc3..fa2511d 100644
    }
  
    // TODO: consider factoring separator stuff out of VirtualizedList into FlatList since it's not
-@@ -1992,6 +2003,15 @@ class CellRenderer extends React.Component<
+@@ -1982,6 +1993,15 @@ class CellRenderer extends React.Component<
      this.props.onUnmount(this.props.cellKey);
    }
  
@@ -346,7 +346,7 @@ index 2648cc3..fa2511d 100644
    _renderElement(renderItem, ListItemComponent, item, index) {
      if (renderItem && ListItemComponent) {
        console.warn(
-@@ -2032,14 +2052,16 @@ class CellRenderer extends React.Component<
+@@ -2022,14 +2042,16 @@ class CellRenderer extends React.Component<
      const {
        CellRendererComponent,
        ItemSeparatorComponent,
@@ -365,7 +365,7 @@ index 2648cc3..fa2511d 100644
      const element = this._renderElement(
        renderItem,
        ListItemComponent,
-@@ -2048,12 +2070,10 @@ class CellRenderer extends React.Component<
+@@ -2038,12 +2060,10 @@ class CellRenderer extends React.Component<
      );
  
      const onLayout =
@@ -381,7 +381,7 @@ index 2648cc3..fa2511d 100644
      // NOTE: that when this is a sticky header, `onLayout` will get automatically extracted and
      // called explicitly by `ScrollViewStickyHeader`.
      const itemSeparator = ItemSeparatorComponent && (
-@@ -2119,7 +2139,14 @@ function describeNestedLists(childList: {
+@@ -2109,7 +2129,14 @@ function describeNestedLists(childList: {
  
  const styles = StyleSheet.create({
    verticallyInverted: {
@@ -398,10 +398,10 @@ index 2648cc3..fa2511d 100644
    horizontallyInverted: {
      transform: [{scaleX: -1}],
 diff --git a/node_modules/react-native/react.gradle b/node_modules/react-native/react.gradle
-index 2aefa12..dea1771 100644
+index d876b13..142c59b 100644
 --- a/node_modules/react-native/react.gradle
 +++ b/node_modules/react-native/react.gradle
-@@ -88,7 +88,7 @@ def enableHermesForVariant = config.enableHermesForVariant ?: {
+@@ -112,7 +112,7 @@ def enableHermesForVariant = config.enableHermesForVariant ?: {
  def hermesFlagsForVariant = config.hermesFlagsForVariant ?: {
      def variant ->
          def hermesFlags;
@@ -410,30 +410,28 @@ index 2aefa12..dea1771 100644
              // Can't use ?: since that will also substitute valid empty lists
              hermesFlags = config.hermesFlagsRelease
              if (hermesFlags == null) hermesFlags = ["-O", "-output-source-map"]
-@@ -102,7 +102,7 @@ def hermesFlagsForVariant = config.hermesFlagsForVariant ?: {
+@@ -128,7 +128,7 @@ def hermesFlagsForVariant = config.hermesFlagsForVariant ?: {
+ def disableDevForVariant = config.disableDevForVariant ?: {
+     def variant ->
+       config."devDisabledIn${variant.name.capitalize()}" ||
+-      variant.name.toLowerCase().contains("release")
++      variant.name.toLowerCase().contains("release") || variant.name.toLowerCase().contains("unsigned")
+ }
+ 
+ // Set bundleForVariant to a function to configure per variant,
+@@ -137,13 +137,13 @@ def bundleForVariant = config.bundleForVariant ?: {
+     def variant ->
+       config."bundleIn${variant.name.capitalize()}" ||
+       config."bundleIn${variant.buildType.name.capitalize()}" ||
+-      variant.name.toLowerCase().contains("release")
++      variant.name.toLowerCase().contains("release") || variant.name.toLowerCase().contains("unsigned")
+ }
+ 
  // Set deleteDebugFilesForVariant to a function to configure per variant,
  // defaults to True for Release variants and False for debug variants
  def deleteDebugFilesForVariant = config.deleteDebugFilesForVariant ?: {
 -    def variant -> variant.name.toLowerCase().contains("release")
-+    def variant -> (variant.name.toLowerCase().contains("release") || variant.name.toLowerCase().contains("unsigned"))
++    def variant -> variant.name.toLowerCase().contains("release") || variant.name.toLowerCase().contains("unsigned")
  }
  
  android {
-@@ -173,7 +173,7 @@ afterEvaluate {
- 
-             // Set up dev mode
-             def devEnabled = !(config."devDisabledIn${targetName}"
--                || targetName.toLowerCase().contains("release"))
-+                || targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned"))
- 
-             def extraArgs = []
- 
-@@ -237,7 +237,7 @@ afterEvaluate {
-                 ? config."bundleIn${targetName}"
-                 : config."bundleIn${variant.buildType.name.capitalize()}" != null
-                     ? config."bundleIn${variant.buildType.name.capitalize()}"
--                    : targetName.toLowerCase().contains("release")
-+                    : (targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned"))
-         }
- 
-         // Expose a minimal interface on the application variant and the task itself:
