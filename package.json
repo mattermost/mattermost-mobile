@@ -25,7 +25,7 @@
     "array.prototype.flat": "1.2.5",
     "base-64": "1.0.0",
     "buffer": "6.0.3",
-    "commonmark": "github:mattermost/commonmark.js#90a62d97ed2dbd2d4711a5adda327128f5827983",
+    "commonmark": "github:mattermost/commonmark.js#d1003be97d15414af6c21894125623c45e3f5096",
     "commonmark-react-renderer": "github:mattermost/commonmark-react-renderer#4e52e1725c0ef5b1e2ecfe9883220ec36c2eb67d",
     "deep-equal": "2.0.5",
     "deepmerge": "4.2.2",
