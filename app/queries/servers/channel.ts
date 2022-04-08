@@ -113,7 +113,7 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
     try {
         const channelRecords = operator.handleChannel({channels, prepareRecordsOnly: true});
         const channelInfoRecords = operator.handleChannelInfo({channelInfos, prepareRecordsOnly: true});
-        const membershipRecords = operator.handleChannelMembership({channelMemberships: memberships, prepareRecordsOnly: true});
+        const membershipRecords = operator.handleChannelMembership({channelMemberships: channelMembers, prepareRecordsOnly: true});
         const myChannelRecords = operator.handleMyChannel({channels, myChannels: memberships, prepareRecordsOnly: true});
         const myChannelSettingsRecords = operator.handleMyChannelSettings({settings: memberships, prepareRecordsOnly: true});
 

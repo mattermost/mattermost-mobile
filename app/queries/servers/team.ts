@@ -159,7 +159,9 @@ export async function syncTeamTable(operator: ServerDataOperator, teams: Team[])
         }
 
         models.push(...await operator.handleTeam({teams: availableTeams, prepareRecordsOnly: true}));
-        await operator.batchRecords(models);
+        if (models.length) {
+            await operator.batchRecords(models);
+        }
         return {};
     } catch (error) {
         return {error};
