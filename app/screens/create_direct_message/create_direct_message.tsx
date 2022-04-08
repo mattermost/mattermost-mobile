@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
@@ -77,6 +77,13 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
+function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: UserProfile[]}) {
+    if (action.type === 'add' && action.values?.length) {
+        return [...state, ...action.values];
+    }
+    return state;
+}
+
 export default function CreateDirectMessage({
     componentId,
     currentTeamId,
@@ -95,7 +102,7 @@ export default function CreateDirectMessage({
     const page = useRef(-1);
     const mounted = useRef(false);
 
-    const [profiles, setProfiles] = useState<UserProfile[]>([]);
+    const [profiles, dispatchProfiles] = useReducer(reduceProfiles, []);
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
@@ -105,11 +112,6 @@ export default function CreateDirectMessage({
 
     const isSearch = Boolean(term);
 
-    const addToProfiles = useRef((newProfiles: UserProfile[]) => setProfiles([...profiles, ...newProfiles]));
-    useEffect(() => {
-        addToProfiles.current = (newProfiles: UserProfile[]) => setProfiles([...profiles, ...newProfiles]);
-    }, [profiles]);
-
     const loadedProfiles = ({users}: {users?: UserProfile[]}) => {
         if (mounted.current) {
             if (users && !users.length) {
@@ -118,9 +120,7 @@ export default function CreateDirectMessage({
 
             page.current += 1;
             setLoading(false);
-            if (users && users.length) {
-                addToProfiles.current(users);
-            }
+            dispatchProfiles({type: 'add', values: users});
         }
     };
 

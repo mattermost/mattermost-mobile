@@ -29,7 +29,7 @@ type AfterLoginArgs = {
     deviceToken?: string;
 }
 
-export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs) => {
+export async function loginEntry({serverUrl, user, deviceToken}: AfterLoginArgs) {
     const dt = Date.now();
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -186,4 +186,4 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
 
         return {error};
     }
-};
+}

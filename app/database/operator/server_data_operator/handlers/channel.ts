@@ -203,8 +203,8 @@ const ChannelHandler = (superclass: any) => class extends superclass {
         }
 
         const memberships: ChannelMember[] = channelMemberships.map((m) => ({
-            id: `${m.channel_id}-${m.user_id}`,
             ...m,
+            id: `${m.channel_id}-${m.user_id}`,
         }));
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: memberships, key: 'id'});

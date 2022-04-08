@@ -7,6 +7,7 @@ class EphemeralStore {
     navigationModalStack: string[] = [];
     theme: Theme | undefined;
     visibleTab = 'Home';
+    creatingChannel = false;
 
     addNavigationComponentId = (componentId: string) => {
         this.addToNavigationComponentIdStack(componentId);

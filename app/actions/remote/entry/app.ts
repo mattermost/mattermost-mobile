@@ -14,7 +14,7 @@ import {isTablet} from '@utils/helpers';
 
 import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, syncOtherServers, teamsToRemove} from './common';
 
-export const appEntry = async (serverUrl: string, since = 0) => {
+export async function appEntry(serverUrl: string, since = 0) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -86,9 +86,9 @@ export const appEntry = async (serverUrl: string, since = 0) => {
 
     const error = teamData.error || chData?.error || prefData.error || meData.error;
     return {error, userId: meData?.user?.id};
-};
+}
 
-export const upgradeEntry = async (serverUrl: string) => {
+export async function upgradeEntry(serverUrl: string) {
     const dt = Date.now();
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -115,4 +115,4 @@ export const upgradeEntry = async (serverUrl: string) => {
     } catch (e) {
         return {error: e, time: Date.now() - dt};
     }
-};
+}

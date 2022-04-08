@@ -17,13 +17,14 @@ import {fetchMissingSidebarInfo, fetchMyChannel, fetchChannelStats, fetchChannel
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
+import ephemeral_store from '@app/store/ephemeral_store';
 import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
 import {deleteChannelMembership, getChannelById, prepareMyChannelsForTeam, getCurrentChannel} from '@queries/servers/channel';
 import {prepareCommonSystemValues, getConfig, setCurrentChannelId, getCurrentChannelId} from '@queries/servers/system';
 import {getNthLastChannelFromTeam} from '@queries/servers/team';
-import {getCurrentUser, getUserById} from '@queries/servers/user';
+import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
 
@@ -36,6 +37,9 @@ export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
 
     const {team_id: teamId, channel_id: channelId} = msg.data;
 
+    if (ephemeral_store.creatingChannel) {
+        return; // We probably don't need to handle this WS because we provoked it
+    }
     try {
         const models: Model[] = [];
         const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
@@ -162,8 +166,15 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
 
     const {database} = operator;
 
+    if (ephemeral_store.creatingChannel) {
+        return; // We probably don't need to handle this WS because we provoked it
+    }
     try {
         const {channel_id: channelId} = msg.broadcast;
+        const channel = await getChannelById(database, channelId);
+        if (channel) {
+            return; // We already have this channel
+        }
         const {channels, memberships} = await fetchMyChannel(serverUrl, '', channelId, true);
         if (!channels || !memberships) {
             return;
@@ -173,7 +184,9 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
             return;
         }
 
-        const {directChannels, users} = await fetchMissingSidebarInfo(serverUrl, channels, user.locale, '', user.id, true);
+        const teammateDisplayNameSetting = await getTeammateNameDisplay(database);
+
+        const {directChannels, users} = await fetchMissingSidebarInfo(serverUrl, channels, user.locale, teammateDisplayNameSetting, user.id, true);
         if (!directChannels?.[0]) {
             return;
         }
