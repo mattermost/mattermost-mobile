@@ -6,7 +6,7 @@ import {prepareDeleteTeam, getMyTeamById, removeTeamFromTeamHistory} from '@quer
 
 import type TeamModel from '@typings/database/models/servers/team';
 
-export const removeUserFromTeam = async (serverUrl: string, teamId: string) => {
+export async function removeUserFromTeam(serverUrl: string, teamId: string) {
     const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
     if (!serverDatabase) {
         return;
@@ -31,4 +31,4 @@ export const removeUserFromTeam = async (serverUrl: string, teamId: string) => {
             }
         }
     }
-};
+}

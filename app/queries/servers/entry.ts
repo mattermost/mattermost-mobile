@@ -28,7 +28,7 @@ type PrepareModelsArgs = {
     meData?: MyUserRequest;
 }
 
-export const prepareModels = async ({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData}: PrepareModelsArgs): Promise<Array<Promise<Model[]>>> => {
+export async function prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData}: PrepareModelsArgs): Promise<Array<Promise<Model[]>>> {
     const modelPromises: Array<Promise<Model[]>> = [];
 
     if (removeTeams?.length) {
@@ -65,4 +65,4 @@ export const prepareModels = async ({operator, initialTeamId, removeTeams, remov
     }
 
     return modelPromises;
-};
+}

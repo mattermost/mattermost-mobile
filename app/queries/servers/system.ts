@@ -155,6 +155,15 @@ export const observeLicense = (database: Database) => {
     );
 };
 
+export const getLicense = async (serverDatabase: Database) => {
+    try {
+        const license = await serverDatabase.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LICENSE);
+        return (license?.value) as ClientLicense | undefined;
+    } catch {
+        return undefined;
+    }
+};
+
 export const getRecentCustomStatuses = async (database: Database) => {
     try {
         const recent = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.RECENT_CUSTOM_STATUS);
@@ -311,7 +320,7 @@ export async function prepareCommonSystemValues(
     }
 }
 
-export const setCurrentChannelId = async (operator: ServerDataOperator, channelId: string) => {
+export async function setCurrentChannelId(operator: ServerDataOperator, channelId: string) {
     try {
         const models = await prepareCommonSystemValues(operator, {currentChannelId: channelId});
         if (models) {
@@ -322,9 +331,9 @@ export const setCurrentChannelId = async (operator: ServerDataOperator, channelI
     } catch (error) {
         return {error};
     }
-};
+}
 
-export const setCurrentTeamAndChannelId = async (operator: ServerDataOperator, teamId?: string, channelId?: string) => {
+export async function setCurrentTeamAndChannelId(operator: ServerDataOperator, teamId?: string, channelId?: string) {
     try {
         const models = await prepareCommonSystemValues(operator, {
             currentChannelId: channelId,
@@ -338,5 +347,5 @@ export const setCurrentTeamAndChannelId = async (operator: ServerDataOperator, t
     } catch (error) {
         return {error};
     }
-};
+}
 

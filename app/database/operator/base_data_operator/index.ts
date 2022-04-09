@@ -187,7 +187,7 @@ export default class BaseDataOperator {
      * @throws {DataOperatorException}
      * @returns {Promise<void>}
      */
-    batchRecords = async (models: Model[]): Promise<void> => {
+    async batchRecords(models: Model[]): Promise<void> {
         try {
             if (models.length > 0) {
                 await this.database.write(async (writer: WriterInterface) => {
@@ -198,7 +198,7 @@ export default class BaseDataOperator {
             // eslint-disable-next-line no-console
             console.warn('batchRecords error ', e as Error);
         }
-    };
+    }
 
     /**
      * handleRecords : Utility that processes some records' data against values already present in the database so as to avoid duplicity.
@@ -211,7 +211,7 @@ export default class BaseDataOperator {
      * @param {string} handleRecordsArgs.tableName
      * @returns {Promise<Model[]>}
      */
-    handleRecords = async ({buildKeyRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues = [], tableName, prepareRecordsOnly = true}: HandleRecordsArgs): Promise<Model[]> => {
+    async handleRecords({buildKeyRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues = [], tableName, prepareRecordsOnly = true}: HandleRecordsArgs): Promise<Model[]> {
         if (!createOrUpdateRawValues.length) {
             // eslint-disable-next-line no-console
             console.warn(
@@ -242,5 +242,5 @@ export default class BaseDataOperator {
         }
 
         return models;
-    };
+    }
 }

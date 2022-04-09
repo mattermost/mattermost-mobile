@@ -143,7 +143,7 @@ export const getLastTeam = async (database: Database) => {
     return getDefaultTeamId(database);
 };
 
-export const syncTeamTable = async (operator: ServerDataOperator, teams: Team[]) => {
+export async function syncTeamTable(operator: ServerDataOperator, teams: Team[]) {
     try {
         const deletedTeams = teams.filter((t) => t.delete_at > 0).map((t) => t.id);
         const deletedSet = new Set(deletedTeams);
@@ -159,12 +159,14 @@ export const syncTeamTable = async (operator: ServerDataOperator, teams: Team[])
         }
 
         models.push(...await operator.handleTeam({teams: availableTeams, prepareRecordsOnly: true}));
-        await operator.batchRecords(models);
+        if (models.length) {
+            await operator.batchRecords(models);
+        }
         return {};
     } catch (error) {
         return {error};
     }
-};
+}
 
 export const getDefaultTeamId = async (database: Database) => {
     const user = await getCurrentUser(database);
@@ -202,7 +204,7 @@ export function prepareMyTeams(operator: ServerDataOperator, teams: Team[], memb
     }
 }
 
-export const deleteMyTeams = async (operator: ServerDataOperator, myTeams: MyTeamModel[]) => {
+export async function deleteMyTeams(operator: ServerDataOperator, myTeams: MyTeamModel[]) {
     try {
         const preparedModels: Model[] = [];
         for (const myTeam of myTeams) {
@@ -216,7 +218,7 @@ export const deleteMyTeams = async (operator: ServerDataOperator, myTeams: MyTea
     } catch (error) {
         return {error};
     }
-};
+}
 
 export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
     try {

@@ -25,7 +25,7 @@ import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
 
-export const switchToChannel = async (serverUrl: string, channelId: string, teamId?: string, prepareRecordsOnly = false) => {
+export async function switchToChannel(serverUrl: string, channelId: string, teamId?: string, prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -113,9 +113,9 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
     }
 
     return {models};
-};
+}
 
-export const removeCurrentUserFromChannel = async (serverUrl: string, channelId: string, prepareRecordsOnly = false) => {
+export async function removeCurrentUserFromChannel(serverUrl: string, channelId: string, prepareRecordsOnly = false) {
     const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
     if (!serverDatabase) {
         return {error: `${serverUrl} database not found`};
@@ -146,9 +146,9 @@ export const removeCurrentUserFromChannel = async (serverUrl: string, channelId:
         }
     }
     return {models};
-};
+}
 
-export const setChannelDeleteAt = async (serverUrl: string, channelId: string, deleteAt: number) => {
+export async function setChannelDeleteAt(serverUrl: string, channelId: string, deleteAt: number) {
     const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
     if (!serverDatabase) {
         return;
@@ -171,18 +171,18 @@ export const setChannelDeleteAt = async (serverUrl: string, channelId: string, d
         // eslint-disable-next-line no-console
         console.log('FAILED TO BATCH CHANGES FOR CHANNEL DELETE AT');
     }
-};
+}
 
-export const selectAllMyChannelIds = async (serverUrl: string) => {
+export async function selectAllMyChannelIds(serverUrl: string) {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return [];
     }
 
     return queryAllMyChannel(database).fetchIds();
-};
+}
 
-export const markChannelAsViewed = async (serverUrl: string, channelId: string, prepareRecordsOnly = false) => {
+export async function markChannelAsViewed(serverUrl: string, channelId: string, prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -210,9 +210,9 @@ export const markChannelAsViewed = async (serverUrl: string, channelId: string, 
     } catch (error) {
         return {error};
     }
-};
+}
 
-export const markChannelAsUnread = async (serverUrl: string, channelId: string, messageCount: number, mentionsCount: number, lastViewed: number, prepareRecordsOnly = false) => {
+export async function markChannelAsUnread(serverUrl: string, channelId: string, messageCount: number, mentionsCount: number, lastViewed: number, prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -241,9 +241,9 @@ export const markChannelAsUnread = async (serverUrl: string, channelId: string, 
     } catch (error) {
         return {error};
     }
-};
+}
 
-export const resetMessageCount = async (serverUrl: string, channelId: string) => {
+export async function resetMessageCount(serverUrl: string, channelId: string) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -264,9 +264,9 @@ export const resetMessageCount = async (serverUrl: string, channelId: string) =>
     } catch (error) {
         return {error};
     }
-};
+}
 
-export const storeMyChannelsForTeam = async (serverUrl: string, teamId: string, channels: Channel[], memberships: ChannelMembership[], prepareRecordsOnly = false) => {
+export async function storeMyChannelsForTeam(serverUrl: string, teamId: string, channels: Channel[], memberships: ChannelMembership[], prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -297,9 +297,9 @@ export const storeMyChannelsForTeam = async (serverUrl: string, teamId: string, 
     }
 
     return {models: flattenedModels};
-};
+}
 
-export const updateMyChannelFromWebsocket = async (serverUrl: string, channelMember: ChannelMembership, prepareRecordsOnly = false) => {
+export async function updateMyChannelFromWebsocket(serverUrl: string, channelMember: ChannelMembership, prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -315,9 +315,9 @@ export const updateMyChannelFromWebsocket = async (serverUrl: string, channelMem
         }
     }
     return {model: member};
-};
+}
 
-export const updateChannelInfoFromChannel = async (serverUrl: string, channel: Channel, prepareRecordsOnly = false) => {
+export async function updateChannelInfoFromChannel(serverUrl: string, channel: Channel, prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -333,9 +333,9 @@ export const updateChannelInfoFromChannel = async (serverUrl: string, channel: C
         operator.batchRecords(newInfo);
     }
     return {model: newInfo};
-};
+}
 
-export const updateLastPostAt = async (serverUrl: string, channelId: string, lastPostAt: number, prepareRecordsOnly = false) => {
+export async function updateLastPostAt(serverUrl: string, channelId: string, lastPostAt: number, prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -361,7 +361,7 @@ export const updateLastPostAt = async (serverUrl: string, channelId: string, las
     }
 
     return {member: undefined};
-};
+}
 
 export async function updateChannelsDisplayName(serverUrl: string, channels: ChannelModel[], users: UserProfile[], prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;

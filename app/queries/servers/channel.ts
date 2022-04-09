@@ -113,7 +113,7 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
     try {
         const channelRecords = operator.handleChannel({channels, prepareRecordsOnly: true});
         const channelInfoRecords = operator.handleChannelInfo({channelInfos, prepareRecordsOnly: true});
-        const membershipRecords = operator.handleChannelMembership({channelMemberships: memberships, prepareRecordsOnly: true});
+        const membershipRecords = operator.handleChannelMembership({channelMemberships: channelMembers, prepareRecordsOnly: true});
         const myChannelRecords = operator.handleMyChannel({channels, myChannels: memberships, prepareRecordsOnly: true});
         const myChannelSettingsRecords = operator.handleMyChannelSettings({settings: memberships, prepareRecordsOnly: true});
 
@@ -284,7 +284,7 @@ export const observeCurrentChannel = (database: Database) => {
         ));
 };
 
-export const deleteChannelMembership = async (operator: ServerDataOperator, userId: string, channelId: string, prepareRecordsOnly = false) => {
+export async function deleteChannelMembership(operator: ServerDataOperator, userId: string, channelId: string, prepareRecordsOnly = false) {
     try {
         const channelMembership = await operator.database.get(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('channel_id', Q.eq(channelId))).fetch();
         const models: Model[] = [];
@@ -298,7 +298,7 @@ export const deleteChannelMembership = async (operator: ServerDataOperator, user
     } catch (error) {
         return {error};
     }
-};
+}
 
 export const addChannelMembership = async (operator: ServerDataOperator, userId: string, channelId: string) => {
     try {

@@ -82,7 +82,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
      * @param {(TransformerArgs) => Promise<Model>} execute.recordOperator
      * @returns {Promise<void>}
      */
-    execute = async ({createRaws, transformer, tableName, updateRaws}: OperationArgs): Promise<Model[]> => {
+    async execute({createRaws, transformer, tableName, updateRaws}: OperationArgs): Promise<Model[]> {
         const models = await this.prepareRecords({
             tableName,
             createRaws,
@@ -95,5 +95,5 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
         }
 
         return models;
-    };
+    }
 }
