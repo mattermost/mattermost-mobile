@@ -212,7 +212,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
 
     const textAnimatedTextStyle = useAnimatedStyle(() => {
         const inputText = placeholder || value;
-        const index = inputText ? 1 : 0;
+        const index = inputText || focusedLabel ? 1 : 0;
         const toValue = positions[index];
         const toSize = size[index];
 
