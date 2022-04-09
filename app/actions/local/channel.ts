@@ -358,6 +358,8 @@ export async function updateLastPostAt(serverUrl: string, channelId: string, las
         } catch (error) {
             return {error};
         }
+
+        return {member};
     }
 
     return {member: undefined};
