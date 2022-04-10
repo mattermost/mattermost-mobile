@@ -415,6 +415,8 @@
   "mobile.message_length.message": "Die Nachricht ist zu lang. Anzahl der Zeichen: {count}/{max}",
   "mobile.message_length.message_split_left": "Nachricht überschreitet maximale Schriftzeichenanzahl",
   "mobile.message_length.title": "Länge der Nachricht",
+  "mobile.microphone_permission_denied_description": "Um an diesem Call teilzunehmen, öffne die Einstellungen um Mattermost den Zugriff auf dein Mikrofon zu erlauben.",
+  "mobile.microphone_permission_denied_title": "{applicationName} möchte auf dein Mikrofon zugreifen",
   "mobile.more_dms.add_more": "Du kannst {remaining, number} weitere Benutzer hinzufügen",
   "mobile.more_dms.cannot_add_more": "Du kannst keine weiteren Benutzer hinzufügen",
   "mobile.more_dms.one_more": "Du kannst einen weiteren Benutzer hinzufügen",
