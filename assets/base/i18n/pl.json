@@ -415,6 +415,8 @@
   "mobile.message_length.message": "Twoja aktualna wiadomość jest za długa. Aktualna liczba znaków: {max}/{count}",
   "mobile.message_length.message_split_left": "Wiadomość przekracza limit znaków",
   "mobile.message_length.title": "Długość Wiadomości",
+  "mobile.microphone_permission_denied_description": "Aby wziąć udział w tym połączeniu, otwórz Ustawienia, aby umożliwić Mattermost dostęp do mikrofonu.",
+  "mobile.microphone_permission_denied_title": "{applicationName} chce uzyskać dostęp do swojego mikrofonu",
   "mobile.more_dms.add_more": "Możesz dodać {remaining, number} użytkowników więcej",
   "mobile.more_dms.cannot_add_more": "Nie możesz dodać więcej użytkowników",
   "mobile.more_dms.one_more": "Możesz dodać jeszcze jednego użytkownika",
