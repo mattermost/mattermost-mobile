@@ -20,6 +20,8 @@
   "apps.error.command.unknown_option": "Option inconnue pour le champ `{fieldName}` : `{option}`.",
   "apps.error.command.unknown_user": "Utilisateur inconnu pour le champ `{fieldName}` : `{option}`.",
   "apps.error.form.no_form": "`form` n'est pas défini.",
+  "apps.error.form.no_lookup": "`lookup` n'est pas défini.",
+  "apps.error.form.no_source": "`source` n'est pas défini.",
   "apps.error.form.refresh": "Une erreur s'est produite lors de la récupération des champs sélectionnés. Veuillez contacter le développeur de l'application. Détails : {details}",
   "apps.error.form.refresh_no_refresh": "Un rafraîchissement a été appelé sur un champ qui ne prend pas en charge le rafraîchissement.",
   "apps.error.form.submit.pretext": "Une erreur s'est produite lors de l'envoi du formulaire. Veuillez contacter le développeur de l'application. Détails : {details}",
