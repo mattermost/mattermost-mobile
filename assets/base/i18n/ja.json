@@ -415,6 +415,8 @@
   "mobile.message_length.message": "メッセージが長すぎます。現在の文字数: {max}/{count}",
   "mobile.message_length.message_split_left": "メッセージが文字数制限を超えています",
   "mobile.message_length.title": "メッセージの長さ",
+  "mobile.microphone_permission_denied_description": "この通話に参加するには、設定を開いて、Mattermost にマイクへのアクセスを許可してください。",
+  "mobile.microphone_permission_denied_title": "{applicationName} がマイクへのアクセスを要求しています",
   "mobile.more_dms.add_more": "あと{remaining, number}人のユーザーを追加できます",
   "mobile.more_dms.cannot_add_more": "これ以上ユーザーを追加できません",
   "mobile.more_dms.one_more": "あと1ユーザー追加できます",
