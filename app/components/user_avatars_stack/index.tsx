@@ -20,23 +20,15 @@ import type UserModel from '@typings/database/models/servers/user';
 const OVERFLOW_DISPLAY_LIMIT = 99;
 
 type Props = {
-    currentUserId: string;
     users: UserModel[];
     breakAt?: number;
     style?: StyleProp<ViewStyle>;
-    teammateNameDisplay: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     const size = 24;
-
-    let STATUS_BUFFER = Platform.select({
-        ios: 3,
-        android: 2,
-    });
-    STATUS_BUFFER = STATUS_BUFFER || 0;
-    const overflowSize = size + STATUS_BUFFER;
     const imgOverlap = -6;
+
     return {
         container: {
             flexDirection: 'row',
@@ -65,9 +57,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         overflowContainer: {
             justifyContent: 'center',
             alignItems: 'center',
-            width: overflowSize,
-            height: overflowSize,
-            borderRadius: overflowSize / 2,
+            width: size,
+            height: size,
+            borderRadius: size / 2,
             borderWidth: 1,
             borderColor: theme.centerChannelBg,
             backgroundColor: theme.centerChannelBg,
@@ -76,9 +68,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         overflowItem: {
             justifyContent: 'center',
             alignItems: 'center',
-            width: overflowSize,
-            height: overflowSize,
-            borderRadius: overflowSize / 2,
+            width: size,
+            height: size,
+            borderRadius: size / 2,
             borderWidth: 1,
             borderColor: theme.centerChannelBg,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
@@ -100,7 +92,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const UserAvatarsStack = ({breakAt = 3, currentUserId, style: baseContainerStyle, teammateNameDisplay, users}: Props) => {
+const UserAvatarsStack = ({breakAt = 3, style: baseContainerStyle, users}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -117,12 +109,7 @@ const UserAvatarsStack = ({breakAt = 3, currentUserId, style: baseContainerStyle
                         />
                     </View>
                 )}
-                <UsersList
-                    currentUserId={currentUserId}
-                    teammateNameDisplay={teammateNameDisplay}
-                    theme={theme}
-                    users={users}
-                />
+                <UsersList users={users}/>
             </>
         );
 
@@ -133,7 +120,7 @@ const UserAvatarsStack = ({breakAt = 3, currentUserId, style: baseContainerStyle
             title: intl.formatMessage({id: 'mobile.participants.header', defaultMessage: 'THREAD PARTICIPANTS'}),
             theme,
         });
-    }), [isTablet, teammateNameDisplay, theme, users]);
+    }), [isTablet, theme, users]);
 
     const displayUsers = users.slice(0, breakAt);
     const overflowUsersCount = Math.min(users.length - displayUsers.length, OVERFLOW_DISPLAY_LIMIT);
