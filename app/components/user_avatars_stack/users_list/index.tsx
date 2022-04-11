@@ -2,28 +2,30 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {StyleSheet} from 'react-native';
 
-import Row from './row';
+import UserItem from '@components/user_item';
 
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    currentUserId: string;
-    teammateNameDisplay: string;
-    theme: Theme;
     users: UserModel[];
-}
+};
 
-const UsersList = ({currentUserId, teammateNameDisplay, theme, users}: Props) => {
+const style = StyleSheet.create({
+    container: {
+        paddingLeft: 0,
+    },
+});
+
+const UsersList = ({users}: Props) => {
     return (
         <>
             {users.map((user) => (
-                <Row
-                    currentUserId={currentUserId}
+                <UserItem
                     key={user.id}
-                    teammateNameDisplay={teammateNameDisplay}
-                    theme={theme}
                     user={user}
+                    containerStyle={style.container}
                 />
             ))}
         </>
