@@ -30,10 +30,13 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
     const dimensions = useWindowDimensions();
     const isTablet = useIsTablet();
     const theme = useTheme();
+    const firstRun = useRef(isTablet);
     const lastSnap = snapPoints.length - 1;
 
     const close = useCallback(() => {
-        dismissModal({componentId});
+        if (firstRun.current) {
+            dismissModal({componentId});
+        }
     }, [componentId]);
 
     useEffect(() => {
@@ -65,6 +68,11 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
         hapticFeedback();
         Keyboard.dismiss();
         sheetRef.current?.snapTo(initialSnapIndex);
+        const t = setTimeout(() => {
+            firstRun.current = true;
+        }, 100);
+
+        return () => clearTimeout(t);
     }, []);
 
     useEffect(() => {
@@ -89,7 +97,7 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
                 }}
             >
                 <Animated.View
-                    style={{...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0, 0, 0, 0.5)'}}
+                    style={StyleSheet.absoluteFill}
                 />
             </TapGestureHandler>
         );
@@ -127,10 +135,10 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
                 ref={sheetRef}
                 snapPoints={snapPoints}
                 borderRadius={10}
-                initialSnap={initialSnapIndex}
+                initialSnap={snapPoints.length - 1}
                 renderContent={renderContainerContent}
                 onCloseEnd={close}
-                enabledBottomInitialAnimation={true}
+                enabledBottomInitialAnimation={false}
                 renderHeader={Indicator}
                 enabledContentTapInteraction={false}
             />

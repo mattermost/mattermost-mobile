@@ -147,7 +147,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
             if (isTablet) {
                 showModal(screen, title, passProps, bottomSheetModalOptions(theme, 'close-post-reactions'));
             } else {
-                showModalOverCurrentContext(screen, passProps);
+                showModalOverCurrentContext(screen, passProps, bottomSheetModalOptions(theme));
             }
         }
     }, [intl, isTablet, postId, theme]);
