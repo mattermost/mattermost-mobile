@@ -233,7 +233,6 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, theme, thre
                     {postBody}
                     <ThreadFooter
                         author={author}
-                        teammateNameDisplay={teammateNameDisplay}
                         testID={`${testIDPrefix}.footer`}
                         thread={thread}
                         theme={theme}
