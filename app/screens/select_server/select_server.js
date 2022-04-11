@@ -32,9 +32,9 @@ import {Client4} from '@client/rest';
 import AppVersion from '@components/app_version';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
+import {Sso} from '@constants';
 import fetchConfig from '@init/fetch';
 import globalEventHandler from '@init/global_event_handler';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity} from '@utils/theme';
@@ -233,20 +233,33 @@ export default class SelectServer extends PureComponent {
     handleLoginOptions = async () => {
         const {formatMessage} = this.context.intl;
         const {config, license} = this.props;
-        const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
+        const isLicensed = license.IsLicensed === 'true';
+        const samlEnabled = isLicensed && config.EnableSaml === 'true' && license.SAML === 'true';
+        const googleEnabled = isLicensed && config.EnableSignUpWithGoogle === 'true';
+        const o365Enabled = isLicensed && config.EnableSignUpWithOffice365 === 'true' && license.Office365OAuth === 'true';
+        const openIdEnabled = isLicensed && config.EnableSignUpWithOpenId === 'true';
         const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
-        const googleEnabled = config.EnableSignUpWithGoogle === 'true' && license.IsLicensed === 'true';
-        const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && license.IsLicensed === 'true' && license.Office365OAuth === 'true';
-        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true' && isMinimumServerVersion(config.Version, 5, 33, 0);
-
-        let options = 0;
-        if (samlEnabled || gitlabEnabled || googleEnabled || o365Enabled || openIdEnabled) {
-            options += 1;
-        }
+        const ldapEnabled = isLicensed && config.EnableLdap === 'true' && license.LDAP === 'true';
+        const hasLoginForm = config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true' || ldapEnabled;
+        const ssoOptions = {
+            [Sso.SAML]: samlEnabled,
+            [Sso.GITLAB]: gitlabEnabled,
+            [Sso.GOOGLE]: googleEnabled,
+            [Sso.OFFICE365]: o365Enabled,
+            [Sso.OPENID]: openIdEnabled,
+        };
+        const enabledSSOs = Object.keys(ssoOptions).filter((key) => ssoOptions[key]);
+        const numberSSOs = enabledSSOs.length;
+        const redirectSSO = !hasLoginForm && numberSSOs === 1;
 
         let screen;
         let title;
-        if (options) {
+        let props;
+        if (redirectSSO) {
+            screen = 'SSO';
+            title = formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
+            props = {ssoType: enabledSSOs[0]};
+        } else if (hasLoginForm && numberSSOs > 0) {
             screen = 'LoginOptions';
             title = formatMessage({id: 'mobile.routes.loginOptions', defaultMessage: 'Login Chooser'});
         } else {
@@ -256,6 +269,7 @@ export default class SelectServer extends PureComponent {
 
         this.props.actions.resetPing();
         await globalEventHandler.configureAnalytics();
+        globalEventHandler.clearCookiesAndWebData();
 
         if (Platform.OS === 'ios') {
             if (config.ExperimentalClientSideCertEnable === 'true' && config.ExperimentalClientSideCertCheck === 'primary') {
@@ -265,10 +279,10 @@ export default class SelectServer extends PureComponent {
             }
 
             setTimeout(() => {
-                this.goToNextScreen(screen, title);
+                this.goToNextScreen(screen, title, props);
             }, 350);
         } else {
-            this.goToNextScreen(screen, title);
+            this.goToNextScreen(screen, title, props);
         }
     };
 

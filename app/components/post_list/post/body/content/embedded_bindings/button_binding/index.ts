@@ -3,7 +3,7 @@
 
 import {connect} from 'react-redux';
 
-import {doAppCall, postEphemeralCallResponseForPost} from '@actions/apps';
+import {handleBindingClick, postEphemeralCallResponseForPost} from '@actions/apps';
 import {handleGotoLocation} from '@mm-redux/actions/integrations';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
 import {getPost} from '@mm-redux/selectors/entities/posts';
@@ -32,7 +32,7 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
 }
 
 const mapDispatchToProps = {
-    doAppCall,
+    handleBindingClick,
     postEphemeralCallResponseForPost,
     handleGotoLocation,
 };

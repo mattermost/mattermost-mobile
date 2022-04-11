@@ -3,6 +3,7 @@
 import {Client4} from '@client/rest';
 import {analytics} from '@init/analytics';
 import {UserTypes, TeamTypes} from '@mm-redux/action_types';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId, getUsers} from '@mm-redux/selectors/entities/users';
 import {Action, ActionFunc, ActionResult, batchActions, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 import {TeamMembership} from '@mm-redux/types/teams';
@@ -738,6 +739,14 @@ export function autocompleteUsers(term: string, teamId = '', channelId = '', opt
         dispatch(batchActions(actions));
 
         return {data};
+    };
+}
+
+export function autocompleteUsersInChannel(prefix: string, channelID: string): ActionFunc {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const currentTeamID = getCurrentTeamId(state);
+        return dispatch(autocompleteUsers(prefix, currentTeamID, channelID));
     };
 }
 

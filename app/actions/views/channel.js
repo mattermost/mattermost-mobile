@@ -232,7 +232,6 @@ export function handleSelectChannel(channelId) {
             dispatch(batchActions(actions, 'BATCH_SWITCH_CHANNEL'));
 
             if (appsEnabled(state)) {
-                //TODO improve sync method
                 dispatch(fetchAppBindings(currentUserId, channelId));
             }
             console.log('channel switch to', channel?.display_name, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line

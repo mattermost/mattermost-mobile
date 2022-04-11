@@ -3,7 +3,7 @@
 
 import moment from 'moment-timezone';
 import React, {useCallback} from 'react';
-import {injectIntl, IntlShape} from 'react-intl';
+import {injectIntl, intlShape, IntlShape} from 'react-intl';
 import {View, TouchableOpacity, Text} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -19,7 +19,7 @@ import type {UserProfile} from '@mm-redux/types/users';
 
 type CallMessageProps = {
     actions: {
-        joinCall: (channelId: string) => void;
+        joinCall: (channelId: string, intl: typeof intlShape) => void;
     };
     post: Post;
     user: UserProfile;

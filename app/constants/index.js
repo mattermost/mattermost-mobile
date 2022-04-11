@@ -9,6 +9,7 @@ import DeepLinkTypes from './deep_linking';
 import DeviceTypes from './device';
 import ListTypes from './list';
 import NavigationTypes from './navigation';
+import Sso from './sso';
 import Types from './types';
 import ViewTypes from './view';
 import WebsocketEvents from './websocket';
@@ -21,6 +22,7 @@ export {
     DateTypes,
     ListTypes,
     NavigationTypes,
+    Sso,
     Types,
     ViewTypes,
     WebsocketEvents,

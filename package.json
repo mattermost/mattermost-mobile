@@ -1,6 +1,6 @@
 {
   "name": "mattermost-mobile",
-  "version": "1.49.1",
+  "version": "1.51.0",
   "description": "Mattermost Mobile with React Native",
   "repository": "git@github.com:mattermost/mattermost-mobile.git",
   "author": "Mattermost, Inc.",
@@ -25,8 +25,8 @@
     "array.prototype.flat": "1.2.5",
     "base-64": "1.0.0",
     "buffer": "6.0.3",
-    "commonmark": "0.30.0",
-    "commonmark-react-renderer": "4.3.5",
+    "commonmark": "github:mattermost/commonmark.js#d1003be97d15414af6c21894125623c45e3f5096",
+    "commonmark-react-renderer": "github:mattermost/commonmark-react-renderer#4e52e1725c0ef5b1e2ecfe9883220ec36c2eb67d",
     "deep-equal": "2.0.5",
     "deepmerge": "4.2.2",
     "emoji-regex": "10.0.0",
@@ -55,7 +55,7 @@
     "react-native-haptic-feedback": "1.13.0",
     "react-native-hw-keyboard-event": "0.0.4",
     "react-native-image-picker": "4.7.3",
-    "react-native-incall-manager": "3.3.0",
+    "react-native-incall-manager": "github:cpoile/react-native-incall-manager",
     "react-native-keyboard-aware-scrollview": "2.1.0",
     "react-native-keyboard-tracking-view": "5.7.0",
     "react-native-keychain": "8.0.0",
@@ -80,7 +80,7 @@
     "react-native-svg": "12.1.1",
     "react-native-vector-icons": "9.0.0",
     "react-native-video": "5.2.0",
-    "react-native-webrtc": "github:streamer45/react-native-webrtc",
+    "react-native-webrtc": "github:mattermost/react-native-webrtc",
     "react-native-webview": "11.17.1",
     "react-native-youtube": "2.0.2",
     "react-redux": "7.2.6",
@@ -98,7 +98,7 @@
     "serialize-error": "9.0.0",
     "shallow-equals": "1.0.0",
     "tinycolor2": "1.4.2",
-    "url-parse": "1.5.6"
+    "url-parse": "1.5.10"
   },
   "devDependencies": {
     "@babel/cli": "7.16.8",

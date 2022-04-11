@@ -9,6 +9,8 @@ export type CallsState = {
     enabled: Dictionary<boolean>;
     joined: string;
     screenShareURL: string;
+    speakerphoneOn: boolean;
+    config: ServerConfig;
 }
 
 export type Call = {
@@ -24,6 +26,7 @@ export type CallParticipant = {
     id: string;
     muted: boolean;
     isTalking: boolean;
+    raisedHand: number;
     profile: UserProfile;
 }
 
@@ -51,3 +54,17 @@ export type VoiceEventData = {
     channelId: string;
     userId: string;
 }
+
+export type ServerConfig = {
+    ICEServers: string[];
+    AllowEnableCalls: boolean;
+    DefaultEnabled: boolean;
+    last_retrieved_at: number;
+}
+
+export const DefaultServerConfig = {
+    ICEServers: [],
+    AllowEnableCalls: false,
+    DefaultEnabled: false,
+    last_retrieved_at: 0,
+} as ServerConfig;

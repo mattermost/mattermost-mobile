@@ -14,7 +14,7 @@ import Markdown from '@components/markdown';
 import StatusBar from '@components/status_bar';
 import {AppCallResponseTypes, AppFieldTypes} from '@mm-redux/constants/apps';
 import {ActionResult} from '@mm-redux/types/actions';
-import {AppCallRequest, AppField, AppForm, AppFormValue, AppFormValues, AppLookupResponse, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
+import {AppField, AppForm, AppFormValue, AppFormValues, AppLookupResponse, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
 import {DialogElement} from '@mm-redux/types/integrations';
 import {Theme} from '@mm-redux/types/theme';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
@@ -29,7 +29,6 @@ import AppsFormField from './apps_form_field';
 import DialogIntroductionText from './dialog_introduction_text';
 
 export type Props = {
-    call: AppCallRequest;
     form: AppForm;
     actions: {
         submit: (submission: {
@@ -155,7 +154,7 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
 
         if (res.error) {
             const errorResponse = res.error;
-            const errorMessage = errorResponse.error;
+            const errorMessage = errorResponse.text;
             const hasErrors = this.updateErrors(elements, errorResponse.data?.errors, errorMessage);
             if (!hasErrors) {
                 this.handleHide();
@@ -225,7 +224,7 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
 
     performLookup = async (name: string, userInput: string): Promise<AppSelectOption[]> => {
         const intl = this.context.intl;
-        const field = this.props.form.fields.find((f) => f.name === name);
+        const field = this.props.form.fields?.find((f) => f.name === name);
         if (!field) {
             return [];
         }
@@ -233,7 +232,7 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
         const res = await this.props.actions.performLookupCall(field, this.state.values, userInput);
         if (res.error) {
             const errorResponse = res.error;
-            const errMsg = errorResponse.error || intl.formatMessage({
+            const errMsg = errorResponse.text || intl.formatMessage({
                 id: 'apps.error.unknown',
                 defaultMessage: 'Unknown error.',
             });
@@ -294,7 +293,7 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
     };
 
     onChange = (name: string, value: any) => {
-        const field = this.props.form.fields.find((f) => f.name === name);
+        const field = this.props.form.fields?.find((f) => f.name === name);
         if (!field) {
             return;
         }
@@ -305,7 +304,7 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             this.props.actions.refreshOnSelect(field, values, value).then((res) => {
                 if (res.error) {
                     const errorResponse = res.error;
-                    const errorMsg = errorResponse.error;
+                    const errorMsg = errorResponse.text;
                     const errors = errorResponse.data?.errors;
                     const elements = fieldsAsElements(this.props.form.fields);
                     this.updateErrors(elements, errors, errorMsg);

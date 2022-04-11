@@ -17,14 +17,11 @@ describe('AppsForm', () => {
             submit: jest.fn(),
             handleGotoLocation: jest.fn(),
         },
-        call: {
-            context: {
-                app_id: 'app1',
-            },
-            path: '/create',
-        },
         componentId: '',
         form: {
+            submit: {
+                path: '/create',
+            },
             title: 'Title',
             footer: 'Footer',
             header: 'Header',

@@ -129,7 +129,7 @@ export default {
     FEATURE_TOGGLE_PREFIX: 'feature_enabled_',
     EMBED_PREVIEW: 'embed_preview',
     LINK_PREVIEW_DISPLAY: 'link_previews',
-    MIN_CHANNELNAME_LENGTH: 2,
+    MIN_CHANNELNAME_LENGTH: 1,
     MAX_CHANNELNAME_LENGTH: 64,
     ANDROID_TOP_LANDSCAPE: 46,
     ANDROID_TOP_PORTRAIT: 56,

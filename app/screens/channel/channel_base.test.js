@@ -28,7 +28,7 @@ describe('ChannelBase', () => {
         componentId: channelBaseComponentId,
         theme: Preferences.THEMES.denim,
         collapsedThreadsEnabled: false,
-        callsFeatureEnabled: false,
+        isSupportedServerCalls: false,
     };
     const optionsForTheme = (theme) => {
         return {

@@ -313,7 +313,7 @@ export default class DraftInput extends PureComponent {
         }
 
         if (data.form) {
-            showAppForm(data.form, data.call, theme);
+            showAppForm(data.form, data.call.context, theme);
         }
 
         this.setInputValue('');

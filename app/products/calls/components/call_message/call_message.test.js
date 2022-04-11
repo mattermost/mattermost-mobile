@@ -4,6 +4,7 @@
 import React from 'react';
 import {Alert, TouchableOpacity} from 'react-native';
 
+import {Posts} from '@mm-redux/constants';
 import Preferences from '@mm-redux/constants/preferences';
 import {shallowWithIntl} from '@test/intl-test-helper';
 
@@ -19,7 +20,7 @@ describe('CallMessage', () => {
             props: {
                 start_at: 100,
             },
-            type: 'custom_calls',
+            type: Posts.POST_TYPES.CUSTOM_CALLS,
         },
         user: {
             id: 'user-1-id',

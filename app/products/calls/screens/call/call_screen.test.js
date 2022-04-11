@@ -45,6 +45,26 @@ describe('CallScreen', () => {
             screenOn: '',
             threadId: false,
         },
+        participants: [{
+            id: 'user-1-id',
+            muted: false,
+            isTalking: false,
+            profile: {
+                id: 'user-1-id',
+                username: 'user-1-username',
+                nickname: 'User 1',
+            },
+        },
+        {
+            id: 'user-2-id',
+            muted: true,
+            isTalking: true,
+            profile: {
+                id: 'user-2-id',
+                username: 'user-2-username',
+                nickname: 'User 2',
+            },
+        }],
         currentParticipant: {
             id: 'user-2-id',
             muted: true,
@@ -77,7 +97,11 @@ describe('CallScreen', () => {
     });
 
     test('should show controls in landscape view on click the screen share', () => {
-        const props = {...baseProps, call: {...baseProps.call, screenOn: 'user-2-id'}, screenShareURL: 'screen-share-url'};
+        const props = {
+            ...baseProps,
+            call: {...baseProps.call, screenOn: 'user-2-id'},
+            screenShareURL: 'screen-share-url',
+        };
         const wrapper = shallow(<CallScreen {...props}/>);
         wrapper.find({testID: 'screen-share-container'}).simulate('press');
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -108,7 +132,11 @@ describe('CallScreen', () => {
             });
 
             test('should match snapshot with screenshare', () => {
-                const props = {...baseProps, call: {...baseProps.call, screenOn: 'user-2-id'}, screenShareURL: 'screen-share-url'};
+                const props = {
+                    ...baseProps,
+                    call: {...baseProps.call, screenOn: 'user-2-id'},
+                    screenShareURL: 'screen-share-url',
+                };
                 const wrapper = shallow(<CallScreen {...props}/>);
 
                 expect(wrapper.getElement()).toMatchSnapshot();
@@ -165,6 +193,38 @@ describe('CallScreen', () => {
                 wrapper.find({testID: 'mute-unmute'}).simulate('press');
                 expect(props.actions.muteMyself).not.toHaveBeenCalled();
                 expect(props.actions.unmuteMyself).toHaveBeenCalled();
+            });
+
+            test('should turn speakerphone on if it is off', () => {
+                const setSpeakerphoneOn = jest.fn();
+                const props = {
+                    ...baseProps,
+                    actions: {
+                        ...baseProps.actions,
+                        setSpeakerphoneOn,
+                    },
+                    speakerphoneOn: false,
+                };
+                const wrapper = shallow(<CallScreen {...props}/>);
+
+                wrapper.find({testID: 'toggle-speakerphone'}).simulate('press');
+                expect(props.actions.setSpeakerphoneOn).toHaveBeenCalledWith(true);
+            });
+
+            test('should turn speakerphone off if it is on', () => {
+                const setSpeakerphoneOn = jest.fn();
+                const props = {
+                    ...baseProps,
+                    actions: {
+                        ...baseProps.actions,
+                        setSpeakerphoneOn,
+                    },
+                    speakerphoneOn: true,
+                };
+                const wrapper = shallow(<CallScreen {...props}/>);
+
+                wrapper.find({testID: 'toggle-speakerphone'}).simulate('press');
+                expect(props.actions.setSpeakerphoneOn).toHaveBeenCalledWith(false);
             });
         });
     });

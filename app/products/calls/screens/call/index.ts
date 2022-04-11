@@ -3,10 +3,19 @@
 import {connect} from 'react-redux';
 import {bindActionCreators, Dispatch} from 'redux';
 
+import {General} from '@mm-redux/constants';
 import {getTheme, getTeammateNameDisplaySetting} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {muteMyself, unmuteMyself, leaveCall} from '@mmproducts/calls//store/actions/calls';
-import {getCurrentCall, getScreenShareURL} from '@mmproducts/calls/store/selectors/calls';
+import {
+    muteMyself,
+    unmuteMyself,
+    leaveCall,
+    setSpeakerphoneOn,
+    raiseHand,
+    unraiseHand,
+} from '@mmproducts/calls//store/actions/calls';
+import {getCurrentCall, getScreenShareURL, isSpeakerphoneOn} from '@mmproducts/calls/store/selectors/calls';
+import {sortParticipants} from '@mmproducts/calls/utils';
 
 import CallScreen from './call_screen';
 
@@ -15,12 +24,15 @@ import type {GlobalState} from '@mm-redux/types/store';
 function mapStateToProps(state: GlobalState) {
     const currentCall = getCurrentCall(state);
     const currentUserId = getCurrentUserId(state);
+    const teammateNameDisplay = getTeammateNameDisplaySetting(state) || General.TEAMMATE_NAME_DISPLAY.SHOW_USERNAME;
     return {
         theme: getTheme(state),
         call: currentCall,
-        teammateNameDisplay: getTeammateNameDisplaySetting(state),
+        teammateNameDisplay,
+        participants: sortParticipants(teammateNameDisplay, currentCall?.participants, currentCall?.screenOn),
         currentParticipant: currentCall && currentCall.participants[currentUserId],
         screenShareURL: getScreenShareURL(state),
+        speakerphoneOn: isSpeakerphoneOn(state),
     };
 }
 
@@ -29,7 +41,10 @@ function mapDispatchToProps(dispatch: Dispatch) {
         actions: bindActionCreators({
             muteMyself,
             unmuteMyself,
+            setSpeakerphoneOn,
             leaveCall,
+            raiseHand,
+            unraiseHand,
         }, dispatch),
     };
 }

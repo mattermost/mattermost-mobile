@@ -20,10 +20,8 @@ exports[`Settings SelectTimezone should match snapshot 1`] = `
   <View
     style={
       Object {
-        "backgroundColor": "#192a4d",
-        "height": 44,
-        "paddingLeft": 8,
-        "width": "100%",
+        "height": 38,
+        "marginVertical": 5,
       }
     }
   >
@@ -39,8 +37,8 @@ exports[`Settings SelectTimezone should match snapshot 1`] = `
       inputHeight={33}
       inputStyle={
         Object {
-          "backgroundColor": "rgba(255,255,255,0.2)",
-          "color": "#ffffff",
+          "backgroundColor": "rgba(63,67,80,0.2)",
+          "color": "#3f4350",
           "fontSize": 15,
         }
       }
@@ -51,17 +49,17 @@ exports[`Settings SelectTimezone should match snapshot 1`] = `
       onChangeText={[Function]}
       onSelectionChange={[Function]}
       placeholder="Search"
-      placeholderTextColor="rgba(255,255,255,0.5)"
+      placeholderTextColor="rgba(63,67,80,0.5)"
       returnKeyType="search"
       searchBarRightMargin={0}
       searchIconSize={24}
-      selectionColor="rgba(255,255,255,0.5)"
+      selectionColor="rgba(63,67,80,0.5)"
       showArrow={false}
       showCancel={true}
       testID="settings.select_timezone.search_bar"
-      tintColorDelete="rgba(255,255,255,0.5)"
-      tintColorSearch="rgba(255,255,255,0.5)"
-      titleCancelColor="#ffffff"
+      tintColorDelete="rgba(63,67,80,0.5)"
+      tintColorSearch="rgba(63,67,80,0.5)"
+      titleCancelColor="#3f4350"
       value=""
     />
   </View>
