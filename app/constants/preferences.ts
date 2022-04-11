@@ -40,6 +40,7 @@ const Preferences: Record<string, any> = {
     CHANNEL_SIDEBAR_ORGANIZATION: 'channel_sidebar_organization',
     CHANNEL_SIDEBAR_LIMIT_DMS: 'limit_visible_dms_gms',
     CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT: 20,
+    CHANNEL_SIDEBAR_GROUP_UNREADS: 'show_unread_section',
     AUTOCLOSE_DMS_ENABLED: 'after_seven_days',
     CATEGORY_ADVANCED_SETTINGS: 'advanced_settings',
     ADVANCED_FILTER_JOIN_LEAVE: 'join_leave',
