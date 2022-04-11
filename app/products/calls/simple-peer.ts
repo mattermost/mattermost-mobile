@@ -421,12 +421,12 @@ export default class Peer extends stream.Duplex {
         this.isNegotiating = true;
     }
 
-    destroy(err?: Error, cb?: (error: Error | null) => void): this {
-        this._destroy(err, cb);
+    destroy(err?: Error, cb?: (error: Error | null) => void, cbPCClose?: () => void): this {
+        this._destroy(err, cb, cbPCClose);
         return this;
     }
 
-    _destroy(err?: Error | null, cb?: (error: Error | null) => void) {
+    _destroy(err?: Error | null, cb?: (error: Error | null) => void, cbPcClose?: () => void) {
         if (this.destroyed || this.destroying) {
             return;
         }
@@ -473,14 +473,14 @@ export default class Peer extends stream.Duplex {
                 } catch (err) {} // eslint-disable-line
 
                 // allow events concurrent with destruction to be handled
-                this.channel.onmessage = null;
-                this.channel.onopen = null;
-                this.channel.onclose = null;
-                this.channel.onerror = null;
+                this.channel.onmessage = undefined;
+                this.channel.onopen = undefined;
+                this.channel.onclose = undefined;
+                this.channel.onerror = undefined;
             }
             if (this.pc) {
                 try {
-                    this.pc.close();
+                    this.pc.close(cbPcClose);
                 } catch (err) {} // eslint-disable-line
 
                 // allow events concurrent with destruction to be handled
