@@ -4,7 +4,7 @@
 import React from 'react';
 import {StyleProp, View, ViewStyle} from 'react-native';
 
-import ProfilePicture from '@components/profile_picture';
+import ProfilePicture from '@components/profile_picture/image';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -22,7 +22,6 @@ const UserAvatar = ({style, user}: Props) => {
             <ProfilePicture
                 author={user}
                 size={24}
-                showStatus={false}
             />
         </View>
     );
