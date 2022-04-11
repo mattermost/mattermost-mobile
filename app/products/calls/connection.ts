@@ -21,7 +21,7 @@ export let client: any = null;
 const websocketConnectTimeout = 3000;
 
 export async function newClient(channelID: string, closeCb: () => void, setScreenShareURL: (url: string) => void) {
-    let peer: any = null;
+    let peer: Peer | null = null;
     let stream: MediaStream;
     let voiceTrackAdded = false;
     let voiceTrack: MediaStreamTrack | null = null;
@@ -50,13 +50,15 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
         streams.forEach((s) => {
             s.getTracks().forEach((track: MediaStreamTrack) => {
                 track.stop();
+                track.release();
             });
         });
 
-        if (peer) {
-            peer.destroy();
-        }
-        InCallManager.stop();
+        peer?.destroy(undefined, undefined, () => {
+            // Wait until the peer connection is closed, which avoids the following racy error that can cause problems with accessing the audio system in the future:
+            // AVAudioSession_iOS.mm:1243  Deactivating an audio session that has running I/O. All I/O should be stopped or paused prior to deactivating the audio session.
+            InCallManager.stop();
+        });
 
         if (closeCb) {
             closeCb();
@@ -67,7 +69,7 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
         if (!peer) {
             return;
         }
-        if (voiceTrackAdded) {
+        if (voiceTrackAdded && voiceTrack) {
             peer.replaceTrack(voiceTrack, null, stream);
         }
         if (voiceTrack) {
@@ -160,7 +162,7 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
     ws.on('message', ({data}) => {
         const msg = JSON.parse(data);
         if (msg.type === 'answer' || msg.type === 'offer') {
-            peer.signal(data);
+            peer?.signal(data);
         }
     });
 
