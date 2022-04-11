@@ -131,6 +131,10 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
             posts: [created],
             prepareRecordsOnly: true,
         });
+        const {member} = await updateLastPostAt(serverUrl, created.channel_id, created.create_at, true);
+        if (member) {
+            models.push(member);
+        }
         if (isCRTEnabled) {
             const {models: threadModels} = await createThreadFromNewPost(serverUrl, created, true);
             if (threadModels?.length) {
