@@ -372,3 +372,17 @@ export const queryMyChannelSettingsByIds = (database: Database, ids: string[]) =
 export const queryChannelsByNames = (database: Database, names: string[]) => {
     return database.get<ChannelModel>(CHANNEL).query(Q.where('name', Q.oneOf(names)));
 };
+
+export const queryMyChannelUnreads = (database: Database, currentTeamId: string) => {
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.on(
+            CHANNEL,
+            Q.or(
+                Q.where('team_id', Q.eq(currentTeamId)),
+                Q.where('team_id', Q.eq('')),
+            ),
+        ),
+        Q.where('is_unread', Q.eq(true)),
+        Q.sortBy('last_post_at', Q.desc),
+    );
+};

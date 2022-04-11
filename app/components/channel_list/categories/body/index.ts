@@ -107,7 +107,6 @@ type EnhanceProps = {
     category: CategoryModel;
     locale: string;
     currentUserId: string;
-    unreadsOnTop: boolean;
     unreadChannelIds: Set<string>;
 } & WithDatabaseArgs
 

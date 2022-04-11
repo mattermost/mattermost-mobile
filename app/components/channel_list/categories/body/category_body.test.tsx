@@ -38,7 +38,6 @@ describe('components/channel_list/categories/body', () => {
                 currentChannelId={''}
                 currentUserId={''}
                 unreadChannelIds={new Set()}
-                unreadsOnTop={false}
             />,
             {database},
         );

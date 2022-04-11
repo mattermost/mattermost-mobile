@@ -16,7 +16,6 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 type Props = {
     categories: CategoryModel[];
     unreadChannels: ChannelModel[];
-    unreadsOnTop: boolean;
     currentChannelId: string;
     currentUserId: string;
     currentTeamId: string;
@@ -30,7 +29,7 @@ const styles = StyleSheet.create({
 
 const extractKey = (item: CategoryModel) => item.id;
 
-const Categories = ({categories, currentChannelId, currentUserId, currentTeamId, unreadChannels, unreadsOnTop}: Props) => {
+const Categories = ({categories, currentChannelId, currentUserId, currentTeamId, unreadChannels}: Props) => {
     const intl = useIntl();
     const listRef = useRef<FlatList>(null);
 
@@ -46,7 +45,6 @@ const Categories = ({categories, currentChannelId, currentUserId, currentTeamId,
                     currentUserId={currentUserId}
                     locale={intl.locale}
                     unreadChannelIds={unreadChannelIds}
-                    unreadsOnTop={unreadsOnTop}
                 />
             </>
         );
@@ -65,7 +63,7 @@ const Categories = ({categories, currentChannelId, currentUserId, currentTeamId,
 
     return (
         <>
-            {unreadsOnTop && unreadChannelIds && <UnreadCategories unreadChannels={unreadChannels}/>}
+            {unreadChannels.length > 0 && <UnreadCategories unreadChannels={unreadChannels}/>}
             <FlatList
                 data={categories}
                 ref={listRef}

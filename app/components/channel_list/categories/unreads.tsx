@@ -5,9 +5,9 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, Text} from 'react-native';
 
-import {useTheme} from '@app/context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
-import {typography} from '@app/utils/typography';
+import {useTheme} from '@context/theme';
+import {typography} from '@utils/typography';
 
 import ChannelListItem from './body/channel';
 
@@ -22,20 +22,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
+const renderItem = ({item}: {item: ChannelModel}) => {
+    return (
+        <ChannelListItem
+            channel={item}
+            isActive={true}
+            collapsed={false}
+        />
+    );
+};
+
 const UnreadCategories = ({unreadChannels}: {unreadChannels: ChannelModel[]}) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
-
-    const renderItem = ({item}: {item: ChannelModel}) => {
-        return (
-            <ChannelListItem
-                channel={item}
-                isActive={true}
-                collapsed={false}
-            />
-        );
-    };
 
     return (
         <>
