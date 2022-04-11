@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {StyleSheet, TextStyle, View} from 'react-native';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import {github, monokai, solarizedDark, solarizedLight} from 'react-syntax-highlighter/dist/cjs/styles/hljs';
@@ -37,6 +37,12 @@ const styles = StyleSheet.create({
 const Highlighter = ({code, language, textStyle, selectable = false}: Props) => {
     const theme = useTheme();
     const style = codeTheme[theme.codeTheme] || github;
+    const preTagStyle = useMemo(() => [
+        styles.preTag,
+        selectable && styles.flex,
+        {backgroundColor: style.hljs.background || theme.centerChannelBg},
+    ],
+    [theme, selectable, style]);
 
     const nativeRenderer = useCallback(({rows, stylesheet}) => {
         const digits = rows.length.toString().length;
@@ -55,11 +61,11 @@ const Highlighter = ({code, language, textStyle, selectable = false}: Props) => 
 
     const preTag = useCallback((info) => (
         <View
-            style={[styles.preTag, selectable && styles.flex, {backgroundColor: style.hljs.background || theme.centerChannelBg}]}
+            style={preTagStyle}
         >
             {info.children}
         </View>
-    ), [theme, selectable, style]);
+    ), [preTagStyle]);
 
     return (
         <SyntaxHighlighter

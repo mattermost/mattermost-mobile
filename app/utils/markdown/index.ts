@@ -11,7 +11,7 @@ type LanguageObject = {
     [key: string]: {
         name: string;
         extensions: string[];
-        aliases?: string[];
+        aliases?: Set<string>;
     };
 }
 
@@ -128,73 +128,69 @@ export const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme: Theme) => 
 });
 
 const highlightedLanguages: LanguageObject = {
-    actionscript: {name: 'ActionScript', extensions: ['as'], aliases: ['as', 'as3']},
+    actionscript: {name: 'ActionScript', extensions: ['as'], aliases: new Set(['as', 'as3'])},
     applescript: {name: 'AppleScript', extensions: ['applescript', 'osascript', 'scpt']},
-    bash: {name: 'Bash', extensions: ['sh'], aliases: ['sh']},
+    bash: {name: 'Bash', extensions: ['sh'], aliases: new Set('sh')},
     clojure: {name: 'Clojure', extensions: ['clj', 'boot', 'cl2', 'cljc', 'cljs', 'cljs.hl', 'cljscm', 'cljx', 'hic']},
-    coffeescript: {name: 'CoffeeScript', extensions: ['coffee', '_coffee', 'cake', 'cjsx', 'cson', 'iced'], aliases: ['coffee', 'coffee-script']},
-    cpp: {name: 'C/C++', extensions: ['cpp', 'c', 'cc', 'h', 'c++', 'h++', 'hpp'], aliases: ['c++', 'c']},
-    cs: {name: 'C#', extensions: ['cs', 'csharp'], aliases: ['c#', 'csharp']},
+    coffeescript: {name: 'CoffeeScript', extensions: ['coffee', '_coffee', 'cake', 'cjsx', 'cson', 'iced'], aliases: new Set(['coffee', 'coffee-script'])},
+    cpp: {name: 'C/C++', extensions: ['cpp', 'c', 'cc', 'h', 'c++', 'h++', 'hpp'], aliases: new Set(['c++', 'c'])},
+    cs: {name: 'C#', extensions: ['cs', 'csharp'], aliases: new Set(['c#', 'csharp'])},
     css: {name: 'CSS', extensions: ['css']},
-    d: {name: 'D', extensions: ['d', 'di'], aliases: ['dlang']},
+    d: {name: 'D', extensions: ['d', 'di'], aliases: new Set('dlang')},
     dart: {name: 'Dart', extensions: ['dart']},
     delphi: {name: 'Delphi', extensions: ['delphi', 'dpr', 'dfm', 'pas', 'pascal', 'freepascal', 'lazarus', 'lpr', 'lfm']},
-    diff: {name: 'Diff', extensions: ['diff', 'patch'], aliases: ['patch', 'udiff']},
+    diff: {name: 'Diff', extensions: ['diff', 'patch'], aliases: new Set(['patch', 'udiff'])},
     django: {name: 'Django', extensions: ['django', 'jinja']},
-    dockerfile: {name: 'Dockerfile', extensions: ['dockerfile', 'docker'], aliases: ['docker']},
-    elixir: {name: 'Elixir', extensions: ['ex', 'exs'], aliases: ['ex', 'exs']},
-    erlang: {name: 'Erlang', extensions: ['erl'], aliases: ['erl']},
+    dockerfile: {name: 'Dockerfile', extensions: ['dockerfile', 'docker'], aliases: new Set('docker')},
+    elixir: {name: 'Elixir', extensions: ['ex', 'exs'], aliases: new Set(['ex', 'exs'])},
+    erlang: {name: 'Erlang', extensions: ['erl'], aliases: new Set('erl')},
     fortran: {name: 'Fortran', extensions: ['f90', 'f95']},
     fsharp: {name: 'F#', extensions: ['fsharp', 'fs']},
     gcode: {name: 'G-Code', extensions: ['gcode', 'nc']},
-    go: {name: 'Go', extensions: ['go'], aliases: ['golang']},
+    go: {name: 'Go', extensions: ['go'], aliases: new Set('golang')},
     groovy: {name: 'Groovy', extensions: ['groovy']},
-    handlebars: {name: 'Handlebars', extensions: ['handlebars', 'hbs', 'html.hbs', 'html.handlebars'], aliases: ['hbs', 'mustache']},
-    haskell: {name: 'Haskell', extensions: ['hs'], aliases: ['hs']},
+    handlebars: {name: 'Handlebars', extensions: ['handlebars', 'hbs', 'html.hbs', 'html.handlebars'], aliases: new Set(['hbs', 'mustache'])},
+    haskell: {name: 'Haskell', extensions: ['hs'], aliases: new Set('hs')},
     haxe: {name: 'Haxe', extensions: ['hx']},
     java: {name: 'Java', extensions: ['java', 'jsp']},
-    javascript: {name: 'JavaScript', extensions: ['js', 'jsx'], aliases: ['js']},
+    javascript: {name: 'JavaScript', extensions: ['js', 'jsx'], aliases: new Set(['js', 'jsx'])},
     json: {name: 'JSON', extensions: ['json']},
-    julia: {name: 'Julia', extensions: ['jl'], aliases: ['jl']},
+    julia: {name: 'Julia', extensions: ['jl'], aliases: new Set('jl')},
     kotlin: {name: 'Kotlin', extensions: ['kt', 'ktm', 'kts']},
-    latex: {name: 'LaTeX', extensions: ['tex'], aliases: ['tex']},
+    latex: {name: 'LaTeX', extensions: ['tex'], aliases: new Set('tex')},
     less: {name: 'Less', extensions: ['less']},
     lisp: {name: 'Lisp', extensions: ['lisp']},
     lua: {name: 'Lua', extensions: ['lua']},
-    makefile: {name: 'Makefile', extensions: ['mk', 'mak'], aliases: ['make', 'mf', 'gnumake', 'bsdmake']},
-    markdown: {name: 'Markdown', extensions: ['md', 'mkdown', 'mkd'], aliases: ['md', 'mkd']},
-    matlab: {name: 'Matlab', extensions: ['matlab', 'm'], aliases: ['m']},
-    objectivec: {name: 'Objective C', extensions: ['mm', 'objc', 'obj-c'], aliases: ['objective_c', 'objc']},
+    makefile: {name: 'Makefile', extensions: ['mk', 'mak'], aliases: new Set(['make', 'mf', 'gnumake', 'bsdmake'])},
+    markdown: {name: 'Markdown', extensions: ['md', 'mkdown', 'mkd'], aliases: new Set(['md', 'mkd'])},
+    matlab: {name: 'Matlab', extensions: ['matlab', 'm'], aliases: new Set('m')},
+    objectivec: {name: 'Objective C', extensions: ['mm', 'objc', 'obj-c'], aliases: new Set(['objective_c', 'objc'])},
     ocaml: {name: 'OCaml', extensions: ['ml']},
-    perl: {name: 'Perl', extensions: ['perl', 'pl'], aliases: ['pl']},
-    pgsql: {name: 'PostgreSQL', extensions: ['pgsql', 'postgres', 'postgresql'], aliases: ['postgres', 'postgresql']},
-    php: {name: 'PHP', extensions: ['php', 'php3', 'php4', 'php5', 'php6'], aliases: ['php3', 'php4', 'php5']},
-    powershell: {name: 'PowerShell', extensions: ['ps', 'ps1'], aliases: ['posh']},
-    puppet: {name: 'Puppet', extensions: ['pp'], aliases: ['pp']},
-    python: {name: 'Python', extensions: ['py', 'gyp'], aliases: ['py']},
-    r: {name: 'R', extensions: ['r'], aliases: ['r', 's']},
-    ruby: {name: 'Ruby', extensions: ['ruby', 'rb', 'gemspec', 'podspec', 'thor', 'irb'], aliases: ['rb']},
-    rust: {name: 'Rust', extensions: ['rs'], aliases: ['rs']},
+    perl: {name: 'Perl', extensions: ['perl', 'pl'], aliases: new Set('pl')},
+    pgsql: {name: 'PostgreSQL', extensions: ['pgsql', 'postgres', 'postgresql'], aliases: new Set(['postgres', 'postgresql'])},
+    php: {name: 'PHP', extensions: ['php', 'php3', 'php4', 'php5', 'php6'], aliases: new Set(['php3', 'php4', 'php5'])},
+    powershell: {name: 'PowerShell', extensions: ['ps', 'ps1'], aliases: new Set('posh')},
+    puppet: {name: 'Puppet', extensions: ['pp'], aliases: new Set('pp')},
+    python: {name: 'Python', extensions: ['py', 'gyp'], aliases: new Set('py')},
+    r: {name: 'R', extensions: ['r'], aliases: new Set(['r', 's'])},
+    ruby: {name: 'Ruby', extensions: ['ruby', 'rb', 'gemspec', 'podspec', 'thor', 'irb'], aliases: new Set('rb')},
+    rust: {name: 'Rust', extensions: ['rs'], aliases: new Set('rs')},
     scala: {name: 'Scala', extensions: ['scala']},
     scheme: {name: 'Scheme', extensions: ['scm', 'sld']},
     scss: {name: 'SCSS', extensions: ['scss']},
-    smalltalk: {name: 'Smalltalk', extensions: ['st'], aliases: ['st', 'squeak']},
+    smalltalk: {name: 'Smalltalk', extensions: ['st'], aliases: new Set(['st', 'squeak'])},
     sql: {name: 'SQL', extensions: ['sql']},
-    stylus: {name: 'Stylus', extensions: ['styl'], aliases: ['styl']},
+    stylus: {name: 'Stylus', extensions: ['styl'], aliases: new Set('styl')},
     swift: {name: 'Swift', extensions: ['swift']},
     text: {name: 'Text', extensions: ['txt', 'log']},
-    typescript: {name: 'TypeScript', extensions: ['ts', 'tsx'], aliases: ['ts', 'tsx']},
-    vbnet: {name: 'VB.Net', extensions: ['vbnet', 'vb', 'bas'], aliases: ['vb', 'visualbasic']},
+    typescript: {name: 'TypeScript', extensions: ['ts', 'tsx'], aliases: new Set(['ts', 'tsx'])},
+    vbnet: {name: 'VB.Net', extensions: ['vbnet', 'vb', 'bas'], aliases: new Set(['vb', 'visualbasic'])},
     vbscript: {name: 'VBScript', extensions: ['vbs']},
     verilog: {name: 'Verilog', extensions: ['v', 'veo', 'sv', 'svh']},
     vhdl: {name: 'VHDL', extensions: ['vhd', 'vhdl']},
     xml: {name: 'HTML, XML', extensions: ['xml', 'html', 'xhtml', 'rss', 'atom', 'xsl', 'plist']},
-    yaml: {name: 'YAML', extensions: ['yaml'], aliases: ['yml']},
+    yaml: {name: 'YAML', extensions: ['yaml'], aliases: new Set('yml')},
 };
-
-function canHighlight(language: string): boolean {
-    return Boolean(getHighlightLanguageFromNameOrAlias(language));
-}
 
 export function getHighlightLanguageFromNameOrAlias(name: string) {
     const langName: string = name.toLowerCase();
@@ -203,21 +199,16 @@ export function getHighlightLanguageFromNameOrAlias(name: string) {
     }
 
     return Object.keys(highlightedLanguages).find((key) => {
-        const aliases = new Set(highlightedLanguages[key].aliases);
-        return aliases.has(langName);
+        return highlightedLanguages[key].aliases?.has(langName);
     }) || '';
 }
 
 export function getHighlightLanguageName(language: string): string {
-    if (canHighlight(language)) {
-        const name: string | undefined = getHighlightLanguageFromNameOrAlias(language);
-        if (!name) {
-            return '';
-        }
-        return highlightedLanguages[name].name;
+    const name: string | undefined = getHighlightLanguageFromNameOrAlias(language);
+    if (!name) {
+        return '';
     }
-
-    return '';
+    return highlightedLanguages[name].name || '';
 }
 
 export function escapeRegex(text: string) {

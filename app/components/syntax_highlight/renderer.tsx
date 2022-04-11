@@ -91,11 +91,11 @@ function createNativeElement({node, stylesheet, key, defaultColor, fontFamily, f
         }
         const style = createStyleObject(
             properties.className,
-            Object.assign(
-                {color: defaultColor},
-                properties.style,
-                startingStyle,
-            ),
+            {
+                color: defaultColor,
+                ...properties.style,
+                ...startingStyle,
+            },
             stylesheet,
         );
         const children = childrenCreator(node.children, style.color || defaultColor);
