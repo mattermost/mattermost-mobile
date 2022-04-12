@@ -4,6 +4,7 @@
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
 import {extractChannelDisplayName} from '@helpers/database';
+import {getIsCRTEnabled} from '@queries/servers/thread';
 import {OperationType} from '@typings/database/enums';
 
 import type {TransformerArgs} from '@typings/database/database';
@@ -120,18 +121,20 @@ export const transformChannelInfoRecord = ({action, database, value}: Transforme
  * @param {RecordPair} operator.value
  * @returns {Promise<MyChannelModel>}
  */
-export const transformMyChannelRecord = ({action, database, value}: TransformerArgs): Promise<MyChannelModel> => {
+export const transformMyChannelRecord = async ({action, database, value}: TransformerArgs): Promise<MyChannelModel> => {
     const raw = value.raw as ChannelMembership;
     const record = value.record as MyChannelModel;
     const isCreateAction = action === OperationType.CREATE;
 
+    const isCRTEnabled = await getIsCRTEnabled(database);
+
     const fieldsMapper = (myChannel: MyChannelModel) => {
         myChannel._raw.id = isCreateAction ? (raw.channel_id || myChannel.id) : record.id;
         myChannel.roles = raw.roles;
-        myChannel.messageCount = raw.msg_count;
+        myChannel.messageCount = isCRTEnabled ? raw.msg_count_root! : raw.msg_count;
         myChannel.isUnread = Boolean(raw.is_unread);
-        myChannel.mentionsCount = raw.mention_count;
-        myChannel.lastPostAt = raw.last_post_at || 0;
+        myChannel.mentionsCount = isCRTEnabled ? raw.mention_count_root! : raw.mention_count;
+        myChannel.lastPostAt = (isCRTEnabled ? (raw.last_root_post_at || raw.last_post_at) : raw.last_post_at) || 0;
         myChannel.lastViewedAt = raw.last_viewed_at;
         myChannel.viewedAt = record?.viewedAt || 0;
     };

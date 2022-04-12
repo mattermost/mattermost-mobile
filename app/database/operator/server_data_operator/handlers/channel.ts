@@ -14,6 +14,7 @@ import {
     transformMyChannelSettingsRecord,
 } from '@database/operator/server_data_operator/transformers/channel';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
+import {getIsCRTEnabled} from '@queries/servers/thread';
 
 import type {HandleChannelArgs, HandleChannelInfoArgs, HandleChannelMembershipArgs, HandleMyChannelArgs, HandleMyChannelSettingsArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -156,14 +157,19 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             return [];
         }
 
+        const isCRTEnabled = await getIsCRTEnabled(this.database);
+
         const channelMap = channels.reduce((result: Record<string, Channel>, channel) => {
             result[channel.id] = channel;
             return result;
         }, {});
+
         for (const my of myChannels) {
             const channel = channelMap[my.channel_id];
             if (channel) {
-                const msgCount = Math.max(0, channel.total_msg_count - my.msg_count);
+                const total = isCRTEnabled ? channel.total_msg_count_root! : channel.total_msg_count;
+                const myMsgCount = isCRTEnabled ? my.msg_count_root! : my.msg_count;
+                const msgCount = Math.max(0, total - myMsgCount);
                 my.msg_count = msgCount;
                 my.is_unread = msgCount > 0;
             }
