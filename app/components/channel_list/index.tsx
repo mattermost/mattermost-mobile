@@ -37,7 +37,14 @@ type ChannelListProps = {
 const ChannelList = ({channelsCount, currentTeamId, iconPad, isTablet, teamsCount}: ChannelListProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const tabletWidth = useSharedValue(TABLET_SIDEBAR_WIDTH);
+    const tabletWidth = useSharedValue(isTablet ? TABLET_SIDEBAR_WIDTH - (teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0) : TABLET_SIDEBAR_WIDTH);
+
+    useEffect(() => {
+        if (isTablet) {
+            tabletWidth.value = TABLET_SIDEBAR_WIDTH - (teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0);
+        }
+    }, [isTablet, teamsCount]);
+
     const tabletStyle = useAnimatedStyle(() => {
         if (!isTablet) {
             return {
@@ -47,12 +54,6 @@ const ChannelList = ({channelsCount, currentTeamId, iconPad, isTablet, teamsCoun
 
         return {maxWidth: withTiming(tabletWidth.value, {duration: 350})};
     }, [isTablet]);
-
-    useEffect(() => {
-        if (isTablet) {
-            tabletWidth.value = TABLET_SIDEBAR_WIDTH - (teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0);
-        }
-    }, [isTablet, teamsCount]);
 
     let content;
 
