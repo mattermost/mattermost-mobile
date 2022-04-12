@@ -149,7 +149,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             if (viewedAt) {
                 models.push(viewedAt);
             }
-        } else {
+        } else if (!isCRTEnabled || !post.root_id) {
             const hasMentions = msg.data.mentions?.includes(currentUserId);
             preparedMyChannelHack(myChannel);
             const {member: unreadAt} = await markChannelAsUnread(
@@ -246,18 +246,36 @@ export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage
 
 export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage) {
     const {channel_id: channelId, team_id: teamId} = msg.broadcast;
-    const {mention_count: mentionCount, msg_count: msgCount, last_viewed_at: lastViewedAt} = msg.data;
+    const {
+        mention_count: mentionCount,
+        mention_count_root: mentionCountRoot,
+        msg_count: msgCount,
+        msg_count_root: msgCountRoot,
+        last_viewed_at: lastViewedAt,
+    } = msg.data;
+
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return;
     }
+    const [myChannel, isCRTEnabled] = await Promise.all([
+        getMyChannel(database, channelId),
+        getIsCRTEnabled(database),
+    ]);
 
-    const myChannel = await getMyChannel(database, channelId);
+    let messages = msgCount;
+    let mentions = mentionCount;
+    if (isCRTEnabled) {
+        messages = msgCountRoot;
+        mentions = mentionCountRoot;
+    }
+
     if (!myChannel?.manuallyUnread) {
         const {channels} = await fetchMyChannel(serverUrl, teamId, channelId, true);
         const channel = channels?.[0];
-        const postNumber = channel?.total_msg_count;
-        const delta = postNumber ? postNumber - msgCount : msgCount;
-        markChannelAsUnread(serverUrl, channelId, delta, mentionCount, lastViewedAt);
+        const postNumber = isCRTEnabled ? channel?.total_msg_count_root : channel?.total_msg_count;
+        const delta = postNumber ? postNumber - messages : messages;
+
+        markChannelAsUnread(serverUrl, channelId, delta, mentions, lastViewedAt);
     }
 }

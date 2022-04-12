@@ -76,26 +76,45 @@ export const loginAnimationOptions = () => {
     };
 };
 
-export const bottomSheetModalOptions = (theme: Theme, closeButtonId: string) => {
-    const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
+export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string) => {
+    if (closeButtonId) {
+        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
+        return {
+            modalPresentationStyle: OptionsModalPresentationStyle.formSheet,
+            modal: {
+                swipeToDismiss: true,
+            },
+            topBar: {
+                leftButtons: [{
+                    id: closeButtonId,
+                    icon: closeButton,
+                    testID: closeButtonId,
+                }],
+                leftButtonColor: changeOpacity(theme.centerChannelColor, 0.56),
+                background: {
+                    color: theme.centerChannelBg,
+                },
+                title: {
+                    color: theme.centerChannelColor,
+                },
+            },
+        };
+    }
+
     return {
-        modalPresentationStyle: OptionsModalPresentationStyle.formSheet,
-        modal: {
-            swipeToDismiss: true,
+        animations: {
+            showModal: {
+                enabled: false,
+            },
+            dismissModal: {
+                enabled: false,
+            },
         },
-        topBar: {
-            leftButtons: [{
-                id: closeButtonId,
-                icon: closeButton,
-                testID: closeButtonId,
-            }],
-            leftButtonColor: changeOpacity(theme.centerChannelColor, 0.56),
-            background: {
-                color: theme.centerChannelBg,
-            },
-            title: {
-                color: theme.centerChannelColor,
-            },
+        modal: {swipeToDismiss: true},
+        statusBar: {
+            backgroundColor: null,
+            drawBehind: true,
+            translucent: true,
         },
     };
 };
@@ -654,7 +673,7 @@ export async function bottomSheet({title, renderContent, snapPoints, initialSnap
             initialSnapIndex,
             renderContent,
             snapPoints,
-        }, {modal: {swipeToDismiss: true}});
+        }, bottomSheetModalOptions(theme));
     }
 }
 

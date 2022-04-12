@@ -66,7 +66,7 @@ export default function Servers() {
         setTotal({mentions, unread});
     };
 
-    const unreadsSubscription = (serverUrl: string, myChannels: MyChannelModel[]) => {
+    const unreadsSubscription = (serverUrl: string, {myChannels, threadMentionCount}: {myChannels: MyChannelModel[]; threadMentionCount: number}) => {
         const unreads = subscriptions.get(serverUrl);
         if (unreads) {
             let mentions = 0;
@@ -76,7 +76,7 @@ export default function Servers() {
                 unread = unread || myChannel.isUnread;
             }
 
-            unreads.mentions = mentions;
+            unreads.mentions = mentions + threadMentionCount;
             unreads.unread = unread;
             subscriptions.set(serverUrl, unreads);
             updateTotal();

@@ -5,7 +5,7 @@ import React, {ReactNode, useCallback, useEffect, useRef} from 'react';
 import {BackHandler, DeviceEventEmitter, Keyboard, StyleSheet, useWindowDimensions, View} from 'react-native';
 import {State, TapGestureHandler} from 'react-native-gesture-handler';
 import {Navigation as RNN} from 'react-native-navigation';
-import Animated from 'react-native-reanimated';
+import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import RNBottomSheet from 'reanimated-bottom-sheet';
 
 import {Events} from '@constants';
@@ -30,10 +30,14 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
     const dimensions = useWindowDimensions();
     const isTablet = useIsTablet();
     const theme = useTheme();
+    const firstRun = useRef(isTablet);
     const lastSnap = snapPoints.length - 1;
+    const backdropOpacity = useSharedValue(0);
 
     const close = useCallback(() => {
-        dismissModal({componentId});
+        if (firstRun.current) {
+            dismissModal({componentId});
+        }
     }, [componentId]);
 
     useEffect(() => {
@@ -65,6 +69,12 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
         hapticFeedback();
         Keyboard.dismiss();
         sheetRef.current?.snapTo(initialSnapIndex);
+        backdropOpacity.value = 1;
+        const t = setTimeout(() => {
+            firstRun.current = true;
+        }, 100);
+
+        return () => clearTimeout(t);
     }, []);
 
     useEffect(() => {
@@ -76,6 +86,11 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
 
         return () => navigationEvents.remove();
     }, [close]);
+
+    const backdropStyle = useAnimatedStyle(() => ({
+        opacity: withTiming(backdropOpacity.value, {duration: 250, easing: Easing.inOut(Easing.linear)}),
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    }));
 
     const renderBackdrop = () => {
         return (
@@ -89,7 +104,7 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
                 }}
             >
                 <Animated.View
-                    style={{...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0, 0, 0, 0.5)'}}
+                    style={[StyleSheet.absoluteFill, backdropStyle]}
                 />
             </TapGestureHandler>
         );
@@ -127,10 +142,13 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
                 ref={sheetRef}
                 snapPoints={snapPoints}
                 borderRadius={10}
-                initialSnap={initialSnapIndex}
+                initialSnap={snapPoints.length - 1}
                 renderContent={renderContainerContent}
                 onCloseEnd={close}
-                enabledBottomInitialAnimation={true}
+                onCloseStart={() => {
+                    backdropOpacity.value = 0;
+                }}
+                enabledBottomInitialAnimation={false}
                 renderHeader={Indicator}
                 enabledContentTapInteraction={false}
             />
