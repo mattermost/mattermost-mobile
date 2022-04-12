@@ -114,7 +114,7 @@ const CombinedUserActivity = ({
         if (isTablet) {
             showModal(Screens.POST_OPTIONS, title, passProps, bottomSheetModalOptions(theme, 'close-post-options'));
         } else {
-            showModalOverCurrentContext(Screens.POST_OPTIONS, passProps);
+            showModalOverCurrentContext(Screens.POST_OPTIONS, passProps, bottomSheetModalOptions(theme));
         }
     }, [post, canDelete, isTablet, intl]);
 
