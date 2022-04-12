@@ -363,7 +363,7 @@ const PostList = ({
                     scrollEventThrottle={60}
                     style={styles.flex}
                     viewabilityConfig={VIEWABILITY_CONFIG}
-                    testID={testID}
+                    testID={`${testID}.flat_list`}
                 />
             </PostListRefreshControl>
             {showMoreMessages &&

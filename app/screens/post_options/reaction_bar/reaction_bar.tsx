@@ -84,6 +84,7 @@ const ReactionBar = ({recentEmojis = [], postId}: QuickReactionProps) => {
                             emoji={emoji}
                             iconSize={iconSize}
                             containerSize={containerSize}
+                            testID='post_options.reaction_bar.reaction'
                         />
                     );
                 })

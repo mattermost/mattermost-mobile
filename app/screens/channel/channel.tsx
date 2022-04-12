@@ -144,6 +144,7 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
                         keyboardTracker={postDraftRef}
                         scrollViewNativeID={channelId}
                         accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
+                        testID='channel.post_draft'
                     />
                 </>
                 }

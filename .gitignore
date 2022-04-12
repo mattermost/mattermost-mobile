@@ -6,7 +6,6 @@ server.PID
 mattermost.keystore
 tmp/
 .env
-env.d.ts
 
 */**/compass-icons.ttf
 

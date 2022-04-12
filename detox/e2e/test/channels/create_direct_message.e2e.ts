@@ -8,6 +8,7 @@
 // *******************************************************************
 
 import {
+    Channel,
     Setup,
     Team,
     User,
@@ -30,10 +31,12 @@ describe('Channels - Create Direct Message', () => {
     const serverOneDisplayName = 'Server 1';
     const directMessagesCategory = 'direct_messages';
     let testTeam: any;
+    let testUser: any;
 
     beforeAll(async () => {
         const {team, user} = await Setup.apiInit(siteOneUrl);
         testTeam = team;
+        testUser = user;
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -75,7 +78,7 @@ describe('Channels - Create Direct Message', () => {
 
         // # Open create direct message screen and search for the new user
         await CreateDirectMessageScreen.open();
-        await CreateDirectMessageScreen.searchInput.replaceText(newUser.username);
+        await CreateDirectMessageScreen.searchInput.replaceText(newUserDisplayName);
 
         // * Verify search returns the new user item
         await expect(CreateDirectMessageScreen.getUserItemDisplayName(newUser.id)).toBeVisible();
@@ -99,7 +102,8 @@ describe('Channels - Create Direct Message', () => {
         await ChannelListScreen.toBeVisible();
 
         // * Verify direct message channel for the new user is added to direct message list
-        await expect(ChannelListScreen.getChannelListItemDisplayName(directMessagesCategory, newUser.id)).toHaveText(newUserDisplayName);
+        const {channel: directMessageChannel} = await Channel.apiCreateDirectChannel(siteOneUrl, [testUser.id, newUser.id]);
+        await expect(ChannelListScreen.getChannelListItemDisplayName(directMessagesCategory, directMessageChannel.name)).toHaveText(newUserDisplayName);
     });
 
     it('MM-T4730_3 - should be able to create a group message', async () => {
@@ -112,8 +116,8 @@ describe('Channels - Create Direct Message', () => {
         // * Verify no group message channel for the new users appears on channel list screen
         const firstNewUserDisplayName = firstNewUser.username;
         const secondNewUserDisplayName = secondNewUser.username;
-        const groupDisplayName = `${firstNewUserDisplayName}, ${secondNewUserDisplayName}`;
-        await expect(ChannelListScreen.getChannelListItemDisplayName(directMessagesCategory, groupDisplayName)).not.toBeVisible();
+        const groupDisplayName = `${firstNewUserDisplayName}, ${secondNewUserDisplayName}, ${testUser.username}`;
+        await expect(element(by.text(groupDisplayName))).not.toBeVisible();
 
         // # Open create direct message screen, search for the first new user and tap on the first new user item
         await CreateDirectMessageScreen.open();
@@ -143,6 +147,6 @@ describe('Channels - Create Direct Message', () => {
         await ChannelListScreen.toBeVisible();
 
         // * Verify group message channel for the other two new users is added to direct message list
-        await expect(ChannelListScreen.getChannelListItemDisplayName(directMessagesCategory, `${firstNewUser.id}__${secondNewUser.id}`)).toHaveText(groupDisplayName);
+        await expect(element(by.text(groupDisplayName))).toBeVisible();
     });
 });

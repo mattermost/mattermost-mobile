@@ -48,7 +48,7 @@ const FollowThreadOption = ({thread}: FollowThreadOptionProps) => {
         <BaseOption
             i18nId={id}
             defaultMessage={defaultMessage}
-            testID='post.options.follow.thread'
+            testID='post_options.follow.thread.option'
             iconName={icon}
             onPress={handleToggleFollow}
         />
