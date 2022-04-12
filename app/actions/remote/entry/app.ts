@@ -7,7 +7,7 @@ import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
 import {queryChannelsById, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
-import {prepareCommonSystemValues, getCommonSystemValues, getCurrentChannelId, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {prepareCommonSystemValues, getCommonSystemValues, getCurrentChannelId, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId, setLastUnreadChannelId} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
@@ -72,6 +72,13 @@ export async function appEntry(serverUrl: string, since = 0) {
     if (rolesData.roles?.length) {
         modelPromises.push(operator.handleRole({roles: rolesData.roles, prepareRecordsOnly: true}));
     }
+
+    // clear lastUnreadChannelId
+    const removeLastUnreadChannelId = prepareCommonSystemValues(operator, {lastUnreadChannelId: ''});
+    if (removeLastUnreadChannelId) {
+        modelPromises.push(removeLastUnreadChannelId);
+    }
+
     const models = await Promise.all(modelPromises);
     await operator.batchRecords(models.flat());
 

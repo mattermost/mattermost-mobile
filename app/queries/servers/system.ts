@@ -5,13 +5,19 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+import {Preferences} from '@app/constants';
+import {getPreferenceAsBool} from '@app/helpers/api/preference';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+
+import {getMyChannel} from './channel';
+import {queryPreferencesByCategoryAndName} from './preference';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type SystemModel from '@typings/database/models/servers/system';
 
 export type PrepareCommonSystemValuesArgs = {
     config?: ClientConfig;
+    lastUnreadChannelId?: string;
     currentChannelId?: string;
     currentTeamId?: string;
     currentUserId?: string;
@@ -274,7 +280,7 @@ export const patchTeamHistory = (operator: ServerDataOperator, value: string[], 
 export async function prepareCommonSystemValues(
     operator: ServerDataOperator, values: PrepareCommonSystemValuesArgs): Promise<SystemModel[]> {
     try {
-        const {config, currentChannelId, currentTeamId, currentUserId, license} = values;
+        const {config, lastUnreadChannelId, currentChannelId, currentTeamId, currentUserId, license} = values;
         const systems: IdValue[] = [];
         if (config !== undefined) {
             systems.push({
@@ -287,6 +293,13 @@ export async function prepareCommonSystemValues(
             systems.push({
                 id: SYSTEM_IDENTIFIERS.LICENSE,
                 value: JSON.stringify(license),
+            });
+        }
+
+        if (lastUnreadChannelId !== undefined) {
+            systems.push({
+                id: SYSTEM_IDENTIFIERS.LAST_UNREAD_CHANNEL_ID,
+                value: lastUnreadChannelId,
             });
         }
 
@@ -349,3 +362,51 @@ export async function setCurrentTeamAndChannelId(operator: ServerDataOperator, t
     }
 }
 
+export const queryLastUnreadChannelId = (database: Database) => {
+    return database.get<SystemModel>(SYSTEM).query(Q.where('id', SYSTEM_IDENTIFIERS.LAST_UNREAD_CHANNEL_ID));
+};
+
+export const getLastUnreadChannelId = async (serverDatabase: Database): Promise<string> => {
+    try {
+        const lastUnreadChannelId = (await queryLastUnreadChannelId(serverDatabase).fetch())[0];
+        return lastUnreadChannelId?.value || '';
+    } catch {
+        return '';
+    }
+};
+
+/**
+ * Marks the passed channel id as the last unread, provided unreads
+ * on top is enabled and the passed channel id was unread
+ *
+ * @param operator
+ * @param channelId
+ * @returns
+ */
+export async function setLastUnreadChannelId(operator: ServerDataOperator, channelId: string) {
+    let id = '';
+
+    // Only set if the channel was actually unread, and unreads on top is enabled
+    const prefs = await queryPreferencesByCategoryAndName(operator.database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).fetch();
+    const unreadsOnTop = getPreferenceAsBool(prefs, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS, false);
+
+    if (unreadsOnTop) {
+        const myC = await getMyChannel(operator.database, channelId);
+        if (myC?.isUnread) {
+            id = channelId;
+        }
+
+        try {
+            const models = await prepareCommonSystemValues(operator, {lastUnreadChannelId: id});
+            if (models) {
+                await operator.batchRecords(models);
+            }
+
+            return {lastUnreadChannelId: id};
+        } catch (error) {
+            return {error};
+        }
+    }
+
+    return null;
+}
