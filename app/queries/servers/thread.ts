@@ -16,7 +16,7 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 import type Model from '@nozbe/watermelondb/Model';
 import type ThreadModel from '@typings/database/models/servers/thread';
 
-const {SERVER: {CHANNEL, POST, THREAD}} = MM_TABLES;
+const {SERVER: {THREADS_IN_TEAM, THREAD, POST, CHANNEL}} = MM_TABLES;
 
 export const getIsCRTEnabled = async (database: Database): Promise<boolean> => {
     const config = await getConfig(database);
@@ -96,10 +96,8 @@ export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperat
     return models;
 };
 
-export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnreads?: boolean, hasReplies?: boolean, isFollowing?: boolean, sort?: boolean): Query<ThreadModel> => {
-    const query: Q.Clause[] = [
-        Q.experimentalNestedJoin(POST, CHANNEL),
-    ];
+export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnreads?: boolean, hasReplies?: boolean, isFollowing?: boolean, sort?: boolean, limit?: number): Query<ThreadModel> => {
+    const query: Q.Clause[] = [];
 
     if (isFollowing) {
         query.push(Q.where('is_following', true));
@@ -117,21 +115,38 @@ export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnrea
         query.push(Q.sortBy('last_reply_at', Q.desc));
     }
 
+    let joinCondition: Q.Condition = Q.where('team_id', teamId);
+
+    if (!onlyUnreads) {
+        joinCondition = Q.and(
+            Q.where('team_id', teamId),
+            Q.where('loaded_in_global_threads', true),
+        );
+    }
+
     query.push(
-        Q.on(
-            POST,
-            Q.on(
-                CHANNEL,
-                Q.or(
-                    Q.where('team_id', teamId),
-                    Q.where('team_id', ''),
-                ),
-            ),
-        ),
+        Q.on(THREADS_IN_TEAM, joinCondition),
     );
+
+    if (limit) {
+        query.push(Q.take(limit));
+    }
 
     return database.get<ThreadModel>(THREAD).query(...query);
 };
+
+export async function getNewestThreadInTeam(
+    database: Database,
+    teamId: string,
+    unread: boolean,
+): Promise<ThreadModel | undefined> {
+    try {
+        const threads = await queryThreadsInTeam(database, teamId, unread, true, true, true, 1).fetch();
+        return threads?.[0] || undefined;
+    } catch (e) {
+        return undefined;
+    }
+}
 
 export function observeThreadMentionCount(database: Database, teamId?: string, includeDmGm?: boolean): Observable<number> {
     return observeUnreadsAndMentionsInTeam(database, teamId, includeDmGm).pipe(
