@@ -18,7 +18,11 @@ const {THREADS_IN_TEAM} = MM_TABLES.SERVER;
 
 const ThreadInTeamHandler = (superclass: any) => class extends superclass {
     handleThreadInTeam = async ({threadsMap, loadedInGlobalThreads, prepareRecordsOnly = false}: HandleThreadInTeamArgs): Promise<ThreadInTeamModel[]> => {
-        if (!Object.keys(threadsMap).length) {
+        if (!threadsMap || !Object.keys(threadsMap).length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "threadsMap" object has been passed to the handleReceivedPostForChannel method',
+            );
             return [];
         }
 

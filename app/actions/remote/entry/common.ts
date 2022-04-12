@@ -18,6 +18,9 @@ import {queryAllChannelsForTeam} from '@queries/servers/channel';
 import {getConfig} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
+import {isCRTEnabled} from '@utils/thread';
+
+import {fetchNewThreads} from '../thread';
 
 import type ClientError from '@client/rest/error';
 
@@ -180,10 +183,10 @@ export const fetchAlternateTeamData = async (
     return {initialTeamId, removeTeamIds};
 };
 
-export const deferredAppEntryActions = async (
+export async function deferredAppEntryActions(
     serverUrl: string, since: number, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined,
     config: ClientConfig, license: ClientLicense, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
-    initialTeamId?: string, initialChannelId?: string) => {
+    initialTeamId?: string, initialChannelId?: string) {
     // defer fetching posts for initial channel
     if (initialChannelId) {
         fetchPostsForChannel(serverUrl, initialChannelId);
@@ -209,9 +212,24 @@ export const deferredAppEntryActions = async (
         await fetchTeamsChannelsAndUnreadPosts(serverUrl, since, teamData.teams, teamData.memberships, initialTeamId);
     }
 
+    if (preferences && isCRTEnabled(preferences, config)) {
+        if (initialTeamId) {
+            await fetchNewThreads(serverUrl, initialTeamId, false);
+        }
+
+        if (teamData.teams?.length) {
+            for await (const team of teamData.teams) {
+                if (team.id !== initialTeamId) {
+                    // need to await here since GM/DM threads in different teams overlap
+                    await fetchNewThreads(serverUrl, team.id, false);
+                }
+            }
+        }
+    }
+
     fetchAllTeams(serverUrl);
     updateAllUsersSince(serverUrl, since);
-};
+}
 
 export const syncOtherServers = async (serverUrl: string) => {
     const database = DatabaseManager.appDatabase?.database;

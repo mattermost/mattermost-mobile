@@ -4,7 +4,7 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
-import type ChannelModel from './channel';
+import type MyChannelModel from './my_channel';
 
 /**
  * The MyChannelSettings model represents the specific user's configuration to
@@ -17,6 +17,6 @@ export default class MyChannelSettingsModel extends Model {
     /** notify_props : Configurations with regards to this channel */
     notifyProps: Partial<ChannelNotifyProps>;
 
-    /** channel : The relation pointing to the CHANNEL table */
-    channel: Relation<ChannelModel>;
+    /** myChannel : The relation pointing to the MY_CHANNEL table */
+    myChannel: Relation<MyChannelModel>;
 }

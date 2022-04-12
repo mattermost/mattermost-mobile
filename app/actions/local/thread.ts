@@ -130,7 +130,7 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
 // When new post arrives:
 // 1. If a reply, then update the reply_count, add user as the participant
 // 2. Else add the post as a thread
-export const createThreadFromNewPost = async (serverUrl: string, post: Post, prepareRecordsOnly = false) => {
+export async function createThreadFromNewPost(serverUrl: string, post: Post, prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -156,31 +156,25 @@ export const createThreadFromNewPost = async (serverUrl: string, post: Post, pre
             prepareRecordsOnly: true,
             skipSync: true,
         });
-        if (threadParticipantModels?.length) {
-            models.push(...threadParticipantModels);
-        }
+        models.push(...threadParticipantModels);
     } else { // If the post is a root post, then we need to add it to the thread table
         const threadModels = await prepareThreadsFromReceivedPosts(operator, [post]);
-        if (threadModels?.length) {
-            models.push(...threadModels);
-        }
+        models.push(...threadModels);
     }
 
-    if (models.length && !prepareRecordsOnly) {
+    if (!prepareRecordsOnly) {
         await operator.batchRecords(models);
     }
 
     return {models};
-};
+}
 
 // On receiving threads, Along with the "threads" & "thread participants", extract and save "posts" & "users"
-export const processReceivedThreads = async (serverUrl: string, threads: Thread[], teamId: string, prepareRecordsOnly = false, loadedInGlobalThreads = false) => {
+export async function processReceivedThreads(serverUrl: string, threads: Thread[], teamId: string, prepareRecordsOnly = false, loadedInGlobalThreads = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
-
-    const models: Model[] = [];
 
     const posts: Post[] = [];
     const users: UserProfile[] = [];
@@ -199,10 +193,6 @@ export const processReceivedThreads = async (serverUrl: string, threads: Thread[
         prepareRecordsOnly: true,
     });
 
-    if (postModels.length) {
-        models.push(...postModels);
-    }
-
     const threadModels = await operator.handleThreads({
         threads,
         teamId,
@@ -210,33 +200,27 @@ export const processReceivedThreads = async (serverUrl: string, threads: Thread[
         loadedInGlobalThreads,
     });
 
-    if (threadModels.length) {
-        models.push(...threadModels);
-    }
-
     const userModels = await operator.handleUsers({
         users,
         prepareRecordsOnly: true,
     });
 
-    if (userModels.length) {
-        models.push(...userModels);
-    }
+    const models = [...postModels, ...threadModels, ...userModels];
 
-    if (models.length && !prepareRecordsOnly) {
+    if (!prepareRecordsOnly) {
         await operator.batchRecords(models);
     }
     return {models};
-};
+}
 
-export const markTeamThreadsAsRead = async (serverUrl: string, teamId: string, prepareRecordsOnly = false) => {
+export async function markTeamThreadsAsRead(serverUrl: string, teamId: string, prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
     try {
         const {database} = operator;
-        const threads = await queryThreadsInTeam(database, teamId, true).fetch();
+        const threads = await queryThreadsInTeam(database, teamId, true, true, true).fetch();
         const models = threads.map((thread) => thread.prepareUpdate((record) => {
             record.unreadMentions = 0;
             record.unreadReplies = 0;
@@ -249,9 +233,9 @@ export const markTeamThreadsAsRead = async (serverUrl: string, teamId: string, p
     } catch (error) {
         return {error};
     }
-};
+}
 
-export const updateThread = async (serverUrl: string, threadId: string, updatedThread: Partial<Thread>, prepareRecordsOnly = false) => {
+export async function updateThread(serverUrl: string, threadId: string, updatedThread: Partial<Thread>, prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -278,4 +262,4 @@ export const updateThread = async (serverUrl: string, threadId: string, updatedT
     } catch (error) {
         return {error};
     }
-};
+}

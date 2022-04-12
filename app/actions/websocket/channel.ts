@@ -18,13 +18,14 @@ import {fetchMissingSidebarInfo, fetchMyChannel, fetchChannelStats, fetchChannel
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
+import EphemeralStore from '@app/store/ephemeral_store';
 import {Events, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
 import {deleteChannelMembership, getChannelById, prepareMyChannelsForTeam, getCurrentChannel} from '@queries/servers/channel';
 import {prepareCommonSystemValues, getConfig, setCurrentChannelId, getCurrentChannelId} from '@queries/servers/system';
 import {getNthLastChannelFromTeam} from '@queries/servers/team';
-import {getCurrentUser, getUserById} from '@queries/servers/user';
+import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
 
@@ -34,10 +35,19 @@ export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
     if (!operator) {
         return;
     }
+    const {database} = operator;
 
     const {team_id: teamId, channel_id: channelId} = msg.data;
+    if (EphemeralStore.creatingChannel) {
+        return; // We probably don't need to handle this WS because we provoked it
+    }
 
     try {
+        const channel = await getChannelById(database, channelId);
+        if (channel) {
+            return; // We already have this channel
+        }
+
         const models: Model[] = [];
         const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
         if (channels && memberships) {
@@ -96,7 +106,7 @@ export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
         const models: Model[] = await operator.handleChannel({channels: [updatedChannel], prepareRecordsOnly: true});
         const infoModel = await updateChannelInfoFromChannel(serverUrl, updatedChannel, true);
         if (infoModel.model) {
-            models.push(infoModel.model);
+            models.push(...infoModel.model);
         }
         operator.batchRecords(models);
     } catch {
@@ -155,7 +165,7 @@ export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: an
     }
 }
 
-export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
+export async function handleDirectAddedEvent(serverUrl: string, msg: WebSocketMessage) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return;
@@ -163,8 +173,31 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
 
     const {database} = operator;
 
+    if (EphemeralStore.creatingDMorGMTeammates.length) {
+        let userList: string[] | undefined;
+        if ('teammate_ids' in msg.data) { // GM
+            try {
+                userList = JSON.parse(msg.data.teammate_ids);
+            } catch {
+                // Do nothing
+            }
+        } else if (msg.data.teammate_id) { // DM
+            userList = [msg.data.teammate_id];
+        }
+        if (userList?.length === EphemeralStore.creatingDMorGMTeammates.length) {
+            const usersSet = new Set(userList);
+            if (EphemeralStore.creatingDMorGMTeammates.every((v) => usersSet.has(v))) {
+                return; // We are adding this channel
+            }
+        }
+    }
+
     try {
         const {channel_id: channelId} = msg.broadcast;
+        const channel = await getChannelById(database, channelId);
+        if (channel) {
+            return; // We already have this channel
+        }
         const {channels, memberships} = await fetchMyChannel(serverUrl, '', channelId, true);
         if (!channels || !memberships) {
             return;
@@ -174,7 +207,9 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
             return;
         }
 
-        const {directChannels, users} = await fetchMissingSidebarInfo(serverUrl, channels, user.locale, '', user.id, true);
+        const teammateDisplayNameSetting = await getTeammateNameDisplay(database);
+
+        const {directChannels, users} = await fetchMissingSidebarInfo(serverUrl, channels, user.locale, teammateDisplayNameSetting, user.id, true);
         if (!directChannels?.[0]) {
             return;
         }
@@ -184,19 +219,17 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
         if (channelModels.models?.length) {
             models.push(...channelModels.models);
         }
-        const categoryModels = await addChannelToDefaultCategory(serverUrl, channels[0], false);
+        const categoryModels = await addChannelToDefaultCategory(serverUrl, channels[0], true);
         if (categoryModels.models?.length) {
             models.push(...categoryModels.models);
         }
 
-        if (users?.length) {
+        if (users.length) {
             const userModels = await operator.handleUsers({users, prepareRecordsOnly: true});
             models.push(...userModels);
         }
 
-        if (models.length) {
-            operator.batchRecords(models);
-        }
+        operator.batchRecords(models);
     } catch {
         // do nothing
     }
@@ -236,7 +269,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
             }
 
             const {posts, order, authors, actionType, previousPostId} = await fetchPostsForChannel(serverUrl, channelId, true);
-            if (posts?.length && order && actionType) {
+            if (actionType) {
                 models.push(...await operator.handlePosts({
                     actionType,
                     order,
@@ -254,9 +287,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
             if (!addedUser) {
                 // TODO Potential improvement https://mattermost.atlassian.net/browse/MM-40581
                 const {users} = await fetchUsersByIds(serverUrl, [userId], true);
-                if (users) {
-                    models.push(...await operator.handleUsers({users, prepareRecordsOnly: true}));
-                }
+                models.push(...await operator.handleUsers({users, prepareRecordsOnly: true}));
             }
             const channel = await getChannelById(database, channelId);
             if (channel) {

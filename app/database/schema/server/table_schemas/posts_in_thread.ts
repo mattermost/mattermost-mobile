@@ -10,8 +10,8 @@ const {POSTS_IN_THREAD} = MM_TABLES.SERVER;
 export default tableSchema({
     name: POSTS_IN_THREAD,
     columns: [
-        {name: 'root_id', type: 'string', isIndexed: true},
         {name: 'earliest', type: 'number'},
         {name: 'latest', type: 'number'},
+        {name: 'root_id', type: 'string', isIndexed: true},
     ],
 });

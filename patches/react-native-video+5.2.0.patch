@@ -1,8 +1,16 @@
 diff --git a/node_modules/react-native-video/android-exoplayer/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java b/node_modules/react-native-video/android-exoplayer/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
-index fe95fdf..90c39f6 100644
+index fe95fdf..e38b9a9 100644
 --- a/node_modules/react-native-video/android-exoplayer/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
 +++ b/node_modules/react-native-video/android-exoplayer/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
-@@ -14,6 +14,7 @@ import android.view.Window;
+@@ -3,6 +3,7 @@ package com.brentvatne.exoplayer;
+ import android.annotation.SuppressLint;
+ import android.app.Activity;
+ import android.content.Context;
++import android.graphics.Color;
+ import android.media.AudioManager;
+ import android.net.Uri;
+ import android.os.Handler;
+@@ -14,6 +15,7 @@ import android.view.Window;
  import android.view.accessibility.CaptioningManager;
  import android.widget.FrameLayout;
  import android.widget.ImageButton;
@@ -10,7 +18,7 @@ index fe95fdf..90c39f6 100644
  
  import com.brentvatne.react.R;
  import com.brentvatne.receiver.AudioBecomingNoisyReceiver;
-@@ -317,6 +318,7 @@ class ReactExoplayerView extends FrameLayout implements
+@@ -317,6 +319,7 @@ class ReactExoplayerView extends FrameLayout implements
          playerControlView.setPlayer(player);
          playerControlView.show();
          playPauseControlContainer = playerControlView.findViewById(R.id.exo_play_pause_container);
@@ -18,7 +26,7 @@ index fe95fdf..90c39f6 100644
  
          // Invoking onClick event for exoplayerView
          exoPlayerView.setOnClickListener(new OnClickListener() {
-@@ -736,6 +738,7 @@ class ReactExoplayerView extends FrameLayout implements
+@@ -736,6 +739,7 @@ class ReactExoplayerView extends FrameLayout implements
      @Override
      public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
          String text = "onStateChanged: playWhenReady=" + playWhenReady + ", playbackState=";
@@ -26,7 +34,7 @@ index fe95fdf..90c39f6 100644
          switch (playbackState) {
              case Player.STATE_IDLE:
                  text += "idle";
-@@ -1305,6 +1308,7 @@ class ReactExoplayerView extends FrameLayout implements
+@@ -1305,6 +1309,7 @@ class ReactExoplayerView extends FrameLayout implements
          Window window = activity.getWindow();
          View decorView = window.getDecorView();
          int uiOptions;
@@ -34,10 +42,11 @@ index fe95fdf..90c39f6 100644
          if (isFullscreen) {
              if (Util.SDK_INT >= 19) { // 4.4+
                  uiOptions = SYSTEM_UI_FLAG_HIDE_NAVIGATION
-@@ -1316,10 +1320,12 @@ class ReactExoplayerView extends FrameLayout implements
+@@ -1316,10 +1321,13 @@ class ReactExoplayerView extends FrameLayout implements
              }
              eventEmitter.fullscreenWillPresent();
              decorView.setSystemUiVisibility(uiOptions);
++            decorView.setBackgroundColor(Color.parseColor("#000000"));
 +            fullscreenButton.setImageResource(R.drawable.exo_controls_fullscreen_exit);
              eventEmitter.fullscreenDidPresent();
          } else {

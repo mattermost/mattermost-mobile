@@ -16,7 +16,7 @@ import {forceLogoutIfNecessary} from './session';
 import type {Client} from '@client/rest';
 import type PostModel from '@typings/database/models/servers/post';
 
-export const addReaction = async (serverUrl: string, postId: string, emojiName: string) => {
+export async function addReaction(serverUrl: string, postId: string, emojiName: string) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -52,9 +52,7 @@ export const addReaction = async (serverUrl: string, postId: string, emojiName: 
                 models.push(...recent);
             }
 
-            if (models.length) {
-                await operator.batchRecords(models);
-            }
+            await operator.batchRecords(models);
 
             return {reaction};
         }
@@ -70,7 +68,7 @@ export const addReaction = async (serverUrl: string, postId: string, emojiName: 
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
-};
+}
 
 export const removeReaction = async (serverUrl: string, postId: string, emojiName: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;

@@ -82,6 +82,7 @@ type Props = {
     editing: boolean;
     error?: string | object;
     header: string;
+    headerOnly?: boolean;
     onHeaderChange: (text: string) => void;
     onTypeChange: (type: ChannelType) => void;
     purpose: string;
@@ -97,6 +98,7 @@ export default function ChannelInfoForm({
     editing,
     error,
     header,
+    headerOnly,
     onHeaderChange,
     onTypeChange,
     purpose,
@@ -138,7 +140,7 @@ export default function ChannelInfoForm({
     const makePrivateLabel = formatMessage({id: t('channel_modal.makePrivate.label'), defaultMessage: 'Make Private'});
     const makePrivateDescription = formatMessage({id: t('channel_modal.makePrivate.description'), defaultMessage: 'When a channel is set to private, only invited team members can access and participate in that channel.'});
 
-    const displayHeaderOnly = channelType === General.DM_CHANNEL || channelType === General.GM_CHANNEL;
+    const displayHeaderOnly = headerOnly || channelType === General.DM_CHANNEL || channelType === General.GM_CHANNEL;
     const showSelector = !displayHeaderOnly && !editing;
 
     const isPrivate = type === General.PRIVATE_CHANNEL;
