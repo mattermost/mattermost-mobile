@@ -27,15 +27,26 @@ const styles = StyleSheet.create({
     },
 });
 
-const extractKey = (item: CategoryModel) => item.id;
+const extractKey = (item: CategoryModel) => (Array.isArray(item) ? 'UNREADS' : item.id);
 
 const Categories = ({categories, currentChannelId, currentUserId, currentTeamId, unreadChannels}: Props) => {
     const intl = useIntl();
     const listRef = useRef<FlatList>(null);
 
     const unreadChannelIds = useMemo(() => new Set(unreadChannels.map((myC) => myC.id)), [unreadChannels]);
+    const categoriesToDisplay: Array<CategoryModel|string[]> = useMemo(() => {
+        if (unreadChannelIds.size) {
+            return [Array.from(unreadChannelIds), ...categories];
+        }
 
-    const renderCategory = useCallback((data: {item: CategoryModel}) => {
+        return categories;
+    }, [categories, unreadChannelIds]);
+
+    const renderCategory = useCallback((data: {item: CategoryModel | string[]}) => {
+        if (Array.isArray(data.item)) {
+            return <UnreadCategories unreadChannels={unreadChannels}/>;
+        }
+
         return (
             <>
                 <CategoryHeader category={data.item}/>
@@ -48,7 +59,7 @@ const Categories = ({categories, currentChannelId, currentUserId, currentTeamId,
                 />
             </>
         );
-    }, [categories, currentChannelId, intl.locale]);
+    }, [categories, currentChannelId, intl.locale, unreadChannels]);
 
     useEffect(() => {
         listRef.current?.scrollToOffset({animated: false, offset: 0});
@@ -62,23 +73,20 @@ const Categories = ({categories, currentChannelId, currentUserId, currentTeamId,
     }
 
     return (
-        <>
-            {unreadChannels.length > 0 && <UnreadCategories unreadChannels={unreadChannels}/>}
-            <FlatList
-                data={categories}
-                ref={listRef}
-                renderItem={renderCategory}
-                style={styles.mainList}
-                showsHorizontalScrollIndicator={false}
-                showsVerticalScrollIndicator={false}
-                keyExtractor={extractKey}
-                removeClippedSubviews={true}
-                initialNumToRender={5}
-                windowSize={15}
-                updateCellsBatchingPeriod={10}
-                maxToRenderPerBatch={5}
-            />
-        </>
+        <FlatList
+            data={categoriesToDisplay}
+            ref={listRef}
+            renderItem={renderCategory}
+            style={styles.mainList}
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
+            keyExtractor={extractKey}
+            removeClippedSubviews={true}
+            initialNumToRender={5}
+            windowSize={15}
+            updateCellsBatchingPeriod={10}
+            maxToRenderPerBatch={5}
+        />
     );
 };
 

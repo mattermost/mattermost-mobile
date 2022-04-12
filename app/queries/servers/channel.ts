@@ -377,9 +377,12 @@ export const queryMyChannelUnreads = (database: Database, currentTeamId: string)
     return database.get<MyChannelModel>(MY_CHANNEL).query(
         Q.on(
             CHANNEL,
-            Q.or(
-                Q.where('team_id', Q.eq(currentTeamId)),
-                Q.where('team_id', Q.eq('')),
+            Q.and(
+                Q.or(
+                    Q.where('team_id', Q.eq(currentTeamId)),
+                    Q.where('team_id', Q.eq('')),
+                ),
+                Q.where('delete_at', Q.eq(0)),
             ),
         ),
         Q.where('is_unread', Q.eq(true)),
