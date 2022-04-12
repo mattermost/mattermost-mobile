@@ -149,7 +149,7 @@ export default function CreateDirectMessage({
     }, [selectedIds]);
 
     const createDirectChannel = useCallback(async (id: string): Promise<boolean> => {
-        const user = profiles.find((u) => u.id === id);
+        const user = selectedIds[id];
 
         const displayName = displayUsername(user, intl.locale, teammateNameDisplay);
 
@@ -170,7 +170,7 @@ export default function CreateDirectMessage({
         }
 
         return !result.error;
-    }, [profiles, intl.locale, teammateNameDisplay, serverUrl]);
+    }, [selectedIds, intl.locale, teammateNameDisplay, serverUrl]);
 
     const createGroupChannel = useCallback(async (ids: string[]): Promise<boolean> => {
         const result = await makeGroupChannel(serverUrl, ids);
