@@ -12,7 +12,7 @@ import {addRecentReaction} from './reactions';
 import type Model from '@nozbe/watermelondb/Model';
 import type UserModel from '@typings/database/models/servers/user';
 
-export const setCurrentUserStatusOffline = async (serverUrl: string) => {
+export async function setCurrentUserStatusOffline(serverUrl: string) {
     const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
     if (!serverDatabase) {
         return {error: `No database present for ${serverUrl}`};
@@ -35,9 +35,9 @@ export const setCurrentUserStatusOffline = async (serverUrl: string) => {
     }
 
     return null;
-};
+}
 
-export const updateLocalCustomStatus = async (serverUrl: string, user: UserModel, customStatus?: UserCustomStatus) => {
+export async function updateLocalCustomStatus(serverUrl: string, user: UserModel, customStatus?: UserCustomStatus) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -72,7 +72,7 @@ export const updateLocalCustomStatus = async (serverUrl: string, user: UserModel
     }
 
     return {};
-};
+}
 
 export const updateRecentCustomStatuses = async (serverUrl: string, customStatus: UserCustomStatus, prepareRecordsOnly = false, remove = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;

@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import DataOperatorException from '@database/exceptions/data_operator_exception';
 import DatabaseManager from '@database/manager';
 import {
     transformCustomEmojiRecord,
@@ -115,6 +114,6 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
                 createOrUpdateRawValues: [{id: 'tos-1', value: '1'}],
                 prepareRecordsOnly: false,
             }),
-        ).rejects.toThrow(DataOperatorException);
+        ).rejects.toThrow(Error);
     });
 });

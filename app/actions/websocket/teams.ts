@@ -101,9 +101,9 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
                 rolesToLoad.add(role);
             }
             const serverRoles = await fetchRolesIfNeeded(serverUrl, Array.from(rolesToLoad), true);
-            if (serverRoles.roles!.length) {
+            if (serverRoles.roles?.length) {
                 const preparedRoleModels = database.operator.handleRole({
-                    roles: serverRoles.roles!,
+                    roles: serverRoles.roles,
                     prepareRecordsOnly: true,
                 });
                 modelPromises.push(preparedRoleModels);
@@ -115,10 +115,8 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
         modelPromises.push(...prepareMyTeams(database.operator, teams, teamMemberships));
     }
 
-    if (modelPromises.length) {
-        const models = await Promise.all(modelPromises);
-        await database.operator.batchRecords(models.flat());
-    }
+    const models = await Promise.all(modelPromises);
+    await database.operator.batchRecords(models.flat());
 
     delete addingTeam[teamId];
 }

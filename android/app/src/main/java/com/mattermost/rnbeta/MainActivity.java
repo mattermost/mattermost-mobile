@@ -10,6 +10,8 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableMap;
+// import com.facebook.react.ReactActivityDelegate;
+// import com.facebook.react.ReactRootView;
 import com.reactnativenavigation.NavigationActivity;
 import com.github.emilioicai.hwkeyboardevent.HWKeyboardEventModule;
 
@@ -34,18 +36,6 @@ public class MainActivity extends NavigationActivity {
         }
     }
 
-    @Override
-    // This can be removed once https://github.com/facebook/react-native/issues/32628 is solved
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        MattermostManagedModule instance = MattermostManagedModule.getInstance();
-        if (instance != null) {
-            WritableMap data = Arguments.createMap();
-            data.putString("appState", hasFocus ? "active" : "background");
-            instance.sendEvent("windowFocusChanged", data);
-        }
-    }
-
     /*
     https://mattermost.atlassian.net/browse/MM-10601
     Required by react-native-hw-keyboard-event
@@ -64,4 +54,25 @@ public class MainActivity extends NavigationActivity {
     private void setHWKeyboardConnected() {
         HWKeyboardConnected = getResources().getConfiguration().keyboard == Configuration.KEYBOARD_QWERTY;
     }
+
+    /**
+   * Returns the instance of the {@link ReactActivityDelegate}. There the RootView is created and
+   * you can specify the rendered you wish to use (Fabric or the older renderer).
+   */
+    // @Override
+    // protected ReactActivityDelegate createReactActivityDelegate() {
+    //     return new MainActivityDelegate(this, getMainComponentName());
+    // }
+    // public static class MainActivityDelegate extends ReactActivityDelegate {
+    //     public MainActivityDelegate(ReactActivity activity, String mainComponentName) {
+    //     super(activity, mainComponentName);
+    //     }
+    //     @Override
+    //     protected ReactRootView createRootView() {
+    //     ReactRootView reactRootView = new ReactRootView(getContext());
+    //     // If you opted-in for the New Architecture, we enable the Fabric Renderer.
+    //     reactRootView.setIsFabric(BuildConfig.IS_NEW_ARCHITECTURE_ENABLED);
+    //     return reactRootView;
+    //     }
+    // }
 }
