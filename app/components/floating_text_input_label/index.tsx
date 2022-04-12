@@ -6,38 +6,14 @@
 import {debounce} from 'lodash';
 import React, {useState, useEffect, useRef, useImperativeHandle, forwardRef, useMemo, useCallback} from 'react';
 import {GestureResponderEvent, LayoutChangeEvent, NativeSyntheticEvent, Platform, StyleProp, TargetedEvent, Text, TextInput, TextInputFocusEventData, TextInputProps, TextStyle, TouchableWithoutFeedback, View, ViewStyle} from 'react-native';
-import Animated, {useCode, interpolateNode, EasingNode, Value, set, Clock} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, withTiming, Easing} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import {timingAnimation} from './animation_utils';
-
 const DEFAULT_INPUT_HEIGHT = 48;
 const BORDER_DEFAULT_WIDTH = 1;
 const BORDER_FOCUSED_WIDTH = 2;
-
-const getTopStyle = (styles: any, animation: Value<0|1>, inputText?: string) => {
-    if (inputText) {
-        return getLabelPositions(styles.textInput, styles.label, styles.smallLabel)[1];
-    }
-
-    return interpolateNode(animation, {
-        inputRange: [0, 1],
-        outputRange: [...getLabelPositions(styles.textInput, styles.label, styles.smallLabel)],
-    });
-};
-
-const getFontSize = (styles: any, animation: Value<0|1>, inputText?: string) => {
-    if (inputText) {
-        return styles.smallLabel.fontSize;
-    }
-
-    return interpolateNode(animation, {
-        inputRange: [0, 1],
-        outputRange: [styles.textInput.fontSize, styles.smallLabel.fontSize],
-    });
-};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -156,39 +132,20 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     testID,
     ...props
 }: FloatingTextInputProps, ref) => {
-    const [focusedLabel, setIsFocusLabel] = useState<boolean | undefined>();
     const [focused, setIsFocused] = useState(Boolean(value) && editable);
+    const [focusedLabel, setIsFocusLabel] = useState<boolean | undefined>(Boolean(placeholder || value));
     const inputRef = useRef<TextInput>(null);
-    const [animation] = useState(new Value(focusedLabel ? 1 : 0));
     const debouncedOnFocusTextInput = debounce(setIsFocusLabel, 500, {leading: true, trailing: false});
     const styles = getStyleSheet(theme);
-    let from = 0;
-    let to = 0;
-    if (focusedLabel !== undefined) {
-        from = focusedLabel ? 0 : 1;
-        to = focusedLabel ? 1 : 0;
-    }
+
+    const positions = useMemo(() => getLabelPositions(styles.textInput, styles.label, styles.smallLabel), [styles]);
+    const size = useMemo(() => [styles.textInput.fontSize, styles.smallLabel.fontSize], [styles]);
 
     useImperativeHandle(ref, () => ({
         blur: () => inputRef.current?.blur(),
         focus: () => inputRef.current?.focus(),
         isFocused: () => inputRef.current?.isFocused() || false,
     }), [inputRef]);
-
-    useCode(
-        () => set(
-            animation,
-            timingAnimation({
-                animation,
-                duration: 150,
-                from,
-                to,
-                easing: EasingNode.linear,
-                clock: new Clock(),
-            }),
-        ),
-        [focusedLabel],
-    );
 
     useEffect(
         () => {
@@ -253,31 +210,27 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
         return res;
     }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, multiline]);
 
-    const textAnimatedTextStyle = useMemo(() => {
-        const res = [styles.label];
-        const inputText = value || placeholder;
-        res.push({
-            top: getTopStyle(styles, animation, inputText),
-            fontSize: getFontSize(styles, animation, inputText),
-            backgroundColor: (
-                focusedLabel || inputText ? theme.centerChannelBg : 'transparent'
-            ),
-            paddingHorizontal: focusedLabel || inputText ? 4 : 0,
-            color: styles.label.color,
-        });
+    const textAnimatedTextStyle = useAnimatedStyle(() => {
+        const inputText = placeholder || value;
+        const index = inputText || focusedLabel ? 1 : 0;
+        const toValue = positions[index];
+        const toSize = size[index];
 
-        if (focused) {
-            res.push({color: theme.buttonBg});
-        }
-
-        res.push(labelTextStyle);
-
+        let color = styles.label.color;
         if (shouldShowError) {
-            res.push({color: theme.errorTextColor});
+            color = theme.errorTextColor;
+        } else if (focused) {
+            color = theme.buttonBg;
         }
 
-        return res;
-    }, [theme, styles, focused, shouldShowError, labelTextStyle, placeholder, animation, focusedLabel]);
+        return {
+            top: withTiming(toValue, {duration: 250, easing: Easing.linear}),
+            fontSize: withTiming(toSize, {duration: 250, easing: Easing.linear}),
+            backgroundColor: focusedLabel || inputText ? theme.centerChannelBg : 'transparent',
+            paddingHorizontal: focusedLabel || inputText ? 4 : 0,
+            color,
+        };
+    });
 
     return (
         <TouchableWithoutFeedback
@@ -287,7 +240,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
             <View style={combinedContainerStyle}>
                 <Animated.Text
                     onPress={onAnimatedTextPress}
-                    style={textAnimatedTextStyle}
+                    style={[styles.label, labelTextStyle, textAnimatedTextStyle]}
                     suppressHighlighting={true}
                 >
                     {label}

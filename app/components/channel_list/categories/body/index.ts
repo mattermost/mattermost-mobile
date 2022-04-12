@@ -110,7 +110,7 @@ type EnhanceProps = {
     unreadChannelIds: Set<string>;
 } & WithDatabaseArgs
 
-const enhance = withObservables(['category', 'unreadChannelIds'], ({category, locale, database, currentUserId, unreadChannelIds}: EnhanceProps) => {
+const enhance = withObservables(['category', 'locale', 'unreadChannelIds'], ({category, locale, database, currentUserId, unreadChannelIds}: EnhanceProps) => {
     const observedCategory = category.observe();
     const sortedChannels = observedCategory.pipe(
         switchMap((c) => getSortedChannels(database, c, unreadChannelIds, locale)),

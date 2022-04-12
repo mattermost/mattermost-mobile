@@ -421,10 +421,12 @@ export const searchProfiles = async (serverUrl: string, term: string, options: a
 
         if (!fetchOnly) {
             const toStore = removeUserFromList(currentUserId, users);
-            await operator.handleUsers({
-                users: toStore,
-                prepareRecordsOnly: false,
-            });
+            if (toStore.length) {
+                await operator.handleUsers({
+                    users: toStore,
+                    prepareRecordsOnly: false,
+                });
+            }
         }
 
         return {data: users};
