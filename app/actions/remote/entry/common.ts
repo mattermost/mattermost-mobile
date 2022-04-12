@@ -17,8 +17,8 @@ import {queryAllServers} from '@queries/app/servers';
 import {queryAllChannelsForTeam} from '@queries/servers/channel';
 import {getConfig} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
-import {getIsCRTEnabled} from '@queries/servers/thread';
 import {isDMorGM} from '@utils/channel';
+import {isCRTEnabled} from '@utils/thread';
 
 import {fetchNewThreads} from '../thread';
 
@@ -212,21 +212,16 @@ export async function deferredAppEntryActions(
         await fetchTeamsChannelsAndUnreadPosts(serverUrl, since, teamData.teams, teamData.memberships, initialTeamId);
     }
 
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (database) {
-        const isCRTEnabled = await getIsCRTEnabled(database);
+    if (preferences && isCRTEnabled(preferences, config)) {
+        if (initialTeamId) {
+            await fetchNewThreads(serverUrl, initialTeamId, false);
+        }
 
-        if (isCRTEnabled) {
-            if (initialTeamId) {
-                await fetchNewThreads(serverUrl, initialTeamId, false);
-            }
-
-            if (teamData.teams?.length) {
-                for await (const team of teamData.teams) {
-                    if (team.id !== initialTeamId) {
-                        // need to await here since GM/DM threads in different teams overlap
-                        await fetchNewThreads(serverUrl, team.id, false);
-                    }
+        if (teamData.teams?.length) {
+            for await (const team of teamData.teams) {
+                if (team.id !== initialTeamId) {
+                    // need to await here since GM/DM threads in different teams overlap
+                    await fetchNewThreads(serverUrl, team.id, false);
                 }
             }
         }

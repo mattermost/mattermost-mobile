@@ -16,9 +16,9 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {queryChannelsById, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
 import {getCommonSystemValues, getConfig, getCurrentChannelId, getWebSocketLastDisconnected, resetWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
-import {getIsCRTEnabled} from '@queries/servers/thread';
 import {isDMorGM} from '@utils/channel';
 import {isTablet} from '@utils/helpers';
+import {isCRTEnabled} from '@utils/thread';
 
 import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
 import {handleChannelConvertedEvent, handleChannelCreatedEvent,
@@ -199,8 +199,7 @@ async function doReconnect(serverUrl: string) {
         await fetchTeamsChannelsAndUnreadPosts(serverUrl, lastDisconnectedAt, teamData.teams, teamData.memberships, initialTeamId);
     }
 
-    const isCRTEnabled = await getIsCRTEnabled(database);
-    if (isCRTEnabled) {
+    if (prefData.preferences && isCRTEnabled(prefData.preferences, config)) {
         if (initialTeamId) {
             await fetchNewThreads(serverUrl, initialTeamId, false);
         }

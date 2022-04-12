@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-//
+
 import {markTeamThreadsAsRead, processReceivedThreads, switchToThread, updateThread} from '@actions/local/thread';
 import {fetchPostThread} from '@actions/remote/post';
 import {General} from '@constants';
@@ -23,7 +23,7 @@ type FetchThreadsRequest = {
     data: GetUserThreadsResponse;
 };
 
-export type FetchThreadsOptions = {
+type FetchThreadsOptions = {
     before?: string;
     after?: string;
     perPage?: number;
@@ -337,7 +337,6 @@ export async function fetchNewThreads(
     if (!error && !prepareRecordsOnly && models?.length) {
         try {
             await operator.batchRecords(models);
-            return {error: false};
         } catch (err) {
             if (__DEV__) {
                 throw err;
