@@ -7,6 +7,10 @@ exports[`LatexCodeBlock should have maxWidth 10 1`] = `
       Object {
         "flexDirection": "row",
         "flexWrap": "wrap",
+        "marginBottom": -7,
+      },
+      Object {
+        "height": undefined,
       },
     ]
   }
@@ -38,6 +42,10 @@ exports[`LatexCodeBlock should match snapshot 1`] = `
       Object {
         "flexDirection": "row",
         "flexWrap": "wrap",
+        "marginBottom": -7,
+      },
+      Object {
+        "height": undefined,
       },
     ]
   }
