@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {
     transformCategoryChannelRecord,
     transformCategoryRecord,
@@ -36,10 +35,12 @@ const CategoryHandler = (superclass: any) => class extends superclass {
      * @returns {Promise<CategoryModel[]>}
      */
     handleCategories = async ({categories, prepareRecordsOnly = true}: HandleCategoryArgs): Promise<CategoryModel[]> => {
-        if (!categories.length) {
-            throw new DataOperatorException(
-                'An empty "categories" array has been passed to the handleCategories method',
+        if (!categories?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "categories" array has been passed to the handleCategories method',
             );
+            return [];
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: categories, key: 'id'});
@@ -62,10 +63,13 @@ const CategoryHandler = (superclass: any) => class extends superclass {
      * @returns {Promise<CategoryChannelModel[]>}
      */
     handleCategoryChannels = async ({categoryChannels, prepareRecordsOnly = true}: HandleCategoryChannelArgs): Promise<CategoryModel[]> => {
-        if (!categoryChannels.length) {
-            throw new DataOperatorException(
-                'An empty "categoryChannels" array has been passed to the handleCategories method',
+        if (!categoryChannels?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "categoryChannels" array has been passed to the handleCategories method',
             );
+
+            return [];
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: categoryChannels, key: 'id'});

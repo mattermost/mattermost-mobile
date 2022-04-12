@@ -12,12 +12,13 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getConfig, getCurrentTeamId} from '@queries/servers/system';
-import {queryUsersByUsername} from '@queries/servers/user';
+import {getTeammateNameDisplay, queryUsersByUsername} from '@queries/servers/user';
 import {showModal} from '@screens/navigation';
 import * as DraftUtils from '@utils/draft';
 import {matchDeepLink, tryOpenURL} from '@utils/url';
+import {displayUsername} from '@utils/user';
 
-import {getOrCreateDirectChannel, switchToChannelById, switchToChannelByName} from './channel';
+import {makeDirectChannel, switchToChannelById, switchToChannelByName} from './channel';
 
 import type {DeepLinkChannel, DeepLinkPermalink, DeepLinkDM, DeepLinkGM, DeepLinkPlugin} from '@typings/launch';
 
@@ -128,8 +129,9 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+    const {database} = operator;
 
-    const config = await getConfig(operator.database);
+    const config = await getConfig(database);
     const match = matchDeepLink(location, serverUrl, config?.SiteURL);
 
     if (match) {
@@ -151,20 +153,18 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
                     return {data: false};
                 }
 
-                let serverDatabase = operator.database;
                 if (data.serverUrl !== serverUrl) {
-                    serverDatabase = DatabaseManager.serverDatabases[serverUrl]?.database;
-                    if (!serverDatabase) {
+                    if (!database) {
                         return {error: `${serverUrl} database not found`};
                     }
                 }
-                const user = (await queryUsersByUsername(serverDatabase, [data.userName]).fetch())[0];
+                const user = (await queryUsersByUsername(database, [data.userName]).fetch())[0];
                 if (!user) {
                     DraftUtils.errorUnkownUser(intl);
                     return {data: false};
                 }
 
-                getOrCreateDirectChannel(data.serverUrl, user.id);
+                makeDirectChannel(data.serverUrl, user.id, displayUsername(user, intl.locale, await getTeammateNameDisplay(database)), true);
                 break;
             }
             case DeepLinkTypes.GROUPCHANNEL: {

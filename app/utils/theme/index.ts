@@ -256,3 +256,12 @@ export function setThemeDefaults(theme: Theme): Theme {
 
     return processedTheme as Theme;
 }
+
+export const updateThemeIfNeeded = (theme: Theme, force = false) => {
+    if (theme !== EphemeralStore.theme || force) {
+        EphemeralStore.theme = theme;
+        requestAnimationFrame(() => {
+            setNavigationStackStyles(theme);
+        });
+    }
+};

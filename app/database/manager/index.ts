@@ -4,9 +4,9 @@
 import {Database, Q} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import logger from '@nozbe/watermelondb/utils/common/logger';
-import * as FileSystem from 'expo-file-system';
 import {DeviceEventEmitter, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import FileSystem from 'react-native-fs';
 
 import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
@@ -24,6 +24,7 @@ import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
 import {queryActiveServer, queryServer, queryServerByIdentifier} from '@queries/app/servers';
 import {DatabaseType} from '@typings/database/enums';
+import {emptyFunction} from '@utils/general';
 import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
 
@@ -49,7 +50,7 @@ class DatabaseManager {
             ThreadModel, ThreadParticipantModel, ThreadInTeamModel, UserModel,
         ];
 
-        this.databaseDirectory = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupDatabase : `${FileSystem.documentDirectory}databases/`;
+        this.databaseDirectory = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupDatabase : `${FileSystem.DocumentDirectoryPath}/databases/`;
     }
 
     /**
@@ -82,7 +83,7 @@ class DatabaseManager {
             const databaseName = APP_DATABASE;
 
             if (Platform.OS === 'android') {
-                await FileSystem.makeDirectoryAsync(this.databaseDirectory!, {intermediates: true});
+                await FileSystem.mkdir(this.databaseDirectory!);
             }
             const databaseFilePath = this.getDatabaseFilePath(databaseName);
             const modelClasses = this.appModels;
@@ -390,9 +391,9 @@ class DatabaseManager {
         const databaseShm = `${androidFilesDir}${databaseName}.db-shm`;
         const databaseWal = `${androidFilesDir}${databaseName}.db-wal`;
 
-        FileSystem.deleteAsync(databaseFile, {idempotent: true});
-        FileSystem.deleteAsync(databaseShm, {idempotent: true});
-        FileSystem.deleteAsync(databaseWal, {idempotent: true});
+        FileSystem.unlink(databaseFile).catch(emptyFunction);
+        FileSystem.unlink(databaseShm).catch(emptyFunction);
+        FileSystem.unlink(databaseWal).catch(emptyFunction);
     };
 
     /**
@@ -410,7 +411,7 @@ class DatabaseManager {
 
             // On Android, we'll remove the databases folder under the Document Directory
             const androidFilesDir = `${this.databaseDirectory}databases/`;
-            await FileSystem.deleteAsync(androidFilesDir);
+            await FileSystem.unlink(androidFilesDir);
             return true;
         } catch (e) {
             return false;
@@ -458,7 +459,7 @@ class DatabaseManager {
     * @returns {string}
     */
     private getDatabaseFilePath = (dbName: string): string => {
-        return Platform.OS === 'ios' ? `${this.databaseDirectory}/${dbName}.db` : `${this.databaseDirectory}${dbName}.db`;
+        return Platform.OS === 'ios' ? `${this.databaseDirectory}/${dbName}.db` : `${this.databaseDirectory}/${dbName}.db`;
     };
 }
 

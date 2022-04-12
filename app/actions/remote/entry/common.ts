@@ -183,10 +183,10 @@ export const fetchAlternateTeamData = async (
     return {initialTeamId, removeTeamIds};
 };
 
-export const deferredAppEntryActions = async (
+export async function deferredAppEntryActions(
     serverUrl: string, since: number, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined,
     config: ClientConfig, license: ClientLicense, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
-    initialTeamId?: string, initialChannelId?: string) => {
+    initialTeamId?: string, initialChannelId?: string) {
     // defer fetching posts for initial channel
     if (initialChannelId) {
         fetchPostsForChannel(serverUrl, initialChannelId);
@@ -234,7 +234,7 @@ export const deferredAppEntryActions = async (
 
     fetchAllTeams(serverUrl);
     updateAllUsersSince(serverUrl, since);
-};
+}
 
 export const syncOtherServers = async (serverUrl: string) => {
     const database = DatabaseManager.appDatabase?.database;

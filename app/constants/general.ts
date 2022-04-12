@@ -32,7 +32,7 @@ export default {
     MAX_GROUP_CHANNELS_FOR_PROFILES: 50,
     DEFAULT_AUTOLINKED_URL_SCHEMES: ['http', 'https', 'ftp', 'mailto', 'tel', 'mattermost'],
     PROFILE_CHUNK_SIZE: 100,
-    SEARCH_TIMEOUT_MILLISECONDS: 100,
+    SEARCH_TIMEOUT_MILLISECONDS: 500,
     AUTOCOMPLETE_SPLIT_CHARACTERS: ['.', '-', '_'],
     CHANNEL_USER_ROLE: 'channel_user',
     RESTRICT_DIRECT_MESSAGE_ANY: 'any',

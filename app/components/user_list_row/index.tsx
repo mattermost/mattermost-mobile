@@ -11,11 +11,10 @@ import {
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
 import {BotTag, GuestTag} from '@components/tag';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {displayUsername, isGuest} from '@utils/user';
-
-import TouchableWithFeedback from '../touchable_with_feedback';
 
 type Props = {
     id: string;
@@ -155,6 +154,7 @@ export default function UserListRow({
     return (
         <TouchableWithFeedback
             onPress={handlePress}
+            underlayColor={changeOpacity(theme.centerChannelColor, 0.16)}
         >
             <View
                 style={style.container}

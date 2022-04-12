@@ -27,7 +27,7 @@ export type MyTeamsRequest = {
     error?: unknown;
 }
 
-export const addUserToTeam = async (serverUrl: string, teamId: string, userId: string, fetchOnly = false) => {
+export async function addUserToTeam(serverUrl: string, teamId: string, userId: string, fetchOnly = false) {
     let client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -56,9 +56,7 @@ export const addUserToTeam = async (serverUrl: string, teamId: string, userId: s
                     prepareCategoryChannels(operator, categories || []),
                 ])).flat();
 
-                if (models.length) {
-                    await operator.batchRecords(models);
-                }
+                await operator.batchRecords(models);
 
                 if (await isTablet()) {
                     const channel = await getDefaultChannelForTeam(operator.database, teamId);
@@ -74,9 +72,9 @@ export const addUserToTeam = async (serverUrl: string, teamId: string, userId: s
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
-};
+}
 
-export const fetchMyTeams = async (serverUrl: string, fetchOnly = false): Promise<MyTeamsRequest> => {
+export async function fetchMyTeams(serverUrl: string, fetchOnly = false): Promise<MyTeamsRequest> {
     let client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -124,9 +122,9 @@ export const fetchMyTeams = async (serverUrl: string, fetchOnly = false): Promis
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
-};
+}
 
-export const fetchMyTeam = async (serverUrl: string, teamId: string, fetchOnly = false): Promise<MyTeamsRequest> => {
+export async function fetchMyTeam(serverUrl: string, teamId: string, fetchOnly = false): Promise<MyTeamsRequest> {
     let client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -158,7 +156,7 @@ export const fetchMyTeam = async (serverUrl: string, teamId: string, fetchOnly =
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
-};
+}
 
 export const fetchAllTeams = async (serverUrl: string, fetchOnly = false): Promise<MyTeamsRequest> => {
     let client;
@@ -170,7 +168,6 @@ export const fetchAllTeams = async (serverUrl: string, fetchOnly = false): Promi
 
     try {
         const teams = await client.getTeams();
-
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             if (operator) {
@@ -205,7 +202,7 @@ export const fetchTeamsChannelsAndUnreadPosts = async (serverUrl: string, since:
     return {error: undefined};
 };
 
-export const fetchTeamByName = async (serverUrl: string, teamName: string, fetchOnly = false) => {
+export async function fetchTeamByName(serverUrl: string, teamName: string, fetchOnly = false) {
     let client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -219,10 +216,8 @@ export const fetchTeamByName = async (serverUrl: string, teamName: string, fetch
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             if (operator) {
-                const model = await operator.handleTeam({teams: [team], prepareRecordsOnly: true});
-                if (model) {
-                    await operator.batchRecords(model);
-                }
+                const models = await operator.handleTeam({teams: [team], prepareRecordsOnly: true});
+                await operator.batchRecords(models);
             }
         }
 
@@ -231,7 +226,7 @@ export const fetchTeamByName = async (serverUrl: string, teamName: string, fetch
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
-};
+}
 
 export const removeUserFromTeam = async (serverUrl: string, teamId: string, userId: string, fetchOnly = false) => {
     let client;
@@ -256,7 +251,7 @@ export const removeUserFromTeam = async (serverUrl: string, teamId: string, user
     }
 };
 
-export const handleTeamChange = async (serverUrl: string, teamId: string) => {
+export async function handleTeamChange(serverUrl: string, teamId: string) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return;
@@ -303,4 +298,4 @@ export const handleTeamChange = async (serverUrl: string, teamId: string) => {
     if (channels?.length && memberships?.length) {
         fetchPostsForUnreadChannels(serverUrl, channels, memberships, channelId);
     }
-};
+}

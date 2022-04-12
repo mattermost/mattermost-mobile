@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {buildPreferenceKey} from '@database/operator/server_data_operator/comparators';
 import {
     transformPreferenceRecord,
@@ -34,10 +33,12 @@ const UserHandler = (superclass: any) => class extends superclass {
      * @returns {Promise<PreferenceModel[]>}
      */
     handlePreferences = async ({preferences, prepareRecordsOnly = true, sync = false}: HandlePreferencesArgs): Promise<PreferenceModel[]> => {
-        if (!preferences.length) {
-            throw new DataOperatorException(
-                'An empty "preferences" array has been passed to the handlePreferences method',
+        if (!preferences?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "preferences" array has been passed to the handlePreferences method',
             );
+            return [];
         }
 
         // WE NEED TO SYNC THE PREFS FROM WHAT WE GOT AND WHAT WE HAVE
@@ -86,10 +87,12 @@ const UserHandler = (superclass: any) => class extends superclass {
      * @returns {Promise<UserModel[]>}
      */
     handleUsers = async ({users, prepareRecordsOnly = true}: HandleUsersArgs): Promise<UserModel[]> => {
-        if (!users.length) {
-            throw new DataOperatorException(
-                'An empty "users" array has been passed to the handleUsers method',
+        if (!users?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "users" array has been passed to the handleUsers method',
             );
+            return [];
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: users, key: 'id'});

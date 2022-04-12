@@ -51,11 +51,7 @@ export async function prepareCategoryChannels(
             });
         });
 
-        if (categoryChannels.length) {
-            return operator.handleCategoryChannels({categoryChannels, prepareRecordsOnly: true});
-        }
-
-        return [];
+        return operator.handleCategoryChannels({categoryChannels, prepareRecordsOnly: true});
     } catch (e) {
         return [];
     }
