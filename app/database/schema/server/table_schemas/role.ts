@@ -10,7 +10,7 @@ const {ROLE} = MM_TABLES.SERVER;
 export default tableSchema({
     name: ROLE,
     columns: [
-        {name: 'name', type: 'string'},
+        {name: 'name', type: 'string', isIndexed: true},
         {name: 'permissions', type: 'string'},
     ],
 });

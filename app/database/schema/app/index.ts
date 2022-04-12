@@ -29,9 +29,9 @@ export const schema: AppSchema = appSchema({
             columns: [
                 {name: 'db_path', type: 'string'},
                 {name: 'display_name', type: 'string'},
-                {name: 'url', type: 'string', isIndexed: true},
-                {name: 'last_active_at', type: 'number', isIndexed: true},
                 {name: 'identifier', type: 'string', isIndexed: true},
+                {name: 'last_active_at', type: 'number', isIndexed: true},
+                {name: 'url', type: 'string', isIndexed: true},
             ],
         }),
     ],

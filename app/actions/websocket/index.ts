@@ -298,6 +298,7 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
 
         case WebsocketEvents.DIRECT_ADDED:
+        case WebsocketEvents.GROUP_ADDED:
             handleDirectAddedEvent(serverUrl, msg);
             break;
 

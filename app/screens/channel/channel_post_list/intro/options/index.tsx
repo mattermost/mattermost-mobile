@@ -38,8 +38,8 @@ const IntroOptions = ({channelId, header, favorite, people, theme}: Props) => {
     }, []);
 
     const onSetHeader = useCallback(() => {
-        const title = formatMessage({id: 'screens.channel_edit', defaultMessage: 'Edit Channel'});
-        showModal(Screens.CREATE_OR_EDIT_CHANNEL, title, {channelId});
+        const title = formatMessage({id: 'screens.channel_edit_header', defaultMessage: 'Edit Channel Header'});
+        showModal(Screens.CREATE_OR_EDIT_CHANNEL, title, {channelId, headerOnly: true});
     }, []);
 
     const onDetails = useCallback(() => {

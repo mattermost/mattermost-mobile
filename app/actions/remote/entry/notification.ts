@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
-
 import {switchToChannel} from '@actions/local/channel';
 import {markChannelAsRead} from '@actions/remote/channel';
 import {fetchRoles} from '@actions/remote/role';
@@ -19,7 +17,7 @@ import {emitNotificationError} from '@utils/notification';
 
 import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, syncOtherServers, teamsToRemove} from './common';
 
-export const pushNotificationEntry = async (serverUrl: string, notification: NotificationWithData) => {
+export async function pushNotificationEntry(serverUrl: string, notification: NotificationWithData) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -130,9 +128,7 @@ export const pushNotificationEntry = async (serverUrl: string, notification: Not
     }
 
     const models = await Promise.all(modelPromises);
-    if (models.length) {
-        await operator.batchRecords(models.flat() as Model[]);
-    }
+    await operator.batchRecords(models.flat());
 
     const {id: currentUserId, locale: currentUserLocale} = meData.user || (await getCurrentUser(operator.database))!;
     const {config, license} = await getCommonSystemValues(operator.database);
@@ -141,4 +137,4 @@ export const pushNotificationEntry = async (serverUrl: string, notification: Not
     syncOtherServers(serverUrl);
     const error = teamData.error || chData?.error || prefData.error || meData.error;
     return {error, userId: meData?.user?.id};
-};
+}

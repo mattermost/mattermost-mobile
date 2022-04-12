@@ -13,7 +13,6 @@ import type ChannelInfoModel from '@typings/database/models/servers/channel_info
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 import type DraftModel from '@typings/database/models/servers/draft';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
-import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type TeamModel from '@typings/database/models/servers/team';
@@ -26,7 +25,6 @@ const {
     CHANNEL_MEMBERSHIP,
     DRAFT,
     MY_CHANNEL,
-    MY_CHANNEL_SETTINGS,
     POSTS_IN_CHANNEL,
     POST,
     TEAM,
@@ -46,7 +44,7 @@ export default class ChannelModel extends Model implements ChannelModelInterface
         /** A CHANNEL can be associated with multiple CHANNEL_MEMBERSHIP (relationship is 1:N) */
         [CHANNEL_MEMBERSHIP]: {type: 'has_many', foreignKey: 'channel_id'},
 
-        /** A CHANNEL can be associated with multiple CATEGORY_CHANNEL (relationship is 1:N) */
+        /** A CHANNEL can be associated with one CATEGORY_CHANNEL per team (relationship is 1:1)  */
         [CATEGORY_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
 
         /** A CHANNEL can be associated with multiple DRAFT (relationship is 1:N) */
@@ -66,6 +64,10 @@ export default class ChannelModel extends Model implements ChannelModelInterface
 
         /** A USER can create multiple CHANNEL (relationship is 1:N) */
         [USER]: {type: 'belongs_to', key: 'creator_id'},
+
+        /** A CHANNEL is associated with one CHANNEL_INFO**/
+        [CHANNEL_INFO]: {type: 'has_many', foreignKey: 'id'},
+
     };
 
     /** create_at : The creation date for this channel */
@@ -125,9 +127,6 @@ export default class ChannelModel extends Model implements ChannelModelInterface
 
     /** membership : Query returning the membership data for the current user if it belongs to this channel */
     @immutableRelation(MY_CHANNEL, 'id') membership!: Relation<MyChannelModel>;
-
-    /** settings: User specific settings/preferences for this channel */
-    @immutableRelation(MY_CHANNEL_SETTINGS, 'id') settings!: Relation<MyChannelSettingsModel>;
 
     /** categoryChannel : Query returning the membership data for the current user if it belongs to this channel */
     @immutableRelation(CATEGORY_CHANNEL, 'channel_id') categoryChannel!: Relation<CategoryChannelModel>;

@@ -59,9 +59,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         prepareRecordsOnly: true,
     });
 
-    if (postModels?.length) {
-        models.push(...postModels);
-    }
+    models.push(...postModels);
 
     const isCRTEnabled = await getIsCRTEnabled(database);
     if (isCRTEnabled) {
@@ -120,9 +118,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     const {authors} = await fetchPostAuthors(serverUrl, [post], true);
     if (authors?.length) {
         const authorsModels = await operator.handleUsers({users: authors, prepareRecordsOnly: true});
-        if (authorsModels.length) {
-            models.push(...authorsModels);
-        }
+        models.push(...authorsModels);
     }
 
     if (!shouldIgnorePost(post)) {
@@ -191,9 +187,7 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     const {authors} = await fetchPostAuthors(serverUrl, [post], true);
     if (authors?.length) {
         const authorsModels = await operator.handleUsers({users: authors, prepareRecordsOnly: true});
-        if (authorsModels.length) {
-            models.push(...authorsModels);
-        }
+        models.push(...authorsModels);
     }
 
     const postModels = await operator.handlePosts({
@@ -202,13 +196,9 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
         posts: [post],
         prepareRecordsOnly: true,
     });
-    if (postModels.length) {
-        models.push(...postModels);
-    }
+    models.push(...postModels);
 
-    if (models.length) {
-        operator.batchRecords(models);
-    }
+    operator.batchRecords(models);
 }
 
 export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage) {

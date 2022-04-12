@@ -5,9 +5,10 @@ import {Relation} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
 import type ChannelModel from './channel';
+import type MyChannelSettingsModel from './my_channel_settings';
 
 /**
- * MyChannel is an extension of the Channel model but it lists only the Channels the app's user belongs to
+ * MyChannel is an extension of the Channel model, but it lists only the Channels the app's user belongs to
  */
 export default class MyChannelModel extends Model {
     /** table (name) : MyChannel */
@@ -39,4 +40,7 @@ export default class MyChannelModel extends Model {
 
     /** channel : The relation pointing to the CHANNEL table */
     channel: Relation<ChannelModel>;
+
+    /** settings: User specific settings/preferences for this channel */
+    settings: Relation<MyChannelSettingsModel>;
 }

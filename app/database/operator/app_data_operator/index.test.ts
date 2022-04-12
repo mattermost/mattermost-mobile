@@ -66,17 +66,17 @@ describe('** APP DATA OPERATOR **', () => {
         expect(appOperator).toBeTruthy();
 
         const spyOnHandleRecords = jest.spyOn(appOperator as any, 'handleRecords');
-        const global: IdValue[] = [{id: 'global-1-name', value: 'global-1-value'}];
+        const globals: IdValue[] = [{id: 'global-1-name', value: 'global-1-value'}];
 
         await appOperator?.handleGlobal({
-            global,
+            globals,
             prepareRecordsOnly: false,
         });
 
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'id',
             transformer: transformGlobalRecord,
-            createOrUpdateRawValues: global,
+            createOrUpdateRawValues: globals,
             tableName: 'Global',
             prepareRecordsOnly: false,
         });

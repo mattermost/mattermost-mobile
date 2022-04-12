@@ -10,7 +10,7 @@ import {MM_TABLES} from '@constants/database';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 
 import {queryPreferencesByCategoryAndName} from './preference';
-import {observeConfig, observeCurrentUserId, observeLicense, getCurrentUserId} from './system';
+import {observeConfig, observeCurrentUserId, observeLicense, getCurrentUserId, getConfig, getLicense} from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type UserModel from '@typings/database/models/servers/user';
@@ -59,15 +59,7 @@ export const queryUsersByUsername = (database: Database, usernames: string[]) =>
 };
 
 export async function prepareUsers(operator: ServerDataOperator, users: UserProfile[]): Promise<UserModel[]> {
-    try {
-        if (users.length) {
-            return operator.handleUsers({users, prepareRecordsOnly: true});
-        }
-
-        return [];
-    } catch {
-        return [];
-    }
+    return operator.handleUsers({users, prepareRecordsOnly: true});
 }
 
 export const observeTeammateNameDisplay = (database: Database) => {
@@ -80,6 +72,13 @@ export const observeTeammateNameDisplay = (database: Database) => {
         ),
     );
 };
+
+export async function getTeammateNameDisplay(database: Database) {
+    const config = await getConfig(database);
+    const license = await getLicense(database);
+    const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).fetch();
+    return getTeammateNameDisplaySetting(preferences, config, license);
+}
 
 export const queryUsersLike = (database: Database, likeUsername: string) => {
     return database.get(USER).query(

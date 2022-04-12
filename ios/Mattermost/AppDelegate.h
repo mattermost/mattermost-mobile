@@ -1,8 +1,8 @@
 #import <React/RCTBridgeDelegate.h>
-#import <Expo/Expo.h>
+#import <UIKit/UIKit.h>
 #import "RNNotifications.h"
 
-@interface AppDelegate : EXAppDelegateWrapper <UIApplicationDelegate, RCTBridgeDelegate>
+@interface AppDelegate : UIResponder <UIApplicationDelegate, RCTBridgeDelegate>
 
 @property (nonatomic, strong) UIWindow *window;
 @property(nonatomic,assign)BOOL allowRotation;
