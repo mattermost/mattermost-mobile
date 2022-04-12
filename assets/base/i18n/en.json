@@ -240,6 +240,7 @@
   "mobile.camera_photo_permission_denied_title": "{applicationName} would like to access your camera",
   "mobile.channel_info.alertNo": "No",
   "mobile.channel_info.alertYes": "Yes",
+  "mobile.channel_list.unreads": "UNREADS",
   "mobile.commands.error_title": "Error Executing Command",
   "mobile.components.select_server_view.connect": "Connect",
   "mobile.components.select_server_view.connecting": "Connecting",

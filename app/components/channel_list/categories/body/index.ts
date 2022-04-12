@@ -66,14 +66,16 @@ const observeSettings = (database: Database, channels: ChannelModel[]) => {
     return queryMyChannelSettingsByIds(database, ids).observeWithColumns(['notify_props']);
 };
 
-const getChannelsFromRelation = async (relations: CategoryChannelModel[] | MyChannelModel[]) => {
+export const getChannelsFromRelation = async (relations: CategoryChannelModel[] | MyChannelModel[]) => {
     return Promise.all(relations.map((r) => r.channel?.fetch()));
 };
 
-const getSortedChannels = (database: Database, category: CategoryModel, locale: string) => {
+const getSortedChannels = (database: Database, category: CategoryModel, unreadChannelIds: Set<string>, locale: string) => {
     switch (category.sorting) {
         case 'alpha': {
-            const channels = category.channels.observeWithColumns(['display_name']);
+            const channels = category.channels.observeWithColumns(['display_name']).pipe(
+                map((cs) => cs.filter((c) => !unreadChannelIds.has(c.id))),
+            );
             const settings = channels.pipe(
                 switchMap((cs) => observeSettings(database, cs)),
             );
@@ -83,12 +85,14 @@ const getSortedChannels = (database: Database, category: CategoryModel, locale: 
         }
         case 'manual': {
             return category.categoryChannelsBySortOrder.observeWithColumns(['sort_order']).pipe(
+                map((cc) => cc.filter((c) => !unreadChannelIds.has(c.channelId))),
                 map(getChannelsFromRelation),
                 concatAll(),
             );
         }
         default:
             return category.myChannels.observeWithColumns(['last_post_at']).pipe(
+                map((myCs) => myCs.filter((myC) => !unreadChannelIds.has(myC.id))),
                 map(getChannelsFromRelation),
                 concatAll(),
             );
@@ -99,12 +103,17 @@ const mapPrefName = (prefs: PreferenceModel[]) => of$(prefs.map((p) => p.name));
 
 const mapChannelIds = (channels: ChannelModel[]) => of$(channels.map((c) => c.id));
 
-type EnhanceProps = {category: CategoryModel; locale: string; currentUserId: string} & WithDatabaseArgs
+type EnhanceProps = {
+    category: CategoryModel;
+    locale: string;
+    currentUserId: string;
+    unreadChannelIds: Set<string>;
+} & WithDatabaseArgs
 
-const enhance = withObservables(['category'], ({category, locale, database, currentUserId}: EnhanceProps) => {
+const enhance = withObservables(['category', 'locale', 'unreadChannelIds'], ({category, locale, database, currentUserId, unreadChannelIds}: EnhanceProps) => {
     const observedCategory = category.observe();
     const sortedChannels = observedCategory.pipe(
-        switchMap((c) => getSortedChannels(database, c, locale)),
+        switchMap((c) => getSortedChannels(database, c, unreadChannelIds, locale)),
     );
 
     const dmMap = (p: PreferenceModel) => getDirectChannelName(p.name, currentUserId);

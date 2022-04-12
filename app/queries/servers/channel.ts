@@ -373,6 +373,20 @@ export const queryChannelsByNames = (database: Database, names: string[]) => {
     return database.get<ChannelModel>(CHANNEL).query(Q.where('name', Q.oneOf(names)));
 };
 
+export const queryMyChannelUnreads = (database: Database, currentTeamId: string) => {
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.on(
+            CHANNEL,
+            Q.or(
+                Q.where('team_id', Q.eq(currentTeamId)),
+                Q.where('team_id', Q.eq('')),
+            ),
+        ),
+        Q.where('is_unread', Q.eq(true)),
+        Q.sortBy('last_post_at', Q.desc),
+    );
+};
+
 export function observeMyChannelMentionCount(database: Database, teamId?: string, columns = ['mentions_count', 'is_unread']): Observable<number> {
     const conditions: Q.Condition[] = [
         Q.where('delete_at', Q.eq(0)),
