@@ -31,7 +31,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         titleContainer: {marginVertical: 4},
         titleText: {
             color: theme.centerChannelColor,
-            ...typography('Heading', 700, 'SemiBold'),
+            ...typography('Heading', 600, 'SemiBold'),
         },
         separator: {
             height: 1,
