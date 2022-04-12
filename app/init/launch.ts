@@ -1,9 +1,8 @@
 ﻿// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {RUNNING_E2E} from '@env';
 import Emm from '@mattermost/react-native-emm';
-import {Alert, Linking, LogBox, Platform} from 'react-native';
+import {Alert, Linking, Platform} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
 import {appEntry, pushNotificationEntry, upgradeEntry} from '@actions/remote/entry';
@@ -220,9 +219,3 @@ export const getLaunchPropsFromNotification = async (notification: NotificationW
 
     return launchProps;
 };
-
-// Ignore all notifications if running e2e
-const isRunningE2e = RUNNING_E2E === 'true';
-// eslint-disable-next-line no-console
-console.log(`RUNNING_E2E: ${RUNNING_E2E}, isRunningE2e: ${isRunningE2e}`);
-LogBox.ignoreAllLogs(isRunningE2e);
