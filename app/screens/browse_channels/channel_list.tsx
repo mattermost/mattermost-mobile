@@ -1,17 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
-import {View, FlatList, Keyboard} from 'react-native';
+import React, {useCallback, useMemo} from 'react';
+import {View, FlatList} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {useTheme} from '@context/theme';
-import {
-    changeOpacity,
-    makeStyleSheetFromTheme,
-} from '@utils/theme';
+import {useKeyboardHeight} from '@hooks/device';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ChannelListRow from './channel_list_row';
 
@@ -66,7 +64,11 @@ export default function ChannelList({
     const theme = useTheme();
 
     const style = getStyleFromTheme(theme);
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const keyboardHeight = useKeyboardHeight();
+    const noResutsStyle = useMemo(() => [
+        style.noResultContainer,
+        {paddingBottom: keyboardHeight},
+    ], [style, keyboardHeight]);
 
     const renderItem = useCallback(({item}: {item: Channel}) => {
         return (
@@ -79,30 +81,32 @@ export default function ChannelList({
     }, [onSelectChannel]);
 
     const renderLoading = useCallback(() => {
+        if (!loading) {
+            return null;
+        }
+
         return (
-            <View style={[style.noResultContainer, {paddingBottom: keyboardHeight}]}>
-                <Loading
-                    containerStyle={style.loadingContainer}
-                    style={style.loading}
-                    color={theme.buttonBg}
-                />
-            </View>
+            <Loading
+                containerStyle={style.loadingContainer}
+                style={style.loading}
+                color={theme.buttonBg}
+            />
         );
 
     //Style is covered by the theme
-    }, [theme, keyboardHeight]);
+    }, [loading, theme]);
 
     const renderNoResults = useCallback(() => {
         if (term) {
             return (
-                <View style={[style.noResultContainer, {paddingBottom: keyboardHeight}]}>
+                <View style={noResutsStyle}>
                     <NoResultsWithTerm term={term}/>
                 </View>
             );
         }
 
         return (
-            <View style={[style.noResultContainer, {paddingBottom: keyboardHeight}]}>
+            <View style={noResutsStyle}>
                 <FormattedText
                     id='browse_channels.noMore'
                     defaultMessage='No more channels to join'
@@ -110,7 +114,7 @@ export default function ChannelList({
                 />
             </View>
         );
-    }, [style, term, keyboardHeight]);
+    }, [style, term, noResutsStyle]);
 
     const renderSeparator = useCallback(() => (
         <View
@@ -118,27 +122,13 @@ export default function ChannelList({
         />
     ), [theme]);
 
-    useEffect(() => {
-        const show = Keyboard.addListener('keyboardWillShow', (event) => {
-            setKeyboardHeight(event.endCoordinates.height);
-        });
-
-        const hide = Keyboard.addListener('keyboardWillHide', () => {
-            setKeyboardHeight(0);
-        });
-
-        return () => {
-            show.remove();
-            hide.remove();
-        };
-    }, []);
-
     return (
         <FlatList
             data={channels}
             renderItem={renderItem}
             testID='browse_channels.channel_list.flat_list'
-            ListEmptyComponent={loading ? renderLoading : renderNoResults}
+            ListEmptyComponent={renderNoResults}
+            ListFooterComponent={renderLoading}
             onEndReached={onEndReached}
             contentContainerStyle={style.listContainer}
             ItemSeparatorComponent={renderSeparator}

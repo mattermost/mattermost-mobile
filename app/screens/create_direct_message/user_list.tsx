@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {FlatList, Keyboard, ListRenderItemInfo, Platform, SectionList, SectionListData, Text, View} from 'react-native';
 
 import Loading from '@components/loading';
@@ -9,6 +9,7 @@ import NoResultsWithTerm from '@components/no_results_with_term';
 import UserListRow from '@components/user_list_row';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
+import {useKeyboardHeight} from '@hooks/device';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -132,7 +133,11 @@ export default function UserList({
 }: Props) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const keyboardHeight = useKeyboardHeight();
+    const noResutsStyle = useMemo(() => [
+        style.noResultContainer,
+        {paddingBottom: keyboardHeight},
+    ], [style, keyboardHeight]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<UserProfile>) => {
         // The list will re-render when the selection changes because it's passed into the list as extraData
@@ -161,15 +166,13 @@ export default function UserList({
         }
 
         return (
-            <View style={[style.noResultContainer, {paddingBottom: keyboardHeight}]}>
-                <Loading
-                    containerStyle={style.loadingContainer}
-                    style={style.loading}
-                    color={theme.buttonBg}
-                />
-            </View>
+            <Loading
+                containerStyle={style.loadingContainer}
+                style={style.loading}
+                color={theme.buttonBg}
+            />
         );
-    }, [loading && style, theme, keyboardHeight]);
+    }, [loading, theme]);
 
     const renderNoResults = useCallback(() => {
         if (!showNoResults || !term) {
@@ -177,11 +180,11 @@ export default function UserList({
         }
 
         return (
-            <View style={[style.noResultContainer, {paddingBottom: keyboardHeight}]}>
+            <View style={noResutsStyle}>
                 <NoResultsWithTerm term={term}/>
             </View>
         );
-    }, [showNoResults && style, term, keyboardHeight]);
+    }, [showNoResults && style, term, noResutsStyle]);
 
     const renderSectionHeader = useCallback(({section}: {section: SectionListData<UserProfile>}) => {
         return (
@@ -203,7 +206,8 @@ export default function UserList({
                 {...keyboardDismissProp}
                 keyExtractor={keyExtractor}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
-                ListEmptyComponent={loading ? renderLoading : renderNoResults}
+                ListEmptyComponent={renderNoResults}
+                ListFooterComponent={renderLoading}
                 maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
                 removeClippedSubviews={true}
                 renderItem={renderItem}
@@ -223,7 +227,8 @@ export default function UserList({
                 {...keyboardDismissProp}
                 keyExtractor={keyExtractor}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
-                ListEmptyComponent={loading ? renderLoading : renderNoResults}
+                ListEmptyComponent={renderNoResults}
+                ListFooterComponent={renderLoading}
                 maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
                 removeClippedSubviews={true}
                 renderItem={renderItem}
@@ -244,21 +249,6 @@ export default function UserList({
         }
         return createProfilesSections(profiles);
     }, [term, profiles]);
-
-    useEffect(() => {
-        const show = Keyboard.addListener('keyboardWillShow', (event) => {
-            setKeyboardHeight(event.endCoordinates.height);
-        });
-
-        const hide = Keyboard.addListener('keyboardWillHide', () => {
-            setKeyboardHeight(0);
-        });
-
-        return () => {
-            show.remove();
-            hide.remove();
-        };
-    }, []);
 
     if (term) {
         return renderFlatList(data as UserProfile[]);
