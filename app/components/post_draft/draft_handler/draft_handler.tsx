@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import DraftUploadManager from '@managers/draft_upload_manager';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 
 import {addFilesToDraft, removeDraft} from '@actions/local/draft';
 import {useServerUrl} from '@context/server';
+import DraftUploadManager from '@managers/draft_upload_manager';
 import {fileMaxWarning, fileSizeWarning, uploadDisabledWarning} from '@utils/file';
 
 import SendHandler from '../send_handler';

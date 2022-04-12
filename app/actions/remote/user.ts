@@ -3,7 +3,6 @@
 
 /* eslint-disable max-lines */
 
-import NetworkManager from '@managers/network_manager';
 import {Model} from '@nozbe/watermelondb';
 import {chunk} from 'lodash';
 
@@ -14,6 +13,7 @@ import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
+import NetworkManager from '@managers/network_manager';
 import {getMembersCountByChannelsId, queryChannelsByTypes} from '@queries/servers/channel';
 import {getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {getCurrentUser, getUserById, prepareUsers, queryAllUsers, queryUsersById, queryUsersByUsername} from '@queries/servers/user';

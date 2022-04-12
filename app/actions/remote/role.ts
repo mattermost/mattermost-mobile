@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetworkManager from '@managers/network_manager';
-
 import DatabaseManager from '@database/manager';
+import NetworkManager from '@managers/network_manager';
 import {queryRoles} from '@queries/servers/role';
 
 import {forceLogoutIfNecessary} from './session';

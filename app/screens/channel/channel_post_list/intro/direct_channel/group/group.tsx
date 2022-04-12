@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetworkManager from '@managers/network_manager';
 import {chunk} from 'lodash';
 import React from 'react';
 import {View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import {useServerUrl} from '@context/server';
+import NetworkManager from '@managers/network_manager';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {Client} from '@client/rest';

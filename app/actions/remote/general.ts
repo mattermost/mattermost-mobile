@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetworkManager from '@managers/network_manager';
-
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
+import NetworkManager from '@managers/network_manager';
 import {getExpandedLinks} from '@queries/servers/system';
 
 import {forceLogoutIfNecessary} from './session';

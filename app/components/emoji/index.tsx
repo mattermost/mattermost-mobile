@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetworkManager from '@managers/network_manager';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
@@ -17,6 +16,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {useServerUrl} from '@context/server';
+import NetworkManager from '@managers/network_manager';
 import {queryCustomEmojisByName} from '@queries/servers/custom_emoji';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {EmojiIndicesByAlias, Emojis} from '@utils/emoji';

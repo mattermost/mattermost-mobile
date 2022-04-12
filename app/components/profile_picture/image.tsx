@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetworkManager from '@managers/network_manager';
 import React, {useMemo} from 'react';
 import FastImage, {Source} from 'react-native-fast-image';
 
@@ -9,6 +8,7 @@ import CompassIcon from '@components/compass_icon';
 import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import NetworkManager from '@managers/network_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {Client} from '@client/rest';

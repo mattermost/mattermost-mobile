@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetworkManager from '@managers/network_manager';
 import deepEqual from 'deep-equal';
 
 import {logError} from '@actions/remote/error';
@@ -9,6 +8,7 @@ import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
+import NetworkManager from '@managers/network_manager';
 import {getCommonSystemValues} from '@queries/servers/system';
 
 import type ClientError from '@client/rest/error';

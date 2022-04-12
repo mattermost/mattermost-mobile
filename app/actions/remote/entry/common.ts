@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetworkManager from '@managers/network_manager';
-
 import {fetchChannelStats, fetchMissingSidebarInfo, fetchMyChannelsForTeam, markChannelAsRead, MyChannelsRequest} from '@actions/remote/channel';
 import {fetchPostsForChannel, fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
@@ -14,6 +12,7 @@ import DatabaseManager from '@database/manager';
 import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
+import NetworkManager from '@managers/network_manager';
 import {queryAllServers} from '@queries/app/servers';
 import {queryAllChannelsForTeam} from '@queries/servers/channel';
 import {getConfig} from '@queries/servers/system';

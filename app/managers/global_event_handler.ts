@@ -1,9 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import * as analytics from '@managers/analytics';
-import NetworkManager from '@managers/network_manager';
-import WebsocketManager from '@managers/websocket_manager';
 import CookieManager, {Cookie} from '@react-native-cookies/cookies';
 import {Alert, DeviceEventEmitter, Linking, Platform} from 'react-native';
 import semver from 'semver';
@@ -16,6 +13,9 @@ import {DEFAULT_LOCALE, getTranslations, resetMomentLocale, t} from '@i18n';
 import {getServerCredentials, removeServerCredentials} from '@init/credentials';
 import {getLaunchPropsFromDeepLink, relaunchApp} from '@init/launch';
 import PushNotifications from '@init/push_notifications';
+import * as analytics from '@managers/analytics';
+import NetworkManager from '@managers/network_manager';
+import WebsocketManager from '@managers/websocket_manager';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {LaunchType} from '@typings/launch';

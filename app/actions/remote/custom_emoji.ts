@@ -1,12 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetworkManager from '@managers/network_manager';
-
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {Client} from '@client/rest';
 import {Emoji, General} from '@constants';
 import DatabaseManager from '@database/manager';
+import NetworkManager from '@managers/network_manager';
 import {queryCustomEmojisByName} from '@queries/servers/custom_emoji';
 
 export const fetchCustomEmojis = async (serverUrl: string, page = 0, perPage = General.PAGE_SIZE_DEFAULT, sort = Emoji.SORT_BY_NAME) => {

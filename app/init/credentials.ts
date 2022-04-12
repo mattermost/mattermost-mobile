@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import * as analytics from '@managers/analytics';
 import {Platform} from 'react-native';
 import * as KeyChain from 'react-native-keychain';
 
 import DatabaseManager from '@database/manager';
+import * as analytics from '@managers/analytics';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
 import type {ServerCredential} from '@typings/credentials';

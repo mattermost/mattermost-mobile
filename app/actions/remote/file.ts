@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetworkManager from '@managers/network_manager';
 import {ClientResponse, ClientResponseError} from '@mattermost/react-native-network-client';
 
 import {Client} from '@client/rest';
 import ClientError from '@client/rest/error';
 import {DOWNLOAD_TIMEOUT} from '@constants/network';
+import NetworkManager from '@managers/network_manager';
 
 import {forceLogoutIfNecessary} from './session';
 

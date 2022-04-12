@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetworkManager from '@managers/network_manager';
 import React, {useCallback, useMemo, useState} from 'react';
 import {Platform, View} from 'react-native';
 
@@ -11,6 +10,7 @@ import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
+import NetworkManager from '@managers/network_manager';
 import {dismissBottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 

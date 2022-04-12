@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import DraftUploadManager from '@managers/draft_upload_manager';
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {
     ScrollView,
@@ -13,6 +12,7 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 
 import {GalleryInit} from '@context/gallery';
 import {useTheme} from '@context/theme';
+import DraftUploadManager from '@managers/draft_upload_manager';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 

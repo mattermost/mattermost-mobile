@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetworkManager from '@managers/network_manager';
-
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
+import NetworkManager from '@managers/network_manager';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
 

@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetworkManager from '@managers/network_manager';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
@@ -19,6 +18,7 @@ import AppVersion from '@components/app_version';
 import {Screens, Sso} from '@constants';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
+import NetworkManager from '@managers/network_manager';
 import {queryServerByDisplayName, queryServerByIdentifier} from '@queries/app/servers';
 import Background from '@screens/background';
 import {dismissModal, goToScreen, loginAnimationOptions} from '@screens/navigation';

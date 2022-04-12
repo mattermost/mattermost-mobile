@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 /* eslint-disable max-lines */
-import NetworkManager from '@managers/network_manager';
 import {Model} from '@nozbe/watermelondb';
 import {IntlShape} from 'react-intl';
 
@@ -13,6 +12,7 @@ import {General, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import NetworkManager from '@managers/network_manager';
 import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';

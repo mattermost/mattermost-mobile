@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetworkManager from '@managers/network_manager';
 import {IntlShape} from 'react-intl';
 
 import {sendEphemeralPost} from '@actions/local/post';
@@ -9,6 +8,7 @@ import ClientError from '@client/rest/error';
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
 import {AppCallResponseTypes, AppCallTypes} from '@constants/apps';
+import NetworkManager from '@managers/network_manager';
 import {showModal} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {makeCallErrorResponse} from '@utils/apps';

@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import WebsocketManager from '@managers/websocket_manager';
 import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
@@ -10,6 +9,7 @@ import {fetchMe, fetchUsersByIds} from '@actions/remote/user';
 import {General, Events, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import WebsocketManager from '@managers/websocket_manager';
 import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCommonSystemValues} from '@queries/servers/system';

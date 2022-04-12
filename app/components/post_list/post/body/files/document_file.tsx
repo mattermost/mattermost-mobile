@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetworkManager from '@managers/network_manager';
 import {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
 import React, {forwardRef, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
@@ -13,6 +12,7 @@ import tinyColor from 'tinycolor2';
 import ProgressBar from '@components/progress_bar';
 import {DOWNLOAD_TIMEOUT} from '@constants/network';
 import {useServerUrl} from '@context/server';
+import NetworkManager from '@managers/network_manager';
 import {alertDownloadDocumentDisabled, alertDownloadFailed, alertFailedToOpenDocument} from '@utils/document';
 import {fileExists, getLocalFilePathFromFile} from '@utils/file';
 import {emptyFunction} from '@utils/general';

@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetworkManager from '@managers/network_manager';
-
 import {storeCategories} from '@actions/local/category';
+import NetworkManager from '@managers/network_manager';
 
 import {forceLogoutIfNecessary} from './session';
 

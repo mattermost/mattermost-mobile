@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetworkManager from '@managers/network_manager';
-
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import NetworkManager from '@managers/network_manager';
 import {prepareMissingChannelsForAllTeams} from '@queries/servers/channel';
 import {getCurrentUser} from '@queries/servers/user';
 import {processPostsFetched} from '@utils/post';

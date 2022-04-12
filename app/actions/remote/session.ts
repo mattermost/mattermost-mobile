@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetworkManager from '@managers/network_manager';
-import WebsocketManager from '@managers/websocket_manager';
 import {DeviceEventEmitter} from 'react-native';
 
 import {getDeviceTimezone, isTimezoneEnabled} from '@actions/local/timezone';
@@ -10,6 +8,8 @@ import {Database, Events} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
+import NetworkManager from '@managers/network_manager';
+import WebsocketManager from '@managers/websocket_manager';
 import {queryDeviceToken} from '@queries/app/global';
 import {getCurrentUserId, getCommonSystemValues} from '@queries/servers/system';
 import {getCSRFFromCookie} from '@utils/security';
