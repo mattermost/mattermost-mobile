@@ -102,9 +102,6 @@ export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string) =>
     }
 
     return {
-        layout: {
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        },
         animations: {
             showModal: {
                 enabled: false,
@@ -114,6 +111,11 @@ export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string) =>
             },
         },
         modal: {swipeToDismiss: true},
+        statusBar: {
+            backgroundColor: null,
+            drawBehind: true,
+            translucent: true,
+        },
     };
 };
 
