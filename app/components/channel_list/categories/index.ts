@@ -29,7 +29,7 @@ const enhanced = withObservables(
         const categories = queryCategoriesByTeamIds(database, [currentTeamId]).observeWithColumns(['sort_order']);
 
         const unreadsOnTop = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
-            observe().
+            observeWithColumns(['value']).
             pipe(
                 switchMap((prefs: PreferenceModel[]) => of$(getPreferenceAsBool(prefs, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS, false))),
             );
