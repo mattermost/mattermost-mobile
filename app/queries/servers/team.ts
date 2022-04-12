@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {of as of$, map as map$, Observable} from 'rxjs';
+import {switchMap, distinctUntilChanged, combineLatestWith} from 'rxjs/operators';
 
 import {Database as DatabaseConstants, Preferences} from '@constants';
 import {getPreferenceValue} from '@helpers/api/preference';
@@ -11,9 +11,10 @@ import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
 
 import {prepareDeleteCategory} from './categories';
-import {prepareDeleteChannel, getDefaultChannelForTeam} from './channel';
+import {prepareDeleteChannel, getDefaultChannelForTeam, observeMyChannelMentionCount} from './channel';
 import {queryPreferencesByCategoryAndName} from './preference';
 import {patchTeamHistory, getConfig, getTeamHistory, observeCurrentTeamId} from './system';
+import {observeThreadMentionCount} from './thread';
 import {getCurrentUser} from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -21,7 +22,12 @@ import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
 import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
 
-const {MY_TEAM, TEAM, TEAM_CHANNEL_HISTORY, MY_CHANNEL} = DatabaseConstants.MM_TABLES.SERVER;
+const {
+    MY_CHANNEL,
+    MY_TEAM,
+    TEAM,
+    TEAM_CHANNEL_HISTORY,
+} = DatabaseConstants.MM_TABLES.SERVER;
 
 export const addChannelToTeamHistory = async (operator: ServerDataOperator, teamId: string, channelId: string, prepareRecordsOnly = false) => {
     let tch: TeamChannelHistory|undefined;
@@ -377,3 +383,14 @@ export const observeCurrentTeam = (database: Database) => {
         switchMap((id) => observeTeam(database, id)),
     );
 };
+
+export function observeMentionCount(database: Database, teamId?: string, includeDmGm?: boolean): Observable<number> {
+    const channelMentionCountObservable = observeMyChannelMentionCount(database, teamId);
+    const threadMentionCountObservable = observeThreadMentionCount(database, teamId, includeDmGm);
+
+    return channelMentionCountObservable.pipe(
+        combineLatestWith(threadMentionCountObservable),
+        map$(([ccount, tcount]) => ccount + tcount),
+        distinctUntilChanged(),
+    );
+}

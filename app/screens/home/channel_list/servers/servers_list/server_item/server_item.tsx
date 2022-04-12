@@ -136,13 +136,14 @@ const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
         displayName = intl.formatMessage({id: 'servers.default', defaultMessage: 'Default Server'});
     }
 
-    const unreadsSubscription = (myChannels: MyChannelModel[]) => {
+    const unreadsSubscription = ({myChannels, threadMentionCount}: {myChannels: MyChannelModel[]; threadMentionCount: number}) => {
         let mentions = 0;
         let isUnread = false;
         for (const myChannel of myChannels) {
             mentions += myChannel.mentionsCount;
             isUnread = isUnread || myChannel.isUnread;
         }
+        mentions += threadMentionCount;
 
         setBadge({isUnread, mentions});
     };

@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {of as of$, Observable} from 'rxjs';
+import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
@@ -372,3 +372,26 @@ export const queryMyChannelSettingsByIds = (database: Database, ids: string[]) =
 export const queryChannelsByNames = (database: Database, names: string[]) => {
     return database.get<ChannelModel>(CHANNEL).query(Q.where('name', Q.oneOf(names)));
 };
+
+export function observeMyChannelMentionCount(database: Database, teamId?: string, columns = ['mentions_count', 'is_unread']): Observable<number> {
+    const conditions: Q.Condition[] = [
+        Q.where('delete_at', Q.eq(0)),
+    ];
+
+    if (teamId) {
+        conditions.push(Q.where('team_id', Q.eq(teamId)));
+    }
+
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.on(CHANNEL, Q.and(
+            ...conditions,
+        )),
+    ).
+        observeWithColumns(columns).
+        pipe(
+            switchMap((val) => of$(val.reduce((acc, v) => {
+                return acc + v.mentionsCount;
+            }, 0))),
+            distinctUntilChanged(),
+        );
+}
