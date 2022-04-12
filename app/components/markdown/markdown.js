@@ -307,6 +307,7 @@ export default class Markdown extends PureComponent {
                     content={latexCode}
                     onLayout={this.onInlineLatexLayout}
                     maxMathWidth={Dimensions.get('window').width * 0.75}
+                    mathHeight={this.state.inlineLatexHeight}
                 />
             </Text>
         );

@@ -3,7 +3,7 @@
 
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
-import {Text, View} from 'react-native';
+import {Platform, Text, View} from 'react-native';
 import MathView from 'react-native-math-view';
 
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -14,6 +14,7 @@ export default class LatexInline extends PureComponent {
         theme: PropTypes.object.isRequired,
         onLayout: PropTypes.func,
         maxMathWidth: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+        mathHeight: PropTypes.number,
     };
 
     onErrorMessage = (errorMsg) => {
@@ -31,9 +32,14 @@ export default class LatexInline extends PureComponent {
     render() {
         const style = getStyleSheet(this.props.theme);
 
+        const viewStyleObj = Platform.select({
+            ios: () => [style.viewStyle, {height: this.props.mathHeight}],
+            android: () => [style.viewStyle],
+        })();
+
         return (
             <View
-                style={[style.viewStyle]}
+                style={viewStyleObj}
                 key={this.props.content}
                 onLayout={this.props.onLayout}
             >
@@ -57,6 +63,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         viewStyle: {
             flexDirection: 'row',
             flexWrap: 'wrap',
+            ...Platform.select({
+                ios: {
+                    marginBottom: -7,
+                },
+            }),
         },
         errorText: {
             flexDirection: 'row',
