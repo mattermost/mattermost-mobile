@@ -17,7 +17,7 @@ import type Model from '@nozbe/watermelondb/Model';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {CHANNEL, POST, THREAD, THREAD_PARTICIPANT, USER}} = MM_TABLES;
+const {SERVER: {CHANNEL, POST, THREAD, THREADS_IN_TEAM, THREAD_PARTICIPANT, USER}} = MM_TABLES;
 
 export const getIsCRTEnabled = async (database: Database): Promise<boolean> => {
     const config = await getConfig(database);
