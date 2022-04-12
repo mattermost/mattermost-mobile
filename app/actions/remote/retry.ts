@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import NetworkManager from '@managers/network_manager';
+
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
-import NetworkManager from '@init/network_manager';
 import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {prepareMyPreferences, queryPreferencesByCategoryAndName} from '@queries/servers/preference';

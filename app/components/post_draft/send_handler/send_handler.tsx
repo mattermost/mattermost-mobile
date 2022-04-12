@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import DraftUploadManager from '@managers/draft_upload_manager';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
@@ -13,7 +14,6 @@ import {setStatus} from '@actions/remote/user';
 import {Events, Screens} from '@constants';
 import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
 import {useServerUrl} from '@context/server';
-import DraftUploadManager from '@init/draft_upload_manager';
 import * as DraftUtils from '@utils/draft';
 import {isReactionMatch} from '@utils/emoji/helpers';
 import {preventDoubleTap} from '@utils/tap';

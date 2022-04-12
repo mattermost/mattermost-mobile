@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import NetworkManager from '@managers/network_manager';
 import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {removeUserFromTeam as localRemoveUserFromTeam} from '@actions/local/team';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
-import NetworkManager from '@init/network_manager';
 import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected} from '@queries/servers/system';

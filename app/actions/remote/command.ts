@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import NetworkManager from '@managers/network_manager';
 import {IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
@@ -9,7 +10,6 @@ import {Client} from '@client/rest';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DeepLinkTypes from '@constants/deep_linking';
 import DatabaseManager from '@database/manager';
-import NetworkManager from '@init/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getConfig, getCurrentTeamId} from '@queries/servers/system';
 import {getTeammateNameDisplay, queryUsersByUsername} from '@queries/servers/user';

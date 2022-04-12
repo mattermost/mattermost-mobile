@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import NetworkManager from '@managers/network_manager';
+
 import {markTeamThreadsAsRead, processReceivedThreads, switchToThread, updateThread} from '@actions/local/thread';
 import {fetchPostThread} from '@actions/remote/post';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
-import NetworkManager from '@init/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {getCommonSystemValues} from '@queries/servers/system';

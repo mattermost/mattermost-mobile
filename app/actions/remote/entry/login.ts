@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import NetworkManager from '@managers/network_manager';
+
 import {fetchMyChannelsForTeam, MyChannelsRequest} from '@actions/remote/channel';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRolesIfNeeded, RolesRequest} from '@actions/remote/role';
@@ -11,7 +13,6 @@ import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
-import NetworkManager from '@init/network_manager';
 import {prepareModels} from '@queries/servers/entry';
 import {prepareCommonSystemValues} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory} from '@queries/servers/team';

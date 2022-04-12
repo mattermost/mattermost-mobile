@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import NetworkManager from '@managers/network_manager';
 import React, {ReactNode, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, StyleSheet, TouchableOpacity, View} from 'react-native';
@@ -11,7 +12,6 @@ import ProfilePicture from '@components/profile_picture';
 import {View as ViewConstant} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import NetworkManager from '@init/network_manager';
 import {showModal} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import DraftUploadManager from '@managers/draft_upload_manager';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {StyleSheet, TouchableWithoutFeedback, View} from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -13,7 +14,6 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
 import {useGalleryItem} from '@hooks/gallery';
-import DraftUploadManager from '@init/draft_upload_manager';
 import {isImage} from '@utils/file';
 import {changeOpacity} from '@utils/theme';
 

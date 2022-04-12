@@ -4,6 +4,7 @@
 
 /* eslint-disable max-lines */
 
+import NetworkManager from '@managers/network_manager';
 import {DeviceEventEmitter} from 'react-native';
 
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
@@ -16,7 +17,6 @@ import DatabaseManager from '@database/manager';
 import {filterPostsInOrderedArray} from '@helpers/api/post';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import {extractRecordsForTable} from '@helpers/database';
-import NetworkManager from '@init/network_manager';
 import {prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';

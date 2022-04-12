@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Analytics, create} from '@managers/analytics';
 import {DeviceEventEmitter} from 'react-native';
 
 import {Events} from '@constants';
 import {t} from '@i18n';
-import {Analytics, create} from '@init/analytics';
 import {setServerCredentials} from '@init/credentials';
 import {semverFromServerVersion} from '@utils/server';
 

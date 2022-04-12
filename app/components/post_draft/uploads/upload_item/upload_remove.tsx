@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import DraftUploadManager from '@managers/draft_upload_manager';
 import React from 'react';
 import {View, Platform} from 'react-native';
 
@@ -9,7 +10,6 @@ import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import DraftUploadManager from '@init/draft_upload_manager';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 type Props = {

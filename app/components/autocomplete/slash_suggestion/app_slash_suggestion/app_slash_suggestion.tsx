@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import analytics from '@managers/analytics';
 import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
@@ -11,7 +12,6 @@ import ChannelMentionItem from '@components/autocomplete/channel_mention_item';
 import {COMMAND_SUGGESTION_CHANNEL, COMMAND_SUGGESTION_USER} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import analytics from '@init/analytics';
 import ChannelModel from '@typings/database/models/servers/channel';
 import UserModel from '@typings/database/models/servers/user';
 import {makeStyleSheetFromTheme} from '@utils/theme';
