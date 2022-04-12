@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import moment, {Moment} from 'moment-timezone';
-import {NativeModules} from 'react-native';
+import {NativeModules, Platform} from 'react-native';
 
 import {Device} from '@constants';
 import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES} from '@constants/custom_status';
@@ -142,3 +142,7 @@ export async function isTablet() {
 }
 
 export const pluckUnique = (key: string) => (array: Array<{[key: string]: unknown}>) => Array.from(new Set(array.map((obj) => obj[key])));
+
+export function bottomSheetSnapPoint(itemsCount: number, itemHeight: number, bottomInset = 0) {
+    return ((itemsCount + Platform.select({android: 1, default: 0})) * itemHeight) + (bottomInset * 2.5);
+}

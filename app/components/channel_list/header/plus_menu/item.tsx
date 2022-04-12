@@ -3,7 +3,6 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
 
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 
@@ -36,14 +35,12 @@ const PlusMenuItem = ({pickerAction, onPress}: PlusMenuItemProps) => {
     };
     const itemType = menuItems[pickerAction];
     return (
-        <View>
-            <SlideUpPanelItem
-                text={itemType.text}
-                icon={itemType.icon}
-                onPress={onPress}
-                testID={itemType.testID}
-            />
-        </View>
+        <SlideUpPanelItem
+            text={itemType.text}
+            icon={itemType.icon}
+            onPress={onPress}
+            testID={itemType.testID}
+        />
     );
 };
 

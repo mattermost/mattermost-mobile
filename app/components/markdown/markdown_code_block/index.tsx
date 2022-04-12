@@ -6,6 +6,7 @@ import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, Text, TextStyle, TouchableOpacity, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -13,6 +14,7 @@ import SyntaxHighlighter from '@components/syntax_highlight';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {bottomSheet, dismissBottomSheet, goToScreen} from '@screens/navigation';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {getHighlightLanguageFromNameOrAlias, getHighlightLanguageName} from '@utils/markdown';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -66,6 +68,7 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const theme = useTheme();
+    const insets = useSafeAreaInsets();
     const style = getStyleSheet(theme);
 
     const handlePress = preventDoubleTap(() => {
@@ -134,12 +137,12 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
             bottomSheet({
                 closeButtonId: 'close-code-block',
                 renderContent,
-                snapPoints: [3 * ITEM_HEIGHT, 10],
+                snapPoints: [bottomSheetSnapPoint(2, ITEM_HEIGHT, insets.bottom), 10],
                 title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
                 theme,
             });
         }
-    }, [managedConfig, intl, theme]);
+    }, [managedConfig, intl, insets, theme]);
 
     const trimContent = (text: string) => {
         const lines = text.split('\n');
