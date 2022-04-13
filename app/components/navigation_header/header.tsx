@@ -41,6 +41,9 @@ type Props = {
 const hitSlop = {top: 20, bottom: 20, left: 20, right: 20};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    centered: {
+        alignItems: Platform.select({android: 'flex-start', ios: 'center'}),
+    },
     container: {
         alignItems: 'center',
         backgroundColor: theme.sidebarBg,
@@ -51,6 +54,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     subtitleContainer: {
         flexDirection: 'row',
+        justifyContent: Platform.select({android: 'flex-start', ios: 'center'}),
     },
     subtitle: {
         color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
@@ -67,22 +71,49 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 3,
         height: '100%',
         paddingHorizontal: 8,
+        ...Platform.select({
+            ios: {
+                paddingHorizontal: 60,
+                flex: undefined,
+                width: '100%',
+                position: 'absolute',
+                left: 16,
+                bottom: 0,
+                zIndex: 1,
+            },
+        }),
+    },
+    leftAction: {
+        alignItems: 'center',
+        flexDirection: 'row',
     },
     leftContainer: {
-        alignItems: 'center',
-        flex: Platform.select({ios: 1}),
-        flexDirection: 'row',
         height: '100%',
+        justifyContent: 'center',
+        ...Platform.select({
+            ios: {
+                zIndex: 5,
+                position: 'absolute',
+                bottom: 0,
+            },
+        }),
     },
     rightContainer: {
         alignItems: 'center',
-        flex: Platform.select({ios: 1}),
         flexDirection: 'row',
         height: '100%',
         justifyContent: 'flex-end',
+        ...Platform.select({
+            ios: {
+                right: 16,
+                bottom: 0,
+                position: 'absolute',
+                zIndex: 2,
+            },
+        }),
     },
     rightIcon: {
-        marginLeft: 20,
+        marginLeft: 10,
     },
     title: {
         color: theme.sidebarHeaderTextColor,
@@ -136,23 +167,25 @@ const Header = ({
     return (
         <Animated.View style={containerStyle}>
             {showBackButton &&
-            <TouchableWithFeedback
-                borderlessRipple={true}
-                onPress={onBackPress}
-                rippleRadius={20}
-                type={Platform.select({android: 'native', default: 'opacity'})}
-                testID='navigation.header.back'
-                hitSlop={hitSlop}
-            >
-                <Animated.View style={styles.leftContainer}>
-                    <CompassIcon
-                        size={24}
-                        name={Platform.select({android: 'arrow-left', ios: 'arrow-back-ios'})!}
-                        color={theme.sidebarHeaderTextColor}
-                    />
-                    {leftComponent}
-                </Animated.View>
-            </TouchableWithFeedback>
+            <Animated.View style={styles.leftContainer}>
+                <TouchableWithFeedback
+                    borderlessRipple={true}
+                    onPress={onBackPress}
+                    rippleRadius={20}
+                    type={Platform.select({android: 'native', default: 'opacity'})}
+                    testID='navigation.header.back'
+                    hitSlop={hitSlop}
+                >
+                    <Animated.View style={styles.leftAction}>
+                        <CompassIcon
+                            size={24}
+                            name={Platform.select({android: 'arrow-left', ios: 'arrow-back-ios'})!}
+                            color={theme.sidebarHeaderTextColor}
+                        />
+                        {leftComponent}
+                    </Animated.View>
+                </TouchableWithFeedback>
+            </Animated.View>
             }
             <Animated.View style={[styles.titleContainer, additionalTitleStyle]}>
                 <TouchableWithFeedback
@@ -160,7 +193,7 @@ const Header = ({
                     onPress={onTitlePress}
                     type='opacity'
                 >
-                    <>
+                    <View style={styles.centered}>
                         {!hasSearch &&
                         <Animated.Text
                             ellipsizeMode='tail'
@@ -184,7 +217,7 @@ const Header = ({
                             {subtitleCompanion}
                         </View>
                         }
-                    </>
+                    </View>
                 </TouchableWithFeedback>
             </Animated.View>
             <Animated.View style={styles.rightContainer}>
