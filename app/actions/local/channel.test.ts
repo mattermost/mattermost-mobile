@@ -121,7 +121,7 @@ describe('switchToChannel', () => {
         const {systemValues, teamHistory, channelHistory, member} = await queryDatabaseValues(operator.database, teamId, channelId);
 
         expect(error).toBeUndefined();
-        expect(models?.length).toBe(1); // Viewed at
+        expect(models?.length).toBe(2); // Viewed at, lastUnread
         expect(systemValues.currentTeamId).toBe(teamId);
         expect(systemValues.currentChannelId).toBe(channelId);
         expect(teamHistory.length).toBe(0);
