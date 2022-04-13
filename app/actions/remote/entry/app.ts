@@ -21,6 +21,12 @@ export async function appEntry(serverUrl: string, since = 0) {
     }
     const {database} = operator;
 
+    // clear lastUnreadChannelId
+    const removeLastUnreadChannelId = await prepareCommonSystemValues(operator, {lastUnreadChannelId: ''});
+    if (removeLastUnreadChannelId) {
+        operator.batchRecords(removeLastUnreadChannelId);
+    }
+
     const tabletDevice = await isTablet();
     const currentTeamId = await getCurrentTeamId(database);
     const lastDisconnectedAt = (await getWebSocketLastDisconnected(database)) || since;
@@ -72,6 +78,7 @@ export async function appEntry(serverUrl: string, since = 0) {
     if (rolesData.roles?.length) {
         modelPromises.push(operator.handleRole({roles: rolesData.roles, prepareRecordsOnly: true}));
     }
+
     const models = await Promise.all(modelPromises);
     await operator.batchRecords(models.flat());
 

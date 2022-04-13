@@ -61,15 +61,18 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                     models.push(...history);
                 }
 
+                const commonValues: PrepareCommonSystemValuesArgs = {
+                    lastUnreadChannelId: member.isUnread ? channelId : '',
+                };
+
                 if ((system.currentTeamId !== toTeamId) || (system.currentChannelId !== channelId)) {
-                    const commonValues: PrepareCommonSystemValuesArgs = {
-                        currentChannelId: system.currentChannelId === channelId ? undefined : channelId,
-                        currentTeamId: system.currentTeamId === toTeamId ? undefined : toTeamId,
-                    };
-                    const common = await prepareCommonSystemValues(operator, commonValues);
-                    if (common) {
-                        models.push(...common);
-                    }
+                    commonValues.currentChannelId = system.currentChannelId === channelId ? undefined : channelId;
+                    commonValues.currentTeamId = system.currentTeamId === toTeamId ? undefined : toTeamId;
+                }
+
+                const common = await prepareCommonSystemValues(operator, commonValues);
+                if (common) {
+                    models.push(...common);
                 }
 
                 if (system.currentChannelId !== channelId || system.currentTeamId !== toTeamId) {

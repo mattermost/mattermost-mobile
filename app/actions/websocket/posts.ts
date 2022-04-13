@@ -10,12 +10,14 @@ import {createThreadFromNewPost, updateThread} from '@actions/local/thread';
 import {fetchMyChannel, markChannelAsRead} from '@actions/remote/channel';
 import {fetchPostAuthors, fetchPostById} from '@actions/remote/post';
 import {fetchThread} from '@actions/remote/thread';
-import {ActionType, Events} from '@constants';
+import {ActionType, Events, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {getCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
+import EphemeralStore from '@store/ephemeral_store';
+import {isTablet} from '@utils/helpers';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
 
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -136,8 +138,14 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             } else if ((post.channel_id === currentChannelId)) { // TODO: THREADS && !viewingGlobalThreads) {
                 // Don't mark as read if we're in global threads screen
                 // the currentChannelId still refers to previously viewed channel
-                markAsViewed = false;
-                markAsRead = true;
+
+                const isChannelScreenMounted = EphemeralStore.getNavigationComponents().includes(Screens.CHANNEL);
+
+                const isTabletDevice = await isTablet();
+                if (isChannelScreenMounted || isTabletDevice) {
+                    markAsViewed = false;
+                    markAsRead = true;
+                }
             }
         }
 

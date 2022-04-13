@@ -24,6 +24,8 @@ type Props = {
 const styles = StyleSheet.create({
     mainList: {
         flex: 1,
+        marginLeft: -18,
+        marginRight: -20,
     },
 });
 
@@ -44,7 +46,12 @@ const Categories = ({categories, currentChannelId, currentUserId, currentTeamId,
 
     const renderCategory = useCallback((data: {item: CategoryModel | string[]}) => {
         if (Array.isArray(data.item)) {
-            return <UnreadCategories unreadChannels={unreadChannels}/>;
+            return (
+                <UnreadCategories
+                    currentChannelId={currentChannelId}
+                    unreadChannels={unreadChannels}
+                />
+            );
         }
 
         return (

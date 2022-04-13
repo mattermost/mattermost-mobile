@@ -12,6 +12,7 @@ import type SystemModel from '@typings/database/models/servers/system';
 
 export type PrepareCommonSystemValuesArgs = {
     config?: ClientConfig;
+    lastUnreadChannelId?: string;
     currentChannelId?: string;
     currentTeamId?: string;
     currentUserId?: string;
@@ -83,6 +84,7 @@ export const getCommonSystemValues = async (serverDatabase: Database) => {
     let currentChannelId = '';
     let currentTeamId = '';
     let currentUserId = '';
+    let lastUnreadChannelId = '';
     systemRecords.forEach((systemRecord) => {
         switch (systemRecord.id) {
             case SYSTEM_IDENTIFIERS.CONFIG:
@@ -100,6 +102,9 @@ export const getCommonSystemValues = async (serverDatabase: Database) => {
             case SYSTEM_IDENTIFIERS.LICENSE:
                 license = systemRecord.value as ClientLicense;
                 break;
+            case SYSTEM_IDENTIFIERS.LAST_UNREAD_CHANNEL_ID:
+                lastUnreadChannelId = systemRecord.value;
+                break;
         }
     });
 
@@ -107,6 +112,7 @@ export const getCommonSystemValues = async (serverDatabase: Database) => {
         currentChannelId,
         currentTeamId,
         currentUserId,
+        lastUnreadChannelId,
         config: (config as ClientConfig),
         license: (license as ClientLicense),
     };
@@ -274,7 +280,7 @@ export const patchTeamHistory = (operator: ServerDataOperator, value: string[], 
 export async function prepareCommonSystemValues(
     operator: ServerDataOperator, values: PrepareCommonSystemValuesArgs): Promise<SystemModel[]> {
     try {
-        const {config, currentChannelId, currentTeamId, currentUserId, license} = values;
+        const {config, lastUnreadChannelId, currentChannelId, currentTeamId, currentUserId, license} = values;
         const systems: IdValue[] = [];
         if (config !== undefined) {
             systems.push({
@@ -287,6 +293,13 @@ export async function prepareCommonSystemValues(
             systems.push({
                 id: SYSTEM_IDENTIFIERS.LICENSE,
                 value: JSON.stringify(license),
+            });
+        }
+
+        if (lastUnreadChannelId !== undefined) {
+            systems.push({
+                id: SYSTEM_IDENTIFIERS.LAST_UNREAD_CHANNEL_ID,
+                value: lastUnreadChannelId,
             });
         }
 
@@ -349,3 +362,23 @@ export async function setCurrentTeamAndChannelId(operator: ServerDataOperator, t
     }
 }
 
+export const observeLastUnreadChannelId = (database: Database) => {
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.LAST_UNREAD_CHANNEL_ID).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$({value: ''}))),
+    ).pipe(
+        switchMap((model) => of$(model.value as string)),
+    );
+};
+
+export const queryLastUnreadChannelId = (database: Database) => {
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.LAST_UNREAD_CHANNEL_ID);
+};
+
+export const getLastUnreadChannelId = async (serverDatabase: Database): Promise<string> => {
+    try {
+        const lastUnreadChannelId = (await queryLastUnreadChannelId(serverDatabase).fetch())[0];
+        return lastUnreadChannelId?.value || '';
+    } catch {
+        return '';
+    }
+};

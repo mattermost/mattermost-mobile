@@ -24,6 +24,7 @@ exports[`components/channel_list/categories/header should match snapshot 1`] = `
       Object {
         "alignItems": "flex-start",
         "flexDirection": "row",
+        "marginLeft": 16,
         "marginTop": 12,
         "paddingLeft": 2,
         "paddingVertical": 8,
