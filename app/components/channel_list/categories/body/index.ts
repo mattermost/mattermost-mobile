@@ -7,14 +7,13 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap, concatAll} from 'rxjs/operators';
 
-import {observeCurrentUserId} from '@app/queries/servers/system';
-import {getDirectChannelName} from '@app/utils/channel';
 import {General, Preferences} from '@constants';
 import {DMS_CATEGORY} from '@constants/categories';
 import {queryChannelsByNames, queryMyChannelSettingsByIds} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeCurrentUserId} from '@queries/servers/system';
 import {WithDatabaseArgs} from '@typings/database/database';
-import PreferenceModel from '@typings/database/models/servers/preference';
+import {getDirectChannelName} from '@utils/channel';
 
 import CategoryBody from './category_body';
 
@@ -23,6 +22,7 @@ import type CategoryChannelModel from '@typings/database/models/servers/category
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
+import type PreferenceModel from '@typings/database/models/servers/preference';
 
 type ChannelData = Pick<ChannelModel, 'id' | 'displayName'> & {
     isMuted: boolean;

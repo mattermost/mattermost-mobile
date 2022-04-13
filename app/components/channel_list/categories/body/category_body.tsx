@@ -33,7 +33,7 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit}: Props
             return filteredChannels.slice(0, limit - 1);
         }
         return filteredChannels;
-    }, [category.type, limit, sortedChannels]);
+    }, [category.type, limit, hiddenChannelIds, sortedChannels]);
 
     const renderItem = useCallback(({item}: {item: ChannelModel}) => {
         return (
