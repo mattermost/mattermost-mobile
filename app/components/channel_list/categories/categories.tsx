@@ -21,6 +21,8 @@ type Props = {
 const styles = StyleSheet.create({
     mainList: {
         flex: 1,
+        marginLeft: -18,
+        marginRight: -20,
     },
 });
 

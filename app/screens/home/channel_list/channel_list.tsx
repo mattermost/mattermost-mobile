@@ -4,6 +4,7 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React from 'react';
+import {StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -13,7 +14,6 @@ import TeamSidebar from '@components/team_sidebar';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import Channel from '@screens/channel';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Servers from './servers';
 
@@ -25,7 +25,8 @@ type ChannelProps = {
 };
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+
+const styles = StyleSheet.create({
     flex: {
         flex: 1,
     },
@@ -33,20 +34,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
         flexDirection: 'row',
     },
-    sectionContainer: {
-        marginTop: 32,
-        paddingHorizontal: 24,
-    },
-    sectionTitle: {
-        fontSize: 24,
-        fontFamily: 'OpenSans-SemiBold',
-        color: theme.centerChannelColor,
-    },
-}));
+});
 
 const ChannelListScreen = (props: ChannelProps) => {
     const theme = useTheme();
-    const styles = getStyleSheet(theme);
     const managedConfig = useManagedConfig<ManagedConfig>();
 
     const isTablet = useIsTablet();

@@ -46,12 +46,15 @@ Object {
           >
             <View
               style={
-                Object {
-                  "alignItems": "center",
-                  "flexDirection": "row",
-                  "height": 40,
-                  "paddingLeft": 2,
-                }
+                Array [
+                  Object {
+                    "alignItems": "center",
+                    "flexDirection": "row",
+                    "height": 40,
+                    "paddingHorizontal": 20,
+                  },
+                  false,
+                ]
               }
               testID="category.test_category.channel_list_item.channel.collapsed.false"
             >
@@ -108,6 +111,7 @@ Object {
                     },
                     false,
                     false,
+                    null,
                   ]
                 }
                 testID="category.test_category.channel_list_item.channel.display_name"

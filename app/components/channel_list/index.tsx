@@ -23,7 +23,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingRight: 20,
         paddingTop: 10,
     },
-
 }));
 
 type ChannelListProps = {

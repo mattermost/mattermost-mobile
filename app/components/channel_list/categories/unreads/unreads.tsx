@@ -17,8 +17,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     heading: {
         color: changeOpacity(theme.sidebarText, 0.64),
         ...typography('Heading', 75),
-        paddingLeft: 5,
-        paddingTop: 10,
+        paddingLeft: 18,
+        paddingVertical: 8,
+        marginTop: 12,
     },
 }));
 
@@ -31,8 +32,11 @@ const renderItem = ({item}: {item: ChannelModel}) => {
         />
     );
 };
+type UnreadCategoriesProps = {
+    unreadChannels: ChannelModel[];
+}
 
-const UnreadCategories = ({unreadChannels}: {unreadChannels: ChannelModel[]}) => {
+const UnreadCategories = ({unreadChannels}: UnreadCategoriesProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
