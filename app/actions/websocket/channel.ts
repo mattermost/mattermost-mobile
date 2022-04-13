@@ -214,7 +214,7 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: WebSocketMe
         }
 
         const models: Model[] = [];
-        const channelModels = await storeMyChannelsForTeam(serverUrl, '', directChannels, memberships);
+        const channelModels = await storeMyChannelsForTeam(serverUrl, '', directChannels, memberships, true);
         if (channelModels.models?.length) {
             models.push(...channelModels.models);
         }

@@ -314,6 +314,10 @@ export const queryUsersOnChannel = (database: Database, channelId: string) => {
 };
 
 export const getMembersCountByChannelsId = async (database: Database, channelsId: string[]) => {
+    const result = channelsId.reduce((r: Record<string, number>, cId) => {
+        r[cId] = 0;
+        return r;
+    }, {});
     const q = await database.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(Q.where('channel_id', Q.oneOf(channelsId))).fetch();
     return q.reduce((r: Record<string, number>, m) => {
         if (r[m.channelId]) {
@@ -323,7 +327,7 @@ export const getMembersCountByChannelsId = async (database: Database, channelsId
 
         r[m.channelId] = 1;
         return r;
-    }, {});
+    }, result);
 };
 
 export const queryChannelsByTypes = (database: Database, channelTypes: ChannelType[]) => {
