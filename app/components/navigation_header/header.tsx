@@ -41,6 +41,9 @@ type Props = {
 const hitSlop = {top: 20, bottom: 20, left: 20, right: 20};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    centered: {
+        alignItems: Platform.select({android: 'flex-start', ios: 'center'}),
+    },
     container: {
         alignItems: 'center',
         backgroundColor: theme.sidebarBg,
@@ -190,7 +193,7 @@ const Header = ({
                     onPress={onTitlePress}
                     type='opacity'
                 >
-                    <>
+                    <View style={styles.centered}>
                         {!hasSearch &&
                         <Animated.Text
                             ellipsizeMode='tail'
@@ -214,7 +217,7 @@ const Header = ({
                             {subtitleCompanion}
                         </View>
                         }
-                    </>
+                    </View>
                 </TouchableWithFeedback>
             </Animated.View>
             <Animated.View style={styles.rightContainer}>
