@@ -33,7 +33,7 @@ const concatenateChannelsArray = ([a, b]: CA) => {
 
 const enhanced = withObservables(['currentTeamId'], ({currentTeamId, database}: WithDatabaseProps) => {
     const unreadsOnTop = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
-        observe().
+        observeWithColumns(['value']).
         pipe(
             switchMap((prefs: PreferenceModel[]) => of$(getPreferenceAsBool(prefs, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS, false))),
         );
