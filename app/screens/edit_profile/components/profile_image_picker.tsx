@@ -4,6 +4,7 @@
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {TouchableOpacity} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Client} from '@client/rest';
 import CompassIcon from '@components/compass_icon';
@@ -13,6 +14,7 @@ import NetworkManager from '@init/network_manager';
 import PanelItem from '@screens/edit_profile/components/panel_item';
 import {bottomSheet} from '@screens/navigation';
 import PickerUtil from '@utils/file/file_picker';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -70,6 +72,7 @@ const ProfileImagePicker = ({
 }: ImagePickerProps) => {
     const theme = useTheme();
     const intl = useIntl();
+    const insets = useSafeAreaInsets();
     const serverUrl = useServerUrl();
     const pictureUtils = useMemo(() => new PickerUtil(intl, uploadFiles), [uploadFiles, intl]);
     const canRemovePicture = hasPictureUrl(user, serverUrl);
@@ -102,16 +105,17 @@ const ProfileImagePicker = ({
             );
         };
 
-        const snapPoints = canRemovePicture ? 5 : 4;
+        const snapPointsCount = canRemovePicture ? 5 : 4;
+        const snapPoint = bottomSheetSnapPoint(snapPointsCount, ACTION_HEIGHT, insets.bottom);
 
         return bottomSheet({
             closeButtonId: 'close-edit-profile',
             renderContent,
-            snapPoints: [(snapPoints * ACTION_HEIGHT), 10],
+            snapPoints: [snapPoint, 10],
             title: '',
             theme,
         });
-    }), [canRemovePicture, onRemoveProfileImage, pictureUtils, theme]);
+    }), [canRemovePicture, onRemoveProfileImage, insets, pictureUtils, theme]);
 
     return (
         <TouchableOpacity
