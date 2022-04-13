@@ -33,15 +33,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
         flexDirection: 'row',
     },
-    sectionContainer: {
-        marginTop: 32,
-        paddingHorizontal: 24,
-    },
-    sectionTitle: {
-        fontSize: 24,
-        fontFamily: 'OpenSans-SemiBold',
-        color: theme.centerChannelColor,
-    },
 }));
 
 const ChannelListScreen = (props: ChannelProps) => {

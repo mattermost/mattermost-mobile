@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect} from 'react';
+import {View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {TABLET_SIDEBAR_WIDTH, TEAM_SIDEBAR_WIDTH} from '@constants/view';
@@ -23,7 +24,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingRight: 20,
         paddingTop: 10,
     },
-
 }));
 
 type ChannelListProps = {

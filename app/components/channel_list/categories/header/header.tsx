@@ -19,6 +19,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingVertical: 8,
         marginTop: 12,
         paddingLeft: 2,
+        marginLeft: 16,
         flexDirection: 'row',
         alignItems: 'flex-start',
     },

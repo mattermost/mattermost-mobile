@@ -11,7 +11,7 @@ import {getPreferenceAsBool} from '@app/helpers/api/preference';
 import {getChannelById, queryMyChannelUnreads} from '@app/queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@app/queries/servers/preference';
 import {queryCategoriesByTeamIds} from '@queries/servers/categories';
-import {observeCurrentChannelId, observeCurrentUserId, queryLastUnreadChannelId} from '@queries/servers/system';
+import {observeCurrentChannelId, observeCurrentUserId, observeLastUnreadChannelId} from '@queries/servers/system';
 
 import {getChannelsFromRelation} from './body';
 import Categories from './categories';
@@ -25,7 +25,11 @@ type CA = [
     a: Array<ChannelModel | null>,
     b: ChannelModel | undefined,
 ]
-const concatenateChannelsArray = ([a, b]: CA) => of$(a?.concat(b!));
+const concatenateChannelsArray = ([a, b]: CA) => {
+    console.log('--- last unread?', b);
+
+    return of$(b ? a?.concat(b) : a);
+};
 
 type WithDatabaseProps = { currentTeamId: string } & WithDatabaseArgs
 
@@ -42,11 +46,11 @@ const enhanced = withObservables(
                 switchMap((prefs: PreferenceModel[]) => of$(getPreferenceAsBool(prefs, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS, false))),
             );
 
-        const getC = (sysId: SystemModel[]) => getChannelById(database, sysId[0]?.value);
+        const getC = (lastUnreadChannelId: string) => getChannelById(database, lastUnreadChannelId);
 
         const unreadChannels = unreadsOnTop.pipe(switchMap((gU) => {
             if (gU) {
-                const lastUnread = queryLastUnreadChannelId(database).observe().pipe(
+                const lastUnread = observeLastUnreadChannelId(database).pipe(
                     switchMap(getC),
                 );
 

@@ -11,7 +11,7 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {extractChannelDisplayName} from '@helpers/database';
 import {prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannel, getMyChannel, getChannelById, queryUsersOnChannel} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
+import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId, setLastUnreadChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, queryMyTeams, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
@@ -61,10 +61,11 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                     models.push(...history);
                 }
 
-                if ((system.currentTeamId !== toTeamId) || (system.currentChannelId !== channelId)) {
+                if ((system.currentTeamId !== toTeamId) || (system.currentChannelId !== channelId) || system.lastUnreadChannelId) {
                     const commonValues: PrepareCommonSystemValuesArgs = {
                         currentChannelId: system.currentChannelId === channelId ? undefined : channelId,
                         currentTeamId: system.currentTeamId === toTeamId ? undefined : toTeamId,
+                        lastUnreadChannelId: member.isUnread ? channelId : '',
                     };
                     const common = await prepareCommonSystemValues(operator, commonValues);
                     if (common) {

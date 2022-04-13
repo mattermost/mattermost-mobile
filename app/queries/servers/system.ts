@@ -89,6 +89,7 @@ export const getCommonSystemValues = async (serverDatabase: Database) => {
     let currentChannelId = '';
     let currentTeamId = '';
     let currentUserId = '';
+    let lastUnreadChannelId = '';
     systemRecords.forEach((systemRecord) => {
         switch (systemRecord.id) {
             case SYSTEM_IDENTIFIERS.CONFIG:
@@ -106,6 +107,9 @@ export const getCommonSystemValues = async (serverDatabase: Database) => {
             case SYSTEM_IDENTIFIERS.LICENSE:
                 license = systemRecord.value as ClientLicense;
                 break;
+            case SYSTEM_IDENTIFIERS.LAST_UNREAD_CHANNEL_ID:
+                lastUnreadChannelId = systemRecord.value;
+                break;
         }
     });
 
@@ -113,6 +117,7 @@ export const getCommonSystemValues = async (serverDatabase: Database) => {
         currentChannelId,
         currentTeamId,
         currentUserId,
+        lastUnreadChannelId,
         config: (config as ClientConfig),
         license: (license as ClientLicense),
     };
@@ -297,6 +302,7 @@ export async function prepareCommonSystemValues(
         }
 
         if (lastUnreadChannelId !== undefined) {
+            console.log('SET LAST UNREAD ID', lastUnreadChannelId);
             systems.push({
                 id: SYSTEM_IDENTIFIERS.LAST_UNREAD_CHANNEL_ID,
                 value: lastUnreadChannelId,
@@ -362,8 +368,16 @@ export async function setCurrentTeamAndChannelId(operator: ServerDataOperator, t
     }
 }
 
+export const observeLastUnreadChannelId = (database: Database) => {
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.LAST_UNREAD_CHANNEL_ID).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$({value: ''}))),
+    ).pipe(
+        switchMap((model) => of$(model.value as string)),
+    );
+};
+
 export const queryLastUnreadChannelId = (database: Database) => {
-    return database.get<SystemModel>(SYSTEM).query(Q.where('id', SYSTEM_IDENTIFIERS.LAST_UNREAD_CHANNEL_ID));
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.LAST_UNREAD_CHANNEL_ID);
 };
 
 export const getLastUnreadChannelId = async (serverDatabase: Database): Promise<string> => {

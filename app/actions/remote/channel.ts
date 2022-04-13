@@ -15,7 +15,7 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import NetworkManager from '@init/network_manager';
 import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {getCommonSystemValues, getCurrentTeamId, getCurrentUserId, setLastUnreadChannelId} from '@queries/servers/system';
+import {getCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {prepareMyTeams, getNthLastChannelFromTeam, getMyTeamById, getTeamById, getTeamByName} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {generateChannelNameFromDisplayName, getDirectChannelName, isDMorGM} from '@utils/channel';
@@ -933,15 +933,8 @@ export async function getChannelTimezones(serverUrl: string, channelId: string) 
 }
 
 export async function switchToChannelById(serverUrl: string, channelId: string, teamId?: string) {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
     fetchPostsForChannel(serverUrl, channelId);
     await switchToChannel(serverUrl, channelId, teamId);
-    setLastUnreadChannelId(operator, channelId);
     markChannelAsRead(serverUrl, channelId);
     fetchChannelStats(serverUrl, channelId);
 

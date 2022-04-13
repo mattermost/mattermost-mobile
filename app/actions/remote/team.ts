@@ -274,7 +274,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     }
 
     const models = [];
-    const system = await prepareCommonSystemValues(operator, {currentChannelId: channelId, currentTeamId: teamId});
+    const system = await prepareCommonSystemValues(operator, {currentChannelId: channelId, currentTeamId: teamId, lastUnreadChannelId: ''});
     if (system?.length) {
         models.push(...system);
     }
