@@ -5,11 +5,11 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, Text} from 'react-native';
 
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 import {useTheme} from '@context/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import ChannelListItem from './body/channel';
+import ChannelListItem from '../body/channel';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 
@@ -26,8 +26,8 @@ const renderItem = ({item}: {item: ChannelModel}) => {
     return (
         <ChannelListItem
             channel={item}
-            isActive={true}
             collapsed={false}
+            isUnreads={true}
         />
     );
 };
@@ -37,6 +37,9 @@ const UnreadCategories = ({unreadChannels}: {unreadChannels: ChannelModel[]}) =>
     const styles = getStyleSheet(theme);
     const intl = useIntl();
 
+    if (!unreadChannels.length) {
+        return null;
+    }
     return (
         <>
             <Text

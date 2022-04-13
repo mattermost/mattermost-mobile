@@ -66,10 +66,11 @@ type Props = {
     myChannel?: MyChannelModel;
     collapsed: boolean;
     currentUserId: string;
+    isVisible: boolean;
     testID?: string;
 }
 
-const ChannelListItem = ({channel, isActive, currentUserId, isMuted, myChannel, collapsed, testID}: Props) => {
+const ChannelListItem = ({channel, isActive, currentUserId, isMuted, isVisible, myChannel, collapsed, testID}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -118,7 +119,7 @@ const ChannelListItem = ({channel, isActive, currentUserId, isMuted, myChannel, 
         displayName = formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
     }
 
-    if ((channel.deleteAt > 0 && !isActive) || !myChannel) {
+    if ((channel.deleteAt > 0 && !isActive) || !myChannel || !isVisible) {
         return null;
     }
 

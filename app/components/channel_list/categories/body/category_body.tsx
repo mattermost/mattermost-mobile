@@ -12,50 +12,45 @@ import ChannelListItem from './channel';
 import type CategoryModel from '@typings/database/models/servers/category';
 
 type Props = {
-    currentChannelId: string;
     sortedChannels: ChannelModel[];
-    hiddenChannelIds: Set<string>;
     category: CategoryModel;
     limit: number;
 };
 
 const extractKey = (item: ChannelModel) => item.id;
 
-const CategoryBody = ({currentChannelId, sortedChannels, category, hiddenChannelIds, limit}: Props) => {
+const CategoryBody = ({sortedChannels, category, limit}: Props) => {
     const ids = useMemo(() => {
-        let filteredChannels = sortedChannels;
-
-        // Remove all closed gm/dms
-        if (hiddenChannelIds.size) {
-            filteredChannels = sortedChannels.filter((item) => item && !hiddenChannelIds.has(item.id));
-        }
+        const filteredChannels = sortedChannels;
 
         if (category.type === DMS_CATEGORY && limit > 0) {
             return filteredChannels.slice(0, limit - 1);
         }
         return filteredChannels;
-    }, [category.type, limit, hiddenChannelIds, sortedChannels]);
+    }, [category.type, limit, sortedChannels]);
 
-    const ChannelItem = useCallback(({item}: {item: ChannelModel}) => {
+    const renderItem = useCallback(({item}: {item: ChannelModel}) => {
         return (
             <ChannelListItem
                 channel={item}
-                isActive={item.id === currentChannelId}
                 collapsed={category.collapsed}
                 testID={`category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_list_item`}
             />
         );
-    }, [currentChannelId, category.collapsed]);
+    }, [category.collapsed]);
 
     return (
         <FlatList
             data={ids}
-            renderItem={ChannelItem}
+            renderItem={renderItem}
             keyExtractor={extractKey}
             removeClippedSubviews={true}
             initialNumToRender={20}
             windowSize={15}
             updateCellsBatchingPeriod={10}
+
+            // @ts-expect-error strictMode not exposed on the types
+            strictMode={true}
         />
     );
 };

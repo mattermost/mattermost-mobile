@@ -17,12 +17,12 @@ describe('components/channel_list/categories/body', () => {
         database = server.database;
     });
 
-    it('render without error', () => {
+    it('do not render when there are no unread channels', () => {
         const wrapper = renderWithEverything(
             <UnreadsCategory unreadChannels={[]}/>,
             {database},
         );
 
-        expect(wrapper.toJSON()).toBeTruthy();
+        expect(wrapper.toJSON()).toBeNull();
     });
 });

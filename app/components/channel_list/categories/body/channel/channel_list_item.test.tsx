@@ -38,6 +38,7 @@ describe('components/channel_list/categories/body/channel/item', () => {
                 collapsed={false}
                 currentUserId={'id'}
                 testID='channel_list_item'
+                isVisible={true}
             />,
         );
 
