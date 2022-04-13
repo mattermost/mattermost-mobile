@@ -19,16 +19,13 @@ import Categories from './categories';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PreferenceModel from '@typings/database/models/servers/preference';
-import type SystemModel from '@typings/database/models/servers/system';
 
 type CA = [
     a: Array<ChannelModel | null>,
     b: ChannelModel | undefined,
 ]
 const concatenateChannelsArray = ([a, b]: CA) => {
-    console.log('--- last unread?', b);
-
-    return of$(b ? a?.concat(b) : a);
+    return of$(b ? a.filter((c) => c && c.id !== b.id).concat(b) : a);
 };
 
 type WithDatabaseProps = { currentTeamId: string } & WithDatabaseArgs

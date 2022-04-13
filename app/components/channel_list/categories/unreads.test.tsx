@@ -19,7 +19,10 @@ describe('components/channel_list/categories/body', () => {
 
     it('render without error', () => {
         const wrapper = renderWithEverything(
-            <UnreadsCategory unreadChannels={[]}/>,
+            <UnreadsCategory
+                currentChannelId={''}
+                unreadChannels={[]}
+            />,
             {database},
         );
 

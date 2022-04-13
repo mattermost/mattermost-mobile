@@ -5,12 +5,7 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {Preferences} from '@app/constants';
-import {getPreferenceAsBool} from '@app/helpers/api/preference';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-
-import {getMyChannel} from './channel';
-import {queryPreferencesByCategoryAndName} from './preference';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type SystemModel from '@typings/database/models/servers/system';
@@ -302,7 +297,6 @@ export async function prepareCommonSystemValues(
         }
 
         if (lastUnreadChannelId !== undefined) {
-            console.log('SET LAST UNREAD ID', lastUnreadChannelId);
             systems.push({
                 id: SYSTEM_IDENTIFIERS.LAST_UNREAD_CHANNEL_ID,
                 value: lastUnreadChannelId,
@@ -388,39 +382,3 @@ export const getLastUnreadChannelId = async (serverDatabase: Database): Promise<
         return '';
     }
 };
-
-/**
- * Marks the passed channel id as the last unread, provided unreads
- * on top is enabled and the passed channel id was unread
- *
- * @param operator
- * @param channelId
- * @returns
- */
-export async function setLastUnreadChannelId(operator: ServerDataOperator, channelId: string) {
-    let id = '';
-
-    // Only set if the channel was actually unread, and unreads on top is enabled
-    const prefs = await queryPreferencesByCategoryAndName(operator.database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).fetch();
-    const unreadsOnTop = getPreferenceAsBool(prefs, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS, false);
-
-    if (unreadsOnTop) {
-        const myC = await getMyChannel(operator.database, channelId);
-        if (myC?.isUnread) {
-            id = channelId;
-        }
-
-        try {
-            const models = await prepareCommonSystemValues(operator, {lastUnreadChannelId: id});
-            if (models) {
-                await operator.batchRecords(models);
-            }
-
-            return {lastUnreadChannelId: id};
-        } catch (error) {
-            return {error};
-        }
-    }
-
-    return null;
-}
