@@ -11,6 +11,7 @@ export const CHANNEL = 'Channel';
 export const CHANNEL_ADD_PEOPLE = 'ChannelAddPeople';
 export const CHANNEL_DETAILS = 'ChannelDetails';
 export const CHANNEL_EDIT = 'ChannelEdit';
+export const CODE = 'Code';
 export const CREATE_DIRECT_MESSAGE = 'CreateDirectMessage';
 export const CREATE_OR_EDIT_CHANNEL = 'CreateOrEditChannel';
 export const CUSTOM_STATUS = 'CustomStatus';
@@ -51,6 +52,7 @@ export default {
     CHANNEL_ADD_PEOPLE,
     CHANNEL_EDIT,
     CHANNEL_DETAILS,
+    CODE,
     CREATE_DIRECT_MESSAGE,
     CUSTOM_STATUS_CLEAR_AFTER,
     CUSTOM_STATUS,

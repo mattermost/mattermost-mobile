@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {buildAppInfoKey} from '@database/operator/app_data_operator/comparator';
 import {transformInfoRecord, transformGlobalRecord} from '@database/operator/app_data_operator/transformers';
 import BaseDataOperator from '@database/operator/base_data_operator';
@@ -13,11 +12,13 @@ import type {HandleInfoArgs, HandleGlobalArgs} from '@typings/database/database'
 const {APP: {INFO, GLOBAL}} = MM_TABLES;
 
 export default class AppDataOperator extends BaseDataOperator {
-    handleInfo = ({info, prepareRecordsOnly = true}: HandleInfoArgs) => {
-        if (!info.length) {
-            throw new DataOperatorException(
-                'An empty "values" array has been passed to the handleInfo',
+    handleInfo = async ({info, prepareRecordsOnly = true}: HandleInfoArgs) => {
+        if (!info?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "info" array has been passed to the handleInfo',
             );
+            return [];
         }
 
         return this.handleRecords({
@@ -30,18 +31,20 @@ export default class AppDataOperator extends BaseDataOperator {
         });
     };
 
-    handleGlobal = async ({global, prepareRecordsOnly = true}: HandleGlobalArgs) => {
-        if (!global.length) {
-            throw new DataOperatorException(
-                'An empty "values" array has been passed to the handleGlobal',
+    handleGlobal = async ({globals, prepareRecordsOnly = true}: HandleGlobalArgs) => {
+        if (!globals?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "globals" array has been passed to the handleGlobal',
             );
+            return [];
         }
 
         return this.handleRecords({
             fieldName: 'id',
             transformer: transformGlobalRecord,
             prepareRecordsOnly,
-            createOrUpdateRawValues: getUniqueRawsBy({raws: global, key: 'id'}),
+            createOrUpdateRawValues: getUniqueRawsBy({raws: globals, key: 'id'}),
             tableName: GLOBAL,
         });
     };

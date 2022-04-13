@@ -37,6 +37,7 @@ describe('components/channel_list/categories/body', () => {
                 locale={DEFAULT_LOCALE}
                 currentChannelId={''}
                 currentUserId={''}
+                unreadChannelIds={new Set()}
             />,
             {database},
         );

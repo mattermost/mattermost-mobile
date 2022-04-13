@@ -1,25 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {View, FlatList} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
+import NoResultsWithTerm from '@components/no_results_with_term';
 import {useTheme} from '@context/theme';
-import {
-    changeOpacity,
-    makeStyleSheetFromTheme,
-} from '@utils/theme';
+import {useKeyboardHeight} from '@hooks/device';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ChannelListRow from './channel_list_row';
 
 type Props = {
     onEndReached: () => void;
     loading: boolean;
-    isSearch: boolean;
     channels: Channel[];
     onSelectChannel: (channel: Channel) => void;
+    term?: string;
 }
 
 const channelKeyExtractor = (channel: Channel) => {
@@ -28,15 +27,6 @@ const channelKeyExtractor = (channel: Channel) => {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
-        noResultContainer: {
-            flexGrow: 1,
-            alignItems: 'center' as const,
-            justifyContent: 'center' as const,
-        },
-        noResultText: {
-            fontSize: 26,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-        },
         loadingContainer: {
             flex: 1,
             justifyContent: 'center' as const,
@@ -51,6 +41,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             paddingHorizontal: 20,
             flexGrow: 1,
         },
+        noResultContainer: {
+            flexGrow: 1,
+            alignItems: 'center' as const,
+            justifyContent: 'center' as const,
+        },
         separator: {
             height: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
@@ -63,11 +58,17 @@ export default function ChannelList({
     onEndReached,
     onSelectChannel,
     loading,
-    isSearch,
+    term,
     channels,
 }: Props) {
     const theme = useTheme();
+
     const style = getStyleFromTheme(theme);
+    const keyboardHeight = useKeyboardHeight();
+    const noResutsStyle = useMemo(() => [
+        style.noResultContainer,
+        {paddingBottom: keyboardHeight},
+    ], [style, keyboardHeight]);
 
     const renderItem = useCallback(({item}: {item: Channel}) => {
         return (
@@ -80,6 +81,10 @@ export default function ChannelList({
     }, [onSelectChannel]);
 
     const renderLoading = useCallback(() => {
+        if (!loading) {
+            return null;
+        }
+
         return (
             <Loading
                 containerStyle={style.loadingContainer}
@@ -89,23 +94,19 @@ export default function ChannelList({
         );
 
     //Style is covered by the theme
-    }, [theme]);
+    }, [loading, theme]);
 
     const renderNoResults = useCallback(() => {
-        if (isSearch) {
+        if (term) {
             return (
-                <View style={style.noResultContainer}>
-                    <FormattedText
-                        id='mobile.custom_list.no_results'
-                        defaultMessage='No Results'
-                        style={style.noResultText}
-                    />
+                <View style={noResutsStyle}>
+                    <NoResultsWithTerm term={term}/>
                 </View>
             );
         }
 
         return (
-            <View style={style.noResultContainer}>
+            <View style={noResutsStyle}>
                 <FormattedText
                     id='browse_channels.noMore'
                     defaultMessage='No more channels to join'
@@ -113,7 +114,7 @@ export default function ChannelList({
                 />
             </View>
         );
-    }, [style, isSearch]);
+    }, [style, term, noResutsStyle]);
 
     const renderSeparator = useCallback(() => (
         <View
@@ -126,9 +127,9 @@ export default function ChannelList({
             data={channels}
             renderItem={renderItem}
             testID='browse_channels.channel_list.flat_list'
-            ListEmptyComponent={loading ? renderLoading : renderNoResults}
+            ListEmptyComponent={renderNoResults}
+            ListFooterComponent={renderLoading}
             onEndReached={onEndReached}
-            ListFooterComponent={loading && channels.length ? renderLoading : null}
             contentContainerStyle={style.listContainer}
             ItemSeparatorComponent={renderSeparator}
             keyExtractor={channelKeyExtractor}

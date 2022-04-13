@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {of as of$, Observable} from 'rxjs';
+import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
@@ -113,7 +113,7 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
     try {
         const channelRecords = operator.handleChannel({channels, prepareRecordsOnly: true});
         const channelInfoRecords = operator.handleChannelInfo({channelInfos, prepareRecordsOnly: true});
-        const membershipRecords = operator.handleChannelMembership({channelMemberships: memberships, prepareRecordsOnly: true});
+        const membershipRecords = operator.handleChannelMembership({channelMemberships: channelMembers, prepareRecordsOnly: true});
         const myChannelRecords = operator.handleMyChannel({channels, myChannels: memberships, prepareRecordsOnly: true});
         const myChannelSettingsRecords = operator.handleMyChannelSettings({settings: memberships, prepareRecordsOnly: true});
 
@@ -126,7 +126,7 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
 export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model[]> => {
     const preparedModels: Model[] = [channel.prepareDestroyPermanently()];
 
-    const relations: Array<Relation<Model> | undefined> = [channel.membership, channel.info, channel.settings, channel.categoryChannel];
+    const relations: Array<Relation<Model> | undefined> = [channel.membership, channel.info, channel.categoryChannel];
     await Promise.all(relations.map(async (relation) => {
         try {
             const model = await relation?.fetch();
@@ -284,7 +284,7 @@ export const observeCurrentChannel = (database: Database) => {
         ));
 };
 
-export const deleteChannelMembership = async (operator: ServerDataOperator, userId: string, channelId: string, prepareRecordsOnly = false) => {
+export async function deleteChannelMembership(operator: ServerDataOperator, userId: string, channelId: string, prepareRecordsOnly = false) {
     try {
         const channelMembership = await operator.database.get(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('channel_id', Q.eq(channelId))).fetch();
         const models: Model[] = [];
@@ -298,7 +298,7 @@ export const deleteChannelMembership = async (operator: ServerDataOperator, user
     } catch (error) {
         return {error};
     }
-};
+}
 
 export const addChannelMembership = async (operator: ServerDataOperator, userId: string, channelId: string) => {
     try {
@@ -372,3 +372,43 @@ export const queryMyChannelSettingsByIds = (database: Database, ids: string[]) =
 export const queryChannelsByNames = (database: Database, names: string[]) => {
     return database.get<ChannelModel>(CHANNEL).query(Q.where('name', Q.oneOf(names)));
 };
+
+export const queryMyChannelUnreads = (database: Database, currentTeamId: string) => {
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.on(
+            CHANNEL,
+            Q.and(
+                Q.or(
+                    Q.where('team_id', Q.eq(currentTeamId)),
+                    Q.where('team_id', Q.eq('')),
+                ),
+                Q.where('delete_at', Q.eq(0)),
+            ),
+        ),
+        Q.where('is_unread', Q.eq(true)),
+        Q.sortBy('last_post_at', Q.desc),
+    );
+};
+
+export function observeMyChannelMentionCount(database: Database, teamId?: string, columns = ['mentions_count', 'is_unread']): Observable<number> {
+    const conditions: Q.Condition[] = [
+        Q.where('delete_at', Q.eq(0)),
+    ];
+
+    if (teamId) {
+        conditions.push(Q.where('team_id', Q.eq(teamId)));
+    }
+
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.on(CHANNEL, Q.and(
+            ...conditions,
+        )),
+    ).
+        observeWithColumns(columns).
+        pipe(
+            switchMap((val) => of$(val.reduce((acc, v) => {
+                return acc + v.mentionsCount;
+            }, 0))),
+            distinctUntilChanged(),
+        );
+}

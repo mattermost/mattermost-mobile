@@ -236,9 +236,9 @@ export default function BrowseChannels(props: Props) {
                 <ChannelList
                     channels={channels}
                     onEndReached={onEndReached}
-                    isSearch={Boolean(term)}
                     loading={loading}
                     onSelectChannel={onSelectChannel}
+                    term={term}
                 />
             </>
         );

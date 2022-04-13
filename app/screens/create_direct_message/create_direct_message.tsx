@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
@@ -77,6 +77,13 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
+function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: UserProfile[]}) {
+    if (action.type === 'add' && action.values?.length) {
+        return [...state, ...action.values];
+    }
+    return state;
+}
+
 export default function CreateDirectMessage({
     componentId,
     currentTeamId,
@@ -95,7 +102,7 @@ export default function CreateDirectMessage({
     const page = useRef(-1);
     const mounted = useRef(false);
 
-    const [profiles, setProfiles] = useState<UserProfile[]>([]);
+    const [profiles, dispatchProfiles] = useReducer(reduceProfiles, []);
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
@@ -105,11 +112,6 @@ export default function CreateDirectMessage({
 
     const isSearch = Boolean(term);
 
-    const addToProfiles = useRef((newProfiles: UserProfile[]) => setProfiles([...profiles, ...newProfiles]));
-    useEffect(() => {
-        addToProfiles.current = (newProfiles: UserProfile[]) => setProfiles([...profiles, ...newProfiles]);
-    }, [profiles]);
-
     const loadedProfiles = ({users}: {users?: UserProfile[]}) => {
         if (mounted.current) {
             if (users && !users.length) {
@@ -118,9 +120,7 @@ export default function CreateDirectMessage({
 
             page.current += 1;
             setLoading(false);
-            if (users && users.length) {
-                addToProfiles.current(users);
-            }
+            dispatchProfiles({type: 'add', values: users});
         }
     };
 
@@ -149,7 +149,7 @@ export default function CreateDirectMessage({
     }, [selectedIds]);
 
     const createDirectChannel = useCallback(async (id: string): Promise<boolean> => {
-        const user = profiles.find((u) => u.id === id);
+        const user = selectedIds[id];
 
         const displayName = displayUsername(user, intl.locale, teammateNameDisplay);
 
@@ -170,7 +170,7 @@ export default function CreateDirectMessage({
         }
 
         return !result.error;
-    }, [profiles, intl.locale, teammateNameDisplay, serverUrl]);
+    }, [selectedIds, intl.locale, teammateNameDisplay, serverUrl]);
 
     const createGroupChannel = useCallback(async (ids: string[]): Promise<boolean> => {
         const result = await makeGroupChannel(serverUrl, ids);
@@ -249,9 +249,9 @@ export default function CreateDirectMessage({
         let results;
 
         if (restrictDirectMessage) {
-            results = await searchProfiles(serverUrl, lowerCasedTerm);
+            results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
         } else {
-            results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId});
+            results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
         }
 
         let data: UserProfile[] = [];
@@ -275,12 +275,12 @@ export default function CreateDirectMessage({
             }
 
             searchTimeoutId.current = setTimeout(() => {
-                search();
+                searchUsers(text);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             clearSearch();
         }
-    }, [search, clearSearch]);
+    }, [searchUsers, clearSearch]);
 
     const updateNavigationButtons = useCallback(async (startEnabled: boolean) => {
         const closeIcon = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
@@ -389,13 +389,13 @@ export default function CreateDirectMessage({
             <UserList
                 currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
-                isSearch={isSearch}
                 loading={loading}
                 profiles={data}
                 selectedIds={selectedIds}
                 showNoResults={!loading && page.current !== -1}
                 teammateNameDisplay={teammateNameDisplay}
                 fetchMore={getProfiles}
+                term={term}
                 testID='create_direct_message.user_list'
             />
         </SafeAreaView>

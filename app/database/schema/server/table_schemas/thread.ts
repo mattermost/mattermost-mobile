@@ -10,12 +10,13 @@ const {THREAD} = MM_TABLES.SERVER;
 export default tableSchema({
     name: THREAD,
     columns: [
+        {name: 'is_following', type: 'boolean'},
         {name: 'last_reply_at', type: 'number'},
         {name: 'last_viewed_at', type: 'number'},
-        {name: 'is_following', type: 'boolean'},
         {name: 'reply_count', type: 'number'},
-        {name: 'unread_replies', type: 'number'},
         {name: 'unread_mentions', type: 'number'},
+        {name: 'unread_replies', type: 'number'},
         {name: 'viewed_at', type: 'number'},
     ],
 });
+

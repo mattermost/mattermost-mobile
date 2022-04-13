@@ -71,25 +71,25 @@ export type CreateServerDatabaseArgs = {
 
 export type HandleReactionsArgs = {
   prepareRecordsOnly: boolean;
-  postsReactions: ReactionsPerPost[];
+  postsReactions?: ReactionsPerPost[];
   skipSync?: boolean;
 };
 
 export type HandleFilesArgs = {
-  files: FileInfo[];
+  files?: FileInfo[];
   prepareRecordsOnly: boolean;
 };
 
 export type HandlePostsArgs = {
   actionType: string;
-  order: string[];
+  order?: string[];
   previousPostId?: string;
-  posts: Post[];
+  posts?: Post[];
   prepareRecordsOnly?: boolean;
 };
 
 export type HandleThreadsArgs = {
-  threads: Thread[];
+  threads?: Thread[];
   prepareRecordsOnly?: boolean;
   teamId?: string;
   loadedInGlobalThreads?: boolean;
@@ -98,11 +98,11 @@ export type HandleThreadsArgs = {
 export type HandleThreadParticipantsArgs = {
   prepareRecordsOnly: boolean;
   skipSync?: boolean;
-  threadsParticipants: ParticipantsPerThread[];
+  threadsParticipants?: ParticipantsPerThread[];
 };
 
 export type HandleThreadInTeamArgs = {
-  threadsMap: Record<string, Thread[]>;
+  threadsMap?: Record<string, Thread[]>;
   prepareRecordsOnly?: boolean;
   loadedInGlobalThreads?: boolean;
 };
@@ -122,7 +122,7 @@ export type SanitizeThreadParticipantsArgs = {
 }
 
 export type ChainPostsArgs = {
-  order: string[];
+  order?: string[];
   previousPostId: string;
   posts: Post[];
 };
@@ -177,85 +177,85 @@ type PrepareOnly = {
 }
 
 export type HandleInfoArgs = PrepareOnly & {
-    info: AppInfo[];
+    info?: AppInfo[];
 }
 
 export type HandleGlobalArgs = PrepareOnly & {
-    global: IdValue[];
+    globals?: IdValue[];
 }
 
 export type HandleRoleArgs = PrepareOnly & {
-    roles: Role[];
+    roles?: Role[];
 }
 
 export type HandleCustomEmojiArgs = PrepareOnly & {
-    emojis: CustomEmoji[];
+    emojis?: CustomEmoji[];
 }
 
 export type HandleSystemArgs = PrepareOnly & {
-    systems: IdValue[];
+    systems?: IdValue[];
 }
 
 export type HandleMyChannelArgs = PrepareOnly & {
-  channels: Channel[];
-  myChannels: ChannelMembership[];
+  channels?: Channel[];
+  myChannels?: ChannelMembership[];
 };
 
 export type HandleChannelInfoArgs = PrepareOnly &{
-  channelInfos: Array<Partial<ChannelInfo>>;
+  channelInfos?: Array<Partial<ChannelInfo>>;
 };
 
 export type HandleMyChannelSettingsArgs = PrepareOnly & {
-  settings: ChannelMembership[];
+  settings?: ChannelMembership[];
 };
 
 export type HandleChannelArgs = PrepareOnly & {
-  channels: Channel[];
+  channels?: Channel[];
 };
 
 export type HandleCategoryArgs = PrepareOnly & {
-  categories: Category[];
+  categories?: Category[];
 };
 
 export type HandleCategoryChannelArgs = PrepareOnly & {
-  categoryChannels: CategoryChannel[];
+  categoryChannels?: CategoryChannel[];
 };
 
 export type HandleMyTeamArgs = PrepareOnly & {
-  myTeams: MyTeam[];
+  myTeams?: MyTeam[];
 };
 
 export type HandleTeamSearchHistoryArgs = PrepareOnly &{
-  teamSearchHistories: TeamSearchHistory[];
+  teamSearchHistories?: TeamSearchHistory[];
 };
 
 export type HandleTeamChannelHistoryArgs = PrepareOnly & {
-  teamChannelHistories: TeamChannelHistory[];
+  teamChannelHistories?: TeamChannelHistory[];
 };
 
 export type HandleTeamArgs = PrepareOnly & {
-    teams: Team[];
+    teams?: Team[];
 };
 
 export type HandleChannelMembershipArgs = PrepareOnly & {
-  channelMemberships: Array<Pick<ChannelMembership, 'user_id' | 'channel_id'>>;
+  channelMemberships?: Array<Pick<ChannelMembership, 'user_id' | 'channel_id'>>;
 };
 
 export type HandleTeamMembershipArgs = PrepareOnly & {
-  teamMemberships: TeamMembership[];
+  teamMemberships?: TeamMembership[];
 };
 
 export type HandlePreferencesArgs = PrepareOnly & {
-  preferences: PreferenceType[];
+  preferences?: PreferenceType[];
   sync?: boolean;
 };
 
 export type HandleUsersArgs = PrepareOnly & {
-    users: UserProfile[];
+    users?: UserProfile[];
  };
 
 export type HandleDraftArgs = PrepareOnly & {
-  drafts: Draft[];
+  drafts?: Draft[];
 };
 
 export type LoginArgs = {

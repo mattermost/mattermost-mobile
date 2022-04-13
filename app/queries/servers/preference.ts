@@ -15,15 +15,11 @@ import type PreferenceModel from '@typings/database/models/servers/preference';
 const {SERVER: {PREFERENCE}} = MM_TABLES;
 
 export async function prepareMyPreferences(operator: ServerDataOperator, preferences: PreferenceType[], sync = false): Promise<PreferenceModel[]> {
-    try {
-        return operator.handlePreferences({
-            prepareRecordsOnly: true,
-            preferences,
-            sync,
-        });
-    } catch {
-        return [];
-    }
+    return operator.handlePreferences({
+        prepareRecordsOnly: true,
+        preferences,
+        sync,
+    });
 }
 
 export const queryPreferencesByCategoryAndName = (database: Database, category: string, name?: string, value?: string) => {
@@ -51,7 +47,7 @@ export const getThemeForCurrentTeam = async (database: Database) => {
     return undefined;
 };
 
-export const deletePreferences = async (database: ServerDatabase, preferences: PreferenceType[]): Promise<Boolean> => {
+export async function deletePreferences(database: ServerDatabase, preferences: PreferenceType[]): Promise<Boolean> {
     try {
         const preparedModels: Model[] = [];
         for await (const pref of preferences) {
@@ -67,4 +63,4 @@ export const deletePreferences = async (database: ServerDatabase, preferences: P
     } catch (error) {
         return false;
     }
-};
+}

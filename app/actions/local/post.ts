@@ -99,7 +99,7 @@ export const sendEphemeralPost = async (serverUrl: string, message: string, chan
     return {post};
 };
 
-export const removePost = async (serverUrl: string, post: PostModel | Post) => {
+export async function removePost(serverUrl: string, post: PostModel | Post) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -130,9 +130,9 @@ export const removePost = async (serverUrl: string, post: PostModel | Post) => {
     }
 
     return {post};
-};
+}
 
-export const markPostAsDeleted = async (serverUrl: string, post: Post, prepareRecordsOnly = false) => {
+export async function markPostAsDeleted(serverUrl: string, post: Post, prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -154,4 +154,4 @@ export const markPostAsDeleted = async (serverUrl: string, post: Post, prepareRe
         operator.batchRecords([dbPost]);
     }
     return {model};
-};
+}

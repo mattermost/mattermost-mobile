@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getThumbnailAsync} from 'expo-video-thumbnails';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {StyleSheet, useWindowDimensions, View} from 'react-native';
+import {createThumbnail} from 'react-native-create-thumbnail';
 
 import {updateLocalFile} from '@actions/local/file';
 import {buildFilePreviewUrl, fetchPublicLink} from '@actions/remote/file';
@@ -89,7 +89,7 @@ const VideoFile = ({
                 // library
                 const publicUri = await fetchPublicLink(serverUrl, data.id!);
                 if (('link') in publicUri) {
-                    const {uri, height, width} = await getThumbnailAsync(data.localPath || publicUri.link, {time: 2000});
+                    const {path: uri, height, width} = await createThumbnail({url: data.localPath || publicUri.link, timeStamp: 2000});
                     data.mini_preview = uri;
                     data.height = height;
                     data.width = width;

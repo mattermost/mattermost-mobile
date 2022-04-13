@@ -9,7 +9,6 @@ import type ChannelInfoModel from './channel_info';
 import type ChannelMembershipModel from './channel_membership';
 import type DraftModel from './draft';
 import type MyChannelModel from './my_channel';
-import type MyChannelSettingsModel from './my_channel_settings';
 import type PostModel from './post';
 import type PostsInChannelModel from './posts_in_channel';
 import type TeamModel from './team';
@@ -78,9 +77,6 @@ export default class ChannelModel extends Model {
 
     /** membership : Query returning the membership data for the current user if it belongs to this channel */
     membership: Relation<MyChannelModel>;
-
-    /** settings: User specific settings/preferences for this channel */
-    settings: Relation<MyChannelSettingsModel>;
 
     /** categoryChannel: category of this channel */
     categoryChannel: Relation<CategoryChannelModel>;
