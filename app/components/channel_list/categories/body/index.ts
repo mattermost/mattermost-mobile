@@ -7,11 +7,14 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap, concatAll} from 'rxjs/operators';
 
+import {observeCurrentUserId} from '@app/queries/servers/system';
+import {getDirectChannelName} from '@app/utils/channel';
 import {General, Preferences} from '@constants';
 import {DMS_CATEGORY} from '@constants/categories';
-import {queryMyChannelSettingsByIds} from '@queries/servers/channel';
+import {queryChannelsByNames, queryMyChannelSettingsByIds} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {WithDatabaseArgs} from '@typings/database/database';
+import PreferenceModel from '@typings/database/models/servers/preference';
 
 import CategoryBody from './category_body';
 
@@ -93,16 +96,40 @@ const getSortedChannels = (database: Database, category: CategoryModel, locale: 
     }
 };
 
+const mapPrefName = (prefs: PreferenceModel[]) => of$(prefs.map((p) => p.name));
+
+const mapChannelIds = (channels: ChannelModel[]) => of$(channels.map((c) => c.id));
+
 type EnhanceProps = {
     category: CategoryModel;
     locale: string;
+    currentUserId: string;
 } & WithDatabaseArgs
 
-const enhance = withObservables(['category', 'locale'], ({category, locale, database}: EnhanceProps) => {
+const withUserId = withObservables([], ({database}: WithDatabaseArgs) => ({currentUserId: observeCurrentUserId(database)}));
+
+const enhance = withObservables(['category', 'locale'], ({category, locale, database, currentUserId}: EnhanceProps) => {
     const observedCategory = category.observe();
     const sortedChannels = observedCategory.pipe(
         switchMap((c) => getSortedChannels(database, c, locale)),
     );
+
+    const dmMap = (p: PreferenceModel) => getDirectChannelName(p.name, currentUserId);
+
+    const hiddenDmIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, undefined, 'false').
+        observe().pipe(
+            switchMap((prefs: PreferenceModel[]) => {
+                const names = prefs.map(dmMap);
+                const channels = queryChannelsByNames(database, names).observe();
+
+                return channels.pipe(
+                    switchMap(mapChannelIds),
+                );
+            }),
+        );
+
+    const hiddenGmIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_GROUP_CHANNEL_SHOW, undefined, 'false').
+        observe().pipe(switchMap(mapPrefName));
 
     let limit = of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
     if (category.type === DMS_CATEGORY) {
@@ -113,11 +140,16 @@ const enhance = withObservables(['category', 'locale'], ({category, locale, data
         );
     }
 
+    const hiddenChannelIds = combineLatest([hiddenDmIds, hiddenGmIds]).pipe(switchMap(
+        ([a, b]) => of$(new Set(a.concat(b))),
+    ));
+
     return {
         limit,
+        hiddenChannelIds,
         sortedChannels,
         category: observedCategory,
     };
 });
 
-export default withDatabase(enhance(CategoryBody));
+export default withDatabase(withUserId(enhance(CategoryBody)));

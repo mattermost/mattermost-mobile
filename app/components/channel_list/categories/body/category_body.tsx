@@ -13,15 +13,21 @@ import type CategoryModel from '@typings/database/models/servers/category';
 
 type Props = {
     sortedChannels: ChannelModel[];
+    hiddenChannelIds: Set<string>;
     category: CategoryModel;
     limit: number;
 };
 
 const extractKey = (item: ChannelModel) => item.id;
 
-const CategoryBody = ({sortedChannels, category, limit}: Props) => {
+const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit}: Props) => {
     const ids = useMemo(() => {
-        const filteredChannels = sortedChannels;
+        let filteredChannels = sortedChannels;
+
+        // Remove all closed gm/dms
+        if (hiddenChannelIds.size) {
+            filteredChannels = sortedChannels.filter((item) => item && !hiddenChannelIds.has(item.id));
+        }
 
         if (category.type === DMS_CATEGORY && limit > 0) {
             return filteredChannels.slice(0, limit - 1);
