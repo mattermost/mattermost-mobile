@@ -415,6 +415,8 @@
   "mobile.message_length.message": "A jelenlegi üzenete túl hosszú. Jelenlegi karakterek száma: {count}/{max}",
   "mobile.message_length.message_split_left": "Az üzenet meghaladja a karakter korlátot",
   "mobile.message_length.title": "Üzenet hossza",
+  "mobile.microphone_permission_denied_description": "A hívásban való részvételhez nyissa meg a Beállításokat, hogy a Mattermost hozzáférhessen a mikrofonjához.",
+  "mobile.microphone_permission_denied_title": "{applicationName} szeretne hozzáférni a mikrofonjához",
   "mobile.more_dms.add_more": "Hozzáadhat {remaining, number} további felhasználót",
   "mobile.more_dms.cannot_add_more": "Nem adhat hozzá további felhasználókat",
   "mobile.more_dms.one_more": "Hozzáadhat még 1 felhasználót",
