@@ -3,12 +3,14 @@
 
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useState, useEffect, useMemo} from 'react';
+import {Freeze} from 'react-freeze';
 import {useIntl} from 'react-intl';
 import {StyleSheet, View, ActivityIndicator, FlatList, DeviceEventEmitter} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, Edge} from 'react-native-safe-area-context';
 
 import {fetchRecentMentions} from '@actions/remote/search';
+import {FreezePlaceholder} from '@components/freeze_screen';
 import NavigationHeader from '@components/navigation_header';
 import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
@@ -145,7 +147,10 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
     }, []);
 
     return (
-        <>
+        <Freeze
+            freeze={!isFocused}
+            placeholder={FreezePlaceholder}
+        >
             <NavigationHeader
                 isLargeTitle={isLargeTitle}
                 showBackButton={false}
@@ -178,7 +183,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
                     />
                 </Animated.View>
             </SafeAreaView>
-        </>
+        </Freeze>
     );
 };
 

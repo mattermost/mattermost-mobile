@@ -15,7 +15,7 @@ type FreezeScreenProps = {
     children: React.ReactNode;
 }
 
-const FreezePlaceholder = ({backgroundColor}: FreezePlaceholderProps) => {
+export const FreezePlaceholder = ({backgroundColor}: FreezePlaceholderProps) => {
     return <View style={{flex: 1, backgroundColor}}/>;
 };
 

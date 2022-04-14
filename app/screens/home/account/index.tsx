@@ -3,14 +3,16 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {useRoute} from '@react-navigation/native';
+import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useState} from 'react';
+import {Freeze} from 'react-freeze';
 import {ScrollView, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+import {FreezePlaceholder} from '@components/freeze_screen';
 import {View as ViewConstants} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -66,6 +68,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const AccountScreen = ({currentUser, enableCustomUserStatuses, customStatusExpirySupported, showFullName}: AccountScreenProps) => {
     const theme = useTheme();
+    const isFocused = useIsFocused();
     const [start, setStart] = useState(false);
     const route = useRoute();
     const insets = useSafeAreaInsets();
@@ -101,44 +104,49 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, customStatusExpir
     const styles = getStyleSheet(theme);
 
     return (
-        <SafeAreaView
-            edges={edges}
-            style={styles.container}
-            testID='account.screen'
+        <Freeze
+            freeze={!isFocused}
+            placeholder={FreezePlaceholder}
         >
-            <View style={[{height: insets.top, flexDirection: 'row'}]}>
-                <View style={[styles.container, tabletSidebarStyle]}/>
-                {isTablet && <View style={styles.tabletContainer}/>}
-            </View>
-            <Animated.View
-                onLayout={onLayout}
-                style={[styles.flexRow, animated]}
+            <SafeAreaView
+                edges={edges}
+                style={styles.container}
+                testID='account.screen'
             >
-                <ScrollView
-                    contentContainerStyle={styles.flex}
-                    alwaysBounceVertical={false}
-                    style={tabletSidebarStyle}
-                >
-                    <AccountUserInfo
-                        user={currentUser}
-                        showFullName={showFullName}
-                        theme={theme}
-                    />
-                    <AccountOptions
-                        enableCustomUserStatuses={enableCustomUserStatuses}
-                        isCustomStatusExpirySupported={customStatusExpirySupported}
-                        isTablet={isTablet}
-                        user={currentUser}
-                        theme={theme}
-                    />
-                </ScrollView>
-                {isTablet &&
-                <View style={[styles.tabletContainer, styles.tabletDivider]}>
-                    <AccountTabletView/>
+                <View style={[{height: insets.top, flexDirection: 'row'}]}>
+                    <View style={[styles.container, tabletSidebarStyle]}/>
+                    {isTablet && <View style={styles.tabletContainer}/>}
                 </View>
-                }
-            </Animated.View>
-        </SafeAreaView>
+                <Animated.View
+                    onLayout={onLayout}
+                    style={[styles.flexRow, animated]}
+                >
+                    <ScrollView
+                        contentContainerStyle={styles.flex}
+                        alwaysBounceVertical={false}
+                        style={tabletSidebarStyle}
+                    >
+                        <AccountUserInfo
+                            user={currentUser}
+                            showFullName={showFullName}
+                            theme={theme}
+                        />
+                        <AccountOptions
+                            enableCustomUserStatuses={enableCustomUserStatuses}
+                            isCustomStatusExpirySupported={customStatusExpirySupported}
+                            isTablet={isTablet}
+                            user={currentUser}
+                            theme={theme}
+                        />
+                    </ScrollView>
+                    {isTablet &&
+                    <View style={[styles.tabletContainer, styles.tabletDivider]}>
+                        <AccountTabletView/>
+                    </View>
+                    }
+                </Animated.View>
+            </SafeAreaView>
+        </Freeze>
     );
 };
 
