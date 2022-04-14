@@ -17,6 +17,7 @@ import WebsocketManager from './app/init/websocket_manager';
 import {registerScreens} from './app/screens';
 import EphemeralStore from './app/store/ephemeral_store';
 import setFontFamily from './app/utils/font_family';
+import './app/utils/emoji'; // Imported to ensure it is loaded when used
 
 declare const global: { HermesInternal: null | {} };
 
