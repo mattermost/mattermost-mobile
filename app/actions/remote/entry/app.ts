@@ -12,14 +12,19 @@ import {getCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
 
-import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, syncOtherServers, teamsToRemove} from './common';
+import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, registerDeviceToken, syncOtherServers, teamsToRemove} from './common';
 
 export async function appEntry(serverUrl: string, since = 0) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+
     const {database} = operator;
+
+    if (!since) {
+        registerDeviceToken(serverUrl);
+    }
 
     // clear lastUnreadChannelId
     const removeLastUnreadChannelId = await prepareCommonSystemValues(operator, {lastUnreadChannelId: ''});
