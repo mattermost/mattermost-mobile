@@ -9,7 +9,7 @@ import {DEFAULT_LOCALE} from '@i18n';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import CategoryBody from './';
+import CategoryBody from '.';
 
 import type CategoryModel from '@typings/database/models/servers/category';
 
