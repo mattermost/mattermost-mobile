@@ -111,7 +111,7 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
 
     const marginTop = defaultHeight + (isTablet ? insets.top : 0);
     useEffect(() => {
-        // This is done so that the header reneders
+        // This is done so that the header renders
         // and the screen does not look totally blank
         const t = requestAnimationFrame(() => {
             setShouldRenderPosts(Boolean(channelId));
