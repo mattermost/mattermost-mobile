@@ -32,6 +32,7 @@ module.exports = {
                 '@hooks': './app/hooks',
                 '@i18n': './app/i18n',
                 '@init': './app/init',
+                '@managers': './app/managers',
                 '@notifications': './app/notifications',
                 '@queries': './app/queries',
                 '@screens': './app/screens',

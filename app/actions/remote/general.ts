@@ -4,7 +4,7 @@
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {getExpandedLinks} from '@queries/servers/system';
 
 import {forceLogoutIfNecessary} from './session';

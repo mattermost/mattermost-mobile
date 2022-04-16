@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 
 import {addFilesToDraft, removeDraft} from '@actions/local/draft';
 import {useServerUrl} from '@context/server';
-import DraftUploadManager from '@init/draft_upload_manager';
+import DraftUploadManager from '@managers/draft_upload_manager';
 import {fileMaxWarning, fileSizeWarning, uploadDisabledWarning} from '@utils/file';
 
 import SendHandler from '../send_handler';
