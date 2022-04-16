@@ -18,7 +18,7 @@ import AppVersion from '@components/app_version';
 import {Screens, Sso} from '@constants';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {queryServerByDisplayName, queryServerByIdentifier} from '@queries/app/servers';
 import Background from '@screens/background';
 import {dismissModal, goToScreen, loginAnimationOptions} from '@screens/navigation';

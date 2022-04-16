@@ -11,14 +11,11 @@ import CategoryHeader from './header';
 import UnreadCategories from './unreads';
 
 import type CategoryModel from '@typings/database/models/servers/category';
-import type ChannelModel from '@typings/database/models/servers/channel';
 
 type Props = {
     categories: CategoryModel[];
-    unreadChannels: ChannelModel[];
-    currentChannelId: string;
-    currentUserId: string;
     currentTeamId: string;
+    unreadsOnTop: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -29,51 +26,39 @@ const styles = StyleSheet.create({
     },
 });
 
-const extractKey = (item: CategoryModel) => (Array.isArray(item) ? 'UNREADS' : item.id);
+const extractKey = (item: CategoryModel | 'UNREADS') => (item === 'UNREADS' ? 'UNREADS' : item.id);
 
-const Categories = ({categories, currentChannelId, currentUserId, currentTeamId, unreadChannels}: Props) => {
+const Categories = ({categories, currentTeamId, unreadsOnTop}: Props) => {
     const intl = useIntl();
     const listRef = useRef<FlatList>(null);
 
-    const unreadChannelIds = useMemo(() => new Set(unreadChannels.map((myC) => myC.id)), [unreadChannels]);
-    const categoriesToDisplay: Array<CategoryModel|string[]> = useMemo(() => {
-        if (unreadChannelIds.size) {
-            return [Array.from(unreadChannelIds), ...categories];
+    const renderCategory = useCallback((data: {item: CategoryModel | 'UNREADS'}) => {
+        if (data.item === 'UNREADS') {
+            return <UnreadCategories currentTeamId={currentTeamId}/>;
         }
-
-        return categories;
-    }, [categories, unreadChannelIds]);
-
-    const renderCategory = useCallback((data: {item: CategoryModel | string[]}) => {
-        if (Array.isArray(data.item)) {
-            return (
-                <UnreadCategories
-                    currentChannelId={currentChannelId}
-                    unreadChannels={unreadChannels}
-                />
-            );
-        }
-
         return (
             <>
                 <CategoryHeader category={data.item}/>
                 <CategoryBody
                     category={data.item}
-                    currentChannelId={currentChannelId}
-                    currentUserId={currentUserId}
                     locale={intl.locale}
-                    unreadChannelIds={unreadChannelIds}
                 />
             </>
         );
-    }, [categories, currentChannelId, intl.locale, unreadChannels]);
+    }, [intl.locale]);
 
     useEffect(() => {
         listRef.current?.scrollToOffset({animated: false, offset: 0});
     }, [currentTeamId]);
 
-    // Sort Categories
-    categories.sort((a, b) => a.sortOrder - b.sortOrder);
+    const categoriesToShow = useMemo(() => {
+        const orderedCategories = [...categories];
+        orderedCategories.sort((a, b) => a.sortOrder - b.sortOrder);
+        if (unreadsOnTop) {
+            return ['UNREADS' as const, ...orderedCategories];
+        }
+        return orderedCategories;
+    }, [categories, unreadsOnTop]);
 
     if (!categories.length) {
         return <LoadCategoriesError/>;
@@ -81,7 +66,7 @@ const Categories = ({categories, currentChannelId, currentUserId, currentTeamId,
 
     return (
         <FlatList
-            data={categoriesToDisplay}
+            data={categoriesToShow}
             ref={listRef}
             renderItem={renderCategory}
             style={styles.mainList}
@@ -93,6 +78,9 @@ const Categories = ({categories, currentChannelId, currentUserId, currentTeamId,
             windowSize={15}
             updateCellsBatchingPeriod={10}
             maxToRenderPerBatch={5}
+
+            // @ts-expect-error strictMode not included in the types
+            strictMode={true}
         />
     );
 };

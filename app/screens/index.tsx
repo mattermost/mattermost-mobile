@@ -140,7 +140,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             screen = withServerDatabase(require('@screens/reactions').default);
             break;
         case Screens.SAVED_POSTS:
-            screen = withServerDatabase((require('@screens/home/saved_posts').default));
+            screen = withServerDatabase((require('@screens/saved_posts').default));
             break;
         case Screens.SSO:
             screen = withIntl(require('@screens/sso').default);

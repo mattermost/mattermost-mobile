@@ -46,6 +46,7 @@
             "@hooks/*": ["app/hooks/*"],
             "@i18n": ["app/i18n/index"],
             "@init/*": ["app/init/*"],
+            "@managers/*": ["app/managers/*"],
             "@notifications": ["app/notifications/index"],
             "@queries/*": ["app/queries/*"],
             "@screens/*": ["app/screens/*"],

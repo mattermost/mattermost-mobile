@@ -11,7 +11,7 @@ import ChannelMentionItem from '@components/autocomplete/channel_mention_item';
 import {COMMAND_SUGGESTION_CHANNEL, COMMAND_SUGGESTION_USER} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import analytics from '@init/analytics';
+import analytics from '@managers/analytics';
 import ChannelModel from '@typings/database/models/servers/channel';
 import UserModel from '@typings/database/models/servers/user';
 import {makeStyleSheetFromTheme} from '@utils/theme';

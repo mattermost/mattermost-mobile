@@ -5,7 +5,7 @@ import {Model} from '@nozbe/watermelondb';
 
 import {addRecentReaction} from '@actions/local/reactions';
 import DatabaseManager from '@database/manager';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {getRecentPostsInChannel, getRecentPostsInThread} from '@queries/servers/post';
 import {queryReaction} from '@queries/servers/reaction';
 import {getCurrentChannelId, getCurrentUserId} from '@queries/servers/system';

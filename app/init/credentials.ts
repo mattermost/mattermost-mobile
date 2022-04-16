@@ -5,7 +5,7 @@ import {Platform} from 'react-native';
 import * as KeyChain from 'react-native-keychain';
 
 import DatabaseManager from '@database/manager';
-import * as analytics from '@init/analytics';
+import * as analytics from '@managers/analytics';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
 import type {ServerCredential} from '@typings/credentials';

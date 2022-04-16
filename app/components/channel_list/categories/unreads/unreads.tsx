@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, Text} from 'react-native';
 
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 import {useTheme} from '@context/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import ChannelListItem from './body/channel';
+import ChannelListItem from '../body/channel';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 
@@ -23,26 +23,27 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
+const renderItem = ({item}: {item: ChannelModel}) => {
+    return (
+        <ChannelListItem
+            channel={item}
+            collapsed={false}
+            isUnreads={true}
+        />
+    );
+};
 type UnreadCategoriesProps = {
     unreadChannels: ChannelModel[];
-    currentChannelId: string;
 }
 
-const UnreadCategories = ({unreadChannels, currentChannelId}: UnreadCategoriesProps) => {
+const UnreadCategories = ({unreadChannels}: UnreadCategoriesProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
 
-    const renderItem = useCallback(({item}: {item: ChannelModel}) => {
-        return (
-            <ChannelListItem
-                channel={item}
-                isActive={item.id === currentChannelId}
-                collapsed={false}
-            />
-        );
-    }, [currentChannelId]);
-
+    if (!unreadChannels.length) {
+        return null;
+    }
     return (
         <>
             <Text

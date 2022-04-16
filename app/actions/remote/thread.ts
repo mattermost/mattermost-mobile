@@ -5,7 +5,7 @@ import {markTeamThreadsAsRead, processReceivedThreads, switchToThread, updateThr
 import {fetchPostThread} from '@actions/remote/post';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {getCommonSystemValues} from '@queries/servers/system';
