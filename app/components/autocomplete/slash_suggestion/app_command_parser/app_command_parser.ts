@@ -9,7 +9,7 @@ import {fetchChannelById, fetchChannelByName, searchChannels} from '@actions/rem
 import {fetchUsersByIds, fetchUsersByUsernames, searchUsers} from '@actions/remote/user';
 import {AppCallResponseTypes, AppCallTypes, AppFieldTypes, COMMAND_SUGGESTION_ERROR} from '@constants/apps';
 import DatabaseManager from '@database/manager';
-import IntegrationsManager from '@init/integrations_manager';
+import IntegrationsManager from '@managers/integrations_manager';
 import {getChannelById, queryChannelsByNames} from '@queries/servers/channel';
 import {getCurrentTeamId} from '@queries/servers/system';
 import {getUserById, queryUsersByUsername} from '@queries/servers/user';

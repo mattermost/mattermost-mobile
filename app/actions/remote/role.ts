@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {queryRoles} from '@queries/servers/role';
 
 import {forceLogoutIfNecessary} from './session';

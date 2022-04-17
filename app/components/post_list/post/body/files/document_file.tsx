@@ -12,7 +12,7 @@ import tinyColor from 'tinycolor2';
 import ProgressBar from '@components/progress_bar';
 import {DOWNLOAD_TIMEOUT} from '@constants/network';
 import {useServerUrl} from '@context/server';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {alertDownloadDocumentDisabled, alertDownloadFailed, alertFailedToOpenDocument} from '@utils/document';
 import {fileExists, getLocalFilePathFromFile} from '@utils/file';
 import {emptyFunction} from '@utils/general';

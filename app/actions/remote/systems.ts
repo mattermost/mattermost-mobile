@@ -8,7 +8,7 @@ import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {getCommonSystemValues} from '@queries/servers/system';
 
 import type ClientError from '@client/rest/error';

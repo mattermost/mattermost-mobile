@@ -3,7 +3,7 @@
 
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
 

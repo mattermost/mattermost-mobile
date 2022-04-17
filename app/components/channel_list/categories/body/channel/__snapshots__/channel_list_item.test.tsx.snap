@@ -39,12 +39,15 @@ exports[`components/channel_list/categories/body/channel/item should match snaps
   >
     <View
       style={
-        Object {
-          "alignItems": "center",
-          "flexDirection": "row",
-          "height": 40,
-          "paddingLeft": 2,
-        }
+        Array [
+          Object {
+            "alignItems": "center",
+            "flexDirection": "row",
+            "height": 40,
+            "paddingHorizontal": 20,
+          },
+          false,
+        ]
       }
       testID="channel_list_item.hello.collapsed.false"
     >
@@ -124,6 +127,7 @@ exports[`components/channel_list/categories/body/channel/item should match snaps
             },
             false,
             false,
+            null,
           ]
         }
         testID="channel_list_item.hello.display_name"

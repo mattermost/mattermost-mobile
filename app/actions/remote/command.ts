@@ -9,7 +9,7 @@ import {Client} from '@client/rest';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DeepLinkTypes from '@constants/deep_linking';
 import DatabaseManager from '@database/manager';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getConfig, getCurrentTeamId} from '@queries/servers/system';
 import {getTeammateNameDisplay, queryUsersByUsername} from '@queries/servers/user';

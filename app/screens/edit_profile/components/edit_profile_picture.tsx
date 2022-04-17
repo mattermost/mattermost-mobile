@@ -10,7 +10,7 @@ import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {dismissBottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 

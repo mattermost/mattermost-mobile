@@ -314,6 +314,10 @@ export const queryUsersOnChannel = (database: Database, channelId: string) => {
 };
 
 export const getMembersCountByChannelsId = async (database: Database, channelsId: string[]) => {
+    const result = channelsId.reduce((r: Record<string, number>, cId) => {
+        r[cId] = 0;
+        return r;
+    }, {});
     const q = await database.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(Q.where('channel_id', Q.oneOf(channelsId))).fetch();
     return q.reduce((r: Record<string, number>, m) => {
         if (r[m.channelId]) {
@@ -323,7 +327,7 @@ export const getMembersCountByChannelsId = async (database: Database, channelsId
 
         r[m.channelId] = 1;
         return r;
-    }, {});
+    }, result);
 };
 
 export const queryChannelsByTypes = (database: Database, channelTypes: ChannelType[]) => {
@@ -371,6 +375,23 @@ export const queryMyChannelSettingsByIds = (database: Database, ids: string[]) =
 
 export const queryChannelsByNames = (database: Database, names: string[]) => {
     return database.get<ChannelModel>(CHANNEL).query(Q.where('name', Q.oneOf(names)));
+};
+
+export const queryMyChannelUnreads = (database: Database, currentTeamId: string) => {
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.on(
+            CHANNEL,
+            Q.and(
+                Q.or(
+                    Q.where('team_id', Q.eq(currentTeamId)),
+                    Q.where('team_id', Q.eq('')),
+                ),
+                Q.where('delete_at', Q.eq(0)),
+            ),
+        ),
+        Q.where('is_unread', Q.eq(true)),
+        Q.sortBy('last_post_at', Q.desc),
+    );
 };
 
 export function observeMyChannelMentionCount(database: Database, teamId?: string, columns = ['mentions_count', 'is_unread']): Observable<number> {

@@ -18,7 +18,6 @@ import {fetchMissingSidebarInfo, fetchMyChannel, fetchChannelStats, fetchChannel
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
-import EphemeralStore from '@app/store/ephemeral_store';
 import {Events, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
@@ -27,6 +26,7 @@ import {prepareCommonSystemValues, getConfig, setCurrentChannelId, getCurrentCha
 import {getNthLastChannelFromTeam} from '@queries/servers/team';
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
 
 // Received when current user created a channel in a different client
@@ -215,7 +215,7 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: WebSocketMe
         }
 
         const models: Model[] = [];
-        const channelModels = await storeMyChannelsForTeam(serverUrl, '', directChannels, memberships);
+        const channelModels = await storeMyChannelsForTeam(serverUrl, '', directChannels, memberships, true);
         if (channelModels.models?.length) {
             models.push(...channelModels.models);
         }
