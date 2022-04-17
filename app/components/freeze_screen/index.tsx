@@ -5,6 +5,7 @@ import React from 'react';
 import {Freeze} from 'react-freeze';
 import {StyleSheet, View} from 'react-native';
 
+import {useIsTablet} from '@hooks/device';
 import useFreeze from '@hooks/freeze';
 
 type FreezePlaceholderProps = {
@@ -50,19 +51,27 @@ const style = StyleSheet.create({
 
 function FreezeScreen({freeze: freezeFromProps, children}: FreezeScreenProps) {
     const {freeze, backgroundColor} = useFreeze();
+    const isTablet = useIsTablet();
     const placeholder = (<FreezePlaceholder backgroundColor={backgroundColor}/>);
 
-    return (
-        <Freeze
-            freeze={freezeFromProps || freeze}
-            placeholder={placeholder}
-        >
+    let component = children;
+    if (!isTablet) {
+        component = (
             <View
                 ref={handleRef}
                 style={style.freeze}
             >
                 {children}
             </View>
+        );
+    }
+
+    return (
+        <Freeze
+            freeze={freezeFromProps || freeze}
+            placeholder={placeholder}
+        >
+            {component}
         </Freeze>
     );
 }

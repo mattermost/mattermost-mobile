@@ -139,7 +139,7 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
                     subtitleCompanion={subtitleCompanion}
                     title={title}
                 />
-                {shouldRenderPosts &&
+                {shouldRenderPosts && Boolean(channelId) &&
                 <>
                     <View style={[styles.flex, {marginTop}]}>
                         <ChannelPostList
