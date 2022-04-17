@@ -1,31 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useState} from 'react';
-import {Freeze} from 'react-freeze';
 import {ScrollView, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
 
-import {FreezePlaceholder} from '@components/freeze_screen';
+import FreezeScreen from '@components/freeze_screen';
 import {View as ViewConstants} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {observeConfig} from '@queries/servers/system';
-import {observeCurrentUser} from '@queries/servers/user';
-import {isCustomStatusExpirySupported, isMinimumServerVersion} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import AccountOptions from './components/options';
 import AccountTabletView from './components/tablet_view';
 import AccountUserInfo from './components/user_info';
 
-import type {WithDatabaseArgs} from '@typings/database/database';
 import type UserModel from '@typings/database/models/servers/user';
 
 type AccountScreenProps = {
@@ -104,10 +95,7 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, customStatusExpir
     const styles = getStyleSheet(theme);
 
     return (
-        <Freeze
-            freeze={!isFocused}
-            placeholder={FreezePlaceholder}
-        >
+        <FreezeScreen freeze={!isFocused}>
             <SafeAreaView
                 edges={edges}
                 style={styles.container}
@@ -146,30 +134,8 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, customStatusExpir
                     }
                 </Animated.View>
             </SafeAreaView>
-        </Freeze>
+        </FreezeScreen>
     );
 };
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const config = observeConfig(database);
-    const showFullName = config.pipe((switchMap((cfg) => of$(cfg?.ShowFullName === 'true'))));
-    const enableCustomUserStatuses = config.pipe((switchMap((cfg) => {
-        return of$(cfg?.EnableCustomUserStatuses === 'true' && isMinimumServerVersion(cfg?.Version || '', 5, 36));
-    })));
-    const version = config.pipe(
-        switchMap((cfg) => of$(cfg?.Version || '')),
-    );
-    const customStatusExpirySupported = config.pipe(
-        switchMap((cfg) => of$(isCustomStatusExpirySupported(cfg?.Version || ''))),
-    );
-
-    return {
-        currentUser: observeCurrentUser(database),
-        enableCustomUserStatuses,
-        customStatusExpirySupported,
-        showFullName,
-        version,
-    };
-});
-
-export default withDatabase(enhanced(AccountScreen));
+export default AccountScreen;

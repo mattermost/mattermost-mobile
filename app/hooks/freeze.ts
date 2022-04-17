@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useEffect, useState} from 'react';
-import {DeviceEventEmitter, Platform} from 'react-native';
+import {DeviceEventEmitter} from 'react-native';
 
 import {Events} from '@constants';
 
@@ -12,11 +12,8 @@ const useFreeze = () => {
 
     useEffect(() => {
         const freezeListener = DeviceEventEmitter.addListener(Events.FREEZE_SCREEN, (shouldFreeze: boolean, color = '#000') => {
-            // kept until this https://github.com/software-mansion/react-freeze/issues/7 is fixed
-            if (Platform.OS === 'ios') {
-                setFreeze(shouldFreeze);
-                setBackgroundColor(color);
-            }
+            setFreeze(shouldFreeze);
+            setBackgroundColor(color);
         });
 
         return () => freezeListener.remove();

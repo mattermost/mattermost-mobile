@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {Freeze} from 'react-freeze';
-import {View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import useFreeze from '@hooks/freeze';
 
@@ -13,25 +13,58 @@ type FreezePlaceholderProps = {
 
 type FreezeScreenProps = {
     children: React.ReactNode;
+    freeze?: boolean;
 }
 
 export const FreezePlaceholder = ({backgroundColor}: FreezePlaceholderProps) => {
     return <View style={{flex: 1, backgroundColor}}/>;
 };
 
-const FreezeScreen = ({children}: FreezeScreenProps) => {
-    const {freeze, backgroundColor} = useFreeze();
+interface ViewConfig extends View {
+    viewConfig: {
+      validAttributes: {
+        style: {
+          display: boolean;
+        };
+      };
+    };
+  }
 
+// This solves the keeping of position on Android
+const handleRef = (ref: ViewConfig) => {
+    if (ref?.viewConfig?.validAttributes?.style) {
+        ref.viewConfig.validAttributes.style = {
+            ...ref.viewConfig.validAttributes.style,
+            display: false,
+        };
+    }
+};
+
+const style = StyleSheet.create({
+    freeze: {
+        height: '100%',
+        width: '100%',
+        position: 'absolute',
+    },
+});
+
+function FreezeScreen({freeze: freezeFromProps, children}: FreezeScreenProps) {
+    const {freeze, backgroundColor} = useFreeze();
     const placeholder = (<FreezePlaceholder backgroundColor={backgroundColor}/>);
 
     return (
         <Freeze
-            freeze={freeze}
+            freeze={freezeFromProps || freeze}
             placeholder={placeholder}
         >
-            {children}
+            <View
+                ref={handleRef}
+                style={style.freeze}
+            >
+                {children}
+            </View>
         </Freeze>
     );
-};
+}
 
 export default FreezeScreen;

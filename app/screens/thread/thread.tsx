@@ -6,6 +6,7 @@ import {StyleSheet, View} from 'react-native';
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import {THREAD_ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useAppState} from '@hooks/device';
@@ -32,7 +33,7 @@ const Thread = ({rootPost}: ThreadProps) => {
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
 
     return (
-        <>
+        <FreezeScreen>
             <SafeAreaView
                 style={styles.flex}
                 mode='margin'
@@ -57,7 +58,7 @@ const Thread = ({rootPost}: ThreadProps) => {
                 </>
                 }
             </SafeAreaView>
-        </>
+        </FreezeScreen>
     );
 };
 

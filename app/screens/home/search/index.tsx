@@ -3,14 +3,13 @@
 
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useMemo} from 'react';
-import {Freeze} from 'react-freeze';
 import {useIntl} from 'react-intl';
 import {Text, FlatList, View, Platform} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import Badge from '@components/badge';
-import {FreezePlaceholder} from '@components/freeze_screen';
+import FreezeScreen from '@components/freeze_screen';
 import NavigationHeader from '@components/navigation_header';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
@@ -91,10 +90,7 @@ const SearchScreen = () => {
     ];
 
     return (
-        <Freeze
-            freeze={!isFocused}
-            placeholder={FreezePlaceholder}
-        >
+        <FreezeScreen freeze={!isFocused}>
             <NavigationHeader
                 isLargeTitle={isLargeTitle}
                 leftComponent={leftComponent}
@@ -146,7 +142,7 @@ const SearchScreen = () => {
                     />
                 </Animated.View>
             </SafeAreaView>
-        </Freeze>
+        </FreezeScreen>
     );
 };
 

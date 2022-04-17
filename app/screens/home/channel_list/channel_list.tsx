@@ -68,8 +68,8 @@ const ChannelListScreen = (props: ChannelProps) => {
         return {height: insets.top, backgroundColor: theme.sidebarBg};
     }, [theme]);
 
-    const content = (
-        <>
+    return (
+        <FreezeScreen freeze={!isFocused}>
             {<Animated.View style={top}/>}
             <SafeAreaView
                 style={styles.content}
@@ -96,18 +96,8 @@ const ChannelListScreen = (props: ChannelProps) => {
                     }
                 </Animated.View>
             </SafeAreaView>
-        </>
+        </FreezeScreen>
     );
-
-    if (isTablet) {
-        return (
-            <FreezeScreen>
-                {content}
-            </FreezeScreen>
-        );
-    }
-
-    return content;
 };
 
 export default ChannelListScreen;
