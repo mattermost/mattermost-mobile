@@ -79,13 +79,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Footer = ({participants, serverUrl, teamId, testID, theme, thread}: Props) => {
     const styles = getStyleSheet(theme);
-    const onUnfollow = useCallback(preventDoubleTap(() => {
-        updateThreadFollowing(serverUrl, teamId, thread.id, false);
-    }), []);
-
-    const onFollow = useCallback(preventDoubleTap(() => {
-        updateThreadFollowing(serverUrl, teamId, thread.id, true);
-    }), []);
+    const toggleFollow = useCallback(preventDoubleTap(() => {
+        updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing);
+    }), [thread.isFollowing]);
 
     let repliesComponent;
     let followButton;
@@ -114,7 +110,7 @@ const Footer = ({participants, serverUrl, teamId, testID, theme, thread}: Props)
     if (thread.isFollowing) {
         followButton = (
             <TouchableOpacity
-                onPress={onUnfollow}
+                onPress={toggleFollow}
                 style={styles.followingButtonContainer}
                 testID={`${testID}.following`}
             >
@@ -130,7 +126,7 @@ const Footer = ({participants, serverUrl, teamId, testID, theme, thread}: Props)
             <>
                 <View style={styles.followSeparator}/>
                 <TouchableOpacity
-                    onPress={onFollow}
+                    onPress={toggleFollow}
                     style={styles.notFollowingButtonContainer}
                     testID={`${testID}.follow`}
                 >
