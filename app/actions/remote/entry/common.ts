@@ -13,6 +13,7 @@ import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/pr
 import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
 import NetworkManager from '@managers/network_manager';
+import {getDeviceToken} from '@queries/app/global';
 import {queryAllServers} from '@queries/app/servers';
 import {queryAllChannelsForTeam} from '@queries/servers/channel';
 import {getConfig} from '@queries/servers/system';
@@ -231,12 +232,32 @@ export async function deferredAppEntryActions(
     updateAllUsersSince(serverUrl, since);
 }
 
+export const registerDeviceToken = async (serverUrl: string) => {
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    const appDatabase = DatabaseManager.appDatabase?.database;
+    if (appDatabase) {
+        const deviceToken = await getDeviceToken(appDatabase);
+        if (deviceToken) {
+            client.attachDevice(deviceToken);
+        }
+    }
+
+    return {error: undefined};
+};
+
 export const syncOtherServers = async (serverUrl: string) => {
     const database = DatabaseManager.appDatabase?.database;
     if (database) {
         const servers = await queryAllServers(database);
         for (const server of servers) {
             if (server.url !== serverUrl && server.lastActiveAt > 0) {
+                registerDeviceToken(server.url);
                 syncAllChannelMembers(server.url);
             }
         }
