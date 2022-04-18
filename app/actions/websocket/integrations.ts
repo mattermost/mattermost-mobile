@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import IntegrationsManager from '@init/integrations_manager';
+import IntegrationsManager from '@managers/integrations_manager';
 
 export function handleOpenDialogEvent(serverUrl: string, msg: WebSocketMessage) {
     const data: string = msg.data?.dialog;

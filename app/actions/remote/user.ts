@@ -13,7 +13,7 @@ import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {getMembersCountByChannelsId, queryChannelsByTypes} from '@queries/servers/channel';
 import {getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {getCurrentUser, getUserById, prepareUsers, queryAllUsers, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
@@ -71,7 +71,7 @@ export const fetchMe = async (serverUrl: string, fetchOnly = false): Promise<MyU
     }
 };
 
-export const fetchProfilesInChannel = async (serverUrl: string, channelId: string, excludeUserId?: string, fetchOnly = false): Promise<ProfilesInChannelRequest> => {
+export async function fetchProfilesInChannel(serverUrl: string, channelId: string, excludeUserId?: string, fetchOnly = false): Promise<ProfilesInChannelRequest> {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -108,9 +108,9 @@ export const fetchProfilesInChannel = async (serverUrl: string, channelId: strin
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {channelId, error};
     }
-};
+}
 
-export const fetchProfilesPerChannels = async (serverUrl: string, channelIds: string[], excludeUserId?: string, fetchOnly = false): Promise<ProfilesPerChannelRequest> => {
+export async function fetchProfilesPerChannels(serverUrl: string, channelIds: string[], excludeUserId?: string, fetchOnly = false): Promise<ProfilesPerChannelRequest> {
     try {
         const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
         if (!operator) {
@@ -164,7 +164,7 @@ export const fetchProfilesPerChannels = async (serverUrl: string, channelIds: st
     } catch (error) {
         return {error};
     }
-};
+}
 
 export const updateMe = async (serverUrl: string, user: Partial<UserProfile>) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -209,7 +209,7 @@ export const fetchStatusInBatch = (serverUrl: string, id: string) => {
     return debouncedFetchStatusesByIds.apply(null, [serverUrl]);
 };
 
-export const fetchStatusByIds = async (serverUrl: string, userIds: string[], fetchOnly = false) => {
+export async function fetchStatusByIds(serverUrl: string, userIds: string[], fetchOnly = false) {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -246,7 +246,7 @@ export const fetchStatusByIds = async (serverUrl: string, userIds: string[], fet
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
-};
+}
 
 export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetchOnly = false) => {
     let client: Client;
@@ -421,10 +421,12 @@ export const searchProfiles = async (serverUrl: string, term: string, options: a
 
         if (!fetchOnly) {
             const toStore = removeUserFromList(currentUserId, users);
-            await operator.handleUsers({
-                users: toStore,
-                prepareRecordsOnly: false,
-            });
+            if (toStore.length) {
+                await operator.handleUsers({
+                    users: toStore,
+                    prepareRecordsOnly: false,
+                });
+            }
         }
 
         return {data: users};
@@ -472,7 +474,7 @@ export const fetchMissingProfilesByUsernames = async (serverUrl: string, usernam
     }
 };
 
-export const updateAllUsersSince = async (serverUrl: string, since: number, fetchOnly = false) => {
+export async function updateAllUsersSince(serverUrl: string, since: number, fetchOnly = false) {
     if (!since) {
         return {users: []};
     }
@@ -512,9 +514,9 @@ export const updateAllUsersSince = async (serverUrl: string, since: number, fetc
     }
 
     return {users: userUpdates};
-};
+}
 
-export const updateUsersNoLongerVisible = async (serverUrl: string, prepareRecordsOnly = false): Promise<{error?: unknown; models?: Model[]}> => {
+export async function updateUsersNoLongerVisible(serverUrl: string, prepareRecordsOnly = false): Promise<{error?: unknown; models?: Model[]}> {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -549,7 +551,7 @@ export const updateUsersNoLongerVisible = async (serverUrl: string, prepareRecor
     }
 
     return {models};
-};
+}
 
 export const setStatus = async (serverUrl: string, status: UserStatus) => {
     let client: Client;

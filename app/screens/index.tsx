@@ -73,6 +73,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CHANNEL:
             screen = withServerDatabase(require('@screens/channel').default);
             break;
+        case Screens.CODE:
+            screen = withServerDatabase(require('@screens/code').default);
+            break;
         case Screens.CREATE_OR_EDIT_CHANNEL:
             screen = withServerDatabase(require('@screens/create_or_edit_channel').default);
             break;
@@ -143,7 +146,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             screen = withServerDatabase(require('@screens/reactions').default);
             break;
         case Screens.SAVED_POSTS:
-            screen = withServerDatabase((require('@screens/home/saved_posts').default));
+            screen = withServerDatabase((require('@screens/saved_posts').default));
             break;
         case Screens.SSO:
             screen = withIntl(require('@screens/sso').default);

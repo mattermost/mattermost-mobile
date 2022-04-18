@@ -12,7 +12,6 @@ import ChannelListItem from './channel';
 import type CategoryModel from '@typings/database/models/servers/category';
 
 type Props = {
-    currentChannelId: string;
     sortedChannels: ChannelModel[];
     hiddenChannelIds: Set<string>;
     category: CategoryModel;
@@ -21,7 +20,7 @@ type Props = {
 
 const extractKey = (item: ChannelModel) => item.id;
 
-const CategoryBody = ({currentChannelId, sortedChannels, category, hiddenChannelIds, limit}: Props) => {
+const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit}: Props) => {
     const ids = useMemo(() => {
         let filteredChannels = sortedChannels;
 
@@ -36,26 +35,28 @@ const CategoryBody = ({currentChannelId, sortedChannels, category, hiddenChannel
         return filteredChannels;
     }, [category.type, limit, hiddenChannelIds, sortedChannels]);
 
-    const ChannelItem = useCallback(({item}: {item: ChannelModel}) => {
+    const renderItem = useCallback(({item}: {item: ChannelModel}) => {
         return (
             <ChannelListItem
                 channel={item}
-                isActive={item.id === currentChannelId}
                 collapsed={category.collapsed}
                 testID={`category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_list_item`}
             />
         );
-    }, [currentChannelId, category.collapsed]);
+    }, [category.collapsed]);
 
     return (
         <FlatList
             data={ids}
-            renderItem={ChannelItem}
+            renderItem={renderItem}
             keyExtractor={extractKey}
             removeClippedSubviews={true}
             initialNumToRender={20}
             windowSize={15}
             updateCellsBatchingPeriod={10}
+
+            // @ts-expect-error strictMode not exposed on the types
+            strictMode={true}
         />
     );
 };

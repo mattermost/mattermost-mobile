@@ -24,7 +24,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flexShrink: 1,
     },
     contentContainer: {
-        marginVertical: 4,
+        marginBottom: 4,
     },
     empty: {
         flex: 1,

@@ -35,8 +35,6 @@ describe('components/channel_list/categories/body', () => {
             <CategoryBody
                 category={category}
                 locale={DEFAULT_LOCALE}
-                currentChannelId={''}
-                currentUserId={''}
             />,
             {database},
         );

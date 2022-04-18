@@ -1,22 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchMissingSidebarInfo, switchToChannelById} from '@actions/remote/channel';
+import {markChannelAsViewed} from '@actions/local/channel';
+import {fetchMissingSidebarInfo, markChannelAsRead, switchToChannelById} from '@actions/remote/channel';
 import {AppEntryData, AppEntryError, fetchAppEntryData, teamsToRemove} from '@actions/remote/entry/common';
 import {fetchPostsForUnreadChannels, fetchPostsSince} from '@actions/remote/post';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchTeamsChannelsAndUnreadPosts} from '@actions/remote/team';
+import {fetchNewThreads} from '@actions/remote/thread';
 import {fetchStatusByIds, updateAllUsersSince} from '@actions/remote/user';
-import {WebsocketEvents} from '@constants';
+import {Screens, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {queryChannelsById, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
 import {getCommonSystemValues, getConfig, getCurrentChannelId, getWebSocketLastDisconnected, resetWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import EphemeralStore from '@store/ephemeral_store';
 import {isDMorGM} from '@utils/channel';
 import {isTablet} from '@utils/helpers';
+import {isCRTEnabled} from '@utils/thread';
 
 import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
 import {handleChannelConvertedEvent, handleChannelCreatedEvent,
@@ -187,6 +191,13 @@ async function doReconnect(serverUrl: string) {
         // https://mattermost.atlassian.net/browse/MM-40098
         fetchPostsSince(serverUrl, currentChannelId, lastDisconnectedAt);
 
+        const isChannelScreenMounted = EphemeralStore.getNavigationComponents().includes(Screens.CHANNEL);
+
+        if (isChannelScreenMounted || tabletDevice) {
+            markChannelAsRead(serverUrl, currentChannelId);
+            markChannelAsViewed(serverUrl, currentChannelId);
+        }
+
         // defer fetching posts for unread channels on initial team
         if (chData?.channels && chData.memberships) {
             fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, currentChannelId);
@@ -196,6 +207,21 @@ async function doReconnect(serverUrl: string) {
     // defer fetch channels and unread posts for other teams
     if (teamData.teams?.length && teamData.memberships?.length) {
         await fetchTeamsChannelsAndUnreadPosts(serverUrl, lastDisconnectedAt, teamData.teams, teamData.memberships, initialTeamId);
+    }
+
+    if (prefData.preferences && isCRTEnabled(prefData.preferences, config)) {
+        if (initialTeamId) {
+            await fetchNewThreads(serverUrl, initialTeamId, false);
+        }
+
+        if (teamData.teams?.length) {
+            for await (const team of teamData.teams) {
+                if (team.id !== initialTeamId) {
+                    // need to await here since GM/DM threads in different teams overlap
+                    await fetchNewThreads(serverUrl, team.id, false);
+                }
+            }
+        }
     }
 
     fetchAllTeams(serverUrl);
@@ -299,6 +325,7 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
 
         case WebsocketEvents.DIRECT_ADDED:
+        case WebsocketEvents.GROUP_ADDED:
             handleDirectAddedEvent(serverUrl, msg);
             break;
 

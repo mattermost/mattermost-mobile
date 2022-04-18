@@ -3,8 +3,8 @@
 //
 
 import DatabaseManager from '@database/manager';
-import IntegrationsMananger from '@init/integrations_manager';
-import NetworkManager from '@init/network_manager';
+import IntegrationsMananger from '@managers/integrations_manager';
+import NetworkManager from '@managers/network_manager';
 import {getCurrentChannelId, getCurrentTeamId} from '@queries/servers/system';
 
 import {forceLogoutIfNecessary} from './session';

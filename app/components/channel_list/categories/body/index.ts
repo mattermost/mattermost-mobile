@@ -11,6 +11,7 @@ import {General, Preferences} from '@constants';
 import {DMS_CATEGORY} from '@constants/categories';
 import {queryChannelsByNames, queryMyChannelSettingsByIds} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeCurrentUserId} from '@queries/servers/system';
 import {WithDatabaseArgs} from '@typings/database/database';
 import {getDirectChannelName} from '@utils/channel';
 
@@ -66,7 +67,7 @@ const observeSettings = (database: Database, channels: ChannelModel[]) => {
     return queryMyChannelSettingsByIds(database, ids).observeWithColumns(['notify_props']);
 };
 
-const getChannelsFromRelation = async (relations: CategoryChannelModel[] | MyChannelModel[]) => {
+export const getChannelsFromRelation = async (relations: CategoryChannelModel[] | MyChannelModel[]) => {
     return Promise.all(relations.map((r) => r.channel?.fetch()));
 };
 
@@ -99,9 +100,15 @@ const mapPrefName = (prefs: PreferenceModel[]) => of$(prefs.map((p) => p.name));
 
 const mapChannelIds = (channels: ChannelModel[]) => of$(channels.map((c) => c.id));
 
-type EnhanceProps = {category: CategoryModel; locale: string; currentUserId: string} & WithDatabaseArgs
+type EnhanceProps = {
+    category: CategoryModel;
+    locale: string;
+    currentUserId: string;
+} & WithDatabaseArgs
 
-const enhance = withObservables(['category'], ({category, locale, database, currentUserId}: EnhanceProps) => {
+const withUserId = withObservables([], ({database}: WithDatabaseArgs) => ({currentUserId: observeCurrentUserId(database)}));
+
+const enhance = withObservables(['category', 'locale'], ({category, locale, database, currentUserId}: EnhanceProps) => {
     const observedCategory = category.observe();
     const sortedChannels = observedCategory.pipe(
         switchMap((c) => getSortedChannels(database, c, locale)),
@@ -145,4 +152,4 @@ const enhance = withObservables(['category'], ({category, locale, database, curr
     };
 });
 
-export default withDatabase(enhance(CategoryBody));
+export default withDatabase(withUserId(enhance(CategoryBody)));

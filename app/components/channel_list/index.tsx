@@ -23,7 +23,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingRight: 20,
         paddingTop: 10,
     },
-
 }));
 
 type ChannelListProps = {
@@ -34,10 +33,21 @@ type ChannelListProps = {
     teamsCount: number;
 }
 
+const getTabletWidth = (teamsCount: number) => {
+    return TABLET_SIDEBAR_WIDTH - (teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0);
+};
+
 const ChannelList = ({channelsCount, currentTeamId, iconPad, isTablet, teamsCount}: ChannelListProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const tabletWidth = useSharedValue(TABLET_SIDEBAR_WIDTH);
+    const tabletWidth = useSharedValue(isTablet ? getTabletWidth(teamsCount) : 0);
+
+    useEffect(() => {
+        if (isTablet) {
+            tabletWidth.value = getTabletWidth(teamsCount);
+        }
+    }, [isTablet && teamsCount]);
+
     const tabletStyle = useAnimatedStyle(() => {
         if (!isTablet) {
             return {
@@ -47,12 +57,6 @@ const ChannelList = ({channelsCount, currentTeamId, iconPad, isTablet, teamsCoun
 
         return {maxWidth: withTiming(tabletWidth.value, {duration: 350})};
     }, [isTablet]);
-
-    useEffect(() => {
-        if (isTablet) {
-            tabletWidth.value = TABLET_SIDEBAR_WIDTH - (teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0);
-        }
-    }, [isTablet, teamsCount]);
 
     let content;
 

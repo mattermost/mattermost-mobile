@@ -8,6 +8,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {queryMyChannelsByTeam} from '@queries/servers/channel';
 import {observeCurrentTeamId} from '@queries/servers/system';
+import {observeMentionCount} from '@queries/servers/team';
 
 import TeamItem from './team_item';
 
@@ -20,10 +21,6 @@ type WithTeamsArgs = WithDatabaseArgs & {
 
 const enhance = withObservables(['myTeam'], ({myTeam, database}: WithTeamsArgs) => {
     const myChannels = queryMyChannelsByTeam(database, myTeam.id).observeWithColumns(['mentions_count', 'is_unread']);
-    const mentionCount = myChannels.pipe(
-        // eslint-disable-next-line max-nested-callbacks
-        switchMap((val) => of$(val.reduce((acc, v) => acc + v.mentionsCount, 0))),
-    );
     const hasUnreads = myChannels.pipe(
         // eslint-disable-next-line max-nested-callbacks
         switchMap((val) => of$(val.reduce((acc, v) => acc || v.isUnread, false))),
@@ -32,7 +29,7 @@ const enhance = withObservables(['myTeam'], ({myTeam, database}: WithTeamsArgs) 
     return {
         currentTeamId: observeCurrentTeamId(database),
         team: myTeam.team.observe(),
-        mentionCount,
+        mentionCount: observeMentionCount(database, myTeam.id, false),
         hasUnreads,
     };
 });

@@ -2,19 +2,20 @@
 // See LICENSE.txt for license information.
 
 import {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
-import * as FileSystem from 'expo-file-system';
 import React, {forwardRef, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, StatusBar, StatusBarStyle, StyleSheet, TouchableOpacity, View} from 'react-native';
 import FileViewer from 'react-native-file-viewer';
+import FileSystem from 'react-native-fs';
 import tinyColor from 'tinycolor2';
 
 import ProgressBar from '@components/progress_bar';
 import {DOWNLOAD_TIMEOUT} from '@constants/network';
 import {useServerUrl} from '@context/server';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {alertDownloadDocumentDisabled, alertDownloadFailed, alertFailedToOpenDocument} from '@utils/document';
 import {fileExists, getLocalFilePathFromFile} from '@utils/file';
+import {emptyFunction} from '@utils/general';
 
 import FileIcon from './file_icon';
 
@@ -83,7 +84,7 @@ const DocumentFile = forwardRef<DocumentFileRef, DocumentFileProps>(({background
             }
         } catch (error) {
             if (path) {
-                FileSystem.deleteAsync(path, {idempotent: true});
+                FileSystem.unlink(path).catch(emptyFunction);
             }
             setDownloading(false);
             setProgress(0);
@@ -136,7 +137,7 @@ const DocumentFile = forwardRef<DocumentFileRef, DocumentFileProps>(({background
                 onDonePreviewingFile();
 
                 if (path) {
-                    FileSystem.deleteAsync(path, {idempotent: true});
+                    FileSystem.unlink(path).catch(emptyFunction);
                 }
             });
         }

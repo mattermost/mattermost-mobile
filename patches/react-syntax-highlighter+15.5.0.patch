@@ -1,0 +1,7 @@
+diff --git a/node_modules/react-syntax-highlighter/create-element.js b/node_modules/react-syntax-highlighter/create-element.js
+index 76d3cf2..1951d6c 100644
+--- a/node_modules/react-syntax-highlighter/create-element.js
++++ b/node_modules/react-syntax-highlighter/create-element.js
+@@ -1 +1 @@
+-export { default } from './dist/esm/create-element';
++export { default, createStyleObject } from './dist/esm/create-element';

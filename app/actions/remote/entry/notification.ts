@@ -17,7 +17,7 @@ import {emitNotificationError} from '@utils/notification';
 
 import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, syncOtherServers, teamsToRemove} from './common';
 
-export const pushNotificationEntry = async (serverUrl: string, notification: NotificationWithData) => {
+export async function pushNotificationEntry(serverUrl: string, notification: NotificationWithData) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -137,4 +137,4 @@ export const pushNotificationEntry = async (serverUrl: string, notification: Not
     syncOtherServers(serverUrl);
     const error = teamData.error || chData?.error || prefData.error || meData.error;
     return {error, userId: meData?.user?.id};
-};
+}

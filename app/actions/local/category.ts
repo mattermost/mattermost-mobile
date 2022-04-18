@@ -30,7 +30,7 @@ export const deleteCategory = async (serverUrl: string, categoryId: string) => {
     }
 };
 
-export const storeCategories = async (serverUrl: string, categories: CategoryWithChannels[], prune = false, prepareRecordsOnly = false) => {
+export async function storeCategories(serverUrl: string, categories: CategoryWithChannels[], prune = false, prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
 
     if (!operator) {
@@ -83,7 +83,7 @@ export const storeCategories = async (serverUrl: string, categories: CategoryWit
     }
 
     return {models: flattenedModels};
-};
+}
 
 export const toggleCollapseCategory = async (serverUrl: string, categoryId: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl].database;

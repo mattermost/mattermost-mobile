@@ -4,11 +4,12 @@
 /* eslint-disable react/no-multi-comp */
 
 import * as ReactNative from 'react-native';
+import 'react-native-gesture-handler/jestSetup';
 import mockSafeAreaContext from 'react-native-safe-area-context/jest/mock';
 
-import 'react-native-gesture-handler/jestSetup';
-require('react-native-reanimated/lib/reanimated2/jestUtils').setUpTests();
+import type {ReadDirItem, StatResult} from 'react-native-fs';
 
+require('react-native-reanimated/lib/reanimated2/jestUtils').setUpTests();
 require('isomorphic-fetch');
 
 /* eslint-disable no-console */
@@ -173,14 +174,45 @@ jest.mock('react-native-vector-icons', () => {
     };
 });
 
-jest.mock('expo-file-system', () => ({
-    cacheDirectory: 'root/cache',
-    documentDirectory: 'root/documents',
-    deleteAsync: jest.fn().mockResolvedValue(true),
-    getInfoAsync: jest.fn().mockResolvedValue({exists: false}),
-    makeDirectoryAsync: jest.fn().mockResolvedValue(true),
-    readDirectoryAsync: jest.fn().mockResolvedValue([]),
-}));
+jest.mock('react-native-fs', () => {
+    const RNFS = {
+        CachesDirectoryPath: 'root/cache',
+        DocumentDirectoryPath: 'root/files',
+        exists: async () => {
+            return true;
+        },
+        unlink: async () => {
+            return true;
+        },
+        mkdir: async () => {
+            return true;
+        },
+        readDir: async (path: string): Promise<ReadDirItem[]> => {
+            return [{
+                ctime: undefined,
+                mtime: undefined,
+                name: 'testfile.test',
+                path,
+                size: 123,
+                isFile: () => true,
+                isDirectory: () => false,
+            }];
+        },
+        stat: async (path: string): Promise<StatResult> => ({
+            name: 'test name',
+            path,
+            size: 123,
+            mode: 600,
+            ctime: 0,
+            mtime: 0,
+            originalFilepath: path,
+            isFile: () => true,
+            isDirectory: () => false,
+        }),
+    };
+
+    return RNFS;
+});
 
 jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');

@@ -14,12 +14,18 @@ import {isTablet} from '@utils/helpers';
 
 import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, syncOtherServers, teamsToRemove} from './common';
 
-export const appEntry = async (serverUrl: string, since = 0) => {
+export async function appEntry(serverUrl: string, since = 0) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
     const {database} = operator;
+
+    // clear lastUnreadChannelId
+    const removeLastUnreadChannelId = await prepareCommonSystemValues(operator, {lastUnreadChannelId: ''});
+    if (removeLastUnreadChannelId) {
+        operator.batchRecords(removeLastUnreadChannelId);
+    }
 
     const tabletDevice = await isTablet();
     const currentTeamId = await getCurrentTeamId(database);
@@ -72,6 +78,7 @@ export const appEntry = async (serverUrl: string, since = 0) => {
     if (rolesData.roles?.length) {
         modelPromises.push(operator.handleRole({roles: rolesData.roles, prepareRecordsOnly: true}));
     }
+
     const models = await Promise.all(modelPromises);
     await operator.batchRecords(models.flat());
 
@@ -86,9 +93,9 @@ export const appEntry = async (serverUrl: string, since = 0) => {
 
     const error = teamData.error || chData?.error || prefData.error || meData.error;
     return {error, userId: meData?.user?.id};
-};
+}
 
-export const upgradeEntry = async (serverUrl: string) => {
+export async function upgradeEntry(serverUrl: string) {
     const dt = Date.now();
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -115,4 +122,4 @@ export const upgradeEntry = async (serverUrl: string) => {
     } catch (e) {
         return {error: e, time: Date.now() - dt};
     }
-};
+}

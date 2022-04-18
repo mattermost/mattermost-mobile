@@ -5,7 +5,7 @@ import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {prepareMyPreferences, queryPreferencesByCategoryAndName} from '@queries/servers/preference';
@@ -23,7 +23,7 @@ import {fetchMyTeams, MyTeamsRequest} from './team';
 
 import type {Model} from '@nozbe/watermelondb';
 
-export const retryInitialTeamAndChannel = async (serverUrl: string) => {
+export async function retryInitialTeamAndChannel(serverUrl: string) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -130,9 +130,9 @@ export const retryInitialTeamAndChannel = async (serverUrl: string) => {
     } catch (error) {
         return {error: true};
     }
-};
+}
 
-export const retryInitialChannel = async (serverUrl: string, teamId: string) => {
+export async function retryInitialChannel(serverUrl: string, teamId: string) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -209,4 +209,4 @@ export const retryInitialChannel = async (serverUrl: string, teamId: string) => 
     } catch (error) {
         return {error: true};
     }
-};
+}

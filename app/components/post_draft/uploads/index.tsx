@@ -12,7 +12,7 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 
 import {GalleryInit} from '@context/gallery';
 import {useTheme} from '@context/theme';
-import DraftUploadManager from '@init/draft_upload_manager';
+import DraftUploadManager from '@managers/draft_upload_manager';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 

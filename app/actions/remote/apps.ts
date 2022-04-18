@@ -6,7 +6,7 @@ import {IntlShape} from 'react-intl';
 import {sendEphemeralPost} from '@actions/local/post';
 import ClientError from '@client/rest/error';
 import {AppCallResponseTypes} from '@constants/apps';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {cleanForm, createCallRequest, makeCallErrorResponse} from '@utils/apps';
 
 import type {Client} from '@client/rest';

@@ -121,7 +121,7 @@ describe('switchToChannel', () => {
         const {systemValues, teamHistory, channelHistory, member} = await queryDatabaseValues(operator.database, teamId, channelId);
 
         expect(error).toBeUndefined();
-        expect(models?.length).toBe(1); // Viewed at
+        expect(models?.length).toBe(2); // Viewed at, lastUnread
         expect(systemValues.currentTeamId).toBe(teamId);
         expect(systemValues.currentChannelId).toBe(channelId);
         expect(teamHistory.length).toBe(0);
@@ -146,7 +146,7 @@ describe('switchToChannel', () => {
         const {systemValues, teamHistory, channelHistory, member} = await queryDatabaseValues(operator.database, teamId, channelId);
 
         expect(error).toBeUndefined();
-        expect(models?.length).toBe(3); // Viewed at, channel history and currentChannelId
+        expect(models?.length).toBe(4); // Viewed at, channel history and currentChannelId
         expect(systemValues.currentTeamId).toBe(teamId);
         expect(systemValues.currentChannelId).toBe(channelId);
         expect(teamHistory.length).toBe(0);
@@ -172,7 +172,7 @@ describe('switchToChannel', () => {
         const {systemValues, teamHistory, channelHistory, member} = await queryDatabaseValues(operator.database, teamId, channelId);
 
         expect(error).toBeUndefined();
-        expect(models?.length).toBe(5); // Viewed at, channel history, team history, currentTeamId and currentChannelId
+        expect(models?.length).toBe(6); // Viewed at, channel history, team history, currentTeamId and currentChannelId
         expect(systemValues.currentTeamId).toBe(teamId);
         expect(systemValues.currentChannelId).toBe(channelId);
         expect(teamHistory.length).toBe(1);
@@ -200,7 +200,7 @@ describe('switchToChannel', () => {
         const {systemValues, teamHistory, channelHistory, member} = await queryDatabaseValues(operator.database, teamId, channelId);
 
         expect(error).toBeUndefined();
-        expect(models?.length).toBe(4); // Viewed at, channel history, team history and currentTeamId
+        expect(models?.length).toBe(5); // Viewed at, channel history, team history and currentTeamId, lastUnread
         expect(systemValues.currentTeamId).toBe(teamId);
         expect(systemValues.currentChannelId).toBe(channelId);
         expect(teamHistory.length).toBe(1);
@@ -228,7 +228,7 @@ describe('switchToChannel', () => {
         const {systemValues, teamHistory, channelHistory, member} = await queryDatabaseValues(operator.database, teamId, channelId);
 
         expect(error).toBeUndefined();
-        expect(models?.length).toBe(5); // Viewed at, channel history, team history, currentTeamId and currentChannelId
+        expect(models?.length).toBe(6); // Viewed at, channel history, team history, currentTeamId and currentChannelId, lastUnread
         expect(systemValues.currentTeamId).toBe(teamId);
         expect(systemValues.currentChannelId).toBe(channelId);
         expect(teamHistory.length).toBe(1);
@@ -255,7 +255,7 @@ describe('switchToChannel', () => {
         const {systemValues, teamHistory, channelHistory, member} = await queryDatabaseValues(operator.database, teamId, channelId);
 
         expect(error).toBeUndefined();
-        expect(models?.length).toBe(5); // Viewed at, channel history, team history, currentTeamId and currentChannelId
+        expect(models?.length).toBe(6); // Viewed at, channel history, team history, currentTeamId and currentChannelId, lastUnread
         expect(systemValues.currentTeamId).toBe(teamId);
         expect(systemValues.currentChannelId).toBe(channelId);
         expect(teamHistory.length).toBe(1);
@@ -282,7 +282,7 @@ describe('switchToChannel', () => {
         const {systemValues, teamHistory, channelHistory, member} = await queryDatabaseValues(operator.database, teamId, channelId);
 
         expect(error).toBeUndefined();
-        expect(models?.length).toBe(3); // Viewed at, channel history and currentChannelId
+        expect(models?.length).toBe(4); // Viewed at, channel history and currentChannelId, lastUnread
         expect(systemValues.currentTeamId).toBe(teamId);
         expect(systemValues.currentChannelId).toBe(channelId);
         expect(teamHistory.length).toBe(0);
@@ -309,7 +309,7 @@ describe('switchToChannel', () => {
         const {systemValues, teamHistory, channelHistory, member} = await queryDatabaseValues(operator.database, teamId, channelId);
 
         expect(error).toBeUndefined();
-        expect(models?.length).toBe(3); // Viewed at, channel history and currentChannelId
+        expect(models?.length).toBe(4); // Viewed at, channel history and currentChannelId, lastUnread
         expect(systemValues.currentTeamId).toBe(teamId);
         expect(systemValues.currentChannelId).toBe(channelId);
         expect(teamHistory.length).toBe(0);
@@ -335,7 +335,7 @@ describe('switchToChannel', () => {
         const {systemValues, teamHistory, channelHistory, member} = await queryDatabaseValues(operator.database, teamId, channelId);
 
         expect(error).toBeUndefined();
-        expect(models?.length).toBe(5); // Viewed at, channel history, team history, currentTeamId and currentChannelId
+        expect(models?.length).toBe(6); // Viewed at, channel history, team history, currentTeamId and currentChannelId, lastUnread
         expect(systemValues.currentTeamId).toBe(teamId);
         expect(systemValues.currentChannelId).toBe(channelId);
         expect(teamHistory.length).toBe(1);
@@ -395,7 +395,7 @@ describe('switchToChannel', () => {
         const {systemValues, teamHistory, channelHistory, member} = await queryDatabaseValues(operator.database, teamId, channelId);
 
         expect(error).toBeUndefined();
-        expect(models?.length).toBe(5); // Viewed at, channel history, team history, currentTeamId and currentChannelId
+        expect(models?.length).toBe(6); // Viewed at, channel history, team history, currentTeamId and currentChannelId, lastunread
         expect(systemValues.currentTeamId).toBe(currentTeamId);
         expect(systemValues.currentChannelId).toBe(currentChannelId);
         expect(teamHistory.length).toBe(0);
@@ -422,7 +422,7 @@ describe('switchToChannel', () => {
         const {systemValues, teamHistory, channelHistory, member} = await queryDatabaseValues(operator.database, teamId, channelId);
 
         expect(error).toBeUndefined();
-        expect(models?.length).toBe(5); // Viewed at, channel history, team history, currentTeamId and currentChannelId
+        expect(models?.length).toBe(6); // Viewed at, channel history, team history, currentTeamId and currentChannelId, lastUnread
         expect(systemValues.currentTeamId).toBe(teamId);
         expect(systemValues.currentChannelId).toBe(channelId);
         expect(teamHistory.length).toBe(1);

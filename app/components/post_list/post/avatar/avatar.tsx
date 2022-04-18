@@ -11,7 +11,7 @@ import ProfilePicture from '@components/profile_picture';
 import {View as ViewConstant} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {showModal} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 

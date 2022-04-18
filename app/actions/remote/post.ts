@@ -16,7 +16,7 @@ import DatabaseManager from '@database/manager';
 import {filterPostsInOrderedArray} from '@helpers/api/post';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import {extractRecordsForTable} from '@helpers/database';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
@@ -52,7 +52,7 @@ type AuthorsRequest = {
     error?: unknown;
 }
 
-export const createPost = async (serverUrl: string, post: Partial<Post>, files: FileInfo[] = []): Promise<{data?: boolean; error?: any}> => {
+export async function createPost(serverUrl: string, post: Partial<Post>, files: FileInfo[] = []): Promise<{data?: boolean; error?: any}> {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -131,6 +131,10 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
             posts: [created],
             prepareRecordsOnly: true,
         });
+        const {member} = await updateLastPostAt(serverUrl, created.channel_id, created.create_at, true);
+        if (member) {
+            models.push(member);
+        }
         if (isCRTEnabled) {
             const {models: threadModels} = await createThreadFromNewPost(serverUrl, created, true);
             if (threadModels?.length) {
@@ -176,7 +180,7 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
     }
 
     return {data: true};
-};
+}
 
 export const fetchPostsForCurrentChannel = async (serverUrl: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -188,7 +192,7 @@ export const fetchPostsForCurrentChannel = async (serverUrl: string) => {
     return fetchPostsForChannel(serverUrl, currentChannelId);
 };
 
-export const fetchPostsForChannel = async (serverUrl: string, channelId: string, fetchOnly = false) => {
+export async function fetchPostsForChannel(serverUrl: string, channelId: string, fetchOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -222,6 +226,8 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string,
         }
 
         if (!fetchOnly) {
+            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+
             const models = [];
             const postModels = await operator.handlePosts({
                 actionType,
@@ -239,14 +245,18 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string,
 
             let lastPostAt = 0;
             for (const post of data.posts) {
-                lastPostAt = post.create_at > lastPostAt ? post.create_at : lastPostAt;
-            }
-            const {member: memberModel} = await updateLastPostAt(serverUrl, channelId, lastPostAt, true);
-            if (memberModel) {
-                models.push(memberModel);
+                if (!isCRTEnabled || post.root_id) {
+                    lastPostAt = post.create_at > lastPostAt ? post.create_at : lastPostAt;
+                }
             }
 
-            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            if (lastPostAt) {
+                const {member: memberModel} = await updateLastPostAt(serverUrl, channelId, lastPostAt, true);
+                if (memberModel) {
+                    models.push(memberModel);
+                }
+            }
+
             if (isCRTEnabled) {
                 const threadModels = await prepareThreadsFromReceivedPosts(operator, data.posts);
                 if (threadModels?.length) {
@@ -261,7 +271,7 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string,
     }
 
     return {posts: data.posts, order: data.order, authors, actionType, previousPostId: data.previousPostId};
-};
+}
 
 export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: Channel[], memberships: ChannelMembership[], excludeChannelId?: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -283,7 +293,7 @@ export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: C
     return {error: undefined};
 };
 
-export const fetchPosts = async (serverUrl: string, channelId: string, page = 0, perPage = General.POST_CHUNK_SIZE, fetchOnly = false): Promise<PostsRequest> => {
+export async function fetchPosts(serverUrl: string, channelId: string, page = 0, perPage = General.POST_CHUNK_SIZE, fetchOnly = false): Promise<PostsRequest> {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -318,9 +328,9 @@ export const fetchPosts = async (serverUrl: string, channelId: string, page = 0,
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
-};
+}
 
-export const fetchPostsBefore = async (serverUrl: string, channelId: string, postId: string, perPage = General.POST_CHUNK_SIZE, fetchOnly = false) => {
+export async function fetchPostsBefore(serverUrl: string, channelId: string, postId: string, perPage = General.POST_CHUNK_SIZE, fetchOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -385,9 +395,9 @@ export const fetchPostsBefore = async (serverUrl: string, channelId: string, pos
         }
         return {error};
     }
-};
+}
 
-export const fetchPostsSince = async (serverUrl: string, channelId: string, since: number, fetchOnly = false): Promise<PostsRequest> => {
+export async function fetchPostsSince(serverUrl: string, channelId: string, since: number, fetchOnly = false): Promise<PostsRequest> {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -423,7 +433,7 @@ export const fetchPostsSince = async (serverUrl: string, channelId: string, sinc
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
-};
+}
 
 export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOnly = false): Promise<AuthorsRequest> => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -496,7 +506,7 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
     }
 };
 
-export const fetchPostThread = async (serverUrl: string, postId: string, fetchOnly = false): Promise<PostsRequest> => {
+export async function fetchPostThread(serverUrl: string, postId: string, fetchOnly = false): Promise<PostsRequest> {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -510,7 +520,8 @@ export const fetchPostThread = async (serverUrl: string, postId: string, fetchOn
     }
 
     try {
-        const data = await client.getPostThread(postId);
+        const isCRTEnabled = await getIsCRTEnabled(operator.database);
+        const data = await client.getPostThread(postId, isCRTEnabled, isCRTEnabled);
         const result = processPostsFetched(data);
         if (!fetchOnly) {
             const models = await operator.handlePosts({
@@ -518,7 +529,6 @@ export const fetchPostThread = async (serverUrl: string, postId: string, fetchOn
                 actionType: ActionType.POSTS.RECEIVED_IN_THREAD,
                 prepareRecordsOnly: true,
             });
-            const isCRTEnabled = await getIsCRTEnabled(operator.database);
             if (isCRTEnabled) {
                 const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
                 if (threadModels?.length) {
@@ -532,7 +542,7 @@ export const fetchPostThread = async (serverUrl: string, postId: string, fetchOn
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
-};
+}
 
 export async function fetchPostsAround(serverUrl: string, channelId: string, postId: string, perPage = General.POST_AROUND_CHUNK_SIZE) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -667,7 +677,7 @@ export async function fetchMissingChannelsFromPosts(serverUrl: string, posts: Po
     }
 }
 
-export const fetchPostById = async (serverUrl: string, postId: string, fetchOnly = false) => {
+export async function fetchPostById(serverUrl: string, postId: string, fetchOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -717,7 +727,7 @@ export const fetchPostById = async (serverUrl: string, postId: string, fetchOnly
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
-};
+}
 
 export const togglePinPost = async (serverUrl: string, postId: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -805,8 +815,18 @@ export const markPostAsUnread = async (serverUrl: string, postId: string) => {
                 client.getChannelMember(channelId, userId),
             ]);
             if (channel && channelMember) {
-                const messageCount = channel.total_msg_count - channelMember.msg_count;
-                const mentionCount = channelMember.mention_count;
+                const isCRTEnabled = await getIsCRTEnabled(database);
+                let totalMessages = channel.total_msg_count;
+                let messages = channelMember.msg_count;
+                let mentionCount = channelMember.mention_count;
+
+                if (isCRTEnabled) {
+                    totalMessages = channel.total_msg_count_root!;
+                    messages = channelMember.msg_count_root!;
+                    mentionCount = channelMember.mention_count_root!;
+                }
+
+                const messageCount = totalMessages - messages;
                 await markChannelAsUnread(serverUrl, channelId, messageCount, mentionCount, post.createAt);
                 return {
                     post,

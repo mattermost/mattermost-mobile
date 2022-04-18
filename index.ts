@@ -8,15 +8,16 @@ import {ComponentDidAppearEvent, ComponentDidDisappearEvent, Navigation} from 'r
 import {Events, Screens} from './app/constants';
 import DatabaseManager from './app/database/manager';
 import {getAllServerCredentials} from './app/init/credentials';
-import GlobalEventHandler from './app/init/global_event_handler';
 import {initialLaunch} from './app/init/launch';
 import ManagedApp from './app/init/managed_app';
-import NetworkManager from './app/init/network_manager';
 import PushNotifications from './app/init/push_notifications';
-import WebsocketManager from './app/init/websocket_manager';
+import GlobalEventHandler from './app/managers/global_event_handler';
+import NetworkManager from './app/managers/network_manager';
+import WebsocketManager from './app/managers/websocket_manager';
 import {registerScreens} from './app/screens';
 import EphemeralStore from './app/store/ephemeral_store';
 import setFontFamily from './app/utils/font_family';
+import './app/utils/emoji'; // Imported to ensure it is loaded when used
 
 declare const global: { HermesInternal: null | {} };
 
@@ -27,6 +28,7 @@ if (__DEV__) {
         'scaleY',
         "[react-native-gesture-handler] Seems like you're using an old API with gesture components, check out new Gestures system!",
         'new NativeEventEmitter',
+        'ViewPropTypes will be removed from React Native',
     ]);
 }
 
