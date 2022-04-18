@@ -7,7 +7,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {removeUserFromTeam as localRemoveUserFromTeam} from '@actions/local/team';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected} from '@queries/servers/system';
@@ -274,7 +274,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     }
 
     const models = [];
-    const system = await prepareCommonSystemValues(operator, {currentChannelId: channelId, currentTeamId: teamId});
+    const system = await prepareCommonSystemValues(operator, {currentChannelId: channelId, currentTeamId: teamId, lastUnreadChannelId: ''});
     if (system?.length) {
         models.push(...system);
     }

@@ -11,7 +11,7 @@ import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {prepareModels} from '@queries/servers/entry';
 import {prepareCommonSystemValues} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory} from '@queries/servers/team';

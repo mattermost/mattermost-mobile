@@ -38,7 +38,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.sidebarText, 0.4),
         },
         iconActive: {
-            color: theme.sidebarTextActiveColor,
+            color: theme.sidebarText,
         },
         iconUnread: {
             color: theme.sidebarUnreadText,
@@ -53,7 +53,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center',
         },
         groupBoxActive: {
-            backgroundColor: changeOpacity(theme.sidebarTextActiveColor, 0.3),
+            backgroundColor: changeOpacity(theme.sidebarText, 0.3),
         },
         groupBoxUnread: {
             backgroundColor: changeOpacity(theme.sidebarUnreadText, 0.3),
@@ -66,7 +66,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Body', 75, 'SemiBold'),
         },
         groupActive: {
-            color: theme.sidebarTextActiveColor,
+            color: theme.sidebarText,
         },
         groupUnread: {
             color: theme.sidebarUnreadText,

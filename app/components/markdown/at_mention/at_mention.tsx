@@ -7,6 +7,7 @@ import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {GestureResponderEvent, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -14,6 +15,7 @@ import {MM_TABLES} from '@constants/database';
 import {useTheme} from '@context/theme';
 import UserModel from '@database/models/server/user';
 import {bottomSheet, dismissBottomSheet, showModal} from '@screens/navigation';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {displayUsername, getUsersByUsername} from '@utils/user';
 
 import type UserModelType from '@typings/database/models/servers/user';
@@ -54,6 +56,7 @@ const AtMention = ({
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const theme = useTheme();
+    const insets = useSafeAreaInsets();
     const user = useMemo(() => {
         const usersByUsername = getUsersByUsername(users);
         let mn = mentionName.toLowerCase();
@@ -146,12 +149,12 @@ const AtMention = ({
             bottomSheet({
                 closeButtonId: 'close-at-mention',
                 renderContent,
-                snapPoints: [3 * ITEM_HEIGHT, 10],
+                snapPoints: [bottomSheetSnapPoint(2, ITEM_HEIGHT, insets.bottom), 10],
                 title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
                 theme,
             });
         }
-    }, [managedConfig, intl, theme]);
+    }, [managedConfig, intl, theme, insets]);
 
     const mentionTextStyle = [];
 

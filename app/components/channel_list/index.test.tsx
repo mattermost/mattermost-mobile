@@ -3,7 +3,6 @@
 
 import Database from '@nozbe/watermelondb/Database';
 import React from 'react';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import ServerDataOperator from '@database/operator/server_data_operator';
@@ -31,14 +30,12 @@ describe('components/channel_list', () => {
 
     it('should render', () => {
         const wrapper = renderWithEverything(
-            <SafeAreaProvider>
-                <ChannelsList
-                    isTablet={false}
-                    teamsCount={1}
-                    currentTeamId={TestHelper.basicTeam!.id}
-                    channelsCount={1}
-                />
-            </SafeAreaProvider>,
+            <ChannelsList
+                isTablet={false}
+                teamsCount={1}
+                currentTeamId={TestHelper.basicTeam!.id}
+                channelsCount={1}
+            />,
             {database},
         );
         expect(wrapper.toJSON()).toBeTruthy();
@@ -51,14 +48,12 @@ describe('components/channel_list', () => {
         });
 
         const wrapper = renderWithEverything(
-            <SafeAreaProvider>
-                <ChannelsList
-                    isTablet={false}
-                    teamsCount={0}
-                    currentTeamId='TestHelper.basicTeam!.id'
-                    channelsCount={1}
-                />
-            </SafeAreaProvider>,
+            <ChannelsList
+                isTablet={false}
+                teamsCount={0}
+                currentTeamId='TestHelper.basicTeam!.id'
+                channelsCount={1}
+            />,
             {database},
         );
 
@@ -72,14 +67,12 @@ describe('components/channel_list', () => {
 
     it('should render channels error', () => {
         const wrapper = renderWithEverything(
-            <SafeAreaProvider>
-                <ChannelsList
-                    isTablet={false}
-                    teamsCount={1}
-                    currentTeamId={TestHelper.basicTeam!.id}
-                    channelsCount={0}
-                />
-            </SafeAreaProvider>,
+            <ChannelsList
+                isTablet={false}
+                teamsCount={1}
+                currentTeamId={TestHelper.basicTeam!.id}
+                channelsCount={0}
+            />,
             {database},
         );
         expect(wrapper.toJSON()).toMatchSnapshot();

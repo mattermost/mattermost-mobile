@@ -9,7 +9,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import CompassIcon from '@components/compass_icon';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {observeConfig} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
 import {WithDatabaseArgs} from '@typings/database/database';

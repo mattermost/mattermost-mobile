@@ -5,6 +5,7 @@ import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
 import {render} from '@testing-library/react-native';
 import React, {ReactElement} from 'react';
 import {createIntl, IntlProvider} from 'react-intl';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import {ThemeContext, getDefaultThemeByAppearance} from '@context/theme';
 import {getTranslations} from '@i18n';
@@ -25,7 +26,9 @@ export function renderWithIntl(ui: ReactElement, {locale = 'en', ...renderOption
                 locale={locale}
                 messages={getTranslations(locale)}
             >
-                {children}
+                <SafeAreaProvider>
+                    {children}
+                </SafeAreaProvider>
             </IntlProvider>
         );
     }
@@ -41,7 +44,9 @@ export function renderWithIntlAndTheme(ui: ReactElement, {locale = 'en', ...rend
                 messages={getTranslations(locale)}
             >
                 <ThemeContext.Provider value={getDefaultThemeByAppearance()}>
-                    {children}
+                    <SafeAreaProvider>
+                        {children}
+                    </SafeAreaProvider>
                 </ThemeContext.Provider>
             </IntlProvider>
         );
@@ -63,7 +68,9 @@ export function renderWithEverything(ui: ReactElement, {locale = 'en', database,
                     messages={getTranslations(locale)}
                 >
                     <ThemeContext.Provider value={getDefaultThemeByAppearance()}>
-                        {children}
+                        <SafeAreaProvider>
+                            {children}
+                        </SafeAreaProvider>
                     </ThemeContext.Provider>
                 </IntlProvider>
             </DatabaseProvider>

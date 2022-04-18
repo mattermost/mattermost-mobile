@@ -4,6 +4,7 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {TextStyle} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {setStatus} from '@actions/remote/user';
 import MenuItem from '@components/menu_item';
@@ -13,6 +14,7 @@ import UserStatusIndicator from '@components/user_status';
 import General from '@constants/general';
 import {useServerUrl} from '@context/server';
 import {bottomSheet, dismissBottomSheet, dismissModal} from '@screens/navigation';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity} from '@utils/theme';
 import {confirmOutOfOfficeDisabled} from '@utils/user';
@@ -29,6 +31,7 @@ const {OUT_OF_OFFICE, OFFLINE, AWAY, ONLINE, DND} = General;
 
 const UserStatus = ({currentUser, style, theme}: Props) => {
     const intl = useIntl();
+    const insets = useSafeAreaInsets();
     const serverUrl = useServerUrl();
 
     const handleSetStatus = useCallback(preventDoubleTap(() => {
@@ -83,14 +86,15 @@ const UserStatus = ({currentUser, style, theme}: Props) => {
             );
         };
 
+        const snapPoint = bottomSheetSnapPoint(4, ITEM_HEIGHT, insets.bottom);
         bottomSheet({
             closeButtonId: 'close-set-user-status',
             renderContent,
-            snapPoints: [(5 * ITEM_HEIGHT) + 10, 10],
+            snapPoints: [snapPoint, 10],
             title: intl.formatMessage({id: 'account.user_status.title', defaultMessage: 'User Presence'}),
             theme,
         });
-    }), [theme]);
+    }), [theme, insets]);
 
     const updateStatus = useCallback((status: string) => {
         const userStatus = {

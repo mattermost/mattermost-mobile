@@ -5,8 +5,8 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {Events} from '@constants';
 import {t} from '@i18n';
-import {Analytics, create} from '@init/analytics';
 import {setServerCredentials} from '@init/credentials';
+import {Analytics, create} from '@managers/analytics';
 import {semverFromServerVersion} from '@utils/server';
 
 import * as ClientConstants from './constants';

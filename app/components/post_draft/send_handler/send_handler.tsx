@@ -13,7 +13,7 @@ import {setStatus} from '@actions/remote/user';
 import {Events, Screens} from '@constants';
 import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
 import {useServerUrl} from '@context/server';
-import DraftUploadManager from '@init/draft_upload_manager';
+import DraftUploadManager from '@managers/draft_upload_manager';
 import * as DraftUtils from '@utils/draft';
 import {isReactionMatch} from '@utils/emoji/helpers';
 import {preventDoubleTap} from '@utils/tap';

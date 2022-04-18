@@ -18,8 +18,8 @@ const {DraftUploadManager} = exportedForTesting;
 const url = 'baseHandler.test.com';
 const mockClient = TestHelper.createClient();
 
-jest.mock('@init/network_manager', () => {
-    const original = jest.requireActual('@init/network_manager');
+jest.mock('@managers/network_manager', () => {
+    const original = jest.requireActual('@managers/network_manager');
     return {
         ...original,
         getClient: (serverUrl: string) => {

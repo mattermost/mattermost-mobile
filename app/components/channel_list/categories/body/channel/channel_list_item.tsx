@@ -22,7 +22,7 @@ import type MyChannelModel from '@typings/database/models/servers/my_channel';
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flexDirection: 'row',
-        paddingLeft: 2,
+        paddingHorizontal: 20,
         height: 40,
         alignItems: 'center',
     },
@@ -52,6 +52,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     mutedBadge: {
         opacity: 0.4,
     },
+    activeItem: {
+        backgroundColor: changeOpacity(theme.sidebarTextActiveColor, 0.1),
+        borderLeftColor: theme.sidebarTextActiveBorder,
+        borderLeftWidth: 5,
+        marginLeft: 0,
+        paddingLeft: 14,
+    },
+    textActive: {
+        color: theme.sidebarText,
+    },
+
 }));
 
 const textStyle = StyleSheet.create({
@@ -66,10 +77,11 @@ type Props = {
     myChannel?: MyChannelModel;
     collapsed: boolean;
     currentUserId: string;
+    isVisible: boolean;
     testID?: string;
 }
 
-const ChannelListItem = ({channel, isActive, currentUserId, isMuted, myChannel, collapsed, testID}: Props) => {
+const ChannelListItem = ({channel, isActive, currentUserId, isMuted, isVisible, myChannel, collapsed, testID}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -78,13 +90,14 @@ const ChannelListItem = ({channel, isActive, currentUserId, isMuted, myChannel, 
     const isOwnDirectMessage = (channel.type === General.DM_CHANNEL) && currentUserId === getUserIdFromChannelName(currentUserId, channel.name);
 
     // Make it brighter if it's not muted, and highlighted or has unreads
-    const bright = !isMuted && (isActive || (myChannel && (myChannel.isUnread || myChannel.mentionsCount > 0)));
+    const isUnread = !isMuted && (myChannel && (myChannel.isUnread || myChannel.mentionsCount > 0));
 
-    const sharedValue = useSharedValue(collapsed && !bright);
+    const shouldCollapse = (collapsed && !isUnread) && !isActive;
+    const sharedValue = useSharedValue(shouldCollapse);
 
     useEffect(() => {
-        sharedValue.value = collapsed && !bright;
-    }, [collapsed && !bright]);
+        sharedValue.value = shouldCollapse;
+    }, [shouldCollapse]);
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
@@ -99,6 +112,7 @@ const ChannelListItem = ({channel, isActive, currentUserId, isMuted, myChannel, 
             switchToChannelById(serverUrl, myChannel.id);
         }
     }, [myChannel?.id, serverUrl]);
+
     const membersCount = useMemo(() => {
         if (channel.type === General.GM_CHANNEL) {
             return channel.displayName.split(',').length;
@@ -107,18 +121,19 @@ const ChannelListItem = ({channel, isActive, currentUserId, isMuted, myChannel, 
     }, [channel.type, channel.displayName]);
 
     const textStyles = useMemo(() => [
-        bright ? textStyle.bright : textStyle.regular,
+        isUnread ? textStyle.bright : textStyle.regular,
         styles.text,
-        bright && styles.highlight,
+        isUnread && styles.highlight,
         isMuted && styles.muted,
-    ], [bright, styles, isMuted]);
+        isActive ? styles.textActive : null,
+    ], [isUnread, styles, isMuted]);
 
     let displayName = channel.displayName;
     if (isOwnDirectMessage) {
         displayName = formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
     }
 
-    if ((channel.deleteAt > 0 && !isActive) || !myChannel) {
+    if ((channel.deleteAt > 0 && !isActive) || !myChannel || !isVisible) {
         return null;
     }
 
@@ -126,7 +141,7 @@ const ChannelListItem = ({channel, isActive, currentUserId, isMuted, myChannel, 
         <Animated.View style={animatedStyle}>
             <TouchableOpacity onPress={switchChannels}>
                 <View
-                    style={styles.container}
+                    style={[styles.container, isActive && styles.activeItem]}
                     testID={`${testID}.${channel.name}.collapsed.${collapsed && !isActive}`}
                 >
                     <ChannelIcon
