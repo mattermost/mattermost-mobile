@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {KeyboardTypeOptions} from 'react-native';
+
 type DialogError = {
     id: string;
     defaultMessage: string;
@@ -83,4 +85,19 @@ export function checkIfErrorsMatchElements(errors: {
     }
 
     return false;
+}
+
+export function selectKeyboardType(subtype?: string): KeyboardTypeOptions {
+    switch (subtype) {
+        case 'email':
+            return 'email-address';
+        case 'number':
+            return 'numeric';
+        case 'tel':
+            return 'phone-pad';
+        case 'url':
+            return 'url';
+        default:
+            return 'default';
+    }
 }

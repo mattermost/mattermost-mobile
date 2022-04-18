@@ -36,7 +36,7 @@ type Props = {
     helpText?: string;
     errorText?: string;
 }
-function Label({
+function Footer({
     disabled,
     disabledText,
     helpText,
@@ -86,4 +86,4 @@ function Label({
     );
 }
 
-export default Label;
+export default Footer;

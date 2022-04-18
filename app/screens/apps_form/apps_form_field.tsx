@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {KeyboardTypeOptions, View} from 'react-native';
+import {View} from 'react-native';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
 import Markdown from '@components/markdown';
@@ -11,6 +11,7 @@ import TextSetting from '@components/settings/text_setting';
 import {View as ViewConstants} from '@constants';
 import {AppFieldTypes} from '@constants/apps';
 import {useTheme} from '@context/theme';
+import {selectKeyboardType} from '@utils/integrations';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -40,18 +41,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-function selectKeyboardType(subtype?: string): KeyboardTypeOptions {
-    switch (subtype) {
-        case 'email':
-            return 'email-address';
-        case 'number':
-            return 'numeric';
-        case 'tel':
-            return 'phone-pad';
-        case 'url':
-            return 'url';
+function selectDataSource(fieldType: string): string {
+    switch (fieldType) {
+        case AppFieldTypes.USER:
+            return ViewConstants.DATA_SOURCE_USERS;
+        case AppFieldTypes.CHANNEL:
+            return ViewConstants.DATA_SOURCE_CHANNELS;
+        case AppFieldTypes.DYNAMIC_SELECT:
+            return ViewConstants.DATA_SOURCE_DYNAMIC;
         default:
-            return 'default';
+            return '';
     }
 }
 
@@ -106,29 +105,15 @@ function AppsFormField({
         case AppFieldTypes.CHANNEL:
         case AppFieldTypes.STATIC_SELECT:
         case AppFieldTypes.DYNAMIC_SELECT: {
-            let dataSource = '';
-            let options: DialogOption[] = [];
-
-            switch (field.type) {
-                case AppFieldTypes.USER:
-                    dataSource = ViewConstants.DATA_SOURCE_USERS;
-                    break;
-                case AppFieldTypes.CHANNEL:
-                    dataSource = ViewConstants.DATA_SOURCE_CHANNELS;
-                    break;
-                case AppFieldTypes.DYNAMIC_SELECT:
-                    dataSource = ViewConstants.DATA_SOURCE_DYNAMIC;
-                    break;
-                case AppFieldTypes.STATIC_SELECT:
-                    if (field.options) {
-                        options = field.options.map((option) => ({text: option.label, value: option.value}));
-                    }
+            let options: DialogOption[] | undefined;
+            if (field.type === AppFieldTypes.STATIC_SELECT && field.options) {
+                options = field.options.map((option) => ({text: option.label, value: option.value}));
             }
 
             return (
                 <AutocompleteSelector
                     label={displayName}
-                    dataSource={dataSource}
+                    dataSource={selectDataSource(field.type)}
                     options={options}
                     optional={!field.is_required}
                     onSelected={handleChange}

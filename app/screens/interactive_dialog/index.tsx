@@ -132,7 +132,7 @@ function InteractiveDialog({
         setButtons(componentId, {
             leftButtons: [makeCloseButton(icon)],
         });
-    }, [theme]);
+    }, [theme.sidebarHeaderTextColor]);
 
     const handleSubmit = useCallback(async () => {
         const newErrors: Errors = {};

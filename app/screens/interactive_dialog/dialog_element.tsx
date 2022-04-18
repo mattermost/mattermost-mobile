@@ -8,6 +8,7 @@ import AutocompleteSelector from '@components/autocomplete_selector';
 import BoolSetting from '@components/settings/bool_setting';
 import RadioSetting from '@components/settings/radio_setting';
 import TextSetting from '@components/settings/text_setting';
+import {selectKeyboardType as selectKB} from '@utils/integrations';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
@@ -17,18 +18,7 @@ function selectKeyboardType(type: InteractiveDialogElementType, subtype?: Intera
         return 'default';
     }
 
-    switch (subtype) {
-        case 'email':
-            return 'email-address';
-        case 'number':
-            return 'numeric';
-        case 'tel':
-            return 'phone-pad';
-        case 'url':
-            return 'url';
-        default:
-            return 'default';
-    }
+    return selectKB(subtype);
 }
 
 type Props = {
