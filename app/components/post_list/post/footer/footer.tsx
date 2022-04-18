@@ -16,11 +16,9 @@ import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    currentUserId: string;
     participants: UserModel[];
     serverUrl: string;
     teamId: string;
-    teammateNameDisplay: string;
     testID: string;
     theme: Theme;
     thread: ThreadModel;
@@ -79,7 +77,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Footer = ({currentUserId, participants, serverUrl, teamId, teammateNameDisplay, testID, theme, thread}: Props) => {
+const Footer = ({participants, serverUrl, teamId, testID, theme, thread}: Props) => {
     const styles = getStyleSheet(theme);
     const onUnfollow = useCallback(preventDoubleTap(() => {
         updateThreadFollowing(serverUrl, teamId, thread.id, false);
@@ -158,9 +156,7 @@ const Footer = ({currentUserId, participants, serverUrl, teamId, teammateNameDis
     if (participantsList.length) {
         userAvatarsStack = (
             <UserAvatarsStack
-                currentUserId={currentUserId}
                 style={styles.avatarsContainer}
-                teammateNameDisplay={teammateNameDisplay}
                 users={participantsList}
             />
         );

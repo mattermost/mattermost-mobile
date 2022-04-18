@@ -4,13 +4,12 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
+import {BaseOption} from '@components/common_post_options';
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
-
-import BaseOption from './base_option';
 
 import type PostModel from '@typings/database/models/servers/post';
 

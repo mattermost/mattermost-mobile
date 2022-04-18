@@ -277,7 +277,6 @@ const Post = ({
         if (thread.replyCount > 0 || thread.isFollowing) {
             footer = (
                 <Footer
-                    currentUserId={currentUser.id}
                     serverUrl={serverUrl}
                     teamId={teamId}
                     testID={`${itemTestID}.footer`}

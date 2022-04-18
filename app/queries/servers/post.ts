@@ -5,7 +5,10 @@ import {Database, Model, Q, Query} from '@nozbe/watermelondb';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
+
+import {queryPreferencesByCategoryAndName} from './preference';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type PostInChannelModel from '@typings/database/models/servers/posts_in_channel';
@@ -48,6 +51,14 @@ export const getPostById = async (database: Database, postId: string) => {
 export const observePost = (database: Database, postId: string) => {
     return database.get<PostModel>(POST).query(Q.where('id', postId), Q.take(1)).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+    );
+};
+
+export const observePostSaved = (database: Database, postId: string) => {
+    return queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, postId).observe().pipe(
+        switchMap(
+            (pref) => of$(Boolean(pref[0]?.value === 'true')),
+        ),
     );
 };
 
