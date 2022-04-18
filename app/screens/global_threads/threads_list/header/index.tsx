@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, TouchableOpacity, View} from 'react-native';
 
@@ -8,6 +8,7 @@ import {updateTeamThreadsAsRead} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export type Tab = 'all' | 'unreads';
@@ -88,7 +89,7 @@ const Header = ({setTab, tab, teamId, testID, theme, unreadsCount}: Props) => {
     const hasUnreads = unreadsCount > 0;
     const viewingUnreads = tab === 'unreads';
 
-    const handleMarkAllAsRead = () => {
+    const handleMarkAllAsRead = useCallback(preventDoubleTap(() => {
         Alert.alert(
             intl.formatMessage({
                 id: 'global_threads.markAllRead.title',
@@ -115,7 +116,36 @@ const Header = ({setTab, tab, teamId, testID, theme, unreadsCount}: Props) => {
                 },
             }],
         );
-    };
+    }), []);
+
+    const handleViewAllThreads = useCallback(preventDoubleTap(() => setTab('all')), []);
+    const handleViewUnreadThreads = useCallback(preventDoubleTap(() => setTab('unreads')), []);
+
+    const {allThreadsContainerStyle, allThreadsStyle, unreadsContainerStyle, unreadsStyle} = useMemo(() => {
+        return {
+            allThreadsContainerStyle: [
+                styles.menuItemContainer,
+                viewingUnreads ? undefined : styles.menuItemContainerSelected,
+            ],
+            allThreadsStyle: [
+                styles.menuItem,
+                viewingUnreads ? {} : styles.menuItemSelected,
+            ],
+            unreadsContainerStyle: [
+                styles.menuItemContainer,
+                viewingUnreads ? styles.menuItemContainerSelected : undefined,
+            ],
+            unreadsStyle: [
+                styles.menuItem,
+                viewingUnreads ? styles.menuItemSelected : {},
+            ],
+        };
+    }, [styles, viewingUnreads]);
+
+    const markAllStyle = useMemo(() => [
+        styles.markAllReadIcon,
+        hasUnreads ? undefined : styles.markAllReadIconDisabled,
+    ], [styles, hasUnreads]);
 
     const testIDPrefix = `${testID}.header`;
 
@@ -123,27 +153,27 @@ const Header = ({setTab, tab, teamId, testID, theme, unreadsCount}: Props) => {
         <View style={styles.container}>
             <View style={styles.menuContainer}>
                 <TouchableOpacity
-                    onPress={() => setTab('all')}
+                    onPress={handleViewAllThreads}
                     testID={`${testIDPrefix}.all_threads`}
                 >
-                    <View style={[styles.menuItemContainer, viewingUnreads ? undefined : styles.menuItemContainerSelected]}>
+                    <View style={allThreadsContainerStyle}>
                         <FormattedText
                             id='global_threads.allThreads'
                             defaultMessage='All your threads'
-                            style={[styles.menuItem, viewingUnreads ? {} : styles.menuItemSelected]}
+                            style={allThreadsStyle}
                         />
                     </View>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    onPress={() => setTab('unreads')}
+                    onPress={handleViewUnreadThreads}
                     testID={`${testIDPrefix}.unread_threads`}
                 >
-                    <View style={[styles.menuItemContainer, viewingUnreads ? styles.menuItemContainerSelected : undefined]}>
+                    <View style={unreadsContainerStyle}>
                         <View>
                             <FormattedText
                                 id='global_threads.unreads'
                                 defaultMessage='Unreads'
-                                style={[styles.menuItem, viewingUnreads ? styles.menuItemSelected : {}]}
+                                style={unreadsStyle}
                             />
                             {hasUnreads ? (
                                 <View
@@ -163,7 +193,7 @@ const Header = ({setTab, tab, teamId, testID, theme, unreadsCount}: Props) => {
                 >
                     <CompassIcon
                         name='playlist-check'
-                        style={[styles.markAllReadIcon, hasUnreads ? undefined : styles.markAllReadIconDisabled]}
+                        style={markAllStyle}
                     />
                 </TouchableOpacity>
             </View>

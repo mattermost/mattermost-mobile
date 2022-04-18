@@ -146,9 +146,9 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, theme, thre
         } else {
             showModalOverCurrentContext(Screens.THREAD_OPTIONS, passProps);
         }
-    }, [isTablet, thread]);
+    }, [isTablet, theme, thread]);
 
-    const threadStarterName = displayUsername(author, undefined, teammateNameDisplay);
+    const threadStarterName = displayUsername(author, intl.locale, teammateNameDisplay);
     const testIDPrefix = `${testID}.${thread.id}`;
 
     const needBadge = thread.unreadMentions || thread.unreadReplies;

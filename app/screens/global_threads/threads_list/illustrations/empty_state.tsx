@@ -9,6 +9,7 @@ import Svg, {
     ClipPath,
 } from 'react-native-svg';
 
+import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {IntlShape} from 'react-intl';
@@ -16,7 +17,6 @@ import type {IntlShape} from 'react-intl';
 type Props = {
     intl: IntlShape;
     isUnreads: boolean;
-    theme: Theme;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -46,7 +46,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-function EmptyState({intl, isUnreads, theme}: Props) {
+function EmptyState({intl, isUnreads}: Props) {
+    const theme = useTheme();
     const style = getStyleSheet(theme);
     let title;
     let subTitle;

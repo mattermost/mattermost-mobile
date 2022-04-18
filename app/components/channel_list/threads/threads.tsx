@@ -49,14 +49,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 type Props = {
     currentChannelId: string;
-    isCRTEnabled: boolean;
     unreadsAndMentions: {
         unreads: number;
         mentions: number;
     };
 };
 
-const ThreadsButton = ({currentChannelId, isCRTEnabled, unreadsAndMentions}: Props) => {
+const ThreadsButton = ({currentChannelId, unreadsAndMentions}: Props) => {
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
 
@@ -65,7 +64,7 @@ const ThreadsButton = ({currentChannelId, isCRTEnabled, unreadsAndMentions}: Pro
 
     const handlePress = useCallback(preventDoubleTap(() => {
         switchToGlobalThreads(serverUrl);
-    }), [isTablet, serverUrl]);
+    }), [serverUrl]);
 
     const {unreads, mentions} = unreadsAndMentions;
 
@@ -76,16 +75,12 @@ const ThreadsButton = ({currentChannelId, isCRTEnabled, unreadsAndMentions}: Pro
         // Highlight the menu if:
         // 1. There are unreads
         // 2. No channel is selected and it's a tablet, which means thread screen is selected
-        if (unreads || (!currentChannelId && isTablet)) {
+        if (unreads || (isTablet && !currentChannelId)) {
             icon.push(styles.iconHighlight);
             text.push(styles.textHighlight);
         }
         return [icon, text];
     }, [currentChannelId, isTablet, styles, unreads]);
-
-    if (!isCRTEnabled) {
-        return null;
-    }
 
     return (
         <TouchableOpacity onPress={handlePress} >

@@ -6,12 +6,12 @@ import {useIntl} from 'react-intl';
 import {FlatList, Platform, StyleSheet} from 'react-native';
 
 import {fetchThreads} from '@actions/remote/thread';
-import {General} from '@app/constants';
 import Loading from '@components/loading';
+import {General} from '@constants';
 
-import EmptyState from './empty_state';
 import EndOfList from './end_of_list';
 import Header, {Tab} from './header';
+import EmptyState from './illustrations/empty_state';
 import Thread from './thread';
 
 import type ThreadModel from '@typings/database/models/servers/thread';
@@ -56,7 +56,7 @@ const ThreadsList = ({
 }: Props) => {
     const intl = useIntl();
     const hasCalled = useRef(false);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [endReached, setEndReached] = useState(false);
 
     const noThreads = !threads?.length;
@@ -70,10 +70,8 @@ const ThreadsList = ({
                 hasCalled.current = true;
                 setIsLoading(false);
             });
-        } else {
-            setIsLoading(false);
         }
-    }, [serverUrl, tab, noThreads, teamId]);
+    }, [noThreads]);
 
     const listEmptyComponent = useMemo(() => {
         if (isLoading) {
@@ -88,10 +86,9 @@ const ThreadsList = ({
             <EmptyState
                 intl={intl}
                 isUnreads={tab === 'unreads'}
-                theme={theme}
             />
         );
-    }, [theme, tab, isLoading]);
+    }, [isLoading, intl, theme, tab]);
 
     const listFooterComponent = useMemo(() => {
         if (tab === 'unreads' || !threads.length) {
@@ -112,7 +109,7 @@ const ThreadsList = ({
         }
 
         return null;
-    }, [isLoading, tab, theme, endReached]);
+    }, [isLoading, intl, tab, theme, endReached]);
 
     const handleEndReached = useCallback(() => {
         if (!lastThread || tab === 'unreads' || endReached) {
@@ -132,7 +129,7 @@ const ThreadsList = ({
         }).finally(() => {
             setIsLoading(false);
         });
-    }, [lastThread?.id, tab, endReached]);
+    }, [endReached, lastThread?.id, serverUrl, tab, teamId]);
 
     const renderItem = useCallback(({item}) => (
         <Thread
@@ -141,7 +138,7 @@ const ThreadsList = ({
             thread={item}
             theme={theme}
         />
-    ), [theme]);
+    ), [teammateNameDisplay, testID, theme]);
 
     return (
         <>

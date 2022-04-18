@@ -5,7 +5,9 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useEffect} from 'react';
 import {View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import FormattedText from '@components/formatted_text';
 import {ITEM_HEIGHT} from '@components/menu_item';
 import {Screens} from '@constants';
@@ -13,20 +15,20 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissModal} from '@screens/navigation';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import CopyLinkOption from './options/copy_link_option';
 import MarkAsUnreadOption from './options/mark_as_unread_option';
 import OpenInChannelOption from './options/open_in_channel_option';
-import ReplyOption from './options/reply_option';
-import SaveOption from './options/save_option';
-import UnfollowThreadOption from './options/unfollow_thread_option';
 
+import type PostModel from '@typings/database/models/servers/post';
 import type TeamModel from '@typings/database/models/servers/team';
 import type ThreadModel from '@typings/database/models/servers/thread';
 
-type PostOptionsProps = {
+type ThreadOptionsProps = {
     componentId: string;
+    isSaved: boolean;
+    post: PostModel;
     team: TeamModel;
     thread: ThreadModel;
 };
@@ -46,11 +48,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const ThreadOptions = ({
     componentId,
+    isSaved,
+    post,
     team,
     thread,
-}: PostOptionsProps) => {
+}: ThreadOptionsProps) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
+
+    const insets = useSafeAreaInsets();
 
     const style = getStyleSheet(theme);
 
@@ -74,12 +80,13 @@ const ThreadOptions = ({
     const options = [
         <ReplyOption
             key='reply'
-            threadId={thread.id}
+            location={Screens.THREAD_OPTIONS}
+            post={post}
         />,
-        <UnfollowThreadOption
+        <FollowThreadOption
             key='unfollow'
-            teamId={team.id}
-            threadId={thread.id}
+            channelId={post.channelId}
+            thread={thread}
         />,
         <OpenInChannelOption
             key='open-in-channel'
@@ -92,7 +99,8 @@ const ThreadOptions = ({
         />,
         <SaveOption
             key='save'
-            threadId={thread.id}
+            isSaved={isSaved}
+            postId={post.id}
         />,
     ];
 
@@ -100,10 +108,9 @@ const ThreadOptions = ({
     const canCopyLink = managedConfig?.copyAndPasteProtection !== 'true';
     if (canCopyLink) {
         options.push(
-            <CopyLinkOption
+            <CopyPermalinkOption
                 key='copy-link'
-                team={team}
-                threadId={thread.id}
+                post={post}
             />,
         );
     }
@@ -129,7 +136,7 @@ const ThreadOptions = ({
             closeButtonId='close-thread-options'
             componentId={Screens.THREAD_OPTIONS}
             initialSnapIndex={0}
-            snapPoints={[((options.length + 2) * ITEM_HEIGHT), 10]}
+            snapPoints={[bottomSheetSnapPoint(options.length, ITEM_HEIGHT, insets.bottom), 10]}
         />
     );
 };

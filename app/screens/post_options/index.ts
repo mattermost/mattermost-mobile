@@ -6,12 +6,12 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$, Observable} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {General, Permissions, Post, Preferences, Screens} from '@constants';
+import {General, Permissions, Post, Screens} from '@constants';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
-import {observePost} from '@queries/servers/post';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observePost, observePostSaved} from '@queries/servers/post';
 import {observePermissionForChannel, observePermissionForPost} from '@queries/servers/role';
 import {observeConfig, observeLicense} from '@queries/servers/system';
+import {observeIsCRTEnabled, observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
@@ -112,7 +112,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
         return of$(!isSystemMessage(post) && !isArchived && !isReadOnly);
     }));
 
-    const isSaved = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, post.id).observe().pipe(switchMap((pref) => of$(Boolean(pref[0]?.value === 'true'))));
+    const isSaved = observePostSaved(database, post.id);
 
     const canEdit = combineLatest([postEditTimeLimit, isLicensed, channel, currentUser, channelIsArchived, channelIsReadOnly, canEditUntil, canPostPermission]).pipe(
         switchMap(([lt, ls, c, u, isArchived, isReadOnly, until, canPost]) => {
@@ -140,6 +140,10 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
         return of$(permission && !isArchived && !isReadOnly && canPost);
     }));
 
+    const thread = observeIsCRTEnabled(database).pipe(
+        switchMap((enabled) => (enabled ? observeThreadById(database, post.id) : of$(undefined))),
+    );
+
     return {
         canMarkAsUnread,
         canAddReaction,
@@ -150,6 +154,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
         isSaved,
         canEdit,
         post,
+        thread,
     };
 });
 

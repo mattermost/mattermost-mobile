@@ -29,6 +29,7 @@ type ChannelListProps = {
     channelsCount: number;
     currentTeamId?: string;
     iconPad?: boolean;
+    isCRTEnabled?: boolean;
     isTablet: boolean;
     teamsCount: number;
 }
@@ -37,7 +38,7 @@ const getTabletWidth = (teamsCount: number) => {
     return TABLET_SIDEBAR_WIDTH - (teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0);
 };
 
-const ChannelList = ({channelsCount, currentTeamId, iconPad, isTablet, teamsCount}: ChannelListProps) => {
+const ChannelList = ({channelsCount, currentTeamId, iconPad, isCRTEnabled, isTablet, teamsCount}: ChannelListProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const tabletWidth = useSharedValue(isTablet ? getTabletWidth(teamsCount) : 0);
@@ -68,7 +69,7 @@ const ChannelList = ({channelsCount, currentTeamId, iconPad, isTablet, teamsCoun
         content = (
             <>
                 <SearchField/>
-                <Threads/>
+                {isCRTEnabled && <Threads/>}
                 <Categories
                     currentTeamId={currentTeamId}
                 />

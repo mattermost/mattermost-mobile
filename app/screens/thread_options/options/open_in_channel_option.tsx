@@ -5,11 +5,11 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
 import {showPermalink} from '@actions/remote/permalink';
+import {BaseOption} from '@components/common_post_options';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
-import BaseOption from '@screens/post_options/options/base_option';
 
 type Props = {
     threadId: string;

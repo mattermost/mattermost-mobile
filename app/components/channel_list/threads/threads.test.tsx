@@ -11,7 +11,6 @@ test('Threads Component should match snapshot', () => {
     const {toJSON} = renderWithIntlAndTheme(
         <Threads
             currentChannelId='someChannelId'
-            isCRTEnabled={true}
             unreadsAndMentions={{
                 unreads: 0,
                 mentions: 0,

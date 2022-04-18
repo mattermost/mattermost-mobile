@@ -10,7 +10,7 @@ import {getTeamById} from '@queries/servers/team';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import ChannelsList from './';
+import ChannelsList from './channel_list';
 
 describe('components/channel_list', () => {
     let database: Database;
@@ -31,6 +31,20 @@ describe('components/channel_list', () => {
     it('should render', () => {
         const wrapper = renderWithEverything(
             <ChannelsList
+                isTablet={false}
+                teamsCount={1}
+                currentTeamId={TestHelper.basicTeam!.id}
+                channelsCount={1}
+            />,
+            {database},
+        );
+        expect(wrapper.toJSON()).toBeTruthy();
+    });
+
+    it('should match the snapshot when CRT is enabled', () => {
+        const wrapper = renderWithEverything(
+            <ChannelsList
+                isCRTEnabled={true}
                 isTablet={false}
                 teamsCount={1}
                 currentTeamId={TestHelper.basicTeam!.id}
