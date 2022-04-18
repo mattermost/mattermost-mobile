@@ -7,7 +7,7 @@ import {FlatList} from 'react-native';
 import {DMS_CATEGORY} from '@constants/categories';
 import ChannelModel from '@typings/database/models/servers/channel';
 
-import ChannelListItem from './channel';
+import ChannelItem from './channel_item';
 
 import type CategoryModel from '@typings/database/models/servers/category';
 
@@ -37,7 +37,7 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit}: Props
 
     const renderItem = useCallback(({item}: {item: ChannelModel}) => {
         return (
-            <ChannelListItem
+            <ChannelItem
                 channel={item}
                 collapsed={category.collapsed}
                 testID={`category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_list_item`}

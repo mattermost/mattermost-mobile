@@ -10,9 +10,9 @@ import {getTeamById} from '@queries/servers/team';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import ChannelsList from './';
+import CategoriesList from '.';
 
-describe('components/channel_list', () => {
+describe('components/categories_list', () => {
     let database: Database;
     let operator: ServerDataOperator;
     beforeAll(async () => {
@@ -30,7 +30,7 @@ describe('components/channel_list', () => {
 
     it('should render', () => {
         const wrapper = renderWithEverything(
-            <ChannelsList
+            <CategoriesList
                 isTablet={false}
                 teamsCount={1}
                 currentTeamId={TestHelper.basicTeam!.id}
@@ -48,7 +48,7 @@ describe('components/channel_list', () => {
         });
 
         const wrapper = renderWithEverything(
-            <ChannelsList
+            <CategoriesList
                 isTablet={false}
                 teamsCount={0}
                 currentTeamId='TestHelper.basicTeam!.id'
@@ -67,7 +67,7 @@ describe('components/channel_list', () => {
 
     it('should render channels error', () => {
         const wrapper = renderWithEverything(
-            <ChannelsList
+            <CategoriesList
                 isTablet={false}
                 teamsCount={1}
                 currentTeamId={TestHelper.basicTeam!.id}

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, Platform, StyleSheet, View} from 'react-native';
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
@@ -47,6 +47,7 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
     const appState = useAppState();
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
+    const [shouldRenderPosts, setShouldRenderPosts] = useState(false);
     const theme = useTheme();
     const defaultHeight = useDefaultHeaderHeight();
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
@@ -109,7 +110,15 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
     }
 
     const marginTop = defaultHeight + (isTablet ? insets.top : 0);
-    const channelIsSet = Boolean(channelId);
+    useEffect(() => {
+        // This is done so that the header renders
+        // and the screen does not look totally blank
+        const t = requestAnimationFrame(() => {
+            setShouldRenderPosts(Boolean(channelId));
+        });
+
+        return () => cancelAnimationFrame(t);
+    }, [channelId]);
 
     return (
         <FreezeScreen>
@@ -130,7 +139,7 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
                     subtitleCompanion={subtitleCompanion}
                     title={title}
                 />
-                {channelIsSet &&
+                {shouldRenderPosts && Boolean(channelId) &&
                 <>
                     <View style={[styles.flex, {marginTop}]}>
                         <ChannelPostList

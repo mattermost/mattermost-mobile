@@ -5,7 +5,7 @@ import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 
 import {retryInitialChannel} from '@actions/remote/retry';
-import LoadingError from '@components/channel_list/loading_error';
+import LoadingError from '@components/loading_error';
 import {useServerUrl} from '@context/server';
 
 type Props = {

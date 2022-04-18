@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`components/channel_list/categories/body/channel/item should match snapshot 1`] = `
+exports[`components/channel_list/categories/body/channel_item should match snapshot 1`] = `
 <View
   animatedStyle={
     Object {

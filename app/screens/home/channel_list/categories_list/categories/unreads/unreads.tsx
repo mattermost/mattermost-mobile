@@ -9,7 +9,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import ChannelListItem from '../body/channel';
+import ChannelItem from '../body/channel_item';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 
@@ -25,7 +25,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const renderItem = ({item}: {item: ChannelModel}) => {
     return (
-        <ChannelListItem
+        <ChannelItem
             channel={item}
             collapsed={false}
             isUnreads={true}

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`components/channel_list should render channels error 1`] = `
+exports[`components/categories_list should render channels error 1`] = `
 <View
   animatedStyle={
     Object {
@@ -304,7 +304,7 @@ exports[`components/channel_list should render channels error 1`] = `
 </View>
 `;
 
-exports[`components/channel_list should render team error 1`] = `
+exports[`components/categories_list should render team error 1`] = `
 <View
   animatedStyle={
     Object {

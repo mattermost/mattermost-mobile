@@ -29,9 +29,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderRadius: 8,
             elevation: 3,
         },
-        hidden: {
-            display: 'none',
-        },
         searchContainer: {
             ...Platform.select({
                 android: {
@@ -128,22 +125,19 @@ const Autocomplete = ({
         if (isSearch) {
             s.push(style.base, style.searchContainer, {height: maxListHeight});
         }
-        if (!hasElements) {
-            s.push(style.hidden);
-        }
         return s;
     }, [style, isSearch && maxListHeight, hasElements]);
 
     const containerStyles = useMemo(() => {
-        const s = [style.borders];
+        const s = [];
         if (!isSearch && !fixedBottomPosition) {
             const offset = isTablet ? -OFFSET_TABLET : 0;
             s.push(style.base, {bottom: postInputTop + LIST_BOTTOM + offset});
         } else if (fixedBottomPosition) {
             s.push(style.base, {bottom: 0});
         }
-        if (!hasElements) {
-            s.push(style.hidden);
+        if (hasElements) {
+            s.push(style.borders);
         }
         return s;
     }, [!isSearch, isTablet, hasElements, postInputTop]);
