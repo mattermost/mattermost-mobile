@@ -44,7 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         text: {
             color: theme.sidebarHeaderTextColor,
-            ...typography('Heading', 75, 'SemiBold'),
+            ...typography('Heading', 75),
         },
     };
 });
