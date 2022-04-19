@@ -39,8 +39,8 @@ const SUPPORTED_DOCS_FORMAT = Platform.select({
 });
 
 const SUPPORTED_VIDEO_FORMAT = Platform.select({
-    ios: ['video/mp4', 'video/x-m4v', 'video/quicktime'],
-    android: ['video/3gpp', 'video/x-matroska', 'video/mp4', 'video/webm'],
+    ios: ['audio/mp4', 'video/mp4', 'video/x-m4v', 'video/quicktime'],
+    android: ['audio/mp4', 'video/3gpp', 'video/x-matroska', 'video/mp4', 'video/webm'],
 });
 
 const types = {};
