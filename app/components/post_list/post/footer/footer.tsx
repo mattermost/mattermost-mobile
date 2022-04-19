@@ -82,7 +82,7 @@ const Footer = ({participants, teamId, testID, thread}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const toggleFollow = useCallback(preventDoubleTap(() => {
-        if (!teamId) {
+        if (teamId == null) {
             return;
         }
         updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing);
