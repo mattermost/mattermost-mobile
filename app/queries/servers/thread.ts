@@ -15,7 +15,6 @@ import {getConfig, observeConfig} from './system';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type Model from '@nozbe/watermelondb/Model';
 import type ThreadModel from '@typings/database/models/servers/thread';
-import type ThreadInTeamModel from '@typings/database/models/servers/thread_in_team';
 import type UserModel from '@typings/database/models/servers/user';
 
 const {SERVER: {CHANNEL, POST, THREAD, THREADS_IN_TEAM, THREAD_PARTICIPANT, USER}} = MM_TABLES;
@@ -53,11 +52,16 @@ export const observeThreadById = (database: Database, threadId: string) => {
     );
 };
 
-export const observeTeamIdByThreadId = (database: Database, threadId: string) => {
-    return database.get<ThreadInTeamModel>(THREADS_IN_TEAM).query(
-        Q.where('thread_id', threadId),
-    ).observe().pipe(
-        switchMap((threadsInTeam) => of$(threadsInTeam[0]?.teamId || undefined)),
+export const observeTeamIdByThread = (thread: ThreadModel) => {
+    return thread.post.observe().pipe(
+        switchMap((post) => {
+            if (!post) {
+                return of$(undefined);
+            }
+            return post.channel.observe().pipe(
+                switchMap((channel) => of$(channel?.teamId)),
+            );
+        }),
     );
 };
 
