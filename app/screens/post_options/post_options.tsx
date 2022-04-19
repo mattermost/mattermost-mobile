@@ -33,7 +33,7 @@ type PostOptionsProps = {
     isSaved: boolean;
     location: typeof Screens[keyof typeof Screens];
     post: PostModel;
-    thread: ThreadModel | undefined;
+    thread?: ThreadModel;
     componentId: string;
 };
 
@@ -91,10 +91,7 @@ const PostOptions = ({
                 {canAddReaction && <ReactionBar postId={post.id}/>}
                 {canReply && <ReplyOption post={post}/>}
                 {shouldRenderFollow &&
-                    <FollowThreadOption
-                        channelId={post.channelId}
-                        thread={thread}
-                    />
+                    <FollowThreadOption thread={thread}/>
                 }
                 {canMarkAsUnread && !isSystemPost &&
                     <MarkAsUnreadOption postId={post.id}/>

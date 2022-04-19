@@ -3,25 +3,17 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
 
-import {MM_TABLES} from '@constants/database';
+import {observeTeamIdByThreadId} from '@queries/servers/thread';
 
 import FollowThreadOption from './follow_thread_option';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type ChannelModel from '@typings/database/models/servers/channel';
+import type ThreadModel from '@typings/database/models/servers/thread';
 
-const {SERVER: {CHANNEL}} = MM_TABLES;
-
-const enhanced = withObservables(['channelId'], ({database, channelId}: WithDatabaseArgs & { channelId: string }) => {
-    const teamId = database.get<ChannelModel>(CHANNEL).findAndObserve(channelId).pipe(
-        switchMap((chan) => of$(chan.teamId)),
-    );
-
+const enhanced = withObservables(['thread'], ({database, thread}: WithDatabaseArgs & { thread: ThreadModel }) => {
     return {
-        teamId,
+        teamId: observeTeamIdByThreadId(database, thread.id),
     };
 });
 
