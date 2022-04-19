@@ -37,21 +37,14 @@ type PostOptionsProps = {
     post: PostModel;
     thread: Partial<PostModel>;
     componentId: string;
+    offSetY: number;
 };
 
 const PostOptions = ({
-    canAddReaction,
-    canDelete,
-    canEdit,
-    canMarkAsUnread,
-    canPin,
-    canReply,
-    combinedPost,
-    componentId,
-    isSaved,
-    location,
-    post,
-    thread,
+    canAddReaction, canDelete, canEdit,
+    canMarkAsUnread, canPin, canReply,
+    combinedPost, componentId, isSaved,
+    location, post, thread, offSetY,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
 
@@ -101,14 +94,24 @@ const PostOptions = ({
                 {canMarkAsUnread && !isSystemPost &&
                     <MarkAsUnreadOption postId={post.id}/>
                 }
-                {canCopyPermalink && <CopyLinkOption post={post}/>}
+                {Boolean(canCopyPermalink && post.message) &&
+                    <CopyLinkOption
+                        post={post}
+                        location={location}
+                        offSetY={offSetY}
+                    />}
                 {!isSystemPost &&
                     <SaveOption
                         isSaved={isSaved}
                         postId={post.id}
                     />
                 }
-                {Boolean(canCopyText && post.message) && <CopyTextOption postMessage={post.message}/>}
+                {Boolean(canCopyText && post.message) &&
+                    <CopyTextOption
+                        postMessage={post.message}
+                        location={location}
+                        offSetY={offSetY}
+                    />}
                 {canPin &&
                     <PinChannelOption
                         isPostPinned={post.isPinned}

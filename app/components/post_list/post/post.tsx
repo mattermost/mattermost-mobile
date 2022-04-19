@@ -55,6 +55,7 @@ type PostProps = {
     skipPinnedHeader?: boolean;
     style?: StyleProp<ViewStyle>;
     testID?: string;
+    offSetY: number;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -99,7 +100,7 @@ const Post = ({
     appsEnabled, canDelete, currentUser, differentThreadSequence, filesCount, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
     isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
     location, post, reactionsCount, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
-    testID, previousPost,
+    testID, previousPost, offSetY,
 }: PostProps) => {
     const pressDetected = useRef(false);
     const intl = useIntl();
@@ -166,7 +167,7 @@ const Post = ({
         }
 
         Keyboard.dismiss();
-        const passProps = {location, post, showAddReaction};
+        const passProps = {location, post, showAddReaction, offSetY};
         const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
         if (isTablet) {

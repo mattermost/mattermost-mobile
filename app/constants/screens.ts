@@ -39,6 +39,7 @@ export const SSO = 'SSO';
 export const THREAD = 'Thread';
 export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
 export const USER_PROFILE = 'UserProfile';
+export const SNACK_BAR = 'SnackBar';
 
 export default {
     ABOUT,
@@ -79,6 +80,7 @@ export default {
     THREAD,
     THREAD_FOLLOW_BUTTON,
     USER_PROFILE,
+    SNACK_BAR,
 };
 
 export const MODAL_SCREENS_WITHOUT_BACK = [
