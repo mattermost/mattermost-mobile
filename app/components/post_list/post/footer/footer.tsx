@@ -8,6 +8,8 @@ import {updateThreadFollowing} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import UserAvatarsStack from '@components/user_avatars_stack';
+import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -17,10 +19,8 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     participants: UserModel[];
-    serverUrl: string;
-    teamId: string;
+    teamId?: string;
     testID: string;
-    theme: Theme;
     thread: ThreadModel;
 };
 
@@ -77,15 +77,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Footer = ({participants, serverUrl, teamId, testID, theme, thread}: Props) => {
+const Footer = ({participants, teamId, testID, thread}: Props) => {
+    const serverUrl = useServerUrl();
+    const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const onUnfollow = useCallback(preventDoubleTap(() => {
-        updateThreadFollowing(serverUrl, teamId, thread.id, false);
-    }), []);
-
-    const onFollow = useCallback(preventDoubleTap(() => {
-        updateThreadFollowing(serverUrl, teamId, thread.id, true);
-    }), []);
+    const toggleFollow = useCallback(preventDoubleTap(() => {
+        if (!teamId) {
+            return;
+        }
+        updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing);
+    }), [thread.isFollowing]);
 
     let repliesComponent;
     let followButton;
@@ -114,7 +115,7 @@ const Footer = ({participants, serverUrl, teamId, testID, theme, thread}: Props)
     if (thread.isFollowing) {
         followButton = (
             <TouchableOpacity
-                onPress={onUnfollow}
+                onPress={toggleFollow}
                 style={styles.followingButtonContainer}
                 testID={`${testID}.following`}
             >
@@ -130,7 +131,7 @@ const Footer = ({participants, serverUrl, teamId, testID, theme, thread}: Props)
             <>
                 <View style={styles.followSeparator}/>
                 <TouchableOpacity
-                    onPress={onFollow}
+                    onPress={toggleFollow}
                     style={styles.notFollowingButtonContainer}
                     testID={`${testID}.follow`}
                 >
@@ -150,7 +151,7 @@ const Footer = ({participants, serverUrl, teamId, testID, theme, thread}: Props)
             return orderedParticipantsList;
         }
         return [];
-    }, [participants]);
+    }, [participants.length]);
 
     let userAvatarsStack;
     if (participantsList.length) {

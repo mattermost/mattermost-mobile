@@ -14,7 +14,7 @@ import type ThreadModel from '@typings/database/models/servers/thread';
 
 type FollowThreadOptionProps = {
     thread: ThreadModel;
-    teamId: string;
+    teamId?: string;
 };
 
 const FollowThreadOption = ({thread, teamId}: FollowThreadOptionProps) => {
@@ -45,6 +45,9 @@ const FollowThreadOption = ({thread, teamId}: FollowThreadOptionProps) => {
     const serverUrl = useServerUrl();
 
     const handleToggleFollow = () => {
+        if (!teamId) {
+            return;
+        }
         updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing);
         dismissBottomSheet(Screens.POST_OPTIONS);
     };
@@ -53,7 +56,7 @@ const FollowThreadOption = ({thread, teamId}: FollowThreadOptionProps) => {
         <BaseOption
             i18nId={id}
             defaultMessage={defaultMessage}
-            testID='post.options.follow.thread'
+            testID='post_options.follow.thread.option'
             iconName={icon}
             onPress={handleToggleFollow}
         />

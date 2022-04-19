@@ -152,9 +152,6 @@ const withPost = withObservables(
             isLastReply,
             isPostAddChannelMember,
             post: post.observe(),
-            teamId: post.channel.observe().pipe(
-                switchMap((channel) => of$(channel?.teamId)),
-            ),
             thread: isCRTEnabled ? observeThreadById(database, post.id) : of$(undefined),
             reactionsCount: post.reactions.observeCount(),
         };

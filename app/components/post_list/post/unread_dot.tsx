@@ -4,14 +4,11 @@
 import React from 'react';
 import {View} from 'react-native';
 
+import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-
-import type ThreadModel from '@typings/database/models/servers/thread';
 
 type Props = {
     testID: string;
-    theme: Theme;
-    thread: ThreadModel;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -33,19 +30,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const UnreadDot = ({testID, theme, thread}: Props) => {
-    if (thread.unreadMentions || thread.unreadReplies) {
-        const styles = getStyleSheet(theme);
-        return (
-            <View
-                style={styles.badgeContainer}
-                testID={testID}
-            >
-                <View style={styles.unreadDot}/>
-            </View>
-        );
-    }
-    return null;
+const UnreadDot = ({testID}: Props) => {
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
+    return (
+        <View
+            style={styles.badgeContainer}
+            testID={testID}
+        >
+            <View style={styles.unreadDot}/>
+        </View>
+    );
 };
 
 export default UnreadDot;
