@@ -5,6 +5,7 @@ import {isAndroid} from '@support/utils';
 
 class Alert {
     // alert titles
+    deletePostTitle = isAndroid() ? element(by.text('Delete Post')) : element(by.label('Delete Post')).atIndex(0);
     logoutTitle = (serverDisplayName: string) => {
         const title = `Are you sure you want to log out of ${serverDisplayName}?`;
 
@@ -18,6 +19,7 @@ class Alert {
 
     // alert buttons
     cancelButton = isAndroid() ? element(by.text('CANCEL')) : element(by.label('Cancel')).atIndex(1);
+    deleteButton = isAndroid() ? element(by.text('DELETE')) : element(by.label('Delete')).atIndex(0);
     logoutButton = isAndroid() ? element(by.text('LOG OUT')) : element(by.label('Log out')).atIndex(1);
     removeButton = isAndroid() ? element(by.text('REMOVE')) : element(by.label('Remove')).atIndex(1);
 }

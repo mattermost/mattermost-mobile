@@ -25,6 +25,8 @@ class ChannelListScreen {
     headerPlusButton = element(by.id(this.testID.headerPlusButton));
     findChannelsInput = element(by.id(this.testID.findChannelsInput));
     threadsButton = element(by.id(this.testID.threadsButton));
+
+    // convenience props
     browseChannelsItem = PlusMenu.browseChannelsItem;
     createNewChannelItem = PlusMenu.createNewChannelItem;
     openDirectMessageItem = PlusMenu.openDirectMessageItem;

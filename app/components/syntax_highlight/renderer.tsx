@@ -5,6 +5,7 @@ import React, {useCallback} from 'react';
 import {FlatList, ScrollView, StyleSheet, Text} from 'react-native';
 import {createStyleObject} from 'react-syntax-highlighter/create-element';
 
+import {generateId} from '@utils/general';
 import {changeOpacity} from '@utils/theme';
 
 type CreateChildren = {
@@ -136,6 +137,7 @@ const CodeHighlightRenderer = ({defaultColor, digits, fontFamily, fontSize, rows
             <FlatList
                 data={rows}
                 renderItem={renderItem}
+                listKey={generateId()}
             />
         </ScrollView>
     );

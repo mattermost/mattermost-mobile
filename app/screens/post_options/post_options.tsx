@@ -135,6 +135,7 @@ const PostOptions = ({
             componentId={Screens.POST_OPTIONS}
             initialSnapIndex={0}
             snapPoints={[((snapPoints + additionalSnapPoints) * ITEM_HEIGHT), 10]}
+            testID='post_options'
         />
     );
 };

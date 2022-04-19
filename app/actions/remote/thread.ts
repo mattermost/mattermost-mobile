@@ -8,7 +8,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
-import {getCommonSystemValues} from '@queries/servers/system';
+import {getCommonSystemValues, getCurrentTeamId} from '@queries/servers/system';
 import {getIsCRTEnabled, getNewestThreadInTeam, getThreadById} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 
@@ -180,6 +180,12 @@ export const updateThreadRead = async (serverUrl: string, teamId: string, thread
 };
 
 export const updateThreadFollowing = async (serverUrl: string, teamId: string, threadId: string, state: boolean) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
     let client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -187,8 +193,14 @@ export const updateThreadFollowing = async (serverUrl: string, teamId: string, t
         return {error};
     }
 
+    // DM/GM doesn't have a teamId, so we pass the current team id
+    let threadTeamId = teamId;
+    if (!threadTeamId) {
+        threadTeamId = await getCurrentTeamId(database);
+    }
+
     try {
-        const data = await client.updateThreadFollow('me', teamId, threadId, state);
+        const data = await client.updateThreadFollow('me', threadTeamId, threadId, state);
 
         // Update locally
         await updateThread(serverUrl, threadId, {is_following: state});

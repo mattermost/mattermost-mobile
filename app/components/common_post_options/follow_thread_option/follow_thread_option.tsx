@@ -45,7 +45,7 @@ const FollowThreadOption = ({thread, teamId}: FollowThreadOptionProps) => {
     const serverUrl = useServerUrl();
 
     const handleToggleFollow = () => {
-        if (!teamId) {
+        if (teamId == null) {
             return;
         }
         updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing);

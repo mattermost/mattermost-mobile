@@ -53,11 +53,16 @@ export const observeThreadById = (database: Database, threadId: string) => {
     );
 };
 
-export const observeTeamIdByThreadId = (database: Database, threadId: string) => {
-    return database.get<ThreadInTeamModel>(THREADS_IN_TEAM).query(
-        Q.where('thread_id', threadId),
-    ).observe().pipe(
-        switchMap((threadsInTeam) => of$(threadsInTeam[0]?.teamId || undefined)),
+export const observeTeamIdByThread = (thread: ThreadModel) => {
+    return thread.post.observe().pipe(
+        switchMap((post) => {
+            if (!post) {
+                return of$(undefined);
+            }
+            return post.channel.observe().pipe(
+                switchMap((channel) => of$(channel?.teamId)),
+            );
+        }),
     );
 };
 

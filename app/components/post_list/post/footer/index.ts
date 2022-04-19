@@ -4,7 +4,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
-import {observeTeamIdByThreadId, queryThreadParticipants} from '@queries/servers/thread';
+import {observeTeamIdByThread, queryThreadParticipants} from '@queries/servers/thread';
 
 import Footer from './footer';
 
@@ -16,7 +16,7 @@ const enhanced = withObservables(
     ({database, thread}: WithDatabaseArgs & {thread: ThreadModel}) => {
         return {
             participants: queryThreadParticipants(database, thread.id).observe(),
-            teamId: observeTeamIdByThreadId(database, thread.id),
+            teamId: observeTeamIdByThread(thread),
         };
     },
 );

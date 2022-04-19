@@ -17,6 +17,7 @@ import {
     ChannelScreen,
     ChannelListScreen,
     CreateDirectMessageScreen,
+    CreateOrEditChannelScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
@@ -142,8 +143,16 @@ describe('Channels - Channel List', () => {
         await CreateDirectMessageScreen.close();
     });
 
-    xit('MM-T4728_6 - should be able to go to create channel screen', async () => {
-        // NOT YET IMPLEMENTED
+    it('MM-T4728_6 - should be able to go to create channel screen', async () => {
+        // # Tap on plus menu button and tap on create new channel item
+        await ChannelListScreen.headerPlusButton.tap();
+        await ChannelListScreen.createNewChannelItem.tap();
+
+        // * Verify on create channel screen
+        await CreateOrEditChannelScreen.toBeVisible();
+
+        // # Go back to channel list screen
+        await CreateOrEditChannelScreen.close();
     });
 
     xit('MM-T4728_7 - should be able to go to threads screen', async () => {

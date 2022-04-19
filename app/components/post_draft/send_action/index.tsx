@@ -41,7 +41,7 @@ function SendButton({
     sendMessage,
 }: Props) {
     const theme = useTheme();
-    const sendButtonTestID = `${testID}.send.button`;
+    const sendButtonTestID = disabled ? `${testID}.send.button.disabled` : `${testID}.send.button`;
     const style = getStyleSheet(theme);
 
     const viewStyle = useMemo(() => {
