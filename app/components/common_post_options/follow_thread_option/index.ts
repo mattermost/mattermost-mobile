@@ -1,18 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
-import {observeTeamIdByThread} from '@queries/servers/thread';
+import {observeCurrentTeamId} from '@app/queries/servers/system';
 
 import FollowThreadOption from './follow_thread_option';
 
-import type ThreadModel from '@typings/database/models/servers/thread';
+import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enhanced = withObservables(['thread'], ({thread}: { thread: ThreadModel }) => {
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
-        teamId: observeTeamIdByThread(thread),
+        teamId: observeCurrentTeamId(database),
     };
 });
 
-export default enhanced(FollowThreadOption);
+export default withDatabase(enhanced(FollowThreadOption));
