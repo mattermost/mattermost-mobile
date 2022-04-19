@@ -80,6 +80,7 @@ const Reactions = ({initialEmoji, reactions}: Props) => {
             componentId={Screens.REACTIONS}
             initialSnapIndex={1}
             snapPoints={['90%', '50%', 10]}
+            testID='reactions'
         />
     );
 };

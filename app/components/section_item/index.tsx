@@ -93,6 +93,7 @@ const SectionItem = ({testID = 'sectionItem', action, actionType, actionValue, l
             <Switch
                 onValueChange={action}
                 value={selected}
+                testID={`${testID}.toggled.${selected}`}
             />
         );
     } else if (actionType === ActionTypes.ARROW) {

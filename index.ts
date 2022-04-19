@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter, Platform} from 'react-native';
+import {DeviceEventEmitter, LogBox, Platform} from 'react-native';
+import {RUNNING_E2E} from 'react-native-dotenv';
 import 'react-native-gesture-handler';
 import {ComponentDidAppearEvent, ComponentDidDisappearEvent, Navigation} from 'react-native-navigation';
 
@@ -22,7 +23,6 @@ import './app/utils/emoji'; // Imported to ensure it is loaded when used
 declare const global: { HermesInternal: null | {} };
 
 if (__DEV__) {
-    const LogBox = require('react-native/Libraries/LogBox/LogBox');
     LogBox.ignoreLogs([
         '`-[RCTRootView cancelTouches]`',
         'scaleY',
@@ -30,6 +30,14 @@ if (__DEV__) {
         'new NativeEventEmitter',
         'ViewPropTypes will be removed from React Native',
     ]);
+
+    // Ignore all notifications if running e2e
+    const isRunningE2e = RUNNING_E2E === 'true';
+    // eslint-disable-next-line no-console
+    console.log(`RUNNING_E2E: ${RUNNING_E2E}, isRunningE2e: ${isRunningE2e}`);
+    if (isRunningE2e) {
+        LogBox.ignoreAllLogs(true);
+    }
 }
 
 setFontFamily();

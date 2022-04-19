@@ -77,9 +77,9 @@ describe('Channels - Browse Channels', () => {
         await expect(BrowseChannelsScreen.getChannelItemDisplayName(channel.name)).toHaveText(channel.display_name);
 
         // # Tap on the new channel item
-        await BrowseChannelsScreen.getChannelItem(channel.name).tap();
+        await BrowseChannelsScreen.getChannelItem(channel.name).multiTap(2);
 
-        // * Verify on new channel screen
+        // * Verify on newly joined  channel screen
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(channel.display_name);
         await expect(ChannelScreen.introDisplayName).toHaveText(channel.display_name);
@@ -88,7 +88,7 @@ describe('Channels - Browse Channels', () => {
         await ChannelScreen.back();
         await ChannelListScreen.toBeVisible();
 
-        // * Verify new channel is added to channel list
+        // * Verify newly joined channel is added to channel list
         await expect(ChannelListScreen.getChannelListItemDisplayName(channelsCategory, channel.name)).toBeVisible();
     });
 });

@@ -15,7 +15,7 @@ import {observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/sy
 import ChannelModel from '@typings/database/models/servers/channel';
 import MyChannelModel from '@typings/database/models/servers/my_channel';
 
-import ChannelListItem from './channel_list_item';
+import ChannelItem from './channel_item';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PreferenceModel from '@typings/database/models/servers/preference';
@@ -65,4 +65,4 @@ const enhance = withObservables(['channel', 'isUnreads'], ({channel, isUnreads, 
     };
 });
 
-export default React.memo(withDatabase(enhance(ChannelListItem)));
+export default React.memo(withDatabase(enhance(ChannelItem)));
