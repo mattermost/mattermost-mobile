@@ -520,6 +520,7 @@
   "threads.following": "Following",
   "threads.followMessage": "Follow Message",
   "threads.followThread": "Follow Thread",
+  "threads.newReplies": "{count} new {count, plural, one {reply} other {replies}}",
   "threads.unfollowMessage": "Unfollow Message",
   "threads.unfollowThread": "Unfollow Thread",
   "user.edit_profile.email.auth_service": "Login occurs through {service}. Email cannot be updated. Email address used for notifications is {email}.",

@@ -3,26 +3,28 @@
 
 import React from 'react';
 
+import {updateThreadFollowing} from '@actions/remote/thread';
+import {BaseOption} from '@components/common_post_options';
 import {Screens} from '@constants';
+import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
+import {dismissBottomSheet} from '@screens/navigation';
 
-import BaseOption from './base_option';
+import type ThreadModel from '@typings/database/models/servers/thread';
 
 type FollowThreadOptionProps = {
-    thread?: any;
-    location?: typeof Screens[keyof typeof Screens];
+    thread: ThreadModel;
+    teamId?: string;
 };
 
-//todo: to implement CRT follow thread
-
-const FollowThreadOption = ({thread}: FollowThreadOptionProps) => {
+const FollowThreadOption = ({thread, teamId}: FollowThreadOptionProps) => {
     let id: string;
     let defaultMessage: string;
     let icon: string;
 
-    if (thread.is_following) {
+    if (thread.isFollowing) {
         icon = 'message-minus-outline';
-        if (thread?.participants?.length) {
+        if (thread.replyCount) {
             id = t('threads.unfollowThread');
             defaultMessage = 'Unfollow Thread';
         } else {
@@ -31,7 +33,7 @@ const FollowThreadOption = ({thread}: FollowThreadOptionProps) => {
         }
     } else {
         icon = 'message-plus-outline';
-        if (thread?.participants?.length) {
+        if (thread.replyCount) {
             id = t('threads.followThread');
             defaultMessage = 'Follow Thread';
         } else {
@@ -40,8 +42,14 @@ const FollowThreadOption = ({thread}: FollowThreadOptionProps) => {
         }
     }
 
+    const serverUrl = useServerUrl();
+
     const handleToggleFollow = () => {
-        //todo:
+        if (teamId == null) {
+            return;
+        }
+        updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing);
+        dismissBottomSheet(Screens.POST_OPTIONS);
     };
 
     return (

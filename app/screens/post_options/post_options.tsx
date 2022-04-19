@@ -5,24 +5,22 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useEffect} from 'react';
 import {Navigation} from 'react-native-navigation';
 
+import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import {ITEM_HEIGHT} from '@components/menu_item';
 import {Screens} from '@constants';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissModal} from '@screens/navigation';
 import {isSystemMessage} from '@utils/post';
 
-import CopyLinkOption from './options/copy_permalink_option';
 import CopyTextOption from './options/copy_text_option';
 import DeletePostOption from './options/delete_post_option';
 import EditOption from './options/edit_option';
-import FollowThreadOption from './options/follow_option';
 import MarkAsUnreadOption from './options/mark_unread_option';
 import PinChannelOption from './options/pin_channel_option';
-import ReplyOption from './options/reply_option';
-import SaveOption from './options/save_option';
 import ReactionBar from './reaction_bar';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type ThreadModel from '@typings/database/models/servers/thread';
 
 type PostOptionsProps = {
     canAddReaction: boolean;
@@ -35,7 +33,7 @@ type PostOptionsProps = {
     isSaved: boolean;
     location: typeof Screens[keyof typeof Screens];
     post: PostModel;
-    thread: Partial<PostModel>;
+    thread?: ThreadModel;
     componentId: string;
 };
 
@@ -93,15 +91,12 @@ const PostOptions = ({
                 {canAddReaction && <ReactionBar postId={post.id}/>}
                 {canReply && <ReplyOption post={post}/>}
                 {shouldRenderFollow &&
-                    <FollowThreadOption
-                        location={location}
-                        thread={thread}
-                    />
+                    <FollowThreadOption thread={thread}/>
                 }
                 {canMarkAsUnread && !isSystemPost &&
                     <MarkAsUnreadOption postId={post.id}/>
                 }
-                {canCopyPermalink && <CopyLinkOption post={post}/>}
+                {canCopyPermalink && <CopyPermalinkOption post={post}/>}
                 {!isSystemPost &&
                     <SaveOption
                         isSaved={isSaved}
