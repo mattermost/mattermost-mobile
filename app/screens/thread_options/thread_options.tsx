@@ -85,7 +85,6 @@ const ThreadOptions = ({
         />,
         <FollowThreadOption
             key='unfollow'
-            channelId={post.channelId}
             thread={thread}
         />,
         <OpenInChannelOption
