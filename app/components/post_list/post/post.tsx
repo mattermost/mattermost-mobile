@@ -58,9 +58,8 @@ type PostProps = {
     skipSavedHeader?: boolean;
     skipPinnedHeader?: boolean;
     style?: StyleProp<ViewStyle>;
-    teamId: string;
     testID?: string;
-    thread: ThreadModel | undefined;
+    thread?: ThreadModel;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -105,7 +104,7 @@ const Post = ({
     appsEnabled, canDelete, currentUser, differentThreadSequence, filesCount, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
     isCRTEnabled, isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
     location, post, reactionsCount, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
-    teamId, testID, thread, previousPost,
+    testID, thread, previousPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
     const intl = useIntl();
@@ -277,21 +276,16 @@ const Post = ({
         if (thread.replyCount > 0 || thread.isFollowing) {
             footer = (
                 <Footer
-                    serverUrl={serverUrl}
-                    teamId={teamId}
                     testID={`${itemTestID}.footer`}
-                    theme={theme}
                     thread={thread}
                 />
             );
         }
-        unreadDot = (
-            <UnreadDot
-                testID={`${itemTestID}.badge`}
-                theme={theme}
-                thread={thread}
-            />
-        );
+        if (thread.unreadMentions || thread.unreadReplies) {
+            unreadDot = (
+                <UnreadDot testID={`${itemTestID}.badge`}/>
+            );
+        }
     }
 
     return (

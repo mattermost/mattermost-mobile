@@ -31,7 +31,7 @@ const ReplyOption = ({post, location}: Props) => {
             defaultMessage='Reply'
             iconName='reply-outline'
             onPress={handleReply}
-            testID='post.options.reply'
+            testID='post_options.reply.post.option'
         />
     );
 };
