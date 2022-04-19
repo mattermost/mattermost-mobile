@@ -14,6 +14,7 @@ import {useIsTablet} from '@hooks/device';
 import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
 import ThreadFooter from './thread_footer';
@@ -81,20 +82,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         channelName: {
             color: theme.centerChannelColor,
-            fontSize: 10,
-            fontWeight: '600',
-            lineHeight: 16,
+            ...typography('Body', 25, 'SemiBold'),
             letterSpacing: 0.1,
             textTransform: 'uppercase',
-            marginLeft: 6,
-            marginRight: 6,
-            marginTop: 2,
-            marginBottom: 2,
+            marginHorizontal: 12,
+            marginVertical: 2,
         },
         date: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
-            fontSize: 12,
-            fontWeight: '400',
+            ...typography('Body', 25, 'Light'),
         },
         message: {
             color: theme.centerChannelColor,
@@ -117,10 +113,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignSelf: 'center',
         },
         mentionBadgeText: {
-            fontFamily: 'Open Sans',
-            fontSize: 10,
-            lineHeight: 16,
-            fontWeight: '700',
+            ...typography('Body', 25, 'SemiBold'),
             alignSelf: 'center',
             color: theme.buttonColor,
         },

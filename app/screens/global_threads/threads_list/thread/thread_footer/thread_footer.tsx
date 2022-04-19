@@ -7,6 +7,7 @@ import {View} from 'react-native';
 import FormattedText from '@components/formatted_text';
 import UserAvatarsStack from '@components/user_avatars_stack';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
@@ -37,16 +38,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         replies: {
             alignSelf: 'center',
             color: changeOpacity(theme.centerChannelColor, 0.64),
-            fontSize: 12,
-            fontWeight: '600',
             marginRight: 12,
+            ...typography('Body', 75, 'SemiBold'),
         },
         unreadReplies: {
             alignSelf: 'center',
             color: theme.sidebarTextActiveBorder,
-            fontSize: 12,
-            fontWeight: '600',
             marginRight: 12,
+            ...typography('Body', 75, 'SemiBold'),
         },
     };
 });

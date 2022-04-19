@@ -13,7 +13,7 @@ import ChannelListHeader from './header';
 import LoadChannelsError from './load_channels_error';
 import LoadTeamsError from './load_teams_error';
 import SearchField from './search';
-import Threads from './threads';
+import ThreadsButton from './threads_button';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -69,7 +69,7 @@ const ChannelList = ({channelsCount, currentTeamId, iconPad, isCRTEnabled, isTab
         content = (
             <>
                 <SearchField/>
-                {isCRTEnabled && <Threads/>}
+                {isCRTEnabled && <ThreadsButton/>}
                 <Categories
                     currentTeamId={currentTeamId}
                 />

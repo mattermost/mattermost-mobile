@@ -9,9 +9,9 @@ import {fetchThreads} from '@actions/remote/thread';
 import Loading from '@components/loading';
 import {General} from '@constants';
 
+import EmptyState from './empty_state';
 import EndOfList from './end_of_list';
 import Header, {Tab} from './header';
-import EmptyState from './illustrations/empty_state';
 import Thread from './thread';
 
 import type ThreadModel from '@typings/database/models/servers/thread';

@@ -1,16 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
-import {map} from 'rxjs/operators';
 
 import NavigationHeader from '@components/navigation_header';
-import {Database} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useAppState, useIsTablet} from '@hooks/device';
@@ -20,11 +16,6 @@ import {popTopScreen} from '@screens/navigation';
 import ThreadsList from './threads_list';
 
 import type {Tab} from './threads_list/threads_list';
-import type {WithDatabaseArgs} from '@typings/database/database';
-import type SystemModel from '@typings/database/models/servers/system';
-
-const {MM_TABLES, SYSTEM_IDENTIFIERS} = Database;
-const {SERVER: {SYSTEM}} = MM_TABLES;
 
 type Props = {
     componentId?: string;
@@ -94,10 +85,4 @@ const GlobalThreads = ({componentId, currentTeamId}: Props) => {
     );
 };
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentTeamId: database.collections.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).pipe(
-        map(({value}: {value: string}) => value),
-    ),
-}));
-
-export default withDatabase(enhanced(GlobalThreads));
+export default GlobalThreads;

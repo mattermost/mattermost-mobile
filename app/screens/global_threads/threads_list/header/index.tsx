@@ -10,6 +10,7 @@ import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 export type Tab = 'all' | 'unreads';
 
@@ -48,15 +49,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         menuItem: {
             color: changeOpacity(theme.centerChannelColor, 0.56),
             alignSelf: 'center',
-            fontFamily: 'Open Sans',
-            fontWeight: '600',
-            fontSize: 16,
-            lineHeight: 24,
+            ...typography('Body', 200, 'SemiBold'),
         },
         menuItemSelected: {
             color: theme.buttonBg,
         },
-
         unreadsDot: {
             position: 'absolute',
             width: 6,
@@ -116,7 +113,7 @@ const Header = ({setTab, tab, teamId, testID, theme, unreadsCount}: Props) => {
                 },
             }],
         );
-    }), []);
+    }), [intl, serverUrl, teamId]);
 
     const handleViewAllThreads = useCallback(preventDoubleTap(() => setTab('all')), []);
     const handleViewUnreadThreads = useCallback(preventDoubleTap(() => setTab('unreads')), []);
@@ -129,7 +126,7 @@ const Header = ({setTab, tab, teamId, testID, theme, unreadsCount}: Props) => {
             ],
             allThreadsStyle: [
                 styles.menuItem,
-                viewingUnreads ? {} : styles.menuItemSelected,
+                viewingUnreads ? undefined : styles.menuItemSelected,
             ],
             unreadsContainerStyle: [
                 styles.menuItemContainer,
@@ -137,7 +134,7 @@ const Header = ({setTab, tab, teamId, testID, theme, unreadsCount}: Props) => {
             ],
             unreadsStyle: [
                 styles.menuItem,
-                viewingUnreads ? styles.menuItemSelected : {},
+                viewingUnreads ? styles.menuItemSelected : undefined,
             ],
         };
     }, [styles, viewingUnreads]);

@@ -20,7 +20,7 @@ const SaveOption = ({isSaved, threadId}: Props) => {
         const remoteAction = isSaved ? deleteSavedPost : savePostPreference;
         remoteAction(serverUrl, threadId);
         dismissBottomSheet(Screens.THREAD_OPTIONS);
-    }, [threadId, serverUrl]);
+    }, [isSaved, serverUrl, threadId]);
 
     const id = isSaved ? t('mobile.post_info.unsave') : t('mobile.post_info.save');
     const defaultMessage = isSaved ? 'Unsave' : 'Save';

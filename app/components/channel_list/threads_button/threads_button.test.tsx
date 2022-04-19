@@ -5,7 +5,7 @@ import React from 'react';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
-import Threads from './threads';
+import Threads from './threads_button';
 
 test('Threads Component should match snapshot', () => {
     const {toJSON} = renderWithIntlAndTheme(

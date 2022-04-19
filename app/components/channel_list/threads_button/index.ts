@@ -8,7 +8,7 @@ import {switchMap} from 'rxjs/operators';
 import {observeCurrentChannelId, observeCurrentTeamId} from '@queries/servers/system';
 import {observeUnreadsAndMentionsInTeam} from '@queries/servers/thread';
 
-import Threads from './threads';
+import ThreadsButton from './threads_button';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -25,4 +25,4 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     };
 });
 
-export default withDatabase(enhanced(Threads));
+export default withDatabase(enhanced(ThreadsButton));

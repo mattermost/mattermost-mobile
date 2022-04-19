@@ -41,7 +41,7 @@ describe('components/channel_list', () => {
         expect(wrapper.toJSON()).toBeTruthy();
     });
 
-    it('should match the snapshot when CRT is enabled', () => {
+    it('should render channel list with thread menu', () => {
         const wrapper = renderWithEverything(
             <ChannelsList
                 isCRTEnabled={true}

@@ -17,6 +17,7 @@ import BottomSheet from '@screens/bottom_sheet';
 import {dismissModal} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import MarkAsUnreadOption from './options/mark_as_unread_option';
 import OpenInChannelOption from './options/open_in_channel_option';
@@ -40,8 +41,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         listHeaderText: {
             color: changeOpacity(theme.centerChannelColor, 0.56),
-            fontSize: 12,
-            fontWeight: '600',
+            ...typography('Body', 75, 'SemiBold'),
         },
     };
 });
