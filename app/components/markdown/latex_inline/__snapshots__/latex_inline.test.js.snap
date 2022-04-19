@@ -1,0 +1,71 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LatexCodeBlock should have maxWidth 10 1`] = `
+<View
+  style={
+    Array [
+      Object {
+        "flexDirection": "row",
+        "flexWrap": "wrap",
+        "marginBottom": -7,
+      },
+      Object {
+        "height": undefined,
+      },
+    ]
+  }
+>
+  <ForwardRef
+    color="black"
+    math="\\\\frac{1}{2} == 0.5^{0*\\\\pi} - 0.5"
+    onError={[Function]}
+    renderError={[Function]}
+    resizeMode="contain"
+    style={
+      Array [
+        Object {
+          "marginBottom": -7,
+        },
+        Object {
+          "maxWidth": 10,
+        },
+      ]
+    }
+  />
+</View>
+`;
+
+exports[`LatexCodeBlock should match snapshot 1`] = `
+<View
+  style={
+    Array [
+      Object {
+        "flexDirection": "row",
+        "flexWrap": "wrap",
+        "marginBottom": -7,
+      },
+      Object {
+        "height": undefined,
+      },
+    ]
+  }
+>
+  <ForwardRef
+    color="black"
+    math="\\\\frac{1}{2} == 0.5^{0*\\\\pi} - 0.5"
+    onError={[Function]}
+    renderError={[Function]}
+    resizeMode="contain"
+    style={
+      Array [
+        Object {
+          "marginBottom": -7,
+        },
+        Object {
+          "maxWidth": "100%",
+        },
+      ]
+    }
+  />
+</View>
+`;

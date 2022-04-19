@@ -62,6 +62,7 @@
     "react-native-linear-gradient": "2.5.6",
     "react-native-local-auth": "1.6.0",
     "react-native-localize": "2.1.9",
+    "react-native-math-view": "3.9.5",
     "react-native-mmkv-storage": "0.6.11",
     "react-native-navigation": "7.25.1",
     "react-native-notifications": "4.1.3",

@@ -89,6 +89,7 @@ GEM
 
 PLATFORMS
   ruby
+  x64-mingw32
 
 DEPENDENCIES
   cocoapods (= 1.11.2)
