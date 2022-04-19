@@ -23,9 +23,10 @@ type SlideUpPanelProps = {
     initialSnapIndex?: number;
     renderContent: () => ReactNode;
     snapPoints?: Array<string | number>;
+    testID?: string;
 }
 
-const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderContent, snapPoints = ['90%', '50%', 50]}: SlideUpPanelProps) => {
+const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderContent, snapPoints = ['90%', '50%', 50], testID}: SlideUpPanelProps) => {
     const sheetRef = useRef<RNBottomSheet>(null);
     const dimensions = useWindowDimensions();
     const isTablet = useIsTablet();
@@ -121,6 +122,7 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
                 width: isTablet ? '100%' : Math.min(dimensions.width, 450),
                 alignSelf: 'center',
             }}
+            testID={`${testID}.screen`}
         >
             {renderContent()}
         </View>

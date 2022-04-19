@@ -54,6 +54,7 @@ const Thread = ({rootPost}: ThreadProps) => {
                         accessoriesContainerID={THREAD_ACCESSORIES_CONTAINER_NATIVE_ID}
                         rootId={rootPost!.id}
                         keyboardTracker={postDraftRef}
+                        testID='thread.post_draft'
                     />
                 </>
                 }

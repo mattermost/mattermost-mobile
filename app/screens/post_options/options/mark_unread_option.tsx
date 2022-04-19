@@ -29,7 +29,7 @@ const MarkAsUnreadOption = ({postId}: Props) => {
             defaultMessage='Mark as Unread'
             iconName='mark-as-unread'
             onPress={onPress}
-            testID='post.options.mark.unread'
+            testID='post_options.mark.unread.option'
         />
     );
 };
