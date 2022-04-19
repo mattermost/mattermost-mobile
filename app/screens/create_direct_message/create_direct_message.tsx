@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, View} from 'react-native';
+import {Keyboard, Platform, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -11,7 +11,7 @@ import {makeDirectChannel, makeGroupChannel} from '@actions/remote/channel';
 import {fetchProfiles, fetchProfilesInTeam, searchProfiles} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
-import SearchBar from '@components/search_bar';
+import Search from '@components/search';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -51,14 +51,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
         },
         searchBar: {
-            marginHorizontal: 12,
-            borderRadius: 8,
-            marginTop: 12,
-            marginBottom: 12,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-        },
-        searchBarInput: {
-            color: theme.centerChannelColor,
+            marginLeft: 12,
+            marginRight: Platform.select({ios: 4, default: 12}),
+            marginVertical: 12,
         },
         loadingContainer: {
             alignItems: 'center',
@@ -82,6 +77,13 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
+function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: UserProfile[]}) {
+    if (action.type === 'add' && action.values?.length) {
+        return [...state, ...action.values];
+    }
+    return state;
+}
+
 export default function CreateDirectMessage({
     componentId,
     currentTeamId,
@@ -100,7 +102,7 @@ export default function CreateDirectMessage({
     const page = useRef(-1);
     const mounted = useRef(false);
 
-    const [profiles, setProfiles] = useState<UserProfile[]>([]);
+    const [profiles, dispatchProfiles] = useReducer(reduceProfiles, []);
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
@@ -110,11 +112,6 @@ export default function CreateDirectMessage({
 
     const isSearch = Boolean(term);
 
-    const addToProfiles = useRef((newProfiles: UserProfile[]) => setProfiles([...profiles, ...newProfiles]));
-    useEffect(() => {
-        addToProfiles.current = (newProfiles: UserProfile[]) => setProfiles([...profiles, ...newProfiles]);
-    }, [profiles]);
-
     const loadedProfiles = ({users}: {users?: UserProfile[]}) => {
         if (mounted.current) {
             if (users && !users.length) {
@@ -123,9 +120,7 @@ export default function CreateDirectMessage({
 
             page.current += 1;
             setLoading(false);
-            if (users && users.length) {
-                addToProfiles.current(users);
-            }
+            dispatchProfiles({type: 'add', values: users});
         }
     };
 
@@ -154,7 +149,7 @@ export default function CreateDirectMessage({
     }, [selectedIds]);
 
     const createDirectChannel = useCallback(async (id: string): Promise<boolean> => {
-        const user = profiles.find((u) => u.id === id);
+        const user = selectedIds[id];
 
         const displayName = displayUsername(user, intl.locale, teammateNameDisplay);
 
@@ -175,7 +170,7 @@ export default function CreateDirectMessage({
         }
 
         return !result.error;
-    }, [profiles, intl.locale, teammateNameDisplay, serverUrl]);
+    }, [selectedIds, intl.locale, teammateNameDisplay, serverUrl]);
 
     const createGroupChannel = useCallback(async (ids: string[]): Promise<boolean> => {
         const result = await makeGroupChannel(serverUrl, ids);
@@ -254,9 +249,9 @@ export default function CreateDirectMessage({
         let results;
 
         if (restrictDirectMessage) {
-            results = await searchProfiles(serverUrl, lowerCasedTerm);
+            results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
         } else {
-            results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId});
+            results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
         }
 
         let data: UserProfile[] = [];
@@ -267,6 +262,10 @@ export default function CreateDirectMessage({
         setSearchResults(data);
         setLoading(false);
     }, [restrictDirectMessage, serverUrl, currentTeamId]);
+
+    const search = useCallback(() => {
+        searchUsers(term);
+    }, [searchUsers, term]);
 
     const onSearch = useCallback((text: string) => {
         if (text) {
@@ -289,7 +288,7 @@ export default function CreateDirectMessage({
             leftButtons: [{
                 id: CLOSE_BUTTON,
                 icon: closeIcon,
-                testID: 'close.more_direct_messages.button',
+                testID: 'close.create_direct_message.button',
             }],
             rightButtons: [{
                 color: theme.sidebarHeaderTextColor,
@@ -297,7 +296,7 @@ export default function CreateDirectMessage({
                 text: formatMessage({id: 'mobile.create_direct_message.start', defaultMessage: 'Start'}),
                 showAsAction: 'always',
                 enabled: startEnabled,
-                testID: 'more_direct_messages.start.button',
+                testID: 'create_direct_message.start.button',
             }],
         });
     }, [intl.locale, theme]);
@@ -360,22 +359,19 @@ export default function CreateDirectMessage({
     }
 
     return (
-        <SafeAreaView style={style.container}>
+        <SafeAreaView
+            style={style.container}
+            testID='create_direct_message.screen'
+        >
             <View style={style.searchBar}>
-                <SearchBar
-                    testID='more_direct_messages.search_bar'
-                    placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                    cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                    backgroundColor='transparent'
-                    inputHeight={33}
-                    inputStyle={style.searchBarInput}
+                <Search
+                    testID='create_direct_message.search_bar'
+                    placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                    cancelButtonTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
-                    tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
-                    titleCancelColor={theme.centerChannelColor}
                     onChangeText={onSearch}
-                    onSearchButtonPress={onSearch}
-                    onCancelButtonPress={clearSearch}
+                    onSubmitEditing={search}
+                    onCancel={clearSearch}
                     autoCapitalize='none'
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     value={term}
@@ -393,13 +389,14 @@ export default function CreateDirectMessage({
             <UserList
                 currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
-                isSearch={isSearch}
                 loading={loading}
                 profiles={data}
                 selectedIds={selectedIds}
                 showNoResults={!loading && page.current !== -1}
                 teammateNameDisplay={teammateNameDisplay}
                 fetchMore={getProfiles}
+                term={term}
+                testID='create_direct_message.user_list'
             />
         </SafeAreaView>
     );

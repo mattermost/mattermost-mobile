@@ -66,6 +66,7 @@ export default function DropdownSlideup({
         <BottomSheetContent
             showButton={false}
             showTitle={!isTablet}
+            testID='dropdown_slideup'
             title={intl.formatMessage({id: 'browse_channels.dropdownTitle', defaultMessage: 'Show'})}
         >
             <SlideUpPanelItem

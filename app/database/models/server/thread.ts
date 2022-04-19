@@ -8,14 +8,16 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type ThreadModelInterface from '@typings/database/models/servers/thread';
+import type ThreadInTeamModel from '@typings/database/models/servers/thread_in_team';
 import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
 
-const {POST, THREAD, THREAD_PARTICIPANT} = MM_TABLES.SERVER;
+const {POST, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM} = MM_TABLES.SERVER;
 
 /**
  * The Thread model contains thread information of a post.
  */
-export default class ThreadModel extends Model {
+export default class ThreadModel extends Model implements ThreadModelInterface {
     /** table (name) : Thread */
     static table = THREAD;
 
@@ -27,6 +29,9 @@ export default class ThreadModel extends Model {
 
         /** A THREAD can have multiple THREAD_PARTICIPANT. (relationship is 1:N)*/
         [THREAD_PARTICIPANT]: {type: 'has_many', foreignKey: 'thread_id'},
+
+        /** A THREAD can have multiple THREADS_IN_TEAM. (relationship is 1:N)*/
+        [THREADS_IN_TEAM]: {type: 'has_many', foreignKey: 'thread_id'},
     };
 
     /** last_reply_at : The timestamp of when user last replied to the thread. */
@@ -47,17 +52,21 @@ export default class ThreadModel extends Model {
     /** unread_mentions : The number of mentions that have not been read by the user. */
     @field('unread_mentions') unreadMentions!: number;
 
-    /** loaded_in_global_threads : Flag to differentiate the unread threads loaded for showing unread counts/mentions */
-    @field('loaded_in_global_threads') loadedInGlobalThreads!: boolean;
+    /** viewed_at : The timestamp showing when the user's last opened this thread (this is used for the new line message indicator) */
+    @field('viewed_at') viewedAt!: number;
 
     /** participants : All the participants associated with this Thread */
     @children(THREAD_PARTICIPANT) participants!: Query<ThreadParticipantModel>;
+
+    /** threadsInTeam : All the threadsInTeam associated with this Thread */
+    @children(THREADS_IN_TEAM) threadsInTeam!: Query<ThreadInTeamModel>;
 
     /** post : The root post of this thread */
     @immutableRelation(POST, 'id') post!: Relation<PostModel>;
 
     async destroyPermanently() {
         await this.participants.destroyAllPermanently();
+        await this.threadsInTeam.destroyAllPermanently();
         super.destroyPermanently();
     }
 }

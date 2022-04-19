@@ -8,13 +8,42 @@ import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type Props = {
     onPress?: (e: GestureResponderEvent) => void;
     icon?: string;
+    testID?: string;
     text?: string;
 }
-export default function BottomSheetButton({onPress, icon, text}: Props) {
+
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        button: {
+            backgroundColor: theme.buttonBg,
+            display: 'flex',
+            flexDirection: 'row',
+            paddingVertical: 14,
+            paddingHorizontal: 24,
+            borderRadius: 4,
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: 48,
+        },
+        text: {
+            color: theme.buttonColor,
+            paddingHorizontal: 8,
+            ...typography('Body', 200, 'SemiBold'),
+        },
+        icon_container: {
+            width: 24,
+            height: 24,
+            marginTop: 2,
+        },
+    };
+});
+
+export default function BottomSheetButton({onPress, icon, testID, text}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -23,6 +52,7 @@ export default function BottomSheetButton({onPress, icon, text}: Props) {
             onPress={onPress}
             type='opacity'
             style={styles.button}
+            testID={testID}
         >
             {icon && (
                 <View style={styles.icon_container}>
@@ -42,31 +72,3 @@ export default function BottomSheetButton({onPress, icon, text}: Props) {
         </TouchableWithFeedback>
     );
 }
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        button: {
-            backgroundColor: theme.buttonBg,
-            display: 'flex',
-            flexDirection: 'row',
-            paddingVertical: 14,
-            paddingHorizontal: 24,
-            borderRadius: 4,
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: 48,
-        },
-        text: {
-            color: theme.buttonColor,
-            fontWeight: 'bold',
-            fontSize: 16,
-            lineHeight: 18,
-            paddingHorizontal: 1,
-        },
-        icon_container: {
-            width: 24,
-            height: 24,
-            marginBottom: 1,
-        },
-    };
-});

@@ -1,34 +1,43 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter, Platform} from 'react-native';
+import {DeviceEventEmitter, LogBox, Platform} from 'react-native';
+import {RUNNING_E2E} from 'react-native-dotenv';
 import 'react-native-gesture-handler';
 import {ComponentDidAppearEvent, ComponentDidDisappearEvent, Navigation} from 'react-native-navigation';
 
 import {Events, Screens} from './app/constants';
 import DatabaseManager from './app/database/manager';
 import {getAllServerCredentials} from './app/init/credentials';
-import GlobalEventHandler from './app/init/global_event_handler';
 import {initialLaunch} from './app/init/launch';
 import ManagedApp from './app/init/managed_app';
-import NetworkManager from './app/init/network_manager';
 import PushNotifications from './app/init/push_notifications';
-import WebsocketManager from './app/init/websocket_manager';
+import GlobalEventHandler from './app/managers/global_event_handler';
+import NetworkManager from './app/managers/network_manager';
+import WebsocketManager from './app/managers/websocket_manager';
 import {registerScreens} from './app/screens';
 import EphemeralStore from './app/store/ephemeral_store';
 import setFontFamily from './app/utils/font_family';
+import './app/utils/emoji'; // Imported to ensure it is loaded when used
 
 declare const global: { HermesInternal: null | {} };
 
 if (__DEV__) {
-    const LogBox = require('react-native/Libraries/LogBox/LogBox');
     LogBox.ignoreLogs([
         '`-[RCTRootView cancelTouches]`',
         'scaleY',
-        'Require cycle: node_modules/zod/lib/src/index.js',
         "[react-native-gesture-handler] Seems like you're using an old API with gesture components, check out new Gestures system!",
         'new NativeEventEmitter',
+        'ViewPropTypes will be removed from React Native',
     ]);
+
+    // Ignore all notifications if running e2e
+    const isRunningE2e = RUNNING_E2E === 'true';
+    // eslint-disable-next-line no-console
+    console.log(`RUNNING_E2E: ${RUNNING_E2E}, isRunningE2e: ${isRunningE2e}`);
+    if (isRunningE2e) {
+        LogBox.ignoreAllLogs(true);
+    }
 }
 
 setFontFamily();

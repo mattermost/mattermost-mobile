@@ -11,11 +11,10 @@ import {
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
 import {BotTag, GuestTag} from '@components/tag';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {displayUsername, isGuest} from '@utils/user';
-
-import TouchableWithFeedback from '../touchable_with_feedback';
 
 type Props = {
     id: string;
@@ -149,14 +148,18 @@ export default function UserListRow({
     const showTeammateDisplay = teammateDisplay !== username;
 
     const itemTestID = `${testID}.${id}`;
-    const displayUsernameTestID = `${testID}.display_username`;
+    const displayNameTestID = `${itemTestID}.display_name`;
     const profilePictureTestID = `${itemTestID}.profile_picture`;
 
     return (
         <TouchableWithFeedback
             onPress={handlePress}
+            underlayColor={changeOpacity(theme.centerChannelColor, 0.16)}
         >
-            <View style={style.container}>
+            <View
+                style={style.container}
+                testID={itemTestID}
+            >
                 <View style={style.profileContainer}>
                     <ProfilePicture
                         author={user}
@@ -165,17 +168,14 @@ export default function UserListRow({
                         testID={profilePictureTestID}
                     />
                 </View>
-                <View
-                    style={style.textContainer}
-                    testID={itemTestID}
-                >
+                <View style={style.textContainer}>
                     <View>
                         <View style={style.indicatorContainer}>
                             <Text
                                 style={style.username}
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
-                                testID={displayUsernameTestID}
+                                testID={displayNameTestID}
                             >
                                 {usernameDisplay}
                             </Text>

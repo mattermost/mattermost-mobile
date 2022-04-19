@@ -6,7 +6,7 @@ import {ClientResponse, ClientResponseError} from '@mattermost/react-native-netw
 import {Client} from '@client/rest';
 import ClientError from '@client/rest/error';
 import {DOWNLOAD_TIMEOUT} from '@constants/network';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 
 import {forceLogoutIfNecessary} from './session';
 

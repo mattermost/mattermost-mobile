@@ -16,3 +16,4 @@ export default tableSchema({
         {name: 'user_id', type: 'string', isIndexed: true},
     ],
 });
+

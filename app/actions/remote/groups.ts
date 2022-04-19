@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Client} from '@client/rest';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 
 export const getGroupsForAutocomplete = async (serverUrl: string, channelId: string) => {
     let client: Client;

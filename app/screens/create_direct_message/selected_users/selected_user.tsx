@@ -9,10 +9,10 @@ import {
     View,
 } from 'react-native';
 
-import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
 type Props = {
@@ -85,7 +85,7 @@ export default function SelectedUser({
         >
             <Text
                 style={style.text}
-                testID={`${testID}.${user.id}.display_username`}
+                testID={`${testID}.${user.id}.display_name`}
             >
                 {displayUsername(user, intl.locale, teammateNameDisplay)}
             </Text>

@@ -7,6 +7,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
+import type MyTeamModelInterface from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
 
 const {TEAM, MY_TEAM} = MM_TABLES.SERVER;
@@ -14,11 +15,13 @@ const {TEAM, MY_TEAM} = MM_TABLES.SERVER;
 /**
  * MyTeam represents only the teams that the current user belongs to
  */
-export default class MyTeamModel extends Model {
+export default class MyTeamModel extends Model implements MyTeamModelInterface {
     /** table (name) : MyTeam */
     static table = MY_TEAM;
 
     static associations: Associations = {
+
+        /** A TEAM is associated to one MY_TEAM (relationship is 1:1) */
         [TEAM]: {type: 'belongs_to', key: 'id'},
     };
 

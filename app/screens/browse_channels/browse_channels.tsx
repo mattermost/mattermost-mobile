@@ -3,23 +3,19 @@
 
 import React, {useCallback, useEffect, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
-import {Keyboard, View} from 'react-native';
+import {Keyboard, Platform, StyleSheet, View} from 'react-native';
 import {ImageResource, Navigation, OptionsTopBarButton} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {joinChannel, switchToChannelById} from '@actions/remote/channel';
 import Loading from '@components/loading';
-import SearchBar from '@components/search_bar';
-import {General} from '@constants';
+import Search from '@components/search';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
-import {
-    changeOpacity,
-    makeStyleSheetFromTheme,
-    getKeyboardAppearanceFromTheme,
-} from '@utils/theme';
+import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 import ChannelDropdown from './channel_dropdown';
 import ChannelList from './channel_list';
@@ -55,38 +51,31 @@ const close = () => {
     dismissModal();
 };
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            flex: 1,
-        },
-        searchBar: {
-            marginHorizontal: 12,
-            borderRadius: 8,
-            marginTop: 12,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-        },
-        searchBarInput: {
-            color: theme.centerChannelColor,
-        },
-        loadingContainer: {
-            flex: 1,
-            justifyContent: 'center' as const,
-            alignItems: 'center' as const,
-        },
-        loading: {
-            height: 32,
-            width: 32,
-            justifyContent: 'center' as const,
-        },
-    };
+const style = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    searchBar: {
+        marginLeft: 12,
+        marginRight: Platform.select({ios: 4, default: 12}),
+        marginTop: 12,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center' as const,
+        alignItems: 'center' as const,
+    },
+    loading: {
+        height: 32,
+        width: 32,
+        justifyContent: 'center' as const,
+    },
 });
 
 type Props = {
 
     // Screen Props (do not change during the lifetime of the screen)
     componentId: string;
-    categoryId?: string;
     closeButton: ImageResource;
 
     // Properties not changing during the lifetime of the screen)
@@ -118,7 +107,6 @@ export default function BrowseChannels(props: Props) {
         currentUserId,
         currentTeamId,
         canShowArchivedChannels,
-        categoryId,
         typeOfChannels,
         changeChannelType: changeTypeOfChannels,
         term,
@@ -130,7 +118,6 @@ export default function BrowseChannels(props: Props) {
     } = props;
     const intl = useIntl();
     const theme = useTheme();
-    const style = getStyleFromTheme(theme);
     const serverUrl = useServerUrl();
 
     const [adding, setAdding] = useState(false);
@@ -174,6 +161,10 @@ export default function BrowseChannels(props: Props) {
         }
     }, [setHeaderButtons, intl.locale]);
 
+    const onSearch = useCallback(() => {
+        searchChannels(term);
+    }, [term, searchChannels]);
+
     useEffect(() => {
         const unsubscribe = Navigation.events().registerComponentListener({
             navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
@@ -182,16 +173,9 @@ export default function BrowseChannels(props: Props) {
                         close();
                         break;
                     case CREATE_BUTTON_ID: {
-                        // TODO part of https://mattermost.atlassian.net/browse/MM-39733
-                        // Update this to use the proper constant and the proper props.
-                        const screen = 'CreateChannel';
-                        const title = intl.formatMessage({id: 'mobile.create_channel.public', defaultMessage: 'New Public Channel'});
-                        const passProps = {
-                            channelType: General.OPEN_CHANNEL,
-                            categoryId,
-                        };
-
-                        goToScreen(screen, title, passProps);
+                        const screen = Screens.CREATE_OR_EDIT_CHANNEL;
+                        const title = intl.formatMessage({id: 'mobile.create_channel.title', defaultMessage: 'New channel'});
+                        goToScreen(screen, title);
                         break;
                     }
                 }
@@ -200,7 +184,7 @@ export default function BrowseChannels(props: Props) {
         return () => {
             unsubscribe.remove();
         };
-    }, [intl.locale, categoryId]);
+    }, [intl.locale]);
 
     useEffect(() => {
         // Update header buttons in case anything related to the header changes
@@ -235,20 +219,14 @@ export default function BrowseChannels(props: Props) {
                     testID='browse_channels.screen'
                     style={style.searchBar}
                 >
-                    <SearchBar
+                    <Search
                         testID='browse_channels.search_bar'
                         placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                        cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                        backgroundColor='transparent'
-                        inputHeight={33}
+                        cancelButtonTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                        tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
-                        tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
-                        titleCancelColor={theme.centerChannelColor}
-                        inputStyle={style.searchBarInput}
                         onChangeText={searchChannels}
-                        onSearchButtonPress={searchChannels}
-                        onCancelButtonPress={stopSearch}
+                        onSubmitEditing={onSearch}
+                        onCancel={stopSearch}
                         autoCapitalize='none'
                         keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         value={term}
@@ -258,9 +236,9 @@ export default function BrowseChannels(props: Props) {
                 <ChannelList
                     channels={channels}
                     onEndReached={onEndReached}
-                    isSearch={Boolean(term)}
                     loading={loading}
                     onSelectChannel={onSelectChannel}
+                    term={term}
                 />
             </>
         );

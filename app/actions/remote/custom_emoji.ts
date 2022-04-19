@@ -5,7 +5,7 @@ import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {Client} from '@client/rest';
 import {Emoji, General} from '@constants';
 import DatabaseManager from '@database/manager';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {queryCustomEmojisByName} from '@queries/servers/custom_emoji';
 
 export const fetchCustomEmojis = async (serverUrl: string, page = 0, perPage = General.PAGE_SIZE_DEFAULT, sort = Emoji.SORT_BY_NAME) => {
@@ -23,12 +23,10 @@ export const fetchCustomEmojis = async (serverUrl: string, page = 0, perPage = G
 
     try {
         const data = await client.getCustomEmojis(page, perPage, sort);
-        if (data.length) {
-            await operator.handleCustomEmojis({
-                emojis: data,
-                prepareRecordsOnly: false,
-            });
-        }
+        await operator.handleCustomEmojis({
+            emojis: data,
+            prepareRecordsOnly: false,
+        });
 
         return {data};
     } catch (error) {
@@ -54,14 +52,13 @@ export const searchCustomEmojis = async (serverUrl: string, term: string) => {
         const data = await client.searchCustomEmoji(term);
         if (data.length) {
             const names = data.map((c) => c.name);
-            const exist = await queryCustomEmojisByName(operator.database, names);
-            const emojis = data.filter((d) => exist.findIndex((c) => c.name === d.name));
-            if (emojis.length) {
-                await operator.handleCustomEmojis({
-                    emojis,
-                    prepareRecordsOnly: false,
-                });
-            }
+            const exist = await queryCustomEmojisByName(operator.database, names).fetch();
+            const existingNames = new Set(exist.map((e) => e.name));
+            const emojis = data.filter((d) => !existingNames.has(d.name));
+            await operator.handleCustomEmojis({
+                emojis,
+                prepareRecordsOnly: false,
+            });
         }
         return {data};
     } catch (error) {

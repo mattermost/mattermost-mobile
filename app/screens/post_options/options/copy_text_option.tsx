@@ -31,7 +31,7 @@ const CopyTextOption = ({postMessage, location, offsetY}: Props) => {
             defaultMessage='Copy Text'
             iconName='content-copy'
             onPress={handleCopyText}
-            testID='post.options.copy.text'
+            testID='post_options.copy.text.option'
         />
     );
 };

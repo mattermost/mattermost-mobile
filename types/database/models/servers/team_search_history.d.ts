@@ -4,6 +4,8 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
+import type TeamModel from './team';
+
 /**
  * The TeamSearchHistory model holds the term searched within a team.  The searches are performed
  * at team level in the app.

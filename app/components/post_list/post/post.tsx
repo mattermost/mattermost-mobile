@@ -92,6 +92,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'column',
         },
         rightColumnPadding: {paddingBottom: 3},
+        touchableContainer: {marginHorizontal: -20, paddingHorizontal: 20},
     };
 });
 
@@ -174,7 +175,7 @@ const Post = ({
         if (isTablet) {
             showModal(Screens.POST_OPTIONS, title, passProps, bottomSheetModalOptions(theme, 'close-post-options'));
         } else {
-            showModalOverCurrentContext(Screens.POST_OPTIONS, passProps);
+            showModalOverCurrentContext(Screens.POST_OPTIONS, passProps, bottomSheetModalOptions(theme));
         }
     };
 
@@ -201,12 +202,11 @@ const Post = ({
     } else {
         postAvatar = (
             <View style={[styles.profilePictureContainer, pendingPostStyle]}>
-                {isAutoResponder ? (
+                {(isAutoResponder || isSystemPost) ? (
                     <SystemAvatar theme={theme}/>
                 ) : (
                     <Avatar
                         isAutoReponse={isAutoResponder}
-                        isSystemPost={isSystemPost}
                         post={post}
                     />
                 )}
@@ -277,6 +277,7 @@ const Post = ({
                 onPress={handlePress}
                 onLongPress={showPostOptions}
                 underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
+                style={styles.touchableContainer}
             >
                 <>
                     <PreHeader

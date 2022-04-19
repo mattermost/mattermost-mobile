@@ -4,8 +4,7 @@
 /* eslint-disable new-cap */
 
 import React, {memo} from 'react';
-import {Touchable, TouchableOpacity, TouchableWithoutFeedback, View, StyleProp, ViewStyle} from 'react-native';
-import {TouchableNativeFeedback} from 'react-native-gesture-handler';
+import {Touchable, TouchableOpacity, TouchableNativeFeedback, TouchableWithoutFeedback, View, StyleProp, ViewStyle} from 'react-native';
 
 type TouchableProps = Touchable & {
     children: React.ReactNode | React.ReactNode[];

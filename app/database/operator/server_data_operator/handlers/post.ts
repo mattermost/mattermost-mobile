@@ -5,8 +5,7 @@ import {Q} from '@nozbe/watermelondb';
 
 import {ActionType} from '@constants';
 import {MM_TABLES} from '@constants/database';
-import DataOperatorException from '@database/exceptions/data_operator_exception';
-import {isRecordDraftEqualToRaw, isRecordFileEqualToRaw, isRecordPostEqualToRaw} from '@database/operator/server_data_operator/comparators';
+import {buildDraftKey} from '@database/operator/server_data_operator/comparators';
 import {
     transformDraftRecord,
     transformFileRecord,
@@ -48,18 +47,20 @@ const PostHandler = (superclass: any) => class extends superclass {
      * @throws DataOperatorException
      * @returns {Promise<DraftModel[]>}
      */
-    handleDraft = ({drafts, prepareRecordsOnly = true}: HandleDraftArgs): Promise<DraftModel[]> => {
-        if (!drafts.length) {
-            throw new DataOperatorException(
-                'An empty "drafts" array has been passed to the handleDraft method',
+    handleDraft = async ({drafts, prepareRecordsOnly = true}: HandleDraftArgs): Promise<DraftModel[]> => {
+        if (!drafts?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "drafts" array has been passed to the handleDraft method',
             );
+            return [];
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: drafts, key: 'channel_id'});
 
         return this.handleRecords({
             fieldName: 'channel_id',
-            findMatchingRecordBy: isRecordDraftEqualToRaw,
+            buildKeyRecordBy: buildDraftKey,
             transformer: transformDraftRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues,
@@ -71,23 +72,26 @@ const PostHandler = (superclass: any) => class extends superclass {
      * handlePosts: Handler responsible for the Create/Update operations occurring on the Post table from the 'Server' schema
      * @param {HandlePostsArgs} handlePosts
      * @param {string} handlePosts.actionType
-     * @param {string[]} handlePosts.orders
-     * @param {RawPost[]} handlePosts.values
+     * @param {string[]} handlePosts.order
+     * @param {RawPost[]} handlePosts.posts
      * @param {string | undefined} handlePosts.previousPostId
      * @param {boolean | undefined} handlePosts.prepareRecordsOnly
-     * @returns {Promise<void>}
+     * @returns {Promise<Model[]>}
      */
     handlePosts = async ({actionType, order, posts, previousPostId = '', prepareRecordsOnly = false}: HandlePostsArgs): Promise<Model[]> => {
         const tableName = POST;
 
         // We rely on the posts array; if it is empty, we stop processing
-        if (!posts.length) {
+        if (!posts?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "posts" array has been passed to the handlePosts method',
+            );
             return [];
         }
 
         const emojis: CustomEmoji[] = [];
         const files: FileInfo[] = [];
-        const metadatas: Metadata[] = [];
         const postsReactions: ReactionsPerPost[] = [];
         const pendingPostsToDelete: Post[] = [];
         const postsInThread: Record<string, Post[]> = {};
@@ -166,7 +170,6 @@ const PostHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues: uniquePosts.filter((p) => p.delete_at === 0),
             deleteRawValues: pendingPostsToDelete,
             tableName,
-            findMatchingRecordBy: isRecordPostEqualToRaw,
             fieldName: 'id',
         })) as ProcessRecordResults;
 
@@ -191,12 +194,6 @@ const PostHandler = (superclass: any) => class extends superclass {
             // calls handler for Files
             const postFiles = await this.handleFiles({files, prepareRecordsOnly: true});
             batch.push(...postFiles);
-        }
-
-        if (metadatas.length) {
-            // calls handler for postMetadata ( embeds and images )
-            const postMetadata = await this.handlePostMetadata({metadatas, prepareRecordsOnly: true});
-            batch.push(...postMetadata);
         }
 
         if (emojis.length) {
@@ -237,14 +234,17 @@ const PostHandler = (superclass: any) => class extends superclass {
      * @returns {Promise<FileModel[]>}
      */
     handleFiles = async ({files, prepareRecordsOnly}: HandleFilesArgs): Promise<FileModel[]> => {
-        if (!files.length) {
+        if (!files?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "files" array has been passed to the handleFiles method',
+            );
             return [];
         }
 
         const processedFiles = (await this.processRecords({
             createOrUpdateRawValues: files,
             tableName: FILE,
-            findMatchingRecordBy: isRecordFileEqualToRaw,
             fieldName: 'id',
         })) as ProcessRecordResults;
 
@@ -273,6 +273,10 @@ const PostHandler = (superclass: any) => class extends superclass {
      */
     handlePostsInThread = async (postsMap: Record<string, Post[]>, actionType: never, prepareRecordsOnly = false): Promise<PostsInThreadModel[]> => {
         if (!postsMap || !Object.keys(postsMap).length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "postsMap" object has been passed to the handlePostsInThread method',
+            );
             return [];
         }
         switch (actionType) {
@@ -300,6 +304,10 @@ const PostHandler = (superclass: any) => class extends superclass {
         const permittedActions = Object.values(ActionType.POSTS);
 
         if (!posts.length || !permittedActions.includes(actionType)) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "posts" array or an non-supported actionType has been passed to the handlePostsInChannel method',
+            );
             return [];
         }
 

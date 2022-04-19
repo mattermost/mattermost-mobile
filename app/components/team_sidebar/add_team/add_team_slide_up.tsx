@@ -32,6 +32,7 @@ export default function AddTeamSlideUp({otherTeams, canCreateTeams, showTitle = 
             onPress={onPressCreate}
             showButton={canCreateTeams}
             showTitle={showTitle}
+            testID='add_team_slide_up'
             title={intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'})}
         >
             <TeamList teams={otherTeams}/>

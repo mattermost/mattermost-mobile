@@ -10,6 +10,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {isValidUrl} from '@utils/url';
 
 type SlideUpPanelProps = {
@@ -58,10 +59,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         text: {
             color: theme.centerChannelColor,
-            fontSize: 16,
-            lineHeight: 19,
             opacity: 0.9,
-            letterSpacing: -0.45,
+            ...typography('Body', 200, 'Regular'),
         },
     };
 });

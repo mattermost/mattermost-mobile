@@ -28,6 +28,7 @@ type Channel = {
     purpose: string;
     last_post_at: number;
     total_msg_count: number;
+    total_msg_count_root?: number;
     extra_update_at: number;
     creator_id: string;
     scheme_id: string|null;
@@ -55,14 +56,18 @@ type ChannelMembership = {
     roles: string;
     last_viewed_at: number;
     msg_count: number;
+    msg_count_root?: number;
     mention_count: number;
+    mention_count_root?: number;
     notify_props: Partial<ChannelNotifyProps>;
     last_post_at?: number;
+    last_root_post_at?: number;
     last_update_at: number;
     scheme_user?: boolean;
     scheme_admin?: boolean;
     post_root_id?: string;
     is_unread?: boolean;
+    manually_unread?: boolean;
 };
 type ChannelUnread = {
     channel_id: string;

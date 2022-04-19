@@ -8,12 +8,11 @@ import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchPostsAround} from '@actions/remote/post';
-import {Screens} from '@app/constants';
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import PostList from '@components/post_list';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissModal} from '@screens/navigation';
@@ -21,6 +20,7 @@ import ChannelModel from '@typings/database/models/servers/channel';
 import PostModel from '@typings/database/models/servers/post';
 import {closePermalink} from '@utils/permalink';
 import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     currentUsername: UserProfile['username'];

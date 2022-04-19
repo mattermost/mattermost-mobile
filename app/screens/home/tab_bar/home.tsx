@@ -51,7 +51,7 @@ const Home = ({isFocused, theme}: Props) => {
         setTotal({mentions, unread});
     };
 
-    const unreadsSubscription = (serverUrl: string, myChannels: MyChannelModel[]) => {
+    const unreadsSubscription = (serverUrl: string, {myChannels, threadMentionCount}: {myChannels: MyChannelModel[]; threadMentionCount: number}) => {
         const unreads = subscriptions.get(serverUrl);
         if (unreads) {
             let mentions = 0;
@@ -61,7 +61,7 @@ const Home = ({isFocused, theme}: Props) => {
                 unread = unread || myChannel.isUnread;
             }
 
-            unreads.mentions = mentions;
+            unreads.mentions = mentions + threadMentionCount;
             unreads.unread = unread;
             subscriptions.set(serverUrl, unreads);
             updateTotal();
@@ -70,8 +70,8 @@ const Home = ({isFocused, theme}: Props) => {
 
     const serversObserver = async (servers: ServersModel[]) => {
         // unsubscribe mentions from servers that were removed
-        const allUrls = servers.map((s) => s.url);
-        const subscriptionsToRemove = [...subscriptions].filter(([key]) => allUrls.indexOf(key) === -1);
+        const allUrls = new Set(servers.map((s) => s.url));
+        const subscriptionsToRemove = [...subscriptions].filter(([key]) => !allUrls.has(key));
         for (const [key, map] of subscriptionsToRemove) {
             map.subscription?.unsubscribe();
             subscriptions.delete(key);

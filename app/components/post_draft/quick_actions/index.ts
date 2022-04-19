@@ -3,37 +3,31 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import React from 'react';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {observeConfig, observeLicense} from '@queries/servers/system';
 import {isMinimumServerVersion} from '@utils/helpers';
 
 import QuickActions from './quick_actions';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type SystemModel from '@typings/database/models/servers/system';
-
-const {SERVER: {SYSTEM}} = MM_TABLES;
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        switchMap(({value}) => of$(value as ClientConfig)),
-    );
-    const license = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE).pipe(
-        switchMap(({value}) => of$(value as ClientLicense)),
-    );
+    const config = observeConfig(database);
+    const license = observeLicense(database);
 
     const canUploadFiles = combineLatest([config, license]).pipe(
         switchMap(([c, l]) => of$(
-            c.EnableFileAttachments !== 'false' &&
-                (l.IsLicensed === 'false' || l.Compliance === 'false' || c.EnableMobileFileUpload !== 'false'),
+            c?.EnableFileAttachments === 'true' ||
+                (l?.IsLicensed !== 'true' && l?.Compliance !== 'true' && c?.EnableMobileFileUpload === 'true'),
         ),
         ),
     );
 
     const maxFileCount = config.pipe(
-        switchMap((cfg) => of$(isMinimumServerVersion(cfg.Version, 6, 0) ? 10 : 5)),
+        switchMap((cfg) => of$(isMinimumServerVersion(cfg?.Version || '', 6, 0) ? 10 : 5)),
     );
 
     return {
@@ -42,4 +36,4 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     };
 });
 
-export default withDatabase(enhanced(QuickActions));
+export default React.memo(withDatabase(enhanced(QuickActions)));

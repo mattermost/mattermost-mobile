@@ -29,6 +29,7 @@ import com.mattermost.helpers.DatabaseHelper;
 import com.mattermost.helpers.Network;
 import com.mattermost.helpers.PushNotificationDataHelper;
 import com.mattermost.helpers.ResolvePromise;
+import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 import com.wix.reactnativenotifications.core.notification.PushNotification;
 import com.wix.reactnativenotifications.core.AppLaunchHelper;
 import com.wix.reactnativenotifications.core.AppLifecycleFacade;
@@ -238,14 +239,16 @@ public class CustomPushNotification extends PushNotification {
         if (channelId != null) {
             Map<String, List<Integer>> notificationsInChannel = loadNotificationsMap(mContext);
             List<Integer> notifications = notificationsInChannel.get(channelId);
-            notifications.remove(notificationId);
+            if (notifications != null) {
+                notifications.remove(notificationId);
+            }
             saveNotificationsMap(mContext, notificationsInChannel);
             clearChannelNotifications(mContext, channelId);
         }
     }
 
     private void buildNotification(Integer notificationId, boolean createSummary) {
-        final PendingIntent pendingIntent = super.getCTAPendingIntent();
+        final PendingIntent pendingIntent = NotificationIntentAdapter.createPendingNotificationIntent(mContext, mNotificationProps);
         final Notification notification = buildNotification(pendingIntent);
         if (createSummary) {
             final Notification summary = getNotificationSummaryBuilder(pendingIntent).build();

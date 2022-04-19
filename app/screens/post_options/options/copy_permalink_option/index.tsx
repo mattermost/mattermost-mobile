@@ -6,28 +6,23 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {observeCurrentTeamId} from '@queries/servers/system';
+import {observeTeam} from '@queries/servers/team';
 
 import CopyPermalinkOption from './copy_permalink_option';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
-import type SystemModel from '@typings/database/models/servers/system';
 import type TeamModel from '@typings/database/models/servers/team';
 
-const {SERVER: {SYSTEM, TEAM}} = MM_TABLES;
-const {CURRENT_TEAM_ID} = SYSTEM_IDENTIFIERS;
-
 const enhanced = withObservables(['post'], ({post, database}: WithDatabaseArgs & { post: PostModel }) => {
-    const currentTeamId = database.get<SystemModel>(SYSTEM).findAndObserve(CURRENT_TEAM_ID);
+    const currentTeamId = observeCurrentTeamId(database);
     const channel = post.channel.observe();
 
     const teamName = combineLatest([channel, currentTeamId]).pipe(
         switchMap(([c, tid]) => {
-            const teamId = c.teamId || tid.value;
-            return database.
-                get<TeamModel>(TEAM).
-                findAndObserve(teamId).
+            const teamId = c?.teamId || tid;
+            return observeTeam(database, teamId).
                 pipe(
                     // eslint-disable-next-line max-nested-callbacks
                     switchMap((team: TeamModel) => of$(team.name)),

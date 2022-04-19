@@ -7,7 +7,7 @@ import {View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import {useServerUrl} from '@context/server';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {Client} from '@client/rest';

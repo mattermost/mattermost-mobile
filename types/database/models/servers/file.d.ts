@@ -4,6 +4,8 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
+import type PostModel from './post';
+
 /**
  * The File model works in pair with the Post model.  It hosts information about the files shared in a Post
  */
@@ -24,7 +26,7 @@ export default class FileModel extends Model {
     imageThumbnail: string;
 
     /** local_path : Local path of the file that has been uploaded to server */
-    localPath: string;
+    localPath: string | null;
 
     /** mime_type : The media type */
     mimeType: string;

@@ -1,30 +1,44 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchMissingSidebarInfo, switchToChannelById} from '@actions/remote/channel';
+import {markChannelAsViewed} from '@actions/local/channel';
+import {fetchMissingSidebarInfo, markChannelAsRead, switchToChannelById} from '@actions/remote/channel';
 import {AppEntryData, AppEntryError, fetchAppEntryData, teamsToRemove} from '@actions/remote/entry/common';
 import {fetchPostsForUnreadChannels, fetchPostsSince} from '@actions/remote/post';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchTeamsChannelsAndUnreadPosts} from '@actions/remote/team';
+import {fetchNewThreads} from '@actions/remote/thread';
 import {fetchStatusByIds, updateAllUsersSince} from '@actions/remote/user';
-import {General, WebsocketEvents} from '@constants';
+import {Screens, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
-import {queryChannelsById, queryDefaultChannelForTeam} from '@queries/servers/channel';
+import {queryChannelsById, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
-import {queryCommonSystemValues, queryConfig, queryCurrentChannelId, queryWebSocketLastDisconnected, resetWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {getCommonSystemValues, getConfig, getCurrentChannelId, getWebSocketLastDisconnected, resetWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import EphemeralStore from '@store/ephemeral_store';
+import {isDMorGM} from '@utils/channel';
 import {isTablet} from '@utils/helpers';
+import {isCRTEnabled} from '@utils/thread';
 
 import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
-import {handleChannelDeletedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
+import {handleChannelConvertedEvent, handleChannelCreatedEvent,
+    handleChannelDeletedEvent,
+    handleChannelMemberUpdatedEvent,
+    handleChannelUnarchiveEvent,
+    handleChannelUpdatedEvent,
+    handleChannelViewedEvent,
+    handleDirectAddedEvent,
+    handleUserAddedToChannelEvent,
+    handleUserRemovedFromChannelEvent} from './channel';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
 import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
 import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
 import {handleLeaveTeamEvent, handleUserAddedToTeamEvent, handleUpdateTeamEvent} from './teams';
+import {handleThreadUpdatedEvent, handleThreadReadChangedEvent, handleThreadFollowChangedEvent} from './threads';
 import {handleUserUpdatedEvent, handleUserTypingEvent} from './users';
 
 // ESR: 5.37
@@ -36,11 +50,11 @@ export async function handleFirstConnect(serverUrl: string) {
         return;
     }
     const {database} = operator;
-    const config = await queryConfig(database);
-    const lastDisconnect = await queryWebSocketLastDisconnected(database);
+    const config = await getConfig(database);
+    const lastDisconnect = await getWebSocketLastDisconnected(database);
 
     // ESR: 5.37
-    if (lastDisconnect && config.EnableReliableWebSockets !== 'true' && alreadyConnected.has(serverUrl)) {
+    if (lastDisconnect && config?.EnableReliableWebSockets !== 'true' && alreadyConnected.has(serverUrl)) {
         handleReconnect(serverUrl);
         return;
     }
@@ -78,8 +92,8 @@ async function doReconnect(serverUrl: string) {
 
     const {database} = operator;
     const tabletDevice = await isTablet();
-    const system = await queryCommonSystemValues(database);
-    const lastDisconnectedAt = await queryWebSocketLastDisconnected(database);
+    const system = await getCommonSystemValues(database);
+    const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
 
     resetWebSocketLastDisconnected(operator);
     let {config, license} = await fetchConfigAndLicense(serverUrl);
@@ -100,23 +114,29 @@ async function doReconnect(serverUrl: string) {
 
     const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData as AppEntryData;
     const rolesData = await fetchRoles(serverUrl, teamData.memberships, chData?.memberships, meData.user, true);
+    const profiles: UserProfile[] = [];
 
     if (chData?.channels?.length) {
         const teammateDisplayNameSetting = getTeammateNameDisplaySetting(prefData.preferences || [], config, license);
-        let directChannels: Channel[];
-        [chData.channels, directChannels] = chData.channels.reduce(([others, direct], c: Channel) => {
-            if (c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL) {
-                direct.push(c);
+        let direct: Channel[];
+        [chData.channels, direct] = chData.channels.reduce(([others, channels], c: Channel) => {
+            if (isDMorGM(c)) {
+                channels.push(c);
             } else {
                 others.push(c);
             }
 
-            return [others, direct];
+            return [others, channels];
         }, [[], []] as Channel[][]);
 
-        if (directChannels.length) {
-            await fetchMissingSidebarInfo(serverUrl, directChannels, meData.user?.locale, teammateDisplayNameSetting, system.currentUserId, true);
-            chData.channels.push(...directChannels);
+        if (direct.length) {
+            const {directChannels, users} = await fetchMissingSidebarInfo(serverUrl, direct, meData.user?.locale, teammateDisplayNameSetting, system.currentUserId, true);
+            if (directChannels?.length) {
+                chData.channels.push(...directChannels);
+            }
+            if (users?.length) {
+                profiles.push(...users);
+            }
         }
     }
 
@@ -125,7 +145,7 @@ async function doReconnect(serverUrl: string) {
         let cId = '';
         if (tabletDevice) {
             if (!cId) {
-                const channel = await queryDefaultChannelForTeam(database, initialTeamId);
+                const channel = await getDefaultChannelForTeam(database, initialTeamId);
                 if (channel) {
                     cId = channel.id;
                 }
@@ -140,12 +160,16 @@ async function doReconnect(serverUrl: string) {
 
     let removeChannels;
     if (removeChannelIds?.length) {
-        removeChannels = await queryChannelsById(database, removeChannelIds);
+        removeChannels = await queryChannelsById(database, removeChannelIds).fetch();
     }
 
     const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData});
     if (rolesData.roles?.length) {
         modelPromises.push(operator.handleRole({roles: rolesData.roles, prepareRecordsOnly: true}));
+    }
+
+    if (profiles.length) {
+        modelPromises.push(operator.handleUsers({users: profiles, prepareRecordsOnly: true}));
     }
 
     if (modelPromises.length) {
@@ -161,10 +185,17 @@ async function doReconnect(serverUrl: string) {
         }
     }
 
-    const currentChannelId = await queryCurrentChannelId(database);
+    const currentChannelId = await getCurrentChannelId(database);
     if (currentChannelId) {
         // https://mattermost.atlassian.net/browse/MM-40098
         fetchPostsSince(serverUrl, currentChannelId, lastDisconnectedAt);
+
+        const isChannelScreenMounted = EphemeralStore.getNavigationComponents().includes(Screens.CHANNEL);
+
+        if (isChannelScreenMounted || tabletDevice) {
+            markChannelAsRead(serverUrl, currentChannelId);
+            markChannelAsViewed(serverUrl, currentChannelId);
+        }
 
         // defer fetching posts for unread channels on initial team
         if (chData?.channels && chData.memberships) {
@@ -175,6 +206,21 @@ async function doReconnect(serverUrl: string) {
     // defer fetch channels and unread posts for other teams
     if (teamData.teams?.length && teamData.memberships?.length) {
         await fetchTeamsChannelsAndUnreadPosts(serverUrl, lastDisconnectedAt, teamData.teams, teamData.memberships, initialTeamId);
+    }
+
+    if (prefData.preferences && isCRTEnabled(prefData.preferences, config)) {
+        if (initialTeamId) {
+            await fetchNewThreads(serverUrl, initialTeamId, false);
+        }
+
+        if (teamData.teams?.length) {
+            for await (const team of teamData.teams) {
+                if (team.id !== initialTeamId) {
+                    // need to await here since GM/DM threads in different teams overlap
+                    await fetchNewThreads(serverUrl, team.id, false);
+                }
+            }
+        }
     }
 
     fetchAllTeams(serverUrl);
@@ -247,40 +293,41 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
 
         case WebsocketEvents.CHANNEL_CREATED:
+            handleChannelCreatedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleChannelCreatedEvent(msg));
         case WebsocketEvents.CHANNEL_DELETED:
             handleChannelDeletedEvent(serverUrl, msg);
             break;
         case WebsocketEvents.CHANNEL_UNARCHIVED:
+            handleChannelUnarchiveEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleChannelUnarchiveEvent(msg));
         case WebsocketEvents.CHANNEL_UPDATED:
+            handleChannelUpdatedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleChannelUpdatedEvent(msg));
         case WebsocketEvents.CHANNEL_CONVERTED:
+            handleChannelConvertedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleChannelConvertedEvent(msg));
         case WebsocketEvents.CHANNEL_VIEWED:
+            handleChannelViewedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleChannelViewedEvent(msg));
         case WebsocketEvents.CHANNEL_MEMBER_UPDATED:
+            handleChannelMemberUpdatedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleChannelMemberUpdatedEvent(msg));
         case WebsocketEvents.CHANNEL_SCHEME_UPDATED:
+            // Do nothing, handled by CHANNEL_UPDATED due to changes in the channel scheme.
             break;
 
-        // return dispatch(handleChannelSchemeUpdatedEvent(msg));
         case WebsocketEvents.DIRECT_ADDED:
+        case WebsocketEvents.GROUP_ADDED:
+            handleDirectAddedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleDirectAddedEvent(msg));
         case WebsocketEvents.PREFERENCE_CHANGED:
             handlePreferenceChangedEvent(serverUrl, msg);
             break;
@@ -325,17 +372,17 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
 
         case WebsocketEvents.THREAD_UPDATED:
+            handleThreadUpdatedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleThreadUpdated(msg));
         case WebsocketEvents.THREAD_READ_CHANGED:
+            handleThreadReadChangedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleThreadReadChanged(msg));
         case WebsocketEvents.THREAD_FOLLOW_CHANGED:
+            handleThreadFollowChangedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleThreadFollowChanged(msg));
         case WebsocketEvents.APPS_FRAMEWORK_REFRESH_BINDINGS:
             break;
 

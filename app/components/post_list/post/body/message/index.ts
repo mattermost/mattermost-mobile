@@ -3,22 +3,15 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {switchMap} from 'rxjs/operators';
 
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {observeCurrentUser} from '@queries/servers/user';
 
 import Message from './message';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type SystemModel from '@typings/database/models/servers/system';
-import type UserModel from '@typings/database/models/servers/user';
-
-const {SERVER: {SYSTEM, USER}} = MM_TABLES;
 
 const withMessageInput = withObservables([], ({database}: WithDatabaseArgs) => {
-    const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap(({value}) => database.get<UserModel>(USER).findAndObserve(value)),
-    );
+    const currentUser = observeCurrentUser(database);
     return {
         currentUser,
     };

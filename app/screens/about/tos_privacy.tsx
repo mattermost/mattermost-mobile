@@ -9,17 +9,15 @@ import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type SystemModel from '@typings/database/models/servers/system';
-
 type TosPrivacyContainerProps = {
-    config: SystemModel;
+    config: ClientConfig;
     onPressTOS: () => void;
     onPressPrivacyPolicy: () => void;
 }
 
 const TosPrivacyContainer = ({config, onPressTOS, onPressPrivacyPolicy}: TosPrivacyContainerProps) => {
-    const hasTermsOfServiceLink = config.value?.TermsOfServiceLink;
-    const hasPrivacyPolicyLink = config.value?.PrivacyPolicyLink;
+    const hasTermsOfServiceLink = config.TermsOfServiceLink;
+    const hasPrivacyPolicyLink = config.PrivacyPolicyLink;
     const theme = useTheme();
     const style = getStyleSheet(theme);
     return (

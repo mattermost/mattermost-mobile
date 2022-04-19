@@ -55,7 +55,8 @@ const PostOptions = ({
     thread,
     offsetY,
 }: PostOptionsProps) => {
-    const managedConfig = useManagedConfig();
+    const managedConfig = useManagedConfig<ManagedConfig>();
+
     useEffect(() => {
         const unsubscribe = Navigation.events().registerComponentListener({
             navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
@@ -152,6 +153,7 @@ const PostOptions = ({
             componentId={Screens.POST_OPTIONS}
             initialSnapIndex={0}
             snapPoints={[((snapPoints + additionalSnapPoints) * ITEM_HEIGHT), 10]}
+            testID='post_options'
         />
     );
 };

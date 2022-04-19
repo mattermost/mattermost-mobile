@@ -9,6 +9,7 @@ import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import Badge from '@components/badge';
+import FreezeScreen from '@components/freeze_screen';
 import NavigationHeader from '@components/navigation_header';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
@@ -89,7 +90,7 @@ const SearchScreen = () => {
     ];
 
     return (
-        <>
+        <FreezeScreen freeze={!isFocused}>
             <NavigationHeader
                 isLargeTitle={isLargeTitle}
                 leftComponent={leftComponent}
@@ -141,7 +142,7 @@ const SearchScreen = () => {
                     />
                 </Animated.View>
             </SafeAreaView>
-        </>
+        </FreezeScreen>
     );
 };
 

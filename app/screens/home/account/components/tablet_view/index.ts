@@ -7,7 +7,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {Events, Screens} from '@constants';
 import CustomStatus from '@screens/custom_status';
 import EditProfile from '@screens/edit_profile';
-import SavedPosts from '@screens/home/saved_posts';
+import SavedPosts from '@screens/saved_posts';
 
 type SelectedView = {
     id: string;

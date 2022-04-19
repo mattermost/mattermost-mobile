@@ -2,18 +2,17 @@
 // See LICENSE.txt for license information.
 
 import CameraRoll from '@react-native-community/cameraroll';
-import * as FileSystem from 'expo-file-system';
 import React, {useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {NativeModules, Platform, StyleSheet, Text, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import FileViewer from 'react-native-file-viewer';
+import FileSystem from 'react-native-fs';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import Share from 'react-native-share';
 
 import {downloadFile} from '@actions/remote/file';
-import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import ProgressBar from '@components/progress_bar';
 import Toast from '@components/toast';
@@ -22,6 +21,7 @@ import {useServerUrl} from '@context/server';
 import {alertFailedToOpenDocument} from '@utils/document';
 import {fileExists, getLocalFilePathFromFile, hasWriteStoragePermission} from '@utils/file';
 import {galleryItemToFileInfo} from '@utils/gallery';
+import {typography} from '@utils/typography';
 
 import type {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
 
@@ -116,11 +116,10 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction}: Props)
 
     const cancel = async () => {
         try {
-            await downloadPromise.current?.cancel?.();
+            downloadPromise.current?.cancel?.();
             const path = getLocalFilePathFromFile(serverUrl, galleryItemToFileInfo(item));
-            await FileSystem.deleteAsync(path, {idempotent: true});
-
             downloadPromise.current = undefined;
+            await FileSystem.unlink(path);
         } catch {
             // do nothing
         } finally {
@@ -159,7 +158,7 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction}: Props)
         if (mounted.current) {
             if (Platform.OS === 'android') {
                 try {
-                    await NativeModules.MattermostManaged.saveFile(path.replace('file://', '/'));
+                    await NativeModules.MattermostManaged.saveFile(path);
                 } catch {
                     // do nothing in case the user decides not to save the file
                 }
