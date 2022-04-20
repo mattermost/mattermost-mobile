@@ -19,6 +19,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
         backgroundColor: theme.sidebarBg,
         marginHorizontal: 24,
+        maxWidth: 600,
+        alignSelf: 'center',
     },
     body: {
         flex: 1,

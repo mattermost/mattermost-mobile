@@ -3,6 +3,8 @@
 
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
+import Animated, {useAnimatedStyle} from 'react-native-reanimated';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchAllTeams} from '@actions/remote/team';
 import {useServerUrl} from '@context/server';
@@ -75,6 +77,9 @@ type Props = {
 
 const findActiveMemberships = (m: TeamMembership) => m.delete_at === 0;
 
+const safeAreaEdges = ['left' as const, 'right' as const];
+const safeAreaStyle = {flex: 1};
+
 const SelectTeam = ({
     canCreateTeams = true,
 }: Props) => {
@@ -82,6 +87,10 @@ const SelectTeam = ({
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
     const [loading, setLoading] = useState(true);
+    const insets = useSafeAreaInsets();
+    const top = useAnimatedStyle(() => {
+        return {height: insets.top, backgroundColor: theme.sidebarBg};
+    });
 
     const [otherTeams, setOtherTeams] = useState<Team[]>();
     useEffect(() => {
@@ -112,10 +121,17 @@ const SelectTeam = ({
         body = (<NoTeams canCreateTeams={canCreateTeams}/>);
     }
     return (
-        <View style={styles.container}>
-            <Header/>
-            {body}
-        </View>
+        <SafeAreaView
+            mode='margin'
+            edges={safeAreaEdges}
+            style={safeAreaStyle}
+        >
+            <Animated.View style={top}/>
+            <View style={styles.container}>
+                <Header/>
+                {body}
+            </View>
+        </SafeAreaView>
     );
 };
 

@@ -19,6 +19,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         justifyContent: 'center',
         marginHorizontal: 24,
+        maxWidth: 600,
+        alignSelf: 'center',
     },
     iconWrapper: {
         height: 120,
