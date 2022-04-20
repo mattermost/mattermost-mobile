@@ -13,6 +13,7 @@ import {queryPostsBetween} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCanManageChannelMembers, observePermissionForPost} from '@queries/servers/role';
 import {observeConfigBooleanValue} from '@queries/servers/system';
+import {observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
 import {areConsecutivePosts, isPostEphemeral} from '@utils/post';
@@ -28,6 +29,7 @@ import type UserModel from '@typings/database/models/servers/user';
 type PropsInput = WithDatabaseArgs & {
     appsEnabled: boolean;
     currentUser: UserModel;
+    isCRTEnabled?: boolean;
     nextPost: PostModel | undefined;
     post: PostModel;
     previousPost: PostModel | undefined;
@@ -92,8 +94,8 @@ const withSystem = withObservables([], ({database}: WithDatabaseArgs) => ({
 }));
 
 const withPost = withObservables(
-    ['currentUser', 'post', 'previousPost', 'nextPost'],
-    ({appsEnabled, currentUser, database, post, previousPost, nextPost}: PropsInput) => {
+    ['currentUser', 'isCRTEnabled', 'post', 'previousPost', 'nextPost'],
+    ({appsEnabled, currentUser, database, isCRTEnabled, post, previousPost, nextPost}: PropsInput) => {
         let isJumboEmoji = of$(false);
         let isLastReply = of$(true);
         let isPostAddChannelMember = of$(false);
@@ -150,6 +152,7 @@ const withPost = withObservables(
             isLastReply,
             isPostAddChannelMember,
             post: post.observe(),
+            thread: isCRTEnabled ? observeThreadById(database, post.id) : of$(undefined),
             reactionsCount: post.reactions.observeCount(),
         };
     });

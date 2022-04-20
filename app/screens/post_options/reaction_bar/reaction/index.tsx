@@ -31,8 +31,9 @@ type ReactionProps = {
     emoji: string;
     iconSize: number;
     containerSize: number;
+    testID?: string;
 }
-const Reaction = ({onPressReaction, emoji, iconSize, containerSize}: ReactionProps) => {
+const Reaction = ({onPressReaction, emoji, iconSize, containerSize, testID}: ReactionProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const handleReactionPressed = useCallback(() => {
@@ -53,6 +54,7 @@ const Reaction = ({onPressReaction, emoji, iconSize, containerSize}: ReactionPro
             key={emoji}
             onPress={handleReactionPressed}
             style={highlightedStyle}
+            testID={`${testID}.${emoji}`}
         >
             <View
                 style={reactionStyle}

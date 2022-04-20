@@ -4,11 +4,10 @@
 import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback} from 'react';
 
+import {BaseOption} from '@components/common_post_options';
 import {Screens} from '@constants';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
-
-import BaseOption from './base_option';
 
 type Props = {
     postMessage: string;
@@ -25,7 +24,7 @@ const CopyTextOption = ({postMessage}: Props) => {
             defaultMessage='Copy Text'
             iconName='content-copy'
             onPress={handleCopyText}
-            testID='post.options.copy.text'
+            testID='post_options.copy.text.option'
         />
     );
 };

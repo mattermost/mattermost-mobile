@@ -58,7 +58,7 @@ const isDirect = (channel?: ChannelModel): boolean => {
 };
 
 const makeCloseButton = (icon: ImageResource) => {
-    return buildNavigationButton(CLOSE_BUTTON_ID, 'close.more_direct_messages.button', icon);
+    return buildNavigationButton(CLOSE_BUTTON_ID, 'close.create_or_edit_channel.button', icon);
 };
 
 const CreateOrEditChannel = ({
@@ -111,7 +111,7 @@ const CreateOrEditChannel = ({
     const rightButton = useMemo(() => {
         const base = buildNavigationButton(
             editing ? EDIT_BUTTON_ID : CREATE_BUTTON_ID,
-            'edit_channel.save.button',
+            editing ? 'create_or_edit_channel.save.button' : 'create_or_edit_channel.create.button',
             undefined,
             editing ? formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'}) : formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
         );

@@ -8,7 +8,6 @@ import {StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import ChannelList from '@components/channel_list';
 import FreezeScreen from '@components/freeze_screen';
 import TeamSidebar from '@components/team_sidebar';
 import {useTheme} from '@context/theme';
@@ -16,6 +15,7 @@ import {useIsTablet} from '@hooks/device';
 import Channel from '@screens/channel';
 import {resetToTeams} from '@screens/navigation';
 
+import CategoriesList from './categories_list';
 import Servers from './servers';
 
 type ChannelProps = {
@@ -75,8 +75,8 @@ const ChannelListScreen = (props: ChannelProps) => {
         }
     }, [Boolean(props.teamsCount)]);
 
-    const content = (
-        <>
+    return (
+        <FreezeScreen freeze={!isFocused}>
             {<Animated.View style={top}/>}
             <SafeAreaView
                 style={styles.content}
@@ -91,7 +91,7 @@ const ChannelListScreen = (props: ChannelProps) => {
                         iconPad={canAddOtherServers}
                         teamsCount={props.teamsCount}
                     />
-                    <ChannelList
+                    <CategoriesList
                         iconPad={canAddOtherServers && props.teamsCount <= 1}
                         isTablet={isTablet}
                         teamsCount={props.teamsCount}
@@ -103,18 +103,8 @@ const ChannelListScreen = (props: ChannelProps) => {
                     }
                 </Animated.View>
             </SafeAreaView>
-        </>
+        </FreezeScreen>
     );
-
-    if (isTablet) {
-        return (
-            <FreezeScreen>
-                {content}
-            </FreezeScreen>
-        );
-    }
-
-    return content;
 };
 
 export default ChannelListScreen;

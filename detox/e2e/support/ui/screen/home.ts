@@ -22,7 +22,7 @@ class HomeScreen {
     accountTab = element(by.id(this.testID.accountTab));
 
     toBeVisible = async () => {
-        await waitFor(this.channelListTab).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.channelListTab).toExist().withTimeout(timeouts.TEN_SEC);
 
         return this.channelListTab;
     };
