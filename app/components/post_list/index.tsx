@@ -31,6 +31,7 @@ type Props = {
     currentUsername: string;
     highlightedId?: PostModel['id'];
     highlightPinnedOrSaved?: boolean;
+    isCRTEnabled?: boolean;
     isTimezoneEnabled: boolean;
     lastViewedAt: number;
     location: string;
@@ -82,6 +83,7 @@ const PostList = ({
     footer,
     highlightedId,
     highlightPinnedOrSaved = true,
+    isCRTEnabled,
     isTimezoneEnabled,
     lastViewedAt,
     location,
@@ -300,6 +302,7 @@ const PostList = ({
 
         return (
             <Post
+                isCRTEnabled={isCRTEnabled}
                 key={item.id}
                 post={item}
                 style={styles.scale}
@@ -307,7 +310,7 @@ const PostList = ({
                 {...postProps}
             />
         );
-    }, [currentTimezone, highlightPinnedOrSaved, isTimezoneEnabled, orderedPosts, shouldRenderReplyButton, theme]);
+    }, [currentTimezone, highlightPinnedOrSaved, isCRTEnabled, isTimezoneEnabled, orderedPosts, shouldRenderReplyButton, theme]);
 
     const scrollToIndex = useCallback((index: number, animated = true, applyOffset = true) => {
         listRef.current?.scrollToIndex({

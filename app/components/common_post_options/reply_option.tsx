@@ -4,24 +4,24 @@
 import React, {useCallback} from 'react';
 
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import {BaseOption} from '@components/common_post_options';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 
-import BaseOption from './base_option';
-
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
     post: PostModel;
+    location?: typeof Screens[keyof typeof Screens];
 }
-const ReplyOption = ({post}: Props) => {
+const ReplyOption = ({post, location}: Props) => {
     const serverUrl = useServerUrl();
 
     const handleReply = useCallback(async () => {
         const rootId = post.rootId || post.id;
-        await dismissBottomSheet(Screens.POST_OPTIONS);
+        await dismissBottomSheet(location || Screens.POST_OPTIONS);
         fetchAndSwitchToThread(serverUrl, rootId);
     }, [post, serverUrl]);
 

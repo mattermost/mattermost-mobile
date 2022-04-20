@@ -53,8 +53,8 @@ const withHeaderProps = withObservables(
             isCustomStatusEnabled,
             isMilitaryTime,
             isTimezoneEnabled,
-            teammateNameDisplay,
             rootPostAuthor,
+            teammateNameDisplay,
         };
     });
 

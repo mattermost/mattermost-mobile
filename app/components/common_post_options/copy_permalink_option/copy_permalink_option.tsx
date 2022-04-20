@@ -4,14 +4,13 @@
 import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback} from 'react';
 
+import {BaseOption} from '@components/common_post_options';
 import {Screens} from '@constants';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 import {showSnackBar} from '@utils/snack_bar';
-
-import BaseOption from '../base_option';
 
 import type PostModel from '@typings/database/models/servers/post';
 

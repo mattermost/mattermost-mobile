@@ -27,6 +27,7 @@ type HeaderProps = {
     currentUser: UserModel;
     enablePostUsernameOverride: boolean;
     isAutoResponse: boolean;
+    isCRTEnabled?: boolean;
     isCustomStatusEnabled: boolean;
     isEphemeral: boolean;
     isMilitaryTime: boolean;
@@ -71,7 +72,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Header = (props: HeaderProps) => {
     const {
-        author, commentCount = 0, currentUser, enablePostUsernameOverride, isAutoResponse, isCustomStatusEnabled,
+        author, commentCount = 0, currentUser, enablePostUsernameOverride, isAutoResponse, isCRTEnabled, isCustomStatusEnabled,
         isEphemeral, isMilitaryTime, isPendingOrFailed, isSystemPost, isTimezoneEnabled, isWebHook,
         location, post, rootPostAuthor, shouldRenderReplyButton, teammateNameDisplay,
     } = props;
@@ -124,13 +125,13 @@ const Header = (props: HeaderProps) => {
                         style={style.time}
                         testID='post_header.date_time'
                     />
-                    {showReply && commentCount > 0 &&
-                    <HeaderReply
-                        commentCount={commentCount}
-                        location={location}
-                        post={post}
-                        theme={theme}
-                    />
+                    {!isCRTEnabled && showReply && commentCount > 0 &&
+                        <HeaderReply
+                            commentCount={commentCount}
+                            location={location}
+                            post={post}
+                            theme={theme}
+                        />
                     }
                 </View>
             </View>
