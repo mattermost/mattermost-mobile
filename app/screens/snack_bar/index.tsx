@@ -1,21 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Text, TouchableOpacity} from 'react-native';
+import {Text, TouchableOpacity, useWindowDimensions, ViewStyle} from 'react-native';
 import {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import Toast from '@components/toast';
 import {Screens} from '@constants';
 import {SNACK_BAR_CONFIG, SNACK_BAR_TYPE} from '@constants/snack_bar';
-import {BOTTOM_TAB_HEIGHT} from '@constants/view';
+import {BOTTOM_TAB_HEIGHT, TABLET_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {dismissOverlay} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         text: {
@@ -34,12 +33,12 @@ type SnackBarProps = {
     barType: keyof typeof SNACK_BAR_TYPE;
     location: typeof Screens[keyof typeof Screens];
 }
-
 const SnackBar = ({barType, componentId, onPress, location}: SnackBarProps) => {
     const [showToast, setShowToast] = useState<boolean | undefined>();
     const intl = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
+    const {width: windowWidth} = useWindowDimensions();
 
     const config = SNACK_BAR_CONFIG[barType];
     const styles = getStyleSheet(theme);
@@ -50,18 +49,68 @@ const SnackBar = ({barType, componentId, onPress, location}: SnackBarProps) => {
     }, [onPress, componentId]);
 
     const animatedStyle = useAnimatedStyle(() => {
-        let diff = 50;
-        const screens = [Screens.PERMALINK, Screens.MENTIONS, Screens.SAVED_POSTS];
-        if (!isTablet && screens.includes(location)) {
-            diff = 7;
+        const DRAFT_INPUT_HEIGHT = 130;
+        let delta: number;
+
+        switch (location) {
+            case Screens.MENTIONS:
+                delta = BOTTOM_TAB_HEIGHT - 15;
+                break;
+            case Screens.SAVED_POSTS:
+                delta = BOTTOM_TAB_HEIGHT + 15;
+                break;
+            default:
+                delta = 0;
         }
 
         return {
             position: 'absolute',
-            bottom: BOTTOM_TAB_HEIGHT + diff,
+            bottom: DRAFT_INPUT_HEIGHT - delta,
             opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
         };
     });
+
+    const toastStyle = useMemo(() => {
+        const diffWidth = windowWidth - TABLET_SIDEBAR_WIDTH;
+        const TABLET_PORTRAIT_RATIO = 96;
+
+        let tabletStyle: Partial<ViewStyle>;
+
+        switch (true) {
+            case location === Screens.THREAD :
+                tabletStyle = {
+                    marginLeft: 0,
+                    width: `${TABLET_PORTRAIT_RATIO}%`,
+                    marginBottom: 30,
+                };
+                break;
+            case location === Screens.SAVED_POSTS :
+                tabletStyle = {
+                    marginBottom: 20,
+                    marginLeft: TABLET_SIDEBAR_WIDTH,
+                    width: (TABLET_PORTRAIT_RATIO / 100) * diffWidth,
+                };
+                break;
+            case [Screens.PERMALINK, Screens.MENTIONS].includes(location):
+                tabletStyle = {
+                    marginBottom: 0,
+                    marginLeft: 0,
+                    width: (TABLET_PORTRAIT_RATIO / 100) * windowWidth,
+                };
+                break;
+            default:
+                tabletStyle = {
+                    marginBottom: 40,
+                    marginLeft: TABLET_SIDEBAR_WIDTH,
+                    width: (TABLET_PORTRAIT_RATIO / 100) * diffWidth,
+                };
+        }
+
+        return [
+            {backgroundColor: theme[config.themeColor]},
+            isTablet && tabletStyle,
+        ];
+    }, [theme, barType]);
 
     useEffect(() => {
         setShowToast(true);
@@ -90,10 +139,10 @@ const SnackBar = ({barType, componentId, onPress, location}: SnackBarProps) => {
     return (
         <Toast
             animatedStyle={animatedStyle}
-            style={{}}
             message={intl.formatMessage({id: config.id, defaultMessage: config.defaultMessage})}
             iconName={config.iconName}
             textStyle={styles.text}
+            style={toastStyle}
         >
             {config.canUndo && onPress && (
                 <TouchableOpacity onPress={onPressHandler}>
