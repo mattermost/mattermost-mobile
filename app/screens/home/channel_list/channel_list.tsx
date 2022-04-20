@@ -13,13 +13,14 @@ import TeamSidebar from '@components/team_sidebar';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 
-import ChannelTabletView from './channel_tablet_view';
 import CategoriesList from './categories_list';
+import ChannelTabletView from './channel_tablet_view';
 import Servers from './servers';
 
 type ChannelProps = {
     channelsCount: number;
     currentTeamId?: string;
+    isCRTEnabled: boolean;
     teamsCount: number;
     time?: number;
 };
@@ -86,6 +87,7 @@ const ChannelListScreen = (props: ChannelProps) => {
                     />
                     <CategoriesList
                         iconPad={canAddOtherServers && props.teamsCount <= 1}
+                        isCRTEnabled={props.isCRTEnabled}
                         isTablet={isTablet}
                         teamsCount={props.teamsCount}
                         channelsCount={props.channelsCount}
