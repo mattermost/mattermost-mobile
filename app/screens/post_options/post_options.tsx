@@ -88,7 +88,7 @@ const PostOptions = ({
                 {canMarkAsUnread && !isSystemPost &&
                     <MarkAsUnreadOption postId={post.id}/>
                 }
-                { canCopyPermalink &&
+                {canCopyPermalink &&
                     <CopyPermalinkOption
                         post={post}
                         sourceScreen={sourceScreen}
