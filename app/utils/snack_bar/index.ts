@@ -7,7 +7,7 @@ import {showOverlay} from '@screens/navigation';
 type ShowSnackBarArgs = {
     barType: keyof typeof SNACK_BAR_TYPE;
     onPress?: () => void;
-    location?: typeof Screens[keyof typeof Screens];
+    sourceScreen?: typeof Screens[keyof typeof Screens];
 };
 export const showSnackBar = (passProps: ShowSnackBarArgs) => {
     const screen = Screens.SNACK_BAR;

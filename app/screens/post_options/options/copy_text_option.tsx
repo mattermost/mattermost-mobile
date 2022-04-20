@@ -12,14 +12,14 @@ import {dismissBottomSheet} from '@screens/navigation';
 import {showSnackBar} from '@utils/snack_bar';
 
 type Props = {
-    location: typeof Screens[keyof typeof Screens];
+    sourceScreen: typeof Screens[keyof typeof Screens];
     postMessage: string;
 }
-const CopyTextOption = ({postMessage, location}: Props) => {
+const CopyTextOption = ({postMessage, sourceScreen}: Props) => {
     const handleCopyText = useCallback(async () => {
         Clipboard.setString(postMessage);
         await dismissBottomSheet(Screens.POST_OPTIONS);
-        showSnackBar({barType: SNACK_BAR_TYPE.MESSAGE_COPIED, location});
+        showSnackBar({barType: SNACK_BAR_TYPE.MESSAGE_COPIED, sourceScreen});
     }, [postMessage]);
 
     return (

@@ -15,6 +15,7 @@ import {useIsTablet} from '@hooks/device';
 import {dismissOverlay} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         text: {
@@ -29,11 +30,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 type SnackBarProps = {
     componentId: string;
-    onPress?: () => void;
+    onUndoPress?: () => void;
     barType: keyof typeof SNACK_BAR_TYPE;
-    location: typeof Screens[keyof typeof Screens];
+    sourceScreen: typeof Screens[keyof typeof Screens];
 }
-const SnackBar = ({barType, componentId, onPress, location}: SnackBarProps) => {
+
+const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarProps) => {
     const [showToast, setShowToast] = useState<boolean | undefined>();
     const intl = useIntl();
     const theme = useTheme();
@@ -45,14 +47,14 @@ const SnackBar = ({barType, componentId, onPress, location}: SnackBarProps) => {
 
     const onPressHandler = useCallback(() => {
         dismissOverlay(componentId);
-        onPress?.();
-    }, [onPress, componentId]);
+        onUndoPress?.();
+    }, [onUndoPress, componentId]);
 
     const animatedStyle = useAnimatedStyle(() => {
         const DRAFT_INPUT_HEIGHT = 130;
         let delta: number;
 
-        switch (location) {
+        switch (sourceScreen) {
             case Screens.MENTIONS:
                 delta = BOTTOM_TAB_HEIGHT - 15;
                 break;
@@ -77,21 +79,21 @@ const SnackBar = ({barType, componentId, onPress, location}: SnackBarProps) => {
         let tabletStyle: Partial<ViewStyle>;
 
         switch (true) {
-            case location === Screens.THREAD :
+            case sourceScreen === Screens.THREAD :
                 tabletStyle = {
                     marginLeft: 0,
                     width: `${TABLET_PORTRAIT_RATIO}%`,
                     marginBottom: 30,
                 };
                 break;
-            case location === Screens.SAVED_POSTS :
+            case sourceScreen === Screens.SAVED_POSTS :
                 tabletStyle = {
                     marginBottom: 20,
                     marginLeft: TABLET_SIDEBAR_WIDTH,
                     width: (TABLET_PORTRAIT_RATIO / 100) * diffWidth,
                 };
                 break;
-            case [Screens.PERMALINK, Screens.MENTIONS].includes(location):
+            case [Screens.PERMALINK, Screens.MENTIONS].includes(sourceScreen):
                 tabletStyle = {
                     marginBottom: 0,
                     marginLeft: 0,
@@ -144,17 +146,16 @@ const SnackBar = ({barType, componentId, onPress, location}: SnackBarProps) => {
             textStyle={styles.text}
             style={toastStyle}
         >
-            {config.canUndo && onPress && (
+            {config.canUndo && onUndoPress && (
                 <TouchableOpacity onPress={onPressHandler}>
-                    <Text
-                        style={styles.undo}
-                    >
+                    <Text style={styles.undo}>
                         {intl.formatMessage({
                             id: 'snack.bar.undo',
                             defaultMessage: 'Undo',
                         })}
                     </Text>
-                </TouchableOpacity>)}
+                </TouchableOpacity>
+            )}
         </Toast>
     );
 };
