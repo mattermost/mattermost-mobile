@@ -32,6 +32,7 @@ describe('components/channel_list/categories/body/channel_item', () => {
         const wrapper = renderWithIntlAndTheme(
             <ChannelItem
                 channel={{displayName: 'Hello!', type: 'G', shared: false, name: 'hello', deleteAt: 0} as ChannelModel}
+                hasDraft={false}
                 isActive={false}
                 myChannel={myChannel}
                 isMuted={false}

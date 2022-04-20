@@ -11,6 +11,7 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     author?: UserModel;
+    isInfo?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -18,9 +19,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: theme.sidebarBg,
         borderWidth: 0,
     },
+    statusInfo: {
+        backgroundColor: theme.centerChannelBg,
+    },
 }));
 
-const DmAvatar = ({author}: Props) => {
+const DmAvatar = ({author, isInfo}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     return (
@@ -29,7 +33,7 @@ const DmAvatar = ({author}: Props) => {
             size={24}
             showStatus={true}
             statusSize={12}
-            statusStyle={style.status}
+            statusStyle={[style.status, isInfo && style.statusInfo]}
         />
     );
 };

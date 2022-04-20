@@ -5,11 +5,10 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, Text} from 'react-native';
 
+import ChannelItem from '@components/channel_item';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import ChannelItem from '../body/channel_item';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 

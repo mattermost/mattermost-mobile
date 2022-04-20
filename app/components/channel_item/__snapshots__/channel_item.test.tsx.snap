@@ -47,24 +47,17 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
             "paddingHorizontal": 20,
           },
           false,
+          undefined,
         ]
       }
       testID="channel_list_item.hello.collapsed.false"
     >
       <View
         style={
-          Array [
-            Object {
-              "alignItems": "center",
-              "justifyContent": "center",
-            },
-            Object {
-              "height": 24,
-              "width": 24,
-            },
-            undefined,
-            undefined,
-          ]
+          Object {
+            "flex": 1,
+            "flexDirection": "row",
+          }
         }
       >
         <View
@@ -72,68 +65,87 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
             Array [
               Object {
                 "alignItems": "center",
-                "backgroundColor": "rgba(255,255,255,0.16)",
-                "borderRadius": 4,
                 "justifyContent": "center",
               },
-              undefined,
-              undefined,
               Object {
                 "height": 24,
                 "width": 24,
               },
+              undefined,
+              undefined,
             ]
           }
         >
-          <Text
+          <View
             style={
               Array [
                 Object {
-                  "color": "#ffffff",
-                  "fontFamily": "OpenSans-SemiBold",
-                  "fontSize": 12,
-                  "fontWeight": "600",
-                  "lineHeight": 16,
+                  "alignItems": "center",
+                  "backgroundColor": "rgba(255,255,255,0.16)",
+                  "borderRadius": 4,
+                  "justifyContent": "center",
                 },
                 undefined,
                 undefined,
                 Object {
-                  "fontSize": 12,
+                  "height": 24,
+                  "width": 24,
                 },
               ]
             }
-            testID="undefined.gm_member_count"
           >
-            1
+            <Text
+              style={
+                Array [
+                  Object {
+                    "color": "#ffffff",
+                    "fontFamily": "OpenSans-SemiBold",
+                    "fontSize": 12,
+                    "fontWeight": "600",
+                    "lineHeight": 16,
+                  },
+                  undefined,
+                  undefined,
+                  Object {
+                    "fontSize": 12,
+                  },
+                ]
+              }
+              testID="undefined.gm_member_count"
+            >
+              1
+            </Text>
+          </View>
+        </View>
+        <View>
+          <Text
+            ellipsizeMode="tail"
+            numberOfLines={1}
+            style={
+              Array [
+                Object {
+                  "fontFamily": "OpenSans",
+                  "fontSize": 16,
+                  "fontWeight": "400",
+                  "lineHeight": 24,
+                },
+                Object {
+                  "color": "rgba(255,255,255,0.72)",
+                  "marginTop": -1,
+                  "paddingLeft": 12,
+                },
+                false,
+                false,
+                null,
+                null,
+              ]
+            }
+            testID="channel_list_item.hello.display_name"
+          >
+            Hello!
           </Text>
         </View>
       </View>
-      <Text
-        ellipsizeMode="tail"
-        numberOfLines={1}
-        style={
-          Array [
-            Object {
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "400",
-              "lineHeight": 24,
-            },
-            Object {
-              "color": "rgba(255,255,255,0.72)",
-              "flex": 1,
-              "marginTop": -1,
-              "paddingLeft": 12,
-            },
-            false,
-            false,
-            null,
-          ]
-        }
-        testID="channel_list_item.hello.display_name"
-      >
-        Hello!
-      </Text>
     </View>
   </View>
 </View>

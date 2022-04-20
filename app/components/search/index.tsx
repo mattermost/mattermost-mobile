@@ -6,7 +6,7 @@
 
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {ActivityIndicatorProps, Platform, StyleProp, TextInput, TextInputProps, TextStyle, TouchableOpacityProps, ViewStyle} from 'react-native';
+import {ActivityIndicatorProps, Keyboard, Platform, StyleProp, TextInput, TextInputProps, TextStyle, TouchableOpacityProps, ViewStyle} from 'react-native';
 import {SearchBar} from 'react-native-elements';
 
 import CompassIcon from '@components/compass_icon';
@@ -82,9 +82,10 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
     const searchInputTestID = `${props.testID}.search.input`;
 
     const onCancel = useCallback(() => {
+        Keyboard.dismiss();
         setValue('');
         props.onCancel?.();
-    }, []);
+    }, [props.onCancel]);
 
     const onClear = useCallback(() => {
         setValue('');
@@ -94,7 +95,7 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
     const onChangeText = useCallback((text: string) => {
         setValue(text);
         props.onChangeText?.(text);
-    }, []);
+    }, [props.onChangeText]);
 
     const cancelButtonProps = useMemo(() => ({
         buttonTextStyle: {
@@ -117,7 +118,7 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
                 testID={searchClearButtonTestID}
             />
         );
-    }, [searchRef.current, theme]);
+    }, [searchRef.current?.clear, theme]);
 
     const searchIcon = useMemo(() => (
         <CompassIcon
@@ -126,19 +127,17 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
             onPress={searchRef.current?.focus}
             size={24}
         />
-    ), [searchRef.current, theme]);
+    ), [searchRef.current?.focus, theme]);
 
     const cancelIcon = useMemo(() => (
         <CompassIcon
             color={changeOpacity(props.cancelButtonProps?.color || theme.centerChannelColor, Platform.select({android: 0.56, default: 0.72}))}
             name='arrow-left'
-
-            // @ts-expect-error cancel is not part of TextInput does exist in SearchBar
-            onPress={searchRef.current?.cancel}
+            onPress={onCancel}
             size={24}
             testID={searchCancelButtonTestID}
         />
-    ), [searchRef.current, theme]);
+    ), [onCancel, theme]);
 
     useImperativeHandle(ref, () => ({
         blur: () => {
