@@ -13,7 +13,7 @@ import {DEFAULT_LOCALE} from '@i18n';
 import {prepareDeleteCategory} from './categories';
 import {prepareDeleteChannel, getDefaultChannelForTeam, observeMyChannelMentionCount} from './channel';
 import {queryPreferencesByCategoryAndName} from './preference';
-import {patchTeamHistory, getConfig, getTeamHistory, observeCurrentTeamId} from './system';
+import {patchTeamHistory, getConfig, getTeamHistory, observeCurrentTeamId, getCurrentTeamId} from './system';
 import {observeThreadMentionCount} from './thread';
 import {getCurrentUser} from './user';
 
@@ -28,6 +28,15 @@ const {
     TEAM,
     TEAM_CHANNEL_HISTORY,
 } = DatabaseConstants.MM_TABLES.SERVER;
+
+export const getCurrentTeam = async (database: Database) => {
+    const currentUserId = await getCurrentTeamId(database);
+    if (currentUserId) {
+        return getTeamById(database, currentUserId);
+    }
+
+    return undefined;
+};
 
 export const addChannelToTeamHistory = async (operator: ServerDataOperator, teamId: string, channelId: string, prepareRecordsOnly = false) => {
     let tch: TeamChannelHistory|undefined;

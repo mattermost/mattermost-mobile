@@ -3,7 +3,7 @@
 
 import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$, combineLatest} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {switchMap, catchError} from 'rxjs/operators';
 
 import {Database as DatabaseConstants, General, Permissions} from '@constants';
 import {isDMorGM} from '@utils/channel';
@@ -53,17 +53,20 @@ export function observePermissionForChannel(channel: ChannelModel, user: UserMod
 }
 
 export function observePermissionForTeam(team: TeamModel, user: UserModel, permission: string, defaultValue: boolean) {
-    return team.myTeam.observe().pipe(switchMap((myTeam) => {
-        const rolesArray = [...user.roles.split(' ')];
+    return team.myTeam.observe().pipe(
+        switchMap((myTeam) => {
+            const rolesArray = [...user.roles.split(' ')];
 
-        if (myTeam) {
-            rolesArray.push(...myTeam.roles.split(' '));
-        }
+            if (myTeam) {
+                rolesArray.push(...myTeam.roles.split(' '));
+            }
 
-        return queryRolesByNames(user.database, rolesArray).observe().pipe(
-            switchMap((roles) => of$(hasPermission(roles, permission, defaultValue))),
-        );
-    }));
+            return queryRolesByNames(user.database, rolesArray).observe().pipe(
+                switchMap((roles) => of$(hasPermission(roles, permission, defaultValue))),
+            );
+        }),
+        catchError(() => of$(defaultValue)),
+    );
 }
 
 export function observePermissionForPost(post: PostModel, user: UserModel, permission: string, defaultValue: boolean) {

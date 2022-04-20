@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {View, Text} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
@@ -15,9 +15,18 @@ type Props = {
     lastIconUpdate: number;
     displayName: string;
     selected: boolean;
+    backgroundColor?: string;
+    textColor?: string;
 }
 
-export default function TeamIcon({id, lastIconUpdate, displayName, selected}: Props) {
+export default function TeamIcon({
+    id,
+    lastIconUpdate,
+    displayName,
+    selected,
+    textColor,
+    backgroundColor,
+}: Props) {
     const [imageError, setImageError] = useState(false);
     const ref = useRef<View>(null);
     const theme = useTheme();
@@ -36,11 +45,19 @@ export default function TeamIcon({id, lastIconUpdate, displayName, selected}: Pr
         }
     }, []);
 
+    const containerStyle = useMemo(() => {
+        if (selected) {
+            return backgroundColor ? [styles.containerSelected, {backgroundColor}] : styles.containerSelected;
+        }
+
+        return backgroundColor ? [styles.container, {backgroundColor}] : styles.container;
+    }, [styles, backgroundColor, selected]);
+
     let teamIconContent;
     if (imageError || !lastIconUpdate) {
         teamIconContent = (
             <Text
-                style={styles.text}
+                style={textColor ? [styles.text, {color: textColor}] : styles.text}
             >
                 {displayName?.substr(0, 2).toUpperCase()}
             </Text>
@@ -57,7 +74,7 @@ export default function TeamIcon({id, lastIconUpdate, displayName, selected}: Pr
 
     return (
         <View
-            style={selected ? styles.containerSelected : styles.container}
+            style={containerStyle}
             ref={ref}
         >
             {teamIconContent}

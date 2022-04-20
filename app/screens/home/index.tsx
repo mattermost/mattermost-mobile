@@ -10,6 +10,7 @@ import {enableFreeze, enableScreens} from 'react-native-screens';
 
 import {Events, Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {alertTeamRemove} from '@utils/navigation';
 import {notificationError} from '@utils/notification';
 
 import Account from './account';
@@ -46,6 +47,16 @@ export default function HomeScreen(props: HomeProps) {
             listener.remove();
         };
     }, []);
+
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(Events.LEAVE_TEAM, (displayName: string) => {
+            alertTeamRemove(displayName, intl);
+        });
+
+        return () => {
+            listener.remove();
+        };
+    });
 
     return (
         <NavigationContainer

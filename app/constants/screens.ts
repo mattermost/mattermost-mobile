@@ -27,6 +27,7 @@ export const IN_APP_NOTIFICATION = 'InAppNotification';
 export const LOGIN = 'Login';
 export const MENTIONS = 'Mentions';
 export const MFA = 'MFA';
+export const SELECT_TEAM = 'SelectTeam';
 export const PARTICIPANTS_LIST = 'ParticipantsList';
 export const PERMALINK = 'Permalink';
 export const POST_OPTIONS = 'PostOptions';
@@ -67,6 +68,7 @@ export default {
     LOGIN,
     MENTIONS,
     MFA,
+    SELECT_TEAM,
     PARTICIPANTS_LIST,
     PERMALINK,
     POST_OPTIONS,

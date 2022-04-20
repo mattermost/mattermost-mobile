@@ -12,7 +12,7 @@ import {ssoLogin} from '@actions/remote/session';
 import ClientError from '@client/rest/error';
 import {Screens, Sso} from '@constants';
 import Background from '@screens/background';
-import {resetToHome} from '@screens/navigation';
+import {resetToHome, resetToTeams} from '@screens/navigation';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
 import SSOWithWebView from './sso_with_webview';
@@ -95,8 +95,7 @@ const SSO = ({config, extra, launchError, launchType, serverDisplayName, serverU
             return;
         }
         if (!result.hasTeams && !result.error) {
-            // eslint-disable-next-line no-console
-            console.log('GO TO NO TEAMS');
+            goToSelectTeam();
             return;
         }
         goToHome(result.time || 0, result.error as never);
@@ -105,6 +104,10 @@ const SSO = ({config, extra, launchError, launchType, serverDisplayName, serverU
     const goToHome = (time: number, error?: never) => {
         const hasError = launchError || Boolean(error);
         resetToHome({extra, launchError: hasError, launchType, serverUrl, time});
+    };
+
+    const goToSelectTeam = () => {
+        resetToTeams();
     };
 
     const transform = useAnimatedStyle(() => {

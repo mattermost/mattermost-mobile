@@ -3,7 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {useIsFocused, useRoute} from '@react-navigation/native';
-import React from 'react';
+import React, {useEffect} from 'react';
 import {StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -14,6 +14,7 @@ import TeamSidebar from '@components/team_sidebar';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import Channel from '@screens/channel';
+import {resetToTeams} from '@screens/navigation';
 
 import Servers from './servers';
 
@@ -67,6 +68,12 @@ const ChannelListScreen = (props: ChannelProps) => {
     const top = useAnimatedStyle(() => {
         return {height: insets.top, backgroundColor: theme.sidebarBg};
     }, [theme]);
+
+    useEffect(() => {
+        if (!props.teamsCount) {
+            resetToTeams();
+        }
+    }, [Boolean(props.teamsCount)]);
 
     const content = (
         <>

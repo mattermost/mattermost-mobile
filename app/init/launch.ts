@@ -11,7 +11,8 @@ import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from '@init/credentials';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
-import {goToScreen, resetToHome, resetToSelectServer} from '@screens/navigation';
+import {queryMyTeams} from '@queries/servers/team';
+import {goToScreen, resetToHome, resetToSelectServer, resetToTeams} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkType, DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {convertToNotificationData} from '@utils/notification';
@@ -111,7 +112,12 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
                 }
             }
 
-            launchToHome({...props, launchType, serverUrl});
+            if (await queryMyTeams(database).fetchCount()) {
+                launchToHome({...props, launchType, serverUrl});
+            } else {
+                resetToTeams();
+            }
+
             return;
         }
     }

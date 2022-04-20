@@ -273,34 +273,10 @@ export function resetToSelectServer(passProps: LaunchProps) {
     });
 }
 
-export function resetToTeams(name: string, title: string, passProps = {}, options = {}) {
+export function resetToTeams(passProps = {}) {
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
-
-    const defaultOptions = {
-        layout: {
-            componentBackgroundColor: theme.centerChannelBg,
-        },
-        statusBar: {
-            visible: true,
-            backgroundColor: theme.sidebarBg,
-        },
-        topBar: {
-            visible: true,
-            title: {
-                color: theme.sidebarHeaderTextColor,
-                text: title,
-            },
-            backButton: {
-                color: theme.sidebarHeaderTextColor,
-                title: '',
-            },
-            background: {
-                color: theme.sidebarBg,
-            },
-        },
-    };
 
     EphemeralStore.clearNavigationComponents();
 
@@ -309,10 +285,29 @@ export function resetToTeams(name: string, title: string, passProps = {}, option
             stack: {
                 children: [{
                     component: {
-                        id: name,
-                        name,
+                        id: Screens.SELECT_TEAM,
+                        name: Screens.SELECT_TEAM,
                         passProps,
-                        options: merge(defaultOptions, options),
+                        options: {
+                            layout: {
+                                componentBackgroundColor: theme.centerChannelBg,
+                            },
+                            statusBar: {
+                                visible: true,
+                                backgroundColor: theme.sidebarBg,
+                            },
+                            topBar: {
+                                visible: false,
+                                height: 0,
+                                background: {
+                                    color: theme.sidebarBg,
+                                },
+                                backButton: {
+                                    visible: false,
+                                    color: theme.sidebarHeaderTextColor,
+                                },
+                            },
+                        },
                     },
                 }],
             },

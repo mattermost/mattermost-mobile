@@ -25,6 +25,10 @@ export default function AddTeamSlideUp({otherTeams, canCreateTeams, showTitle = 
         dismissBottomSheet();
     }, []);
 
+    const onTeamAdded = useCallback(() => {
+        dismissBottomSheet();
+    }, []);
+
     return (
         <BottomSheetContent
             buttonIcon='plus'
@@ -34,7 +38,10 @@ export default function AddTeamSlideUp({otherTeams, canCreateTeams, showTitle = 
             showTitle={showTitle}
             title={intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'})}
         >
-            <TeamList teams={otherTeams}/>
+            <TeamList
+                teams={otherTeams}
+                onTeamAdded={onTeamAdded}
+            />
         </BottomSheetContent>
     );
 }
