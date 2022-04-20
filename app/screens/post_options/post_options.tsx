@@ -37,14 +37,13 @@ type PostOptionsProps = {
     post: PostModel;
     thread: Partial<PostModel>;
     componentId: string;
-    offSetY: number;
 };
 
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
     canMarkAsUnread, canPin, canReply,
     combinedPost, componentId, isSaved,
-    location, post, thread, offSetY,
+    location, post, thread,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
 
@@ -98,7 +97,6 @@ const PostOptions = ({
                     <CopyLinkOption
                         post={post}
                         location={location}
-                        offSetY={offSetY}
                     />}
                 {!isSystemPost &&
                     <SaveOption
@@ -110,7 +108,6 @@ const PostOptions = ({
                     <CopyTextOption
                         postMessage={post.message}
                         location={location}
-                        offSetY={offSetY}
                     />}
                 {canPin &&
                     <PinChannelOption

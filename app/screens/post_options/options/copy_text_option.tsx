@@ -15,13 +15,12 @@ import BaseOption from './base_option';
 type Props = {
     location: typeof Screens[keyof typeof Screens];
     postMessage: string;
-    offSetY: number;
 }
-const CopyTextOption = ({postMessage, location, offSetY}: Props) => {
+const CopyTextOption = ({postMessage, location}: Props) => {
     const handleCopyText = useCallback(async () => {
         Clipboard.setString(postMessage);
         await dismissBottomSheet(Screens.POST_OPTIONS);
-        showSnackBar({barType: SNACK_BAR_TYPE.MESSAGE_COPIED, location, offSetY});
+        showSnackBar({barType: SNACK_BAR_TYPE.MESSAGE_COPIED, location});
     }, [postMessage]);
 
     return (

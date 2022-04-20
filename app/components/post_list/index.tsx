@@ -3,17 +3,7 @@
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {
-    DeviceEventEmitter,
-    LayoutChangeEvent,
-    NativeScrollEvent,
-    NativeSyntheticEvent,
-    Platform,
-    StyleProp,
-    StyleSheet,
-    View,
-    ViewStyle,
-} from 'react-native';
+import {DeviceEventEmitter, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleProp, StyleSheet, ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
@@ -120,12 +110,6 @@ const PostList = ({
     const initialIndex = useMemo(() => {
         return orderedPosts.indexOf(START_OF_NEW_MESSAGES);
     }, [orderedPosts]);
-
-    const [offSetY, setOffSetY] = useState(0);
-    const onLayout = useCallback((layoutEvent: LayoutChangeEvent) => {
-        const {layout} = layoutEvent.nativeEvent;
-        setOffSetY(layout.y);
-    }, []);
 
     useEffect(() => {
         listRef.current?.scrollToOffset({offset: 0, animated: false});
@@ -312,7 +296,6 @@ const PostList = ({
             previousPost,
             shouldRenderReplyButton,
             skipSaveddHeader,
-            offSetY,
         };
 
         return (
@@ -324,7 +307,7 @@ const PostList = ({
                 {...postProps}
             />
         );
-    }, [currentTimezone, highlightPinnedOrSaved, isTimezoneEnabled, orderedPosts, shouldRenderReplyButton, theme, offSetY]);
+    }, [currentTimezone, highlightPinnedOrSaved, isTimezoneEnabled, orderedPosts, shouldRenderReplyButton, theme]);
 
     const scrollToIndex = useCallback((index: number, animated = true, applyOffset = true) => {
         listRef.current?.scrollToIndex({
@@ -383,7 +366,6 @@ const PostList = ({
                     testID={`${testID}.flat_list`}
                 />
             </PostListRefreshControl>
-            <View onLayout={onLayout}/>
             {showMoreMessages &&
             <MoreMessages
                 channelId={channelId}
