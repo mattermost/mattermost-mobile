@@ -259,7 +259,7 @@ export default class SelectServer extends PureComponent {
             screen = 'SSO';
             title = formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
             props = {ssoType: enabledSSOs[0]};
-        } else if (hasLoginForm && numberSSOs > 0) {
+        } else if ((hasLoginForm && numberSSOs > 0) || numberSSOs > 1) {
             screen = 'LoginOptions';
             title = formatMessage({id: 'mobile.routes.loginOptions', defaultMessage: 'Login Chooser'});
         } else {
