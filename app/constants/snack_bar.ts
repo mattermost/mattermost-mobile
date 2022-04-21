@@ -29,7 +29,7 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
     },
     MESSAGE_COPIED: {
         id: t('snack.bar.message.copied'),
-        defaultMessage: 'Message copied to clipboard',
+        defaultMessage: 'Text copied to clipboard',
         iconName: 'content-copy',
         themeColor: 'centerChannelColor',
         canUndo: false,
