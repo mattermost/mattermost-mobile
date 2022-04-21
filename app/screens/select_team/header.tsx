@@ -40,7 +40,7 @@ function Header() {
     const serverUrl = useServerUrl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const canAddOtherServers = managedConfig?.allowOtherServers !== 'false';
-    const serverButtonRef = useRef<ServersRef>();
+    const serverButtonRef = useRef<ServersRef>(null);
 
     const headerStyle = useMemo(() => ({...styles.header, marginLeft: canAddOtherServers ? MARGIN_WITH_SERVER_ICON : undefined}), [canAddOtherServers]);
     const onLogoutPress = useCallback(() => {

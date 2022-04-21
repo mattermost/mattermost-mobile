@@ -265,7 +265,7 @@ exports[`components/categories_list should render channels error 1`] = `
             },
             Object {
               "fontSize": 16,
-              "lineHeight": 16,
+              "lineHeight": 18,
               "marginTop": 1,
             },
             Object {
@@ -621,7 +621,7 @@ exports[`components/categories_list should render team error 1`] = `
             },
             Object {
               "fontSize": 16,
-              "lineHeight": 16,
+              "lineHeight": 18,
               "marginTop": 1,
             },
             Object {
