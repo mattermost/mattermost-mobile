@@ -421,7 +421,7 @@ export const buttonTextStyle = (
         },
         lg: {
             fontSize: 16,
-            lineHeight: 16,
+            lineHeight: 18,
             marginTop: 1,
         },
     });

@@ -112,7 +112,8 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
                 }
             }
 
-            if (await queryMyTeams(database).fetchCount()) {
+            const nTeams = await queryMyTeams(database).fetchCount();
+            if (nTeams) {
                 launchToHome({...props, launchType, serverUrl});
             } else {
                 resetToTeams();

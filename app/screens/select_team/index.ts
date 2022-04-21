@@ -6,6 +6,7 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+import {queryMyTeams} from '@app/queries/servers/team';
 import {Permissions} from '@constants';
 import {queryRolesByNames} from '@queries/servers/role';
 import {observeCurrentUser} from '@queries/servers/user';
@@ -18,12 +19,15 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const canCreateTeams = observeCurrentUser(database).pipe(
         switchMap((u) => (u ? of$(u.roles.split(' ')) : of$([]))),
-        switchMap((values) => queryRolesByNames(database, values).observe()),
+        switchMap((values) => queryRolesByNames(database, values).observeWithColumns(['permissions'])),
         switchMap((r) => of$(hasPermission(r, Permissions.CREATE_TEAM, false))),
     );
 
+    const nTeams = queryMyTeams(database).observeCount();
+
     return {
         canCreateTeams,
+        nTeams,
     };
 });
 

@@ -54,6 +54,7 @@ export default function AddTeamItem() {
     const styles = getStyleSheet(theme);
     const intl = useIntl();
     const onPress = useCallback(async () => {
+        // TODO https://mattermost.atlassian.net/browse/MM-43622
         //goToScreen(Screens.CREATE_TEAM, 'Create team');
     }, []);
 

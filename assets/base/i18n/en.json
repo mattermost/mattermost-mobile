@@ -234,7 +234,7 @@
   "mobile.about.serverVersionNoBuild": "Server Version: {version}",
   "mobile.account.settings.save": "Save",
   "mobile.action_menu.select": "Select an option",
-  "mobile.add_team.create_team": "Create a New Team",
+  "mobile.add_team.create_team": "Create a new team",
   "mobile.add_team.join_team": "Join Another Team",
   "mobile.android.photos_permission_denied_description": "Upload photos to your server or save them to your device. Open Settings to grant {applicationName} Read and Write access to your photo library.",
   "mobile.android.photos_permission_denied_title": "{applicationName} would like to access your photos",

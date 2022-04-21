@@ -13,7 +13,7 @@ import TeamListItem from './team_list_item';
 
 import type TeamModel from '@typings/database/models/servers/team';
 
-const Empty = require('./no_teams.svg').default;
+const Empty = require('@components/illustrations/no_teams.svg').default;
 
 type Props = {
     teams: Array<Team|TeamModel>;

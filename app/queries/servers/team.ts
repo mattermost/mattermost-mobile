@@ -30,9 +30,9 @@ const {
 } = DatabaseConstants.MM_TABLES.SERVER;
 
 export const getCurrentTeam = async (database: Database) => {
-    const currentUserId = await getCurrentTeamId(database);
-    if (currentUserId) {
-        return getTeamById(database, currentUserId);
+    const currentTeamId = await getCurrentTeamId(database);
+    if (currentTeamId) {
+        return getTeamById(database, currentTeamId);
     }
 
     return undefined;

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
@@ -14,7 +14,7 @@ import {alertServerLogout} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import Servers from '../home/channel_list/servers';
+import Servers, {ServersRef} from '../home/channel_list/servers';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     header: {
@@ -40,23 +40,42 @@ function Header() {
     const serverUrl = useServerUrl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const canAddOtherServers = managedConfig?.allowOtherServers !== 'false';
+    const serverButtonRef = useRef<ServersRef>();
 
     const headerStyle = useMemo(() => ({...styles.header, marginLeft: canAddOtherServers ? MARGIN_WITH_SERVER_ICON : undefined}), [canAddOtherServers]);
     const onLogoutPress = useCallback(() => {
         alertServerLogout(serverDisplayName, () => logout(serverUrl), intl);
     }, [serverUrl, serverDisplayName]);
 
+    const onLabelPress = useCallback(() => {
+        serverButtonRef.current?.openServers();
+    }, []);
+
+    let serverLabel = (
+        <Text
+            style={styles.text}
+            testID='select_team.server_display_name'
+        >
+            {serverDisplayName}
+        </Text>
+    );
+    if (canAddOtherServers) {
+        serverLabel = (
+            <TouchableWithFeedback
+                onPress={onLabelPress}
+                type='opacity'
+                testID='select_team.server_display_name.touchable'
+            >
+                {serverLabel}
+            </TouchableWithFeedback>
+        );
+    }
+
     return (
         <>
-            {canAddOtherServers && <Servers/>}
+            {canAddOtherServers && <Servers ref={serverButtonRef}/>}
             <View style={headerStyle}>
-
-                <Text
-                    style={styles.text}
-                    testID='select_team.server_display_name'
-                >
-                    {serverDisplayName}
-                </Text>
+                {serverLabel}
                 <TouchableWithFeedback
                     onPress={onLogoutPress}
                     testID='select_team.logout.button'

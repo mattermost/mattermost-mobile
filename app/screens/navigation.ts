@@ -273,7 +273,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
     });
 }
 
-export function resetToTeams(passProps = {}) {
+export function resetToTeams() {
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
@@ -287,7 +287,6 @@ export function resetToTeams(passProps = {}) {
                     component: {
                         id: Screens.SELECT_TEAM,
                         name: Screens.SELECT_TEAM,
-                        passProps,
                         options: {
                             layout: {
                                 componentBackgroundColor: theme.centerChannelBg,

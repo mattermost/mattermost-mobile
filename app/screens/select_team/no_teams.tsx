@@ -8,10 +8,11 @@ import {StyleSheet, Text, View} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
-import PublicChannelIllustration from '@screens/channel/channel_post_list/intro/illustration/public';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+const Empty = require('@components/illustrations/no_teams.svg').default;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -29,11 +30,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderRadius: 60,
         justifyContent: 'center',
         alignItems: 'center',
-    },
-    icon: {
-        fontSize: 72,
-        lineHeight: 72,
-        color: changeOpacity(theme.sidebarText, 0.48),
     },
     title: {
         color: theme.sidebarHeaderTextColor,
@@ -58,6 +54,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     plusIcon: {
         color: theme.sidebarText,
+        fontSize: 24,
         lineHeight: 22,
     },
 
@@ -75,13 +72,14 @@ const NoTeams = ({
     const intl = useIntl();
 
     const onButtonPress = useCallback(async () => {
+        // TODO https://mattermost.atlassian.net/browse/MM-43622
         //goToScreen(Screens.CREATE_TEAM, 'Create team');
     }, []);
 
     return (
         <View style={styles.container}>
             <View style={styles.iconWrapper}>
-                <PublicChannelIllustration theme={theme}/>
+                <Empty/>
             </View>
             <Text style={styles.title}>
                 {intl.formatMessage({id: 'select_team.no_team.title', defaultMessage: 'No teams are available to join'})}
@@ -98,7 +96,6 @@ const NoTeams = ({
                     <CompassIcon
                         name='plus'
                         style={styles.plusIcon}
-                        size={24}
                     />
                     <Text style={styles.buttonText}>{intl.formatMessage({id: 'mobile.add_team.create_team', defaultMessage: 'Create a new team'})}</Text>
                 </TouchableWithFeedback>

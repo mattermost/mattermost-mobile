@@ -55,7 +55,7 @@ export default function TeamListItem({team, currentUserId, textColor, iconTextCo
     const serverUrl = useServerUrl();
     const onPress = useCallback(async () => {
         await addUserToTeam(serverUrl, team.id, currentUserId);
-        onTeamAdded?.(team.id);
+        onTeamAdded(team.id);
     }, [onTeamAdded]);
 
     const displayName = 'displayName' in team ? team.displayName : team.display_name;
@@ -80,7 +80,9 @@ export default function TeamListItem({team, currentUserId, textColor, iconTextCo
                 <Text
                     style={[styles.text, {color: textColor}]}
                     numberOfLines={1}
-                >{displayName}</Text>
+                >
+                    {displayName}
+                </Text>
             </TouchableWithFeedback>
         </View>
     );

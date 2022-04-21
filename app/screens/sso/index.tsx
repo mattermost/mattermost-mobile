@@ -95,7 +95,7 @@ const SSO = ({config, extra, launchError, launchType, serverDisplayName, serverU
             return;
         }
         if (!result.hasTeams && !result.error) {
-            goToSelectTeam();
+            resetToTeams();
             return;
         }
         goToHome(result.time || 0, result.error as never);
@@ -104,10 +104,6 @@ const SSO = ({config, extra, launchError, launchType, serverDisplayName, serverU
     const goToHome = (time: number, error?: never) => {
         const hasError = launchError || Boolean(error);
         resetToHome({extra, launchError: hasError, launchType, serverUrl, time});
-    };
-
-    const goToSelectTeam = () => {
-        resetToTeams();
     };
 
     const transform = useAnimatedStyle(() => {

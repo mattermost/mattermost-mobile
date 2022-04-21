@@ -129,7 +129,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
         const result: LoginActionResponse = await login(serverUrl!, {serverDisplayName, loginId: loginId.toLowerCase(), password, config, license});
         if (checkLoginResponse(result)) {
             if (!result.hasTeams && !result.error) {
-                goToSelectTeam();
+                resetToTeams();
                 return;
             }
             goToHome(result.time || 0, result.error as never);
@@ -139,10 +139,6 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
     const goToHome = (time: number, loginError?: never) => {
         const hasError = launchError || Boolean(loginError);
         resetToHome({extra, launchError: hasError, launchType, serverUrl, time});
-    };
-
-    const goToSelectTeam = () => {
-        resetToTeams();
     };
 
     const checkLoginResponse = (data: LoginActionResponse) => {

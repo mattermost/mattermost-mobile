@@ -18,7 +18,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
         backgroundColor: theme.sidebarBg,
-        marginHorizontal: 24,
+        marginHorizontal: 16,
         maxWidth: 600,
         alignSelf: 'center',
     },
@@ -26,7 +26,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        marginHorizontal: 24,
+        marginHorizontal: 16,
     },
     iconWrapper: {
         height: 120,
@@ -59,6 +59,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     separator: {
         borderColor: changeOpacity(theme.sidebarText, 0.08),
         borderTopWidth: 1,
+        marginVertical: 8,
     },
 }));
 

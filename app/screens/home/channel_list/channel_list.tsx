@@ -28,9 +28,6 @@ type ChannelProps = {
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
 const styles = StyleSheet.create({
-    flex: {
-        flex: 1,
-    },
     content: {
         flex: 1,
         flexDirection: 'row',
