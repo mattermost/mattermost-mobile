@@ -72,9 +72,9 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
         };
     });
 
-    const toastStyle = useMemo(() => {
+    const snackBarStyle = useMemo(() => {
         const diffWidth = windowWidth - TABLET_SIDEBAR_WIDTH;
-        const TABLET_PORTRAIT_RATIO = 96;
+        const SNACK_BAR_WIDTH = 96;
 
         let tabletStyle: Partial<ViewStyle>;
 
@@ -82,7 +82,7 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
             case sourceScreen === Screens.THREAD :
                 tabletStyle = {
                     marginLeft: 0,
-                    width: `${TABLET_PORTRAIT_RATIO}%`,
+                    width: `${SNACK_BAR_WIDTH}%`,
                     marginBottom: 30,
                 };
                 break;
@@ -90,26 +90,29 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
                 tabletStyle = {
                     marginBottom: 20,
                     marginLeft: TABLET_SIDEBAR_WIDTH,
-                    width: (TABLET_PORTRAIT_RATIO / 100) * diffWidth,
+                    width: (SNACK_BAR_WIDTH / 100) * diffWidth,
                 };
                 break;
             case [Screens.PERMALINK, Screens.MENTIONS].includes(sourceScreen):
                 tabletStyle = {
                     marginBottom: 0,
                     marginLeft: 0,
-                    width: (TABLET_PORTRAIT_RATIO / 100) * windowWidth,
+                    width: (SNACK_BAR_WIDTH / 100) * windowWidth,
                 };
                 break;
             default:
                 tabletStyle = {
                     marginBottom: 40,
                     marginLeft: TABLET_SIDEBAR_WIDTH,
-                    width: (TABLET_PORTRAIT_RATIO / 100) * diffWidth,
+                    width: (SNACK_BAR_WIDTH / 100) * diffWidth,
                 };
         }
 
         return [
-            {backgroundColor: theme[config.themeColor]},
+            {
+                backgroundColor: theme[config.themeColor],
+                width: '96%',
+            },
             isTablet && tabletStyle,
         ];
     }, [theme, barType]);
@@ -144,7 +147,7 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
             message={intl.formatMessage({id: config.id, defaultMessage: config.defaultMessage})}
             iconName={config.iconName}
             textStyle={styles.text}
-            style={toastStyle}
+            style={snackBarStyle}
         >
             {config.canUndo && onUndoPress && (
                 <TouchableOpacity onPress={onPressHandler}>
