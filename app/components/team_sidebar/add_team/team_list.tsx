@@ -6,14 +6,13 @@ import {ListRenderItemInfo, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler'; // Keep the FlatList from gesture handler so it works well with bottom sheet
 
 import FormattedText from '@components/formatted_text';
+import Empty from '@components/illustrations/no_team';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import TeamListItem from './team_list_item';
 
 import type TeamModel from '@typings/database/models/servers/team';
-
-const Empty = require('@components/illustrations/no_teams.svg').default;
 
 type Props = {
     teams: Array<Team|TeamModel>;
@@ -85,7 +84,7 @@ export default function TeamList({teams, textColor, iconTextColor, iconBackgroun
 
     return (
         <View style={styles.empty}>
-            <Empty/>
+            <Empty theme={theme}/>
             <FormattedText
                 id='team_list.no_other_teams.title'
                 defaultMessage='No additional teams to join'

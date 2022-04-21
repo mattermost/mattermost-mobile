@@ -6,13 +6,12 @@ import {useIntl} from 'react-intl';
 import {StyleSheet, Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import Empty from '@components/illustrations/no_team';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-const Empty = require('@components/illustrations/no_teams.svg').default;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -79,7 +78,7 @@ const NoTeams = ({
     return (
         <View style={styles.container}>
             <View style={styles.iconWrapper}>
-                <Empty/>
+                <Empty theme={theme}/>
             </View>
             <Text style={styles.title}>
                 {intl.formatMessage({id: 'select_team.no_team.title', defaultMessage: 'No teams are available to join'})}
