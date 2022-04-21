@@ -11,6 +11,7 @@ import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
+import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme, hexToHue} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -30,7 +31,7 @@ type Props = {
 }
 
 const HIDDEN_TOP = -60;
-const SHOWN_TOP = Platform.select({ios: 40, default: 0});
+const SHOWN_TOP = Platform.select({ios: 50, default: 5});
 const MIN_INPUT = 0;
 const MAX_INPUT = 1;
 
@@ -101,6 +102,7 @@ const MoreMessages = ({
     theme,
 }: Props) => {
     const serverUrl = useServerUrl();
+    const isTablet = useIsTablet();
     const pressed = useRef(false);
     const resetting = useRef(false);
     const initialScroll = useRef(false);
@@ -108,6 +110,7 @@ const MoreMessages = ({
     const [remaining, setRemaining] = useState(0);
     const underlayColor = useMemo(() => `hsl(${hexToHue(theme.buttonBg)}, 50%, 38%)`, [theme]);
     const top = useSharedValue(0);
+    const shownTop = isTablet ? 5 : SHOWN_TOP;
     const BARS_FACTOR = Math.abs((1) / (HIDDEN_TOP - SHOWN_TOP));
     const styles = getStyleSheet(theme);
     const animatedStyle = useAnimatedStyle(() => ({
@@ -123,13 +126,13 @@ const MoreMessages = ({
                 [
                     HIDDEN_TOP,
                     HIDDEN_TOP,
-                    SHOWN_TOP,
-                    SHOWN_TOP,
+                    shownTop,
+                    shownTop,
                 ],
                 Animated.Extrapolate.CLAMP,
             ), {damping: 15}),
         }],
-    }), []);
+    }), [isTablet, shownTop]);
 
     const resetCount = async () => {
         if (resetting.current) {
