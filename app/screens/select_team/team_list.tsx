@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React from 'react';
+import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
@@ -8,6 +8,7 @@ import {handleTeamChange} from '@actions/remote/team';
 import TeamFlatList from '@components/team_sidebar/add_team/team_list';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {resetToHome} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -18,28 +19,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
         backgroundColor: theme.sidebarBg,
-        marginHorizontal: 16,
-        maxWidth: 600,
-        alignSelf: 'center',
-    },
-    body: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginHorizontal: 16,
-    },
-    iconWrapper: {
-        height: 120,
-        width: 120,
-        backgroundColor: changeOpacity(theme.sidebarText, 0.08),
-        borderRadius: 60,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    icon: {
-        fontSize: 72,
-        lineHeight: 72,
-        color: changeOpacity(theme.sidebarText, 0.48),
+        marginHorizontal: 24,
     },
     title: {
         color: theme.sidebarHeaderTextColor,
@@ -51,10 +31,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 12,
         marginBottom: 25,
         ...typography('Body', 200, 'Regular'),
-    },
-    plusIcon: {
-        color: theme.sidebarText,
-        lineHeight: 22,
     },
     separator: {
         borderColor: changeOpacity(theme.sidebarText, 0.08),
@@ -75,15 +51,20 @@ function TeamList({
     const styles = getStyleSheet(theme);
     const intl = useIntl();
     const serverUrl = useServerUrl();
+    const isTablet = useIsTablet();
 
     const onTeamAdded = async (id: string) => {
         await handleTeamChange(serverUrl, id);
         resetToHome();
     };
 
+    const containerStyle = useMemo(() => {
+        return isTablet ? [styles.container, {maxWidth: 600, alignItems: 'center'}] : styles.container;
+    }, [isTablet, styles]);
+
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
+        <View style={containerStyle}>
+            <View>
                 <Text style={styles.title}>{intl.formatMessage({id: 'select_team.title', defaultMessage: 'Select a team'})}</Text>
                 <Text style={styles.description}>{intl.formatMessage({id: 'select_team.description', defaultMessage: 'You are not yet a member of any teams. Select one below to get started.'})}</Text>
             </View>

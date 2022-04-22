@@ -5,12 +5,15 @@ import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {removeUserFromTeam} from '@actions/local/team';
-import {fetchRolesIfNeeded} from '@actions/remote/role';
+import {fetchMyChannelsForTeam} from '@actions/remote/channel';
+import {fetchRoles} from '@actions/remote/role';
 import {fetchAllTeams, handleTeamChange, fetchMyTeam} from '@actions/remote/team';
 import {updateUsersNoLongerVisible} from '@actions/remote/user';
 import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
+import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
+import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {getCurrentTeam, getLastTeam, prepareMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot, resetToTeams} from '@screens/navigation';
@@ -79,8 +82,8 @@ export async function handleUpdateTeamEvent(serverUrl: string, msg: WebSocketMes
 const addingTeam: {[id: string]: boolean} = {};
 
 export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSocketMessage) {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return;
     }
     const {team_id: teamId} = msg.data;
@@ -95,29 +98,21 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
 
     const modelPromises: Array<Promise<Model[]>> = [];
     if (teams?.length && teamMemberships?.length) {
-        const myMember = teamMemberships[0];
-        if (myMember.roles) {
-            const rolesToLoad = new Set<string>();
-            for (const role of myMember.roles.split(' ')) {
-                rolesToLoad.add(role);
-            }
-            const serverRoles = await fetchRolesIfNeeded(serverUrl, Array.from(rolesToLoad), true);
-            if (serverRoles.roles?.length) {
-                const preparedRoleModels = database.operator.handleRole({
-                    roles: serverRoles.roles,
-                    prepareRecordsOnly: true,
-                });
-                modelPromises.push(preparedRoleModels);
-            }
-        }
+        const {channels, memberships, categories} = await fetchMyChannelsForTeam(serverUrl, teamId, false, 0, true);
+        modelPromises.push(prepareCategories(operator, categories));
+        modelPromises.push(prepareCategoryChannels(operator, categories));
+        modelPromises.push(...await prepareMyChannelsForTeam(operator, teamId, channels || [], memberships || []));
+
+        const {roles} = await fetchRoles(serverUrl, teamMemberships, memberships, undefined, true);
+        modelPromises.push(operator.handleRole({roles, prepareRecordsOnly: true}));
     }
 
     if (teams && teamMemberships) {
-        modelPromises.push(...prepareMyTeams(database.operator, teams, teamMemberships));
+        modelPromises.push(...prepareMyTeams(operator, teams, teamMemberships));
     }
 
     const models = await Promise.all(modelPromises);
-    await database.operator.batchRecords(models.flat());
+    await operator.batchRecords(models.flat());
 
     delete addingTeam[teamId];
 }

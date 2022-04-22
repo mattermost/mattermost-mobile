@@ -12,7 +12,7 @@ export type RolesRequest = {
     roles?: Role[];
 }
 
-export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string[], fetchOnly = false): Promise<RolesRequest> => {
+export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string[], fetchOnly = false, force = false): Promise<RolesRequest> => {
     if (!updatedRoles.length) {
         return {roles: []};
     }
@@ -26,15 +26,20 @@ export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string
 
     const database = DatabaseManager.serverDatabases[serverUrl].database;
     const operator = DatabaseManager.serverDatabases[serverUrl].operator;
-    const existingRoles = await queryRoles(database).fetch();
+    let newRoles;
+    if (force) {
+        newRoles = updatedRoles;
+    } else {
+        const existingRoles = await queryRoles(database).fetch();
 
-    const roleNames = new Set(existingRoles.map((role) => {
-        return role.name;
-    }));
+        const roleNames = new Set(existingRoles.map((role) => {
+            return role.name;
+        }));
 
-    const newRoles = updatedRoles.filter((newRole) => {
-        return !roleNames.has(newRole);
-    });
+        newRoles = updatedRoles.filter((newRole) => {
+            return !roleNames.has(newRole);
+        });
+    }
 
     if (!newRoles.length) {
         return {roles: []};
@@ -56,7 +61,7 @@ export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string
     }
 };
 
-export const fetchRoles = async (serverUrl: string, teamMembership?: TeamMembership[], channelMembership?: ChannelMembership[], user?: UserProfile, fetchOnly = false) => {
+export const fetchRoles = async (serverUrl: string, teamMembership?: TeamMembership[], channelMembership?: ChannelMembership[], user?: UserProfile, fetchOnly = false, force = false) => {
     const rolesToFetch = new Set<string>(user?.roles.split(' ') || []);
 
     if (teamMembership?.length) {
@@ -78,7 +83,7 @@ export const fetchRoles = async (serverUrl: string, teamMembership?: TeamMembers
 
     rolesToFetch.delete('');
     if (rolesToFetch.size > 0) {
-        return fetchRolesIfNeeded(serverUrl, Array.from(rolesToFetch), fetchOnly);
+        return fetchRolesIfNeeded(serverUrl, Array.from(rolesToFetch), fetchOnly, force);
     }
 
     return {roles: []};

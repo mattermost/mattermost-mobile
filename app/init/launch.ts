@@ -112,12 +112,7 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
                 }
             }
 
-            const nTeams = await queryMyTeams(database).fetchCount();
-            if (nTeams) {
-                launchToHome({...props, launchType, serverUrl});
-            } else {
-                resetToTeams();
-            }
+            launchToHome({...props, launchType, serverUrl});
 
             return;
         }
@@ -149,9 +144,23 @@ const launchToHome = async (props: LaunchProps) => {
             break;
     }
 
-    // eslint-disable-next-line no-console
-    console.log('Launch app in Home screen');
-    resetToHome(props);
+    let nTeams = 0;
+    if (props.serverUrl) {
+        const database = DatabaseManager.serverDatabases[props.serverUrl]?.database;
+        if (database) {
+            nTeams = await queryMyTeams(database).fetchCount();
+        }
+    }
+
+    if (nTeams) {
+        // eslint-disable-next-line no-console
+        console.log('Launch app in Home screen');
+        resetToHome(props);
+    } else {
+        // eslint-disable-next-line no-console
+        console.log('Launch app in Select Teams screen');
+        resetToTeams();
+    }
 };
 
 const launchToServer = (props: LaunchProps, resetNavigation: Boolean) => {

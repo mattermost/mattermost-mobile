@@ -6,9 +6,9 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {queryMyTeams} from '@app/queries/servers/team';
 import {Permissions} from '@constants';
 import {queryRolesByNames} from '@queries/servers/role';
+import {queryMyTeams} from '@queries/servers/team';
 import {observeCurrentUser} from '@queries/servers/user';
 import {hasPermission} from '@utils/role';
 
