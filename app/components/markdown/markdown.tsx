@@ -10,7 +10,7 @@ import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import Hashtag from '@components/markdown/hashtag';
-import {blendColors, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
+import {blendColors, changeOpacity, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
 import {getScheme} from '@utils/url';
 
 import AtMention from './at_mention';
@@ -27,7 +27,7 @@ import MarkdownTable from './markdown_table';
 import MarkdownTableCell, {MarkdownTableCellProps} from './markdown_table_cell';
 import MarkdownTableImage from './markdown_table_image';
 import MarkdownTableRow, {MarkdownTableRowProps} from './markdown_table_row';
-import {addListItemIndices, combineTextNodes, highlightMentions, highlightSearchPatterns, pullOutImages} from './transform';
+import {addListItemIndices, combineTextNodes, highlightMentions, highlightSearchPatterns, parseTaskLists, pullOutImages} from './transform';
 
 import type {
     MarkdownAtMentionRenderer, MarkdownBaseRenderer, MarkdownBlockStyles, MarkdownChannelMentionRenderer,
@@ -180,11 +180,14 @@ const Markdown = ({
 
     const renderCheckbox = ({isChecked}: {isChecked: boolean}) => {
         return (
-            <CompassIcon
-                name={isChecked ? 'checkbox-marked' : 'checkbox-blank-outline'}
-                size={12}
-                color={theme.centerChannelColor}
-            />
+            <Text>
+                <CompassIcon
+                    name={isChecked ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                    size={16}
+                    color={changeOpacity(theme.centerChannelColor, 0.56)}
+                />
+                {' '}
+            </Text>
         );
     };
 
@@ -501,6 +504,7 @@ const Markdown = ({
     ast = combineTextNodes(ast);
     ast = addListItemIndices(ast);
     ast = pullOutImages(ast);
+    ast = parseTaskLists(ast);
     if (mentionKeys) {
         ast = highlightMentions(ast, mentionKeys);
     }
