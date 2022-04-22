@@ -46,3 +46,7 @@ export type MarkdownImageRenderer = {
         height?: number;
     };
 }
+
+export type MarkdownLatexRenderer = MarkdownBaseRenderer & {
+    latexCode: string;
+}
