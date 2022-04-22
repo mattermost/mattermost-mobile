@@ -270,6 +270,9 @@ jest.mock('react-native-navigation', () => {
                 bindComponent: jest.fn(() => {
                     return {remove: jest.fn()};
                 }),
+                registerNavigationButtonPressedListener: jest.fn(() => {
+                    return {buttonId: 'buttonId'};
+                }),
             }),
             setRoot: jest.fn(),
             pop: jest.fn(),
