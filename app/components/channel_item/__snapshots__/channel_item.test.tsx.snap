@@ -43,7 +43,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
           Object {
             "alignItems": "center",
             "flexDirection": "row",
-            "height": 40,
+            "minHeight": 40,
             "paddingHorizontal": 20,
           },
           false,
