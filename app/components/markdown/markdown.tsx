@@ -6,6 +6,7 @@ import Renderer from 'commonmark-react-renderer';
 import React, {ReactElement, useRef} from 'react';
 import {Dimensions, GestureResponderEvent, Platform, StyleProp, Text, TextStyle, View} from 'react-native';
 
+import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import Hashtag from '@components/markdown/hashtag';
@@ -101,6 +102,10 @@ const getExtraPropsForNode = (node: any) => {
         extraProps.size = node.size;
     }
 
+    if (node.type === 'checkbox') {
+        extraProps.isChecked = node.isChecked;
+    }
+
     return extraProps;
 };
 
@@ -169,6 +174,16 @@ const Markdown = ({
                 textStyle={computeTextStyle(textStyles, baseTextStyle, context)}
                 channelName={channelName}
                 channelMentions={channelMentions}
+            />
+        );
+    };
+
+    const renderCheckbox = ({isChecked}: {isChecked: boolean}) => {
+        return (
+            <CompassIcon
+                name={isChecked ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                size={12}
+                color={theme.centerChannelColor}
             />
         );
     };
@@ -466,6 +481,7 @@ const Markdown = ({
 
             mention_highlight: Renderer.forwardChildren,
             search_highlight: Renderer.forwardChildren,
+            checkbox: renderCheckbox,
 
             editedIndicator: renderEditedIndicator,
         };
@@ -474,6 +490,7 @@ const Markdown = ({
             renderers,
             renderParagraphsInLists: true,
             getExtraPropsForNode,
+            allowedTypes: Object.keys(renderers),
         });
     };
 

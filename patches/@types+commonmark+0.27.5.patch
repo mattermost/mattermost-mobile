@@ -1,5 +1,5 @@
 diff --git a/node_modules/@types/commonmark/index.d.ts b/node_modules/@types/commonmark/index.d.ts
-index 35e9ed6..382cf98 100755
+index 35e9ed6..3bc0eba 100755
 --- a/node_modules/@types/commonmark/index.d.ts
 +++ b/node_modules/@types/commonmark/index.d.ts
 @@ -5,8 +5,8 @@
@@ -9,20 +9,23 @@ index 35e9ed6..382cf98 100755
 -    'text' |'softbreak' | 'linebreak' | 'emph' | 'strong' | 'html_inline' | 'link' | 'image' | 'code' | 'document' | 'paragraph' |
 -    'block_quote' | 'item' | 'list' | 'heading' | 'code_block' | 'html_block' | 'thematic_break' | 'custom_inline' | 'custom_block';
 +    'text' |'softbreak' | 'linebreak' | 'emph' | 'strong' | 'html_inline' | 'link' | 'image' | 'code' | 'document' | 'paragraph' | 'mention_highlight' | 'search_highlight' | 'at_mention' |
-+    'block_quote' | 'item' | 'list' | 'heading' | 'code_block' | 'html_block' | 'thematic_break' | 'custom_inline' | 'custom_block' | 'table' | 'edited_indicator';
++    'block_quote' | 'item' | 'list' | 'heading' | 'code_block' | 'html_block' | 'thematic_break' | 'custom_inline' | 'custom_block' | 'table' | 'edited_indicator' | 'checkbox';
  
  export class Node {
      constructor(nodeType: NodeType, sourcepos?: Position);
-@@ -125,6 +125,8 @@ export class Node {
+@@ -125,6 +125,11 @@ export class Node {
       * https://github.com/jgm/commonmark.js/issues/74
       */
      _listData: ListData;
 +
 +    mentionName?: string;
++
++    _isChecked: boolean;
++    isChecked: boolean;
  }
  
  /**
-@@ -200,6 +202,8 @@ export interface ParserOptions {
+@@ -200,6 +205,8 @@ export interface ParserOptions {
       */
      smart?: boolean | undefined;
      time?: boolean | undefined;

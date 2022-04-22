@@ -287,3 +287,39 @@ function wrapNode(wrapper: any, node: any) {
     wrapper._lastChild = node;
     node._parent = wrapper;
 }
+
+export function parseTaskLists(ast: Node) {
+    const walker = ast.walker();
+
+    let e;
+    while ((e = walker.next())) {
+        if (!e.entering) {
+            continue;
+        }
+
+        const node = e.node;
+
+        if (node.type !== 'item') {
+            continue;
+        }
+
+        if (node.firstChild?.type === 'paragraph' && node.firstChild?.firstChild?.type === 'text') {
+            const paragraphNode = node.firstChild;
+            const textNode = node.firstChild.firstChild;
+
+            const literal = textNode.literal ?? '';
+
+            const match = (/^ {0,3}\[( |x)\]\s/).exec(literal);
+            if (match) {
+                const checkbox = new Node('checkbox');
+                checkbox._isChecked = match[1] === 'x';
+
+                paragraphNode.prependChild(checkbox);
+
+                textNode.literal = literal.substring(match[0].length);
+            }
+        }
+    }
+
+    return ast;
+}
