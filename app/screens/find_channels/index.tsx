@@ -26,13 +26,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
         marginHorizontal: 20,
-        marginTop: 12,
+        marginTop: 20,
     },
     inputContainerStyle: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.12),
     },
     inputStyle: {
         color: theme.centerChannelColor,
+    },
+    listContainer: {
+        flex: 1,
+        marginTop: 8,
     },
 }));
 
@@ -92,19 +96,21 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
                 value={term}
             />
             {term === '' && <QuickOptions close={close}/>}
-            {term === '' &&
-            <UnfilteredList
-                close={close}
-                keyboardHeight={keyboardHeight}
-            />
-            }
-            {Boolean(term) &&
-            <FilteredList
-                close={close}
-                keyboardHeight={keyboardHeight}
-                term={term}
-            />
-            }
+            <View style={styles.listContainer}>
+                {term === '' &&
+                <UnfilteredList
+                    close={close}
+                    keyboardHeight={keyboardHeight}
+                />
+                }
+                {Boolean(term) &&
+                <FilteredList
+                    close={close}
+                    keyboardHeight={keyboardHeight}
+                    term={term}
+                />
+                }
+            </View>
         </View>
     );
 };

@@ -58,13 +58,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         );
 
     const recentChannels = unreadChannels.pipe(
-        switchMap((unreads) => {
-            if (unreads.length < MAX_UNREAD_CHANNELS) {
-                return observeRecentChannels(database, unreads);
-            }
-
-            return of$([]);
-        }),
+        switchMap((unreads) => observeRecentChannels(database, unreads)),
     );
 
     return {

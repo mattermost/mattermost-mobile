@@ -18,7 +18,7 @@ type Props = {
     close: () => Promise<void>;
 }
 
-const OPTIONS_HEIGHT = 70;
+const OPTIONS_HEIGHT = 60;
 
 const styles = StyleSheet.create({
     container: {

@@ -25,14 +25,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
         borderRadius: 4,
         flex: 1,
-        maxHeight: 68,
+        maxHeight: 60,
         justifyContent: 'center',
         minWidth: 115,
     },
     text: {
         color: changeOpacity(theme.centerChannelColor, 0.56),
         paddingHorizontal: 5,
-        ...typography('Body', 25),
+        ...typography('Body', 50, 'SemiBold'),
     },
 }));
 

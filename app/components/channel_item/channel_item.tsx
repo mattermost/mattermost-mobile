@@ -41,7 +41,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flexDirection: 'row',
         paddingHorizontal: 20,
-        height: 40,
+        minHeight: 40,
         alignItems: 'center',
     },
     infoItem: {
@@ -98,12 +98,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     teamName: {
         color: changeOpacity(theme.centerChannelColor, 0.64),
         paddingLeft: 12,
+        marginTop: 4,
         ...typography('Body', 75),
     },
     teamNameTablet: {
         marginLeft: -12,
         paddingLeft: 0,
-        top: 4,
+        marginTop: 0,
+        paddingBottom: 0,
+        top: 5,
     },
 }));
 
@@ -136,12 +139,17 @@ const ChannelListItem = ({
     }, [shouldCollapse]);
 
     const animatedStyle = useAnimatedStyle(() => {
+        let height = 40;
+        if (isInfo) {
+            height = (teamDisplayName && !isTablet) ? 58 : 44;
+        }
+
         return {
             marginVertical: withTiming(sharedValue.value ? 0 : 2, {duration: 500}),
-            height: withTiming(sharedValue.value ? 0 : 40, {duration: 500}),
+            height: withTiming(sharedValue.value ? 0 : height, {duration: 500}),
             opacity: withTiming(sharedValue.value ? 0 : 1, {duration: 500, easing: Easing.inOut(Easing.exp)}),
         };
-    });
+    }, [teamDisplayName, isTablet, isInfo]);
 
     const switchChannels = useCallback(() => {
         if (myChannel) {
