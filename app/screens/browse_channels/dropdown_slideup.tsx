@@ -66,12 +66,12 @@ export default function DropdownSlideup({
         <BottomSheetContent
             showButton={false}
             showTitle={!isTablet}
-            testID='dropdown_slideup'
+            testID='browse_channels.dropdown_slideup'
             title={intl.formatMessage({id: 'browse_channels.dropdownTitle', defaultMessage: 'Show'})}
         >
             <SlideUpPanelItem
                 onPress={handlePublicPress}
-                testID='browse_channels.dropdownTitle.public'
+                testID='browse_channels.dropdown_slideup_item.public_channels'
                 text={intl.formatMessage({id: 'browse_channels.publicChannels', defaultMessage: 'Public Channels'})}
                 icon={selected === PUBLIC ? 'check' : undefined}
                 {...commonProps}
@@ -79,7 +79,7 @@ export default function DropdownSlideup({
             {canShowArchivedChannels && (
                 <SlideUpPanelItem
                     onPress={handleArchivedPress}
-                    testID='browse_channels.dropdownTitle.public'
+                    testID='browse_channels.dropdown_slideup_item.archived_channels'
                     text={intl.formatMessage({id: 'browse_channels.archivedChannels', defaultMessage: 'Archived Channels'})}
                     icon={selected === ARCHIVED ? 'check' : undefined}
                     {...commonProps}
@@ -88,7 +88,7 @@ export default function DropdownSlideup({
             {sharedChannelsEnabled && (
                 <SlideUpPanelItem
                     onPress={handleSharedPress}
-                    testID='browse_channels.dropdownTitle.public'
+                    testID='browse_channels.dropdown_slideup_item.shared_channels'
                     text={intl.formatMessage({id: 'browse_channels.sharedChannels', defaultMessage: 'Shared Channels'})}
                     icon={selected === SHARED ? 'check' : undefined}
                     {...commonProps}

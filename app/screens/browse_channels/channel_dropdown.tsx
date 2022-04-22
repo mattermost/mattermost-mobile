@@ -90,13 +90,13 @@ export default function ChannelDropdown({
     }
     return (
         <View
-            testID='browse_channels.channel.dropdown'
+            testID='browse_channels.channel_dropdown'
         >
             <Text
                 accessibilityRole={'button'}
                 style={style.channelDropdown}
                 onPress={handleDropdownClick}
-                testID={`browse_channels.channel.dropdown.${typeOfChannels}`}
+                testID={`browse_channels.channel_dropdown.text.${typeOfChannels}`}
             >
                 {channelDropdownText}
                 {'  '}

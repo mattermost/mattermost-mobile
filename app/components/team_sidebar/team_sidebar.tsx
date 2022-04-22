@@ -67,8 +67,10 @@ export default function TeamSidebar({canCreateTeams, iconPad, otherTeams, teamsC
 
     return (
         <Animated.View style={[styles.container, transform]}>
-            <Animated.View style={[styles.listContainer, serverStyle]}>
-                <TeamList/>
+            <Animated.View
+                style={[styles.listContainer, serverStyle]}
+            >
+                <TeamList testID='team_sidebar.team_list'/>
                 {showAddTeam && (
                     <AddTeam
                         canCreateTeams={canCreateTeams}

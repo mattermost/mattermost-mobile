@@ -116,7 +116,7 @@ describe('Channels - Create Direct Message', () => {
         // * Verify no group message channel for the new users appears on channel list screen
         const firstNewUserDisplayName = firstNewUser.username;
         const secondNewUserDisplayName = secondNewUser.username;
-        const groupDisplayName = `${firstNewUserDisplayName}, ${secondNewUserDisplayName}, ${testUser.username}`;
+        const groupDisplayName = `${firstNewUserDisplayName}, ${secondNewUserDisplayName}`;
         await expect(element(by.text(groupDisplayName))).not.toBeVisible();
 
         // # Open create direct message screen, search for the first new user and tap on the first new user item
