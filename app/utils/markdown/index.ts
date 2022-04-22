@@ -108,6 +108,11 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: theme.mentionHighlightBg,
             color: theme.mentionHighlightLink,
         },
+        search_highlight: {
+            fontFamily: 'OpenSans',
+            backgroundColor: theme.mentionHighlightBg,
+            color: theme.mentionHighlightLink,
+        },
     };
 });
 

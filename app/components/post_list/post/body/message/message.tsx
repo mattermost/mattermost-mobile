@@ -50,6 +50,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+const searchPatterns = [
+    {
+        pattern: /\bMattermost\b/,
+        term: 'Mattermost',
+    },
+    {
+        pattern: /\bbug\b/i,
+        term: 'bug',
+    },
+    {
+        pattern: /\bboat/,
+        term: 'boat',
+    },
+];
+
 const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPost, layoutWidth, location, post, theme}: MessageProps) => {
     const [open, setOpen] = useState(false);
     const [height, setHeight] = useState<number|undefined>();
@@ -94,6 +109,7 @@ const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPo
                             textStyles={textStyles}
                             value={post.message}
                             mentionKeys={mentionKeys}
+                            searchPatterns={searchPatterns}
                             theme={theme}
                         />
                     </View>

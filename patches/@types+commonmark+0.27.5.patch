@@ -8,7 +8,7 @@ index 35e9ed6..382cf98 100755
  export type NodeType =
 -    'text' |'softbreak' | 'linebreak' | 'emph' | 'strong' | 'html_inline' | 'link' | 'image' | 'code' | 'document' | 'paragraph' |
 -    'block_quote' | 'item' | 'list' | 'heading' | 'code_block' | 'html_block' | 'thematic_break' | 'custom_inline' | 'custom_block';
-+    'text' |'softbreak' | 'linebreak' | 'emph' | 'strong' | 'html_inline' | 'link' | 'image' | 'code' | 'document' | 'paragraph' | 'mention_highlight' | 'at_mention' |
++    'text' |'softbreak' | 'linebreak' | 'emph' | 'strong' | 'html_inline' | 'link' | 'image' | 'code' | 'document' | 'paragraph' | 'mention_highlight' | 'search_highlight' | 'at_mention' |
 +    'block_quote' | 'item' | 'list' | 'heading' | 'code_block' | 'html_block' | 'thematic_break' | 'custom_inline' | 'custom_block' | 'table' | 'edited_indicator';
  
  export class Node {

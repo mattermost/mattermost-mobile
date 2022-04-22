@@ -26,11 +26,11 @@ import MarkdownTable from './markdown_table';
 import MarkdownTableCell, {MarkdownTableCellProps} from './markdown_table_cell';
 import MarkdownTableImage from './markdown_table_image';
 import MarkdownTableRow, {MarkdownTableRowProps} from './markdown_table_row';
-import {addListItemIndices, combineTextNodes, highlightMentions, pullOutImages} from './transform';
+import {addListItemIndices, combineTextNodes, highlightMentions, highlightSearchPatterns, pullOutImages} from './transform';
 
 import type {
     MarkdownAtMentionRenderer, MarkdownBaseRenderer, MarkdownBlockStyles, MarkdownChannelMentionRenderer,
-    MarkdownEmojiRenderer, MarkdownImageRenderer, MarkdownLatexRenderer, MarkdownTextStyles, UserMentionKey,
+    MarkdownEmojiRenderer, MarkdownImageRenderer, MarkdownLatexRenderer, MarkdownTextStyles, SearchPattern, UserMentionKey,
 } from '@typings/global/markdown';
 
 type MarkdownProps = {
@@ -55,6 +55,7 @@ type MarkdownProps = {
     minimumHashtagLength?: number;
     onPostPress?: (event: GestureResponderEvent) => void;
     postId?: string;
+    searchPatterns?: SearchPattern[];
     textStyles?: MarkdownTextStyles;
     theme: Theme;
     value?: string | number;
@@ -114,7 +115,7 @@ const Markdown = ({
     disableAtChannelMentionHighlight = false, disableAtMentions = false, disableChannelLink = false,
     disableGallery = false, disableHashtags = false, enableInlineLatex, enableLatex,
     imagesMetadata, isEdited, isReplyPost, isSearchResult, layoutWidth,
-    location, mentionKeys, minimumHashtagLength = 3, onPostPress, postId,
+    location, mentionKeys, minimumHashtagLength = 3, onPostPress, postId, searchPatterns,
     textStyles = {}, theme, value = '',
 }: MarkdownProps) => {
     const style = getStyleSheet(theme);
@@ -464,6 +465,7 @@ const Markdown = ({
             table_cell: renderTableCell,
 
             mention_highlight: Renderer.forwardChildren,
+            search_highlight: Renderer.forwardChildren,
 
             editedIndicator: renderEditedIndicator,
         };
@@ -484,6 +486,9 @@ const Markdown = ({
     ast = pullOutImages(ast);
     if (mentionKeys) {
         ast = highlightMentions(ast, mentionKeys);
+    }
+    if (searchPatterns) {
+        ast = highlightSearchPatterns(ast, searchPatterns);
     }
 
     if (isEdited) {
