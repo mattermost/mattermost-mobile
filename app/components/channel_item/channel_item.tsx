@@ -175,7 +175,7 @@ const ChannelListItem = ({
         isMuted && styles.muted,
         isActive && !isInfo ? styles.textActive : null,
         isInfo ? styles.textInfo : null,
-    ], [isUnread, styles, isMuted]);
+    ], [isUnread, styles, isMuted, isActive, isInfo]);
 
     let displayName = channel.displayName;
     if (isOwnDirectMessage) {
