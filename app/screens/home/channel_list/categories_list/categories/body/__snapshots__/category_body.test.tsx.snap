@@ -55,6 +55,9 @@ Object {
                   },
                   false,
                   undefined,
+                  Object {
+                    "minHeight": 40,
+                  },
                 ]
               }
               testID="category.test_category.channel_list_item.channel.collapsed.false"

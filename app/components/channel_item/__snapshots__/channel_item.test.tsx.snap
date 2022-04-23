@@ -48,6 +48,9 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
           },
           false,
           undefined,
+          Object {
+            "minHeight": 40,
+          },
         ]
       }
       testID="channel_list_item.hello.collapsed.false"

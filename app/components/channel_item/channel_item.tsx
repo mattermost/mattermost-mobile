@@ -133,23 +133,25 @@ const ChannelListItem = ({
 
     const shouldCollapse = (collapsed && !isUnread) && !isActive;
     const sharedValue = useSharedValue(shouldCollapse);
+    const height = useMemo(() => {
+        let h = 40;
+        if (isInfo) {
+            h = (teamDisplayName && !isTablet) ? 58 : 44;
+        }
+        return h;
+    }, [teamDisplayName, isInfo, isTablet]);
 
     useEffect(() => {
         sharedValue.value = shouldCollapse;
     }, [shouldCollapse]);
 
     const animatedStyle = useAnimatedStyle(() => {
-        let height = 40;
-        if (isInfo) {
-            height = (teamDisplayName && !isTablet) ? 58 : 44;
-        }
-
         return {
             marginVertical: withTiming(sharedValue.value ? 0 : 2, {duration: 500}),
             height: withTiming(sharedValue.value ? 0 : height, {duration: 500}),
             opacity: withTiming(sharedValue.value ? 0 : 1, {duration: 500, easing: Easing.inOut(Easing.exp)}),
         };
-    }, [teamDisplayName, isTablet, isInfo]);
+    }, [teamDisplayName, isTablet, isInfo, height]);
 
     const switchChannels = useCallback(() => {
         if (myChannel) {
@@ -177,6 +179,14 @@ const ChannelListItem = ({
         isInfo ? styles.textInfo : null,
     ], [isUnread, styles, isMuted, isActive, isInfo]);
 
+    const containerStyle = useMemo(() => [
+        styles.container,
+        isActive && !isInfo && styles.activeItem,
+        isInfo && styles.infoItem,
+        {minHeight: height},
+    ],
+    [height, isActive, isInfo, styles]);
+
     let displayName = channel.displayName;
     if (isOwnDirectMessage) {
         displayName = formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
@@ -191,7 +201,7 @@ const ChannelListItem = ({
             <TouchableOpacity onPress={switchChannels}>
                 <>
                     <View
-                        style={[styles.container, isActive && !isInfo && styles.activeItem, isInfo && styles.infoItem]}
+                        style={containerStyle}
                         testID={`${testID}.${channel.name}.collapsed.${collapsed && !isActive}`}
                     >
                         <View style={styles.wrapper}>
