@@ -8,12 +8,12 @@ import {AppStateStatus} from 'react-native';
 import {queryThreadsInTeam} from '@queries/servers/thread';
 import {observeTeammateNameDisplay} from '@queries/servers/user';
 
-import ThreadsList, {Tab} from './threads_list';
+import ThreadsList from './threads_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 type Props = {
-    tab: Tab;
+    tab: GlobalThreadsTab;
     teamId: string;
     forceQueryAfterAppState: AppStateStatus;
 } & WithDatabaseArgs;

@@ -8,18 +8,16 @@ import {updateTeamThreadsAsRead} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-export type Tab = 'all' | 'unreads';
-
 export type Props = {
-    setTab: (tab: Tab) => void;
-    tab: Tab;
+    setTab: (tab: GlobalThreadsTab) => void;
+    tab: GlobalThreadsTab;
     teamId: string;
     testID: string;
-    theme: Theme;
     unreadsCount: number;
 };
 
@@ -78,7 +76,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const Header = ({setTab, tab, teamId, testID, theme, unreadsCount}: Props) => {
+const Header = ({setTab, tab, teamId, testID, unreadsCount}: Props) => {
+    const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
     const serverUrl = useServerUrl();

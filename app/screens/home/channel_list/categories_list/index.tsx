@@ -32,7 +32,7 @@ type ChannelListProps = {
     isCRTEnabled?: boolean;
     isTablet: boolean;
     teamsCount: number;
-}
+};
 
 const getTabletWidth = (teamsCount: number) => {
     return TABLET_SIDEBAR_WIDTH - (teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0);

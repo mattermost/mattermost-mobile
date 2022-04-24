@@ -19,7 +19,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         currentChannelId: observeCurrentChannelId(database),
         unreadsAndMentions: currentTeamId.pipe(
             switchMap(
-                ([teamId]) => observeUnreadsAndMentionsInTeam(database, teamId),
+                (teamId) => observeUnreadsAndMentionsInTeam(database, teamId),
             ),
         ),
     };

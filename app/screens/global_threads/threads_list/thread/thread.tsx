@@ -10,6 +10,7 @@ import FormattedText from '@components/formatted_text';
 import FriendlyDate from '@components/friendly_date';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
@@ -30,7 +31,6 @@ type Props = {
     post: PostModel;
     teammateNameDisplay: string;
     testID: string;
-    theme: Theme;
     thread: ThreadModel;
 };
 
@@ -120,9 +120,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Thread = ({author, channel, post, teammateNameDisplay, testID, theme, thread}: Props) => {
+const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Props) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
+    const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
@@ -182,7 +183,9 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, theme, thre
             <Text
                 style={styles.threadStarter}
                 numberOfLines={1}
-            >{threadStarterName}</Text>
+            >
+                {threadStarterName}
+            </Text>
         );
         postBody = (
             <Text
@@ -214,7 +217,9 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, theme, thre
                                     <Text
                                         style={styles.channelName}
                                         numberOfLines={1}
-                                    >{channel?.displayName}</Text>
+                                    >
+                                        {channel?.displayName}
+                                    </Text>
                                 </View>
                             )}
                         </View>
@@ -228,7 +233,6 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, theme, thre
                         author={author}
                         testID={`${testIDPrefix}.footer`}
                         thread={thread}
-                        theme={theme}
                     />
                 </View>
             </View>

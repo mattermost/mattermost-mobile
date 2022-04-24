@@ -15,8 +15,6 @@ import {popTopScreen} from '@screens/navigation';
 
 import ThreadsList from './threads_list';
 
-import type {Tab} from './threads_list/threads_list';
-
 type Props = {
     componentId?: string;
     currentTeamId: string;
@@ -40,11 +38,11 @@ const GlobalThreads = ({componentId, currentTeamId}: Props) => {
     const theme = useTheme();
     const defaultHeight = useDefaultHeaderHeight();
 
-    const [tab, setTab] = useState<Tab>('all');
+    const [tab, setTab] = useState<GlobalThreadsTab>('all');
 
     const containerStyle = useMemo(() => {
         const marginTop = defaultHeight + insets.top;
-        return [styles.flex, {marginTop}];
+        return {flex: 1, marginTop};
     }, [defaultHeight, insets.top]);
 
     const onBackPress = useCallback(() => {

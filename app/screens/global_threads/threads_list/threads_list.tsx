@@ -11,17 +11,15 @@ import {General} from '@constants';
 
 import EmptyState from './empty_state';
 import EndOfList from './end_of_list';
-import Header, {Tab} from './header';
+import Header from './header';
 import Thread from './thread';
 
 import type ThreadModel from '@typings/database/models/servers/thread';
 
-export type {Tab};
-
 export type Props = {
-    setTab: (tab: Tab) => void;
+    setTab: (tab: GlobalThreadsTab) => void;
     serverUrl: string;
-    tab: Tab;
+    tab: GlobalThreadsTab;
     teamId: string;
     teammateNameDisplay: string;
     testID: string;
@@ -60,7 +58,7 @@ const ThreadsList = ({
     const [endReached, setEndReached] = useState(false);
 
     const noThreads = !threads?.length;
-    const lastThread = threads?.length ? threads[threads.length - 1] : null;
+    const lastThread = threads?.length > 0 ? threads[threads.length - 1] : null;
 
     useEffect(() => {
         // this is to be called only when there are no threads
@@ -136,7 +134,6 @@ const ThreadsList = ({
             testID={testID}
             teammateNameDisplay={teammateNameDisplay}
             thread={item}
-            theme={theme}
         />
     ), [teammateNameDisplay, testID, theme]);
 
@@ -147,7 +144,6 @@ const ThreadsList = ({
                 tab={tab}
                 teamId={teamId}
                 testID={testID}
-                theme={theme}
                 unreadsCount={unreadsCount}
             />
             <FlatList

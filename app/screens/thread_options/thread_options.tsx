@@ -63,11 +63,8 @@ const ThreadOptions = ({
     useEffect(() => {
         const unsubscribe = Navigation.events().registerComponentListener({
             navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
-                switch (buttonId) {
-                    case 'close-thread-options': {
-                        dismissModal({componentId});
-                        break;
-                    }
+                if (buttonId === 'close-thread-options') {
+                    dismissModal({componentId});
                 }
             },
         }, componentId);

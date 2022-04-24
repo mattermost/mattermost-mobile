@@ -6,6 +6,7 @@ import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import UserAvatarsStack from '@components/user_avatars_stack';
+import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -17,7 +18,6 @@ export type Props = {
     participants: UserModel[];
     testID: string;
     thread: ThreadModel;
-    theme: Theme;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -50,7 +50,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const ThreadFooter = ({author, participants, testID, theme, thread}: Props) => {
+const ThreadFooter = ({author, participants, testID, thread}: Props) => {
+    const theme = useTheme();
     const style = getStyleSheet(theme);
 
     let repliesComponent;
