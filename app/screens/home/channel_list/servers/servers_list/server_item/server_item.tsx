@@ -208,7 +208,7 @@ const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
         }
         const data = await fetchConfigAndLicense(server.url, true);
         if (data.error) {
-            alertServerError(intl, result.error as ClientErrorProps);
+            alertServerError(intl, data.error as ClientErrorProps);
             setSwitching(false);
             return;
         }
