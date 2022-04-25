@@ -13,7 +13,7 @@ import {typography} from '@utils/typography';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 
-export type Props = {
+type Props = {
     author?: UserModel;
     participants: UserModel[];
     testID: string;
@@ -30,10 +30,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         avatarsContainer: {
             marginRight: 12,
             paddingVertical: 8,
-        },
-        replyIconContainer: {
-            top: -1,
-            marginRight: 5,
         },
         replies: {
             alignSelf: 'center',

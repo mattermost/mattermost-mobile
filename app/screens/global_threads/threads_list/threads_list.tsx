@@ -16,7 +16,7 @@ import Thread from './thread';
 
 import type ThreadModel from '@typings/database/models/servers/thread';
 
-export type Props = {
+type Props = {
     setTab: (tab: GlobalThreadsTab) => void;
     serverUrl: string;
     tab: GlobalThreadsTab;

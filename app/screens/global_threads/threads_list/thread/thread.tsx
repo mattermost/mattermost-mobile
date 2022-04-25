@@ -187,14 +187,16 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
                 {threadStarterName}
             </Text>
         );
-        postBody = (
-            <Text
-                style={styles.message}
-                numberOfLines={2}
-            >
-                {post?.message}
-            </Text>
-        );
+        if (post?.message) {
+            postBody = (
+                <Text
+                    style={styles.message}
+                    numberOfLines={2}
+                >
+                    {post?.message}
+                </Text>
+            );
+        }
     }
 
     return (
