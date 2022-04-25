@@ -15,11 +15,12 @@ type Props = {
     hiddenChannelIds: Set<string>;
     category: CategoryModel;
     limit: number;
+    onChannelSwitch: (channelId: string) => void;
 };
 
 const extractKey = (item: ChannelModel) => item.id;
 
-const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit}: Props) => {
+const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChannelSwitch}: Props) => {
     const ids = useMemo(() => {
         let filteredChannels = sortedChannels;
 
@@ -40,9 +41,10 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit}: Props
                 channel={item}
                 collapsed={category.collapsed}
                 testID={`category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_list_item`}
+                onPress={onChannelSwitch}
             />
         );
-    }, [category.collapsed]);
+    }, [category.collapsed, onChannelSwitch]);
 
     return (
         <FlatList

@@ -40,6 +40,26 @@ describe('components/channel_list/categories/body/channel_item', () => {
                 currentUserId={'id'}
                 testID='channel_list_item'
                 isVisible={true}
+                onPress={() => undefined}
+            />,
+        );
+
+        expect(wrapper.toJSON()).toMatchSnapshot();
+    });
+
+    it('should match snapshot when it has a draft', () => {
+        const wrapper = renderWithIntlAndTheme(
+            <ChannelItem
+                channel={{displayName: 'Hello!', type: 'G', shared: false, name: 'hello', deleteAt: 0} as ChannelModel}
+                hasDraft={true}
+                isActive={false}
+                myChannel={myChannel}
+                isMuted={false}
+                collapsed={false}
+                currentUserId={'id'}
+                testID='channel_list_item'
+                isVisible={true}
+                onPress={() => undefined}
             />,
         );
 

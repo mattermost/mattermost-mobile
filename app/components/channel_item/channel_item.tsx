@@ -6,11 +6,9 @@ import {useIntl} from 'react-intl';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
-import {switchToChannelById} from '@actions/remote/channel';
 import Badge from '@components/badge';
 import ChannelIcon from '@components/channel_icon';
 import {General} from '@constants';
-import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -32,7 +30,7 @@ type Props = {
     isMuted: boolean;
     isVisible: boolean;
     myChannel?: MyChannelModel;
-    onPress?: (channelId: string) => void;
+    onPress: (channelId: string) => void;
     teamDisplayName?: string;
     testID?: string;
 }
@@ -123,15 +121,11 @@ const ChannelListItem = ({
     const theme = useTheme();
     const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
-    const serverUrl = useServerUrl();
-
-    const teammateId = (channel.type === General.DM_CHANNEL) ? getUserIdFromChannelName(currentUserId, channel.name) : undefined;
-    const isOwnDirectMessage = (channel.type === General.DM_CHANNEL) && currentUserId === teammateId;
 
     // Make it brighter if it's not muted, and highlighted or has unreads
-    const isUnread = !isMuted && (myChannel && (myChannel.isUnread || myChannel.mentionsCount > 0));
+    const isBright = !isMuted && (myChannel && (myChannel.isUnread || myChannel.mentionsCount > 0));
 
-    const shouldCollapse = (collapsed && !isUnread) && !isActive;
+    const shouldCollapse = (collapsed && !isBright) && !isActive;
     const sharedValue = useSharedValue(shouldCollapse);
     const height = useMemo(() => {
         let h = 40;
@@ -151,33 +145,27 @@ const ChannelListItem = ({
             height: withTiming(sharedValue.value ? 0 : height, {duration: 500}),
             opacity: withTiming(sharedValue.value ? 0 : 1, {duration: 500, easing: Easing.inOut(Easing.exp)}),
         };
-    }, [teamDisplayName, isTablet, isInfo, height]);
+    }, [height]);
 
-    const switchChannels = useCallback(() => {
-        if (myChannel) {
-            if (onPress) {
-                onPress(myChannel.id);
-            } else {
-                switchToChannelById(serverUrl, myChannel.id);
-            }
-        }
-    }, [myChannel?.id, serverUrl]);
+    const handleOnPress = useCallback(() => {
+        onPress(myChannel?.id || channel.id);
+    }, [channel.id, myChannel?.id]);
 
     const membersCount = useMemo(() => {
         if (channel.type === General.GM_CHANNEL) {
-            return channel.displayName.split(',').length;
+            return channel.name.split(',').length;
         }
         return 0;
-    }, [channel.type, channel.displayName]);
+    }, [channel.type, channel.name]);
 
     const textStyles = useMemo(() => [
-        isUnread ? textStyle.bright : textStyle.regular,
+        isBright ? textStyle.bright : textStyle.regular,
         styles.text,
-        isUnread && styles.highlight,
+        isBright && styles.highlight,
         isMuted && styles.muted,
         isActive && !isInfo ? styles.textActive : null,
         isInfo ? styles.textInfo : null,
-    ], [isUnread, styles, isMuted, isActive, isInfo]);
+    ], [isBright, styles, isMuted, isActive, isInfo]);
 
     const containerStyle = useMemo(() => [
         styles.container,
@@ -187,18 +175,21 @@ const ChannelListItem = ({
     ],
     [height, isActive, isInfo, styles]);
 
+    if ((channel.deleteAt > 0 && !isActive) || !myChannel || !isVisible) {
+        return null;
+    }
+
+    const teammateId = (channel.type === General.DM_CHANNEL) ? getUserIdFromChannelName(currentUserId, channel.name) : undefined;
+    const isOwnDirectMessage = (channel.type === General.DM_CHANNEL) && currentUserId === teammateId;
+
     let displayName = channel.displayName;
     if (isOwnDirectMessage) {
         displayName = formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
     }
 
-    if ((channel.deleteAt > 0 && !isActive) || !myChannel || !isVisible) {
-        return null;
-    }
-
     return (
         <Animated.View style={animatedStyle}>
-            <TouchableOpacity onPress={switchChannels}>
+            <TouchableOpacity onPress={handleOnPress}>
                 <>
                     <View
                         style={containerStyle}
@@ -209,7 +200,7 @@ const ChannelListItem = ({
                                 hasDraft={hasDraft}
                                 isActive={isInfo ? false : isActive}
                                 isInfo={isInfo}
-                                isUnread={isUnread}
+                                isUnread={isBright}
                                 isArchived={channel.deleteAt > 0}
                                 membersCount={membersCount}
                                 name={channel.name}

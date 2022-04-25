@@ -108,28 +108,26 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
         setValue(props.defaultValue || value || '');
     }, [props.defaultValue]);
 
-    const clearIcon = useMemo(() => {
-        return (
-            <CompassIcon
-                color={changeOpacity(props.clearIconColor || theme.centerChannelColor, Platform.select({android: 0.56, default: 0.72}))}
-                name={Platform.select({android: 'close', default: 'close-circle'})}
-                onPress={searchRef.current?.clear}
-                size={Platform.select({android: 24, default: 18})}
-                testID={searchClearButtonTestID}
-            />
-        );
-    }, [searchRef.current?.clear, theme]);
+    const clearIcon = (
+        <CompassIcon
+            color={changeOpacity(props.clearIconColor || theme.centerChannelColor, Platform.select({android: 0.56, default: 0.72}))}
+            name={Platform.select({android: 'close', default: 'close-circle'})}
+            onPress={searchRef.current?.clear}
+            size={Platform.select({android: 24, default: 18})}
+            testID={searchClearButtonTestID}
+        />
+    );
 
-    const searchIcon = useMemo(() => (
+    const searchIcon = (
         <CompassIcon
             color={changeOpacity(props.searchIconColor || theme.centerChannelColor, Platform.select({android: 0.56, default: 0.72}))}
             name='magnify'
             onPress={searchRef.current?.focus}
             size={24}
         />
-    ), [searchRef.current?.focus, theme]);
+    );
 
-    const cancelIcon = useMemo(() => (
+    const cancelIcon = (
         <CompassIcon
             color={changeOpacity(props.cancelButtonProps?.color || theme.centerChannelColor, Platform.select({android: 0.56, default: 0.72}))}
             name='arrow-left'
@@ -137,7 +135,7 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
             size={24}
             testID={searchCancelButtonTestID}
         />
-    ), [onCancel, theme]);
+    );
 
     useImperativeHandle(ref, () => ({
         blur: () => {
