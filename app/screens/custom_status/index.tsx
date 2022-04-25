@@ -196,7 +196,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     status.duration = duration;
                     status.expires_at = expiresAt;
                 }
-                const {error} = await updateCustomStatus(serverUrl, currentUser, status);
+                const {error} = await updateCustomStatus(serverUrl, status);
                 if (error) {
                     DeviceEventEmitter.emit(SET_CUSTOM_STATUS_FAILURE);
                     return;

@@ -19,6 +19,7 @@ export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
 export const EDIT_POST = 'EditPost';
 export const EDIT_PROFILE = 'EditProfile';
 export const EDIT_SERVER = 'EditServer';
+export const FIND_CHANNELS = 'FindChannels';
 export const FORGOT_PASSWORD = 'ForgotPassword';
 export const GALLERY = 'Gallery';
 export const HOME = 'Home';
@@ -59,6 +60,7 @@ export default {
     EDIT_POST,
     EDIT_PROFILE,
     EDIT_SERVER,
+    FIND_CHANNELS,
     FORGOT_PASSWORD,
     GALLERY,
     HOME,
@@ -85,5 +87,6 @@ export const MODAL_SCREENS_WITHOUT_BACK = [
     CREATE_DIRECT_MESSAGE,
     EMOJI_PICKER,
     EDIT_POST,
+    FIND_CHANNELS,
     PERMALINK,
 ];

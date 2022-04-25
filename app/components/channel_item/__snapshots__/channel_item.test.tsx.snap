@@ -1,0 +1,286 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/channel_list/categories/body/channel_item should match snapshot 1`] = `
+<View
+  animatedStyle={
+    Object {
+      "value": Object {
+        "height": 40,
+        "marginVertical": 2,
+        "opacity": 1,
+      },
+    }
+  }
+  collapsable={false}
+  style={
+    Object {
+      "height": 40,
+      "marginVertical": 2,
+      "opacity": 1,
+    }
+  }
+>
+  <View
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onClick={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      Object {
+        "opacity": 1,
+      }
+    }
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "flexDirection": "row",
+            "minHeight": 40,
+            "paddingHorizontal": 20,
+          },
+          false,
+          undefined,
+          Object {
+            "minHeight": 40,
+          },
+        ]
+      }
+      testID="channel_list_item.hello.collapsed.false"
+    >
+      <View
+        style={
+          Object {
+            "flex": 1,
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            Array [
+              Object {
+                "alignItems": "center",
+                "justifyContent": "center",
+              },
+              Object {
+                "height": 24,
+                "width": 24,
+              },
+              undefined,
+              undefined,
+            ]
+          }
+        >
+          <View
+            style={
+              Array [
+                Object {
+                  "alignItems": "center",
+                  "backgroundColor": "rgba(255,255,255,0.16)",
+                  "borderRadius": 4,
+                  "justifyContent": "center",
+                },
+                undefined,
+                undefined,
+                Object {
+                  "height": 24,
+                  "width": 24,
+                },
+              ]
+            }
+          >
+            <Text
+              style={
+                Array [
+                  Object {
+                    "color": "#ffffff",
+                    "fontFamily": "OpenSans-SemiBold",
+                    "fontSize": 12,
+                    "fontWeight": "600",
+                    "lineHeight": 16,
+                  },
+                  undefined,
+                  undefined,
+                  Object {
+                    "fontSize": 12,
+                  },
+                ]
+              }
+              testID="undefined.gm_member_count"
+            >
+              1
+            </Text>
+          </View>
+        </View>
+        <View>
+          <Text
+            ellipsizeMode="tail"
+            numberOfLines={1}
+            style={
+              Array [
+                Object {
+                  "fontFamily": "OpenSans",
+                  "fontSize": 16,
+                  "fontWeight": "400",
+                  "lineHeight": 24,
+                },
+                Object {
+                  "color": "rgba(255,255,255,0.72)",
+                  "marginTop": -1,
+                  "paddingLeft": 12,
+                },
+                false,
+                false,
+                null,
+                null,
+              ]
+            }
+            testID="channel_list_item.hello.display_name"
+          >
+            Hello!
+          </Text>
+        </View>
+      </View>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`components/channel_list/categories/body/channel_item should match snapshot when it has a draft 1`] = `
+<View
+  animatedStyle={
+    Object {
+      "value": Object {
+        "height": 40,
+        "marginVertical": 2,
+        "opacity": 1,
+      },
+    }
+  }
+  collapsable={false}
+  style={
+    Object {
+      "height": 40,
+      "marginVertical": 2,
+      "opacity": 1,
+    }
+  }
+>
+  <View
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onClick={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      Object {
+        "opacity": 1,
+      }
+    }
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "flexDirection": "row",
+            "minHeight": 40,
+            "paddingHorizontal": 20,
+          },
+          false,
+          undefined,
+          Object {
+            "minHeight": 40,
+          },
+        ]
+      }
+      testID="channel_list_item.hello.collapsed.false"
+    >
+      <View
+        style={
+          Object {
+            "flex": 1,
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            Array [
+              Object {
+                "alignItems": "center",
+                "justifyContent": "center",
+              },
+              Object {
+                "height": 24,
+                "width": 24,
+              },
+              undefined,
+              undefined,
+            ]
+          }
+        >
+          <Icon
+            name="pencil-outline"
+            style={
+              Array [
+                Object {
+                  "color": "rgba(255,255,255,0.4)",
+                },
+                undefined,
+                undefined,
+                Object {
+                  "fontSize": 24,
+                  "left": 2,
+                },
+              ]
+            }
+            testID="undefined.draft"
+          />
+        </View>
+        <View>
+          <Text
+            ellipsizeMode="tail"
+            numberOfLines={1}
+            style={
+              Array [
+                Object {
+                  "fontFamily": "OpenSans",
+                  "fontSize": 16,
+                  "fontWeight": "400",
+                  "lineHeight": 24,
+                },
+                Object {
+                  "color": "rgba(255,255,255,0.72)",
+                  "marginTop": -1,
+                  "paddingLeft": 12,
+                },
+                false,
+                false,
+                null,
+                null,
+              ]
+            }
+            testID="channel_list_item.hello.display_name"
+          >
+            Hello!
+          </Text>
+        </View>
+      </View>
+    </View>
+  </View>
+</View>
+`;

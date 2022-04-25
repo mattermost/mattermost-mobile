@@ -101,9 +101,10 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             screen = withIntl(require('@screens/edit_server').default);
             break;
         case Screens.EMOJI_PICKER:
-            screen = withServerDatabase(
-                require('@screens/emoji_picker').default,
-            );
+            screen = withServerDatabase(require('@screens/emoji_picker').default);
+            break;
+        case Screens.FIND_CHANNELS:
+            screen = withServerDatabase(require('@screens/find_channels').default);
             break;
         case Screens.FORGOT_PASSWORD:
             screen = withIntl(require('@screens/forgot_password').default);
