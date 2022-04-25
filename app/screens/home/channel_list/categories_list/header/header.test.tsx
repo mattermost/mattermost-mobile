@@ -3,10 +3,10 @@
 
 import React from 'react';
 
+import {PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import {renderWithIntl} from '@test/intl-test-helper';
 
 import Header from './header';
-import { PUSH_PROXY_STATUS_VERIFIED } from '@app/constants/push_proxy';
 
 describe('components/channel_list/header', () => {
     it('Channel List Header Component should match snapshot', () => {
