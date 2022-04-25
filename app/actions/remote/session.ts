@@ -15,7 +15,6 @@ import {getCurrentUserId, getCommonSystemValues} from '@queries/servers/system';
 import {getCSRFFromCookie} from '@utils/security';
 
 import {loginEntry} from './entry';
-import {logError} from './error';
 import {fetchDataRetentionPolicy} from './systems';
 import {autoUpdateTimezone} from './user';
 
@@ -89,7 +88,6 @@ export const getSessions = async (serverUrl: string, currentUserId: string) => {
     try {
         return await client.getSessions(currentUserId);
     } catch (e) {
-        logError(e);
         await forceLogoutIfNecessary(serverUrl, e as ClientError);
     }
 
