@@ -16,6 +16,7 @@ import ServerIcon from '@components/server_icon';
 import TutorialHighlight from '@components/tutorial_highlight';
 import TutorialSwipeLeft from '@components/tutorial_highlight/swipe_left';
 import {Events} from '@constants';
+import {PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {subscribeServerUnreadAndMentions} from '@database/subscription/unreads';
@@ -38,6 +39,7 @@ type Props = {
     isActive: boolean;
     server: ServersModel;
     tutorialWatched: boolean;
+    pushProxyStatus: string;
 }
 
 type BadgeValues = {
@@ -115,9 +117,27 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     tutorialTablet: {
         top: -80,
     },
+    nameView: {
+        flexDirection: 'row',
+        alignItems: 'baseline',
+    },
+    pushAlert: {
+        marginLeft: 7,
+    },
+    pushAlertText: {
+        color: theme.errorTextColor,
+        ...typography('Body', 75, 'Regular'),
+        marginBottom: 12,
+    },
 }));
 
-const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
+const ServerItem = ({
+    highlight,
+    isActive,
+    server,
+    tutorialWatched,
+    pushProxyStatus,
+}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -294,6 +314,16 @@ const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
     const serverItem = `server_list.server_item.${server.displayName.replace(/ /g, '_').toLocaleLowerCase()}`;
     const serverItemTestId = isActive ? `${serverItem}.active` : `${serverItem}.inactive`;
 
+    const pushAlertText = pushProxyStatus === PUSH_PROXY_STATUS_NOT_AVAILABLE ?
+        intl.formatMessage({
+            id: 'server_list.push_proxy_error',
+            defaultMessage: 'Notifications cannot be received from this server because of its configuration. Contact your system admin.',
+        }) :
+        intl.formatMessage({
+            id: 'server_list.push_proxy_unknown',
+            defaultMessage: 'Notifications could not be received from this server because of its configuration. Log out and Log in again to retry.',
+        });
+
     return (
         <>
             <Swipeable
@@ -338,7 +368,17 @@ const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
                             />
                             }
                             <View style={styles.details}>
-                                <Text style={styles.name}>{displayName}</Text>
+                                <View style={styles.nameView}>
+                                    <Text style={styles.name}>{displayName}</Text>
+                                    {pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED && (
+                                        <CompassIcon
+                                            name='alert-outline'
+                                            color={theme.errorTextColor}
+                                            size={14}
+                                            style={styles.pushAlert}
+                                        />
+                                    )}
+                                </View>
                                 <Text style={styles.url}>{removeProtocol(stripTrailingSlashes(server.url))}</Text>
                             </View>
                         </View>
@@ -354,6 +394,12 @@ const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
                     </RectButton>
                 </View>
             </Swipeable>
+            {pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED && (
+                <Text style={styles.pushAlertText}>
+                    {pushAlertText}
+                </Text>
+            )}
+
             {Boolean(database) && server.lastActiveAt > 0 &&
             <WebSocket
                 database={database}

@@ -10,11 +10,13 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import CompassIcon from '@components/compass_icon';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import {useServerDisplayName} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
+import {alertPushProxyError, alertPushProxyUnknown} from '@utils/push_proxy';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -26,6 +28,7 @@ type Props = {
     displayName: string;
     iconPad?: boolean;
     onHeaderPress?: () => void;
+    pushProxyStatus: string;
 }
 
 const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -61,9 +64,23 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.sidebarText, 0.8),
         fontSize: 18,
     },
+    pushAlert: {
+        marginLeft: 5,
+    },
+    subHeadingView: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
 }));
 
-const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, iconPad, onHeaderPress}: Props) => {
+const ChannelListHeader = ({
+    canCreateChannels,
+    canJoinChannels,
+    displayName,
+    iconPad,
+    onHeaderPress,
+    pushProxyStatus,
+}: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
     const intl = useIntl();
@@ -108,6 +125,14 @@ const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, ico
         });
     }, [intl, insets, isTablet, theme]);
 
+    const onPushAlertPress = useCallback(() => {
+        if (pushProxyStatus === PUSH_PROXY_STATUS_NOT_AVAILABLE) {
+            alertPushProxyError(intl);
+        } else {
+            alertPushProxyUnknown(intl);
+        }
+    }, [pushProxyStatus, intl]);
+
     return (
         <Animated.View style={animatedStyle}>
             {Boolean(displayName) &&
@@ -147,12 +172,28 @@ const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, ico
                 </TouchableWithFeedback>
             </View>
             }
-            <Text
-                style={styles.subHeadingStyles}
-                testID='channel_list_header.server_display_name'
-            >
-                {serverDisplayName}
-            </Text>
+            <View style={styles.subHeadingView}>
+                <Text
+                    style={styles.subHeadingStyles}
+                    testID='channel_list_header.server_display_name'
+                >
+                    {serverDisplayName}
+                </Text>
+                {(pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED) && (
+                    <TouchableWithFeedback
+                        onPress={onPushAlertPress}
+                        testID='channel_list_header.push_alert'
+                        type='opacity'
+                    >
+                        <CompassIcon
+                            name='alert-outline'
+                            color={theme.errorTextColor}
+                            size={14}
+                            style={styles.pushAlert}
+                        />
+                    </TouchableWithFeedback>
+                )}
+            </View>
         </Animated.View>
     );
 };

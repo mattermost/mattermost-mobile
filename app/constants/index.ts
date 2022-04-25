@@ -22,6 +22,7 @@ import Post from './post';
 import PostDraft from './post_draft';
 import Preferences from './preferences';
 import Profile from './profile';
+import PushProxy from './push_proxy';
 import Screens from './screens';
 import ServerErrors from './server_errors';
 import Sso from './sso';
@@ -51,6 +52,7 @@ export {
     PostDraft,
     Preferences,
     Profile,
+    PushProxy,
     Screens,
     ServerErrors,
     SupportedServer,

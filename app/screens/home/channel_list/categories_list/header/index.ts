@@ -8,6 +8,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
 import {observePermissionForTeam} from '@queries/servers/role';
+import {observePushVerificationStatus} from '@queries/servers/system';
 import {observeCurrentTeam} from '@queries/servers/team';
 import {observeCurrentUser} from '@queries/servers/user';
 
@@ -42,6 +43,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         displayName: team.pipe(
             switchMap((t) => of$(t?.displayName)),
         ),
+        pushProxyStatus: observePushVerificationStatus(database),
     };
 });
 

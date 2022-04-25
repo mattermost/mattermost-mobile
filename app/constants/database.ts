@@ -55,6 +55,7 @@ export const SYSTEM_IDENTIFIERS = {
     EXPANDED_LINKS: 'expandedLinks',
     INTEGRATION_TRIGGER_ID: 'IntegreationTriggerId',
     LICENSE: 'license',
+    PUSH_VERIFICATION_STATUS: 'pushVerificationStatus',
     RECENT_CUSTOM_STATUS: 'recentCustomStatus',
     RECENT_MENTIONS: 'recentMentions',
     RECENT_REACTIONS: 'recentReactions',

@@ -9,6 +9,7 @@ class EphemeralStore {
     visibleTab = 'Home';
     creatingChannel = false;
     creatingDMorGMTeammates: string[] = [];
+    pushProxyVerification: {[x: string]: string | undefined} = {};
 
     addNavigationComponentId = (componentId: string) => {
         this.addToNavigationComponentIdStack(componentId);

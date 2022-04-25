@@ -120,19 +120,28 @@ exports[`components/channel_list/header Channel List Header Component should mat
       />
     </View>
   </View>
-  <Text
+  <View
     style={
       Object {
-        "color": "rgba(255,255,255,0.64)",
-        "fontFamily": "OpenSans-SemiBold",
-        "fontSize": 11,
-        "fontWeight": "600",
-        "lineHeight": 16,
+        "alignItems": "center",
+        "flexDirection": "row",
       }
     }
-    testID="channel_list_header.server_display_name"
   >
-    
-  </Text>
+    <Text
+      style={
+        Object {
+          "color": "rgba(255,255,255,0.64)",
+          "fontFamily": "OpenSans-SemiBold",
+          "fontSize": 11,
+          "fontWeight": "600",
+          "lineHeight": 16,
+        }
+      }
+      testID="channel_list_header.server_display_name"
+    >
+      
+    </Text>
+  </View>
 </View>
 `;
