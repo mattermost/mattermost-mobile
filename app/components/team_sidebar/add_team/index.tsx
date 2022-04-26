@@ -65,6 +65,7 @@ export default function AddTeam({canCreateTeams, otherTeams}: Props) {
                 onPress={onPress}
                 type='opacity'
                 style={styles.touchable}
+                testID='team_sidebar.add_team.button'
             >
                 <CompassIcon
                     size={28}
