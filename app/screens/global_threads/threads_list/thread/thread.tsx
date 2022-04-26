@@ -8,6 +8,7 @@ import {Text, TouchableHighlight, View} from 'react-native';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import FormattedText from '@components/formatted_text';
 import FriendlyDate from '@components/friendly_date';
+import RemoveMarkdown from '@components/remove_markdown';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -28,7 +29,7 @@ import type UserModel from '@typings/database/models/servers/user';
 type Props = {
     author?: UserModel;
     channel?: ChannelModel;
-    post: PostModel;
+    post?: PostModel;
     teammateNameDisplay: string;
     testID: string;
     thread: ThreadModel;
@@ -127,6 +128,10 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
+    const handleMarkdownSoftBreak = useCallback(() => {
+        return '\n';
+    }, []);
+
     const showThread = useCallback(preventDoubleTap(() => {
         fetchAndSwitchToThread(serverUrl, thread.id);
     }), [serverUrl, thread.id]);
@@ -148,7 +153,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
     const needBadge = thread.unreadMentions || thread.unreadReplies;
     let badgeComponent;
     if (needBadge) {
-        if (thread.unreadMentions && thread.unreadMentions > 0) {
+        if (thread.unreadMentions) {
             badgeComponent = (
                 <View
                     style={styles.mentionBadge}
@@ -157,7 +162,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
                     <Text style={styles.mentionBadgeText}>{thread.unreadMentions > 99 ? '99+' : thread.unreadMentions}</Text>
                 </View>
             );
-        } else if (thread.unreadReplies && thread.unreadReplies > 0) {
+        } else if (thread.unreadReplies) {
             badgeComponent = (
                 <View
                     style={styles.unreadDot}
@@ -169,7 +174,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
 
     let name;
     let postBody;
-    if (post.deleteAt > 0) {
+    if (post?.deleteAt && post.deleteAt > 0) {
         name = (
             <FormattedText
                 id='threads.deleted'
@@ -193,7 +198,10 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
                     style={styles.message}
                     numberOfLines={2}
                 >
-                    {post?.message}
+                    <RemoveMarkdown
+                        renderSoftBreak={handleMarkdownSoftBreak}
+                        value={post.message}
+                    />
                 </Text>
             );
         }
@@ -214,7 +222,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
                     <View style={styles.header}>
                         <View style={styles.headerInfoContainer}>
                             {name}
-                            {threadStarterName !== channel?.displayName && (
+                            {channel && threadStarterName !== channel?.displayName && (
                                 <View style={styles.channelNameContainer}>
                                     <Text
                                         style={styles.channelName}

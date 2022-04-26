@@ -13,23 +13,22 @@ type SelectedView = {
     Component: any;
 }
 
-const TabletView: Record<string, React.ReactNode> = {
+const ComponentsList: Record<string, React.ReactNode> = {
     [Screens.CHANNEL]: Channel,
     [Screens.GLOBAL_THREADS]: GlobalThreads,
 };
 
-const ChannelTabletView = () => {
+const AdditionalTabletView = () => {
     const [selected, setSelected] = useState<SelectedView>();
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, (id: string) => {
-            const component = TabletView[id];
+            const component = ComponentsList[id];
             if (component) {
-                const tabletView = {
+                setSelected({
                     Component: component,
                     id,
-                };
-                setSelected(tabletView);
+                });
             }
         });
 
@@ -43,4 +42,4 @@ const ChannelTabletView = () => {
     return React.createElement(selected.Component, {componentId: selected.id, isTablet: true});
 };
 
-export default ChannelTabletView;
+export default AdditionalTabletView;

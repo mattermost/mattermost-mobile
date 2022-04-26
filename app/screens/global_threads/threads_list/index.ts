@@ -5,6 +5,7 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {AppStateStatus} from 'react-native';
 
+import {observeCurrentTeamId} from '@queries/servers/system';
 import {queryThreadsInTeam} from '@queries/servers/thread';
 import {observeTeammateNameDisplay} from '@queries/servers/user';
 
@@ -18,6 +19,10 @@ type Props = {
     forceQueryAfterAppState: AppStateStatus;
 } & WithDatabaseArgs;
 
+const withTeamId = withObservables([], ({database}: WithDatabaseArgs) => ({
+    teamId: observeCurrentTeamId(database),
+}));
+
 const enhanced = withObservables(['tab', 'teamId', 'forceQueryAfterAppState'], ({database, tab, teamId}: Props) => {
     const getOnlyUnreads = tab !== 'all';
 
@@ -28,4 +33,4 @@ const enhanced = withObservables(['tab', 'teamId', 'forceQueryAfterAppState'], (
     };
 });
 
-export default withDatabase(enhanced(ThreadsList));
+export default withDatabase(withTeamId(enhanced(ThreadsList)));

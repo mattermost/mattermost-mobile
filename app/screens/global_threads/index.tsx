@@ -7,8 +7,6 @@ import {Keyboard, StyleSheet, View} from 'react-native';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import NavigationHeader from '@components/navigation_header';
-import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import {useAppState, useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {popTopScreen} from '@screens/navigation';
@@ -17,7 +15,6 @@ import ThreadsList from './threads_list';
 
 type Props = {
     componentId?: string;
-    currentTeamId: string;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -28,14 +25,12 @@ const styles = StyleSheet.create({
     },
 });
 
-const GlobalThreads = ({componentId, currentTeamId}: Props) => {
+const GlobalThreads = ({componentId}: Props) => {
     const appState = useAppState();
     const intl = useIntl();
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
-    const serverUrl = useServerUrl();
 
-    const theme = useTheme();
     const defaultHeight = useDefaultHeaderHeight();
 
     const [tab, setTab] = useState<GlobalThreadsTab>('all');
@@ -72,11 +67,8 @@ const GlobalThreads = ({componentId, currentTeamId}: Props) => {
                 <ThreadsList
                     forceQueryAfterAppState={appState}
                     setTab={setTab}
-                    serverUrl={serverUrl}
                     tab={tab}
-                    teamId={currentTeamId}
                     testID={'global_threads.list'}
-                    theme={theme}
                 />
             </View>
         </SafeAreaView>

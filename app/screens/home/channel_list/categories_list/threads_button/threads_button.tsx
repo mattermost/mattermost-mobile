@@ -6,6 +6,10 @@ import {TouchableOpacity, View} from 'react-native';
 
 import {switchToGlobalThreads} from '@actions/local/thread';
 import Badge from '@components/badge';
+import {
+    getStyleSheet as getChannelItemStyleSheet,
+    textStyle as channelItemTextStyle,
+} from '@components/channel_item/channel_item';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
@@ -13,37 +17,18 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    container: {
-        display: 'flex',
-        flexDirection: 'row',
-        paddingLeft: 3,
-    },
-    badge: {
-        backgroundColor: theme.mentionBg,
-        position: 'relative',
-        left: 0,
+    baseContainer: {
+        marginLeft: -18,
+        marginRight: -20,
     },
     icon: {
         color: changeOpacity(theme.sidebarText, 0.5),
         fontSize: 24,
     },
-    iconHighlight: {
+    iconActive: {
         color: theme.sidebarText,
-    },
-    textContainer: {
-        flex: 1,
-    },
-    text: {
-        color: changeOpacity(theme.sidebarText, 0.72),
-        paddingLeft: 9,
-        ...typography('Body', 200, 'Regular'),
-    },
-    textHighlight: {
-        color: theme.sidebarText,
-        ...typography('Body', 200, 'SemiBold'),
     },
 }));
 
@@ -60,48 +45,56 @@ const ThreadsButton = ({currentChannelId, unreadsAndMentions}: Props) => {
     const serverUrl = useServerUrl();
 
     const theme = useTheme();
-    const styles = getStyleSheet(theme);
+    const styles = getChannelItemStyleSheet(theme);
+    const customStyles = getStyleSheet(theme);
 
     const handlePress = useCallback(preventDoubleTap(() => {
         switchToGlobalThreads(serverUrl);
     }), [serverUrl]);
 
     const {unreads, mentions} = unreadsAndMentions;
+    const isActive = isTablet && !currentChannelId;
 
-    const [iconStyle, textStyle] = useMemo(() => {
-        const icon = [styles.icon];
-        const text = [styles.text];
+    const [containerStyle, iconStyle, textStyle] = useMemo(() => {
+        const container = [
+            styles.container,
+            isActive ? styles.activeItem : undefined,
+        ];
 
-        // Highlight the menu if:
-        // 1. There are unreads
-        // 2. No channel is selected and it's a tablet, which means thread screen is selected
-        if (unreads || (isTablet && !currentChannelId)) {
-            icon.push(styles.iconHighlight);
-            text.push(styles.textHighlight);
-        }
-        return [icon, text];
-    }, [currentChannelId, isTablet, styles, unreads]);
+        const icon = [
+            customStyles.icon,
+            isActive || unreads ? customStyles.iconActive : undefined,
+        ];
+
+        const text = [
+            unreads ? channelItemTextStyle.bright : channelItemTextStyle.regular,
+            styles.text,
+            unreads ? styles.highlight : undefined,
+            isActive ? styles.textActive : undefined,
+        ];
+
+        return [container, icon, text];
+    }, [customStyles, isActive, styles, unreads]);
 
     return (
-        <TouchableOpacity onPress={handlePress} >
-            <View style={styles.container}>
-                <CompassIcon
-                    name='message-text-outline'
-                    style={iconStyle}
-                />
-                <View style={styles.textContainer}>
+        <TouchableOpacity onPress={handlePress}>
+            <View style={customStyles.baseContainer}>
+                <View style={containerStyle}>
+                    <CompassIcon
+                        name='message-text-outline'
+                        style={iconStyle}
+                    />
                     <FormattedText
                         id='threads'
                         defaultMessage='Threads'
                         style={textStyle}
                     />
+                    <Badge
+                        value={mentions}
+                        style={styles.badge}
+                        visible={mentions > 0}
+                    />
                 </View>
-                <Badge
-                    borderColor='transparent'
-                    value={mentions}
-                    style={styles.badge}
-                    visible={mentions > 0}
-                />
             </View>
         </TouchableOpacity>
     );

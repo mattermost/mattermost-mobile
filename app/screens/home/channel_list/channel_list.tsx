@@ -13,8 +13,8 @@ import TeamSidebar from '@components/team_sidebar';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 
+import AdditionalTabletView from './additional_tablet_view';
 import CategoriesList from './categories_list';
-import ChannelTabletView from './channel_tablet_view';
 import Servers from './servers';
 
 type ChannelProps = {
@@ -94,7 +94,7 @@ const ChannelListScreen = (props: ChannelProps) => {
                         currentTeamId={props.currentTeamId}
                     />
                     {isTablet && Boolean(props.currentTeamId) &&
-                        <ChannelTabletView/>
+                        <AdditionalTabletView/>
                     }
                 </Animated.View>
             </SafeAreaView>

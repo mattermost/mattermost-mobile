@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState, useRef} from 'react';
-import {useIntl} from 'react-intl';
-import {FlatList, Platform, StyleSheet} from 'react-native';
+import {FlatList, StyleSheet} from 'react-native';
 
 import {fetchThreads} from '@actions/remote/thread';
 import Loading from '@components/loading';
 import {General} from '@constants';
+import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 
 import EmptyState from './empty_state';
 import EndOfList from './end_of_list';
@@ -18,13 +19,11 @@ import type ThreadModel from '@typings/database/models/servers/thread';
 
 type Props = {
     setTab: (tab: GlobalThreadsTab) => void;
-    serverUrl: string;
     tab: GlobalThreadsTab;
     teamId: string;
     teammateNameDisplay: string;
     testID: string;
     threads: ThreadModel[];
-    theme: Theme;
     unreadsCount: number;
 };
 
@@ -44,16 +43,16 @@ const styles = StyleSheet.create({
 const ThreadsList = ({
     setTab,
     tab,
-    serverUrl,
     teamId,
     teammateNameDisplay,
     testID,
-    theme,
     threads,
     unreadsCount,
 }: Props) => {
-    const intl = useIntl();
-    const hasCalled = useRef(false);
+    const serverUrl = useServerUrl();
+    const theme = useTheme();
+
+    const hasFetchedOnce = useRef(false);
     const [isLoading, setIsLoading] = useState(false);
     const [endReached, setEndReached] = useState(false);
 
@@ -62,14 +61,14 @@ const ThreadsList = ({
 
     useEffect(() => {
         // this is to be called only when there are no threads
-        if (tab === 'all' && noThreads && !hasCalled.current) {
+        if (tab === 'all' && noThreads && !hasFetchedOnce.current) {
             setIsLoading(true);
             fetchThreads(serverUrl, teamId).finally(() => {
-                hasCalled.current = true;
+                hasFetchedOnce.current = true;
                 setIsLoading(false);
             });
         }
-    }, [noThreads]);
+    }, [noThreads, tab]);
 
     const listEmptyComponent = useMemo(() => {
         if (isLoading) {
@@ -82,11 +81,10 @@ const ThreadsList = ({
         }
         return (
             <EmptyState
-                intl={intl}
                 isUnreads={tab === 'unreads'}
             />
         );
-    }, [isLoading, intl, theme, tab]);
+    }, [isLoading, theme, tab]);
 
     const listFooterComponent = useMemo(() => {
         if (tab === 'unreads' || !threads.length) {
@@ -107,7 +105,7 @@ const ThreadsList = ({
         }
 
         return null;
-    }, [isLoading, intl, tab, theme, endReached]);
+    }, [isLoading, tab, theme, endReached]);
 
     const handleEndReached = useCallback(() => {
         if (!lastThread || tab === 'unreads' || endReached) {
@@ -135,7 +133,7 @@ const ThreadsList = ({
             teammateNameDisplay={teammateNameDisplay}
             thread={item}
         />
-    ), [teammateNameDisplay, testID, theme]);
+    ), [teammateNameDisplay, testID]);
 
     return (
         <>
@@ -151,7 +149,7 @@ const ThreadsList = ({
                 data={threads}
                 ListEmptyComponent={listEmptyComponent}
                 ListFooterComponent={listFooterComponent}
-                maxToRenderPerBatch={Platform.select({android: 5})}
+                maxToRenderPerBatch={10}
                 onEndReached={handleEndReached}
                 removeClippedSubviews={true}
                 renderItem={renderItem}

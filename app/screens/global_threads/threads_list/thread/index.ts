@@ -4,25 +4,26 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
-import {catchError, switchMap} from 'rxjs/operators';
+import {switchMap} from 'rxjs/operators';
+
+import {observeChannel} from '@queries/servers/channel';
+import {observeUser} from '@queries/servers/user';
 
 import Thread from './thread';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ThreadModel from '@typings/database/models/servers/thread';
 
-const enhanced = withObservables([], ({thread}: WithDatabaseArgs & {thread: ThreadModel}) => {
+const enhanced = withObservables([], ({database, thread}: WithDatabaseArgs & {thread: ThreadModel}) => {
     const post = thread.post.observe();
     return {
         post,
         thread: thread.observe(),
         channel: post.pipe(
-            switchMap((row) => row!.channel.observe()),
-            catchError(() => of$(undefined)),
+            switchMap((p) => (p?.channelId ? observeChannel(database, p.channelId) : of$(undefined))),
         ),
         author: post.pipe(
-            switchMap((row) => row!.author.observe()),
-            catchError(() => of$(undefined)),
+            switchMap((u) => (u?.userId ? observeUser(database, u.userId) : of$(undefined))),
         ),
     };
 });

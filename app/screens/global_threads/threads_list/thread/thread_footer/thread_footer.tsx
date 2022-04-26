@@ -88,7 +88,7 @@ const ThreadFooter = ({author, participants, testID, thread}: Props) => {
     }, [participants, author]);
 
     let userAvatarsStack;
-    if (participantsList.length) {
+    if (author && participantsList.length) {
         userAvatarsStack = (
             <UserAvatarsStack
                 style={style.avatarsContainer}

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
+import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
@@ -8,10 +9,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmptyStateIllustration from './illustrations/empty_state';
 
-import type {IntlShape} from 'react-intl';
-
 type Props = {
-    intl: IntlShape;
     isUnreads: boolean;
 }
 
@@ -42,7 +40,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-function EmptyState({intl, isUnreads}: Props) {
+function EmptyState({isUnreads}: Props) {
+    const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
     let title;

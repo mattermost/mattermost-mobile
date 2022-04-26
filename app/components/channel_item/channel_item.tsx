@@ -35,7 +35,7 @@ type Props = {
     testID?: string;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flexDirection: 'row',
         paddingHorizontal: 20,
@@ -108,7 +108,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const textStyle = StyleSheet.create({
+export const textStyle = StyleSheet.create({
     bright: typography('Body', 200, 'SemiBold'),
     regular: typography('Body', 200, 'Regular'),
 });

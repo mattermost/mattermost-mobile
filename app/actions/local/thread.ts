@@ -170,7 +170,7 @@ export async function createThreadFromNewPost(serverUrl: string, post: Post, pre
 }
 
 // On receiving threads, Along with the "threads" & "thread participants", extract and save "posts" & "users"
-export async function processReceivedThreads(serverUrl: string, threads: Thread[], teamId: string, prepareRecordsOnly = false, loadedInGlobalThreads = false) {
+export async function processReceivedThreads(serverUrl: string, threads: Thread[], teamId: string, loadedInGlobalThreads = false, prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};

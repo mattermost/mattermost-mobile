@@ -29,7 +29,7 @@ const {
     TEAM_CHANNEL_HISTORY,
 } = DatabaseConstants.MM_TABLES.SERVER;
 
-// Saves channels & GLOBAL_THREADS to team history
+// Saves channels to team history & excludes & GLOBAL_THREADS from it
 export const addChannelToTeamHistory = async (operator: ServerDataOperator, teamId: string, channelId: string, prepareRecordsOnly = false) => {
     let tch: TeamChannelHistory|undefined;
 
