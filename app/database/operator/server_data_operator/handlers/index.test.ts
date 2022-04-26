@@ -1,19 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import DataOperatorException from '@database/exceptions/data_operator_exception';
 import DatabaseManager from '@database/manager';
-import {
-    isRecordCustomEmojiEqualToRaw,
-    isRecordRoleEqualToRaw,
-    isRecordSystemEqualToRaw,
-    isRecordTermsOfServiceEqualToRaw,
-} from '@database/operator/server_data_operator/comparators';
 import {
     transformCustomEmojiRecord,
     transformRoleRecord,
     transformSystemRecord,
-    transformTermsOfServiceRecord,
 } from '@database/operator/server_data_operator/transformers/general';
 
 import type ServerDataOperator from '..';
@@ -47,7 +39,6 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'id',
             transformer: transformRoleRecord,
-            findMatchingRecordBy: isRecordRoleEqualToRaw,
             createOrUpdateRawValues: roles,
             tableName: 'Role',
             prepareRecordsOnly: false,
@@ -80,7 +71,6 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
             createOrUpdateRawValues: emojis,
             tableName: 'CustomEmoji',
             prepareRecordsOnly: false,
-            findMatchingRecordBy: isRecordCustomEmojiEqualToRaw,
             transformer: transformCustomEmojiRecord,
         });
     });
@@ -98,41 +88,10 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
         });
 
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            findMatchingRecordBy: isRecordSystemEqualToRaw,
             fieldName: 'id',
             transformer: transformSystemRecord,
             createOrUpdateRawValues: systems,
             tableName: 'System',
-            prepareRecordsOnly: false,
-        });
-    });
-
-    it('=> HandleTermsOfService: should write to the TERMS_OF_SERVICE table', async () => {
-        expect.assertions(1);
-
-        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-
-        const termOfService: TermsOfService[] = [
-            {
-                id: 'tos-1',
-                accepted_at: 1,
-                create_at: 1613667352029,
-                user_id: 'user1613667352029',
-                text: '',
-            },
-        ];
-
-        await operator.handleTermOfService({
-            termOfService,
-            prepareRecordsOnly: false,
-        });
-
-        expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            findMatchingRecordBy: isRecordTermsOfServiceEqualToRaw,
-            fieldName: 'id',
-            transformer: transformTermsOfServiceRecord,
-            createOrUpdateRawValues: termOfService,
-            tableName: 'TermsOfService',
             prepareRecordsOnly: false,
         });
     });
@@ -145,21 +104,16 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
         expect(appDatabase).toBeTruthy();
         expect(appOperator).toBeTruthy();
 
-        const findMatchingRecordBy = (existing: Model, newRecord: any) => {
-            return existing === newRecord;
-        };
-
         const transformer = async (model: Model) => model;
 
         await expect(
             operator?.handleRecords({
                 fieldName: 'invalidField',
                 tableName: 'INVALID_TABLE_NAME',
-                findMatchingRecordBy,
                 transformer,
                 createOrUpdateRawValues: [{id: 'tos-1', value: '1'}],
                 prepareRecordsOnly: false,
             }),
-        ).rejects.toThrow(DataOperatorException);
+        ).rejects.toThrow(Error);
     });
 });

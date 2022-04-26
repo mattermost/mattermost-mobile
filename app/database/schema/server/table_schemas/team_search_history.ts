@@ -16,3 +16,4 @@ export default tableSchema({
         {name: 'term', type: 'string'},
     ],
 });
+

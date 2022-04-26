@@ -4,12 +4,11 @@
 import React, {useCallback} from 'react';
 
 import {togglePinPost} from '@actions/remote/post';
+import {BaseOption} from '@components/common_post_options';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
-
-import BaseOption from './base_option';
 
 type PinChannelProps = {
     isPostPinned: boolean;
@@ -44,7 +43,7 @@ const PinChannelOption = ({isPostPinned, postId}: PinChannelProps) => {
             defaultMessage={defaultMessage}
             iconName='pin-outline'
             onPress={onPress}
-            testID={`post.options.${key}.channel`}
+            testID={`post_options.${key}.channel.option`}
         />
     );
 };

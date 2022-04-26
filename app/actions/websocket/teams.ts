@@ -11,9 +11,9 @@ import {updateUsersNoLongerVisible} from '@actions/remote/user';
 import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
-import {queryCurrentTeamId} from '@queries/servers/system';
-import {queryLastTeam, prepareMyTeams} from '@queries/servers/team';
-import {queryCurrentUser} from '@queries/servers/user';
+import {getCurrentTeamId} from '@queries/servers/system';
+import {getLastTeam, prepareMyTeams} from '@queries/servers/team';
+import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 
 export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMessage) {
@@ -22,21 +22,22 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
         return;
     }
 
-    const currentTeamId = await queryCurrentTeamId(database.database);
-    const user = await queryCurrentUser(database.database);
+    const currentTeamId = await getCurrentTeamId(database.database);
+    const user = await getCurrentUser(database.database);
     if (!user) {
         return;
     }
 
-    if (user.id === msg.data.user_id) {
-        await removeUserFromTeam(serverUrl, msg.data.team_id);
+    const {user_id: userId, team_id: teamId} = msg.data;
+    if (user.id === userId) {
+        await removeUserFromTeam(serverUrl, teamId);
         fetchAllTeams(serverUrl);
 
         if (user.isGuest) {
             updateUsersNoLongerVisible(serverUrl);
         }
 
-        if (currentTeamId === msg.data.team_id) {
+        if (currentTeamId === teamId) {
             const currentServer = await queryActiveServer(DatabaseManager.appDatabase!.database);
 
             if (currentServer?.url === serverUrl) {
@@ -45,7 +46,7 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
                 await popToRoot();
             }
 
-            const teamToJumpTo = await queryLastTeam(database.database);
+            const teamToJumpTo = await getLastTeam(database.database);
             if (teamToJumpTo) {
                 handleTeamChange(serverUrl, teamToJumpTo);
             } // TODO else jump to "join a team" screen
@@ -70,13 +71,26 @@ export async function handleUpdateTeamEvent(serverUrl: string, msg: WebSocketMes
     }
 }
 
+// As of today, the server sends a duplicated event to add the user to the team.
+// If we do not handle this, this ends up showing some errors in the database, apart
+// of the extra computation time. We use this to track the events that are being handled
+// and make sure we only handle one.
+const addingTeam: {[id: string]: boolean} = {};
+
 export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSocketMessage) {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return;
     }
+    const {team_id: teamId} = msg.data;
 
-    const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, msg.data.team_id, true);
+    // Ignore duplicated team join events sent by the server
+    if (addingTeam[teamId]) {
+        return;
+    }
+    addingTeam[teamId] = true;
+
+    const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, teamId, true);
 
     const modelPromises: Array<Promise<Model[]>> = [];
     if (teams?.length && teamMemberships?.length) {
@@ -87,9 +101,9 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
                 rolesToLoad.add(role);
             }
             const serverRoles = await fetchRolesIfNeeded(serverUrl, Array.from(rolesToLoad), true);
-            if (serverRoles.roles!.length) {
+            if (serverRoles.roles?.length) {
                 const preparedRoleModels = database.operator.handleRole({
-                    roles: serverRoles.roles!,
+                    roles: serverRoles.roles,
                     prepareRecordsOnly: true,
                 });
                 modelPromises.push(preparedRoleModels);
@@ -98,14 +112,11 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
     }
 
     if (teams && teamMemberships) {
-        const preparedTeamModels = prepareMyTeams(database.operator, teams, teamMemberships);
-        if (preparedTeamModels) {
-            modelPromises.push(...preparedTeamModels);
-        }
+        modelPromises.push(...prepareMyTeams(database.operator, teams, teamMemberships));
     }
 
-    if (modelPromises.length) {
-        const models = await Promise.all(modelPromises);
-        await database.operator.batchRecords(models.flat());
-    }
+    const models = await Promise.all(modelPromises);
+    await database.operator.batchRecords(models.flat());
+
+    delete addingTeam[teamId];
 }

@@ -53,7 +53,7 @@ export default function HomeScreen(props: HomeProps) {
                 dark: false,
                 colors: {
                     primary: theme.centerChannelColor,
-                    background: theme.centerChannelBg,
+                    background: 'transparent',
                     card: theme.centerChannelBg,
                     text: theme.centerChannelColor,
                     border: 'white',
@@ -62,7 +62,7 @@ export default function HomeScreen(props: HomeProps) {
             }}
         >
             <Tab.Navigator
-                screenOptions={{headerShown: false, lazy: true, unmountOnBlur: true}}
+                screenOptions={{headerShown: false, lazy: true, unmountOnBlur: false}}
                 tabBar={(tabProps: BottomTabBarProps) => (
                     <TabBar
                         {...tabProps}
@@ -71,22 +71,24 @@ export default function HomeScreen(props: HomeProps) {
             >
                 <Tab.Screen
                     name={Screens.HOME}
-                    options={{title: 'Channel', unmountOnBlur: false}}
+                    options={{title: 'Channel', unmountOnBlur: false, tabBarTestID: 'tab_bar.home.tab'}}
                 >
                     {() => <ChannelList {...props}/>}
                 </Tab.Screen>
                 <Tab.Screen
                     name={Screens.SEARCH}
                     component={Search}
-                    options={{unmountOnBlur: false}}
+                    options={{unmountOnBlur: false, lazy: true, tabBarTestID: 'tab_bar.search.tab'}}
                 />
                 <Tab.Screen
                     name={Screens.MENTIONS}
                     component={RecentMentions}
+                    options={{tabBarTestID: 'tab_bar.mentions.tab', lazy: true, unmountOnBlur: false}}
                 />
                 <Tab.Screen
                     name={Screens.ACCOUNT}
                     component={Account}
+                    options={{tabBarTestID: 'tab_bar.account.tab', lazy: true, unmountOnBlur: false}}
                 />
             </Tab.Navigator>
         </NavigationContainer>

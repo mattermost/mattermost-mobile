@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {storeCategories} from '@actions/local/category';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 
 import {forceLogoutIfNecessary} from './session';
 

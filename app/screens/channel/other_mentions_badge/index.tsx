@@ -37,7 +37,7 @@ const OtherMentionsBadge = ({channelId}: Props) => {
         setCount(mentions);
     };
 
-    const unreadsSubscription = (serverUrl: string, myChannels: MyChannelModel[]) => {
+    const unreadsSubscription = (serverUrl: string, {myChannels, threadMentionCount}: {myChannels: MyChannelModel[]; threadMentionCount: number}) => {
         const unreads = subscriptions.get(serverUrl);
         if (unreads) {
             let mentions = 0;
@@ -47,7 +47,7 @@ const OtherMentionsBadge = ({channelId}: Props) => {
                 }
             }
 
-            unreads.mentions = mentions;
+            unreads.mentions = mentions + threadMentionCount;
             subscriptions.set(serverUrl, unreads);
             updateCount();
         }
@@ -55,8 +55,8 @@ const OtherMentionsBadge = ({channelId}: Props) => {
 
     const serversObserver = async (servers: ServersModel[]) => {
         // unsubscribe mentions from servers that were removed
-        const allUrls = servers.map((s) => s.url);
-        const subscriptionsToRemove = [...subscriptions].filter(([key]) => allUrls.indexOf(key) === -1);
+        const allUrls = new Set(servers.map((s) => s.url));
+        const subscriptionsToRemove = [...subscriptions].filter(([key]) => !allUrls.has(key));
         for (const [key, map] of subscriptionsToRemove) {
             map.subscription?.unsubscribe();
             subscriptions.delete(key);
@@ -86,6 +86,7 @@ const OtherMentionsBadge = ({channelId}: Props) => {
             subscriptions.forEach((unreads) => {
                 unreads.subscription?.unsubscribe();
             });
+            subscriptions.clear();
         };
     }, []);
 

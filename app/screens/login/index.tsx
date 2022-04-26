@@ -11,8 +11,9 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {useIsTablet} from '@hooks/device';
+import NetworkManager from '@managers/network_manager';
 import Background from '@screens/background';
-import {goToScreen, loginAnimationOptions} from '@screens/navigation';
+import {dismissModal, goToScreen, loginAnimationOptions} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -24,6 +25,8 @@ import SsoOptions from './sso_options';
 import type {LaunchProps} from '@typings/launch';
 
 export interface LoginOptionsProps extends LaunchProps {
+    closeButtonId?: string;
+    componentId: string;
     config: ClientConfig;
     hasLoginForm: boolean;
     license: ClientLicense;
@@ -68,7 +71,11 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
-const LoginOptions = ({config, extra, hasLoginForm, launchType, launchError, license, serverDisplayName, serverUrl, ssoOptions, theme}: LoginOptionsProps) => {
+const LoginOptions = ({
+    closeButtonId, componentId, config, extra,
+    hasLoginForm, launchType, launchError, license,
+    serverDisplayName, serverUrl, ssoOptions, theme,
+}: LoginOptionsProps) => {
     const styles = getStyles(theme);
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
     const dimensions = useWindowDimensions();
@@ -83,7 +90,7 @@ const LoginOptions = ({config, extra, hasLoginForm, launchType, launchError, lic
                 <FormattedText
                     style={styles.subheader}
                     id='mobile.login_options.enter_credentials'
-                    testID='mobile.login_options.enter_credentials'
+                    testID='login_options.description.enter_credentials'
                     defaultMessage='Enter your login details below.'
                 />
             );
@@ -92,7 +99,7 @@ const LoginOptions = ({config, extra, hasLoginForm, launchType, launchError, lic
                 <FormattedText
                     style={styles.subheader}
                     id='mobile.login_options.select_option'
-                    testID='mobile.login_options.select_option'
+                    testID='login_options.description.select_option'
                     defaultMessage='Select a login option below.'
                 />
             );
@@ -102,7 +109,7 @@ const LoginOptions = ({config, extra, hasLoginForm, launchType, launchError, lic
             <FormattedText
                 style={styles.subheader}
                 id='mobile.login_options.none'
-                testID='mobile.login_options.none'
+                testID='login_options.description.none'
                 defaultMessage="You can't log in to your account yet. At least one login option must be configured. Contact your System Admin for assistance."
             />
         );
@@ -123,6 +130,17 @@ const LoginOptions = ({config, extra, hasLoginForm, launchType, launchError, lic
         return {
             transform: [{translateX: withTiming(translateX.value, {duration})}],
         };
+    }, []);
+
+    useEffect(() => {
+        const navigationEvents = Navigation.events().registerNavigationButtonPressedListener(({buttonId}) => {
+            if (closeButtonId && buttonId === closeButtonId) {
+                NetworkManager.invalidateClient(serverUrl);
+                dismissModal({componentId});
+            }
+        });
+
+        return () => navigationEvents.remove();
     }, []);
 
     useEffect(() => {
@@ -150,7 +168,7 @@ const LoginOptions = ({config, extra, hasLoginForm, launchType, launchError, lic
             <FormattedText
                 defaultMessage='Log In to Your Account'
                 id={'mobile.login_options.heading'}
-                testID={'mobile.login_options.heading'}
+                testID={'login_options.title.login_to_account'}
                 style={styles.header}
             />
         );
@@ -159,14 +177,17 @@ const LoginOptions = ({config, extra, hasLoginForm, launchType, launchError, lic
             <FormattedText
                 defaultMessage="Can't Log In"
                 id={'mobile.login_options.cant_heading'}
-                testID={'mobile.login_options.cant_heading'}
+                testID={'login_options.title.cant_login'}
                 style={styles.header}
             />
         );
     }
 
     return (
-        <View style={styles.flex}>
+        <View
+            style={styles.flex}
+            testID='login.screen'
+        >
             <Background theme={theme}/>
             <AnimatedSafeArea style={[styles.container, transform]}>
                 <KeyboardAwareScrollView

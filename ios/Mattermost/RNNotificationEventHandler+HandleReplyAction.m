@@ -50,12 +50,7 @@ NSString *const ReplyActionID = @"REPLY_ACTION";
   NSString *serverUrl = [parsedResponse valueForKeyPath:@"notification.server_url"];
   
   if (serverUrl == nil) {
-    NSString* onlyServerUrl = [[Database default] getOnlyServerUrlObjc];
-    if ([onlyServerUrl length] > 0) {
-      serverUrl = onlyServerUrl;
-    } else {
       [self handleReplyFailure:@"" completionHandler:notificationCompletionHandler];
-    }
   }
   
   NSString *sessionToken = [[Keychain default] getTokenObjcFor:serverUrl];

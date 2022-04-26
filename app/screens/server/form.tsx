@@ -159,6 +159,8 @@ const ServerForm = ({
         );
     }
 
+    const connectButtonTestId = buttonDisabled ? 'server_form.connect.button.disabled' : 'server_form.connect.button';
+
     return (
         <View style={styles.formContainer}>
             <View style={[styles.fullWidth, urlError?.length ? styles.error : undefined]}>
@@ -181,7 +183,7 @@ const ServerForm = ({
                     ref={urlRef}
                     returnKeyType='next'
                     spellCheck={false}
-                    testID='select_server.server_url.input'
+                    testID='server_form.server_url.input'
                     theme={theme}
                     value={url}
                 />
@@ -203,7 +205,7 @@ const ServerForm = ({
                     ref={displayNameRef}
                     returnKeyType='done'
                     spellCheck={false}
-                    testID='select_server.server_display_name.input'
+                    testID='server_form.server_display_name.input'
                     theme={theme}
                     value={displayName}
                 />
@@ -213,14 +215,14 @@ const ServerForm = ({
                 defaultMessage={'Choose a display name for your server'}
                 id={'mobile.components.select_server_view.displayHelp'}
                 style={styles.chooseText}
-                testID={'mobile.components.select_server_view.displayHelp'}
+                testID={'server_form.display_help'}
             />
             }
             <Button
                 containerStyle={[styles.connectButton, styleButtonBackground]}
                 disabled={buttonDisabled}
                 onPress={onConnect}
-                testID='select_server.connect.button'
+                testID={connectButtonTestId}
             >
                 {buttonIcon}
                 <FormattedText

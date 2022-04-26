@@ -4,18 +4,17 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
-import {catchError, switchMap} from 'rxjs/operators';
+import {switchMap} from 'rxjs/operators';
 
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {safeParseJSON} from '@utils/helpers';
+import {observeRecentReactions} from '@queries/servers/system';
+import {getEmojiFirstAlias} from '@utils/emoji/helpers';
 
 import ReactionBar from './reaction_bar';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type SystemModel from '@typings/database/models/servers/system';
 
 const DEFAULT_EMOJIS = [
-    'thumbsup',
+    '+1',
     'smiley',
     'white_check_mark',
     'heart',
@@ -24,17 +23,16 @@ const DEFAULT_EMOJIS = [
 ];
 
 const mergeRecentWithDefault = (recentEmojis: string[]) => {
-    const filterUsed = DEFAULT_EMOJIS.filter((e) => !recentEmojis.includes(e));
-    return recentEmojis.concat(filterUsed).splice(0, 6);
+    const emojiAliases = recentEmojis.slice(0, 6).map((emoji) => getEmojiFirstAlias(emoji));
+    const emojisSet = new Set(emojiAliases);
+    const filterUsed = DEFAULT_EMOJIS.filter((e) => !emojisSet.has(e));
+    return emojiAliases.concat(filterUsed).splice(0, 6);
 };
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    recentEmojis: database.
-        get<SystemModel>(MM_TABLES.SERVER.SYSTEM).
-        findAndObserve(SYSTEM_IDENTIFIERS.RECENT_REACTIONS).
+    recentEmojis: observeRecentReactions(database).
         pipe(
-            switchMap((recent) => of$(mergeRecentWithDefault(safeParseJSON(recent.value) as string[]))),
-            catchError(() => of$(mergeRecentWithDefault([]))),
+            switchMap((recent) => of$(mergeRecentWithDefault(recent))),
         ),
 }));
 

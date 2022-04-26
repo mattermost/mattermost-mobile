@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import {prepareDeleteTeam, queryMyTeamById, removeTeamFromTeamHistory} from '@queries/servers/team';
+import {prepareDeleteTeam, getMyTeamById, removeTeamFromTeamHistory} from '@queries/servers/team';
 
 import type TeamModel from '@typings/database/models/servers/team';
 
-export const removeUserFromTeam = async (serverUrl: string, teamId: string) => {
+export async function removeUserFromTeam(serverUrl: string, teamId: string) {
     const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
     if (!serverDatabase) {
         return;
@@ -14,7 +14,7 @@ export const removeUserFromTeam = async (serverUrl: string, teamId: string) => {
 
     const {operator, database} = serverDatabase;
 
-    const myTeam = await queryMyTeamById(database, teamId);
+    const myTeam = await getMyTeamById(database, teamId);
     if (myTeam) {
         const team = await myTeam.team.fetch() as TeamModel;
         const models = await prepareDeleteTeam(team);
@@ -31,4 +31,4 @@ export const removeUserFromTeam = async (serverUrl: string, teamId: string) => {
             }
         }
     }
-};
+}

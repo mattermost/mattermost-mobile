@@ -5,9 +5,9 @@ import React, {useMemo} from 'react';
 import {StyleProp, Text, useWindowDimensions, View, ViewStyle} from 'react-native';
 import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
 
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type ToastProps = {

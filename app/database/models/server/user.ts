@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Query} from '@nozbe/watermelondb';
 import {children, field, json} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
@@ -14,6 +15,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
+import type UserModelInterface from '@typings/database/models/servers/user';
 import type {UserMentionKey} from '@typings/global/markdown';
 
 const {
@@ -31,7 +33,7 @@ const {
  * The User model represents the 'USER' table and its relationship to other
  * shareholders in the app.
  */
-export default class UserModel extends Model {
+export default class UserModel extends Model implements UserModelInterface {
     /** table (name) : User */
     static table = USER;
 
@@ -56,7 +58,7 @@ export default class UserModel extends Model {
         /** USER has a 1:N relationship with TEAM_MEMBERSHIP.  A user can join multiple teams */
         [TEAM_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
 
-        /** USER has a 1:N relationship with THREAD_PARTICIPANT. A user can participante in multiple threads */
+        /** USER has a 1:N relationship with THREAD_PARTICIPANT. A user can participate in multiple threads */
         [THREAD_PARTICIPANT]: {type: 'has_many', foreignKey: 'user_id'},
     };
 
@@ -105,6 +107,9 @@ export default class UserModel extends Model {
     /** username : The user's username */
     @field('username') username!: string;
 
+    /** remote_id : The ID of the remote organization that this user belongs to */
+    @field('remote_id') remoteId!: string | null;
+
     /** notify_props : Notification preferences/configurations */
     @json('notify_props', safeParseJSON) notifyProps!: UserNotifyProps | null;
 
@@ -117,25 +122,25 @@ export default class UserModel extends Model {
     @json('timezone', safeParseJSON) timezone!: UserTimezone | null;
 
     /** channelsCreated : All the channels that this user created */
-    @children(CHANNEL) channelsCreated!: ChannelModel[];
+    @children(CHANNEL) channelsCreated!: Query<ChannelModel>;
 
     /** channels : All the channels that this user is part of  */
-    @children(CHANNEL_MEMBERSHIP) channels!: ChannelMembershipModel[];
+    @children(CHANNEL_MEMBERSHIP) channels!: Query<ChannelMembershipModel>;
 
     /** posts :  All the posts that this user has written*/
-    @children(POST) posts!: PostModel[];
+    @children(POST) posts!: Query<PostModel>;
 
     /** preferences : All user preferences */
-    @children(PREFERENCE) preferences!: PreferenceModel[];
+    @children(PREFERENCE) preferences!: Query<PreferenceModel>;
 
     /** reactions : All the reactions to posts that this user had */
-    @children(REACTION) reactions!: ReactionModel[];
+    @children(REACTION) reactions!: Query<ReactionModel>;
 
     /** teams : All the team that this user is part of  */
-    @children(TEAM_MEMBERSHIP) teams!: TeamMembershipModel[];
+    @children(TEAM_MEMBERSHIP) teams!: Query<TeamMembershipModel>;
 
     /** threadParticipations : All the thread participations this user is part of  */
-    @children(THREAD_PARTICIPANT) threadParticipations!: ThreadParticipantsModel[];
+    @children(THREAD_PARTICIPANT) threadParticipations!: Query<ThreadParticipantsModel>;
 
     prepareStatus = (status: string) => {
         this.prepareUpdate((u) => {

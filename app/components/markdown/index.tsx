@@ -45,6 +45,7 @@ type MarkdownProps = {
     isEdited?: boolean;
     isReplyPost?: boolean;
     isSearchResult?: boolean;
+    layoutWidth?: number;
     location?: string;
     mentionKeys?: UserMentionKey[];
     minimumHashtagLength?: number;
@@ -55,6 +56,34 @@ type MarkdownProps = {
     value: string | number;
 }
 
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    // Android has trouble giving text transparency depending on how it's nested,
+    // so we calculate the resulting colour manually
+    const editedOpacity = Platform.select({
+        ios: 0.3,
+        android: 1.0,
+    });
+    const editedColor = Platform.select({
+        ios: theme.centerChannelColor,
+        android: blendColors(theme.centerChannelBg, theme.centerChannelColor, 0.3),
+    });
+
+    return {
+        block: {
+            alignItems: 'flex-start',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+        },
+        editedIndicatorText: {
+            color: editedColor,
+            opacity: editedOpacity,
+        },
+        atMentionOpacity: {
+            opacity: 1,
+        },
+    };
+});
+
 class Markdown extends PureComponent<MarkdownProps> {
     static defaultProps = {
         textStyles: {},
@@ -64,6 +93,7 @@ class Markdown extends PureComponent<MarkdownProps> {
         disableAtChannelMentionHighlight: false,
         disableChannelLink: false,
         disableGallery: false,
+        layoutWidth: undefined,
         value: '',
         minimumHashtagLength: 3,
     };
@@ -104,6 +134,7 @@ class Markdown extends PureComponent<MarkdownProps> {
             channelLink: this.renderChannelLink,
             emoji: this.renderEmoji,
             hashtag: this.renderHashtag,
+            latexinline: this.renderParagraph,
 
             paragraph: this.renderParagraph,
             heading: this.renderHeading,
@@ -208,6 +239,7 @@ class Markdown extends PureComponent<MarkdownProps> {
             <MarkdownImage
                 disabled={this.props.disableGallery ?? Boolean(!this.props.location)}
                 errorTextStyle={[this.computeTextStyle(this.props.baseTextStyle, context), this.props.textStyles.error]}
+                layoutWidth={this.props.layoutWidth}
                 linkDestination={linkDestination}
                 imagesMetadata={this.props.imagesMetadata}
                 isReplyPost={this.props.isReplyPost}
@@ -291,7 +323,9 @@ class Markdown extends PureComponent<MarkdownProps> {
 
         return (
             <View style={blockStyle}>
-                {children}
+                <Text>
+                    {children}
+                </Text>
             </View>
         );
     };
@@ -472,33 +506,5 @@ class Markdown extends PureComponent<MarkdownProps> {
         return this.renderer.render(ast);
     }
 }
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    // Android has trouble giving text transparency depending on how it's nested,
-    // so we calculate the resulting colour manually
-    const editedOpacity = Platform.select({
-        ios: 0.3,
-        android: 1.0,
-    });
-    const editedColor = Platform.select({
-        ios: theme.centerChannelColor,
-        android: blendColors(theme.centerChannelBg, theme.centerChannelColor, 0.3),
-    });
-
-    return {
-        block: {
-            alignItems: 'flex-start',
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-        },
-        editedIndicatorText: {
-            color: editedColor,
-            opacity: editedOpacity,
-        },
-        atMentionOpacity: {
-            opacity: 1,
-        },
-    };
-});
 
 export default Markdown;

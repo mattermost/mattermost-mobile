@@ -66,7 +66,7 @@ export default function Servers() {
         setTotal({mentions, unread});
     };
 
-    const unreadsSubscription = (serverUrl: string, myChannels: MyChannelModel[]) => {
+    const unreadsSubscription = (serverUrl: string, {myChannels, threadMentionCount}: {myChannels: MyChannelModel[]; threadMentionCount: number}) => {
         const unreads = subscriptions.get(serverUrl);
         if (unreads) {
             let mentions = 0;
@@ -76,7 +76,7 @@ export default function Servers() {
                 unread = unread || myChannel.isUnread;
             }
 
-            unreads.mentions = mentions;
+            unreads.mentions = mentions + threadMentionCount;
             unreads.unread = unread;
             subscriptions.set(serverUrl, unreads);
             updateTotal();
@@ -87,8 +87,8 @@ export default function Servers() {
         registeredServers.current = sortServers(servers, intl);
 
         // unsubscribe mentions from servers that were removed
-        const allUrls = servers.map((s) => s.url);
-        const subscriptionsToRemove = [...subscriptions].filter(([key]) => allUrls.indexOf(key) === -1);
+        const allUrls = new Set(servers.map((s) => s.url));
+        const subscriptionsToRemove = [...subscriptions].filter(([key]) => !allUrls.has(key));
         for (const [key, map] of subscriptionsToRemove) {
             map.subscription?.unsubscribe();
             subscriptions.delete(key);
@@ -144,6 +144,7 @@ export default function Servers() {
             subscriptions.forEach((unreads) => {
                 unreads.subscription?.unsubscribe();
             });
+            subscriptions.clear();
         };
     }, []);
 
@@ -153,6 +154,7 @@ export default function Servers() {
             mentionCount={total.mentions}
             onPress={onPress}
             style={styles.icon}
+            testID={'channel_list.servers.server_icon'}
         />
     );
 }

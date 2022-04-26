@@ -8,6 +8,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import Button from '@screens/bottom_sheet/button';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type Props = {
     buttonIcon?: string;
@@ -16,6 +17,7 @@ type Props = {
     onPress?: (e: GestureResponderEvent) => void;
     showButton: boolean;
     showTitle: boolean;
+    testID?: string;
     title?: string;
 }
 
@@ -26,12 +28,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             flex: 1,
         },
-        titleContainer: {marginVertical: 4},
+        titleContainer: {
+            marginTop: 4,
+            marginBottom: 12,
+        },
         titleText: {
             color: theme.centerChannelColor,
-            lineHeight: 30,
-            fontSize: 25,
-            fontFamily: 'OpenSans-SemiBold',
+            ...typography('Heading', 600, 'SemiBold'),
         },
         separator: {
             height: 1,
@@ -42,18 +45,27 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const BottomSheetContent = ({buttonText, buttonIcon, children, onPress, showButton, showTitle, title}: Props) => {
+const BottomSheetContent = ({buttonText, buttonIcon, children, onPress, showButton, showTitle, testID, title}: Props) => {
     const dimensions = useWindowDimensions();
     const theme = useTheme();
     const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
     const separatorWidth = Math.max(dimensions.width, 450);
+    const buttonTestId = `${testID}.${buttonText?.replace(/ /g, '_').toLocaleLowerCase()}.button`;
 
     return (
-        <View style={styles.container}>
+        <View
+            style={styles.container}
+            testID={`${testID}.screen`}
+        >
             {showTitle &&
                 <View style={styles.titleContainer}>
-                    <Text style={styles.titleText}>{title}</Text>
+                    <Text
+                        style={styles.titleText}
+                        testID={`${testID}.title`}
+                    >
+                        {title}
+                    </Text>
                 </View>
             }
             <>
@@ -65,6 +77,7 @@ const BottomSheetContent = ({buttonText, buttonIcon, children, onPress, showButt
                     <Button
                         onPress={onPress}
                         icon={buttonIcon}
+                        testID={buttonTestId}
                         text={buttonText}
                     />
                     <View style={{paddingBottom: Platform.select({ios: (isTablet ? 20 : 32), android: 20})}}/>

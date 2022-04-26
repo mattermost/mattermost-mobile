@@ -13,7 +13,7 @@ export const getNeededAtMentionedUsernames = (usernames: Set<string>, posts: Pos
         while ((match = pattern.exec(p.message)) !== null) {
             // match[1] is the matched mention including trailing punctuation
             // match[2] is the matched mention without trailing punctuation
-            if (General.SPECIAL_MENTIONS.indexOf(match[2]) !== -1) {
+            if (General.SPECIAL_MENTIONS.has(match[2])) {
                 continue;
             }
 

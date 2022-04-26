@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {Text, View} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {Text, TouchableOpacity, View} from 'react-native';
 
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';

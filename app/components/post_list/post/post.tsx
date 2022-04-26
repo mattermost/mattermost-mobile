@@ -3,11 +3,10 @@
 
 import React, {ReactNode, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, StyleProp, View, ViewStyle} from 'react-native';
-import {TouchableHighlight} from 'react-native-gesture-handler';
+import {Keyboard, Platform, StyleProp, View, ViewStyle, TouchableHighlight} from 'react-native';
 
-import {showPermalink} from '@actions/local/permalink';
 import {removePost} from '@actions/local/post';
+import {showPermalink} from '@actions/remote/permalink';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
@@ -22,12 +21,14 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Avatar from './avatar';
 import Body from './body';
+import Footer from './footer';
 import Header from './header';
 import PreHeader from './pre_header';
 import SystemMessage from './system_message';
+import UnreadDot from './unread_dot';
 
-import type FileModel from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
+import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 
 type PostProps = {
@@ -35,12 +36,13 @@ type PostProps = {
     canDelete: boolean;
     currentUser: UserModel;
     differentThreadSequence: boolean;
-    files: FileModel[];
+    filesCount: number;
     hasReplies: boolean;
     highlight?: boolean;
     highlightPinnedOrSaved?: boolean;
     highlightReplyBar: boolean;
     isConsecutivePost?: boolean;
+    isCRTEnabled?: boolean;
     isEphemeral: boolean;
     isFirstReply?: boolean;
     isSaved?: boolean;
@@ -57,6 +59,7 @@ type PostProps = {
     skipPinnedHeader?: boolean;
     style?: StyleProp<ViewStyle>;
     testID?: string;
+    thread?: ThreadModel;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -93,14 +96,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'column',
         },
         rightColumnPadding: {paddingBottom: 3},
+        touchableContainer: {marginHorizontal: -20, paddingHorizontal: 20},
     };
 });
 
 const Post = ({
-    appsEnabled, canDelete, currentUser, differentThreadSequence, files, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
-    isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
+    appsEnabled, canDelete, currentUser, differentThreadSequence, filesCount, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
+    isCRTEnabled, isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
     location, post, reactionsCount, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
-    testID, previousPost,
+    testID, thread, previousPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
     const intl = useIntl();
@@ -130,7 +134,7 @@ const Post = ({
         if (post) {
             if (location === Screens.THREAD) {
                 Keyboard.dismiss();
-            } else if (location === Screens.SEARCH) {
+            } else if ([Screens.SAVED_POSTS, Screens.MENTIONS, Screens.SEARCH].includes(location)) {
                 showPermalink(serverUrl, '', post.id, intl);
                 return;
             }
@@ -173,7 +177,7 @@ const Post = ({
         if (isTablet) {
             showModal(Screens.POST_OPTIONS, title, passProps, bottomSheetModalOptions(theme, 'close-post-options'));
         } else {
-            showModalOverCurrentContext(Screens.POST_OPTIONS, passProps);
+            showModalOverCurrentContext(Screens.POST_OPTIONS, passProps, bottomSheetModalOptions(theme));
         }
     };
 
@@ -200,12 +204,11 @@ const Post = ({
     } else {
         postAvatar = (
             <View style={[styles.profilePictureContainer, pendingPostStyle]}>
-                {isAutoResponder ? (
+                {(isAutoResponder || isSystemPost) ? (
                     <SystemAvatar theme={theme}/>
                 ) : (
                     <Avatar
                         isAutoReponse={isAutoResponder}
-                        isSystemPost={isSystemPost}
                         post={post}
                     />
                 )}
@@ -225,6 +228,7 @@ const Post = ({
                     currentUser={currentUser}
                     differentThreadSequence={differentThreadSequence}
                     isAutoResponse={isAutoResponder}
+                    isCRTEnabled={isCRTEnabled}
                     isEphemeral={isEphemeral}
                     isPendingOrFailed={isPendingOrFailed}
                     isSystemPost={isSystemPost}
@@ -248,7 +252,7 @@ const Post = ({
         body = (
             <Body
                 appsEnabled={appsEnabled}
-                files={files}
+                filesCount={filesCount}
                 hasReactions={reactionsCount > 0}
                 highlight={Boolean(highlightedStyle)}
                 highlightReplyBar={highlightReplyBar}
@@ -266,6 +270,24 @@ const Post = ({
         );
     }
 
+    let unreadDot;
+    let footer;
+    if (isCRTEnabled && thread) {
+        if (thread.replyCount > 0 || thread.isFollowing) {
+            footer = (
+                <Footer
+                    testID={`${itemTestID}.footer`}
+                    thread={thread}
+                />
+            );
+        }
+        if (thread.unreadMentions || thread.unreadReplies) {
+            unreadDot = (
+                <UnreadDot testID={`${itemTestID}.badge`}/>
+            );
+        }
+    }
+
     return (
         <View
             testID={testID}
@@ -276,6 +298,7 @@ const Post = ({
                 onPress={handlePress}
                 onLongPress={showPostOptions}
                 underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
+                style={styles.touchableContainer}
             >
                 <>
                     <PreHeader
@@ -290,7 +313,9 @@ const Post = ({
                         <View style={rightColumnStyle}>
                             {header}
                             {body}
+                            {footer}
                         </View>
+                        {unreadDot}
                     </View>
                 </>
             </TouchableHighlight>

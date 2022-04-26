@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
-
 import {fetchMyChannelsForTeam, MyChannelsRequest} from '@actions/remote/channel';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRolesIfNeeded, RolesRequest} from '@actions/remote/role';
@@ -16,7 +14,7 @@ import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {prepareModels} from '@queries/servers/entry';
 import {prepareCommonSystemValues} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory} from '@queries/servers/team';
@@ -40,7 +38,12 @@ type SpecificAfterLoginArgs = {
     clData: ConfigAndLicenseRequest;
 }
 
-export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs): Promise<{error?: any; hasTeams?: boolean; time?: number}> => {
+export async function loginEntry({serverUrl, user, deviceToken}: AfterLoginArgs): Promise<{error?: any; hasTeams?: boolean; time?: number}> {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -92,7 +95,7 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
     } catch (error) {
         return {error};
     }
-};
+}
 
 const gqlLoginEntry = async ({serverUrl, user, clData}: SpecificAfterLoginArgs) => {
     console.log('using graphQL');
@@ -198,7 +201,7 @@ const gqlLoginEntry = async ({serverUrl, user, clData}: SpecificAfterLoginArgs) 
 
     const models = await Promise.all(modelPromises);
     if (models.length) {
-        await operator.batchRecords(models.flat() as Model[]);
+        await operator.batchRecords(models.flat());
     }
 
     const config = clData.config || {} as ClientConfig;
@@ -239,14 +242,14 @@ const restLoginEntry = async ({serverUrl, user, clData}: SpecificAfterLoginArgs)
         if (!prefData.error && !teamData.error) {
             const teamOrderPreference = getPreferenceValue(prefData.preferences!, Preferences.TEAMS_ORDER, '', '') as string;
             const teamRoles: string[] = [];
-            const teamMembers: string[] = [];
+            const teamMembers = new Set<string>();
 
             teamData.memberships?.forEach((tm) => {
                 teamRoles.push(...tm.roles.split(' '));
-                teamMembers.push(tm.team_id);
+                teamMembers.add(tm.team_id);
             });
 
-            myTeams = teamData.teams!.filter((t) => teamMembers?.includes(t.id));
+            myTeams = teamData.teams!.filter((t) => teamMembers.has(t.id));
             initialTeam = selectDefaultTeam(myTeams, user.locale, teamOrderPreference, clData.config?.ExperimentalPrimaryTeam);
 
             if (initialTeam) {
@@ -310,9 +313,7 @@ const restLoginEntry = async ({serverUrl, user, clData}: SpecificAfterLoginArgs)
         }
 
         const models = await Promise.all(modelPromises);
-        if (models.length) {
-            await operator.batchRecords(models.flat() as Model[]);
-        }
+        await operator.batchRecords(models.flat());
 
         const config = clData.config || {} as ClientConfig;
         const license = clData.license || {} as ClientLicense;

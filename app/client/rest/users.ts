@@ -33,7 +33,7 @@ export interface ClientUsersMix {
     getUserByEmail: (email: string) => Promise<UserProfile>;
     getProfilePictureUrl: (userId: string, lastPictureUpdate: number) => string;
     getDefaultProfilePictureUrl: (userId: string) => string;
-    autocompleteUsers: (name: string, teamId: string, channelId: string, options?: Record<string, any>) => Promise<{users: UserProfile[]; out_of_channel?: UserProfile[]}>;
+    autocompleteUsers: (name: string, teamId: string, channelId?: string, options?: Record<string, any>) => Promise<{users: UserProfile[]; out_of_channel?: UserProfile[]}>;
     getSessions: (userId: string) => Promise<Session[]>;
     checkUserMfa: (loginId: string) => Promise<{mfa_required: boolean}>;
     attachDevice: (deviceId: string) => Promise<any>;
@@ -320,15 +320,20 @@ const ClientUsers = (superclass: any) => class extends superclass {
         return `${this.getUserRoute(userId)}/image/default`;
     };
 
-    autocompleteUsers = async (name: string, teamId: string, channelId: string, options = {
+    autocompleteUsers = async (name: string, teamId: string, channelId?: string, options = {
         limit: General.AUTOCOMPLETE_LIMIT_DEFAULT,
     }) => {
-        return this.doFetch(`${this.getUsersRoute()}/autocomplete${buildQueryString({
+        const query: Dictionary<any> = {
             in_team: teamId,
-            in_channel: channelId,
             name,
-            limit: options.limit,
-        })}`, {
+        };
+        if (channelId) {
+            query.in_channel = channelId;
+        }
+        if (options.limit) {
+            query.limit = options.limit;
+        }
+        return this.doFetch(`${this.getUsersRoute()}/autocomplete${buildQueryString(query)}`, {
             method: 'get',
         });
     };

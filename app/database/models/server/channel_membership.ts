@@ -8,6 +8,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type ChannelMembershipModelInterface from '@typings/database/models/servers/channel_membership';
 import type UserModel from '@typings/database/models/servers/user';
 
 const {CHANNEL, CHANNEL_MEMBERSHIP, USER} = MM_TABLES.SERVER;
@@ -16,7 +17,7 @@ const {CHANNEL, CHANNEL_MEMBERSHIP, USER} = MM_TABLES.SERVER;
  * The ChannelMembership model represents the 'association table' where many channels have users and many users are on
  * channels ( N:N relationship between model Users and model Channel)
  */
-export default class ChannelMembershipModel extends Model {
+export default class ChannelMembershipModel extends Model implements ChannelMembershipModelInterface {
     /** table (name) : ChannelMembership */
     static table = CHANNEL_MEMBERSHIP;
 

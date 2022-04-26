@@ -41,7 +41,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default function Typing({
+function Typing({
     channelId,
     rootId,
 }: Props) {
@@ -155,3 +155,5 @@ export default function Typing({
         </Animated.View>
     );
 }
+
+export default React.memo(Typing);

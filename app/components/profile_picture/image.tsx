@@ -8,14 +8,14 @@ import CompassIcon from '@components/compass_icon';
 import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {Client} from '@client/rest';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    author?: UserModel;
+    author?: UserModel | UserProfile;
     iconSize?: number;
     size: number;
     source?: Source | string;
@@ -58,7 +58,8 @@ const Image = ({author, iconSize, size, source}: Props) => {
     }
 
     if (author && client) {
-        const pictureUrl = client.getProfilePictureUrl(author.id, author.lastPictureUpdate);
+        const lastPictureUpdate = ('lastPictureUpdate' in author) ? author.lastPictureUpdate : author.last_picture_update;
+        const pictureUrl = client.getProfilePictureUrl(author.id, lastPictureUpdate);
         const imgSource = source ?? {uri: `${serverUrl}${pictureUrl}`};
         return (
             <FastImage

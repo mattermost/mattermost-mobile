@@ -10,7 +10,6 @@ import {
 } from 'react-native-reanimated';
 
 import {useGallery} from '@context/gallery';
-import {measureItem} from '@utils/gallery';
 
 import type {GestureHandlerGestureEvent} from 'react-native-gesture-handler';
 
@@ -168,8 +167,6 @@ export function useGalleryControls() {
 
     const translateYConfig: WithTimingConfig = {
         duration: 400,
-
-        // @ts-expect-error EasingFactoryFunction missing in type definition
         easing: Easing.bezier(0.33, 0.01, 0, 1),
     };
 
@@ -236,20 +233,13 @@ export function useGalleryItem(
         gallery.registerItem(index, ref);
     }, []);
 
-    const onGestureEvent = useAnimatedGestureHandler({
-        onFinish: (_evt, _ctx, isCanceledOrFailed) => {
-            if (isCanceledOrFailed) {
-                return;
-            }
+    const onGestureEvent = () => {
+        'worklet';
 
-            activeIndex.value = index;
+        activeIndex.value = index;
 
-            // measure the images
-            // width/height and position to animate from it to the full screen one
-            measureItem(ref, gallery.sharedValues);
-            runOnJS(onPress)(identifier, index);
-        },
-    });
+        runOnJS(onPress)(identifier, index);
+    };
 
     return {
         ref,

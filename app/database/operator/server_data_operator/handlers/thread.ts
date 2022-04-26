@@ -4,8 +4,6 @@
 import Model from '@nozbe/watermelondb/Model';
 
 import {Database} from '@constants';
-import DataOperatorException from '@database/exceptions/data_operator_exception';
-import {isRecordThreadEqualToRaw} from '@database/operator/server_data_operator/comparators';
 import {
     transformThreadRecord,
     transformThreadParticipantRecord,
@@ -15,6 +13,7 @@ import {sanitizeThreadParticipants} from '@database/operator/utils/thread';
 
 import type {HandleThreadsArgs, HandleThreadParticipantsArgs} from '@typings/database/database';
 import type ThreadModel from '@typings/database/models/servers/thread';
+import type ThreadInTeamModel from '@typings/database/models/servers/thread_in_team';
 import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
 
 const {
@@ -23,7 +22,7 @@ const {
 } = Database.MM_TABLES.SERVER;
 
 export interface ThreadHandlerMix {
-    handleThreads: ({threads, prepareRecordsOnly}: HandleThreadsArgs) => Promise<Model[]>;
+    handleThreads: ({threads, teamId, prepareRecordsOnly, loadedInGlobalThreads}: HandleThreadsArgs) => Promise<Model[]>;
     handleThreadParticipants: ({threadsParticipants, prepareRecordsOnly}: HandleThreadParticipantsArgs) => Promise<ThreadParticipantModel[]>;
 }
 
@@ -35,11 +34,13 @@ const ThreadHandler = (superclass: any) => class extends superclass {
      * @param {boolean | undefined} handleThreads.prepareRecordsOnly
      * @returns {Promise<void>}
      */
-    handleThreads = async ({threads, prepareRecordsOnly = false}: HandleThreadsArgs): Promise<Model[]> => {
-        if (!threads.length) {
-            throw new DataOperatorException(
-                'An empty "threads" array has been passed to the handleThreads method',
+    handleThreads = async ({threads, teamId, loadedInGlobalThreads, prepareRecordsOnly = false}: HandleThreadsArgs): Promise<Model[]> => {
+        if (!threads?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "threads" array has been passed to the handleThreads method',
             );
+            return [];
         }
 
         // Get unique threads in case they are duplicated
@@ -64,7 +65,6 @@ const ThreadHandler = (superclass: any) => class extends superclass {
         // Get thread models to be created and updated
         const preparedThreads = await this.handleRecords({
             fieldName: 'id',
-            findMatchingRecordBy: isRecordThreadEqualToRaw,
             transformer: transformThreadRecord,
             prepareRecordsOnly: true,
             createOrUpdateRawValues: uniqueThreads,
@@ -78,6 +78,15 @@ const ThreadHandler = (superclass: any) => class extends superclass {
         const threadParticipants = (await this.handleThreadParticipants({threadsParticipants, prepareRecordsOnly: true})) as ThreadParticipantModel[];
         batch.push(...threadParticipants);
 
+        if (teamId) {
+            const threadsInTeam = await this.handleThreadInTeam({
+                threadsMap: {[teamId]: threads},
+                prepareRecordsOnly: true,
+                loadedInGlobalThreads,
+            }) as ThreadInTeamModel[];
+            batch.push(...threadsInTeam);
+        }
+
         if (batch.length && !prepareRecordsOnly) {
             await this.batchRecords(batch);
         }
@@ -90,16 +99,19 @@ const ThreadHandler = (superclass: any) => class extends superclass {
      * @param {HandleThreadParticipantsArgs} handleThreadParticipants
      * @param {ParticipantsPerThread[]} handleThreadParticipants.threadsParticipants
      * @param {boolean} handleThreadParticipants.prepareRecordsOnly
+     * @param {boolean} handleThreadParticipants.skipSync
      * @throws DataOperatorException
      * @returns {Promise<Array<ThreadParticipantModel>>}
      */
-    handleThreadParticipants = async ({threadsParticipants, prepareRecordsOnly}: HandleThreadParticipantsArgs): Promise<ThreadParticipantModel[]> => {
+    handleThreadParticipants = async ({threadsParticipants, prepareRecordsOnly, skipSync = false}: HandleThreadParticipantsArgs): Promise<ThreadParticipantModel[]> => {
         const batchRecords: ThreadParticipantModel[] = [];
 
-        if (!threadsParticipants.length) {
-            throw new DataOperatorException(
-                'An empty "thread participants" array has been passed to the handleThreadParticipants method',
+        if (!threadsParticipants?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "threadParticipants" array has been passed to the handleThreadParticipants method',
             );
+            return [];
         }
 
         for await (const threadParticipant of threadsParticipants) {
@@ -112,6 +124,7 @@ const ThreadHandler = (superclass: any) => class extends superclass {
                 database: this.database,
                 thread_id,
                 rawParticipants: rawValues,
+                skipSync,
             });
 
             if (createParticipants?.length) {

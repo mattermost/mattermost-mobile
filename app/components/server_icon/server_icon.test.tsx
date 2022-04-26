@@ -24,6 +24,7 @@ describe('Server Icon', () => {
             <Icon
                 hasUnreads={true}
                 mentionCount={0}
+                testID='server_icon'
             />,
         );
 
@@ -35,6 +36,7 @@ describe('Server Icon', () => {
             <Icon
                 hasUnreads={false}
                 mentionCount={1}
+                testID='server_icon'
             />,
         );
 

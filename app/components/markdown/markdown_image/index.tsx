@@ -5,9 +5,9 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Platform, StyleProp, Text, TextStyle, View} from 'react-native';
-import {LongPressGestureHandler, TapGestureHandler} from 'react-native-gesture-handler';
+import {Alert, Platform, StyleProp, Text, TextStyle, TouchableWithoutFeedback, View} from 'react-native';
 import Animated from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {SvgUri} from 'react-native-svg';
 import parseUrl from 'url-parse';
 
@@ -25,6 +25,7 @@ import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {lookupMimeType} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {generateId} from '@utils/general';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
 import {getMarkdownImageSize} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -36,6 +37,7 @@ type MarkdownImageProps = {
     imagesMetadata: Record<string, PostImage>;
     isReplyPost?: boolean;
     linkDestination?: string;
+    layoutWidth?: number;
     location?: string;
     postId: string;
     source: string;
@@ -65,18 +67,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const MarkdownImage = ({
     disabled, errorTextStyle, imagesMetadata, isReplyPost = false,
-    linkDestination, location, postId, source, sourceSize,
+    layoutWidth, linkDestination, location, postId, source, sourceSize,
 }: MarkdownImageProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
+    const insets = useSafeAreaInsets();
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const managedConfig = useManagedConfig();
+    const managedConfig = useManagedConfig<ManagedConfig>();
     const genericFileId = useRef(generateId('uid')).current;
-    const tapRef = useRef<TapGestureHandler>();
-    const metadata = imagesMetadata?.[source] || Object.values(imagesMetadata || {})?.[0];
+    const metadata = imagesMetadata?.[source] || Object.values(imagesMetadata || {})[0];
     const [failed, setFailed] = useState(isGifTooLarge(metadata));
-    const originalSize = getMarkdownImageSize(isReplyPost, isTablet, sourceSize, metadata);
+    const originalSize = getMarkdownImageSize(isReplyPost, isTablet, sourceSize, metadata, layoutWidth);
     const serverUrl = useServerUrl();
     const galleryIdentifier = `${postId}-${genericFileId}-${location}`;
     const uri = useMemo(() => {
@@ -108,11 +110,12 @@ const MarkdownImage = ({
             width: originalSize.width,
             height: originalSize.height,
         } as FileInfo;
-    }, [uri, originalSize, metadata, isReplyPost, isTablet]);
+    }, [originalSize, metadata]);
 
     const handlePreviewImage = useCallback(() => {
         const item: GalleryItemType = {
             ...fileToGalleryItem(fileInfo),
+            mime_type: lookupMimeType(fileInfo.name),
             type: 'image',
         };
         openGalleryAtIndex(galleryIdentifier, 0, [item]);
@@ -124,7 +127,7 @@ const MarkdownImage = ({
         handlePreviewImage,
     );
 
-    const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, getViewPortWidth(isReplyPost, isTablet));
+    const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, layoutWidth || getViewPortWidth(isReplyPost, isTablet));
 
     const handleLinkPress = useCallback(() => {
         if (linkDestination) {
@@ -180,12 +183,12 @@ const MarkdownImage = ({
             bottomSheet({
                 closeButtonId: 'close-mardown-image',
                 renderContent,
-                snapPoints: [3 * ITEM_HEIGHT, 10],
+                snapPoints: [bottomSheetSnapPoint(2, ITEM_HEIGHT, insets.bottom), 10],
                 title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
                 theme,
             });
         }
-    }, [managedConfig, intl, theme]);
+    }, [managedConfig, intl, insets, theme]);
 
     const handleOnError = useCallback(() => {
         setFailed(true);
@@ -232,28 +235,43 @@ const MarkdownImage = ({
             );
         } else {
             image = (
+                <TouchableWithoutFeedback
+                    disabled={disabled}
+                    onLongPress={handleLinkLongPress}
+                    onPress={onGestureEvent}
+                >
+                    <Animated.View
+                        style={[styles, {width, height}, style.container]}
+                        testID='markdown_image'
+                    >
+                        <ProgressiveImage
+                            forwardRef={ref}
+                            id={fileInfo.id!}
+                            defaultSource={{uri: fileInfo.uri!}}
+                            onError={handleOnError}
+                            resizeMode='contain'
+                            style={{width, height}}
+                        />
+                    </Animated.View>
+                </TouchableWithoutFeedback>
+            );
+        }
+    }
+
+    if (image && linkDestination && !disabled) {
+        image = (
+            <TouchableWithFeedback
+                onPress={handleLinkPress}
+                onLongPress={handleLinkLongPress}
+                style={[{width, height}, style.container]}
+            >
                 <ProgressiveImage
-                    forwardRef={ref}
                     id={fileInfo.id!}
                     defaultSource={{uri: fileInfo.uri!}}
                     onError={handleOnError}
                     resizeMode='contain'
                     style={{width, height}}
                 />
-
-            );
-        }
-    }
-
-    if (image && linkDestination && !disabled) {
-        return (
-            <TouchableWithFeedback
-                onPress={handleLinkPress}
-                onLongPress={handleLinkLongPress}
-                style={[{width, height}, style.container]}
-                testID='markdown_image_link'
-            >
-                {image}
             </TouchableWithFeedback>
         );
     }
@@ -261,23 +279,7 @@ const MarkdownImage = ({
     return (
         <GalleryInit galleryIdentifier={galleryIdentifier}>
             <Animated.View testID='markdown_image'>
-                <LongPressGestureHandler
-                    enabled={!disabled}
-                    onGestureEvent={handleLinkLongPress}
-                    waitFor={tapRef}
-                >
-                    <Animated.View style={[styles, {width, height}, style.container]}>
-                        <TapGestureHandler
-                            enabled={!disabled}
-                            onGestureEvent={onGestureEvent}
-                            ref={tapRef}
-                        >
-                            <Animated.View>
-                                {image}
-                            </Animated.View>
-                        </TapGestureHandler>
-                    </Animated.View>
-                </LongPressGestureHandler>
+                {image}
             </Animated.View>
         </GalleryInit>
     );

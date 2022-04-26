@@ -14,3 +14,10 @@ type WebSocketMessage = {
     broadcast: WebsocketBroadcast;
     seq: number;
 }
+
+type ThreadReadChangedData = {
+    thread_id: string;
+    timestamp: number;
+    unread_mentions: number;
+    unread_replies: number;
+};

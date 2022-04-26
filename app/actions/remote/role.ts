@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {queryRoles} from '@queries/servers/role';
 
 import {forceLogoutIfNecessary} from './session';
@@ -26,14 +26,14 @@ export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string
 
     const database = DatabaseManager.serverDatabases[serverUrl].database;
     const operator = DatabaseManager.serverDatabases[serverUrl].operator;
-    const existingRoles = await queryRoles(database);
+    const existingRoles = await queryRoles(database).fetch();
 
-    const roleNames = existingRoles.map((role) => {
+    const roleNames = new Set(existingRoles.map((role) => {
         return role.name;
-    });
+    }));
 
     const newRoles = updatedRoles.filter((newRole) => {
-        return !roleNames.includes(newRole);
+        return !roleNames.has(newRole);
     });
 
     if (!newRoles.length) {
@@ -42,7 +42,7 @@ export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string
 
     try {
         const roles = await client.getRolesByNames(newRoles);
-        if (!fetchOnly && roles.length) {
+        if (!fetchOnly) {
             await operator.handleRole({
                 roles,
                 prepareRecordsOnly: false,

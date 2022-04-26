@@ -10,12 +10,12 @@ const {CATEGORY} = MM_TABLES.SERVER;
 export default tableSchema({
     name: CATEGORY,
     columns: [
+        {name: 'collapsed', type: 'boolean'},
         {name: 'display_name', type: 'string'},
-        {name: 'type', type: 'string'},
+        {name: 'muted', type: 'boolean'},
         {name: 'sort_order', type: 'number'},
         {name: 'sorting', type: 'string'},
-        {name: 'muted', type: 'boolean'},
-        {name: 'collapsed', type: 'boolean'},
         {name: 'team_id', type: 'string', isIndexed: true},
+        {name: 'type', type: 'string'},
     ],
 });

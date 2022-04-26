@@ -5,8 +5,8 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {Events} from '@constants';
 import {t} from '@i18n';
-import {Analytics, create} from '@init/analytics';
 import {setServerCredentials} from '@init/credentials';
+import {Analytics, create} from '@managers/analytics';
 import {semverFromServerVersion} from '@utils/server';
 
 import * as ClientConstants from './constants';
@@ -191,6 +191,14 @@ export default class ClientBase {
 
     getRedirectLocationRoute() {
         return `${this.urlVersion}/redirect_location`;
+    }
+
+    getThreadsRoute(userId: string, teamId: string): string {
+        return `${this.getUserRoute(userId)}/teams/${teamId}/threads`;
+    }
+
+    getThreadRoute(userId: string, teamId: string, threadId: string): string {
+        return `${this.getThreadsRoute(userId, teamId)}/${threadId}`;
     }
 
     getAppsProxyRoute() {

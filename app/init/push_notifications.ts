@@ -22,13 +22,11 @@ import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import NativeNotifications from '@notifications';
 import {queryServerName} from '@queries/app/servers';
-import {queryCurrentChannelId} from '@queries/servers/system';
+import {getCurrentChannelId} from '@queries/servers/system';
 import {showOverlay} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
 import {convertToNotificationData} from '@utils/notification';
-
-import {getActiveServerUrl} from './credentials';
 
 const CATEGORY = 'CAN_REPLY';
 const REPLY_ACTION = 'REPLY_ACTION';
@@ -132,11 +130,10 @@ class PushNotifications {
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
         if (database) {
             const isTabletDevice = await isTablet();
-            const activeServerUrl = await getActiveServerUrl();
             const displayName = await queryServerName(DatabaseManager.appDatabase!.database, serverUrl);
-            const channelId = await queryCurrentChannelId(database);
+            const channelId = await getCurrentChannelId(database);
             let serverName;
-            if (serverUrl !== activeServerUrl && Object.keys(DatabaseManager.serverDatabases).length > 1) {
+            if (Object.keys(DatabaseManager.serverDatabases).length > 1) {
                 serverName = displayName;
             }
 

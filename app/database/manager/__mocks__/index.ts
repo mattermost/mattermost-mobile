@@ -4,8 +4,8 @@
 import {Database, Q} from '@nozbe/watermelondb';
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
 import logger from '@nozbe/watermelondb/utils/common/logger';
-import * as FileSystem from 'expo-file-system';
 import {DeviceEventEmitter, Platform} from 'react-native';
+import FileSystem from 'react-native-fs';
 
 import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
@@ -14,8 +14,8 @@ import {InfoModel, GlobalModel, ServersModel} from '@database/models/app';
 import {CategoryModel, CategoryChannelModel, ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
     MyChannelModel, MyChannelSettingsModel, MyTeamModel,
     PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
-    SlashCommandModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
-    TermsOfServiceModel, ThreadModel, ThreadParticipantModel, UserModel,
+    SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
+    ThreadModel, ThreadParticipantModel, ThreadInTeamModel, UserModel,
 } from '@database/models/server';
 import AppDataOperator from '@database/operator/app_data_operator';
 import ServerDataOperator from '@database/operator/server_data_operator';
@@ -50,8 +50,8 @@ class DatabaseManager {
             CategoryModel, CategoryChannelModel, ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
             MyChannelModel, MyChannelSettingsModel, MyTeamModel,
             PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
-            SlashCommandModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
-            TermsOfServiceModel, ThreadModel, ThreadParticipantModel, UserModel,
+            SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
+            ThreadModel, ThreadParticipantModel, ThreadInTeamModel, UserModel,
         ];
         this.databaseDirectory = '';
     }
@@ -301,8 +301,17 @@ class DatabaseManager {
         const databaseFile = `${androidFilesDir}${databaseName}.db`;
         const databaseJournal = `${androidFilesDir}${databaseName}.db-journal`;
 
-        await FileSystem.deleteAsync(databaseFile);
-        await FileSystem.deleteAsync(databaseJournal);
+        try {
+            await FileSystem.unlink(databaseFile);
+        } catch {
+            // do nothing
+        }
+
+        try {
+            await FileSystem.unlink(databaseJournal);
+        } catch {
+            // do nothing
+        }
     };
 
     factoryReset = async (shouldRemoveDirectory: boolean): Promise<boolean> => {
@@ -315,7 +324,7 @@ class DatabaseManager {
 
             // On Android, we'll remove the databases folder under the Document Directory
             const androidFilesDir = `${this.databaseDirectory}databases/`;
-            await FileSystem.deleteAsync(androidFilesDir);
+            await FileSystem.unlink(androidFilesDir);
             return true;
         } catch (e) {
             return false;

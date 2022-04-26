@@ -3,20 +3,20 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@actions/local/timezone';
+import {getDeviceTimezone, isTimezoneEnabled} from '@actions/local/timezone';
 import {Database, Events} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
-import NetworkManager from '@init/network_manager';
-import WebsocketManager from '@init/websocket_manager';
-import {queryDeviceToken} from '@queries/app/global';
-import {queryCurrentUserId, queryCommonSystemValues} from '@queries/servers/system';
+import NetworkManager from '@managers/network_manager';
+import WebsocketManager from '@managers/websocket_manager';
+import {getDeviceToken} from '@queries/app/global';
+import {getCurrentUserId, getCommonSystemValues} from '@queries/servers/system';
 import {getCSRFFromCookie} from '@utils/security';
 
 import {loginEntry} from './entry';
-import {logError} from './error';
 import {fetchDataRetentionPolicy} from './systems';
+import {autoUpdateTimezone} from './user';
 
 import type ClientError from '@client/rest/error';
 import type {LoginArgs} from '@typings/database/database';
@@ -30,7 +30,7 @@ export const completeLogin = async (serverUrl: string, user: UserProfile) => {
     }
 
     const {database} = operator;
-    const {config, license}: { config: Partial<ClientConfig>; license: Partial<ClientLicense> } = await queryCommonSystemValues(database);
+    const {config, license}: { config: Partial<ClientConfig>; license: Partial<ClientLicense> } = await getCommonSystemValues(database);
 
     if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
         return null;
@@ -68,7 +68,7 @@ export const forceLogoutIfNecessary = async (serverUrl: string, err: ClientError
         return {error: `${serverUrl} database not found`};
     }
 
-    const currentUserId = await queryCurrentUserId(database);
+    const currentUserId = await getCurrentUserId(database);
 
     if ('status_code' in err && err.status_code === HTTP_UNAUTHORIZED && err?.url?.indexOf('/login') === -1 && currentUserId) {
         await logout(serverUrl);
@@ -88,7 +88,6 @@ export const getSessions = async (serverUrl: string, currentUserId: string) => {
     try {
         return await client.getSessions(currentUserId);
     } catch (e) {
-        logError(e);
         await forceLogoutIfNecessary(serverUrl, e as ClientError);
     }
 
@@ -112,7 +111,7 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
     }
 
     try {
-        deviceToken = await queryDeviceToken(appDatabase);
+        deviceToken = await getDeviceToken(appDatabase);
         user = await client.login(
             loginId,
             password,
@@ -217,7 +216,7 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
                 displayName: serverDisplayName,
             },
         });
-        deviceToken = await queryDeviceToken(database);
+        deviceToken = await getDeviceToken(database);
         user = await client.getMe();
         await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});
         await server?.operator.handleSystem({

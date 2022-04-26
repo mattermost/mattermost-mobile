@@ -7,16 +7,21 @@ import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preferen
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
 import {fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
-import {General, Preferences} from '@constants';
+import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
+import {getDeviceToken} from '@queries/app/global';
 import {queryAllServers} from '@queries/app/servers';
 import {queryAllChannelsForTeam} from '@queries/servers/channel';
-import {queryConfig} from '@queries/servers/system';
-import {deleteMyTeams, queryAvailableTeamIds, queryMyTeams, queryMyTeamsById, queryTeamsById} from '@queries/servers/team';
+import {getConfig} from '@queries/servers/system';
+import {deleteMyTeams, getAvailableTeamIds, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
+import {isDMorGM} from '@utils/channel';
+import {isCRTEnabled} from '@utils/thread';
+
+import {fetchNewThreads} from '../thread';
 
 import type ClientError from '@client/rest/error';
 
@@ -43,11 +48,11 @@ export const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[])
     const {database} = operator;
     if (removeTeamIds?.length) {
         // Immediately delete myTeams so that the UI renders only teams the user is a member of.
-        const removeMyTeams = await queryMyTeamsById(database, removeTeamIds);
+        const removeMyTeams = await queryMyTeamsByIds(database, removeTeamIds).fetch();
         if (removeMyTeams?.length) {
             await deleteMyTeams(operator, removeMyTeams);
             const ids = removeMyTeams.map((m) => m.id);
-            const removeTeams = await queryTeamsById(database, ids);
+            const removeTeams = await queryTeamsById(database, ids).fetch();
             return removeTeams;
         }
     }
@@ -81,11 +86,11 @@ export const fetchAppEntryData = async (serverUrl: string, since: number, initia
 
     if (!initialTeamId && teamData.teams?.length && teamData.memberships?.length) {
         // If no initial team was set in the database but got teams in the response
-        const config = await queryConfig(database);
+        const config = await getConfig(database);
         const teamOrderPreference = getPreferenceValue(prefData.preferences || [], Preferences.TEAMS_ORDER, '', '') as string;
-        const teamMembers = teamData.memberships.filter((m) => m.delete_at === 0).map((m) => m.team_id);
-        const myTeams = teamData.teams!.filter((t) => teamMembers?.includes(t.id));
-        const defaultTeam = selectDefaultTeam(myTeams, meData.user?.locale || DEFAULT_LOCALE, teamOrderPreference, config.ExperimentalPrimaryTeam);
+        const teamMembers = new Set(teamData.memberships.filter((m) => m.delete_at === 0).map((m) => m.team_id));
+        const myTeams = teamData.teams!.filter((t) => teamMembers.has(t.id));
+        const defaultTeam = selectDefaultTeam(myTeams, meData.user?.locale || DEFAULT_LOCALE, teamOrderPreference, config?.ExperimentalPrimaryTeam);
         if (defaultTeam?.id) {
             chData = await fetchMyChannelsForTeam(serverUrl, defaultTeam.id, includeDeletedChannels, since, fetchOnly);
         }
@@ -107,8 +112,8 @@ export const fetchAppEntryData = async (serverUrl: string, since: number, initia
 
     if (teamData.teams?.length === 0 && !teamData.error) {
         // User is no longer a member of any team
-        const myTeams = await queryMyTeams(database);
-        removeTeamIds.push(...(myTeams?.map((myTeam) => myTeam.id) || []));
+        const myTeams = await queryMyTeams(database).fetch();
+        removeTeamIds.push(...(myTeams.map((myTeam) => myTeam.id) || []));
 
         return {
             ...data,
@@ -125,7 +130,7 @@ export const fetchAppEntryData = async (serverUrl: string, since: number, initia
             removeTeamIds.push(initialTeamId);
         }
 
-        const availableTeamIds = await queryAvailableTeamIds(database, initialTeamId, teamData.teams, prefData.preferences, meData.user?.locale);
+        const availableTeamIds = await getAvailableTeamIds(database, initialTeamId, teamData.teams, prefData.preferences, meData.user?.locale);
         const alternateTeamData = await fetchAlternateTeamData(serverUrl, availableTeamIds, removeTeamIds, includeDeletedChannels, since, fetchOnly);
 
         data = {
@@ -136,11 +141,11 @@ export const fetchAppEntryData = async (serverUrl: string, since: number, initia
 
     if (data.chData?.channels) {
         const removeChannelIds: string[] = [];
-        const fetchedChannelIds = data.chData.channels.map((channel) => channel.id);
+        const fetchedChannelIds = new Set(data.chData.channels.map((channel) => channel.id));
 
-        const channels = await queryAllChannelsForTeam(database, initialTeamId);
+        const channels = await queryAllChannelsForTeam(database, initialTeamId).fetch();
         for (const channel of channels) {
-            if (!fetchedChannelIds.includes(channel.id)) {
+            if (!fetchedChannelIds.has(channel.id)) {
                 removeChannelIds.push(channel.id);
             }
         }
@@ -179,10 +184,10 @@ export const fetchAlternateTeamData = async (
     return {initialTeamId, removeTeamIds};
 };
 
-export const deferredAppEntryActions = async (
+export async function deferredAppEntryActions(
     serverUrl: string, since: number, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined,
     config: ClientConfig, license: ClientLicense, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
-    initialTeamId?: string, initialChannelId?: string, useGraphQL = false) => {
+    initialTeamId?: string, initialChannelId?: string, useGraphQL = false) {
     // defer fetching posts for initial channel
     if (initialChannelId) {
         fetchPostsForChannel(serverUrl, initialChannelId);
@@ -192,7 +197,7 @@ export const deferredAppEntryActions = async (
 
     // defer sidebar DM & GM profiles
     if (chData?.channels?.length && chData.memberships?.length) {
-        const directChannels = chData.channels.filter((c) => c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL);
+        const directChannels = chData.channels.filter(isDMorGM);
         const channelsToFetchProfiles = new Set<Channel>(directChannels);
         if (!useGraphQL && channelsToFetchProfiles.size) {
             const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config, license);
@@ -208,8 +213,42 @@ export const deferredAppEntryActions = async (
         await fetchTeamsChannelsAndUnreadPosts(serverUrl, since, teamData.teams, teamData.memberships, initialTeamId);
     }
 
+    if (preferences && isCRTEnabled(preferences, config)) {
+        if (initialTeamId) {
+            await fetchNewThreads(serverUrl, initialTeamId, false);
+        }
+
+        if (teamData.teams?.length) {
+            for await (const team of teamData.teams) {
+                if (team.id !== initialTeamId) {
+                    // need to await here since GM/DM threads in different teams overlap
+                    await fetchNewThreads(serverUrl, team.id, false);
+                }
+            }
+        }
+    }
+
     fetchAllTeams(serverUrl);
     updateAllUsersSince(serverUrl, since);
+}
+
+export const registerDeviceToken = async (serverUrl: string) => {
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    const appDatabase = DatabaseManager.appDatabase?.database;
+    if (appDatabase) {
+        const deviceToken = await getDeviceToken(appDatabase);
+        if (deviceToken) {
+            client.attachDevice(deviceToken);
+        }
+    }
+
+    return {error: undefined};
 };
 
 export const syncOtherServers = async (serverUrl: string) => {
@@ -218,6 +257,7 @@ export const syncOtherServers = async (serverUrl: string) => {
         const servers = await queryAllServers(database);
         for (const server of servers) {
             if (server.url !== serverUrl && server.lastActiveAt > 0) {
+                registerDeviceToken(server.url);
                 syncAllChannelMembers(server.url);
             }
         }

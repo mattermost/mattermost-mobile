@@ -32,10 +32,11 @@ export default class CategoryModel extends Model implements CategoryInterface {
     /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
-        /** A CATEGORY has a 1:N relationship with CHANNEL. A CATEGORY can possess multiple channels */
+        /** A CHANNEL can belong to several CATEGORY, and a CATEGORY posses multiple channels (N:N relationship).
+         *  We use the intermediate table CATEGORY_CHANNEL for this relationship */
         [CATEGORY_CHANNEL]: {type: 'has_many', foreignKey: 'category_id'},
 
-        /** A TEAM can be associated to CATEGORY (relationship is 1:N) */
+        /**  A Category belongs to a Team, and a Team can have several categories (relationship 1:N) */
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
     };
 
@@ -67,18 +68,26 @@ export default class CategoryModel extends Model implements CategoryInterface {
     @children(CATEGORY_CHANNEL) categoryChannels!: Query<CategoryChannelModel>;
 
     /** categoryChannelsBySortOrder : Retrieves assocated category channels sorted by sort_order */
-    @lazy categoryChannelsBySortOrder = this.categoryChannels.collection.query(
-        Q.where('category_id', this.id),
-        Q.sortBy('sort_order', Q.asc),
-    );
+    @lazy categoryChannelsBySortOrder = this.categoryChannels.collection.
+        query(
+            Q.on(MY_CHANNEL,
+                Q.where('id', Q.notEq('')),
+            ),
+            Q.where('category_id', this.id),
+            Q.sortBy('sort_order', Q.asc),
+        );
 
     /** channels : Retrieves all the channels that are part of this category */
     @lazy channels = this.collections.
         get<ChannelModel>(CHANNEL).
         query(
-            Q.on(CATEGORY_CHANNEL, 'category_id', this.id),
-            Q.where('delete_at', Q.eq(0)),
-            Q.sortBy('display_name'),
+            Q.experimentalJoinTables([MY_CHANNEL, CATEGORY_CHANNEL]),
+            Q.on(CATEGORY_CHANNEL,
+                Q.and(
+                    Q.on(MY_CHANNEL, Q.where('id', Q.notEq(''))),
+                    Q.where('category_id', this.id),
+                ),
+            ),
         );
 
     /** myChannels : Retrieves all myChannels that are part of this category */
@@ -88,7 +97,7 @@ export default class CategoryModel extends Model implements CategoryInterface {
             Q.experimentalJoinTables([CHANNEL, CATEGORY_CHANNEL]),
             Q.on(CATEGORY_CHANNEL,
                 Q.and(
-                    Q.on(CHANNEL, Q.where('delete_at', Q.eq(0))),
+                    Q.on(CHANNEL, Q.where('create_at', Q.gte(0))),
                     Q.where('category_id', this.id),
                 ),
             ),

@@ -3,7 +3,7 @@
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleProp, StyleSheet, ViewStyle, ViewToken} from 'react-native';
+import {DeviceEventEmitter, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleProp, StyleSheet, ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
@@ -21,6 +21,7 @@ import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} fro
 import MoreMessages from './more_messages';
 import PostListRefreshControl from './refresh_control';
 
+import type {ViewableItemsChanged, ViewableItemsChangedListenerEvent} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
@@ -28,7 +29,9 @@ type Props = {
     contentContainerStyle?: StyleProp<ViewStyle>;
     currentTimezone: string | null;
     currentUsername: string;
+    highlightedId?: PostModel['id'];
     highlightPinnedOrSaved?: boolean;
+    isCRTEnabled?: boolean;
     isTimezoneEnabled: boolean;
     lastViewedAt: number;
     location: string;
@@ -44,13 +47,7 @@ type Props = {
     testID: string;
 }
 
-type ViewableItemsChanged = {
-    viewableItems: ViewToken[];
-    changed: ViewToken[];
-}
-
 type onScrollEndIndexListenerEvent = (endIndex: number) => void;
-type ViewableItemsChangedListenerEvent = (viewableItms: ViewToken[]) => void;
 
 type ScrollIndexFailed = {
     index: number;
@@ -84,7 +81,9 @@ const PostList = ({
     currentTimezone,
     currentUsername,
     footer,
+    highlightedId,
     highlightPinnedOrSaved = true,
+    isCRTEnabled,
     isTimezoneEnabled,
     lastViewedAt,
     location,
@@ -101,7 +100,8 @@ const PostList = ({
     const listRef = useRef<FlatList>(null);
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
-    const [offsetY, setOffsetY] = useState(0);
+    const scrolledToHighlighted = useRef(false);
+    const [enableRefreshControl, setEnableRefreshControl] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -115,7 +115,7 @@ const PostList = ({
 
     useEffect(() => {
         listRef.current?.scrollToOffset({offset: 0, animated: false});
-    }, [channelId, listRef.current]);
+    }, [channelId]);
 
     useEffect(() => {
         const scrollToBottom = (screen: string) => {
@@ -147,21 +147,20 @@ const PostList = ({
     const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
         if (Platform.OS === 'android') {
             const {y} = event.nativeEvent.contentOffset;
-            if (y === 0) {
-                setOffsetY(y);
-            } else if (offsetY === 0 && y !== 0) {
-                setOffsetY(y);
-            }
+            setEnableRefreshControl(y === 0);
         }
-    }, [offsetY]);
+    }, []);
 
     const onScrollToIndexFailed = useCallback((info: ScrollIndexFailed) => {
         const index = Math.min(info.highestMeasuredFrameIndex, info.index);
-        if (onScrollEndIndexListener.current) {
-            onScrollEndIndexListener.current(index);
+
+        if (!highlightedId) {
+            if (onScrollEndIndexListener.current) {
+                onScrollEndIndexListener.current(index);
+            }
+            scrollToIndex(index);
         }
-        scrollToIndex(index);
-    }, []);
+    }, [highlightedId]);
 
     const onViewableItemsChanged = useCallback(({viewableItems}: ViewableItemsChanged) => {
         if (!viewableItems.length) {
@@ -170,17 +169,17 @@ const PostList = ({
 
         const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
             if (isViewable) {
-                acc[item.id] = true;
+                acc[`${location}-${item.id}`] = true;
             }
             return acc;
         }, {});
 
-        DeviceEventEmitter.emit('scrolled', viewableItemsMap);
+        DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItemsMap);
 
         if (onViewableItemsChangedListener.current) {
             onViewableItemsChangedListener.current(viewableItems);
         }
-    }, []);
+    }, [location]);
 
     const registerScrollEndIndexListener = useCallback((listener) => {
         onScrollEndIndexListener.current = listener;
@@ -234,6 +233,7 @@ const PostList = ({
                     <ThreadOverview
                         rootId={rootId!}
                         testID={`${testID}.thread_overview`}
+                        style={styles.scale}
                     />
                 );
             }
@@ -285,22 +285,24 @@ const PostList = ({
         }
 
         // Skip rendering Flag for the root post in the thread as it is visible in the `Thread Overview`
-        const skipFlaggedHeader = (
+        const skipSaveddHeader = (
             location === Screens.THREAD &&
             item.id === rootId
         );
 
         const postProps = {
+            highlight: highlightedId === item.id,
             highlightPinnedOrSaved,
             location,
             nextPost,
             previousPost,
             shouldRenderReplyButton,
-            skipFlaggedHeader,
+            skipSaveddHeader,
         };
 
         return (
             <Post
+                isCRTEnabled={isCRTEnabled}
                 key={item.id}
                 post={item}
                 style={styles.scale}
@@ -308,21 +310,36 @@ const PostList = ({
                 {...postProps}
             />
         );
-    }, [currentTimezone, highlightPinnedOrSaved, isTimezoneEnabled, orderedPosts, shouldRenderReplyButton, theme]);
+    }, [currentTimezone, highlightPinnedOrSaved, isCRTEnabled, isTimezoneEnabled, orderedPosts, shouldRenderReplyButton, theme]);
 
-    const scrollToIndex = useCallback((index: number, animated = true) => {
+    const scrollToIndex = useCallback((index: number, animated = true, applyOffset = true) => {
         listRef.current?.scrollToIndex({
             animated,
             index,
-            viewOffset: 0,
+            viewOffset: applyOffset ? Platform.select({ios: -45, default: 0}) : 0,
             viewPosition: 1, // 0 is at bottom
         });
     }, []);
 
+    useEffect(() => {
+        const t = setTimeout(() => {
+            if (highlightedId && orderedPosts && !scrolledToHighlighted.current) {
+                scrolledToHighlighted.current = true;
+                // eslint-disable-next-line max-nested-callbacks
+                const index = orderedPosts.findIndex((p) => typeof p !== 'string' && p.id === highlightedId);
+                if (index >= 0) {
+                    scrollToIndex(index, true);
+                }
+            }
+        }, 500);
+
+        return () => clearTimeout(t);
+    }, [orderedPosts, highlightedId]);
+
     return (
         <>
             <PostListRefreshControl
-                enabled={offsetY === 0}
+                enabled={enableRefreshControl}
                 refreshing={refreshing}
                 onRefresh={onRefresh}
                 style={styles.container}
@@ -334,7 +351,6 @@ const PostList = ({
                     keyboardShouldPersistTaps='handled'
                     keyExtractor={keyExtractor}
                     initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
-                    listKey={`postList-${channelId}`}
                     ListFooterComponent={footer}
                     maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
                     maxToRenderPerBatch={10}
@@ -350,7 +366,7 @@ const PostList = ({
                     scrollEventThrottle={60}
                     style={styles.flex}
                     viewabilityConfig={VIEWABILITY_CONFIG}
-                    testID={testID}
+                    testID={`${testID}.flat_list`}
                 />
             </PostListRefreshControl>
             {showMoreMessages &&

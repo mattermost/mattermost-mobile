@@ -18,7 +18,7 @@
   "channel.hasGuests": "이 그룹 메시지는 게스트가 있습니다.",
   "channel.isGuest": "이 사람은 게스트입니다.",
   "channel_header.addMembers": "멤버 추가",
-  "channel_header.directchannel.you": "{displayname} (당신) ",
+  "channel_header.directchannel.you": "{displayName} (당신) ",
   "channel_header.manageMembers": "회원 관리",
   "channel_header.notificationPreference": "모바일 푸시 알림",
   "channel_header.notificationPreference.all": "모두",

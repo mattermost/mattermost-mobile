@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.util.Log;
 import java.io.File;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +29,7 @@ import com.wix.reactnativenotifications.core.JsIOHelper;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactPackage;
+import com.facebook.react.config.ReactFeatureFlags;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.TurboReactPackage;
 import com.facebook.react.bridge.NativeModule;
@@ -41,6 +41,7 @@ import com.facebook.react.modules.network.OkHttpClientProvider;
 import com.facebook.soloader.SoLoader;
 
 import com.mattermost.networkclient.RCTOkHttpClientFactory;
+import com.mattermost.newarchitecture.MainApplicationReactNativeHost;
 import com.swmansion.reanimated.ReanimatedJSIModulePackage;
 import com.nozbe.watermelondb.jsi.WatermelonDBJSIPackage;
 
@@ -119,10 +120,17 @@ public class MainApplication extends NavigationApplication implements INotificat
         return "index";
       }
     };
+  
+  private final ReactNativeHost mNewArchitectureNativeHost =
+      new MainApplicationReactNativeHost(this);
 
   @Override
   public ReactNativeHost getReactNativeHost() {
-    return mReactNativeHost;
+    if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
+      return mNewArchitectureNativeHost;
+    } else {
+      return mReactNativeHost;
+    }
   }
 
   @Override
@@ -130,15 +138,17 @@ public class MainApplication extends NavigationApplication implements INotificat
     super.onCreate();
     instance = this;
 
+    // If you opted-in for the New Architecture, we enable the TurboModule system
+    ReactFeatureFlags.useTurboModules = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED;
+    SoLoader.init(this, /* native exopackage */ false);
+    initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
+
     Context context = getApplicationContext();
 
     // Delete any previous temp files created by the app
     File tempFolder = new File(context.getCacheDir(), RealPathUtil.CACHE_DIR_NAME);
     RealPathUtil.deleteTempFiles(tempFolder);
     Log.i("ReactNative", "Cleaning temp cache " + tempFolder.getAbsolutePath());
-
-    SoLoader.init(this, /* native exopackage */ false);
-    initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
 
     // Tells React Native to use our RCTOkHttpClientFactory which builds an OKHttpClient
     // with a cookie jar defined in APIClientModule and an interceptor to intercept all

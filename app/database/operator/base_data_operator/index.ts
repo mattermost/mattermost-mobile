@@ -3,7 +3,6 @@
 
 import {Database, Q} from '@nozbe/watermelondb';
 
-import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {
     getRangeOfValues,
     getValidRecordsForUpdate,
@@ -23,8 +22,8 @@ import type {
 
 export interface BaseDataOperatorType {
     database: Database;
-    handleRecords: ({findMatchingRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues, tableName, prepareRecordsOnly}: HandleRecordsArgs) => Promise<Model[]>;
-    processRecords: ({createOrUpdateRawValues, deleteRawValues, tableName, findMatchingRecordBy, fieldName}: ProcessRecordsArgs) => Promise<ProcessRecordResults>;
+    handleRecords: ({buildKeyRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues, tableName, prepareRecordsOnly}: HandleRecordsArgs) => Promise<Model[]>;
+    processRecords: ({createOrUpdateRawValues, deleteRawValues, tableName, buildKeyRecordBy, fieldName}: ProcessRecordsArgs) => Promise<ProcessRecordResults>;
     batchRecords: (models: Model[]) => Promise<void>;
     prepareRecords: ({tableName, createRaws, deleteRaws, updateRaws, transformer}: OperationArgs) => Promise<Model[]>;
 }
@@ -43,16 +42,16 @@ export default class BaseDataOperator {
      * @param {RawValue[]} inputsArg.createOrUpdateRawValues
      * @param {string} inputsArg.tableName
      * @param {string} inputsArg.fieldName
-     * @param {(existing: Model, newElement: RawValue) => boolean} inputsArg.findMatchingRecordBy
+     * @param {(existing: Model, newElement: RawValue) => boolean} inputsArg.buildKeyRecordBy
      * @returns {Promise<{ProcessRecordResults}>}
      */
-    processRecords = async ({createOrUpdateRawValues = [], deleteRawValues = [], tableName, findMatchingRecordBy, fieldName}: ProcessRecordsArgs): Promise<ProcessRecordResults> => {
+    processRecords = async ({createOrUpdateRawValues = [], deleteRawValues = [], tableName, buildKeyRecordBy, fieldName}: ProcessRecordsArgs): Promise<ProcessRecordResults> => {
         const getRecords = async (rawValues: RawValue[]) => {
             // We will query a table where one of its fields can match a range of values.  Hence, here we are extracting all those potential values.
             const columnValues: string[] = getRangeOfValues({fieldName, raws: rawValues});
 
             if (!columnValues.length && rawValues.length) {
-                throw new DataOperatorException(
+                throw new Error(
                     `Invalid "fieldName" or "tableName" has been passed to the processRecords method for tableName ${tableName} fieldName ${fieldName}`,
                 );
             }
@@ -78,15 +77,22 @@ export default class BaseDataOperator {
 
         // for create or update flow
         const createOrUpdateRaws = await getRecords(createOrUpdateRawValues);
+        const recordsByKeys = createOrUpdateRaws.reduce((result: Record<string, Model>, record) => {
+            // @ts-expect-error object with string key
+            const key = buildKeyRecordBy?.(record) || record[fieldName];
+            result[key] = record;
+            return result;
+        }, {});
+
         if (createOrUpdateRawValues.length > 0) {
-            createOrUpdateRawValues.forEach((newElement: RawValue) => {
-                const findIndex = createOrUpdateRaws.findIndex((existing: Model) => {
-                    return findMatchingRecordBy(existing, newElement);
-                });
+            for (const newElement of createOrUpdateRawValues) {
+                // @ts-expect-error object with string key
+                const key = buildKeyRecordBy?.(newElement) || newElement[fieldName];
+                const existingRecord = recordsByKeys[key];
 
                 // We found a record in the database that matches this element; hence, we'll proceed for an UPDATE operation
-                if (findIndex > -1) {
-                    const existingRecord = createOrUpdateRaws[findIndex];
+                if (existingRecord) {
+                    // const existingRecord = createOrUpdateRaws[findIndex];
 
                     // Some raw value has an update_at field.  We'll proceed to update only if the update_at value is different from the record's value in database
                     const updateRecords = getValidRecordsForUpdate({
@@ -96,12 +102,12 @@ export default class BaseDataOperator {
                     });
 
                     updateRaws.push(updateRecords);
-                    return;
+                    continue;
                 }
 
                 // This RawValue is not present in the database; hence, we need to create it
                 createRaws.push({record: undefined, raw: newElement});
-            });
+            }
         }
 
         return {
@@ -124,7 +130,9 @@ export default class BaseDataOperator {
      */
     prepareRecords = async ({tableName, createRaws, deleteRaws, updateRaws, transformer}: OperationArgs): Promise<Model[]> => {
         if (!this.database) {
-            throw new DataOperatorException('Database not defined');
+            // eslint-disable-next-line no-console
+            console.warn('Database not defined in prepareRecords');
+            return [];
         }
 
         let preparedRecords: Array<Promise<Model>> = [];
@@ -179,7 +187,7 @@ export default class BaseDataOperator {
      * @throws {DataOperatorException}
      * @returns {Promise<void>}
      */
-    batchRecords = async (models: Model[]): Promise<void> => {
+    async batchRecords(models: Model[]): Promise<void> {
         try {
             if (models.length > 0) {
                 await this.database.write(async (writer: WriterInterface) => {
@@ -187,14 +195,15 @@ export default class BaseDataOperator {
                 });
             }
         } catch (e) {
-            throw new DataOperatorException('batchRecords error ', e as Error);
+            // eslint-disable-next-line no-console
+            console.warn('batchRecords error ', e as Error);
         }
-    };
+    }
 
     /**
      * handleRecords : Utility that processes some records' data against values already present in the database so as to avoid duplicity.
      * @param {HandleRecordsArgs} handleRecordsArgs
-     * @param {(existing: Model, newElement: RawValue) => boolean} handleRecordsArgs.findMatchingRecordBy
+     * @param {(existing: Model, newElement: RawValue) => boolean} handleRecordsArgs.buildKeyRecordBy
      * @param {string} handleRecordsArgs.fieldName
      * @param {(TransformerArgs) => Promise<Model>} handleRecordsArgs.composer
      * @param {RawValue[]} handleRecordsArgs.createOrUpdateRawValues
@@ -202,18 +211,20 @@ export default class BaseDataOperator {
      * @param {string} handleRecordsArgs.tableName
      * @returns {Promise<Model[]>}
      */
-    handleRecords = async ({findMatchingRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues = [], tableName, prepareRecordsOnly = true}: HandleRecordsArgs): Promise<Model[]> => {
+    async handleRecords({buildKeyRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues = [], tableName, prepareRecordsOnly = true}: HandleRecordsArgs): Promise<Model[]> {
         if (!createOrUpdateRawValues.length) {
-            throw new DataOperatorException(
+            // eslint-disable-next-line no-console
+            console.warn(
                 `An empty "rawValues" array has been passed to the handleRecords method for tableName ${tableName}`,
             );
+            return [];
         }
 
         const {createRaws, deleteRaws, updateRaws} = await this.processRecords({
             createOrUpdateRawValues,
             deleteRawValues,
             tableName,
-            findMatchingRecordBy,
+            buildKeyRecordBy,
             fieldName,
         });
 
@@ -231,5 +242,5 @@ export default class BaseDataOperator {
         }
 
         return models;
-    };
+    }
 }

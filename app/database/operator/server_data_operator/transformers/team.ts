@@ -7,7 +7,6 @@ import {OperationType} from '@typings/database/enums';
 
 import type {TransformerArgs} from '@typings/database/database';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
-import type SlashCommandModel from '@typings/database/models/servers/slash_command';
 import type TeamModel from '@typings/database/models/servers/team';
 import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
 import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
@@ -15,7 +14,6 @@ import type TeamSearchHistoryModel from '@typings/database/models/servers/team_s
 
 const {
     MY_TEAM,
-    SLASH_COMMAND,
     TEAM,
     TEAM_CHANNEL_HISTORY,
     TEAM_MEMBERSHIP,
@@ -138,41 +136,6 @@ export const transformTeamSearchHistoryRecord = ({action, database, value}: Tran
         value,
         fieldsMapper,
     }) as Promise<TeamSearchHistoryModel>;
-};
-
-/**
- * transformSlashCommandRecord: Prepares a record of the SERVER database 'SlashCommand' table for update or create actions.
- * @param {DataFactory} operator
- * @param {Database} operator.database
- * @param {RecordPair} operator.value
- * @returns {Promise<SlashCommandModel>}
- */
-export const transformSlashCommandRecord = ({action, database, value}: TransformerArgs): Promise<SlashCommandModel> => {
-    const raw = value.raw as SlashCommand;
-    const record = value.record as SlashCommandModel;
-    const isCreateAction = action === OperationType.CREATE;
-
-    // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
-    const fieldsMapper = (slashCommand: SlashCommandModel) => {
-        slashCommand._raw.id = isCreateAction ? (raw?.id ?? slashCommand.id) : record.id;
-        slashCommand.isAutoComplete = raw.auto_complete;
-        slashCommand.description = raw.description;
-        slashCommand.displayName = raw.display_name;
-        slashCommand.hint = raw.auto_complete_hint;
-        slashCommand.method = raw.method;
-        slashCommand.teamId = raw.team_id;
-        slashCommand.token = raw.token;
-        slashCommand.trigger = raw.trigger;
-        slashCommand.updateAt = raw.update_at;
-    };
-
-    return prepareBaseRecord({
-        action,
-        database,
-        tableName: SLASH_COMMAND,
-        value,
-        fieldsMapper,
-    }) as Promise<SlashCommandModel>;
 };
 
 /**

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {MEMBERS_PER_PAGE} from '@constants/graphql';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 
 import {Client} from '../rest';
 

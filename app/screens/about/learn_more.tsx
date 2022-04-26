@@ -10,10 +10,8 @@ import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type SystemModel from '@typings/database/models/servers/system';
-
 type LearnMoreProps = {
-    config: SystemModel;
+    config: ClientConfig;
     onHandleAboutEnterprise: () => void;
     onHandleAboutTeam: () => void;
 };
@@ -27,7 +25,7 @@ const LearnMore = ({config, onHandleAboutEnterprise, onHandleAboutTeam}: LearnMo
     let onPress = onHandleAboutTeam;
     let url = Config.TeamEditionLearnURL;
 
-    if (config.value?.BuildEnterpriseReady === 'true') {
+    if (config.BuildEnterpriseReady === 'true') {
         id = t('about.enterpriseEditionLearn');
         defaultMessage = 'Learn more about Enterprise Edition at ';
         onPress = onHandleAboutEnterprise;

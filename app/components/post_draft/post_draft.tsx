@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {DeviceEventEmitter, Platform, View} from 'react-native';
+import React, {RefObject, useState} from 'react';
+import {Platform, View} from 'react-native';
 import {KeyboardTrackingView, KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 
 import Autocomplete from '@components/autocomplete';
-import {PostDraft as PostDraftConstants, View as ViewConstants} from '@constants';
+import {View as ViewConstants} from '@constants';
 import {useIsTablet} from '@hooks/device';
 
 import Archived from './archived';
@@ -26,9 +26,12 @@ type Props = {
     message?: string;
     rootId?: string;
     scrollViewNativeID?: string;
+    keyboardTracker: RefObject<KeyboardTrackingViewRef>;
 }
 
-export default function PostDraft({
+const {KEYBOARD_TRACKING_OFFSET} = ViewConstants;
+
+function PostDraft({
     testID,
     accessoriesContainerID,
     canPost,
@@ -41,35 +44,12 @@ export default function PostDraft({
     message = '',
     rootId = '',
     scrollViewNativeID,
+    keyboardTracker,
 }: Props) {
-    const keyboardTracker = useRef<KeyboardTrackingViewRef>(null);
-    const resetScrollViewAnimationFrame = useRef<number>();
     const [value, setValue] = useState(message);
     const [cursorPosition, setCursorPosition] = useState(message.length);
     const [postInputTop, setPostInputTop] = useState(0);
     const isTablet = useIsTablet();
-
-    const updateNativeScrollView = useCallback((scrollViewNativeIDToUpdate: string) => {
-        if (keyboardTracker?.current && scrollViewNativeID === scrollViewNativeIDToUpdate) {
-            resetScrollViewAnimationFrame.current = requestAnimationFrame(() => {
-                keyboardTracker.current?.resetScrollView(scrollViewNativeIDToUpdate);
-                if (resetScrollViewAnimationFrame.current != null) {
-                    cancelAnimationFrame(resetScrollViewAnimationFrame.current);
-                }
-                resetScrollViewAnimationFrame.current = undefined;
-            });
-        }
-    }, [scrollViewNativeID]);
-
-    useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(PostDraftConstants.UPDATE_NATIVE_SCROLLVIEW, updateNativeScrollView);
-        return () => {
-            listener.remove();
-            if (resetScrollViewAnimationFrame.current) {
-                cancelAnimationFrame(resetScrollViewAnimationFrame.current);
-            }
-        };
-    }, [updateNativeScrollView]);
 
     if (channelIsArchived || deactivatedChannel) {
         const archivedTestID = `${testID}.archived`;
@@ -134,7 +114,7 @@ export default function PostDraft({
                 accessoriesContainerID={accessoriesContainerID}
                 ref={keyboardTracker}
                 scrollViewNativeID={scrollViewNativeID}
-                viewInitialOffsetY={isTablet ? ViewConstants.BOTTOM_TAB_HEIGHT : 0}
+                viewInitialOffsetY={isTablet && !rootId ? KEYBOARD_TRACKING_OFFSET : 0}
             >
                 {draftHandler}
             </KeyboardTrackingView>
@@ -144,3 +124,5 @@ export default function PostDraft({
         </>
     );
 }
+
+export default PostDraft;

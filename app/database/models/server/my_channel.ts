@@ -6,15 +6,17 @@ import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
+import MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelModelInterface from '@typings/database/models/servers/my_channel';
 
-const {CATEGORY_CHANNEL, CHANNEL, MY_CHANNEL} = MM_TABLES.SERVER;
+const {CATEGORY_CHANNEL, CHANNEL, MY_CHANNEL, MY_CHANNEL_SETTINGS} = MM_TABLES.SERVER;
 
 /**
  * MyChannel is an extension of the Channel model but it lists only the Channels the app's user belongs to
  */
-export default class MyChannelModel extends Model {
+export default class MyChannelModel extends Model implements MyChannelModelInterface {
     /** table (name) : MyChannel */
     static table = MY_CHANNEL;
 
@@ -49,4 +51,13 @@ export default class MyChannelModel extends Model {
 
     /** channel : The relation pointing to the CHANNEL table */
     @immutableRelation(CHANNEL, 'id') channel!: Relation<ChannelModel>;
+
+    /** settings: User specific settings/preferences for this channel */
+    @immutableRelation(MY_CHANNEL_SETTINGS, 'id') settings!: Relation<MyChannelSettingsModel>;
+
+    async destroyPermanently() {
+        const settings = await this.settings.fetch();
+        settings?.destroyPermanently();
+        super.destroyPermanently();
+    }
 }

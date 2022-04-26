@@ -4,22 +4,24 @@
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useState, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet, View, ActivityIndicator, FlatList} from 'react-native';
+import {ActivityIndicator, DeviceEventEmitter, FlatList, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, Edge} from 'react-native-safe-area-context';
 
-import {getRecentMentions} from '@actions/remote/search';
+import {fetchRecentMentions} from '@actions/remote/search';
+import FreezeScreen from '@components/freeze_screen';
 import NavigationHeader from '@components/navigation_header';
 import DateSeparator from '@components/post_list/date_separator';
+import PostWithChannelInfo from '@components/post_with_channel_info';
+import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {UserModel} from '@database/models/server';
 import {useCollapsibleHeader} from '@hooks/header';
 import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import EmptyState from './components/empty';
-import Mention from './components/mention';
 
+import type {ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
@@ -28,7 +30,6 @@ const EDGES: Edge[] = ['bottom', 'left', 'right'];
 
 type Props = {
     currentTimezone: string | null;
-    currentUser: UserModel;
     isTimezoneEnabled: boolean;
     mentions: PostModel[];
 }
@@ -44,7 +45,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const RecentMentionsScreen = ({mentions, currentUser, currentTimezone, isTimezoneEnabled}: Props) => {
+const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Props) => {
     const theme = useTheme();
     const route = useRoute();
     const isFocused = useIsFocused();
@@ -65,7 +66,7 @@ const RecentMentionsScreen = ({mentions, currentUser, currentTimezone, isTimezon
 
     useEffect(() => {
         setLoading(true);
-        getRecentMentions(serverUrl).finally(() => {
+        fetchRecentMentions(serverUrl).finally(() => {
             setLoading(false);
         });
     }, [serverUrl]);
@@ -78,7 +79,7 @@ const RecentMentionsScreen = ({mentions, currentUser, currentTimezone, isTimezon
 
     const handleRefresh = useCallback(async () => {
         setRefreshing(true);
-        await getRecentMentions(serverUrl);
+        await fetchRecentMentions(serverUrl);
         setRefreshing(false);
     }, [serverUrl]);
 
@@ -94,6 +95,21 @@ const RecentMentionsScreen = ({mentions, currentUser, currentTimezone, isTimezon
         };
     }, []);
 
+    const onViewableItemsChanged = useCallback(({viewableItems}: ViewableItemsChanged) => {
+        if (!viewableItems.length) {
+            return;
+        }
+
+        const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
+            if (isViewable) {
+                acc[`${Screens.MENTIONS}-${item.id}`] = true;
+            }
+            return acc;
+        }, {});
+
+        DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItemsMap);
+    }, []);
+
     const renderEmptyList = useCallback(() => (
         <View style={[styles.empty, paddingTop]}>
             {loading ? (
@@ -105,7 +121,7 @@ const RecentMentionsScreen = ({mentions, currentUser, currentTimezone, isTimezon
                 <EmptyState/>
             )}
         </View>
-    ), [loading]);
+    ), [loading, theme, paddingTop]);
 
     const renderItem = useCallback(({item}) => {
         if (typeof item === 'string') {
@@ -122,15 +138,15 @@ const RecentMentionsScreen = ({mentions, currentUser, currentTimezone, isTimezon
         }
 
         return (
-            <Mention
-                currentUser={currentUser}
+            <PostWithChannelInfo
+                location={Screens.MENTIONS}
                 post={item}
             />
         );
-    }, [currentUser]);
+    }, []);
 
     return (
-        <>
+        <FreezeScreen freeze={!isFocused}>
             <NavigationHeader
                 isLargeTitle={isLargeTitle}
                 showBackButton={false}
@@ -159,10 +175,11 @@ const RecentMentionsScreen = ({mentions, currentUser, currentTimezone, isTimezon
                         onRefresh={handleRefresh}
                         refreshing={refreshing}
                         renderItem={renderItem}
+                        onViewableItemsChanged={onViewableItemsChanged}
                     />
                 </Animated.View>
             </SafeAreaView>
-        </>
+        </FreezeScreen>
     );
 };
 

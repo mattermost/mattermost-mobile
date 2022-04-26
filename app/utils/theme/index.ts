@@ -6,26 +6,11 @@ import {StatusBar, StyleSheet} from 'react-native';
 import tinyColor from 'tinycolor2';
 
 import {Preferences} from '@constants';
-import {appearanceControlledScreens, mergeNavigationOptions} from '@screens/navigation';
+import {MODAL_SCREENS_WITHOUT_BACK} from '@constants/screens';
 import EphemeralStore from '@store/ephemeral_store';
+import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 
 import type {Options} from 'react-native-navigation';
-
-const MODAL_SCREENS_WITHOUT_BACK = [
-    'AddReaction',
-    'ChannelInfo',
-    'ClientUpgrade',
-    'CreateChannel',
-    'EditPost',
-    'ErrorTeamsList',
-    'MoreChannels',
-    'MoreDirectMessages',
-    'Permalink',
-    'SelectTeam',
-    'Settings',
-    'TermsOfService',
-    'UserProfile',
-];
 
 const rgbPattern = /^rgba?\((\d+),(\d+),(\d+)(?:,([\d.]+))?\)$/;
 
@@ -101,7 +86,7 @@ export function setNavigatorStyles(componentId: string, theme: Theme, additional
                 color: theme.sidebarHeaderTextColor,
             },
             background: {
-                color: theme.sidebarHeaderBg,
+                color: theme.sidebarBg,
             },
             leftButtonColor: theme.sidebarHeaderTextColor,
             rightButtonColor: theme.sidebarHeaderTextColor,
@@ -129,7 +114,7 @@ export function setNavigatorStyles(componentId: string, theme: Theme, additional
 
 export function setNavigationStackStyles(theme: Theme) {
     EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
-        if (!appearanceControlledScreens.includes(componentId)) {
+        if (!appearanceControlledScreens.has(componentId)) {
             setNavigatorStyles(componentId, theme);
         }
     });
@@ -271,3 +256,12 @@ export function setThemeDefaults(theme: Theme): Theme {
 
     return processedTheme as Theme;
 }
+
+export const updateThemeIfNeeded = (theme: Theme, force = false) => {
+    if (theme !== EphemeralStore.theme || force) {
+        EphemeralStore.theme = theme;
+        requestAnimationFrame(() => {
+            setNavigationStackStyles(theme);
+        });
+    }
+};

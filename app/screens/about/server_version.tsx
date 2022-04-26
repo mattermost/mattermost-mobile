@@ -8,21 +8,19 @@ import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type SystemModel from '@typings/database/models/servers/system';
-
 type ServerVersionProps = {
-    config: SystemModel;
+    config: ClientConfig;
 }
 
 const ServerVersion = ({config}: ServerVersionProps) => {
-    const buildNumber = config.value.BuildNumber;
-    const version = config.value.Version;
+    const buildNumber = config.BuildNumber;
+    const version = config.Version;
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
     let id = t('mobile.about.serverVersion');
     let defaultMessage = 'Server Version: {version} (Build {number})';
-    let values = {
+    let values: {version: string; number?: string} = {
         version,
         number: buildNumber,
     };
