@@ -3,8 +3,9 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Text, TouchableOpacity, useWindowDimensions, ViewStyle} from 'react-native';
-import {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import {StyleSheet, Text, TouchableOpacity, useWindowDimensions, ViewStyle} from 'react-native';
+import {Gesture, GestureDetector, GestureHandlerRootView} from 'react-native-gesture-handler';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import Toast from '@components/toast';
 import {Screens} from '@constants';
@@ -41,6 +42,8 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
     const theme = useTheme();
     const isTablet = useIsTablet();
     const {width: windowWidth} = useWindowDimensions();
+    const offset = useSharedValue(0);
+    const start = useSharedValue(0);
 
     const config = SNACK_BAR_CONFIG[barType];
     const styles = getStyleSheet(theme);
@@ -117,6 +120,24 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
         ];
     }, [theme, barType]);
 
+    const animatedMotion = useAnimatedStyle(() => {
+        return {
+            transform: [
+                {translateY: offset.value},
+            ],
+        };
+    }, [offset.value]);
+
+    const gesture = Gesture.
+        // eslint-disable-next-line new-cap
+        Pan().
+        onBegin((e) => {
+            start.value = e.y;
+        }).
+        onEnd((e) => {
+            offset.value = withTiming(e.y + 200, {duration: 300});
+        });
+
     useEffect(() => {
         setShowToast(true);
         const t = setTimeout(() => {
@@ -127,11 +148,25 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
     }, []);
 
     useEffect(() => {
+        const t = setTimeout(() => {
+            if (offset.value > start.value) {
+                dismissOverlay(componentId);
+            }
+        }, 500);
+
+        return () => {
+            if (t) {
+                clearTimeout(t);
+            }
+        };
+    }, [offset.value, start.value]);
+
+    useEffect(() => {
         let t: NodeJS.Timeout;
         if (showToast === false) {
             t = setTimeout(() => {
                 dismissOverlay(componentId);
-            }, 350);
+            }, 700);
         }
 
         return () => {
@@ -142,24 +177,38 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
     }, [showToast]);
 
     return (
-        <Toast
-            animatedStyle={animatedStyle}
-            message={intl.formatMessage({id: config.id, defaultMessage: config.defaultMessage})}
-            iconName={config.iconName}
-            textStyle={styles.text}
-            style={snackBarStyle}
+        <GestureHandlerRootView
+            style={StyleSheet.absoluteFill}
+            pointerEvents={'box-none'}
         >
-            {config.canUndo && onUndoPress && (
-                <TouchableOpacity onPress={onPressHandler}>
-                    <Text style={styles.undo}>
-                        {intl.formatMessage({
-                            id: 'snack.bar.undo',
-                            defaultMessage: 'Undo',
-                        })}
-                    </Text>
-                </TouchableOpacity>
-            )}
-        </Toast>
+            <GestureDetector gesture={gesture}>
+                <Animated.View
+                    style={[
+                        StyleSheet.absoluteFill,
+                        animatedMotion,
+                    ]}
+                >
+                    <Toast
+                        animatedStyle={animatedStyle}
+                        message={intl.formatMessage({id: config.id, defaultMessage: config.defaultMessage})}
+                        iconName={config.iconName}
+                        textStyle={styles.text}
+                        style={snackBarStyle}
+                    >
+                        {config.canUndo && onUndoPress && (
+                            <TouchableOpacity onPress={onPressHandler}>
+                                <Text style={styles.undo}>
+                                    {intl.formatMessage({
+                                        id: 'snack.bar.undo',
+                                        defaultMessage: 'Undo',
+                                    })}
+                                </Text>
+                            </TouchableOpacity>
+                        )}
+                    </Toast>
+                </Animated.View>
+            </GestureDetector>
+        </GestureHandlerRootView>
     );
 };
 
