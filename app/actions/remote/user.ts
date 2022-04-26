@@ -574,7 +574,7 @@ export const setStatus = async (serverUrl: string, status: UserStatus) => {
     }
 };
 
-export const updateCustomStatus = async (serverUrl: string, user: UserModel, customStatus: UserCustomStatus) => {
+export const updateCustomStatus = async (serverUrl: string, customStatus: UserCustomStatus) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -583,6 +583,9 @@ export const updateCustomStatus = async (serverUrl: string, user: UserModel, cus
     }
 
     try {
+        if (!customStatus.duration) {
+            delete customStatus.expires_at;
+        }
         await client.updateCustomStatus(customStatus);
         return {data: true};
     } catch (error) {

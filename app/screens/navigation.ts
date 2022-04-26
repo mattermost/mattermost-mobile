@@ -184,6 +184,8 @@ export function resetToHome(passProps: LaunchProps = {launchType: LaunchType.Nor
 
     if (passProps.launchType === LaunchType.AddServer) {
         dismissModal({componentId: Screens.SERVER});
+        dismissModal({componentId: Screens.LOGIN});
+        dismissModal({componentId: Screens.SSO});
         dismissModal({componentId: Screens.BOTTOM_SHEET});
         return;
     }
