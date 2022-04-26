@@ -13,6 +13,7 @@ import PostDraft from './post_draft';
 import PostList from './post_list';
 import ProfilePicture from './profile_picture';
 import SendButton from './send_button';
+import TeamSidebar from './team_sidebar';
 
 export {
     Alert,
@@ -27,4 +28,5 @@ export {
     PostList,
     ProfilePicture,
     SendButton,
+    TeamSidebar,
 };
