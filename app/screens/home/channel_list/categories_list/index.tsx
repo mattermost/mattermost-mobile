@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect} from 'react';
+import {View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {TABLET_SIDEBAR_WIDTH, TEAM_SIDEBAR_WIDTH} from '@constants/view';
@@ -19,9 +20,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
         backgroundColor: theme.sidebarBg,
+        paddingTop: 10,
+    },
+    padded: {
         paddingLeft: 18,
         paddingRight: 20,
-        paddingTop: 10,
     },
 }));
 
@@ -67,8 +70,10 @@ const ChannelList = ({channelsCount, currentTeamId, iconPad, isTablet, teamsCoun
     } else {
         content = (
             <>
-                <SearchField/>
-                <Threads/>
+                <View style={styles.padded}>
+                    <SearchField/>
+                    <Threads/>
+                </View>
                 <Categories
                     currentTeamId={currentTeamId}
                 />
@@ -78,9 +83,11 @@ const ChannelList = ({channelsCount, currentTeamId, iconPad, isTablet, teamsCoun
 
     return (
         <Animated.View style={[styles.container, tabletStyle]}>
-            <ChannelListHeader
-                iconPad={iconPad}
-            />
+            <View style={styles.padded}>
+                <ChannelListHeader
+                    iconPad={iconPad}
+                />
+            </View>
             {content}
         </Animated.View>
     );

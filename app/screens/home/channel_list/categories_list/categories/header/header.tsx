@@ -17,11 +17,11 @@ import type CategoryModel from '@typings/database/models/servers/category';
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         paddingVertical: 8,
-        marginTop: 12,
-        paddingLeft: 2,
-        marginLeft: 16,
+        paddingTop: 12,
+        paddingLeft: 18,
         flexDirection: 'row',
         alignItems: 'flex-start',
+        backgroundColor: theme.sidebarBg,
     },
     heading: {
         color: changeOpacity(theme.sidebarText, 0.64),

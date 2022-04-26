@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, StyleSheet} from 'react-native';
+import {FlatList, SectionList, SectionListData, StyleSheet} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import {useServerUrl} from '@context/server';
@@ -23,8 +23,9 @@ type Props = {
 
 const styles = StyleSheet.create({
     mainList: {
-        flex: 1,
-        marginLeft: -18,
+        width: '100%',
+
+        // marginLeft: -18,
         marginRight: -20,
     },
 });
@@ -40,18 +41,20 @@ const Categories = ({categories, currentTeamId, unreadsOnTop}: Props) => {
         switchToChannelById(serverUrl, channelId);
     }, [serverUrl]);
 
-    const renderCategory = useCallback((data: {item: CategoryModel | 'UNREADS'}) => {
-        if (data.item === 'UNREADS') {
-            return (
-                <UnreadCategories
-                    currentTeamId={currentTeamId}
-                    onChannelSwitch={onChannelSwitch}
-                />
-            );
-        }
+    const renderCategoryHeader = ({section}: any) => <CategoryHeader category={section.data[0]}/>;
+
+    const renderCategory = useCallback((data: {item: CategoryModel}) => {
+        // if (data.item === 'UNREADS') {
+        //     return (
+        //         <UnreadCategories
+        //             currentTeamId={currentTeamId}
+        //             onChannelSwitch={onChannelSwitch}
+        //         />
+        //     );
+        // }
         return (
             <>
-                <CategoryHeader category={data.item}/>
+                {/* <CategoryHeader category={data.item}/> */}
                 <CategoryBody
                     category={data.item}
                     locale={intl.locale}
@@ -68,16 +71,34 @@ const Categories = ({categories, currentTeamId, unreadsOnTop}: Props) => {
     const categoriesToShow = useMemo(() => {
         const orderedCategories = [...categories];
         orderedCategories.sort((a, b) => a.sortOrder - b.sortOrder);
-        if (unreadsOnTop) {
-            return ['UNREADS' as const, ...orderedCategories];
-        }
-        return orderedCategories;
+
+        const secCat = orderedCategories.map((c) => {
+            return {
+                key: c.id,
+                data: [c],
+            };
+        });
+
+        // if (unreadsOnTop) {
+        //     return ['UNREADS' as const, ...secCat];
+        // }
+        return secCat;
     }, [categories, unreadsOnTop]);
 
     if (!categories.length) {
         return <LoadCategoriesError/>;
     }
 
+    return (
+        <SectionList
+            sections={categoriesToShow}
+            renderItem={renderCategory}
+            renderSectionHeader={renderCategoryHeader}
+            contentContainerStyle={styles.mainList}
+        />
+    );
+
+    /*
     return (
         <FlatList
             data={categoriesToShow}
@@ -97,6 +118,7 @@ const Categories = ({categories, currentTeamId, unreadsOnTop}: Props) => {
             strictMode={true}
         />
     );
+    */
 };
 
 export default Categories;
