@@ -15,7 +15,7 @@ import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import ClientError from '@client/rest/error';
 import AppVersion from '@components/app_version';
-import {Screens, Sso} from '@constants';
+import {Screens} from '@constants';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
@@ -27,6 +27,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {getErrorMessage} from '@utils/client_error';
 import {alertPushProxyError, alertPushProxyUnknown} from '@utils/push_proxy';
+import {loginOptions} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 
@@ -139,6 +140,7 @@ const Server = ({
     useEffect(() => {
         const navigationEvents = Navigation.events().registerNavigationButtonPressedListener(({buttonId}) => {
             if (closeButtonId && buttonId === closeButtonId) {
+                NetworkManager.invalidateClient(url);
                 dismissModal({componentId});
             }
         });
@@ -147,24 +149,7 @@ const Server = ({
     }, []);
 
     const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
-        const isLicensed = license.IsLicensed === 'true';
-        const samlEnabled = config.EnableSaml === 'true' && isLicensed && license.SAML === 'true';
-        const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
-        const googleEnabled = config.EnableSignUpWithGoogle === 'true' && isLicensed;
-        const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && isLicensed && license.Office365OAuth === 'true';
-        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && isLicensed;
-        const ldapEnabled = isLicensed && config.EnableLdap === 'true' && license.LDAP === 'true';
-        const hasLoginForm = config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true' || ldapEnabled;
-        const ssoOptions: Record<string, boolean> = {
-            [Sso.SAML]: samlEnabled,
-            [Sso.GITLAB]: gitlabEnabled,
-            [Sso.GOOGLE]: googleEnabled,
-            [Sso.OFFICE365]: o365Enabled,
-            [Sso.OPENID]: openIdEnabled,
-        };
-        const enabledSSOs = Object.keys(ssoOptions).filter((key) => ssoOptions[key]);
-        const numberSSOs = enabledSSOs.length;
-
+        const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config, license);
         const passProps = {
             config,
             extra,

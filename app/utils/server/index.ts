@@ -5,9 +5,10 @@ import {IntlShape} from 'react-intl';
 import {Alert, AlertButton} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {Screens, SupportedServer} from '@constants';
+import {Screens, Sso, SupportedServer} from '@constants';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
 import {LaunchType} from '@typings/launch';
+import {getErrorMessage} from '@utils/client_error';
 import {changeOpacity} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
@@ -47,6 +48,61 @@ export async function addNewServer(theme: Theme, serverUrl?: string, displayName
     const options = buildServerModalOptions(theme, closeButtonId);
 
     showModal(Screens.SERVER, '', props, options);
+}
+
+export function loginOptions(config: ClientConfig, license: ClientLicense) {
+    const isLicensed = license.IsLicensed === 'true';
+    const samlEnabled = config.EnableSaml === 'true' && isLicensed && license.SAML === 'true';
+    const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
+    const googleEnabled = config.EnableSignUpWithGoogle === 'true' && isLicensed;
+    const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && isLicensed && license.Office365OAuth === 'true';
+    const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && isLicensed;
+    const ldapEnabled = isLicensed && config.EnableLdap === 'true' && license.LDAP === 'true';
+    const hasLoginForm = config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true' || ldapEnabled;
+    const ssoOptions: Record<string, boolean> = {
+        [Sso.SAML]: samlEnabled,
+        [Sso.GITLAB]: gitlabEnabled,
+        [Sso.GOOGLE]: googleEnabled,
+        [Sso.OFFICE365]: o365Enabled,
+        [Sso.OPENID]: openIdEnabled,
+    };
+    const enabledSSOs = Object.keys(ssoOptions).filter((key) => ssoOptions[key]);
+    const numberSSOs = enabledSSOs.length;
+
+    return {
+        enabledSSOs,
+        hasLoginForm,
+        numberSSOs,
+        ssoOptions,
+    };
+}
+
+export async function loginToServer(theme: Theme, serverUrl: string, displayName: string, config: ClientConfig, license: ClientLicense) {
+    await dismissBottomSheet();
+    const closeButtonId = 'close-server';
+    const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config, license);
+    const props = {
+        closeButtonId,
+        config,
+        hasLoginForm,
+        launchType: LaunchType.AddServer,
+        license,
+        serverDisplayName: displayName,
+        serverUrl,
+        ssoOptions,
+        theme,
+    };
+
+    const redirectSSO = !hasLoginForm && numberSSOs === 1;
+    const screen = redirectSSO ? Screens.SSO : Screens.LOGIN;
+    if (redirectSSO) {
+        // @ts-expect-error ssoType not in definition
+        props.ssoType = enabledSSOs[0];
+    }
+
+    const options = buildServerModalOptions(theme, closeButtonId);
+
+    showModal(screen, '', props, options);
 }
 
 export async function editServer(theme: Theme, server: ServersModel) {
@@ -100,6 +156,17 @@ export async function alertServerRemove(displayName: string, onPress: () => void
             text: intl.formatMessage({id: 'servers.remove', defaultMessage: 'Remove'}),
             onPress,
         }],
+    );
+}
+
+export function alertServerError(intl: IntlShape, error: ClientErrorProps) {
+    const message = getErrorMessage(error, intl);
+    Alert.alert(
+        intl.formatMessage({
+            id: 'server.websocket.unreachable',
+            defaultMessage: 'Server is unreachable.',
+        }),
+        message,
     );
 }
 

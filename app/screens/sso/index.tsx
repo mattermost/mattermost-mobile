@@ -11,8 +11,9 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {ssoLogin} from '@actions/remote/session';
 import ClientError from '@client/rest/error';
 import {Screens, Sso} from '@constants';
+import NetworkManager from '@managers/network_manager';
 import Background from '@screens/background';
-import {resetToHome} from '@screens/navigation';
+import {dismissModal, resetToHome} from '@screens/navigation';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
 import SSOWithWebView from './sso_with_webview';
@@ -20,11 +21,13 @@ import SSOWithWebView from './sso_with_webview';
 import type {LaunchProps} from '@typings/launch';
 
 interface SSOProps extends LaunchProps {
-  config: Partial<ClientConfig>;
-  license: Partial<ClientLicense>;
-  ssoType: string;
-  serverDisplayName: string;
-  theme: Theme;
+    closeButtonId?: string;
+    componentId: string;
+    config: Partial<ClientConfig>;
+    license: Partial<ClientLicense>;
+    ssoType: string;
+    serverDisplayName: string;
+    theme: Theme;
 }
 
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
@@ -35,7 +38,11 @@ const styles = StyleSheet.create({
     },
 });
 
-const SSO = ({config, extra, launchError, launchType, serverDisplayName, serverUrl, ssoType, theme}: SSOProps) => {
+const SSO = ({
+    closeButtonId, componentId, config, extra,
+    launchError, launchType, serverDisplayName,
+    serverUrl, ssoType, theme,
+}: SSOProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
     const inAppSessionAuth = managedConfig?.inAppSessionAuth === 'true';
     const dimensions = useWindowDimensions();
@@ -127,6 +134,19 @@ const SSO = ({config, extra, launchError, launchType, serverDisplayName, serverU
 
         return () => unsubscribe.remove();
     }, [dimensions]);
+
+    useEffect(() => {
+        const navigationEvents = Navigation.events().registerNavigationButtonPressedListener(({buttonId}) => {
+            if (closeButtonId && buttonId === closeButtonId) {
+                if (serverUrl) {
+                    NetworkManager.invalidateClient(serverUrl);
+                }
+                dismissModal({componentId});
+            }
+        });
+
+        return () => navigationEvents.remove();
+    }, []);
 
     const props = {
         doSSOLogin,
