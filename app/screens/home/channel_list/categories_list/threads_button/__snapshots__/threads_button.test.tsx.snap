@@ -21,41 +21,52 @@ exports[`Threads Component should match snapshot 1`] = `
   <View
     style={
       Object {
-        "display": "flex",
-        "flexDirection": "row",
-        "paddingLeft": 3,
+        "marginLeft": -18,
+        "marginRight": -20,
       }
     }
   >
-    <Icon
-      name="message-text-outline"
+    <View
       style={
         Array [
           Object {
-            "color": "rgba(255,255,255,0.5)",
-            "fontSize": 24,
+            "alignItems": "center",
+            "flexDirection": "row",
+            "minHeight": 40,
+            "paddingHorizontal": 20,
           },
+          undefined,
         ]
       }
-    />
-    <View
-      style={
-        Object {
-          "flex": 1,
-        }
-      }
     >
+      <Icon
+        name="message-text-outline"
+        style={
+          Array [
+            Object {
+              "color": "rgba(255,255,255,0.5)",
+              "fontSize": 24,
+            },
+            undefined,
+          ]
+        }
+      />
       <Text
         style={
           Array [
             Object {
-              "color": "rgba(255,255,255,0.72)",
               "fontFamily": "OpenSans",
               "fontSize": 16,
               "fontWeight": "400",
               "lineHeight": 24,
-              "paddingLeft": 9,
             },
+            Object {
+              "color": "rgba(255,255,255,0.72)",
+              "marginTop": -1,
+              "paddingLeft": 12,
+            },
+            undefined,
+            undefined,
           ]
         }
       >
