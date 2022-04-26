@@ -4,10 +4,9 @@
 import React, {useCallback, useMemo} from 'react';
 import {FlatList} from 'react-native';
 
+import ChannelItem from '@components/channel_item';
 import {DMS_CATEGORY} from '@constants/categories';
 import ChannelModel from '@typings/database/models/servers/channel';
-
-import ChannelItem from './channel_item';
 
 import type CategoryModel from '@typings/database/models/servers/category';
 
@@ -16,11 +15,12 @@ type Props = {
     hiddenChannelIds: Set<string>;
     category: CategoryModel;
     limit: number;
+    onChannelSwitch: (channelId: string) => void;
 };
 
 const extractKey = (item: ChannelModel) => item.id;
 
-const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit}: Props) => {
+const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChannelSwitch}: Props) => {
     const ids = useMemo(() => {
         let filteredChannels = sortedChannels;
 
@@ -41,9 +41,10 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit}: Props
                 channel={item}
                 collapsed={category.collapsed}
                 testID={`category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_list_item`}
+                onPress={onChannelSwitch}
             />
         );
-    }, [category.collapsed]);
+    }, [category.collapsed, onChannelSwitch]);
 
     return (
         <FlatList

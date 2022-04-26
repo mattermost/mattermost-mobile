@@ -1,15 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, Text} from 'react-native';
 
+import ChannelItem from '@components/channel_item';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import ChannelItem from '../body/channel_item';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 
@@ -23,23 +22,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const renderItem = ({item}: {item: ChannelModel}) => {
-    return (
-        <ChannelItem
-            channel={item}
-            collapsed={false}
-            isUnreads={true}
-        />
-    );
-};
 type UnreadCategoriesProps = {
     unreadChannels: ChannelModel[];
+    onChannelSwitch: (channelId: string) => void;
 }
 
-const UnreadCategories = ({unreadChannels}: UnreadCategoriesProps) => {
+const UnreadCategories = ({onChannelSwitch, unreadChannels}: UnreadCategoriesProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
+
+    const renderItem = useCallback(({item}: {item: ChannelModel}) => {
+        return (
+            <ChannelItem
+                channel={item}
+                collapsed={false}
+                isUnreads={true}
+                onPress={onChannelSwitch}
+            />
+        );
+    }, [onChannelSwitch]);
 
     if (!unreadChannels.length) {
         return null;

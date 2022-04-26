@@ -10,6 +10,7 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {observeMyChannel} from '@queries/servers/channel';
+import {queryDraft} from '@queries/servers/drafts';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
 import ChannelModel from '@typings/database/models/servers/channel';
@@ -20,11 +21,22 @@ import ChannelItem from './channel_item';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
+type EnhanceProps = WithDatabaseArgs & {
+    channel: ChannelModel;
+    isInfo?: boolean;
+    isUnreads?: boolean;
+    showTeamName?: boolean;
+}
+
 const observeIsMutedSetting = (mc: MyChannelModel) => mc.settings.observe().pipe(switchMap((s) => of$(s?.notifyProps?.mark_unread === 'mention')));
 
-const enhance = withObservables(['channel', 'isUnreads'], ({channel, isUnreads, database}: {channel: ChannelModel; isUnreads?: boolean} & WithDatabaseArgs) => {
+const enhance = withObservables(['channel', 'isUnreads', 'showTeamName'], ({channel, database, isInfo, isUnreads, showTeamName}: EnhanceProps) => {
     const currentUserId = observeCurrentUserId(database);
     const myChannel = observeMyChannel(database, channel.id);
+
+    const hasDraft = queryDraft(database, channel.id).observeWithColumns(['message', 'files']).pipe(
+        switchMap((draft) => of$(draft.length > 0)),
+    );
 
     const isActive = observeCurrentChannelId(database).pipe(switchMap((id) => of$(id ? id === channel.id : false)), distinctUntilChanged());
     const unreadsOnTop = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
@@ -38,6 +50,11 @@ const enhance = withObservables(['channel', 'isUnreads'], ({channel, isUnreads, 
             if (!mc) {
                 return of$(false);
             }
+
+            if (isInfo) {
+                return of$(true);
+            }
+
             if (isUnreads) {
                 return of$(u);
             }
@@ -55,13 +72,22 @@ const enhance = withObservables(['channel', 'isUnreads'], ({channel, isUnreads, 
         }),
     );
 
+    let teamDisplayName = of$('');
+    if (channel.teamId && showTeamName) {
+        teamDisplayName = channel.team.observe().pipe(
+            switchMap((team) => of$(team?.displayName || '')),
+        );
+    }
+
     return {
+        channel: channel.observe(),
         currentUserId,
-        isMuted,
+        hasDraft,
         isActive,
+        isMuted,
         isVisible,
         myChannel,
-        channel: channel.observe(),
+        teamDisplayName,
     };
 });
 
