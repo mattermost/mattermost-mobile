@@ -89,9 +89,7 @@ export default function ChannelDropdown({
         channelDropdownText = intl.formatMessage({id: 'browse_channels.showArchivedChannels', defaultMessage: 'Show: Archived Channels'});
     }
     return (
-        <View
-            testID='browse_channels.channel_dropdown'
-        >
+        <View testID='browse_channels.channel_dropdown'>
             <Text
                 accessibilityRole={'button'}
                 style={style.channelDropdown}
