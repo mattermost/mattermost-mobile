@@ -79,7 +79,7 @@ export const doPing = async (serverUrl: string, verifyPushProxy: boolean) => {
         let canReceiveNotifications = response?.data?.CanReceiveNotifications;
 
         // Already verified or old server
-        if (deviceId == null || !canReceiveNotifications == null) {
+        if (deviceId === undefined || canReceiveNotifications === null) {
             canReceiveNotifications = PUSH_PROXY_RESPONSE_VERIFIED;
         }
 
