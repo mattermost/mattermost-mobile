@@ -12,6 +12,7 @@ import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categ
 import {prepareMyChannelsForTeam, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected} from '@queries/servers/system';
 import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, syncTeamTable} from '@queries/servers/team';
+import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
 
 import {fetchMyChannelsForTeam, switchToChannelById} from './channel';
@@ -36,6 +37,7 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
     }
 
     try {
+        EphemeralStore.addingTeam[teamId] = true;
         const member = await client.addToTeam(teamId, userId);
 
         if (!fetchOnly) {
@@ -66,9 +68,10 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
                 }
             }
         }
-
+        delete EphemeralStore.addingTeam[teamId];
         return {member};
     } catch (error) {
+        delete EphemeralStore.addingTeam[teamId];
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }

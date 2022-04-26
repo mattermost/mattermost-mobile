@@ -14,7 +14,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
     currentTeamId: observeCurrentTeamId(database),
-    teamsCount: queryMyTeams(database).observeCount(),
+    teamsCount: queryMyTeams(database).observeCount(false),
     channelsCount: queryAllMyChannel(database).observeCount(),
 }));
 

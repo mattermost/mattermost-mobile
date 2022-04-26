@@ -17,6 +17,7 @@ import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {getCurrentTeam, getLastTeam, prepareMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot, resetToTeams} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 
 export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMessage) {
     const database = DatabaseManager.serverDatabases[serverUrl];
@@ -70,16 +71,10 @@ export async function handleUpdateTeamEvent(serverUrl: string, msg: WebSocketMes
             teams: [team],
             prepareRecordsOnly: false,
         });
-    } catch {
+    } catch (err) {
         // Do nothing
     }
 }
-
-// As of today, the server sends a duplicated event to add the user to the team.
-// If we do not handle this, this ends up showing some errors in the database, apart
-// of the extra computation time. We use this to track the events that are being handled
-// and make sure we only handle one.
-const addingTeam: {[id: string]: boolean} = {};
 
 export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSocketMessage) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -89,10 +84,10 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
     const {team_id: teamId} = msg.data;
 
     // Ignore duplicated team join events sent by the server
-    if (addingTeam[teamId]) {
+    if (EphemeralStore.addingTeam[teamId]) {
         return;
     }
-    addingTeam[teamId] = true;
+    EphemeralStore.addingTeam[teamId] = true;
 
     const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, teamId, true);
 
@@ -114,5 +109,5 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
     const models = await Promise.all(modelPromises);
     await operator.batchRecords(models.flat());
 
-    delete addingTeam[teamId];
+    delete EphemeralStore.addingTeam[teamId];
 }
