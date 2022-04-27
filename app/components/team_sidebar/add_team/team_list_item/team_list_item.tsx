@@ -60,6 +60,8 @@ export default function TeamListItem({team, currentUserId, textColor, iconTextCo
 
     const displayName = 'displayName' in team ? team.displayName : team.display_name;
     const lastTeamIconUpdateAt = 'lastTeamIconUpdatedAt' in team ? team.lastTeamIconUpdatedAt : team.last_team_icon_update;
+    const teamListItemTestId = `team_sidebar.team_list.team_list_item.${team.id}`;
+
     return (
         <View style={styles.container}>
             <TouchableWithFeedback
@@ -75,6 +77,7 @@ export default function TeamListItem({team, currentUserId, textColor, iconTextCo
                         selected={false}
                         textColor={iconTextColor}
                         backgroundColor={iconBackgroundColor}
+                        testID={`${teamListItemTestId}.team_icon`}
                     />
                 </View>
                 <Text

@@ -79,7 +79,9 @@ class ManagedApp {
     };
 
     alertDeviceIsUntrusted = () => {
-        const locale = DEFAULT_LOCALE; // TODO: Get current user or system locale
+        // We use the default device locale as this is an app wide setting
+        // and does not require any server data
+        const locale = DEFAULT_LOCALE;
         const translations = getTranslations(locale);
         Alert.alert(
             translations[t('mobile.managed.blocked_by')].replace('{vendor}', this.vendor),

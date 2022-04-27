@@ -20,6 +20,7 @@ type Props = {
     iconTextColor?: string;
     iconBackgroundColor?: string;
     onTeamAdded: (id: string) => void;
+    testID?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -53,7 +54,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const keyExtractor = (item: TeamModel) => item.id;
 
-export default function TeamList({teams, textColor, iconTextColor, iconBackgroundColor, onTeamAdded}: Props) {
+export default function TeamList({teams, textColor, iconTextColor, iconBackgroundColor, onTeamAdded, testID}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -77,6 +78,7 @@ export default function TeamList({teams, textColor, iconTextColor, iconBackgroun
                     renderItem={renderTeam}
                     keyExtractor={keyExtractor}
                     contentContainerStyle={styles.contentContainer}
+                    testID={`${testID}.flat_list`}
                 />
             </View>
         );
@@ -89,11 +91,13 @@ export default function TeamList({teams, textColor, iconTextColor, iconBackgroun
                 id='team_list.no_other_teams.title'
                 defaultMessage='No additional teams to join'
                 style={styles.title}
+                testID={`${testID}.no_other_teams.title`}
             />
             <FormattedText
                 id='team_list.no_other_teams.description'
                 defaultMessage='To join another team, ask a Team Admin for an invitation, or create your own team.'
                 style={styles.description}
+                testID={`${testID}.no_other_teams.description`}
             />
         </View>
     );

@@ -4,6 +4,7 @@
 import AccountScreen from './account';
 import BrowseChannelsScreen from './browse_channels';
 import ChannelScreen from './channel';
+import ChannelDropdownMenuScreen from './channel_dropdown_menu';
 import ChannelListScreen from './channel_list';
 import CreateDirectMessageScreen from './create_direct_message';
 import CreateOrEditChannelScreen from './create_or_edit_channel';
@@ -19,6 +20,7 @@ export {
     AccountScreen,
     BrowseChannelsScreen,
     ChannelScreen,
+    ChannelDropdownMenuScreen,
     ChannelListScreen,
     CreateDirectMessageScreen,
     CreateOrEditChannelScreen,

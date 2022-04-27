@@ -53,6 +53,7 @@ type Props = {
     selected: boolean;
     backgroundColor?: string;
     textColor?: string;
+    testID?: string;
 }
 
 export default function TeamIcon({
@@ -62,6 +63,7 @@ export default function TeamIcon({
     selected,
     textColor,
     backgroundColor,
+    testID,
 }: Props) {
     const [imageError, setImageError] = useState(false);
     const ref = useRef<View>(null);
@@ -99,8 +101,9 @@ export default function TeamIcon({
         teamIconContent = (
             <Text
                 style={textColor ? [styles.text, {color: textColor}] : styles.text}
+                testID={`${testID}.display_name_abbreviation`}
             >
-                {displayName?.substr(0, 2).toUpperCase()}
+                {displayName?.substring(0, 2).toUpperCase()}
             </Text>
         );
     } else {
@@ -117,6 +120,7 @@ export default function TeamIcon({
         <View
             style={containerStyle}
             ref={ref}
+            testID={testID}
         >
             {teamIconContent}
         </View>
