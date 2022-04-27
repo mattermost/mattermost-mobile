@@ -103,13 +103,13 @@ commands:
           node-version: '16.14.2'
       - restore_cache:
           name: Restore npm cache
-          key: v2-npm-{{ checksum "package.json" }}-{{ arch }}
+          key: v3-npm-{{ checksum "package.json" }}-{{ arch }}-eli
       - run:
           name: Getting JavaScript dependencies
           command: NODE_ENV=development npm ci --ignore-scripts
       - save_cache:
           name: Save npm cache
-          key: v2-npm-{{ checksum "package.json" }}-{{ arch }}
+          key: v3-npm-{{ checksum "package.json" }}-{{ arch }}-eli
           paths:
             - node_modules
       - run:
@@ -598,7 +598,7 @@ workflows:
                 - /^build-ios-\d+$/
                 - /^build-ios-beta-\d+$/
                 - /^build-ios-sim-\d+$/
-                
+
       - github-release:
           context: mattermost-mobile-unsigned
           requires:
