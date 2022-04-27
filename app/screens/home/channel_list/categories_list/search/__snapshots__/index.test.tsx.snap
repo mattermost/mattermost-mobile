@@ -2,17 +2,23 @@
 
 exports[`Search Field should match snapshot 1`] = `
 <View
+  accessible={true}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
   style={
     Object {
-      "alignItems": "center",
       "backgroundColor": "rgba(255,255,255,0.12)",
       "borderRadius": 8,
-      "flex": 1,
       "flexDirection": "row",
       "height": 40,
       "justifyContent": "flex-start",
       "marginVertical": 20,
-      "maxHeight": 40,
       "padding": 8,
       "width": "100%",
     }
@@ -28,34 +34,20 @@ exports[`Search Field should match snapshot 1`] = `
       }
     }
   />
-  <TextInput
-    placeholder="Find Channels"
-    placeholderTextColor="rgba(255,255,255,0.72)"
+  <Text
     style={
-      Array [
-        Array [
-          Object {
-            "fontFamily": "OpenSans",
-            "fontSize": 16,
-            "fontWeight": "400",
-            "lineHeight": 24,
-          },
-          Object {
-            "textAlignVertical": "center",
-          },
-        ],
-        Object {
-          "alignContent": "center",
-          "alignItems": "center",
-          "color": "#ffffff",
-          "flex": 1,
-          "height": 40,
-          "marginLeft": 5,
-          "marginTop": -2,
-        },
-      ]
+      Object {
+        "color": "rgba(255,255,255,0.72)",
+        "fontFamily": "OpenSans",
+        "fontSize": 16,
+        "fontWeight": "400",
+        "lineHeight": 24,
+        "marginLeft": 5,
+        "marginTop": 1,
+      }
     }
-    testID="channel_list.search_field.find_channels.input"
-  />
+  >
+    Find channels...
+  </Text>
 </View>
 `;

@@ -17,6 +17,7 @@ const Empty = require('./no_teams.svg').default;
 
 type Props = {
     teams: TeamModel[];
+    testID?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -58,7 +59,7 @@ const renderTeam = ({item: t}: ListRenderItemInfo<TeamModel>) => {
 
 const keyExtractor = (item: TeamModel) => item.id;
 
-export default function TeamList({teams}: Props) {
+export default function TeamList({teams, testID}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -70,6 +71,7 @@ export default function TeamList({teams}: Props) {
                     renderItem={renderTeam}
                     keyExtractor={keyExtractor}
                     contentContainerStyle={styles.contentContainer}
+                    testID={`${testID}.flat_list`}
                 />
             </View>
         );
@@ -82,11 +84,13 @@ export default function TeamList({teams}: Props) {
                 id='team_list.no_other_teams.title'
                 defaultMessage='No additional teams to join'
                 style={styles.title}
+                testID={`${testID}.no_other_teams.title`}
             />
             <FormattedText
                 id='team_list.no_other_teams.description'
                 defaultMessage='To join another team, ask a Team Admin for an invitation, or create your own team.'
                 style={styles.description}
+                testID={`${testID}.no_other_teams.description`}
             />
         </View>
     );

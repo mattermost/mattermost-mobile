@@ -6,7 +6,7 @@
 
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {ActivityIndicatorProps, Platform, StyleProp, TextInput, TextInputProps, TextStyle, TouchableOpacityProps, ViewStyle} from 'react-native';
+import {ActivityIndicatorProps, Keyboard, Platform, StyleProp, TextInput, TextInputProps, TextStyle, TouchableOpacityProps, ViewStyle} from 'react-native';
 import {SearchBar} from 'react-native-elements';
 
 import CompassIcon from '@components/compass_icon';
@@ -82,9 +82,10 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
     const searchInputTestID = `${props.testID}.search.input`;
 
     const onCancel = useCallback(() => {
+        Keyboard.dismiss();
         setValue('');
         props.onCancel?.();
-    }, []);
+    }, [props.onCancel]);
 
     const onClear = useCallback(() => {
         setValue('');
@@ -94,7 +95,7 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
     const onChangeText = useCallback((text: string) => {
         setValue(text);
         props.onChangeText?.(text);
-    }, []);
+    }, [props.onChangeText]);
 
     const cancelButtonProps = useMemo(() => ({
         buttonTextStyle: {
@@ -107,38 +108,34 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
         setValue(props.defaultValue || value || '');
     }, [props.defaultValue]);
 
-    const clearIcon = useMemo(() => {
-        return (
-            <CompassIcon
-                color={changeOpacity(props.clearIconColor || theme.centerChannelColor, Platform.select({android: 0.56, default: 0.72}))}
-                name={Platform.select({android: 'close', default: 'close-circle'})}
-                onPress={searchRef.current?.clear}
-                size={Platform.select({android: 24, default: 18})}
-                testID={searchClearButtonTestID}
-            />
-        );
-    }, [searchRef.current, theme]);
+    const clearIcon = (
+        <CompassIcon
+            color={changeOpacity(props.clearIconColor || theme.centerChannelColor, Platform.select({android: 0.56, default: 0.72}))}
+            name={Platform.select({android: 'close', default: 'close-circle'})}
+            onPress={searchRef.current?.clear}
+            size={Platform.select({android: 24, default: 18})}
+            testID={searchClearButtonTestID}
+        />
+    );
 
-    const searchIcon = useMemo(() => (
+    const searchIcon = (
         <CompassIcon
             color={changeOpacity(props.searchIconColor || theme.centerChannelColor, Platform.select({android: 0.56, default: 0.72}))}
             name='magnify'
             onPress={searchRef.current?.focus}
             size={24}
         />
-    ), [searchRef.current, theme]);
+    );
 
-    const cancelIcon = useMemo(() => (
+    const cancelIcon = (
         <CompassIcon
             color={changeOpacity(props.cancelButtonProps?.color || theme.centerChannelColor, Platform.select({android: 0.56, default: 0.72}))}
             name='arrow-left'
-
-            // @ts-expect-error cancel is not part of TextInput does exist in SearchBar
-            onPress={searchRef.current?.cancel}
+            onPress={onCancel}
             size={24}
             testID={searchCancelButtonTestID}
         />
-    ), [searchRef.current, theme]);
+    );
 
     useImperativeHandle(ref, () => ({
         blur: () => {

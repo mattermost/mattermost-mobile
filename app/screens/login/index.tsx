@@ -11,8 +11,9 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {useIsTablet} from '@hooks/device';
+import NetworkManager from '@managers/network_manager';
 import Background from '@screens/background';
-import {goToScreen, loginAnimationOptions} from '@screens/navigation';
+import {dismissModal, goToScreen, loginAnimationOptions} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -24,6 +25,8 @@ import SsoOptions from './sso_options';
 import type {LaunchProps} from '@typings/launch';
 
 export interface LoginOptionsProps extends LaunchProps {
+    closeButtonId?: string;
+    componentId: string;
     config: ClientConfig;
     hasLoginForm: boolean;
     license: ClientLicense;
@@ -68,7 +71,11 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
-const LoginOptions = ({config, extra, hasLoginForm, launchType, launchError, license, serverDisplayName, serverUrl, ssoOptions, theme}: LoginOptionsProps) => {
+const LoginOptions = ({
+    closeButtonId, componentId, config, extra,
+    hasLoginForm, launchType, launchError, license,
+    serverDisplayName, serverUrl, ssoOptions, theme,
+}: LoginOptionsProps) => {
     const styles = getStyles(theme);
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
     const dimensions = useWindowDimensions();
@@ -123,6 +130,17 @@ const LoginOptions = ({config, extra, hasLoginForm, launchType, launchError, lic
         return {
             transform: [{translateX: withTiming(translateX.value, {duration})}],
         };
+    }, []);
+
+    useEffect(() => {
+        const navigationEvents = Navigation.events().registerNavigationButtonPressedListener(({buttonId}) => {
+            if (closeButtonId && buttonId === closeButtonId) {
+                NetworkManager.invalidateClient(serverUrl);
+                dismissModal({componentId});
+            }
+        });
+
+        return () => navigationEvents.remove();
     }, []);
 
     useEffect(() => {

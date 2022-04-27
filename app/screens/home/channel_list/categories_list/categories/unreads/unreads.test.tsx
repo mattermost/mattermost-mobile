@@ -21,6 +21,7 @@ describe('components/channel_list/categories/body', () => {
         const wrapper = renderWithEverything(
             <UnreadsCategory
                 unreadChannels={[]}
+                onChannelSwitch={() => undefined}
             />,
             {database},
         );
