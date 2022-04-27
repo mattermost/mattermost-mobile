@@ -178,8 +178,8 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
 
     return (
         <GestureHandlerRootView
-            style={StyleSheet.absoluteFill}
-            pointerEvents={'box-none'}
+            style={[StyleSheet.absoluteFill]}
+            pointerEvents={'none'}
         >
             <GestureDetector gesture={gesture}>
                 <Animated.View
