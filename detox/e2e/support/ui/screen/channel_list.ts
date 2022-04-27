@@ -1,7 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {PlusMenu} from '@support/ui/component';
+import {
+    PlusMenu,
+    TeamSidebar,
+} from '@support/ui/component';
 import {HomeScreen} from '@support/ui/screen';
 import {timeouts} from '@support/utils';
 
@@ -25,6 +28,9 @@ class ChannelListScreen {
     headerPlusButton = element(by.id(this.testID.headerPlusButton));
     findChannelsInput = element(by.id(this.testID.findChannelsInput));
     threadsButton = element(by.id(this.testID.threadsButton));
+
+    // convenience props
+    teamFlatList = TeamSidebar.teamFlatList;
     browseChannelsItem = PlusMenu.browseChannelsItem;
     createNewChannelItem = PlusMenu.createNewChannelItem;
     openDirectMessageItem = PlusMenu.openDirectMessageItem;
@@ -51,6 +57,18 @@ class ChannelListScreen {
 
     getChannelListItemDisplayName = (categoryKey: string, channelName: string) => {
         return element(by.id(`category.${categoryKey}.channel_list_item.${channelName}.display_name`));
+    };
+
+    getTeamItemSelected = (teamId: string) => {
+        return element(by.id(`team_sidebar.team_list.team_item.${teamId}.selected`));
+    };
+
+    getTeamItemNotSelected = (teamId: string) => {
+        return element(by.id(`team_sidebar.team_list.team_item.${teamId}.not_selected`));
+    };
+
+    getTeamItemDisplayNameAbbreviation = (teamId: string) => {
+        return element(by.id(`team_sidebar.team_list.team_item.${teamId}.team_icon.display_name_abbreviation`));
     };
 
     toBeVisible = async () => {

@@ -23,6 +23,7 @@ jest.mock('@utils/url', () => {
 
 describe('SSO', () => {
     const baseProps = {
+        componentId: 'SSO',
         license: {
             IsLicensed: 'true',
         },

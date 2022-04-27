@@ -44,6 +44,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.sidebarUnreadText,
         },
         iconInfo: {
+            color: changeOpacity(theme.centerChannelColor, 0.72),
+        },
+        iconInfoUnread: {
             color: theme.centerChannelColor,
         },
         groupBox: {
@@ -72,6 +75,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.sidebarUnreadText,
         },
         groupInfo: {
+            color: changeOpacity(theme.centerChannelColor, 0.72),
+        },
+        groupInfoUnread: {
             color: theme.centerChannelColor,
         },
         muted: {
@@ -81,19 +87,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const ChannelIcon = ({
-    hasDraft = false,
-    isActive = false,
-    isArchived = false,
-    isInfo = false,
-    isUnread = false,
-    isMuted = false,
-    membersCount = 0,
-    name,
-    shared,
-    size = 12,
-    style,
-    testID,
-    type,
+    hasDraft = false, isActive = false, isArchived = false,
+    isInfo = false, isUnread = false, isMuted = false,
+    membersCount = 0, name,
+    shared, size = 12, style, testID, type,
 }: ChannelIconProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -119,9 +116,9 @@ const ChannelIcon = ({
     }
 
     if (isInfo) {
-        activeIcon = styles.iconInfo;
+        activeIcon = isUnread ? styles.iconInfoUnread : styles.iconInfo;
         activeGroupBox = styles.groupBoxInfo;
-        activeGroup = styles.groupInfo;
+        activeGroup = isUnread ? styles.groupInfoUnread : styles.groupInfo;
     }
 
     if (isMuted) {
@@ -186,7 +183,11 @@ const ChannelIcon = ({
             </View>
         );
     } else if (type === General.DM_CHANNEL) {
-        icon = (<DmAvatar channelName={name}/>);
+        icon = (
+            <DmAvatar
+                channelName={name}
+                isInfo={isInfo}
+            />);
     }
 
     return (

@@ -52,6 +52,19 @@ export const observeThreadById = (database: Database, threadId: string) => {
     );
 };
 
+export const observeTeamIdByThread = (thread: ThreadModel) => {
+    return thread.post.observe().pipe(
+        switchMap((post) => {
+            if (!post) {
+                return of$(undefined);
+            }
+            return post.channel.observe().pipe(
+                switchMap((channel) => of$(channel?.teamId)),
+            );
+        }),
+    );
+};
+
 export const observeUnreadsAndMentionsInTeam = (database: Database, teamId?: string, includeDmGm?: boolean): Observable<{unreads: number; mentions: number}> => {
     const observeThreads = () => queryThreads(database, teamId, true, includeDmGm).
         observeWithColumns(['unread_replies', 'unread_mentions']).

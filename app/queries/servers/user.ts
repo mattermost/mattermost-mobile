@@ -68,7 +68,7 @@ export const observeTeammateNameDisplay = (database: Database) => {
     const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observe();
     return combineLatest([config, license, preferences]).pipe(
         switchMap(
-            ([cfg, lcs, prefs]) => getTeammateNameDisplaySetting(prefs, cfg, lcs),
+            ([cfg, lcs, prefs]) => of$(getTeammateNameDisplaySetting(prefs, cfg, lcs)),
         ),
     );
 };

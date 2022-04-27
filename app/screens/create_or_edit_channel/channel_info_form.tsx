@@ -224,9 +224,10 @@ export default function ChannelInfoForm({
         <SafeAreaView
             edges={['bottom', 'left', 'right']}
             style={styles.container}
+            testID='create_or_edit_channel.screen'
         >
             <KeyboardAwareScrollView
-                testID={'edit_channel_info.scrollview'}
+                testID={'create_or_edit_channel.scrollview'}
 
                 // @ts-expect-error legacy ref
                 ref={scrollViewRef}
@@ -244,7 +245,7 @@ export default function ChannelInfoForm({
                     <View>
                         {showSelector && (
                             <SectionItem
-                                testID='makePrivate'
+                                testID='channel_info_form.make_private'
                                 label={makePrivateLabel}
                                 description={makePrivateDescription}
                                 action={handlePress}
@@ -269,7 +270,7 @@ export default function ChannelInfoForm({
                                     returnKeyType='next'
                                     showErrorIcon={false}
                                     spellCheck={false}
-                                    testID='edit_channel_info.displayname.input'
+                                    testID='channel_info_form.display_name.input'
                                     value={displayName}
                                     ref={nameInput}
                                     containerStyle={styles.textInput}
@@ -288,7 +289,7 @@ export default function ChannelInfoForm({
                                     returnKeyType='next'
                                     showErrorIcon={false}
                                     spellCheck={false}
-                                    testID='edit_channel_info.purpose.input'
+                                    testID='channel_info_form.purpose.input'
                                     value={purpose}
                                     ref={purposeInput}
                                     containerStyle={styles.textInput}
@@ -298,6 +299,7 @@ export default function ChannelInfoForm({
                                     style={styles.helpText}
                                     id='channel_modal.descriptionHelp'
                                     defaultMessage='Describe how this channel should be used.'
+                                    testID='channel_info_form.purpose.description'
                                 />
                             </>
                         )}
@@ -315,7 +317,7 @@ export default function ChannelInfoForm({
                             returnKeyType='next'
                             showErrorIcon={false}
                             spellCheck={false}
-                            testID='edit_channel_info.header.input'
+                            testID='channel_info_form.header.input'
                             value={header}
                             onLayout={onHeaderLayout}
                             ref={headerInput}
@@ -326,6 +328,7 @@ export default function ChannelInfoForm({
                             style={styles.helpText}
                             id='channel_modal.headerHelp'
                             defaultMessage={'Specify text to appear in the channel header beside the channel name. For example, include frequently used links by typing link text [Link Title](http://example.com).'}
+                            testID='channel_info_form.header.description'
                         />
                     </View>
                 </TouchableWithoutFeedback>

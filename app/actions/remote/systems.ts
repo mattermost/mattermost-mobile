@@ -3,7 +3,6 @@
 
 import deepEqual from 'deep-equal';
 
-import {logError} from '@actions/remote/error';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -32,8 +31,6 @@ export const fetchDataRetentionPolicy = async (serverUrl: string) => {
         data = await client.getDataRetentionPolicy();
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientError);
-
-        logError(error);
         return {error};
     }
 

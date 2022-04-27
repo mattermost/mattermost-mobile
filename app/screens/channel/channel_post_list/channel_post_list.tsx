@@ -22,6 +22,7 @@ type Props = {
     contentContainerStyle?: StyleProp<ViewStyle>;
     currentTimezone: string | null;
     currentUsername: string;
+    isCRTEnabled: boolean;
     isTimezoneEnabled: boolean;
     lastViewedAt: number;
     nativeID: string;
@@ -36,7 +37,7 @@ const styles = StyleSheet.create({
 
 const ChannelPostList = ({
     channelId, contentContainerStyle, currentTimezone, currentUsername,
-    isTimezoneEnabled, lastViewedAt, nativeID, posts, shouldShowJoinLeaveMessages,
+    isCRTEnabled, isTimezoneEnabled, lastViewedAt, nativeID, posts, shouldShowJoinLeaveMessages,
 }: Props) => {
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
@@ -61,6 +62,7 @@ const ChannelPostList = ({
             contentContainerStyle={contentContainerStyle}
             currentTimezone={currentTimezone}
             currentUsername={currentUsername}
+            isCRTEnabled={isCRTEnabled}
             isTimezoneEnabled={isTimezoneEnabled}
             footer={intro}
             lastViewedAt={lastViewedAt}
@@ -89,4 +91,3 @@ const ChannelPostList = ({
 };
 
 export default ChannelPostList;
-

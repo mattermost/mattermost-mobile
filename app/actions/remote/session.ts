@@ -10,12 +10,11 @@ import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
-import {queryDeviceToken} from '@queries/app/global';
+import {getDeviceToken} from '@queries/app/global';
 import {getCurrentUserId, getCommonSystemValues} from '@queries/servers/system';
 import {getCSRFFromCookie} from '@utils/security';
 
 import {loginEntry} from './entry';
-import {logError} from './error';
 import {fetchDataRetentionPolicy} from './systems';
 import {autoUpdateTimezone} from './user';
 
@@ -89,7 +88,6 @@ export const getSessions = async (serverUrl: string, currentUserId: string) => {
     try {
         return await client.getSessions(currentUserId);
     } catch (e) {
-        logError(e);
         await forceLogoutIfNecessary(serverUrl, e as ClientError);
     }
 
@@ -113,7 +111,7 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
     }
 
     try {
-        deviceToken = await queryDeviceToken(appDatabase);
+        deviceToken = await getDeviceToken(appDatabase);
         user = await client.login(
             loginId,
             password,
@@ -218,7 +216,7 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
                 displayName: serverDisplayName,
             },
         });
-        deviceToken = await queryDeviceToken(database);
+        deviceToken = await getDeviceToken(database);
         user = await client.getMe();
         await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});
         await server?.operator.handleSystem({

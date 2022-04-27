@@ -43,6 +43,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 50,
             lineHeight: 60,
         },
+        newLine: {
+            lineHeight: 60,
+        },
     };
 });
 
@@ -74,7 +77,7 @@ const JumboEmoji = ({baseTextStyle, isEdited, value}: JumboEmojiProps) => {
     };
 
     const renderNewLine = () => {
-        return <Text style={baseTextStyle}>{'\n'}</Text>;
+        return <Text style={[baseTextStyle, style.newLine]}>{'\n'}</Text>;
     };
 
     const renderEditedIndicator = ({context}: {context: string[]}) => {
