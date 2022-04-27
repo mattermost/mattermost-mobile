@@ -19,6 +19,8 @@ type ToastProps = {
     textStyle?: StyleProp<TextStyle>;
 }
 
+export const TOAST_HEIGHT = 56;
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     center: {
         alignItems: 'center',
@@ -32,7 +34,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         elevation: 6,
         flex: 1,
         flexDirection: 'row',
-        height: 56,
+        height: TOAST_HEIGHT,
         paddingLeft: 20,
         paddingRight: 10,
         shadowColor: changeOpacity('#000', 0.12),

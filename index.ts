@@ -98,8 +98,6 @@ function componentDidAppearListener({componentId, passProps}: ComponentDidAppear
     if (!(passProps as any)?.overlay) {
         EphemeralStore.addNavigationComponentId(componentId);
     }
-
-    EphemeralStore.removeNavigationOverlays();
 }
 
 function componentDidDisappearListener({componentId}: ComponentDidDisappearEvent) {
@@ -114,6 +112,4 @@ function componentDidDisappearListener({componentId}: ComponentDidDisappearEvent
             DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
         }
     }
-
-    EphemeralStore.removeNavigationOverlays();
 }
