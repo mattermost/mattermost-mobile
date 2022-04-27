@@ -7,8 +7,8 @@ stages:
   - test
   - build
 
-.test:
-  image: $CI_REGISTRY/mattermost/ci/images/mattermost-build-webapp:20200524-node-16
+test:
+  image: $CI_REGISTRY/qa/images/android-node:android-32_node-16.14.2-20220426
   stage: test
   variables:
     KUBERNETES_CPU_REQUEST: 3
