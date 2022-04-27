@@ -47,7 +47,7 @@ export function checkDialogElementForError(elem: DialogElement, value: any): Dia
         }
 
         if (elem.subtype === 'url') {
-            if (value && !value.includes('http://') && !value.includes('https://')) {
+            if (value && !value.startsWith('http://') && !value.startsWith('https://')) {
                 return {
                     id: 'interactive_dialog.error.bad_url',
                     defaultMessage: 'URL must include http:// or https://.',

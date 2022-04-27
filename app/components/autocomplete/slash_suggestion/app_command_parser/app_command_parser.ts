@@ -13,11 +13,13 @@ import IntegrationsManager from '@managers/integrations_manager';
 import {getChannelById, getChannelByName} from '@queries/servers/channel';
 import {getCurrentTeamId} from '@queries/servers/system';
 import {getUserById, queryUsersByUsername} from '@queries/servers/user';
-import ChannelModel from '@typings/database/models/servers/channel';
-import UserModel from '@typings/database/models/servers/user';
 import {createCallRequest, filterEmptyOptions} from '@utils/apps';
 
 import {getChannelSuggestions, getUserSuggestions, inTextMentionSuggestions} from './mentions';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type UserModel from '@typings/database/models/servers/user';
+
 /* eslint-disable max-lines */
 
 export enum ParseState {

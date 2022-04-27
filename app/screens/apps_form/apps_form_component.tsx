@@ -238,7 +238,7 @@ function AppsFormComponent({
             setError(formError);
         }
 
-        if (fieldErrors && Object.keys(fieldErrors).length >= 0) {
+        if (fieldErrors && Object.keys(fieldErrors).length > 0) {
             hasErrors = true;
             if (checkIfErrorsMatchElements(fieldErrors as any, elements)) {
                 setErrors(fieldErrors);
@@ -247,7 +247,7 @@ function AppsFormComponent({
                 const field = Object.keys(fieldErrors)[0];
                 setError(intl.formatMessage({
                     id: 'apps.error.responses.unknown_field_error',
-                    defaultMessage: 'Received an error for an unkown field. Field name: `{field}`. Error: `{error}`.',
+                    defaultMessage: 'Received an error for an unknown field. Field name: `{field}`. Error: `{error}`.',
                 }, {
                     field,
                     error: fieldErrors[field],
