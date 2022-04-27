@@ -14,6 +14,7 @@ import {BOTTOM_TAB_HEIGHT, TABLET_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {dismissOverlay} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -140,6 +141,7 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
 
     useEffect(() => {
         setShowToast(true);
+        EphemeralStore.addNavigationOverlay(componentId);
         const t = setTimeout(() => {
             setShowToast(false);
         }, 3000);

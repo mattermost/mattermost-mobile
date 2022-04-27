@@ -9,6 +9,7 @@ type ShowSnackBarArgs = {
     onPress?: () => void;
     sourceScreen?: typeof Screens[keyof typeof Screens];
 };
+
 export const showSnackBar = (passProps: ShowSnackBarArgs) => {
     const screen = Screens.SNACK_BAR;
     showOverlay(screen, passProps);

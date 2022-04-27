@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {dismissOverlay} from '@screens/navigation';
+
 class EphemeralStore {
     allNavigationComponentIds: string[] = [];
     navigationComponentIdStack: string[] = [];
@@ -9,6 +11,7 @@ class EphemeralStore {
     visibleTab = 'Home';
     creatingChannel = false;
     creatingDMorGMTeammates: string[] = [];
+    overlays: string[] = [];
 
     addNavigationComponentId = (componentId: string) => {
         this.addToNavigationComponentIdStack(componentId);
@@ -34,6 +37,10 @@ class EphemeralStore {
         this.navigationModalStack.unshift(componentId);
     };
 
+    addNavigationOverlay = (componentId: string) => {
+        this.overlays.unshift(componentId);
+    };
+
     clearNavigationComponents = () => {
         this.navigationComponentIdStack = [];
         this.navigationModalStack = [];
@@ -42,6 +49,10 @@ class EphemeralStore {
 
     clearNavigationModals = () => {
         this.navigationModalStack = [];
+    };
+
+    clearNavigationOverlays = () => {
+        this.overlays = [];
     };
 
     getAllNavigationComponents = () => this.allNavigationComponentIds;
@@ -74,6 +85,17 @@ class EphemeralStore {
 
         if (index >= 0) {
             this.navigationModalStack.splice(index, 1);
+        }
+    };
+
+    removeNavigationOverlays = () => {
+        const hasOverlays = this.overlays.length;
+
+        if (hasOverlays) {
+            this.overlays.forEach((o) => {
+                dismissOverlay(o);
+            });
+            this.clearNavigationOverlays();
         }
     };
 
