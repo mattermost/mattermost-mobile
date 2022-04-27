@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React from 'react';
 import {Platform, Text, View} from 'react-native';
 import MathView from 'react-native-math-view';
 
@@ -36,14 +36,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const LatexInline = ({content, maxMathWidth, theme}: Props) => {
     const style = getStyleSheet(theme);
-    const mathStyle = useMemo(() => [
-        style.mathStyle,
-        {maxWidth: maxMathWidth || '100%'},
-    ], [maxMathWidth]);
-
-    const onErrorMessage = (error: Error) => {
-        return <Text style={style.errorText}>{'Latex error: ' + error.message}</Text>;
-    };
 
     const onRenderErrorMessage = (errorMsg: MathViewErrorProps) => {
         return <Text style={style.errorText}>{'Latex render error: ' + errorMsg.error.message}</Text>;
@@ -55,9 +47,8 @@ const LatexInline = ({content, maxMathWidth, theme}: Props) => {
             key={content}
         >
             <MathView
-                style={mathStyle}
+                style={[style.mathStyle, {maxWidth: maxMathWidth || '100%'}]}
                 math={content}
-                onError={onErrorMessage}
                 renderError={onRenderErrorMessage}
                 resizeMode='contain'
             />

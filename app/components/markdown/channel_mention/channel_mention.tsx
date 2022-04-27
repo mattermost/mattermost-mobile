@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React from 'react';
 import {useIntl} from 'react-intl';
 import {StyleProp, Text, TextStyle} from 'react-native';
 
@@ -65,7 +65,7 @@ const ChannelMention = ({
     const serverUrl = useServerUrl();
     const channel = getChannelFromChannelName(channelName, channels, channelMentions, team.name);
 
-    const handlePress = useCallback(preventDoubleTap(async () => {
+    const handlePress = preventDoubleTap(async () => {
         let c = channel;
 
         if (!c?.id && c?.display_name) {
@@ -90,7 +90,7 @@ const ChannelMention = ({
             await dismissAllModals();
             await popToRoot();
         }
-    }), [channel?.display_name, channel?.id]);
+    });
 
     if (!channel) {
         return <Text style={textStyle}>{`~${channelName}`}</Text>;

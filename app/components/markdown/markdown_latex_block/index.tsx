@@ -3,7 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-community/clipboard';
-import React, {useCallback} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, View, Text, StyleSheet, Platform} from 'react-native';
 import MathView from 'react-native-math-view';
@@ -88,14 +88,33 @@ const LatexCodeBlock = ({content, theme}: Props) => {
     const insets = useSafeAreaInsets();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const styles = getStyleSheet(theme);
+    const languageDisplayName = getHighlightLanguageName('latex');
 
-    const handlePress = preventDoubleTap(() => {
+    const splitContent = () => {
+        const lines = splitLatexCodeInLines(content);
+        const numberOfLines = lines.length;
+
+        if (numberOfLines > MAX_LINES) {
+            return {
+                content: lines.slice(0, MAX_LINES),
+                numberOfLines,
+            };
+        }
+
+        return {
+            lines,
+            numberOfLines,
+        };
+    };
+
+    const prevContent = useRef(content);
+    const [split, setSplit] = useState(splitContent());
+
+    const handlePress = useCallback(preventDoubleTap(() => {
         const screen = Screens.LATEX;
         const passProps = {
             content,
         };
-
-        const languageDisplayName = getHighlightLanguageName('latex');
         const title = intl.formatMessage({
             id: 'mobile.routes.code',
             defaultMessage: '{language} Code',
@@ -107,7 +126,7 @@ const LatexCodeBlock = ({content, theme}: Props) => {
         requestAnimationFrame(() => {
             goToScreen(screen, title, passProps);
         });
-    });
+    }), [content, languageDisplayName, intl.locale]);
 
     const handleLongPress = useCallback(() => {
         if (managedConfig?.copyAndPasteProtection !== 'true') {
@@ -149,43 +168,26 @@ const LatexCodeBlock = ({content, theme}: Props) => {
         }
     }, [managedConfig, intl, insets, theme]);
 
-    const splitContent = () => {
-        const lines = splitLatexCodeInLines(content);
-        const numberOfLines = lines.length;
-
-        if (numberOfLines > MAX_LINES) {
-            return {
-                content: lines.slice(0, MAX_LINES),
-                numberOfLines,
-            };
-        }
-
-        return {
-            lines,
-            numberOfLines,
-        };
-    };
-
-    const onErrorMessage = (errorMsg: Error) => {
-        return <Text style={styles.errorText}>{'Error: ' + errorMsg.message}</Text>;
-    };
-
-    const onRenderErrorMessage = ({error}: {error: Error}) => {
+    const onRenderErrorMessage = useCallback(({error}: {error: Error}) => {
         return <Text style={styles.errorText}>{'Render error: ' + error.message}</Text>;
-    };
+    }, []);
 
-    const languageDisplayName = getHighlightLanguageName('latex');
-    const {lines, numberOfLines} = splitContent();
+    useEffect(() => {
+        if (prevContent.current !== content) {
+            setSplit(splitContent());
+            prevContent.current = content;
+        }
+    }, [content]);
 
     let plusMoreLines = null;
-    if (numberOfLines > MAX_LINES) {
+    if (split.numberOfLines > MAX_LINES) {
         plusMoreLines = (
             <FormattedText
                 style={styles.plusMoreLinesText}
                 id='mobile.markdown.code.plusMoreLines'
                 defaultMessage='+{count, number} more {count, plural, one {line} other {lines}}'
                 values={{
-                    count: numberOfLines - MAX_LINES,
+                    count: split.numberOfLines - MAX_LINES,
                 }}
             />
         );
@@ -204,14 +206,13 @@ const LatexCodeBlock = ({content, theme}: Props) => {
         >
             <View style={styles.container}>
                 <View style={styles.rightColumn}>
-                    {lines?.map((latexCode) => (
+                    {split.lines?.map((latexCode) => (
                         <View
                             style={styles.code}
                             key={latexCode}
                         >
                             <MathView
                                 math={latexCode}
-                                onError={onErrorMessage}
                                 renderError={onRenderErrorMessage}
                                 resizeMode={'cover'}
                             />
