@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {Text, TouchableHighlight, View} from 'react-native';
 
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import FriendlyDate from '@components/friendly_date';
 import RemoveMarkdown from '@components/remove_markdown';
@@ -25,6 +26,7 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
+import type {MarkdownEmojiRenderer} from '@typings/global/markdown';
 
 type Props = {
     author?: UserModel;
@@ -95,8 +97,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         message: {
             color: theme.centerChannelColor,
-            fontSize: 15,
-            lineHeight: 20,
+            ...typography('Body', 200),
         },
         unreadDot: {
             width: 8,
@@ -127,6 +128,17 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
+
+    const handleMarkdownEmoji = useCallback(({emojiName, literal}: MarkdownEmojiRenderer) => {
+        return (
+            <Emoji
+                emojiName={emojiName}
+                literal={literal}
+                testID='markdown_emoji'
+                textStyle={styles.message}
+            />
+        );
+    }, [styles]);
 
     const handleMarkdownSoftBreak = useCallback(() => {
         return '\n';
@@ -174,7 +186,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
 
     let name;
     let postBody;
-    if (post?.deleteAt && post.deleteAt > 0) {
+    if (!post || post.deleteAt > 0) {
         name = (
             <FormattedText
                 id='threads.deleted'
@@ -194,12 +206,12 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
         );
         if (post?.message) {
             postBody = (
-                <Text
-                    style={styles.message}
-                    numberOfLines={2}
-                >
+                <Text numberOfLines={2}>
                     <RemoveMarkdown
+                        renderEmoji={handleMarkdownEmoji}
+                        renderHardBreak={handleMarkdownSoftBreak}
                         renderSoftBreak={handleMarkdownSoftBreak}
+                        textStyle={styles.message}
                         value={post.message}
                     />
                 </Text>

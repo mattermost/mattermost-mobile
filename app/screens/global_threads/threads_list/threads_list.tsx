@@ -80,9 +80,7 @@ const ThreadsList = ({
             );
         }
         return (
-            <EmptyState
-                isUnreads={tab === 'unreads'}
-            />
+            <EmptyState isUnreads={tab === 'unreads'}/>
         );
     }, [isLoading, theme, tab]);
 

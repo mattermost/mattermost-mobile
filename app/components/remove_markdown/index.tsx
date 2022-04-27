@@ -4,16 +4,21 @@
 import {Parser} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
 import React, {ReactElement, useRef} from 'react';
-import {Text} from 'react-native';
+import {StyleProp, Text, TextStyle} from 'react-native';
+
+import type {MarkdownEmojiRenderer} from '@typings/global/markdown';
 
 type Props = {
+    renderEmoji?: (params: MarkdownEmojiRenderer) => ReactElement;
+    renderHardBreak?: () => string;
     renderSoftBreak?: () => string;
+    textStyle: StyleProp<TextStyle>;
     value: string;
 };
 
-const RemoveMarkdown = ({renderSoftBreak, value}: Props) => {
+const RemoveMarkdown = ({renderEmoji, renderHardBreak, renderSoftBreak, textStyle, value}: Props) => {
     const renderText = ({literal}: {literal: string}) => {
-        return <Text>{literal}</Text>;
+        return <Text style={textStyle}>{literal}</Text>;
     };
 
     const renderNull = () => {
@@ -33,7 +38,7 @@ const RemoveMarkdown = ({renderSoftBreak, value}: Props) => {
                 image: renderNull,
                 atMention: Renderer.forwardChildren,
                 channelLink: Renderer.forwardChildren,
-                emoji: renderNull,
+                emoji: renderEmoji || renderNull,
                 hashtag: Renderer.forwardChildren,
 
                 paragraph: Renderer.forwardChildren,
@@ -44,7 +49,7 @@ const RemoveMarkdown = ({renderSoftBreak, value}: Props) => {
                 list: renderNull,
                 item: renderNull,
 
-                hardBreak: renderNull,
+                hardBreak: renderHardBreak || renderNull,
                 thematicBreak: renderNull,
                 softBreak: renderSoftBreak || renderNull,
 
