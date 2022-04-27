@@ -9,6 +9,7 @@ import {SafeAreaView, Edge} from 'react-native-safe-area-context';
 import {useTheme} from '@context/theme';
 import {splitLatexCodeInLines} from '@utils/markdown/latex';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type Props = {
     content: string;
@@ -42,7 +43,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingVertical: codeVerticalPadding,
         },
         errorText: {
-            fontSize: 14,
+            ...typography('Body', 100),
             marginHorizontal: 5,
             color: theme.errorTextColor,
         },
@@ -68,7 +69,7 @@ const Latex = ({content}: Props) => {
             style={style.scrollContainer}
         >
             <ScrollView
-                style={[style.scrollContainer]}
+                style={style.scrollContainer}
                 contentContainerStyle={style.container}
             >
                 <ScrollView

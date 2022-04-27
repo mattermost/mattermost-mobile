@@ -19,6 +19,7 @@ import {getHighlightLanguageName} from '@utils/markdown';
 import {splitLatexCodeInLines} from '@utils/markdown/latex';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const MAX_LINES = 2;
 
@@ -58,7 +59,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         plusMoreLinesText: {
             color: changeOpacity(theme.centerChannelColor, 0.4),
-            fontSize: 11,
+            ...typography('Body', 50),
             marginTop: 2,
         },
         language: {
@@ -73,10 +74,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         languageText: {
             color: theme.sidebarHeaderTextColor,
-            fontSize: 12,
+            ...typography('Body', 75),
         },
         errorText: {
-            fontSize: 14,
+            ...typography('Body', 100),
             marginHorizontal: 5,
             color: theme.errorTextColor,
         },
@@ -148,9 +149,7 @@ const LatexCodeBlock = ({content, theme}: Props) => {
                         <SlideUpPanelItem
                             destructive={true}
                             icon='cancel'
-                            onPress={() => {
-                                dismissBottomSheet();
-                            }}
+                            onPress={dismissBottomSheet}
                             testID='at_mention.bottom_sheet.cancel'
                             text={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         />
@@ -166,7 +165,7 @@ const LatexCodeBlock = ({content, theme}: Props) => {
                 theme,
             });
         }
-    }, [managedConfig, intl, insets, theme]);
+    }, [managedConfig.copyAndPasteProtection, intl, insets, theme]);
 
     const onRenderErrorMessage = useCallback(({error}: {error: Error}) => {
         return <Text style={styles.errorText}>{'Render error: ' + error.message}</Text>;
