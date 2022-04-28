@@ -3,7 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-community/clipboard';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, View, Text, StyleSheet, Platform} from 'react-native';
 import MathView from 'react-native-math-view';
@@ -91,7 +91,7 @@ const LatexCodeBlock = ({content, theme}: Props) => {
     const styles = getStyleSheet(theme);
     const languageDisplayName = getHighlightLanguageName('latex');
 
-    const splitContent = () => {
+    const split = useMemo(() => {
         const lines = splitLatexCodeInLines(content);
         const numberOfLines = lines.length;
 
@@ -106,10 +106,7 @@ const LatexCodeBlock = ({content, theme}: Props) => {
             lines,
             numberOfLines,
         };
-    };
-
-    const prevContent = useRef(content);
-    const [split, setSplit] = useState(splitContent());
+    }, [content]);
 
     const handlePress = useCallback(preventDoubleTap(() => {
         const screen = Screens.LATEX;
@@ -165,18 +162,11 @@ const LatexCodeBlock = ({content, theme}: Props) => {
                 theme,
             });
         }
-    }, [managedConfig.copyAndPasteProtection, intl, insets, theme]);
+    }, [managedConfig?.copyAndPasteProtection, intl, insets, theme]);
 
     const onRenderErrorMessage = useCallback(({error}: {error: Error}) => {
         return <Text style={styles.errorText}>{'Render error: ' + error.message}</Text>;
     }, []);
-
-    useEffect(() => {
-        if (prevContent.current !== content) {
-            setSplit(splitContent());
-            prevContent.current = content;
-        }
-    }, [content]);
 
     let plusMoreLines = null;
     if (split.numberOfLines > MAX_LINES) {
