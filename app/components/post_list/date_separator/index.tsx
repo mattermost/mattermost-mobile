@@ -6,6 +6,7 @@ import {StyleProp, View, ViewStyle} from 'react-native';
 
 import FormattedDate from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
+import {isSameYear, isToday, isYesterday} from '@utils/datetime';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -36,27 +37,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
     };
 });
-
-export function isSameDay(a: Date, b: Date) {
-    return a.getDate() === b.getDate() && a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear();
-}
-
-export function isSameYear(a: Date, b: Date) {
-    return a.getFullYear() === b.getFullYear();
-}
-
-export function isToday(date: Date) {
-    const now = new Date();
-
-    return isSameDay(date, now);
-}
-
-export function isYesterday(date: Date) {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    return isSameDay(date, yesterday);
-}
 
 const RecentDate = (props: DateSeparatorProps) => {
     const {date, ...otherProps} = props;

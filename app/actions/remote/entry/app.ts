@@ -1,13 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {switchToGlobalThreads} from '@actions/local/thread';
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
+import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {queryChannelsById, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
-import {prepareCommonSystemValues, getCommonSystemValues, getCurrentChannelId, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {prepareCommonSystemValues, getCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {getNthLastChannelFromTeam} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
@@ -46,16 +49,13 @@ export async function appEntry(serverUrl: string, since = 0) {
     const rolesData = await fetchRoles(serverUrl, teamData?.memberships, chData?.memberships, meData?.user, true);
 
     if (initialTeamId === currentTeamId) {
-        let cId = await getCurrentChannelId(database);
         if (tabletDevice) {
-            if (!cId) {
-                const channel = await getDefaultChannelForTeam(database, initialTeamId);
-                if (channel) {
-                    cId = channel.id;
-                }
+            const cId = await getNthLastChannelFromTeam(database, currentTeamId);
+            if (cId === Screens.GLOBAL_THREADS) {
+                switchToGlobalThreads(serverUrl);
+            } else {
+                switchToChannelById(serverUrl, cId, initialTeamId);
             }
-
-            switchToChannelById(serverUrl, cId, initialTeamId);
         }
     } else {
         // Immediately set the new team as the current team in the database so that the UI

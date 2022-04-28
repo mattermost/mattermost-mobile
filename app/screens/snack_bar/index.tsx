@@ -133,7 +133,7 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
         });
 
     const animateHiding = (forceHiding: boolean) => {
-        const duration = forceHiding ? 0 : 500;
+        const duration = forceHiding ? 0 : 200;
         if (!isPanning.value || forceHiding) {
             offset.value = withTiming(100, {duration}, () => runOnJS(hideSnackBar)());
         }
