@@ -12,14 +12,15 @@ import FreezeScreen from '@components/freeze_screen';
 import TeamSidebar from '@components/team_sidebar';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import Channel from '@screens/channel';
 
+import AdditionalTabletView from './additional_tablet_view';
 import CategoriesList from './categories_list';
 import Servers from './servers';
 
 type ChannelProps = {
     channelsCount: number;
     currentTeamId?: string;
+    isCRTEnabled: boolean;
     teamsCount: number;
     time?: number;
 };
@@ -86,13 +87,14 @@ const ChannelListScreen = (props: ChannelProps) => {
                     />
                     <CategoriesList
                         iconPad={canAddOtherServers && props.teamsCount <= 1}
+                        isCRTEnabled={props.isCRTEnabled}
                         isTablet={isTablet}
                         teamsCount={props.teamsCount}
                         channelsCount={props.channelsCount}
                         currentTeamId={props.currentTeamId}
                     />
                     {isTablet && Boolean(props.currentTeamId) &&
-                        <Channel/>
+                        <AdditionalTabletView/>
                     }
                 </Animated.View>
             </SafeAreaView>

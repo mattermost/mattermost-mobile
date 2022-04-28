@@ -22,6 +22,7 @@ export const EDIT_SERVER = 'EditServer';
 export const FIND_CHANNELS = 'FindChannels';
 export const FORGOT_PASSWORD = 'ForgotPassword';
 export const GALLERY = 'Gallery';
+export const GLOBAL_THREADS = 'GlobalThreads';
 export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
 export const INTERACTIVE_DIALOG = 'InteractiveDialog';
@@ -40,6 +41,7 @@ export const SETTINGS_SIDEBAR = 'SettingsSidebar';
 export const SSO = 'SSO';
 export const THREAD = 'Thread';
 export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
+export const THREAD_OPTIONS = 'ThreadOptions';
 export const USER_PROFILE = 'UserProfile';
 
 export default {
@@ -64,6 +66,7 @@ export default {
     FIND_CHANNELS,
     FORGOT_PASSWORD,
     GALLERY,
+    GLOBAL_THREADS,
     HOME,
     INTEGRATION_SELECTOR,
     INTERACTIVE_DIALOG,
@@ -82,6 +85,7 @@ export default {
     SSO,
     THREAD,
     THREAD_FOLLOW_BUTTON,
+    THREAD_OPTIONS,
     USER_PROFILE,
 };
 
