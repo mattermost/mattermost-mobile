@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, useWindowDimensions, ViewStyle} from 'react-native';
 import {Gesture, GestureDetector, GestureHandlerRootView} from 'react-native-gesture-handler';
-import Animated, {runOnJS, useAnimatedStyle, useSharedValue} from 'react-native-reanimated';
+import Animated, {Extrapolation, interpolate, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import Toast, {TOAST_HEIGHT} from '@components/toast';
 import {Screens} from '@constants';
@@ -102,19 +102,18 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
         return {
             transform: [
                 {translateY: offset.value},
+                {scale: interpolate(offset.value, [0, 100], [1, 0], Extrapolation.EXTEND)},
             ],
+            opacity: interpolate(offset.value, [0, 100], [1, 0], Extrapolation.EXTEND),
         };
     }, [offset.value]);
 
-    const onHideSnackBar = () => {
-        const t = setTimeout(() => {
-            setShowToast(false);
-        }, 200);
-
-        return () => clearTimeout(t);
+    const hideSnackBar = () => {
+        setShowToast(false);
     };
 
     const gesture = Gesture.
+        // eslint-disable-next-line new-cap
         Pan().
         onStart((st) => {
             startY.value = st.absoluteY;
@@ -124,36 +123,27 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
             if (e.absoluteY >= startY.value) {
                 offset.value = e.translationY;
             }
-        }).onEnd(() => runOnJS(onHideSnackBar)());
+        }).
+        onEnd(() => {
+            runOnJS(hideSnackBar)();
+        });
+
+    const animateHiding = () => {
+        offset.value = withTiming(100, {duration: 500});
+        setShowToast(false);
+    };
 
     useEffect(() => {
         setShowToast(true);
-        console.log('SHOW TOAST');
-
-        // onHideSnackBar()
+        const t = setTimeout(() => animateHiding(), 3000);
+        return () => clearTimeout(t);
     }, []);
-
-    // useEffect(() => {
-    //     const t = setTimeout(() => {
-    //         if (offset.value > start.value) {
-    //             dismissOverlay(componentId);
-    //             console.log('DISMISS');
-    //         }
-    //     }, 500);
-    //
-    //     return () => {
-    //         if (t) {
-    //             clearTimeout(t);
-    //         }
-    //     };
-    // }, [offset.value, startY.value]);
 
     useEffect(() => {
         let t: NodeJS.Timeout;
         if (showToast === false) {
             t = setTimeout(() => {
                 dismissOverlay(componentId);
-                console.log('DISMISS');
             }, 700);
         }
 
@@ -165,7 +155,7 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
     }, [showToast]);
 
     return (
-        <GestureHandlerRootView style={{flex: 1, backgroundColor: 'red', height: 80, width: '100%', position: 'absolute', bottom: 100}}>
+        <GestureHandlerRootView style={{flex: 1, height: 80, width: '100%', position: 'absolute', bottom: 100}}>
             <GestureDetector gesture={gesture}>
                 <Animated.View style={animatedMotion}>
                     <Toast
