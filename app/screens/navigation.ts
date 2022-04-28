@@ -683,3 +683,8 @@ export async function dismissBottomSheet(alternativeScreen = Screens.BOTTOM_SHEE
     DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
     await EphemeralStore.waitUntilScreensIsRemoved(alternativeScreen);
 }
+
+export const showAppForm = async (form: AppForm, call: AppCallRequest) => {
+    const passProps = {form, call};
+    showModal(Screens.APP_FORM, form.title || '', passProps);
+};

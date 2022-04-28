@@ -11,7 +11,7 @@ import {removePost} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
 import {createThreadFromNewPost} from '@actions/local/thread';
 import {ActionType, Events, General, Post, ServerErrors} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {filterPostsInOrderedArray} from '@helpers/api/post';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
@@ -619,38 +619,6 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
     }
 }
 
-export const postActionWithCookie = async (serverUrl: string, postId: string, actionId: string, actionCookie: string, selectedOption = '') => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    try {
-        const data = await client.doPostActionWithCookie(postId, actionId, actionCookie, selectedOption);
-        if (data?.trigger_id) {
-            await operator.handleSystem({
-                systems: [{
-                    id: SYSTEM_IDENTIFIERS.INTEGRATION_TRIGGER_ID,
-                    value: data.trigger_id,
-                }],
-                prepareRecordsOnly: false,
-            });
-        }
-
-        return {data};
-    } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
-        return {error};
-    }
-};
-
 export async function fetchMissingChannelsFromPosts(serverUrl: string, posts: Post[], fetchOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -988,7 +956,3 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
         return {error};
     }
 }
-
-export const selectAttachmentMenuAction = (serverUrl: string, postId: string, actionId: string, selectedOption: string) => {
-    return postActionWithCookie(serverUrl, postId, actionId, '', selectedOption);
-};

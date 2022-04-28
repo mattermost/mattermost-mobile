@@ -59,9 +59,9 @@ type DialogOption = {
 type DialogElement = {
     display_name: string;
     name: string;
-    type: string;
-    subtype: string;
-    default: string;
+    type: InteractiveDialogElementType;
+    subtype: InteractiveDialogTextSubtype;
+    default: string | boolean;
     placeholder: string;
     help_text: string;
     optional: boolean;
@@ -114,3 +114,6 @@ type PostActionResponse = {
     status: string;
     trigger_id: string;
 };
+
+type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool'
+type InteractiveDialogTextSubtype = 'email' | 'number' | 'tel' | 'url' | 'password'

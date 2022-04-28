@@ -57,6 +57,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.ABOUT:
             screen = withServerDatabase(require('@screens/about').default);
             break;
+        case Screens.APP_FORM:
+            screen = withServerDatabase(require('@screens/apps_form').default);
+            break;
         case Screens.BOTTOM_SHEET:
             screen = withServerDatabase(
                 require('@screens/bottom_sheet').default,
@@ -114,6 +117,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.GLOBAL_THREADS:
             screen = withServerDatabase(require('@screens/global_threads').default);
+            break;
+        case Screens.INTERACTIVE_DIALOG:
+            screen = withServerDatabase(require('@screens/interactive_dialog').default);
             break;
         case Screens.IN_APP_NOTIFICATION: {
             const notificationScreen =

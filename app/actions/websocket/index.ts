@@ -32,6 +32,7 @@ import {handleChannelConvertedEvent, handleChannelCreatedEvent,
     handleDirectAddedEvent,
     handleUserAddedToChannelEvent,
     handleUserRemovedFromChannelEvent} from './channel';
+import {handleOpenDialogEvent} from './integrations';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
@@ -369,6 +370,7 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
 
         case WebsocketEvents.OPEN_DIALOG:
+            handleOpenDialogEvent(serverUrl, msg);
             break;
 
         case WebsocketEvents.THREAD_UPDATED:

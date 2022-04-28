@@ -25,6 +25,7 @@ export const GALLERY = 'Gallery';
 export const GLOBAL_THREADS = 'GlobalThreads';
 export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
+export const INTERACTIVE_DIALOG = 'InteractiveDialog';
 export const IN_APP_NOTIFICATION = 'InAppNotification';
 export const LOGIN = 'Login';
 export const MENTIONS = 'Mentions';
@@ -68,6 +69,7 @@ export default {
     GLOBAL_THREADS,
     HOME,
     INTEGRATION_SELECTOR,
+    INTERACTIVE_DIALOG,
     IN_APP_NOTIFICATION,
     LOGIN,
     MENTIONS,
