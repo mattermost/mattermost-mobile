@@ -44,6 +44,7 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
     const {width: windowWidth} = useWindowDimensions();
     const offset = useSharedValue(0);
     const startY = useSharedValue(0);
+    const isPanning = useSharedValue(false);
 
     const config = SNACK_BAR_CONFIG[barType];
     const styles = getStyleSheet(theme);
@@ -117,6 +118,7 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
         Pan().
         onStart((st) => {
             startY.value = st.absoluteY;
+            isPanning.value = true;
         }).
         activeOffsetY(20).
         onUpdate((e) => {
@@ -126,11 +128,13 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
         }).
         onEnd(() => {
             runOnJS(hideSnackBar)();
+            isPanning.value = false;
         });
 
     const animateHiding = () => {
-        offset.value = withTiming(100, {duration: 500});
-        setShowSnackBar(false);
+        if (!isPanning.value) {
+            offset.value = withTiming(100, {duration: 500}, () => runOnJS(hideSnackBar)());
+        }
     };
 
     useEffect(() => {
@@ -145,7 +149,7 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
         if (showSnackBar === false) {
             t = setTimeout(() => {
                 dismissOverlay(componentId);
-            }, 700);
+            }, 350);
         }
 
         return () => {
