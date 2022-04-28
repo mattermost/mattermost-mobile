@@ -89,7 +89,7 @@ const AtMention = ({
         return user.mentionKeys;
     }, [currentUserId, mentionKeys, user]);
 
-    const goToUserProfile = useCallback(() => {
+    const goToUserProfile = () => {
         const screen = 'UserProfile';
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const passProps = {
@@ -109,7 +109,7 @@ const AtMention = ({
         };
 
         showModal(screen, title, passProps, options);
-    }, [user]);
+    };
 
     const handleLongPress = useCallback(() => {
         if (managedConfig?.copyAndPasteProtection !== 'true') {
@@ -230,4 +230,4 @@ const AtMention = ({
     );
 };
 
-export default React.memo(AtMention);
+export default AtMention;

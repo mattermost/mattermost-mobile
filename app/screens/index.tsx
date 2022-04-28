@@ -132,6 +132,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             );
             return;
         }
+        case Screens.LATEX:
+            screen = withServerDatabase(require('@screens/latex').default);
+            break;
         case Screens.LOGIN:
             screen = withIntl(require('@screens/login').default);
             break;

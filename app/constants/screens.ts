@@ -27,6 +27,7 @@ export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
 export const INTERACTIVE_DIALOG = 'InteractiveDialog';
 export const IN_APP_NOTIFICATION = 'InAppNotification';
+export const LATEX = 'Latex';
 export const LOGIN = 'Login';
 export const MENTIONS = 'Mentions';
 export const MFA = 'MFA';
@@ -71,6 +72,7 @@ export default {
     INTEGRATION_SELECTOR,
     INTERACTIVE_DIALOG,
     IN_APP_NOTIFICATION,
+    LATEX,
     LOGIN,
     MENTIONS,
     MFA,
