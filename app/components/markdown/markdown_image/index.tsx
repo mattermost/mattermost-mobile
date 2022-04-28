@@ -81,13 +81,7 @@ const MarkdownImage = ({
     const originalSize = getMarkdownImageSize(isReplyPost, isTablet, sourceSize, metadata, layoutWidth);
     const serverUrl = useServerUrl();
     const galleryIdentifier = `${postId}-${genericFileId}-${location}`;
-    const uri = useMemo(() => {
-        if (source.startsWith('/')) {
-            return serverUrl + source;
-        }
-
-        return source;
-    }, [source, serverUrl]);
+    const uri = source.startsWith('/') ? serverUrl + source : source;
 
     const fileInfo = useMemo(() => {
         const link = decodeURIComponent(uri);
@@ -119,7 +113,7 @@ const MarkdownImage = ({
             type: 'image',
         };
         openGalleryAtIndex(galleryIdentifier, 0, [item]);
-    }, []);
+    }, [fileInfo]);
 
     const {ref, onGestureEvent, styles} = useGalleryItem(
         galleryIdentifier,
@@ -188,7 +182,7 @@ const MarkdownImage = ({
                 theme,
             });
         }
-    }, [managedConfig, intl, insets, theme]);
+    }, [managedConfig, intl.locale, insets.bottom, theme]);
 
     const handleOnError = useCallback(() => {
         setFailed(true);

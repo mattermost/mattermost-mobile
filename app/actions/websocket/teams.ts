@@ -10,7 +10,7 @@ import {fetchAllTeams, handleTeamChange, fetchMyTeam} from '@actions/remote/team
 import {updateUsersNoLongerVisible} from '@actions/remote/user';
 import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
-import {queryActiveServer} from '@queries/app/servers';
+import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentTeamId} from '@queries/servers/system';
 import {getLastTeam, prepareMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
@@ -38,9 +38,13 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
         }
 
         if (currentTeamId === teamId) {
-            const currentServer = await queryActiveServer(DatabaseManager.appDatabase!.database);
+            const appDatabase = DatabaseManager.appDatabase?.database;
+            let currentServer = '';
+            if (appDatabase) {
+                currentServer = await getActiveServerUrl(appDatabase);
+            }
 
-            if (currentServer?.url === serverUrl) {
+            if (currentServer === serverUrl) {
                 DeviceEventEmitter.emit(Events.LEAVE_TEAM);
                 await dismissAllModals();
                 await popToRoot();

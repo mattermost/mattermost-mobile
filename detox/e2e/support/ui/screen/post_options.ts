@@ -53,6 +53,7 @@ class PostOptionsScreen {
     };
 
     deletePost = async ({confirm = true} = {}) => {
+        await waitFor(this.deletePostOption).toExist().withTimeout(timeouts.TWO_SEC);
         await this.deletePostOption.tap({x: 1, y: 1});
         const {
             deletePostTitle,

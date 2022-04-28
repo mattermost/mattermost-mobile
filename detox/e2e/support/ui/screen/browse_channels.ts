@@ -12,6 +12,10 @@ class BrowseChannelsScreen {
         searchInput: 'browse_channels.search_bar.search.input',
         searchClearButton: 'browse_channels.search_bar.search.clear.button',
         searchCancelButton: 'browse_channels.search_bar.search.cancel.button',
+        channelDropdown: 'browse_channels.channel_dropdown',
+        channelDropdownTextPublic: 'browse_channels.channel_dropdown.text.public',
+        channelDropdownTextArchived: 'browse_channels.channel_dropdown.text.archived',
+        channelDropdownTextShared: 'browse_channels.channel_dropdown.text.shared',
         flatChannelList: 'browse_channels.channel_list.flat_list',
     };
 
@@ -20,6 +24,10 @@ class BrowseChannelsScreen {
     searchInput = element(by.id(this.testID.searchInput));
     searchClearButton = element(by.id(this.testID.searchClearButton));
     searchCancelButton = element(by.id(this.testID.searchCancelButton));
+    channelDropdown = element(by.id(this.testID.channelDropdown));
+    channelDropdownTextPublic = element(by.id(this.testID.channelDropdownTextPublic));
+    channelDropdownTextArchived = element(by.id(this.testID.channelDropdownTextArchived));
+    channelDropdownTextShared = element(by.id(this.testID.channelDropdownTextShared));
     flatChannelList = element(by.id(this.testID.flatChannelList));
 
     getChannelItem = (channelName: string) => {

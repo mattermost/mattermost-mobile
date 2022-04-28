@@ -82,18 +82,23 @@ export default function TeamItem({team, hasUnreads, mentionCount, currentTeamId}
             break;
     }
 
+    const teamItem = `team_sidebar.team_list.team_item.${team.id}`;
+    const teamItemTestId = selected ? `${teamItem}.selected` : `${teamItem}.not_selected`;
+
     return (
         <>
             <View style={[styles.container, selected ? styles.containerSelected : undefined]}>
                 <TouchableWithFeedback
                     onPress={() => handleTeamChange(serverUrl, team.id)}
                     type='opacity'
+                    testID={teamItemTestId}
                 >
                     <TeamIcon
                         displayName={team.displayName}
                         id={team.id}
                         lastIconUpdate={team.lastTeamIconUpdatedAt}
                         selected={selected}
+                        testID={`${teamItem}.team_icon`}
                     />
                 </TouchableWithFeedback>
             </View>

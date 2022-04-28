@@ -1,0 +1,268 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
+import {useIntl} from 'react-intl';
+import {Keyboard, ScrollView} from 'react-native';
+import {ImageResource, Navigation} from 'react-native-navigation';
+import {SafeAreaView} from 'react-native-safe-area-context';
+
+import {submitInteractiveDialog} from '@actions/remote/integrations';
+import CompassIcon from '@components/compass_icon';
+import ErrorText from '@components/error_text';
+import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
+import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
+import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import DialogElement from './dialog_element';
+import DialogIntroductionText from './dialog_introduction_text';
+
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return {
+        container: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
+            flex: 1,
+        },
+        errorContainer: {
+            marginTop: 15,
+            marginLeft: 15,
+            fontSize: 14,
+            fontWeight: 'bold',
+        },
+        scrollView: {
+            marginBottom: 20,
+            marginTop: 10,
+        },
+    };
+});
+
+type Props = {
+    config: InteractiveDialogConfig;
+    componentId: string;
+}
+
+const close = () => {
+    Keyboard.dismiss();
+    dismissModal();
+};
+
+const makeCloseButton = (icon: ImageResource) => {
+    return buildNavigationButton(CLOSE_BUTTON_ID, 'close.more_direct_messages.button', icon);
+};
+
+const CLOSE_BUTTON_ID = 'close-interactive-dialog';
+const SUBMIT_BUTTON_ID = 'submit-interactive-dialog';
+
+type Errors = {[name: string]: string}
+const emptyErrorsState: Errors = {};
+
+type Values = {[name: string]: string|number|boolean}
+type ValuesAction = {name: string; value: string|number|boolean}
+function valuesReducer(state: Values, action: ValuesAction) {
+    if (state[action.name] === action.value) {
+        return state;
+    }
+    return {...state, [action.name]: action.value};
+}
+function initValues(elements: DialogElement[]) {
+    const values: Values = {};
+    elements.forEach((e) => {
+        if (e.type === 'bool') {
+            values[e.name] = (e.default === true || String(e.default).toLowerCase() === 'true');
+        } else if (e.default) {
+            values[e.name] = e.default;
+        }
+    });
+    return values;
+}
+
+const emptyElementList: DialogElement[] = [];
+function InteractiveDialog({
+    config: {
+        url,
+        dialog: {
+            callback_id: callbackId,
+            introduction_text: introductionText,
+            elements = emptyElementList,
+            notify_on_cancel: notifyOnCancel,
+            state,
+            submit_label: submitLabel,
+        },
+    },
+    componentId,
+}: Props) {
+    const theme = useTheme();
+    const style = getStyleFromTheme(theme);
+    const [error, setError] = useState('');
+    const [errors, setErrors] = useState(emptyErrorsState);
+    const [values, dispatchValues] = useReducer(valuesReducer, elements, initValues);
+    const [submitting, setSubmitting] = useState(false);
+    const serverUrl = useServerUrl();
+    const intl = useIntl();
+
+    const scrollView = useRef<ScrollView>();
+
+    const onChange = useCallback((name: string, value: string | number | boolean) => {
+        dispatchValues({name, value});
+    }, []);
+
+    const rightButton = useMemo(() => {
+        const base = buildNavigationButton(
+            SUBMIT_BUTTON_ID,
+            'interactive_dialog.submit.button',
+            undefined,
+            submitLabel || intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'}),
+        );
+        base.enabled = submitting;
+        base.showAsAction = 'always';
+        base.color = theme.sidebarHeaderTextColor;
+        return base;
+    }, [theme.sidebarHeaderTextColor, intl]);
+
+    useEffect(() => {
+        setButtons(componentId, {
+            rightButtons: [rightButton],
+        });
+    }, [rightButton, componentId]);
+
+    useEffect(() => {
+        const icon = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
+        setButtons(componentId, {
+            leftButtons: [makeCloseButton(icon)],
+        });
+    }, [theme.sidebarHeaderTextColor]);
+
+    const handleSubmit = useCallback(async () => {
+        const newErrors: Errors = {};
+        let hasErrors = false;
+        if (elements) {
+            elements.forEach((elem) => {
+                const newError = checkDialogElementForError(elem, values[elem.name]);
+                if (newError) {
+                    newErrors[elem.name] = intl.formatMessage({id: newError.id, defaultMessage: newError.defaultMessage}, newError.values);
+                    hasErrors = true;
+                }
+            });
+        }
+
+        setErrors(hasErrors ? errors : emptyErrorsState);
+
+        if (hasErrors) {
+            return;
+        }
+
+        const dialog = {
+            url,
+            callback_id: callbackId,
+            state,
+            submission: values,
+        } as DialogSubmission;
+
+        setSubmitting(true);
+        const {data} = await submitInteractiveDialog(serverUrl, dialog);
+
+        if (data) {
+            if (data.errors &&
+                Object.keys(data.errors).length >= 0 &&
+                checkIfErrorsMatchElements(data.errors, elements)
+            ) {
+                hasErrors = true;
+                setErrors(data.errors);
+            }
+
+            if (data.error) {
+                hasErrors = true;
+                setError(data.error);
+                scrollView.current?.scrollTo({x: 0, y: 0});
+            } else {
+                setError('');
+            }
+        }
+
+        if (hasErrors) {
+            setSubmitting(false);
+        } else {
+            close();
+        }
+    }, [elements, values, intl, url, callbackId, state]);
+
+    useEffect(() => {
+        const unsubscribe = Navigation.events().registerComponentListener({
+            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
+                switch (buttonId) {
+                    case CLOSE_BUTTON_ID:
+                        if (notifyOnCancel) {
+                            submitInteractiveDialog(serverUrl, {
+                                url,
+                                callback_id: callbackId,
+                                state,
+                                cancelled: true,
+                            } as DialogSubmission);
+                        }
+                        close();
+                        break;
+                    case SUBMIT_BUTTON_ID: {
+                        if (!submitting) {
+                            handleSubmit();
+                        }
+                        break;
+                    }
+                }
+            },
+        }, componentId);
+        return () => {
+            unsubscribe.remove();
+        };
+    }, [serverUrl, url, callbackId, state, handleSubmit, submitting]);
+
+    return (
+        <SafeAreaView
+            testID='interactive_dialog.screen'
+            style={style.container}
+        >
+            <ScrollView
+
+                // @ts-expect-error legacy ref
+                ref={scrollView}
+                style={style.scrollView}
+            >
+                {Boolean(error) && (
+                    <ErrorText
+                        testID='interactive_dialog.error.text'
+                        textStyle={style.errorContainer}
+                        error={error}
+                    />
+                )}
+                {Boolean(introductionText) &&
+                    <DialogIntroductionText
+                        value={introductionText}
+                    />
+                }
+                {Boolean(elements) && elements.map((e) => {
+                    return (
+                        <DialogElement
+                            key={'dialogelement' + e.name}
+                            displayName={e.display_name}
+                            name={e.name}
+                            type={e.type}
+                            subtype={e.subtype}
+                            helpText={e.help_text}
+                            errorText={errors[e.name]}
+                            placeholder={e.placeholder}
+                            maxLength={e.max_length}
+                            dataSource={e.data_source}
+                            optional={e.optional}
+                            options={e.options}
+                            value={values[e.name]}
+                            onChange={onChange}
+                        />
+                    );
+                })}
+            </ScrollView>
+        </SafeAreaView>
+    );
+}
+
+export default InteractiveDialog;

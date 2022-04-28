@@ -6,9 +6,9 @@ import {Alert} from 'react-native';
 
 import {showPermalink} from '@actions/remote/permalink';
 import {Client} from '@client/rest';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DeepLinkTypes from '@constants/deep_linking';
 import DatabaseManager from '@database/manager';
+import IntegrationsManager from '@managers/integrations_manager';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getConfig, getCurrentTeamId} from '@queries/servers/system';
@@ -35,7 +35,6 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
         return {error: error as ClientErrorProps};
     }
 
-    // TODO https://mattermost.atlassian.net/browse/MM-41234
     // const config = await queryConfig(operator.database)
     // if (config.FeatureFlagAppsEnabled) {
     //     const parser = new AppCommandParser(serverUrl, intl, channelId, rootId);
@@ -72,10 +71,7 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
     }
 
     if (data?.trigger_id) { //eslint-disable-line camelcase
-        operator.handleSystem({
-            systems: [{id: SYSTEM_IDENTIFIERS.INTEGRATION_TRIGGER_ID, value: data.trigger_id}],
-            prepareRecordsOnly: false,
-        });
+        IntegrationsManager.getManager(serverUrl)?.setTriggerId(data.trigger_id);
     }
 
     return {data};

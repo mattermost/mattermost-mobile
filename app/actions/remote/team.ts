@@ -5,7 +5,8 @@ import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {removeUserFromTeam as localRemoveUserFromTeam} from '@actions/local/team';
-import {Events} from '@constants';
+import {switchToGlobalThreads} from '@actions/local/thread';
+import {Events, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
@@ -268,7 +269,12 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     if (await isTablet()) {
         channelId = await getNthLastChannelFromTeam(database, teamId);
         if (channelId) {
-            await switchToChannelById(serverUrl, channelId, teamId);
+            if (channelId === Screens.GLOBAL_THREADS) {
+                await switchToGlobalThreads(serverUrl);
+            } else {
+                await switchToChannelById(serverUrl, channelId, teamId);
+            }
+            completeTeamChange(serverUrl, teamId, channelId);
             return;
         }
     }
@@ -287,6 +293,15 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
         await operator.batchRecords(models);
     }
 
+    completeTeamChange(serverUrl, teamId, channelId);
+}
+
+const completeTeamChange = async (serverUrl: string, teamId: string, channelId: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return;
+    }
+
     // If WebSocket is not disconnected we fetch everything since this moment
     const lastDisconnectedAt = (await getWebSocketLastDisconnected(database)) || Date.now();
     const {channels, memberships, error} = await fetchMyChannelsForTeam(serverUrl, teamId, true, lastDisconnectedAt, false, true);
@@ -298,4 +313,4 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     if (channels?.length && memberships?.length) {
         fetchPostsForUnreadChannels(serverUrl, channels, memberships, channelId);
     }
-}
+};

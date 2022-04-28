@@ -20,6 +20,6 @@ module.exports = {
             '<rootDir>/dist/assets/images/video_player/$1@2x.png',
     },
     transformIgnorePatterns: [
-        'node_modules/(?!(@react-native|react-native)|jail-monkey|@sentry/react-native|@react-native-community/cameraroll|react-clone-referenced-element|@react-native-community|react-navigation|@react-navigation/.*|validator|react-syntax-highlighter/.*)',
+        'node_modules/(?!(@react-native|react-native)|jail-monkey|@sentry/react-native|@react-native-community/cameraroll|react-clone-referenced-element|@react-native-community|react-navigation|@react-navigation/.*|validator|react-syntax-highlighter/.*|hast-util-from-selector|hastscript|property-information|hast-util-parse-selector|space-separated-tokens|comma-separated-tokens|zwitch)',
     ],
 };

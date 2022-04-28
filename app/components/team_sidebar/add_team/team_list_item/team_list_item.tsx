@@ -55,6 +55,8 @@ export default function TeamListItem({team, currentUserId}: Props) {
         dismissBottomSheet();
     }, []);
 
+    const teamListItemTestId = `team_sidebar.team_list.team_list_item.${team.id}`;
+
     return (
         <View style={styles.container}>
             <TouchableWithFeedback
@@ -68,6 +70,7 @@ export default function TeamListItem({team, currentUserId}: Props) {
                         displayName={team.displayName}
                         lastIconUpdate={team.lastTeamIconUpdatedAt}
                         selected={false}
+                        testID={`${teamListItemTestId}.team_icon`}
                     />
                 </View>
                 <Text

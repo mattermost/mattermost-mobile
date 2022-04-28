@@ -6,12 +6,12 @@ import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {map} from 'rxjs/operators';
 
-import {doAppCall, postEphemeralCallResponseForPost} from '@actions/remote/apps';
+import {handleBindingClick, postEphemeralCallResponseForPost} from '@actions/remote/apps';
 import AutocompleteSelector from '@components/autocomplete_selector';
-import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@constants/apps';
+import {AppBindingLocations, AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import {observeCurrentTeamId} from '@queries/servers/system';
-import {createCallContext, createCallRequest} from '@utils/apps';
+import {createCallContext} from '@utils/apps';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
@@ -21,27 +21,22 @@ type Props = {
     currentTeamId: string;
     post: PostModel;
     teamID?: string;
-    theme: Theme;
 }
 
-const MenuBinding = ({binding, currentTeamId, post, teamID, theme}: Props) => {
-    const [selected, setSelected] = useState<PostActionOption>();
+const MenuBinding = ({binding, currentTeamId, post, teamID}: Props) => {
+    const [selected, setSelected] = useState<string>();
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
-    const onSelect = useCallback(async (picked?: PostActionOption) => {
-        if (!picked) {
+    const onSelect = useCallback(async (picked?: string | string[]) => {
+        if (!picked || Array.isArray(picked)) { // We are sure AutocompleteSelector only returns one, since it is not multiselect.
             return;
         }
         setSelected(picked);
 
-        const bind = binding.bindings?.find((b) => b.location === picked.value);
+        const bind = binding.bindings?.find((b) => b.location === picked);
         if (!bind) {
             console.debug('Trying to select element not present in binding.'); //eslint-disable-line no-console
-            return;
-        }
-
-        if (!bind.call) {
             return;
         }
 
@@ -53,16 +48,10 @@ const MenuBinding = ({binding, currentTeamId, post, teamID, theme}: Props) => {
             post.id,
         );
 
-        const call = createCallRequest(
-            bind.call,
-            context,
-            {post: AppExpandLevels.EXPAND_ALL},
-        );
-
-        const res = await doAppCall(serverUrl, call, AppCallTypes.SUBMIT, intl, theme);
+        const res = await handleBindingClick(serverUrl, bind, context, intl);
         if (res.error) {
             const errorResponse = res.error as AppCallResponse<unknown>;
-            const errorMessage = errorResponse.error || intl.formatMessage({
+            const errorMessage = errorResponse.text || intl.formatMessage({
                 id: 'apps.error.unknown',
                 defaultMessage: 'Unknown error occurred.',
             });
@@ -73,8 +62,8 @@ const MenuBinding = ({binding, currentTeamId, post, teamID, theme}: Props) => {
         const callResp = res.data!;
         switch (callResp.type) {
             case AppCallResponseTypes.OK:
-                if (callResp.markdown) {
-                    postEphemeralCallResponseForPost(serverUrl, callResp, callResp.markdown, post);
+                if (callResp.text) {
+                    postEphemeralCallResponseForPost(serverUrl, callResp, callResp.text, post);
                 }
                 return;
             case AppCallResponseTypes.NAVIGATE:
@@ -100,6 +89,7 @@ const MenuBinding = ({binding, currentTeamId, post, teamID, theme}: Props) => {
             options={options}
             selected={selected}
             onSelected={onSelect}
+            testID={`embedded_binding.${binding.location}`}
         />
     );
 };

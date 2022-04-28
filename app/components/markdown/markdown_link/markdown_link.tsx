@@ -36,6 +36,19 @@ const style = StyleSheet.create({
     },
 });
 
+const parseLinkLiteral = (literal: string) => {
+    let nextLiteral = literal;
+
+    const WWW_REGEX = /\b^(?:www.)/i;
+    if (nextLiteral.match(WWW_REGEX)) {
+        nextLiteral = literal.replace(WWW_REGEX, 'www.');
+    }
+
+    const parsed = urlParse(nextLiteral, {});
+
+    return parsed.href;
+};
+
 const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteURL}: MarkdownLinkProps) => {
     const intl = useIntl();
     const insets = useSafeAreaInsets();
@@ -45,7 +58,7 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
 
     const {formatMessage} = intl;
 
-    const handlePress = preventDoubleTap(async () => {
+    const handlePress = useCallback(preventDoubleTap(async () => {
         const url = normalizeProtocol(href);
 
         if (!url) {
@@ -80,22 +93,9 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
 
             tryOpenURL(url, onError);
         }
-    });
+    }), [href, intl.locale, serverUrl, siteURL]);
 
-    const parseLinkLiteral = (literal: string) => {
-        let nextLiteral = literal;
-
-        const WWW_REGEX = /\b^(?:www.)/i;
-        if (nextLiteral.match(WWW_REGEX)) {
-            nextLiteral = literal.replace(WWW_REGEX, 'www.');
-        }
-
-        const parsed = urlParse(nextLiteral, {});
-
-        return parsed.href;
-    };
-
-    const parseChildren = () => {
+    const parseChildren = useCallback(() => {
         return Children.map(children, (child: ReactElement) => {
             if (!child.props.literal || typeof child.props.literal !== 'string' || (child.props.context && child.props.context.length && !child.props.context.includes('link'))) {
                 return child;
@@ -115,7 +115,7 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
                 ...otherChildProps,
             };
         });
-    };
+    }, [children]);
 
     const handleLongPress = useCallback(() => {
         if (managedConfig?.copyAndPasteProtection !== 'true') {
