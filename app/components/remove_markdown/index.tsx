@@ -3,20 +3,37 @@
 
 import {Parser} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
-import React, {ReactElement, useRef} from 'react';
+import React, {ReactElement, useCallback, useRef} from 'react';
 import {StyleProp, Text, TextStyle} from 'react-native';
+
+import Emoji from '@components/emoji';
 
 import type {MarkdownEmojiRenderer} from '@typings/global/markdown';
 
 type Props = {
-    renderEmoji?: (params: MarkdownEmojiRenderer) => ReactElement;
-    renderHardBreak?: () => string;
-    renderSoftBreak?: () => string;
+    enableEmoji?: boolean;
+    enableHardBreak?: boolean;
+    enableSoftBreak?: boolean;
     textStyle: StyleProp<TextStyle>;
     value: string;
 };
 
-const RemoveMarkdown = ({renderEmoji, renderHardBreak, renderSoftBreak, textStyle, value}: Props) => {
+const RemoveMarkdown = ({enableEmoji, enableHardBreak, enableSoftBreak, textStyle, value}: Props) => {
+    const renderEmoji = useCallback(({emojiName, literal}: MarkdownEmojiRenderer) => {
+        return (
+            <Emoji
+                emojiName={emojiName}
+                literal={literal}
+                testID='markdown_emoji'
+                textStyle={textStyle}
+            />
+        );
+    }, [textStyle]);
+
+    const renderBreak = useCallback(() => {
+        return '\n';
+    }, []);
+
     const renderText = ({literal}: {literal: string}) => {
         return <Text style={textStyle}>{literal}</Text>;
     };
@@ -38,7 +55,7 @@ const RemoveMarkdown = ({renderEmoji, renderHardBreak, renderSoftBreak, textStyl
                 image: renderNull,
                 atMention: Renderer.forwardChildren,
                 channelLink: Renderer.forwardChildren,
-                emoji: renderEmoji || renderNull,
+                emoji: enableEmoji ? renderEmoji : renderNull,
                 hashtag: Renderer.forwardChildren,
 
                 paragraph: Renderer.forwardChildren,
@@ -49,9 +66,9 @@ const RemoveMarkdown = ({renderEmoji, renderHardBreak, renderSoftBreak, textStyl
                 list: renderNull,
                 item: renderNull,
 
-                hardBreak: renderHardBreak || renderNull,
+                hardBreak: enableHardBreak ? renderBreak : renderNull,
                 thematicBreak: renderNull,
-                softBreak: renderSoftBreak || renderNull,
+                softBreak: enableSoftBreak ? renderBreak : renderNull,
 
                 htmlBlock: renderNull,
                 htmlInline: renderNull,
