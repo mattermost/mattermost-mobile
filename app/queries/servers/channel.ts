@@ -11,7 +11,7 @@ import {hasPermission} from '@utils/role';
 
 import {prepareDeletePost} from './post';
 import {queryRoles} from './role';
-import {observeCurrentChannelId, getCurrentChannelId} from './system';
+import {observeCurrentChannelId, getCurrentChannelId, observeCurrentUserId} from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -431,3 +431,46 @@ export function queryMyChannelsByUnread(database: Database, isUnread: boolean, s
         Q.take(take),
     );
 }
+
+export const observeDirectChannelsByTerm = (database: Database, term: string, take = 20, matchStart = false) => {
+    const onlyDMs = term.startsWith('@') ? "and c.type='D'" : '';
+    const value = Q.sanitizeLikeString(term.startsWith('@') ? term.substring(1) : term);
+    let username = `u.username like '${value}%'`;
+    let displayname = `c.display_name like '${value}%'`;
+    if (!matchStart) {
+        username = `u.username like '%${value}%' and u.username not like '${value}%'`;
+        displayname = `(c.display_name like '%${value}%' and c.display_name not like '${value}%')`;
+    }
+    const currentUserId = observeCurrentUserId(database);
+    return currentUserId.pipe(
+        switchMap((uId) => {
+            return database.get<MyChannelModel>(CHANNEL).query(
+                Q.unsafeSqlQuery(`select distinct my.* from ${MY_CHANNEL} my
+                inner join ${CHANNEL} c on c.id=my.id and c.team_id='' and c.delete_at=0 ${onlyDMs}
+                inner join ${CHANNEL_MEMBERSHIP} cm on cm.channel_id=my.id
+                inner join ${USER} u on u.id=cm.user_id and (cm.user_id != '${uId}' and ${username})
+                or ${displayname}
+                order by my.last_viewed_at desc
+                limit ${take}`),
+            ).observe();
+        }),
+    );
+};
+
+export const observeJoinedChannelsByTerm = (database: Database, term: string, take = 20, matchStart = false) => {
+    if (term.startsWith('@')) {
+        return of$([]);
+    }
+
+    const value = Q.sanitizeLikeString(term);
+    let displayname = `c.display_name like '${value}%'`;
+    if (!matchStart) {
+        displayname = `c.display_name like '%${value}%' and c.display_name not like '${value}%'`;
+    }
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.unsafeSqlQuery(`select distinct my.* from ${MY_CHANNEL} my
+        inner join ${CHANNEL} c on c.id=my.id and c.team_id !='' and ${displayname}
+        order by my.last_viewed_at desc
+        limit ${take}`),
+    ).observe();
+};

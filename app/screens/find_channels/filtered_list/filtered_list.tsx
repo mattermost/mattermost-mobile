@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import Animated, {FadeInDown, FadeOutUp} from 'react-native-reanimated';
 
@@ -14,6 +14,8 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 
 type Props = {
     close: () => Promise<void>;
+    channelsMatch: ChannelModel[];
+    channelsMatchStart: ChannelModel[];
     keyboardHeight: number;
     showTeamName: boolean;
     term: string;
@@ -28,12 +30,11 @@ const style = StyleSheet.create({
     },
 });
 
-const UnfilteredList = ({close, keyboardHeight, showTeamName, term}: Props) => {
+const FilteredList = ({close, channelsMatch, channelsMatchStart, keyboardHeight, showTeamName, term}: Props) => {
     const serverUrl = useServerUrl();
-    const [data] = useState([]);
     const flatListStyle = useMemo(() => ({flexGrow: 1, paddingBottom: keyboardHeight}), [keyboardHeight]);
 
-    const onPress = useCallback(async (channelId: string) => {
+    const onSwitchToChannel = useCallback(async (channelId: string) => {
         await close();
         switchToChannelById(serverUrl, channelId);
     }, [serverUrl, close]);
@@ -56,11 +57,16 @@ const UnfilteredList = ({close, keyboardHeight, showTeamName, term}: Props) => {
                 channel={item}
                 collapsed={false}
                 isInfo={true}
-                onPress={onPress}
+                onPress={onSwitchToChannel}
                 showTeamName={showTeamName}
             />
         );
-    }, [onPress, showTeamName]);
+    }, [onSwitchToChannel, showTeamName]);
+
+    const data = useMemo(() => {
+        const items = channelsMatchStart.concat(channelsMatch);
+        return [...new Set(items)].slice(0, 21);
+    }, [channelsMatchStart, channelsMatch]);
 
     return (
         <Animated.View
@@ -81,4 +87,4 @@ const UnfilteredList = ({close, keyboardHeight, showTeamName, term}: Props) => {
     );
 };
 
-export default UnfilteredList;
+export default FilteredList;
