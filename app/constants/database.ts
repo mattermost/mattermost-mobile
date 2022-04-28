@@ -53,7 +53,6 @@ export const SYSTEM_IDENTIFIERS = {
     CURRENT_USER_ID: 'currentUserId',
     DATA_RETENTION_POLICIES: 'dataRetentionPolicies',
     EXPANDED_LINKS: 'expandedLinks',
-    INTEGRATION_TRIGGER_ID: 'IntegreationTriggerId',
     LICENSE: 'license',
     RECENT_CUSTOM_STATUS: 'recentCustomStatus',
     RECENT_MENTIONS: 'recentMentions',

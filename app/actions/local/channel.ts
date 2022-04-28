@@ -9,6 +9,7 @@ import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@constants/categories';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {extractChannelDisplayName} from '@helpers/database';
+import PushNotifications from '@init/push_notifications';
 import {prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannel, getMyChannel, getChannelById, queryUsersOnChannel} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
@@ -89,6 +90,8 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                     await operator.batchRecords(models);
                 }
 
+                PushNotifications.cancelChannelNotifications(channelId);
+
                 if (!EphemeralStore.theme) {
                     // When opening the app from a push notification the theme may not be set in the EphemeralStore
                     // causing the goToScreen to use the Appearance theme instead and that causes the screen background color to potentially
@@ -103,7 +106,7 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
 
                 if (isTabletDevice) {
                     dismissAllModalsAndPopToRoot();
-                    DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME);
+                    DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME, Screens.CHANNEL);
                 } else {
                     dismissAllModalsAndPopToScreen(Screens.CHANNEL, '', undefined, {topBar: {visible: false}});
                 }

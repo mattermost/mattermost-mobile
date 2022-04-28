@@ -28,6 +28,11 @@ export const queryActiveServer = async (appDatabase: Database) => {
     }
 };
 
+export const getActiveServerUrl = async (appDatabase: Database) => {
+    const server = await queryActiveServer(appDatabase);
+    return server?.url || '';
+};
+
 export const queryServerByIdentifier = async (appDatabase: Database, identifier: string) => {
     try {
         const servers = (await appDatabase.get<ServerModel>(SERVERS).query(Q.where('identifier', identifier)).fetch());

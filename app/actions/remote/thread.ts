@@ -105,7 +105,7 @@ export const fetchThreads = async (
                 thread.is_following = true;
             });
 
-            await processReceivedThreads(serverUrl, threads, teamId, false, !unread);
+            await processReceivedThreads(serverUrl, threads, teamId, !unread, false);
         }
 
         return {data};
@@ -344,7 +344,7 @@ export async function fetchNewThreads(
         return {error: false, models: []};
     }
 
-    const {error, models} = await processReceivedThreads(serverUrl, data, teamId, true, loadedInGlobalThreads);
+    const {error, models} = await processReceivedThreads(serverUrl, data, teamId, loadedInGlobalThreads, true);
 
     if (!error && !prepareRecordsOnly && models?.length) {
         try {

@@ -6,16 +6,20 @@ type AppManifest = {
     display_name: string;
     description?: string;
     homepage_url?: string;
-    root_url: string;
-};
+}
 
 type AppModalState = {
     form: AppForm;
     call: AppCallRequest;
-};
+}
 
 type AppsState = {
     bindings: AppBinding[];
+    bindingsForms: AppCommandFormMap;
+    threadBindings: AppBinding[];
+    threadBindingsForms: AppCommandFormMap;
+    threadBindingsChannelId: string;
+    pluginEnabled: boolean;
 };
 
 type AppBinding = {
@@ -44,18 +48,16 @@ type AppBinding = {
     depends_on_user?: boolean;
     depends_on_post?: boolean;
 
-    // A Binding is either to a Call, or is a "container" for other locations -
-    // i.e. menu sub-items or subcommands.
-    call?: AppCall;
+    // A Binding is either an action (makes a call), a Form, or is a
+    // "container" for other locations - i.e. menu sub-items or subcommands.
     bindings?: AppBinding[];
     form?: AppForm;
+    submit?: AppCall;
 };
 
 type AppCallValues = {
     [name: string]: any;
 };
-
-type AppCallType = string;
 
 type AppCall = {
     path: string;
@@ -75,9 +77,8 @@ type AppCallResponseType = string;
 
 type AppCallResponse<Res = unknown> = {
     type: AppCallResponseType;
-    markdown?: string;
+    text?: string;
     data?: Res;
-    error?: string;
     navigate_to_url?: string;
     use_external_browser?: boolean;
     call?: AppCall;
@@ -101,6 +102,7 @@ type AppContext = {
     root_id?: string;
     props?: AppContextProps;
     user_agent?: string;
+    track_as_submit?: boolean;
 };
 
 type AppContextProps = {
@@ -130,12 +132,23 @@ type AppForm = {
     submit_buttons?: string;
     cancel_button?: boolean;
     submit_on_cancel?: boolean;
-    fields: AppField[];
-    call?: AppCall;
+    fields?: AppField[];
+
+    // source is used in 2 cases:
+    //   - if submit is not set, it is used to fetch the submittable form from
+    //     the app.
+    //   - if a select field change triggers a refresh, the form is refreshed
+    //     from source.
+    source?: AppCall;
+
+    // submit is called when one of the submit buttons is pressed, or the
+    // command is executed.
+    submit?: AppCall;
+
     depends_on?: string[];
 };
 
-type AppFormValue = string | AppSelectOption | boolean | null;
+type AppFormValue = string | boolean | number | AppSelectOption | AppSelectOption[];
 type AppFormValues = {[name: string]: AppFormValue};
 
 type AppSelectOption = {
@@ -170,23 +183,12 @@ type AppField = {
     refresh?: boolean;
     options?: AppSelectOption[];
     multiselect?: boolean;
+    lookup?: AppCall;
 
     // Text props
     subtype?: string;
     min_length?: number;
     max_length?: number;
-};
-
-type AutocompleteSuggestion = {
-    Suggestion: string;
-    Complete: string;
-    Description: string;
-    Hint: string;
-    IconData: string;
-};
-
-type AutocompleteSuggestionWithComplete = AutocompleteSuggestion & {
-    complete: string;
 };
 
 type AutocompleteElement = AppField;
@@ -204,8 +206,15 @@ type FormResponseData = {
     errors?: {
         [field: string]: string;
     };
-};
+}
 
 type AppLookupResponse = {
     items: AppSelectOption[];
-};
+}
+
+type AppCommandFormMap = {[location: string]: AppForm}
+
+type DoAppCallResult<Res=unknown> = {
+    data?: AppCallResponse<Res>;
+    error?: AppCallResponse<Res>;
+}

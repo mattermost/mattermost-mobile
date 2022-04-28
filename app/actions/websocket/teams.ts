@@ -11,7 +11,7 @@ import {fetchAllTeams, handleTeamChange, fetchMyTeam} from '@actions/remote/team
 import {updateUsersNoLongerVisible} from '@actions/remote/user';
 import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
-import {queryActiveServer} from '@queries/app/servers';
+import {getActiveServerUrl} from '@queries/app/servers';
 import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {getCurrentTeam, getLastTeam, prepareMyTeams} from '@queries/servers/team';
@@ -41,9 +41,13 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
         }
 
         if (currentTeam?.id === teamId) {
-            const currentServer = await queryActiveServer(DatabaseManager.appDatabase!.database);
+            const appDatabase = DatabaseManager.appDatabase?.database;
+            let currentServer = '';
+            if (appDatabase) {
+                currentServer = await getActiveServerUrl(appDatabase);
+            }
 
-            if (currentServer?.url === serverUrl) {
+            if (currentServer === serverUrl) {
                 DeviceEventEmitter.emit(Events.LEAVE_TEAM, currentTeam?.displayName);
                 await dismissAllModals();
                 await popToRoot();
@@ -52,7 +56,7 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
             const teamToJumpTo = await getLastTeam(database.database);
             if (teamToJumpTo) {
                 handleTeamChange(serverUrl, teamToJumpTo);
-            } else if (currentServer?.url === serverUrl) {
+            } else if (currentServer === serverUrl) {
                 resetToTeams();
             }
         }

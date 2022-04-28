@@ -57,6 +57,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.ABOUT:
             screen = withServerDatabase(require('@screens/about').default);
             break;
+        case Screens.APP_FORM:
+            screen = withServerDatabase(require('@screens/apps_form').default);
+            break;
         case Screens.BOTTOM_SHEET:
             screen = withServerDatabase(
                 require('@screens/bottom_sheet').default,
@@ -112,6 +115,12 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.GALLERY:
             screen = withServerDatabase(require('@screens/gallery').default);
             break;
+        case Screens.GLOBAL_THREADS:
+            screen = withServerDatabase(require('@screens/global_threads').default);
+            break;
+        case Screens.INTERACTIVE_DIALOG:
+            screen = withServerDatabase(require('@screens/interactive_dialog').default);
+            break;
         case Screens.IN_APP_NOTIFICATION: {
             const notificationScreen =
                 require('@screens/in_app_notification').default;
@@ -156,6 +165,11 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             Navigation.registerComponent(Screens.THREAD_FOLLOW_BUTTON, () => withServerDatabase(
                 require('@screens/thread/thread_follow_button').default,
             ));
+            break;
+        case Screens.THREAD_OPTIONS:
+            screen = withServerDatabase(
+                require('@screens/thread_options').default,
+            );
             break;
     }
 
