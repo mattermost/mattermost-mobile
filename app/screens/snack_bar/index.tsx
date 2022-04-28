@@ -133,8 +133,9 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
         });
 
     const animateHiding = (forceHiding: boolean) => {
+        const duration = forceHiding ? 0 : 500;
         if (!isPanning.value || forceHiding) {
-            offset.value = withTiming(100, {duration: 500}, () => runOnJS(hideSnackBar)());
+            offset.value = withTiming(100, {duration}, () => runOnJS(hideSnackBar)());
         }
     };
 
@@ -163,11 +164,17 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
 
     // This effect checks if we are navigating away and if so, it dismisses the snack bar
     useEffect(() => {
-        const screenEventListener = Navigation.events().registerComponentWillAppearListener(() => {
+        const screenWillAppear = Navigation.events().registerComponentWillAppearListener(() => {
             animateHiding(true);
         });
 
-        return () => screenEventListener.remove();
+        const screenDidDisappear = Navigation.events().registerComponentDidDisappearListener(() => {
+            animateHiding(true);
+        });
+        return () => {
+            screenWillAppear.remove();
+            screenDidDisappear.remove();
+        };
     }, []);
 
     return (
