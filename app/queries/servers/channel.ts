@@ -159,6 +159,10 @@ export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model
     return preparedModels;
 };
 
+export const queryAllChannels = (database: Database) => {
+    return database.get<ChannelModel>(CHANNEL).query();
+};
+
 export const queryAllChannelsForTeam = (database: Database, teamId: string) => {
     return database.get<ChannelModel>(CHANNEL).query(Q.where('team_id', teamId));
 };

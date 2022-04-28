@@ -7,9 +7,6 @@ import {fetchRolesIfNeeded, RolesRequest} from '@actions/remote/role';
 import {getSessions} from '@actions/remote/session';
 import {ConfigAndLicenseRequest, fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchMyTeams, MyTeamsRequest} from '@actions/remote/team';
-import {gqlLogin} from '@client/graphQL/entry';
-import {gqlToClientChannel, gqlToClientChannelMembership, gqlToClientPreference, gqlToClientRole, gqlToClientSidebarCategory, gqlToClientTeam, gqlToClientTeamMembership} from '@client/graphQL/types';
-import ClientError from '@client/rest/error';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue} from '@helpers/api/preference';
@@ -22,7 +19,7 @@ import {selectDefaultChannelForTeam} from '@utils/channel';
 import {isTablet} from '@utils/helpers';
 import {scheduleExpiredNotification} from '@utils/notification';
 
-import {deferredAppEntryActions} from './common';
+import {deferredAppEntryActions, graphQLCommon} from './common';
 
 import type {Client} from '@client/rest';
 
@@ -88,7 +85,7 @@ export async function loginEntry({serverUrl, user, deviceToken}: AfterLoginArgs)
         }
 
         if (clData.config?.FeatureFlagGraphQL === 'true') {
-            return gqlLoginEntry({serverUrl, user, clData});
+            return graphQLCommon(serverUrl, false, '', '');
         }
 
         return restLoginEntry({serverUrl, user, clData});
@@ -96,121 +93,6 @@ export async function loginEntry({serverUrl, user, deviceToken}: AfterLoginArgs)
         return {error};
     }
 }
-
-const gqlLoginEntry = async ({serverUrl, user, clData}: SpecificAfterLoginArgs) => {
-    console.log('using graphQL');
-    const dt = Date.now();
-    const time = Date.now();
-
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    const isTabletDevice = await isTablet();
-
-    let response;
-    try {
-        response = await gqlLogin(serverUrl);
-    } catch (error) {
-        return {error: (error as ClientError).message};
-    }
-
-    if ('error' in response) {
-        return {error: response.error};
-    }
-
-    if ('errors' in response && response.errors?.length) {
-        return {error: response.errors[0].message};
-    }
-
-    const fetchedData = response.data;
-
-    const teamData = {
-        teams: fetchedData.teamMembers.map((m) => gqlToClientTeam(m.team!)),
-        memberships: fetchedData.teamMembers.map((m) => gqlToClientTeamMembership(m)),
-    };
-
-    const chData = {
-        channels: fetchedData.channelMembers?.map((m) => gqlToClientChannel(m.channel!)),
-        memberships: fetchedData.channelMembers?.map((m) => gqlToClientChannelMembership(m)),
-        categories: fetchedData.teamMembers.map((m) => m.sidebarCategories!.map((c) => gqlToClientSidebarCategory(c, m.team!.id!))).flat(),
-    };
-
-    const prefData = {
-        preferences: fetchedData.user?.preferences?.map((p) => gqlToClientPreference(p)),
-    };
-
-    const rolesData = {
-        roles: [
-            ...fetchedData.user?.roles || [],
-            ...fetchedData.channelMembers?.map((m) => m.roles).flat() || [],
-            ...fetchedData.teamMembers?.map((m) => m.roles).flat() || [],
-        ].filter((v, i, a) => a.slice(0, i).find((v2) => v?.name === v2?.name)).map((r) => gqlToClientRole(r!)),
-    };
-
-    const teamOrderPreference = getPreferenceValue(prefData.preferences!, Preferences.TEAMS_ORDER, '', '') as string;
-
-    const initialTeam = selectDefaultTeam(teamData.teams, user.locale, teamOrderPreference, clData.config?.ExperimentalPrimaryTeam);
-    let initialChannel: Channel|undefined;
-
-    if (initialTeam) {
-        if (chData.channels?.length && chData.memberships?.length) {
-            const {channels, memberships} = chData;
-
-            // select initial channel only on Tablets
-            if (isTabletDevice) {
-                initialChannel = selectDefaultChannelForTeam(channels!, memberships!, initialTeam!.id, rolesData.roles, user.locale);
-            }
-        }
-    }
-
-    const modelPromises = await prepareModels({operator, teamData, chData, prefData, initialTeamId: initialTeam?.id});
-
-    const systemModels = prepareCommonSystemValues(
-        operator,
-        {
-            config: clData.config || ({} as ClientConfig),
-            license: clData.license || ({} as ClientLicense),
-            currentTeamId: initialTeam?.id || '',
-            currentChannelId: initialChannel?.id || '',
-        },
-    );
-    if (systemModels) {
-        modelPromises.push(systemModels);
-    }
-
-    if (initialTeam) {
-        const th = addTeamToTeamHistory(operator, initialTeam.id, true);
-        modelPromises.push(th);
-    }
-
-    if (initialTeam && initialChannel) {
-        try {
-            const tch = addChannelToTeamHistory(operator, initialTeam.id, initialChannel.id, true);
-            modelPromises.push(tch);
-        } catch {
-            // do nothing
-        }
-    }
-
-    if (rolesData?.roles?.length) {
-        const roles = operator.handleRole({roles: rolesData.roles, prepareRecordsOnly: true});
-        modelPromises.push(roles);
-    }
-
-    const models = await Promise.all(modelPromises);
-    if (models.length) {
-        await operator.batchRecords(models.flat());
-    }
-
-    const config = clData.config || {} as ClientConfig;
-    const license = clData.license || {} as ClientLicense;
-    deferredAppEntryActions(serverUrl, 0, user.id, user.locale, prefData.preferences, config, license, teamData, chData, initialTeam?.id, initialChannel?.id, true);
-
-    console.log('Time elapsed', Date.now() - time);
-    return {time: Date.now() - dt, hasTeams: Boolean((teamData.teams?.length || 0) > 0)};
-};
 
 const restLoginEntry = async ({serverUrl, user, clData}: SpecificAfterLoginArgs) => {
     const dt = Date.now();

@@ -7,7 +7,7 @@ import {Client} from '../rest';
 
 import {GQLResponse} from './types';
 
-const doGQLQuery = async (serverUrl: string, query: string) => {
+const doGQLQuery = async (serverUrl: string, query: string, operationName: string) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -16,16 +16,15 @@ const doGQLQuery = async (serverUrl: string, query: string) => {
     }
 
     try {
-        const response = await client.doFetch('/api/v5/graphql', {method: 'post', body: JSON.stringify({query})}) as GQLResponse;
+        const response = await client.doFetch('/api/v5/graphql', {method: 'post', body: JSON.stringify({query, operationName})}) as GQLResponse;
         return response;
     } catch (error) {
         return {error};
     }
 };
 
-export const gqlLogin = async (serverUrl: string) => {
-    const response = await doGQLQuery(serverUrl, loginQuery);
-
+export const gqlEntry = async (serverUrl: string) => {
+    const response = await doGQLQuery(serverUrl, entryQuery, 'entry');
     if ('error' in response) {
         return response;
     }
@@ -36,7 +35,7 @@ export const gqlLogin = async (serverUrl: string) => {
         let pageResponse;
         try {
             // eslint-disable-next-line no-await-in-loop
-            pageResponse = await gqlLoginNextPage(serverUrl, members[members.length - 1].cursor!);
+            pageResponse = await gqlEntryNextPage(serverUrl, members[members.length - 1].cursor!);
         } catch {
             break;
         }
@@ -52,12 +51,12 @@ export const gqlLogin = async (serverUrl: string) => {
     return response;
 };
 
-export const gqlLoginNextPage = async (serverUrl: string, cursor: string) => {
-    return doGQLQuery(serverUrl, nextPageLoginQuery(cursor));
+export const gqlEntryNextPage = async (serverUrl: string, cursor: string) => {
+    return doGQLQuery(serverUrl, nextPageLoginQuery(cursor), 'loginNextPage');
 };
 
-const loginQuery = `
-{
+const entryQuery = `
+query entry {
     config
     license
     user(id:"me") {
@@ -173,7 +172,7 @@ const loginQuery = `
 
 const nextPageLoginQuery = (cursor: string) => {
     return `
-{
+query loginNextPage {
     channelMembers(userId:"me", first:PER_PAGE, after:"CURSOR") {
         cursor
         msgCount

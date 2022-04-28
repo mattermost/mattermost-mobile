@@ -208,7 +208,7 @@ export default class ClientBase {
     fetchCount = 0;
     doFetch = async (url: string, options: ClientOptions, returnDataOnly = true) => {
         this.fetchCount++;
-        console.log(this.fetchCount, url);
+        console.log(this.fetchCount, this.apiClient.baseUrl, url);
         let request;
         const method = options.method?.toLowerCase();
         switch (method) {

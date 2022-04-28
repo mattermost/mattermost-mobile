@@ -8,14 +8,14 @@ import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {queryChannelsById, getDefaultChannelForTeam, getMyChannel} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
-import {getCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {getCommonSystemValues, getConfig, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {getMyTeamById} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
 import {emitNotificationError} from '@utils/notification';
 
-import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, syncOtherServers, teamsToRemove} from './common';
+import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, graphQLCommon, syncOtherServers, teamsToRemove} from './common';
 
 export async function pushNotificationEntry(serverUrl: string, notification: NotificationWithData) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -25,10 +25,9 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
 
     // We only reach this point if we have a channel Id in the notification payload
     const channelId = notification.payload!.channel_id!;
-    const isTabletDevice = await isTablet();
+
     const {database} = operator;
     const currentTeamId = await getCurrentTeamId(database);
-    const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
     const currentServerUrl = await DatabaseManager.getActiveServerUrl();
     let isDirectChannel = false;
 
@@ -53,6 +52,24 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         markChannelAsRead(serverUrl, channelId);
         await switchToChannel(serverUrl, channelId, teamId);
     }
+
+    const config = await getConfig(database);
+    if (config?.FeatureFlagGraphQL === 'true') {
+        return graphQLCommon(serverUrl, true, teamId, channelId);
+    }
+
+    return restNotificationEntry(serverUrl, teamId, channelId, isDirectChannel, switchedToTeamAndChanel);
+}
+
+const restNotificationEntry = async (serverUrl: string, teamId: string, channelId: string, isDirectChannel: boolean, switchedToTeamAndChanel: boolean) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+    const {database} = operator;
+
+    const isTabletDevice = await isTablet();
+    const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
 
     const fetchedData = await fetchAppEntryData(serverUrl, lastDisconnectedAt, teamId);
     const fetchedError = (fetchedData as AppEntryError).error;
@@ -137,4 +154,4 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     syncOtherServers(serverUrl);
     const error = teamData.error || chData?.error || prefData.error || meData.error;
     return {error, userId: meData?.user?.id};
-}
+};
