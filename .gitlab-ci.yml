@@ -50,7 +50,7 @@ test:
       - dist
   before_script:
     - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
-    - echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc
+    - echo 'export NVM_DIR="$HOME/.nvm"' > $BASHRC_FILE
     - echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" --no-use' >> $BASHRC_FILE
     # shellcheck source=/dev/null
     - source $BASHRC_FILE;
