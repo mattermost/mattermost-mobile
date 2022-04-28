@@ -7,9 +7,8 @@ stages:
   - test
   - build
 
-test:
+.test:
   image: $CI_REGISTRY/qa/images/android-node:android-32_node-16.14.2-20220426
-#   image: cimg/android:2022.03-node
   stage: test
   variables:
     KUBERNETES_CPU_REQUEST: 3
@@ -37,7 +36,7 @@ test:
     NODE_OPTIONS: --max_old_space_size=12000
     NODE_ENV: production
     BABEL_ENV: production
-    BASHRC_FILE: "$CI_BUILDS_DIR/.bashrc"
+#     BASHRC_FILE: "$CI_BUILDS_DIR/.bashrc"
   cache:
   - key:
       files:
