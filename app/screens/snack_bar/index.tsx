@@ -5,6 +5,7 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, useWindowDimensions, ViewStyle} from 'react-native';
 import {Gesture, GestureDetector, GestureHandlerRootView} from 'react-native-gesture-handler';
+import {Navigation} from 'react-native-navigation';
 import Animated, {Extrapolation, interpolate, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import Toast, {TOAST_HEIGHT} from '@components/toast';
@@ -131,15 +132,16 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
             isPanning.value = false;
         });
 
-    const animateHiding = () => {
-        if (!isPanning.value) {
+    const animateHiding = (forceHiding: boolean) => {
+        if (!isPanning.value || forceHiding) {
             offset.value = withTiming(100, {duration: 500}, () => runOnJS(hideSnackBar)());
         }
     };
 
+    // This effect hides the snack bar after 3 seconds
     useEffect(() => {
         setShowSnackBar(true);
-        const t = setTimeout(() => animateHiding(), 3000);
+        const t = setTimeout(() => animateHiding(false), 3000);
         return () => clearTimeout(t);
     }, []);
 
@@ -158,6 +160,15 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
             }
         };
     }, [showSnackBar]);
+
+    // This effect checks if we are navigating away and if so, it dismisses the snack bar
+    useEffect(() => {
+        const screenEventListener = Navigation.events().registerComponentWillAppearListener(() => {
+            animateHiding(true);
+        });
+
+        return () => screenEventListener.remove();
+    }, []);
 
     return (
         <GestureHandlerRootView style={{flex: 1, height: 80, width: '100%', position: 'absolute', bottom: 100}}>
