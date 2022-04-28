@@ -9,7 +9,7 @@ stages:
 
 test:
 #   image: $CI_REGISTRY/qa/images/android-node:android-32_node-16.14.2-20220426
-  image: cimg/node:16.14.2
+  image: cimg/android:2022.03-node
   stage: test
   variables:
     KUBERNETES_CPU_REQUEST: 3
@@ -34,6 +34,10 @@ test:
     KUBERNETES_SERVICE_EPHEMERAL_STORAGE_LIMIT: 0
 
     COMPASS_ICONS: "node_modules/@mattermost/compass-icons/font/compass-icons.ttf"
+    NODE_OPTIONS: --max_old_space_size=12000
+    NODE_ENV: production
+    BABEL_ENV: production
+    NODE_PARAM_VERSION: 14.6.2
   cache:
   - key:
       files:
@@ -45,7 +49,9 @@ test:
       - dist
   before_script:
 #     - NODE_ENV=development npm update --legacy-peer-deps
-    - NODE_ENV=development npm ci --cache .npm --ignore-scripts --legacy-peer-deps
+    - nvm install "$NODE_PARAM_VERSION"
+    - nvm alias default "$NODE_PARAM_VERSION"
+    - NODE_ENV=development npm ci --cache .npm --ignore-scripts
     - npx patch-package
     - node scripts/generate-assets.js
     - cp "$COMPASS_ICONS" "assets/fonts/"
