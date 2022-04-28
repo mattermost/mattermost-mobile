@@ -103,7 +103,7 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
 
                 if (isTabletDevice) {
                     dismissAllModalsAndPopToRoot();
-                    DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME);
+                    DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME, Screens.CHANNEL);
                 } else {
                     dismissAllModalsAndPopToScreen(Screens.CHANNEL, '', undefined, {topBar: {visible: false}});
                 }

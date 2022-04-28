@@ -8,6 +8,7 @@ import Channel from './channel';
 import Config from './config';
 import {CustomStatusDuration} from './custom_status';
 import Database from './database';
+import DateTime from './datetime';
 import DeepLink from './deep_linking';
 import Device from './device';
 import Emoji from './emoji';
@@ -37,6 +38,7 @@ export {
     CustomStatusDuration,
     Channel,
     Database,
+    DateTime,
     DeepLink,
     Device,
     Emoji,

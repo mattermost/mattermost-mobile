@@ -7,7 +7,8 @@ import {IntlShape} from 'react-intl';
 
 import {storeCategories} from '@actions/local/category';
 import {addChannelToDefaultCategory, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
-import {General, Preferences} from '@constants';
+import {switchToGlobalThreads} from '@actions/local/thread';
+import {General, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
@@ -955,6 +956,9 @@ export async function switchToPenultimateChannel(serverUrl: string) {
     try {
         const currentTeam = await getCurrentTeamId(database);
         const channelId = await getNthLastChannelFromTeam(database, currentTeam, 1);
+        if (channelId === Screens.GLOBAL_THREADS) {
+            return switchToGlobalThreads(serverUrl);
+        }
         return switchToChannelById(serverUrl, channelId);
     } catch (error) {
         return {error};

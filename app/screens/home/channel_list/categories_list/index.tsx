@@ -13,7 +13,7 @@ import ChannelListHeader from './header';
 import LoadChannelsError from './load_channels_error';
 import LoadTeamsError from './load_teams_error';
 import SearchField from './search';
-import Threads from './threads';
+import ThreadsButton from './threads_button';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -29,15 +29,16 @@ type ChannelListProps = {
     channelsCount: number;
     currentTeamId?: string;
     iconPad?: boolean;
+    isCRTEnabled?: boolean;
     isTablet: boolean;
     teamsCount: number;
-}
+};
 
 const getTabletWidth = (teamsCount: number) => {
     return TABLET_SIDEBAR_WIDTH - (teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0);
 };
 
-const ChannelList = ({channelsCount, currentTeamId, iconPad, isTablet, teamsCount}: ChannelListProps) => {
+const CategoriesList = ({channelsCount, currentTeamId, iconPad, isCRTEnabled, isTablet, teamsCount}: ChannelListProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const tabletWidth = useSharedValue(isTablet ? getTabletWidth(teamsCount) : 0);
@@ -68,7 +69,7 @@ const ChannelList = ({channelsCount, currentTeamId, iconPad, isTablet, teamsCoun
         content = (
             <>
                 <SearchField/>
-                <Threads/>
+                {isCRTEnabled && <ThreadsButton/>}
                 <Categories
                     currentTeamId={currentTeamId}
                 />
@@ -86,4 +87,4 @@ const ChannelList = ({channelsCount, currentTeamId, iconPad, isTablet, teamsCoun
     );
 };
 
-export default ChannelList;
+export default CategoriesList;

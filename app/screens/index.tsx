@@ -112,6 +112,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.GALLERY:
             screen = withServerDatabase(require('@screens/gallery').default);
             break;
+        case Screens.GLOBAL_THREADS:
+            screen = withServerDatabase(require('@screens/global_threads').default);
+            break;
         case Screens.IN_APP_NOTIFICATION: {
             const notificationScreen =
                 require('@screens/in_app_notification').default;
@@ -153,6 +156,11 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             Navigation.registerComponent(Screens.THREAD_FOLLOW_BUTTON, () => withServerDatabase(
                 require('@screens/thread/thread_follow_button').default,
             ));
+            break;
+        case Screens.THREAD_OPTIONS:
+            screen = withServerDatabase(
+                require('@screens/thread_options').default,
+            );
             break;
     }
 
