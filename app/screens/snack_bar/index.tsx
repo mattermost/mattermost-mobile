@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Text, TouchableOpacity, useWindowDimensions, ViewStyle} from 'react-native';
+import {DeviceEventEmitter, Text, TouchableOpacity, useWindowDimensions, ViewStyle} from 'react-native';
 import {Gesture, GestureDetector, GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
 import Animated, {Extrapolation, interpolate, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -171,9 +171,15 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
         const screenDidDisappear = Navigation.events().registerComponentDidDisappearListener(() => {
             animateHiding(true);
         });
+
+        const tabPress = DeviceEventEmitter.addListener('tabPress', () => {
+            animateHiding(true);
+        });
+
         return () => {
             screenWillAppear.remove();
             screenDidDisappear.remove();
+            tabPress.remove();
         };
     }, []);
 
