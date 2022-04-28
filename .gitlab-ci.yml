@@ -38,7 +38,7 @@ test:
     NODE_ENV: production
     BABEL_ENV: production
     NODE_PARAM_VERSION: 14.6.2
-    BASHRC_FILE: "~/.bashrc"
+    BASHRC_FILE: "$CI_BUILDS_DIR/.bashrc"
   cache:
   - key:
       files:
