@@ -44,8 +44,8 @@ test:
     paths:
       - dist
   before_script:
-    - NODE_ENV=development npm update
-    - NODE_ENV=development npm ci --cache .npm --ignore-scripts
+#     - NODE_ENV=development npm update --legacy-peer-deps
+    - NODE_ENV=development npm ci --cache .npm --ignore-scripts --legacy-peer-deps
     - npx patch-package
     - node scripts/generate-assets.js
     - cp "$COMPASS_ICONS" "assets/fonts/"
