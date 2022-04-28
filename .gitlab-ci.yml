@@ -37,7 +37,7 @@ test:
     NODE_OPTIONS: --max_old_space_size=12000
     NODE_ENV: production
     BABEL_ENV: production
-    NODE_PARAM_VERSION: 14.6.2
+    NODE_PARAM_VERSION: 16.14.2
     BASHRC_FILE: "$CI_BUILDS_DIR/.bashrc"
   cache:
   - key:
