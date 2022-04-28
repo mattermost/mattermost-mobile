@@ -38,7 +38,6 @@ test:
     NODE_ENV: production
     BABEL_ENV: production
     BASHRC_FILE: "$CI_BUILDS_DIR/.bashrc"
-#     NODE_PARAM_VERSION: 16.14.2
   cache:
   - key:
       files:
@@ -49,16 +48,7 @@ test:
     paths:
       - dist
   before_script:
-#     - touch $BASHRC_FILE
-#     - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
-#     - echo 'export NVM_DIR="$HOME/.nvm"' > $BASHRC_FILE
-#     - echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" --no-use' >> $BASHRC_FILE
-    # shellcheck source=/dev/null
-#     - source $BASHRC_FILE;
-#     - nvm install "$NODE_PARAM_VERSION"
-#     - nvm alias default "$NODE_PARAM_VERSION"
-#     - echo 'nvm use default &>/dev/null' >> $BASHRC_FILE
-
+#     - NODE_ENV=development npm ci --cache .npm/ --prefer-offline --ignore-scripts
     - NODE_ENV=development npm ci --ignore-scripts
     - npx patch-package
     - node scripts/generate-assets.js
