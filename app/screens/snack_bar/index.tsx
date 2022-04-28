@@ -37,7 +37,7 @@ type SnackBarProps = {
 }
 
 const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarProps) => {
-    const [showToast, setShowToast] = useState<boolean | undefined>();
+    const [showSnackBar, setShowSnackBar] = useState<boolean | undefined>();
     const intl = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -109,7 +109,7 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
     }, [offset.value]);
 
     const hideSnackBar = () => {
-        setShowToast(false);
+        setShowSnackBar(false);
     };
 
     const gesture = Gesture.
@@ -130,18 +130,19 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
 
     const animateHiding = () => {
         offset.value = withTiming(100, {duration: 500});
-        setShowToast(false);
+        setShowSnackBar(false);
     };
 
     useEffect(() => {
-        setShowToast(true);
+        setShowSnackBar(true);
         const t = setTimeout(() => animateHiding(), 3000);
         return () => clearTimeout(t);
     }, []);
 
+    // This effect dismisses the Navigation Overlay after we have hidden the snack bar
     useEffect(() => {
         let t: NodeJS.Timeout;
-        if (showToast === false) {
+        if (showSnackBar === false) {
             t = setTimeout(() => {
                 dismissOverlay(componentId);
             }, 700);
@@ -152,7 +153,7 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
                 clearTimeout(t);
             }
         };
-    }, [showToast]);
+    }, [showSnackBar]);
 
     return (
         <GestureHandlerRootView style={{flex: 1, height: 80, width: '100%', position: 'absolute', bottom: 100}}>
