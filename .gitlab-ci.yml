@@ -38,6 +38,7 @@ test:
     NODE_ENV: production
     BABEL_ENV: production
     NODE_PARAM_VERSION: 14.6.2
+    BASHRC_FILE: "~/.bashrc"
   cache:
   - key:
       files:
@@ -48,14 +49,14 @@ test:
     paths:
       - dist
   before_script:
-    - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash;
-    - echo 'export NVM_DIR="$HOME/.nvm"' >> "$BASH_ENV";
-    - echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" --no-use' >> "$BASH_ENV";
+    - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
+    - echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc
+    - echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" --no-use' >> $BASHRC_FILE
     # shellcheck source=/dev/null
-    - source "$BASH_ENV";
+    - source $BASHRC_FILE;
     - nvm install "$NODE_PARAM_VERSION"
     - nvm alias default "$NODE_PARAM_VERSION"
-    - echo 'nvm use default &>/dev/null' >> "$BASH_ENV"
+    - echo 'nvm use default &>/dev/null' >> $BASHRC_FILE
 
     - NODE_ENV=development npm ci --cache .npm --ignore-scripts
     - npx patch-package
