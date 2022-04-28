@@ -48,9 +48,15 @@ test:
     paths:
       - dist
   before_script:
-#     - NODE_ENV=development npm update --legacy-peer-deps
+    - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash;
+    - echo 'export NVM_DIR="$HOME/.nvm"' >> "$BASH_ENV";
+    - echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" --no-use' >> "$BASH_ENV";
+    # shellcheck source=/dev/null
+    - source "$BASH_ENV";
     - nvm install "$NODE_PARAM_VERSION"
     - nvm alias default "$NODE_PARAM_VERSION"
+    - echo 'nvm use default &>/dev/null' >> "$BASH_ENV"
+
     - NODE_ENV=development npm ci --cache .npm --ignore-scripts
     - npx patch-package
     - node scripts/generate-assets.js
