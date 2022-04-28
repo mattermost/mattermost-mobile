@@ -9,7 +9,7 @@ import {Navigation} from 'react-native-navigation';
 import Animated, {Extrapolation, interpolate, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import Toast, {TOAST_HEIGHT} from '@components/toast';
-import {Screens} from '@constants';
+import {Navigation as NavigationConstants, Screens} from '@constants';
 import {SNACK_BAR_CONFIG, SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {TABLET_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
@@ -164,22 +164,17 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
 
     // This effect checks if we are navigating away and if so, it dismisses the snack bar
     useEffect(() => {
-        const screenWillAppear = Navigation.events().registerComponentWillAppearListener(() => {
-            animateHiding(true);
-        });
-
-        const screenDidDisappear = Navigation.events().registerComponentDidDisappearListener(() => {
-            animateHiding(true);
-        });
-
-        const tabPress = DeviceEventEmitter.addListener('tabPress', () => {
-            animateHiding(true);
-        });
+        const onHideSnackBar = () => animateHiding(true);
+        const screenWillAppear = Navigation.events().registerComponentWillAppearListener(onHideSnackBar);
+        const screenDidDisappear = Navigation.events().registerComponentDidDisappearListener(onHideSnackBar);
+        const tabPress = DeviceEventEmitter.addListener('tabPress', onHideSnackBar);
+        const navigateToTab = DeviceEventEmitter.addListener(NavigationConstants.NAVIGATE_TO_TAB, onHideSnackBar);
 
         return () => {
             screenWillAppear.remove();
             screenDidDisappear.remove();
             tabPress.remove();
+            navigateToTab.remove();
         };
     }, []);
 
