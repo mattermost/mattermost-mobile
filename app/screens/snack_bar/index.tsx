@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Text, TouchableOpacity, useWindowDimensions, ViewStyle} from 'react-native';
 import {Gesture, GestureDetector, GestureHandlerRootView} from 'react-native-gesture-handler';
@@ -44,8 +44,8 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
     const isTablet = useIsTablet();
     const {width: windowWidth} = useWindowDimensions();
     const offset = useSharedValue(0);
-    const startY = useSharedValue(0);
-    const isPanning = useSharedValue(false);
+    const baseTimer = useRef<NodeJS.Timeout>();
+    const dismissTimer = useRef<NodeJS.Timeout>();
 
     const config = SNACK_BAR_CONFIG[barType];
     const styles = getStyleSheet(theme);
@@ -114,52 +114,56 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
         setShowSnackBar(false);
     };
 
+    const stopTimers = () => {
+        const timerRefs = [baseTimer, dismissTimer];
+        timerRefs.forEach((ref) => {
+            if (ref.current) {
+                clearTimeout(ref.current);
+            }
+        });
+    };
+
     const gesture = Gesture.
         // eslint-disable-next-line new-cap
         Pan().
-        onStart((st) => {
-            startY.value = st.absoluteY;
-            isPanning.value = true;
-        }).
         activeOffsetY(20).
-        onUpdate((e) => {
-            if (e.absoluteY >= startY.value) {
-                offset.value = e.translationY;
-            }
+        onStart(() => {
+            offset.value = withTiming(100, {duration: 200});
+
+            // animated just started, we'll stop the timer
+            runOnJS(stopTimers)();
         }).
         onEnd(() => {
+            // either dismiss it if the position is at the bottom
             runOnJS(hideSnackBar)();
-            isPanning.value = false;
+
+            // or  reset the timer if the movement is upward ( translationY -ve ) , then reset the animation reverses... withDecay velocity
         });
 
     const animateHiding = (forceHiding: boolean) => {
         const duration = forceHiding ? 0 : 200;
-        if (!isPanning.value || forceHiding) {
-            offset.value = withTiming(100, {duration}, () => runOnJS(hideSnackBar)());
-        }
+        offset.value = withTiming(100, {duration}, () => runOnJS(hideSnackBar)());
     };
 
     // This effect hides the snack bar after 3 seconds
     useEffect(() => {
         setShowSnackBar(true);
-        const t = setTimeout(() => animateHiding(false), 3000);
-        return () => clearTimeout(t);
+        baseTimer.current = setTimeout(() => {
+            animateHiding(false);
+            console.log('>>>  called from base timer in use effect');
+        }, 3000);
+        return () => {
+            if (baseTimer.current) {
+                clearTimeout(baseTimer.current);
+            }
+        };
     }, []);
 
     // This effect dismisses the Navigation Overlay after we have hidden the snack bar
     useEffect(() => {
-        let t: NodeJS.Timeout;
         if (showSnackBar === false) {
-            t = setTimeout(() => {
-                dismissOverlay(componentId);
-            }, 350);
+            dismissOverlay(componentId);
         }
-
-        return () => {
-            if (t) {
-                clearTimeout(t);
-            }
-        };
     }, [showSnackBar]);
 
     // This effect checks if we are navigating away and if so, it dismisses the snack bar
