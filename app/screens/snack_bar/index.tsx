@@ -6,7 +6,15 @@ import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Text, TouchableOpacity, useWindowDimensions, ViewStyle} from 'react-native';
 import {Gesture, GestureDetector, GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
-import Animated, {Extrapolation, interpolate, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {
+    Extrapolation,
+    FadeIn,
+    interpolate,
+    runOnJS,
+    useAnimatedStyle,
+    useSharedValue,
+    withTiming,
+} from 'react-native-reanimated';
 
 import Toast, {TOAST_HEIGHT} from '@components/toast';
 import {Navigation as NavigationConstants, Screens} from '@constants';
@@ -185,7 +193,10 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
     return (
         <GestureHandlerRootView style={{flex: 1, height: 80, width: '100%', position: 'absolute', bottom: 100}}>
             <GestureDetector gesture={gesture}>
-                <Animated.View style={animatedMotion}>
+                <Animated.View
+                    style={animatedMotion}
+                    entering={FadeIn.duration(300)}
+                >
                     <Toast
                         animatedStyle={{opacity: 1, height: TOAST_HEIGHT}}
                         message={intl.formatMessage({id: config.id, defaultMessage: config.defaultMessage})}
