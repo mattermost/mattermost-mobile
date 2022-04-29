@@ -42,6 +42,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             position: 'absolute',
             bottom: 100,
         },
+        toast: {
+            width: '100%',
+            opacity: 1,
+            backgroundColor: theme.centerChannelColor,
+        },
     };
 });
 
@@ -52,6 +57,7 @@ type SnackBarProps = {
     sourceScreen: typeof Screens[keyof typeof Screens];
 }
 
+//fixme: timer is not being canncelled
 const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarProps) => {
     const [showSnackBar, setShowSnackBar] = useState<boolean | undefined>();
     const intl = useIntl();
@@ -61,7 +67,6 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
     const offset = useSharedValue(0);
     const isPanned = useSharedValue(false);
     const baseTimer = useRef<NodeJS.Timeout>();
-    const dismissTimer = useRef<NodeJS.Timeout>();
 
     const config = SNACK_BAR_CONFIG[barType];
     const styles = getStyleSheet(theme);
@@ -109,12 +114,20 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
 
         return StyleSheet.flatten([
             {
-                backgroundColor: theme[config.themeColor],
+                backgroundColor: theme.centerChannelColor,
                 width: '96%',
                 opacity: 1,
                 height: TOAST_HEIGHT,
                 alignSelf: 'center' as const,
                 borderRadius: 9,
+                shadowColor: '#1F000000',
+                shadowOffset: {
+                    width: 0,
+                    height: 6,
+                },
+                shadowRadius: 4,
+                shadowOpacity: 0.12,
+                elevation: 2,
             },
             isTablet && tabletStyle,
         ]);
@@ -126,7 +139,6 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
             ...(isPanned.value && {
                 transform: [
                     {translateY: offset.value},
-                    {scale: interpolate(offset.value, [0, 100], [1, 0], Extrapolation.EXTEND)},
                 ],
             }),
         };
@@ -137,12 +149,9 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
     };
 
     const stopTimers = () => {
-        const timerRefs = [baseTimer, dismissTimer];
-        timerRefs.forEach((ref) => {
-            if (ref.current) {
-                clearTimeout(ref.current);
-            }
-        });
+        if (baseTimer.current) {
+            clearTimeout(baseTimer.current);
+        }
     };
 
     const gesture = Gesture.
@@ -150,11 +159,10 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
         Pan().
         activeOffsetY(20).
         onStart(() => {
-            offset.value = withTiming(100, {duration: 200});
-            isPanned.value = true;
-
             // animated just started, we'll stop the timer
             runOnJS(stopTimers)();
+            offset.value = withTiming(100, {duration: 200});
+            isPanned.value = true;
         }).
         onEnd(() => {
             runOnJS(hideSnackBar)();
@@ -212,7 +220,7 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
                         message={intl.formatMessage({id: config.id, defaultMessage: config.defaultMessage})}
                         iconName={config.iconName}
                         textStyle={styles.text}
-                        style={{width: '100%', opacity: 1}}
+                        style={styles.toast}
                     >
                         {config.canUndo && onUndoPress && (
                             <TouchableOpacity onPress={onPressHandler}>
