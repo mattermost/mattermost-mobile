@@ -19,6 +19,10 @@ executors:
     resource_class: <<parameters.resource_class>>
 
   ios:
+    parameters:
+      resource_class:
+        default: medium
+        type: string
     environment:
       NODE_OPTIONS: --max_old_space_size=12000
       NODE_ENV: production
@@ -27,6 +31,7 @@ executors:
       xcode: "13.3.0"
     working_directory: ~/mattermost-mobile
     shell: /bin/bash --login -o pipefail
+    resource_class: <<parameters.resource_class>>
 
 commands:
   checkout-private:
@@ -342,7 +347,9 @@ jobs:
   #         filename: "*.apk"
 
   build-ios-beta:
-    executor: ios
+    executor:
+      name: ios
+      resource_class: large
     steps:
       - build-ios
       - persist
