@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Text, TouchableOpacity, useWindowDimensions, ViewStyle} from 'react-native';
+import {DeviceEventEmitter, StyleSheet, Text, TouchableOpacity, useWindowDimensions, ViewStyle} from 'react-native';
 import {Gesture, GestureDetector, GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
 import Animated, {
@@ -34,6 +34,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         undo: {
             color: theme.centerChannelBg,
             ...typography('Body', 100, 'SemiBold'),
+        },
+        gestureRoot: {
+            flex: 1,
+            height: 80,
+            width: '100%',
+            position: 'absolute',
+            bottom: 100,
         },
     };
 });
@@ -100,13 +107,17 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
                 };
         }
 
-        return [
+        return StyleSheet.flatten([
             {
                 backgroundColor: theme[config.themeColor],
                 width: '96%',
+                opacity: 1,
+                height: TOAST_HEIGHT,
+                alignSelf: 'center' as const,
+                borderRadius: 9,
             },
             isTablet && tabletStyle,
-        ];
+        ]);
     }, [theme, barType]);
 
     const animatedMotion = useAnimatedStyle(() => {
@@ -190,14 +201,14 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
     }, []);
 
     return (
-        <GestureHandlerRootView style={{flex: 1, height: 80, width: '100%', position: 'absolute', bottom: 100}}>
+        <GestureHandlerRootView style={styles.gestureRoot}>
             <GestureDetector gesture={gesture}>
                 <Animated.View
                     style={animatedMotion}
                     entering={FadeIn.duration(300)}
                 >
                     <Toast
-                        animatedStyle={{opacity: 1, height: TOAST_HEIGHT}}
+                        animatedStyle={snackBarStyle}
                         message={intl.formatMessage({id: config.id, defaultMessage: config.defaultMessage})}
                         iconName={config.iconName}
                         textStyle={styles.text}
