@@ -52,6 +52,7 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
     const isTablet = useIsTablet();
     const {width: windowWidth} = useWindowDimensions();
     const offset = useSharedValue(0);
+    const isPanned = useSharedValue(false);
     const baseTimer = useRef<NodeJS.Timeout>();
     const dismissTimer = useRef<NodeJS.Timeout>();
 
@@ -109,11 +110,13 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
     }, [theme, barType]);
 
     const animatedMotion = useAnimatedStyle(() => {
+        const transform = [
+            {translateY: offset.value},
+            {scale: interpolate(offset.value, [0, 100], [1, 0], Extrapolation.EXTEND)},
+        ];
+
         return {
-            transform: [
-                {translateY: offset.value},
-                {scale: interpolate(offset.value, [0, 100], [1, 0], Extrapolation.EXTEND)},
-            ],
+            ...(isPanned.value && transform),
             opacity: interpolate(offset.value, [0, 100], [1, 0], Extrapolation.EXTEND),
         };
     }, [offset.value]);
@@ -137,6 +140,7 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
         activeOffsetY(20).
         onStart(() => {
             offset.value = withTiming(100, {duration: 200});
+            isPanned.value = true;
 
             // animated just started, we'll stop the timer
             runOnJS(stopTimers)();
@@ -158,7 +162,6 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
         setShowSnackBar(true);
         baseTimer.current = setTimeout(() => {
             animateHiding(false);
-            console.log('>>>  called from base timer in use effect');
         }, 3000);
         return () => {
             if (baseTimer.current) {
