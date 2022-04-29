@@ -3,7 +3,7 @@
 
 import React, {useCallback, useState} from 'react';
 
-import {selectAttachmentMenuAction} from '@actions/remote/post';
+import {selectAttachmentMenuAction} from '@actions/remote/integrations';
 import AutocompleteSelector from '@components/autocomplete_selector';
 import {useServerUrl} from '@context/server';
 
@@ -23,14 +23,14 @@ const ActionMenu = ({dataSource, defaultOption, disabled, id, name, options, pos
     if (defaultOption && options) {
         isSelected = options.find((option) => option.value === defaultOption);
     }
-    const [selected, setSelected] = useState(isSelected);
+    const [selected, setSelected] = useState(isSelected?.value);
 
-    const handleSelect = useCallback(async (selectedItem?: PostActionOption) => {
-        if (!selectedItem) {
+    const handleSelect = useCallback(async (selectedItem: string | string[]) => {
+        if (Array.isArray(selectedItem)) { // Since AutocompleteSelector is not multiselect, we are sure we only receive a string
             return;
         }
 
-        const result = await selectAttachmentMenuAction(serverUrl, postId, id, selectedItem.value);
+        const result = await selectAttachmentMenuAction(serverUrl, postId, id, selectedItem);
         if (result.data?.trigger_id) {
             setSelected(selectedItem);
         }
@@ -44,6 +44,7 @@ const ActionMenu = ({dataSource, defaultOption, disabled, id, name, options, pos
             selected={selected}
             onSelected={handleSelect}
             disabled={disabled}
+            testID={`message_attachment.${name}`}
         />
     );
 };

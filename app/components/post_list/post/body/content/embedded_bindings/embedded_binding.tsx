@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {View} from 'react-native';
 
-import {copyAndFillBindings} from '@utils/apps';
+import {AppBindingLocations} from '@constants/apps';
+import {cleanBinding} from '@utils/apps';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmbedText from './embed_text';
@@ -38,8 +39,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const EmbeddedBinding = ({embed, post, theme}: Props) => {
     const style = getStyleSheet(theme);
+    const [cleanedBindings, setCleanedBindings] = useState<AppBinding[]>([]);
 
-    const bindings: AppBinding[] | undefined = copyAndFillBindings(embed)?.bindings;
+    useEffect(() => {
+        const copiedBindings = JSON.parse(JSON.stringify(embed)) as AppBinding;
+        const bindings = cleanBinding(copiedBindings, AppBindingLocations.IN_POST)?.bindings;
+        setCleanedBindings(bindings!);
+    }, [embed]);
 
     return (
         <>
@@ -56,9 +62,9 @@ const EmbeddedBinding = ({embed, post, theme}: Props) => {
                     theme={theme}
                 />
                 }
-                {Boolean(bindings?.length) &&
+                {Boolean(cleanedBindings?.length) &&
                 <EmbedSubBindings
-                    bindings={bindings!}
+                    bindings={cleanedBindings}
                     post={post}
                     theme={theme}
                 />

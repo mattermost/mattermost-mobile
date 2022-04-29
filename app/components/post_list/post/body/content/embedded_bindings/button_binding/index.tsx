@@ -7,11 +7,11 @@ import {useIntl} from 'react-intl';
 import Button from 'react-native-button';
 import {map} from 'rxjs/operators';
 
-import {doAppCall, postEphemeralCallResponseForPost} from '@actions/remote/apps';
-import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@constants/apps';
+import {handleBindingClick, postEphemeralCallResponseForPost} from '@actions/remote/apps';
+import {AppBindingLocations, AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import {observeCurrentTeamId} from '@queries/servers/system';
-import {createCallContext, createCallRequest} from '@utils/apps';
+import {createCallContext} from '@utils/apps';
 import {getStatusColors} from '@utils/message_attachment_colors';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
@@ -59,7 +59,7 @@ const ButtonBinding = ({currentTeamId, binding, post, teamID, theme}: Props) => 
     const style = getStyleSheet(theme);
 
     const onPress = useCallback(preventDoubleTap(async () => {
-        if (!binding.call || pressed.current) {
+        if (pressed.current) {
             return;
         }
 
@@ -73,18 +73,12 @@ const ButtonBinding = ({currentTeamId, binding, post, teamID, theme}: Props) => 
             post.id,
         );
 
-        const call = createCallRequest(
-            binding.call,
-            context,
-            {post: AppExpandLevels.EXPAND_ALL},
-        );
-
-        const res = await doAppCall(serverUrl, call, AppCallTypes.SUBMIT, intl, theme);
+        const res = await handleBindingClick(serverUrl, binding, context, intl);
         pressed.current = false;
 
         if (res.error) {
-            const errorResponse = res.error as AppCallResponse<unknown>;
-            const errorMessage = errorResponse.error || intl.formatMessage({
+            const errorResponse = res.error;
+            const errorMessage = errorResponse.text || intl.formatMessage({
                 id: 'apps.error.unknown',
                 defaultMessage: 'Unknown error occurred.',
             });
@@ -96,8 +90,8 @@ const ButtonBinding = ({currentTeamId, binding, post, teamID, theme}: Props) => 
 
         switch (callResp.type) {
             case AppCallResponseTypes.OK:
-                if (callResp.markdown) {
-                    postEphemeralCallResponseForPost(serverUrl, callResp, callResp.markdown, post);
+                if (callResp.text) {
+                    postEphemeralCallResponseForPost(serverUrl, callResp, callResp.text, post);
                 }
                 return;
             case AppCallResponseTypes.NAVIGATE:
@@ -117,7 +111,7 @@ const ButtonBinding = ({currentTeamId, binding, post, teamID, theme}: Props) => 
 
     return (
         <Button
-            containerStyle={[style.button]}
+            containerStyle={style.button}
             disabledContainerStyle={style.buttonDisabled}
             onPress={onPress}
         >

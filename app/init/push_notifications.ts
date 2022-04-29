@@ -19,6 +19,7 @@ import {markChannelAsViewed} from '@actions/local/channel';
 import {backgroundNotification, openNotification} from '@actions/remote/notifications';
 import {Device, Events, Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
+import {getTotalMentionsForServer} from '@database/subscription/unreads';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import NativeNotifications from '@notifications';
 import {queryServerName} from '@queries/app/servers';
@@ -68,26 +69,24 @@ class PushNotifications {
             NativeNotifications.removeDeliveredNotifications(channelId);
         } else {
             const ids: string[] = [];
-            let badgeCount = notifications.length;
 
             for (const notification of notifications) {
                 if (notification.channel_id === channelId) {
                     ids.push(notification.identifier);
-                    badgeCount--;
                 }
             }
-
-            // TODO: Set the badgeCount with databases mention count aggregate ??
-            // or should we use the badge count from the icon?
 
             if (ids.length) {
                 NativeNotifications.removeDeliveredNotifications(ids);
             }
 
-            if (Platform.OS === 'ios') {
+            const serversUrl = Object.keys(DatabaseManager.serverDatabases);
+            const mentionPromises = serversUrl.map((url) => getTotalMentionsForServer(url));
+            Promise.all(mentionPromises).then((result) => {
+                let badgeCount = result.reduce((acc, count) => (acc + count), 0);
                 badgeCount = badgeCount <= 0 ? 0 : badgeCount;
                 Notifications.ios.setBadgeCount(badgeCount);
-            }
+            });
         }
     };
 
@@ -121,6 +120,7 @@ class PushNotifications {
 
         if (serverUrl && payload?.channel_id) {
             markChannelAsViewed(serverUrl, payload?.channel_id, false);
+            this.cancelChannelNotifications(payload.channel_id);
         }
     };
 
@@ -254,7 +254,7 @@ class PushNotifications {
                 prefix = Device.PUSH_NOTIFY_ANDROID_REACT_NATIVE;
             }
 
-            storeDeviceToken(`${prefix}:${deviceToken}`);
+            storeDeviceToken(`${prefix}-v2:${deviceToken}`);
 
             // Store the device token in the default database
             this.requestNotificationReplyPermissions();
