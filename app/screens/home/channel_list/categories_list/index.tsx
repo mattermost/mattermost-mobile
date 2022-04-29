@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect} from 'react';
+import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
@@ -41,6 +42,7 @@ const getTabletWidth = (teamsCount: number) => {
 };
 
 const ChannelList = ({channelsCount, currentTeamId, iconPad, isTablet, teamsCount}: ChannelListProps) => {
+    const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const tabletWidth = useSharedValue(isTablet ? getTabletWidth(teamsCount) : 0);
@@ -76,6 +78,7 @@ const ChannelList = ({channelsCount, currentTeamId, iconPad, isTablet, teamsCoun
                 </View>
                 <Categories
                     currentTeamId={currentTeamId}
+                    locale={intl.locale}
                 />
             </>
         );
