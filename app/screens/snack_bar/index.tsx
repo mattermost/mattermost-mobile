@@ -110,14 +110,14 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
     }, [theme, barType]);
 
     const animatedMotion = useAnimatedStyle(() => {
-        const transform = [
-            {translateY: offset.value},
-            {scale: interpolate(offset.value, [0, 100], [1, 0], Extrapolation.EXTEND)},
-        ];
-
         return {
-            ...(isPanned.value && transform),
             opacity: interpolate(offset.value, [0, 100], [1, 0], Extrapolation.EXTEND),
+            ...(isPanned.value && {
+                transform: [
+                    {translateY: offset.value},
+                    {scale: interpolate(offset.value, [0, 100], [1, 0], Extrapolation.EXTEND)},
+                ],
+            }),
         };
     }, [offset.value]);
 
@@ -146,20 +146,16 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
             runOnJS(stopTimers)();
         }).
         onEnd(() => {
-            // either dismiss it if the position is at the bottom
             runOnJS(hideSnackBar)();
-
-            // or  reset the timer if the movement is upward ( translationY -ve ) , then reset the animation reverses... withDecay velocity
         });
 
     const animateHiding = (forceHiding: boolean) => {
         const duration = forceHiding ? 0 : 200;
-        offset.value = withTiming(100, {duration}, () => runOnJS(hideSnackBar)());
+        offset.value = withTiming(200, {duration}, () => runOnJS(hideSnackBar)());
     };
 
     // This effect hides the snack bar after 3 seconds
     useEffect(() => {
-        setShowSnackBar(true);
         baseTimer.current = setTimeout(() => {
             animateHiding(false);
         }, 3000);
