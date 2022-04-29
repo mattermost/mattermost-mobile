@@ -126,7 +126,7 @@ export const getTimezone = (timezone: UserTimezone | null) => {
 export const getUserCustomStatus = (user?: UserModel | UserProfile): UserCustomStatus | undefined => {
     try {
         if (typeof user?.props?.customStatus === 'string') {
-            return JSON.parse(user.props.customStatus) as UserCustomStatus;
+            return JSON.parse(user.props.customStatus);
         }
 
         return user?.props?.customStatus;
@@ -230,14 +230,14 @@ export function getSuggestionsSplitBy(term: string, splitStr: string): string[] 
     if (splitStr === ' ') {
         suggestions = initialSuggestions;
     } else {
-        suggestions = initialSuggestions.reduce((acc, val) => {
+        suggestions = initialSuggestions.reduce<string[]>((acc, val) => {
             if (acc.length === 0) {
                 acc.push(val);
             } else {
                 acc.push(splitStr + val, val);
             }
             return acc;
-        }, [] as string[]);
+        }, []);
     }
     return suggestions;
 }

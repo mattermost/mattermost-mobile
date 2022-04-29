@@ -3,7 +3,7 @@
 
 import withObservables from '@nozbe/with-observables';
 import React, {ComponentType, createContext, useEffect} from 'react';
-import {Appearance, EventSubscription} from 'react-native';
+import {Appearance} from 'react-native';
 
 import {Preferences} from '@constants';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
@@ -39,7 +39,7 @@ const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
             const teamTheme = themes.find((t) => t.name === currentTeamId) || themes[0];
             if (teamTheme?.value) {
                 try {
-                    const theme = setThemeDefaults(JSON.parse(teamTheme.value) as Theme);
+                    const theme = setThemeDefaults(JSON.parse(teamTheme.value));
                     updateThemeIfNeeded(theme);
 
                     return theme;
@@ -56,7 +56,7 @@ const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
     };
 
     useEffect(() => {
-        const listener = Appearance.addChangeListener(getTheme) as EventSubscription;
+        const listener = Appearance.addChangeListener(getTheme);
 
         return () => listener.remove();
     }, []);

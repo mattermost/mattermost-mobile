@@ -65,7 +65,7 @@ export async function handleUpdateTeamEvent(serverUrl: string, msg: WebSocketMes
     }
 
     try {
-        const team = JSON.parse(msg.data.team) as Team;
+        const team: Team = JSON.parse(msg.data.team);
         database.operator.handleTeam({
             teams: [team],
             prepareRecordsOnly: false,

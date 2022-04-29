@@ -351,7 +351,7 @@ export async function fetchPostsBefore(serverUrl: string, channelId: string, pos
         }
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
         const data = await client.getPostsBefore(channelId, postId, 0, perPage, isCRTEnabled, isCRTEnabled);
-        const result = await processPostsFetched(data);
+        const result = processPostsFetched(data);
 
         if (activeServerUrl === serverUrl) {
             DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, false);

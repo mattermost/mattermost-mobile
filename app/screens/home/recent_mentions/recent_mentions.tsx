@@ -54,7 +54,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
     const [loading, setLoading] = useState(true);
     const serverUrl = useServerUrl();
 
-    const params = route.params! as {direction: string};
+    const params = route.params as {direction: string};
     const toLeft = params.direction === 'left';
     const translateSide = toLeft ? -25 : 25;
     const opacity = useSharedValue(isFocused ? 1 : 0);

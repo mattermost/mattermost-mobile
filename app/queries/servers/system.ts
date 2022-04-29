@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
-import {of as of$} from 'rxjs';
+import {of as of$, Observable} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -35,11 +35,10 @@ export const querySystemValue = (database: Database, key: string) => {
     return database.get<SystemModel>(SYSTEM).query(Q.where('id', (key)), Q.take(1));
 };
 
-export const observeCurrentChannelId = (database: Database) => {
+export const observeCurrentChannelId = (database: Database): Observable<string> => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: ''}))),
-    ).pipe(
-        switchMap((model) => of$(model.value as string)),
+        switchMap((model) => of$(model.value)),
     );
 };
 
@@ -52,11 +51,10 @@ export const getCurrentTeamId = async (serverDatabase: Database): Promise<string
     }
 };
 
-export const observeCurrentTeamId = (database: Database) => {
+export const observeCurrentTeamId = (database: Database): Observable<string> => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: ''}))),
-    ).pipe(
-        switchMap((model) => of$(model.value as string)),
+        switchMap((model) => of$(model.value)),
     );
 };
 
@@ -69,18 +67,17 @@ export const getCurrentUserId = async (serverDatabase: Database): Promise<string
     }
 };
 
-export const observeCurrentUserId = (database: Database) => {
+export const observeCurrentUserId = (database: Database): Observable<string> => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.CURRENT_USER_ID).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: ''}))),
-    ).pipe(
-        switchMap((model) => of$(model.value as string)),
+        switchMap((model) => of$(model.value)),
     );
 };
 
 export const getCommonSystemValues = async (serverDatabase: Database) => {
-    const systemRecords = (await serverDatabase.collections.get(SYSTEM).query().fetch()) as SystemModel[];
-    let config = {};
-    let license = {};
+    const systemRecords = (await serverDatabase.collections.get<SystemModel>(SYSTEM).query().fetch());
+    let config: ClientConfig = {} as ClientConfig;
+    let license: ClientLicense = {} as ClientLicense;
     let currentChannelId = '';
     let currentTeamId = '';
     let currentUserId = '';
@@ -100,7 +97,7 @@ export const getCommonSystemValues = async (serverDatabase: Database) => {
                 currentUserId = systemRecord.value;
                 break;
             case SYSTEM_IDENTIFIERS.LICENSE:
-                license = systemRecord.value as ClientLicense;
+                license = systemRecord.value;
                 break;
             case SYSTEM_IDENTIFIERS.LAST_UNREAD_CHANNEL_ID:
                 lastUnreadChannelId = systemRecord.value;
@@ -113,8 +110,8 @@ export const getCommonSystemValues = async (serverDatabase: Database) => {
         currentTeamId,
         currentUserId,
         lastUnreadChannelId,
-        config: (config as ClientConfig),
-        license: (license as ClientLicense),
+        config,
+        license,
     };
 };
 
@@ -127,11 +124,10 @@ export const getConfig = async (serverDatabase: Database) => {
     }
 };
 
-export const observeConfig = (database: Database) => {
+export const observeConfig = (database: Database): Observable<ClientConfig | undefined> => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.CONFIG).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: undefined}))),
-    ).pipe(
-        switchMap((model) => of$(model.value as ClientConfig | undefined)),
+        switchMap((model) => of$(model.value)),
     );
 };
 
@@ -153,79 +149,74 @@ export const observeConfigIntValue = (database: Database, key: keyof ClientConfi
     );
 };
 
-export const observeLicense = (database: Database) => {
+export const observeLicense = (database: Database): Observable<ClientLicense | undefined> => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.LICENSE).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: undefined}))),
-    ).pipe(
-        switchMap((model) => of$(model.value as ClientLicense | undefined)),
+        switchMap((model) => of$(model.value)),
     );
 };
 
-export const getLicense = async (serverDatabase: Database) => {
+export const getLicense = async (serverDatabase: Database): Promise<ClientLicense | undefined> => {
     try {
         const license = await serverDatabase.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LICENSE);
-        return (license?.value) as ClientLicense | undefined;
+        return license?.value;
     } catch {
         return undefined;
     }
 };
 
-export const getRecentCustomStatuses = async (database: Database) => {
+export const getRecentCustomStatuses = async (database: Database): Promise<UserCustomStatus[]> => {
     try {
         const recent = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.RECENT_CUSTOM_STATUS);
-        return recent.value as UserCustomStatus[];
+        return recent.value;
     } catch {
         return [];
     }
 };
 
-export const getExpandedLinks = async (database: Database) => {
+export const getExpandedLinks = async (database: Database): Promise<Record<string, string>> => {
     try {
         const expandedLinks = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.EXPANDED_LINKS);
-        return (expandedLinks?.value || {}) as Record<string, string>;
+        return expandedLinks?.value || {};
     } catch {
         return {};
     }
 };
 
-export const observeExpandedLinks = (database: Database) => {
+export const observeExpandedLinks = (database: Database): Observable<Record<string, string>> => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.EXPANDED_LINKS).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: {}}))),
-    ).pipe(
-        switchMap((model) => of$(model.value as Record<string, string>)),
+        switchMap((model) => of$(model.value)),
     );
 };
 
-export const observeRecentMentions = (database: Database) => {
+export const observeRecentMentions = (database: Database): Observable<string[]> => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.RECENT_MENTIONS).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: []}))),
-    ).pipe(
-        switchMap((model) => of$(model.value as string[])),
+        switchMap((model) => of$(model.value)),
     );
 };
 
-export const getRecentReactions = async (database: Database) => {
+export const getRecentReactions = async (database: Database): Promise<string[]> => {
     try {
         const reactions = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.RECENT_REACTIONS);
-        return reactions.value as string[];
+        return reactions.value;
     } catch {
         return [];
     }
 };
 
-export const observeRecentReactions = (database: Database) => {
+export const observeRecentReactions = (database: Database): Observable<string[]> => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.RECENT_REACTIONS).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: []}))),
-    ).pipe(
-        switchMap((model) => of$(model.value as string[])),
+        switchMap((model) => of$(model.value)),
     );
 };
 
-export const observeRecentCustomStatus = (database: Database) => {
+export const observeRecentCustomStatus = (database: Database): Observable<UserCustomStatus[]> => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.RECENT_CUSTOM_STATUS).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: []}))),
-    ).pipe(
-        switchMap((model) => of$(model.value as UserCustomStatus[])),
+        switchMap((model) => of$(model.value)),
     );
 };
 
@@ -241,7 +232,6 @@ export const getWebSocketLastDisconnected = async (serverDatabase: Database) => 
 export const observeWebsocket = (database: Database) => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.WEBSOCKET).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: '0'}))),
-    ).pipe(
         switchMap((model) => of$(parseInt(model.value || 0, 10) || 0)),
     );
 };
@@ -260,10 +250,10 @@ export const resetWebSocketLastDisconnected = async (operator: ServerDataOperato
     return [];
 };
 
-export const getTeamHistory = async (serverDatabase: Database) => {
+export const getTeamHistory = async (serverDatabase: Database): Promise<string[]> => {
     try {
         const teamHistory = await serverDatabase.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.TEAM_HISTORY);
-        return (teamHistory.value) as string[];
+        return teamHistory.value;
     } catch {
         return [];
     }
@@ -362,11 +352,10 @@ export async function setCurrentTeamAndChannelId(operator: ServerDataOperator, t
     }
 }
 
-export const observeLastUnreadChannelId = (database: Database) => {
+export const observeLastUnreadChannelId = (database: Database): Observable<string> => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.LAST_UNREAD_CHANNEL_ID).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: ''}))),
-    ).pipe(
-        switchMap((model) => of$(model.value as string)),
+        switchMap((model) => of$(model.value)),
     );
 };
 

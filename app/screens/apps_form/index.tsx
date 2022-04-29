@@ -60,7 +60,7 @@ function AppsFormContainer({
         }
 
         const creq = createCallRequest(currentForm.submit, context, {}, submission.values);
-        const res = await doAppSubmit(serverUrl, creq, intl) as DoAppCallResult<FormResponseData>;
+        const res = await doAppSubmit<FormResponseData>(serverUrl, creq, intl);
 
         if (res.error) {
             return res;

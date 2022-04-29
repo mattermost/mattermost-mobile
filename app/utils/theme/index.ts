@@ -254,7 +254,7 @@ export function setThemeDefaults(theme: Theme): Theme {
         processedTheme.sidebarTeamBarBg = blendColors(theme.sidebarHeaderBg, '#000000', 0.2, true);
     }
 
-    return processedTheme as Theme;
+    return processedTheme;
 }
 
 export const updateThemeIfNeeded = (theme: Theme, force = false) => {

@@ -29,7 +29,7 @@ type PostOptionsProps = {
     canMarkAsUnread: boolean;
     canPin: boolean;
     canReply: boolean;
-    combinedPost?: Post;
+    combinedPost?: Post | PostModel;
     isSaved: boolean;
     location: typeof Screens[keyof typeof Screens];
     post: PostModel;

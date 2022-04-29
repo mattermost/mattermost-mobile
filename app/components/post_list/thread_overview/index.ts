@@ -7,7 +7,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
-import {observePost, queryPostRepliesCount} from '@queries/servers/post';
+import {observePost, queryPostReplies} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 
 import ThreadOverview from './thread_overview';
@@ -24,7 +24,7 @@ const enhanced = withObservables(
                 pipe(
                     switchMap((pref) => of$(Boolean(pref[0]?.value === 'true'))),
                 ),
-            repliesCount: queryPostRepliesCount(database, rootId).observeCount(false),
+            repliesCount: queryPostReplies(database, rootId).observeCount(false),
         };
     });
 

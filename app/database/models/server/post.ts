@@ -97,16 +97,16 @@ export default class PostModel extends Model implements PostModelInterface {
     @json('props', safeParseJSON) props!: any;
 
     // A draft can be associated with this post for as long as this post is a parent post
-    @lazy drafts = this.collections.get(DRAFT).query(Q.on(POST, 'id', this.id)) as Query<DraftModel>;
+    @lazy drafts = this.collections.get<DraftModel>(DRAFT).query(Q.on(POST, 'id', this.id));
 
     @lazy root = this.collection.query(Q.where('id', this.rootId)) as Query<PostModel>;
 
     /** postsInThread: The thread to which this post is associated */
-    @lazy postsInThread = this.collections.get(POSTS_IN_THREAD).query(
+    @lazy postsInThread = this.collections.get<PostInThreadModel>(POSTS_IN_THREAD).query(
         Q.where('root_id', this.rootId || this.id),
         Q.sortBy('latest', Q.desc),
         Q.take(1),
-    ) as Query<PostInThreadModel>;
+    );
 
     /** files: All the files associated with this Post */
     @children(FILE) files!: Query<FileModel>;

@@ -6,6 +6,7 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
+import {observeChannel} from '@app/queries/servers/channel';
 import {General, Permissions} from '@constants';
 import {observePermissionForPost} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeCurrentUserId} from '@queries/servers/system';
@@ -14,9 +15,7 @@ import {isSystemAdmin} from '@utils/user';
 
 import Reactions from './reactions';
 
-import type {Relation} from '@nozbe/watermelondb';
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 
 type WithReactionsInput = WithDatabaseArgs & {
@@ -28,7 +27,7 @@ const withReactions = withObservables(['post'], ({database, post}: WithReactions
     const currentUser = currentUserId.pipe(
         switchMap((id) => observeUser(database, id)),
     );
-    const channel = (post.channel as Relation<ChannelModel>).observe();
+    const channel = observeChannel(database, post.channelId);
     const experimentalTownSquareIsReadOnly = observeConfigBooleanValue(database, 'ExperimentalTownSquareIsReadOnly');
     const disabled = combineLatest([currentUser, channel, experimentalTownSquareIsReadOnly]).pipe(
         map(([u, c, readOnly]) => ((c && c.deleteAt > 0) || (c?.name === General.DEFAULT_CHANNEL && !isSystemAdmin(u?.roles || '') && readOnly))),
