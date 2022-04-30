@@ -22,7 +22,8 @@ const enhance = withObservables(
         }
 
         const config = observeConfig(database);
-        const linkPreviewPreference = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.LINK_PREVIEW_DISPLAY).observe();
+        const linkPreviewPreference = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.LINK_PREVIEW_DISPLAY).
+            observeWithColumns(['value']);
         const showLinkPreviews = combineLatest([config, linkPreviewPreference], (cfg, pref) => {
             const previewsEnabled = getPreferenceAsBool(pref, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.LINK_PREVIEW_DISPLAY, true);
             return of$(previewsEnabled && cfg?.EnableLinkPreviews === 'true');

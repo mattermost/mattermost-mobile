@@ -117,7 +117,7 @@ const enhance = withObservables(['category', 'locale'], ({category, locale, data
     const dmMap = (p: PreferenceModel) => getDirectChannelName(p.name, currentUserId);
 
     const hiddenDmIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, undefined, 'false').
-        observe().pipe(
+        observeWithColumns(['value']).pipe(
             switchMap((prefs: PreferenceModel[]) => {
                 const names = prefs.map(dmMap);
                 const channels = queryChannelsByNames(database, names).observe();
@@ -129,15 +129,16 @@ const enhance = withObservables(['category', 'locale'], ({category, locale, data
         );
 
     const hiddenGmIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_GROUP_CHANNEL_SHOW, undefined, 'false').
-        observe().pipe(switchMap(mapPrefName));
+        observeWithColumns(['value']).pipe(switchMap(mapPrefName));
 
     let limit = of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
     if (category.type === DMS_CATEGORY) {
-        limit = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_LIMIT_DMS).observe().pipe(
-            switchMap((val) => {
-                return val[0] ? of$(parseInt(val[0].value, 10)) : of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
-            }),
-        );
+        limit = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_LIMIT_DMS).
+            observeWithColumns(['value']).pipe(
+                switchMap((val) => {
+                    return val[0] ? of$(parseInt(val[0].value, 10)) : of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
+                }),
+            );
     }
 
     const hiddenChannelIds = combineLatest([hiddenDmIds, hiddenGmIds]).pipe(switchMap(
