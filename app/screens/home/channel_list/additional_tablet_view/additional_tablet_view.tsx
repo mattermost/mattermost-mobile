@@ -13,13 +13,21 @@ type SelectedView = {
     Component: any;
 }
 
+type Props = {
+    currentChannelId: string;
+    isCRTEnabled: boolean;
+}
+
 const ComponentsList: Record<string, React.ReactNode> = {
     [Screens.CHANNEL]: Channel,
     [Screens.GLOBAL_THREADS]: GlobalThreads,
 };
 
-const AdditionalTabletView = () => {
-    const [selected, setSelected] = useState<SelectedView>();
+const channelScreen: SelectedView = {id: Screens.CHANNEL, Component: Channel};
+const globalScreen: SelectedView = {id: Screens.GLOBAL_THREADS, Component: GlobalThreads};
+
+const AdditionalTabletView = ({currentChannelId, isCRTEnabled}: Props) => {
+    const [selected, setSelected] = useState<SelectedView>(isCRTEnabled && !currentChannelId ? globalScreen : channelScreen);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, (id: string) => {
