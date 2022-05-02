@@ -131,7 +131,10 @@ export const transformMyChannelRecord = async ({action, database, value}: Transf
     const fieldsMapper = (myChannel: MyChannelModel) => {
         myChannel._raw.id = isCreateAction ? (raw.channel_id || myChannel.id) : record.id;
         myChannel.roles = raw.roles;
-        myChannel.messageCount = isCRTEnabled ? raw.msg_count_root! : raw.msg_count;
+
+        // ignoring msg_count_root because msg_count is already calculated in "handleMyChannel" based on CRT is enabled or not
+        myChannel.messageCount = raw.msg_count;
+
         myChannel.isUnread = Boolean(raw.is_unread);
         myChannel.mentionsCount = isCRTEnabled ? raw.mention_count_root! : raw.mention_count;
         myChannel.lastPostAt = (isCRTEnabled ? (raw.last_root_post_at || raw.last_post_at) : raw.last_post_at) || 0;

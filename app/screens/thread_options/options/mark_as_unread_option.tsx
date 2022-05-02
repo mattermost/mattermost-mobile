@@ -3,27 +3,28 @@
 
 import React, {useCallback} from 'react';
 
-import {updateThreadRead} from '@actions/remote/thread';
+import {markThreadAsUnread, updateThreadRead} from '@actions/remote/thread';
 import {BaseOption} from '@components/common_post_options';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 
-import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
 
 type Props = {
-    post: PostModel;
     teamId: string;
     thread: ThreadModel;
 }
-const MarkAsUnreadOption = ({teamId, thread, post}: Props) => {
+const MarkAsUnreadOption = ({teamId, thread}: Props) => {
     const serverUrl = useServerUrl();
 
     const onHandlePress = useCallback(async () => {
-        const timestamp = thread.unreadReplies ? Date.now() : post.createAt;
-        updateThreadRead(serverUrl, teamId, thread.id, timestamp);
+        if (thread.unreadReplies) {
+            updateThreadRead(serverUrl, teamId, thread.id, Date.now());
+        } else {
+            markThreadAsUnread(serverUrl, teamId, thread.id, thread.id);
+        }
         dismissBottomSheet(Screens.THREAD_OPTIONS);
     }, [serverUrl, thread]);
 
