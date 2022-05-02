@@ -312,7 +312,7 @@ export function parseTaskLists(ast: Node) {
             const match = (/^ {0,3}\[( |x)\]\s/).exec(literal);
             if (match) {
                 const checkbox = new Node('checkbox');
-                checkbox._isChecked = match[1] === 'x';
+                checkbox.isChecked = match[1] === 'x';
 
                 paragraphNode.prependChild(checkbox);
 
