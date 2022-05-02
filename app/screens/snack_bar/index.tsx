@@ -3,10 +3,11 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, StyleSheet, Text, TouchableOpacity, useWindowDimensions, ViewStyle} from 'react-native';
+import {DeviceEventEmitter, Text, TouchableOpacity, useWindowDimensions, ViewStyle} from 'react-native';
 import {Gesture, GestureDetector, GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
 import Animated, {
+    AnimatedStyleProp,
     Extrapolation,
     FadeIn,
     interpolate,
@@ -25,6 +26,8 @@ import {useIsTablet} from '@hooks/device';
 import {dismissOverlay} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+const SNACK_BAR_WIDTH = 96;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -47,6 +50,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             opacity: 1,
             backgroundColor: theme.centerChannelColor,
         },
+        mobile: {
+            backgroundColor: theme.centerChannelColor,
+            width: `${SNACK_BAR_WIDTH}%`,
+            opacity: 1,
+            height: TOAST_HEIGHT,
+            alignSelf: 'center' as const,
+            borderRadius: 9,
+            shadowColor: '#1F000000',
+            shadowOffset: {
+                width: 0,
+                height: 6,
+            },
+            shadowRadius: 4,
+            shadowOpacity: 0.12,
+            elevation: 2,
+        },
     };
 });
 
@@ -57,7 +76,6 @@ type SnackBarProps = {
     sourceScreen: typeof Screens[keyof typeof Screens];
 }
 
-//fixme: timer is not being canncelled
 const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarProps) => {
     const [showSnackBar, setShowSnackBar] = useState<boolean | undefined>();
     const intl = useIntl();
@@ -78,7 +96,6 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
 
     const snackBarStyle = useMemo(() => {
         const diffWidth = windowWidth - TABLET_SIDEBAR_WIDTH;
-        const SNACK_BAR_WIDTH = 96;
 
         let tabletStyle: Partial<ViewStyle>;
 
@@ -112,25 +129,10 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
                 };
         }
 
-        return StyleSheet.flatten([
-            {
-                backgroundColor: theme.centerChannelColor,
-                width: '96%',
-                opacity: 1,
-                height: TOAST_HEIGHT,
-                alignSelf: 'center' as const,
-                borderRadius: 9,
-                shadowColor: '#1F000000',
-                shadowOffset: {
-                    width: 0,
-                    height: 6,
-                },
-                shadowRadius: 4,
-                shadowOpacity: 0.12,
-                elevation: 2,
-            },
+        return [
+            styles.mobile,
             isTablet && tabletStyle,
-        ]);
+        ] as AnimatedStyleProp<ViewStyle>;
     }, [theme, barType]);
 
     const animatedMotion = useAnimatedStyle(() => {
@@ -142,7 +144,7 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
                 ],
             }),
         };
-    }, [offset.value]);
+    }, [offset.value, isPanned.value]);
 
     const hideSnackBar = () => {
         setShowSnackBar(false);
@@ -159,10 +161,9 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
         Pan().
         activeOffsetY(20).
         onStart(() => {
-            // animated just started, we'll stop the timer
+            isPanned.value = true;
             runOnJS(stopTimers)();
             offset.value = withTiming(100, {duration: 200});
-            isPanned.value = true;
         }).
         onEnd(() => {
             runOnJS(hideSnackBar)();
@@ -176,14 +177,17 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
     // This effect hides the snack bar after 3 seconds
     useEffect(() => {
         baseTimer.current = setTimeout(() => {
-            animateHiding(false);
+            if (!isPanned.value) {
+                animateHiding(false);
+            }
         }, 3000);
+
         return () => {
             if (baseTimer.current) {
                 clearTimeout(baseTimer.current);
             }
         };
-    }, []);
+    }, [isPanned.value]);
 
     // This effect dismisses the Navigation Overlay after we have hidden the snack bar
     useEffect(() => {
