@@ -13,13 +13,20 @@ import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import NetworkManager from '@managers/network_manager';
-import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo} from '@queries/servers/channel';
+import {
+    prepareMyChannelsForTeam,
+    getChannelById,
+    getChannelByName,
+    getMyChannel,
+    getChannelInfo,
+    queryMyChannelSettingsByIds,
+} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {prepareMyTeams, getNthLastChannelFromTeam, getMyTeamById, getTeamById, getTeamByName} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
-import {generateChannelNameFromDisplayName, getDirectChannelName, isDMorGM} from '@utils/channel';
+import {compareNotifyProps, generateChannelNameFromDisplayName, getDirectChannelName, isDMorGM} from '@utils/channel';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
@@ -1002,3 +1009,39 @@ export async function fetchChannelById(serverUrl: string, id: string) {
         return {error};
     }
 }
+
+export const updateChannelNotifyProps = async (serverUrl: string, userId: string, channelId: string, props: ChannelNotifyProps) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const notifyProps = {...props, channel_id: channelId, user_id: userId};
+        await client.updateChannelNotifyProps(notifyProps);
+
+        const channelSettings = await queryMyChannelSettingsByIds(database, [channelId]).fetch();
+        const currentSettings = channelSettings?.[0];
+
+        if (currentSettings && !compareNotifyProps(notifyProps, currentSettings.notifyProps)) {
+            await database.write(async () => {
+                await currentSettings.update((c) => {
+                    c.notifyProps = {...props, ...currentSettings.notifyProps};
+                });
+            });
+        }
+        return {
+            notifyProps: currentSettings.notifyProps,
+        };
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
