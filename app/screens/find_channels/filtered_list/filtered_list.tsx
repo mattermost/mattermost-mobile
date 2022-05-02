@@ -30,6 +30,7 @@ type RemoteChannels = {
 }
 
 type Props = {
+    archivedChannels: ChannelModel[];
     close: () => Promise<void>;
     channelsMatch: ChannelModel[];
     channelsMatchStart: ChannelModel[];
@@ -62,7 +63,7 @@ const style = StyleSheet.create({
 
 export const MAX_RESULTS = 20;
 
-const sortyByUserOrChannel = <T extends Channel|UserModel>(locale: string, teammateDisplayNameSetting: string, a: T, b: T): number => {
+const sortyByUserOrChannel = <T extends Channel |UserModel>(locale: string, teammateDisplayNameSetting: string, a: T, b: T): number => {
     const aDisplayName = 'display_name' in a ? a.display_name : displayUsername(a, locale, teammateDisplayNameSetting);
     const bDisplayName = 'display_name' in b ? b.display_name : displayUsername(b, locale, teammateDisplayNameSetting);
 
@@ -70,7 +71,7 @@ const sortyByUserOrChannel = <T extends Channel|UserModel>(locale: string, teamm
 };
 
 const FilteredList = ({
-    close, channelsMatch, channelsMatchStart, currentTeamId,
+    archivedChannels, close, channelsMatch, channelsMatchStart, currentTeamId,
     keyboardHeight, loading, onLoading, restrictDirectMessage, showTeamName,
     teamIds, teammateDisplayNameSetting, term, usersMatch, usersMatchStart,
 }: Props) => {
@@ -101,13 +102,13 @@ const FilteredList = ({
             if (totalLocalResults < MAX_RESULTS) {
                 const {channels} = await searchAllChannels(serverUrl, lowerCasedTerm, true);
                 if (channels) {
-                    const existingChannelIds = new Set(channelsMatchStart.concat(channelsMatch).map((c) => c.id));
+                    const existingChannelIds = new Set(channelsMatchStart.concat(channelsMatch).concat(archivedChannels).map((c) => c.id));
                     const filteredChannels = channels.filter((c) => !existingChannelIds.has(c.id) && teamIds.has(c.team_id));
-                    const startWith = filteredChannels.filter((c) => c.display_name.startsWith(term) && c.delete_at === 0).
+                    const startWith = filteredChannels.filter((c) => c.display_name.toLowerCase().startsWith(term) && c.delete_at === 0).
                         sort((a, b) => (a.last_post_at > b.last_post_at ? 1 : -1)).slice(0, MAX_RESULTS + 1);
-                    const matches = filteredChannels.filter((c) => c.display_name.includes(term) && !c.display_name.startsWith(term) && c.delete_at === 0).
+                    const matches = filteredChannels.filter((c) => c.display_name.toLowerCase().includes(term) && !c.display_name.toLowerCase().startsWith(term) && c.delete_at === 0).
                         sort(sortChannelsByDisplayName.bind(null, locale)).slice(0, MAX_RESULTS + 1);
-                    const archived = filteredChannels.filter((c) => c.display_name.includes(term) && c.delete_at > 0).
+                    const archived = filteredChannels.filter((c) => c.display_name.toLowerCase().includes(term) && c.delete_at > 0).
                         sort(sortChannelsByDisplayName.bind(null, locale)).slice(0, MAX_RESULTS + 1);
                     if (mounted.current) {
                         setRemoteChannels({archived, startWith, matches});
@@ -237,11 +238,13 @@ const FilteredList = ({
 
         // Archived channels
         if (items.length < MAX_RESULTS) {
-            items.push(...remoteChannels.archived);
+            const archivedAlpha = [...archivedChannels, ...remoteChannels.archived].
+                sort(sortChannelsByDisplayName.bind(null, locale));
+            items.push(...archivedAlpha.slice(0, MAX_RESULTS + 1));
         }
 
         return [...new Set(items)].slice(0, MAX_RESULTS + 1);
-    }, [channelsMatchStart, channelsMatch, remoteChannels, usersMatch, usersMatchStart, locale, teammateDisplayNameSetting]);
+    }, [archivedChannels, channelsMatchStart, channelsMatch, remoteChannels, usersMatch, usersMatchStart, locale, teammateDisplayNameSetting]);
 
     useEffect(() => {
         mounted.current = true;

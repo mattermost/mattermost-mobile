@@ -7,7 +7,7 @@ import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General} from '@constants';
-import {observeDirectChannelsByTerm, observeJoinedChannelsByTerm, observeNotDirectChannelsByTerm} from '@queries/servers/channel';
+import {observeArchiveChannelsByTerm, observeDirectChannelsByTerm, observeJoinedChannelsByTerm, observeNotDirectChannelsByTerm} from '@queries/servers/channel';
 import {observeConfig, observeCurrentTeamId} from '@queries/servers/system';
 import {queryJoinedTeams} from '@queries/servers/team';
 import {observeTeammateNameDisplay} from '@queries/servers/user';
@@ -40,6 +40,11 @@ const enhanced = withObservables(['term'], ({database, term}: EnhanceProps) => {
     const channelsMatch = combineLatest([joinedChannelsMatch, directChannelsMatch]).pipe(
         switchMap((matched) => retrieveChannels(database, matched.flat(), true)),
     );
+
+    const archivedChannels = observeArchiveChannelsByTerm(database, term, MAX_RESULTS).pipe(
+        switchMap((archived) => retrieveChannels(database, archived)),
+    );
+
     const usersMatchStart = observeNotDirectChannelsByTerm(database, term, MAX_RESULTS, true);
     const usersMatch = observeNotDirectChannelsByTerm(database, term, MAX_RESULTS);
 
@@ -50,6 +55,7 @@ const enhanced = withObservables(['term'], ({database, term}: EnhanceProps) => {
     const teammateDisplayNameSetting = observeTeammateNameDisplay(database);
 
     return {
+        archivedChannels,
         channelsMatch,
         channelsMatchStart,
         currentTeamId: observeCurrentTeamId(database),

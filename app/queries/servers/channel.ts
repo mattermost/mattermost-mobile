@@ -513,3 +513,18 @@ export const observeJoinedChannelsByTerm = (database: Database, term: string, ta
         limit ${take}`),
     ).observe();
 };
+
+export const observeArchiveChannelsByTerm = (database: Database, term: string, take = 20) => {
+    if (term.startsWith('@')) {
+        return of$([]);
+    }
+
+    const value = Q.sanitizeLikeString(term);
+    const displayname = `c.display_name like '%${value}%'`;
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.unsafeSqlQuery(`select distinct my.* from ${MY_CHANNEL} my
+        inner join ${CHANNEL} c on c.id=my.id and c.delete_at != 0 and c.team_id !='' and ${displayname}
+        order by my.last_viewed_at desc
+        limit ${take}`),
+    ).observe();
+};

@@ -175,7 +175,7 @@ const ChannelListItem = ({
     ],
     [height, isActive, isInfo, styles]);
 
-    if ((channel.deleteAt > 0 && !isActive) || !myChannel || !isVisible) {
+    if (!myChannel || !isVisible) {
         return null;
     }
 
