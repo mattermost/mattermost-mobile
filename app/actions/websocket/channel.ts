@@ -251,36 +251,38 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
 
     try {
         if (userId === currentUser?.id) {
-            const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
-            if (channels && memberships) {
-                const prepare = await prepareMyChannelsForTeam(operator, teamId, channels, memberships);
-                if (prepare.length) {
-                    const prepareModels = await Promise.all(prepare);
-                    const flattenedModels = prepareModels.flat();
-                    if (flattenedModels?.length > 0) {
-                        await operator.batchRecords(flattenedModels);
+            if (!EphemeralStore.isJoiningChannel(channelId)) {
+                const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
+                if (channels && memberships) {
+                    const prepare = await prepareMyChannelsForTeam(operator, teamId, channels, memberships);
+                    if (prepare.length) {
+                        const prepareModels = await Promise.all(prepare);
+                        const flattenedModels = prepareModels.flat();
+                        if (flattenedModels?.length > 0) {
+                            await operator.batchRecords(flattenedModels);
+                        }
+                    }
+
+                    const categoriesModels = await addChannelToDefaultCategory(serverUrl, channels[0], true);
+                    if (categoriesModels.models?.length) {
+                        models.push(...categoriesModels.models);
                     }
                 }
 
-                const categoriesModels = await addChannelToDefaultCategory(serverUrl, channels[0], true);
-                if (categoriesModels.models?.length) {
-                    models.push(...categoriesModels.models);
+                const {posts, order, authors, actionType, previousPostId} = await fetchPostsForChannel(serverUrl, channelId, true);
+                if (actionType) {
+                    models.push(...await operator.handlePosts({
+                        actionType,
+                        order,
+                        posts,
+                        previousPostId,
+                        prepareRecordsOnly: true,
+                    }));
                 }
-            }
 
-            const {posts, order, authors, actionType, previousPostId} = await fetchPostsForChannel(serverUrl, channelId, true);
-            if (actionType) {
-                models.push(...await operator.handlePosts({
-                    actionType,
-                    order,
-                    posts,
-                    previousPostId,
-                    prepareRecordsOnly: true,
-                }));
-            }
-
-            if (authors?.length) {
-                models.push(...await operator.handleUsers({users: authors, prepareRecordsOnly: true}));
+                if (authors?.length) {
+                    models.push(...await operator.handleUsers({users: authors, prepareRecordsOnly: true}));
+                }
             }
         } else {
             const addedUser = getUserById(database, userId);
@@ -297,7 +299,10 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
                 }));
             }
         }
-        await operator.batchRecords(models);
+
+        if (models.length) {
+            await operator.batchRecords(models);
+        }
 
         await fetchChannelStats(serverUrl, channelId, false);
     } catch {
@@ -355,7 +360,7 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
                                 models.push(...switchToGlobalThreadsModels);
                             }
                         } else {
-                            const {models: switchChannelModels} = await switchToChannel(serverUrl, channelToJumpTo, '', true);
+                            const {models: switchChannelModels} = await switchToChannel(serverUrl, channelToJumpTo, '', false, true);
                             if (switchChannelModels) {
                                 models.push(...switchChannelModels);
                             }

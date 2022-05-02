@@ -12,6 +12,7 @@ import {hasPermission} from '@utils/role';
 import {prepareDeletePost} from './post';
 import {queryRoles} from './role';
 import {observeCurrentChannelId, getCurrentChannelId, observeCurrentUserId} from './system';
+import {observeTeammateNameDisplay} from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -457,6 +458,44 @@ export const observeDirectChannelsByTerm = (database: Database, term: string, ta
     );
 };
 
+export const observeNotDirectChannelsByTerm = (database: Database, term: string, take = 20, matchStart = false) => {
+    const teammateNameSetting = observeTeammateNameDisplay(database);
+
+    const value = Q.sanitizeLikeString(term.startsWith('@') ? term.substring(1) : term);
+    let username = `u.username like '${value}%'`;
+    let nickname = `u.nickname like '${value}%'`;
+    let displayname = `(u.first_name || ' ' || u.last_name) like '${value}%'`;
+    if (!matchStart) {
+        username = `(u.username like '%${value}%' and u.username not like '${value}%')`;
+        nickname = `(u.nickname like '%${value}%' and u.nickname not like '${value}%')`;
+        displayname = `((u.first_name || ' ' || u.last_name) like '%${value}%' and (u.first_name || ' ' || u.last_name) not like '${value}%')`;
+    }
+
+    return teammateNameSetting.pipe(
+        switchMap((setting) => {
+            let sortBy = '';
+            switch (setting) {
+                case General.TEAMMATE_NAME_DISPLAY.SHOW_NICKNAME_FULLNAME:
+                    sortBy = "order by case u.nickname when '' then 1 else 0 end, case (u.first_name || ' ' || u.last_name) when '' then 1 else 0 end, u.username";
+                    break;
+                case General.TEAMMATE_NAME_DISPLAY.SHOW_FULLNAME:
+                    sortBy = "order by case (u.first_name || ' ' || u.last_name) when '' then 1 else 0 end, u.username";
+                    break;
+                default:
+                    sortBy = 'order u.username';
+                    break;
+            }
+
+            return database.get<UserModel>(USER).query(
+                Q.unsafeSqlQuery(`select distinct u.* from User u
+                left join ChannelMembership cm ON cm.user_id=u.id
+                where cm.user_id IS NULL and (${displayname} or ${username} or ${nickname})
+                ${sortBy} limit ${take}`),
+            ).observe();
+        }),
+    );
+};
+
 export const observeJoinedChannelsByTerm = (database: Database, term: string, take = 20, matchStart = false) => {
     if (term.startsWith('@')) {
         return of$([]);
@@ -469,7 +508,7 @@ export const observeJoinedChannelsByTerm = (database: Database, term: string, ta
     }
     return database.get<MyChannelModel>(MY_CHANNEL).query(
         Q.unsafeSqlQuery(`select distinct my.* from ${MY_CHANNEL} my
-        inner join ${CHANNEL} c on c.id=my.id and c.team_id !='' and ${displayname}
+        inner join ${CHANNEL} c on c.id=my.id and c.delete_at=0 and c.team_id !='' and ${displayname}
         order by my.last_viewed_at desc
         limit ${take}`),
     ).observe();

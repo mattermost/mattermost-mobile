@@ -9,6 +9,7 @@ class EphemeralStore {
     visibleTab = 'Home';
     creatingChannel = false;
     creatingDMorGMTeammates: string[] = [];
+    joiningChannels = new Set<string>();
 
     addNavigationComponentId = (componentId: string) => {
         this.addToNavigationComponentIdStack(componentId);
@@ -113,6 +114,19 @@ class EphemeralStore {
 
             found = !this.navigationComponentIdStack.includes(componentId);
         }
+    };
+
+    // Ephemeral control when joining a channel locally
+    addJoiningChannel = (channelId: string) => {
+        this.joiningChannels.add(channelId);
+    };
+
+    isJoiningChannel = (channelId: string) => {
+        return this.joiningChannels.has(channelId);
+    };
+
+    removeJoiningChanel = (channelId: string) => {
+        this.joiningChannels.delete(channelId);
     };
 }
 
