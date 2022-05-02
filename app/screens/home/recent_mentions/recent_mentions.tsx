@@ -75,7 +75,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
 
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop}), [scrollPaddingTop]);
 
-    const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [mentions]);
+    const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [mentions]);
 
     const handleRefresh = useCallback(async () => {
         setRefreshing(true);
