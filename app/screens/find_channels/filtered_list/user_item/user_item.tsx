@@ -57,7 +57,7 @@ const UserItem = ({currentUserId, onPress, teammateDisplayNameSetting, testID, u
 
     const handleOnPress = useCallback(() => {
         onPress(user.id, displayName);
-    }, [user.id, displayName]);
+    }, [user.id, displayName, onPress]);
 
     return (
         <TouchableOpacity onPress={handleOnPress}>

@@ -63,6 +63,10 @@ const style = StyleSheet.create({
 
 export const MAX_RESULTS = 20;
 
+const sortByLastPostAt = (a: Channel, b: Channel) => {
+    return a.last_post_at > b.last_post_at ? 1 : -1;
+};
+
 const sortByUserOrChannel = <T extends Channel |UserModel>(locale: string, teammateDisplayNameSetting: string, a: T, b: T): number => {
     const aDisplayName = 'display_name' in a ? a.display_name : displayUsername(a, locale, teammateDisplayNameSetting);
     const bDisplayName = 'display_name' in b ? b.display_name : displayUsername(b, locale, teammateDisplayNameSetting);
@@ -127,7 +131,7 @@ const FilteredList = ({
                     if (mounted.current) {
                         setRemoteChannels({
                             archived: archived.sort(sortChannelsByDisplayName.bind(null, locale)).slice(0, MAX_RESULTS + 1),
-                            startWith,
+                            startWith: startWith.sort(sortByLastPostAt).slice(0, MAX_RESULTS + 1),
                             matches: matches.sort(sortChannelsByDisplayName.bind(null, locale)).slice(0, MAX_RESULTS + 1),
                         });
                     }

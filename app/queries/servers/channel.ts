@@ -489,6 +489,7 @@ export const observeNotDirectChannelsByTerm = (database: Database, term: string,
             return database.get<UserModel>(USER).query(
                 Q.unsafeSqlQuery(`SELECT DISTINCT u.* FROM User u
                 LEFT JOIN ChannelMembership cm ON cm.user_id=u.id
+                LEFT JOIN Channel c ON c.id=cm.id AND c.type='${General.DM_CHANNEL}'
                 WHERE cm.user_id IS NULL AND (${displayname} OR ${username} OR ${nickname})
                 ${sortBy} LIMIT ${take}`),
             ).observe();
