@@ -5,6 +5,7 @@ import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {Client} from '@client/rest';
 import {Emoji, General} from '@constants';
 import DatabaseManager from '@database/manager';
+import {debounce} from '@helpers/api/general';
 import NetworkManager from '@managers/network_manager';
 import {queryCustomEmojisByName} from '@queries/servers/custom_emoji';
 
@@ -65,4 +66,40 @@ export const searchCustomEmojis = async (serverUrl: string, term: string) => {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
+};
+
+const names = new Set<string>();
+const debouncedFetchEmojiByNames = debounce(async (serverUrl: string) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const promises: Array<Promise<CustomEmoji>> = [];
+    for (const name of names) {
+        promises.push(client.getCustomEmojiByName(name));
+    }
+
+    const emojis = await Promise.all(promises);
+
+    try {
+        await operator.handleCustomEmojis({emojis, prepareRecordsOnly: false});
+        return {error: undefined};
+    } catch (error) {
+        return {error};
+    }
+}, 200, false, () => {
+    names.clear();
+});
+
+export const fetchCustomEmojiInBatch = (serverUrl: string, emojiName: string) => {
+    names.add(emojiName);
+    return debouncedFetchEmojiByNames.apply(null, [serverUrl]);
 };
