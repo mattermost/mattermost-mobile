@@ -40,6 +40,7 @@ export default class ChannelBase extends PureComponent {
         viewingGlobalThreads: PropTypes.bool,
         collapsedThreadsEnabled: PropTypes.bool.isRequired,
         isSupportedServerCalls: PropTypes.bool.isRequired,
+        isCallsEnabled: PropTypes.bool.isRequired,
         selectedPost: PropTypes.shape({
             id: PropTypes.string.isRequired,
             channel_id: PropTypes.string.isRequired,
