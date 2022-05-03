@@ -30,7 +30,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: {channel
             if (memberRoles) {
                 combinedRoles.push(...memberRoles);
             }
-            return queryRolesByNames(database, combinedRoles).observe();
+            return queryRolesByNames(database, combinedRoles).observeWithColumns(['permissions']);
         }),
     );
 

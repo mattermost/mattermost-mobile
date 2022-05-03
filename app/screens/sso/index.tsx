@@ -13,7 +13,7 @@ import ClientError from '@client/rest/error';
 import {Screens, Sso} from '@constants';
 import NetworkManager from '@managers/network_manager';
 import Background from '@screens/background';
-import {dismissModal, resetToHome} from '@screens/navigation';
+import {dismissModal, resetToHome, resetToTeams} from '@screens/navigation';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
 import SSOWithWebView from './sso_with_webview';
@@ -102,8 +102,7 @@ const SSO = ({
             return;
         }
         if (!result.hasTeams && !result.error) {
-            // eslint-disable-next-line no-console
-            console.log('GO TO NO TEAMS');
+            resetToTeams();
             return;
         }
         goToHome(result.time || 0, result.error as never);

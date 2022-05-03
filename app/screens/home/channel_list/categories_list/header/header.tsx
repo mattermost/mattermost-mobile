@@ -7,16 +7,18 @@ import {Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {logout} from '@actions/remote/session';
 import CompassIcon from '@components/compass_icon';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
-import {useServerDisplayName} from '@context/server';
+import {useServerDisplayName, useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {alertPushProxyError, alertPushProxyUnknown} from '@utils/push_proxy';
+import {alertServerLogout} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -71,6 +73,16 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         flexDirection: 'row',
         alignItems: 'center',
     },
+    noTeamHeadingStyles: {
+        color: changeOpacity(theme.sidebarText, 0.64),
+        ...typography('Body', 100, 'SemiBold'),
+    },
+    noTeamHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        height: 40,
+    },
 }));
 
 const ChannelListHeader = ({
@@ -91,6 +103,7 @@ const ChannelListHeader = ({
     const animatedStyle = useAnimatedStyle(() => ({
         marginLeft: withTiming(marginLeft.value, {duration: 350}),
     }), []);
+    const serverUrl = useServerUrl();
 
     useEffect(() => {
         marginLeft.value = iconPad ? 44 : 0;
@@ -133,67 +146,103 @@ const ChannelListHeader = ({
         }
     }, [pushProxyStatus, intl]);
 
-    return (
-        <Animated.View style={animatedStyle}>
-            {Boolean(displayName) &&
-            <View style={styles.headerRow}>
-                <TouchableWithFeedback
-                    onPress={onHeaderPress}
-                    type='opacity'
-                >
-                    <View style={styles.headerRow}>
-                        <Text
-                            style={styles.headingStyles}
-                            testID='channel_list_header.team_display_name'
-                        >
-                            {displayName}
-                        </Text>
-                        <View
-                            style={styles.chevronButton}
-                            testID='channel_list_header.chevron.button'
-                        >
-                            <CompassIcon
-                                style={styles.chevronIcon}
-                                name={'chevron-down'}
-                            />
-                        </View>
-                    </View>
-                </TouchableWithFeedback>
-                <TouchableWithFeedback
-                    onPress={onPress}
-                    style={styles.plusButton}
-                    testID='channel_list_header.plus.button'
-                    type='opacity'
-                >
-                    <CompassIcon
-                        style={styles.plusIcon}
-                        name={'plus'}
-                    />
-                </TouchableWithFeedback>
-            </View>
-            }
-            <View style={styles.subHeadingView}>
-                <Text
-                    style={styles.subHeadingStyles}
-                    testID='channel_list_header.server_display_name'
-                >
-                    {serverDisplayName}
-                </Text>
-                {(pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED) && (
+    const onLogoutPress = useCallback(() => {
+        alertServerLogout(serverDisplayName, () => logout(serverUrl), intl);
+    }, []);
+
+    let header;
+    if (displayName) {
+        header = (
+            <>
+                <View style={styles.headerRow}>
                     <TouchableWithFeedback
-                        onPress={onPushAlertPress}
-                        testID='channel_list_header.push_alert'
+                        onPress={onHeaderPress}
+                        type='opacity'
+                    >
+                        <View style={styles.headerRow}>
+                            <Text
+                                style={styles.headingStyles}
+                                testID='channel_list_header.team_display_name'
+                            >
+                                {displayName}
+                            </Text>
+                            <View
+                                style={styles.chevronButton}
+                                testID='channel_list_header.chevron.button'
+                            >
+                                <CompassIcon
+                                    style={styles.chevronIcon}
+                                    name={'chevron-down'}
+                                />
+                            </View>
+                        </View>
+                    </TouchableWithFeedback>
+                    <TouchableWithFeedback
+                        onPress={onPress}
+                        style={styles.plusButton}
+                        testID='channel_list_header.plus.button'
                         type='opacity'
                     >
                         <CompassIcon
-                            name='alert-outline'
-                            color={theme.errorTextColor}
-                            size={14}
-                            style={styles.pushAlert}
+                            style={styles.plusIcon}
+                            name={'plus'}
                         />
                     </TouchableWithFeedback>
-                )}
+                </View>
+                <View style={styles.subHeadingView}>
+                    <Text
+                        style={styles.subHeadingStyles}
+                        testID='channel_list_header.server_display_name'
+                    >
+                        {serverDisplayName}
+                    </Text>
+                    {(pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED) && (
+                        <TouchableWithFeedback
+                            onPress={onPushAlertPress}
+                            testID='channel_list_header.push_alert'
+                            type='opacity'
+                        >
+                            <CompassIcon
+                                name='alert-outline'
+                                color={theme.errorTextColor}
+                                size={14}
+                                style={styles.pushAlert}
+                            />
+                        </TouchableWithFeedback>
+                    )}
+                </View>
+            </>
+        );
+    } else {
+        header = (
+            <View style={styles.noTeamHeaderRow}>
+                <View style={styles.noTeamHeaderRow}>
+                    <Text
+                        style={styles.noTeamHeadingStyles}
+                        testID='channel_list_header.team_display_name'
+                    >
+                        {serverDisplayName}
+                    </Text>
+                </View>
+                <TouchableWithFeedback
+                    onPress={onLogoutPress}
+                    testID='channel_list_header.plus.button'
+                    type='opacity'
+                >
+                    <Text
+                        style={styles.noTeamHeadingStyles}
+                        testID='channel_list_header.team_display_name'
+                    >
+                        {intl.formatMessage({id: 'account.logout', defaultMessage: 'Log out'})}
+                    </Text>
+                </TouchableWithFeedback>
             </View>
+        );
+    }
+
+    return (
+        <Animated.View style={animatedStyle}>
+            {header}
         </Animated.View>
     );
 };
