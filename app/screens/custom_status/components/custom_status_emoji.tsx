@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Text, TouchableOpacity} from 'react-native';
+import {TouchableOpacity} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
@@ -18,9 +18,7 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         iconContainer: {
-            position: 'absolute',
-            left: 14,
-            top: 10,
+            marginLeft: 14,
         },
         icon: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
@@ -40,12 +38,10 @@ const CustomStatusEmoji = ({emoji, isStatusSet, onPress, theme}: Props) => {
             style={style.iconContainer}
         >
             {isStatusSet ? (
-                <Text style={style.emoji}>
-                    <Emoji
-                        emojiName={emoji || 'speech_balloon'}
-                        size={20}
-                    />
-                </Text>
+                <Emoji
+                    emojiName={emoji || 'speech_balloon'}
+                    size={20}
+                />
             ) : (
                 <CompassIcon
                     name='emoticon-happy-outline'
