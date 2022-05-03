@@ -79,46 +79,23 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
             ]
           }
         >
-          <View
+          <Icon
+            name="globe"
             style={
               Array [
                 Object {
-                  "alignItems": "center",
-                  "backgroundColor": "rgba(255,255,255,0.16)",
-                  "borderRadius": 4,
-                  "justifyContent": "center",
+                  "color": "rgba(255,255,255,0.4)",
                 },
                 undefined,
                 undefined,
                 Object {
-                  "height": 24,
-                  "width": 24,
+                  "fontSize": 24,
+                  "left": 1,
                 },
               ]
             }
-          >
-            <Text
-              style={
-                Array [
-                  Object {
-                    "color": "#ffffff",
-                    "fontFamily": "OpenSans-SemiBold",
-                    "fontSize": 12,
-                    "fontWeight": "600",
-                    "lineHeight": 16,
-                  },
-                  undefined,
-                  undefined,
-                  Object {
-                    "fontSize": 12,
-                  },
-                ]
-              }
-              testID="undefined.gm_member_count"
-            >
-              1
-            </Text>
-          </View>
+            testID="undefined.public"
+          />
         </View>
         <View>
           <Text

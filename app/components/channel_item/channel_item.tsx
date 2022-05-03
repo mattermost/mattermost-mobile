@@ -29,6 +29,7 @@ type Props = {
     isInfo?: boolean;
     isMuted: boolean;
     isVisible: boolean;
+    membersCount: number;
     myChannel?: MyChannelModel;
     onPress: (channelId: string) => void;
     teamDisplayName?: string;
@@ -115,7 +116,7 @@ export const textStyle = StyleSheet.create({
 
 const ChannelListItem = ({
     channel, collapsed, currentUserId, hasDraft,
-    isActive, isInfo, isMuted, isVisible,
+    isActive, isInfo, isMuted, isVisible, membersCount,
     myChannel, onPress, teamDisplayName, testID}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
@@ -150,13 +151,6 @@ const ChannelListItem = ({
     const handleOnPress = useCallback(() => {
         onPress(myChannel?.id || channel.id);
     }, [channel.id, myChannel?.id]);
-
-    const membersCount = useMemo(() => {
-        if (channel.type === General.GM_CHANNEL) {
-            return channel.name.split(',').length;
-        }
-        return 0;
-    }, [channel.type, channel.name]);
 
     const textStyles = useMemo(() => [
         isBright ? textStyle.bright : textStyle.regular,
