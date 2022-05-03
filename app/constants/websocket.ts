@@ -1,5 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import Calls from '@constants/calls';
+
 const WebsocketEvents = {
     POSTED: 'posted',
     POST_EDITED: 'post_edited',
@@ -53,18 +56,18 @@ const WebsocketEvents = {
     SIDEBAR_CATEGORY_UPDATED: 'sidebar_category_updated',
     SIDEBAR_CATEGORY_DELETED: 'sidebar_category_deleted',
     SIDEBAR_CATEGORY_ORDER_UPDATED: 'sidebar_category_order_updated',
-    CALLS_CHANNEL_ENABLED: 'custom_com.mattermost.calls_channel_enable_voice',
-    CALLS_CHANNEL_DISABLED: 'custom_com.mattermost.calls_channel_disable_voice',
-    CALLS_USER_CONNECTED: 'custom_com.mattermost.calls_user_connected',
-    CALLS_USER_DISCONNECTED: 'custom_com.mattermost.calls_user_disconnected',
-    CALLS_USER_MUTED: 'custom_com.mattermost.calls_user_muted',
-    CALLS_USER_UNMUTED: 'custom_com.mattermost.calls_user_unmuted',
-    CALLS_USER_VOICE_ON: 'custom_com.mattermost.calls_user_voice_on',
-    CALLS_USER_VOICE_OFF: 'custom_com.mattermost.calls_user_voice_off',
-    CALLS_CALL_START: 'custom_com.mattermost.calls_call_start',
-    CALLS_SCREEN_ON: 'custom_com.mattermost.calls_user_screen_on',
-    CALLS_SCREEN_OFF: 'custom_com.mattermost.calls_user_screen_off',
-    CALLS_USER_RAISE_HAND: 'custom_com.mattermost.calls_user_raise_hand',
-    CALLS_USER_UNRAISE_HAND: 'custom_com.mattermost.calls_user_unraise_hand',
+    CALLS_CHANNEL_ENABLED: `custom_${Calls.PluginId}_channel_enable_voice`,
+    CALLS_CHANNEL_DISABLED: `custom_${Calls.PluginId}_channel_disable_voice`,
+    CALLS_USER_CONNECTED: `custom_${Calls.PluginId}_user_connected`,
+    CALLS_USER_DISCONNECTED: `custom_${Calls.PluginId}_user_disconnected`,
+    CALLS_USER_MUTED: `custom_${Calls.PluginId}_user_muted`,
+    CALLS_USER_UNMUTED: `custom_${Calls.PluginId}_user_unmuted`,
+    CALLS_USER_VOICE_ON: `custom_${Calls.PluginId}_user_voice_on`,
+    CALLS_USER_VOICE_OFF: `custom_${Calls.PluginId}_user_voice_off`,
+    CALLS_CALL_START: `custom_${Calls.PluginId}_call_start`,
+    CALLS_SCREEN_ON: `custom_${Calls.PluginId}_user_screen_on`,
+    CALLS_SCREEN_OFF: `custom_${Calls.PluginId}_user_screen_off`,
+    CALLS_USER_RAISE_HAND: `custom_${Calls.PluginId}_user_raise_hand`,
+    CALLS_USER_UNRAISE_HAND: `custom_${Calls.PluginId}_user_unraise_hand`,
 };
 export default WebsocketEvents;

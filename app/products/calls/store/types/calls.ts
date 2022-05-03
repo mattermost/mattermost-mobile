@@ -11,6 +11,7 @@ export type CallsState = {
     screenShareURL: string;
     speakerphoneOn: boolean;
     config: ServerConfig;
+    pluginEnabled: boolean;
 }
 
 export type Call = {

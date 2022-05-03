@@ -11,7 +11,12 @@ import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
 import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin} from '@mm-redux/utils/user_utils';
 import {loadConfig} from '@mmproducts/calls/store/actions/calls';
-import {getConfig, isCallsExplicitlyDisabled, isCallsExplicitlyEnabled} from '@mmproducts/calls/store/selectors/calls';
+import {
+    getConfig,
+    isCallsExplicitlyDisabled,
+    isCallsExplicitlyEnabled,
+    isCallsPluginEnabled,
+} from '@mmproducts/calls/store/selectors/calls';
 
 // Check if calls is enabled. If it is, then run fn; if it isn't, show an alert and set
 // msgPostfix to ' (Not Available)'.
@@ -45,12 +50,15 @@ export const useCallsChannelSettings = () => {
     const dispatch = useDispatch();
     const config = useSelector(getConfig);
     const currentChannel = useSelector(getCurrentChannel);
+    const pluginEnabled = useSelector(isCallsPluginEnabled);
     const explicitlyDisabled = useSelector(isCallsExplicitlyDisabled);
     const explicitlyEnabled = useSelector(isCallsExplicitlyEnabled);
     const roles = useSelector(getCurrentUserRoles);
 
     useEffect(() => {
-        dispatch(loadConfig());
+        if (pluginEnabled) {
+            dispatch(loadConfig());
+        }
     }, []);
 
     const isDirectMessage = currentChannel.type === General.DM_CHANNEL;
@@ -58,9 +66,11 @@ export const useCallsChannelSettings = () => {
     const isAdmin = checkIsAdmin(roles);
     const isChannelAdmin = isAdmin || checkIsChannelAdmin(roles);
 
-    const enabled = (explicitlyEnabled || (!explicitlyDisabled && config.DefaultEnabled));
+    const enabled = pluginEnabled && (explicitlyEnabled || (!explicitlyDisabled && config.DefaultEnabled));
     let canEnableDisable;
-    if (config.AllowEnableCalls) {
+    if (!pluginEnabled) {
+        canEnableDisable = false;
+    } else if (config.AllowEnableCalls) {
         canEnableDisable = isDirectMessage || isGroupMessage || isChannelAdmin;
     } else {
         canEnableDisable = isAdmin;

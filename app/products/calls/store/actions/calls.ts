@@ -92,12 +92,36 @@ export function loadCalls(): ActionFunc {
 
 export function batchLoadCalls(forceConfig = false): ActionFunc {
     return async (dispatch: DispatchFunc) => {
+        const res = await dispatch(checkIsCallsPluginEnabled());
+        if (!res.data) {
+            // Calls is not enabled.
+            return {};
+        }
+
         const promises = [dispatch(loadConfig(forceConfig)), dispatch(loadCalls())];
         Promise.all(promises).then((actions: Array<Awaited<GenericAction>>) => {
             dispatch(batchActions(actions, 'BATCH_LOAD_CALLS'));
         });
 
         return {};
+    };
+}
+
+export function checkIsCallsPluginEnabled(): ActionFunc {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        let data;
+        try {
+            data = await Client4.getPluginsManifests();
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch, getState);
+            dispatch(logError(error));
+            return {} as GenericAction;
+        }
+
+        const enabled = data.findIndex((m) => m.id === Calls.PluginId) !== -1;
+        dispatch({type: CallsTypes.RECEIVED_PLUGIN_ENABLED, data: enabled});
+
+        return {data: enabled};
     };
 }
 
@@ -135,6 +159,10 @@ export function disableChannelCalls(channelId: string): ActionFunc {
 
 export function joinCall(channelId: string, intl: typeof intlShape): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        // Edge case: calls was disabled when app loaded, and then enabled, but app hasn't
+        // reconnected its websocket since then (i.e., hasn't called batchLoadCalls yet)
+        dispatch(checkIsCallsPluginEnabled());
+
         const hasPermission = await hasMicrophonePermission(intl);
         if (!hasPermission) {
             return {error: 'no permissions to microphone, unable to start call'};
