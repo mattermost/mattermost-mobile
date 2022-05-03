@@ -11,7 +11,8 @@ import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from '@init/credentials';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
-import {goToScreen, resetToHome, resetToSelectServer} from '@screens/navigation';
+import {queryMyTeams} from '@queries/servers/team';
+import {goToScreen, resetToHome, resetToSelectServer, resetToTeams} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkType, DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {convertToNotificationData} from '@utils/notification';
@@ -112,6 +113,7 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
             }
 
             launchToHome({...props, launchType, serverUrl});
+
             return;
         }
     }
@@ -142,9 +144,23 @@ const launchToHome = async (props: LaunchProps) => {
             break;
     }
 
-    // eslint-disable-next-line no-console
-    console.log('Launch app in Home screen');
-    resetToHome(props);
+    let nTeams = 0;
+    if (props.serverUrl) {
+        const database = DatabaseManager.serverDatabases[props.serverUrl]?.database;
+        if (database) {
+            nTeams = await queryMyTeams(database).fetchCount();
+        }
+    }
+
+    if (nTeams) {
+        // eslint-disable-next-line no-console
+        console.log('Launch app in Home screen');
+        resetToHome(props);
+    } else {
+        // eslint-disable-next-line no-console
+        console.log('Launch app in Select Teams screen');
+        resetToTeams();
+    }
 };
 
 const launchToServer = (props: LaunchProps, resetNavigation: Boolean) => {

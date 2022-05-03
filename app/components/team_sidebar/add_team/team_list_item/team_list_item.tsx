@@ -9,15 +9,18 @@ import TeamIcon from '@components/team_sidebar/team_list/team_item/team_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {dismissBottomSheet} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type TeamModel from '@typings/database/models/servers/team';
 
 type Props = {
-    team: TeamModel;
+    team: TeamModel | Team;
     currentUserId: string;
+    textColor?: string;
+    iconTextColor?: string;
+    iconBackgroundColor?: string;
+    onTeamAdded: (teamId: string) => void;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -46,15 +49,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default function TeamListItem({team, currentUserId}: Props) {
+export default function TeamListItem({team, currentUserId, textColor, iconTextColor, iconBackgroundColor, onTeamAdded}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
     const onPress = useCallback(async () => {
         await addUserToTeam(serverUrl, team.id, currentUserId);
-        dismissBottomSheet();
-    }, []);
+        onTeamAdded(team.id);
+    }, [onTeamAdded]);
 
+    const displayName = 'displayName' in team ? team.displayName : team.display_name;
+    const lastTeamIconUpdateAt = 'lastTeamIconUpdatedAt' in team ? team.lastTeamIconUpdatedAt : team.last_team_icon_update;
     const teamListItemTestId = `team_sidebar.team_list.team_list_item.${team.id}`;
 
     return (
@@ -67,16 +72,20 @@ export default function TeamListItem({team, currentUserId}: Props) {
                 <View style={styles.icon_container}>
                     <TeamIcon
                         id={team.id}
-                        displayName={team.displayName}
-                        lastIconUpdate={team.lastTeamIconUpdatedAt}
+                        displayName={displayName}
+                        lastIconUpdate={lastTeamIconUpdateAt}
                         selected={false}
+                        textColor={iconTextColor}
+                        backgroundColor={iconBackgroundColor}
                         testID={`${teamListItemTestId}.team_icon`}
                     />
                 </View>
                 <Text
-                    style={styles.text}
+                    style={[styles.text, {color: textColor}]}
                     numberOfLines={1}
-                >{team.displayName}</Text>
+                >
+                    {displayName}
+                </Text>
             </TouchableWithFeedback>
         </View>
     );

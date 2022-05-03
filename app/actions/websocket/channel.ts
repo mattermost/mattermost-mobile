@@ -251,6 +251,9 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
 
     try {
         if (userId === currentUser?.id) {
+            if (EphemeralStore.isAddingToTeam(teamId)) {
+                return;
+            }
             const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
             if (channels && memberships) {
                 const prepare = await prepareMyChannelsForTeam(operator, teamId, channels, memberships);

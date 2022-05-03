@@ -45,7 +45,7 @@ export async function appEntry(serverUrl: string, since = 0) {
     }
 
     const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData;
-    const rolesData = await fetchRoles(serverUrl, teamData?.memberships, chData?.memberships, meData?.user, true);
+    const rolesData = await fetchRoles(serverUrl, teamData?.memberships, chData?.memberships, meData?.user, true, true);
 
     if (initialTeamId === currentTeamId) {
         if (tabletDevice) {
