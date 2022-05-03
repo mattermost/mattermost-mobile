@@ -52,17 +52,12 @@ const UserItem = ({currentUserId, onPress, teammateDisplayNameSetting, testID, u
     const {formatMessage, locale} = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    let displayName = displayUsername(user, locale, teammateDisplayNameSetting);
+    const isOwnDirectMessage = currentUserId === user.id;
+    const displayName = displayUsername(user, locale, teammateDisplayNameSetting);
 
     const handleOnPress = useCallback(() => {
         onPress(user.id, displayName);
-    }, [locale, user, displayName]);
-
-    const isOwnDirectMessage = currentUserId === user.id;
-
-    if (isOwnDirectMessage) {
-        displayName = formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
-    }
+    }, [user.id, displayName]);
 
     return (
         <TouchableOpacity onPress={handleOnPress}>
@@ -88,7 +83,7 @@ const UserItem = ({currentUserId, onPress, teammateDisplayNameSetting, testID, u
                                 style={styles.text}
                                 testID={`${testID}.${user.id}.display_name`}
                             >
-                                {displayName}
+                                {isOwnDirectMessage ? formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName}) : displayName}
                             </Text>
                         </View>
                         <CustomStatus userId={user.id}/>

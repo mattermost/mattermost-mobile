@@ -63,7 +63,7 @@ const style = StyleSheet.create({
 
 export const MAX_RESULTS = 20;
 
-const sortyByUserOrChannel = <T extends Channel |UserModel>(locale: string, teammateDisplayNameSetting: string, a: T, b: T): number => {
+const sortByUserOrChannel = <T extends Channel |UserModel>(locale: string, teammateDisplayNameSetting: string, a: T, b: T): number => {
     const aDisplayName = 'display_name' in a ? a.display_name : displayUsername(a, locale, teammateDisplayNameSetting);
     const bDisplayName = 'display_name' in b ? b.display_name : displayUsername(b, locale, teammateDisplayNameSetting);
 
@@ -103,15 +103,33 @@ const FilteredList = ({
                 const {channels} = await searchAllChannels(serverUrl, lowerCasedTerm, true);
                 if (channels) {
                     const existingChannelIds = new Set(channelsMatchStart.concat(channelsMatch).concat(archivedChannels).map((c) => c.id));
-                    const filteredChannels = channels.filter((c) => !existingChannelIds.has(c.id) && teamIds.has(c.team_id));
-                    const startWith = filteredChannels.filter((c) => c.display_name.toLowerCase().startsWith(term) && c.delete_at === 0).
-                        sort((a, b) => (a.last_post_at > b.last_post_at ? 1 : -1)).slice(0, MAX_RESULTS + 1);
-                    const matches = filteredChannels.filter((c) => c.display_name.toLowerCase().includes(term) && !c.display_name.toLowerCase().startsWith(term) && c.delete_at === 0).
-                        sort(sortChannelsByDisplayName.bind(null, locale)).slice(0, MAX_RESULTS + 1);
-                    const archived = filteredChannels.filter((c) => c.display_name.toLowerCase().includes(term) && c.delete_at > 0).
-                        sort(sortChannelsByDisplayName.bind(null, locale)).slice(0, MAX_RESULTS + 1);
+                    const [startWith, matches, archived] = channels.reduce<[Channel[], Channel[], Channel[]]>(([s, m, a], c) => {
+                        if (existingChannelIds.has(c.id) || !teamIds.has(c.team_id)) {
+                            return [s, m, a];
+                        }
+                        if (!c.delete_at) {
+                            if (c.display_name.toLowerCase().startsWith(lowerCasedTerm)) {
+                                return [[...s, c], m, a];
+                            }
+                            if (c.display_name.toLowerCase().includes(lowerCasedTerm)) {
+                                return [s, [...m, c], a];
+                            }
+                            return [s, m, a];
+                        }
+
+                        if (c.display_name.toLowerCase().includes(lowerCasedTerm)) {
+                            return [s, m, [...a, c]];
+                        }
+
+                        return [s, m, a];
+                    }, [[], [], []]);
+
                     if (mounted.current) {
-                        setRemoteChannels({archived, startWith, matches});
+                        setRemoteChannels({
+                            archived: archived.sort(sortChannelsByDisplayName.bind(null, locale)).slice(0, MAX_RESULTS + 1),
+                            startWith,
+                            matches: matches.sort(sortChannelsByDisplayName.bind(null, locale)).slice(0, MAX_RESULTS + 1),
+                        });
                     }
                 }
             }
@@ -232,7 +250,7 @@ const FilteredList = ({
         // Users & Channels that matches
         if (items.length < MAX_RESULTS) {
             const sortedByAlpha = [...usersMatch, ...remoteChannels.matches].
-                sort(sortyByUserOrChannel.bind(null, locale, teammateDisplayNameSetting));
+                sort(sortByUserOrChannel.bind(null, locale, teammateDisplayNameSetting));
             items.push(...sortedByAlpha.slice(0, MAX_RESULTS + 1));
         }
 

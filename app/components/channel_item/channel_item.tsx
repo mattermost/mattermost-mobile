@@ -229,7 +229,12 @@ const ChannelListItem = ({
                                 </Text>
                                 }
                             </View>
-                            {Boolean(teammateId) && <CustomStatus userId={teammateId!}/>}
+                            {Boolean(teammateId) &&
+                                <CustomStatus
+                                    isInfo={isInfo}
+                                    userId={teammateId!}
+                                />
+                            }
                             {isInfo && Boolean(teamDisplayName) && isTablet &&
                                 <Text
                                     ellipsizeMode='tail'

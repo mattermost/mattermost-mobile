@@ -434,25 +434,25 @@ export function queryMyChannelsByUnread(database: Database, isUnread: boolean, s
 }
 
 export const observeDirectChannelsByTerm = (database: Database, term: string, take = 20, matchStart = false) => {
-    const onlyDMs = term.startsWith('@') ? "and c.type='D'" : '';
+    const onlyDMs = term.startsWith('@') ? "AND c.type='D'" : '';
     const value = Q.sanitizeLikeString(term.startsWith('@') ? term.substring(1) : term);
-    let username = `u.username like '${value}%'`;
-    let displayname = `c.display_name like '${value}%'`;
+    let username = `u.username LIKE '${value}%'`;
+    let displayname = `c.display_name LIKE '${value}%'`;
     if (!matchStart) {
-        username = `u.username like '%${value}%' and u.username not like '${value}%'`;
-        displayname = `(c.display_name like '%${value}%' and c.display_name not like '${value}%')`;
+        username = `u.username LIKE '%${value}%' AND u.username NOT LIKE '${value}%'`;
+        displayname = `(c.display_name LIKE '%${value}%' AND c.display_name NOT LIKE '${value}%')`;
     }
     const currentUserId = observeCurrentUserId(database);
     return currentUserId.pipe(
         switchMap((uId) => {
             return database.get<MyChannelModel>(CHANNEL).query(
-                Q.unsafeSqlQuery(`select distinct my.* from ${MY_CHANNEL} my
-                inner join ${CHANNEL} c on c.id=my.id and c.team_id='' and c.delete_at=0 ${onlyDMs}
-                inner join ${CHANNEL_MEMBERSHIP} cm on cm.channel_id=my.id
-                inner join ${USER} u on u.id=cm.user_id and (cm.user_id != '${uId}' and ${username})
-                or ${displayname}
-                order by my.last_viewed_at desc
-                limit ${take}`),
+                Q.unsafeSqlQuery(`SELECT DISTINCT my.* FROM ${MY_CHANNEL} my
+                INNER JOIN ${CHANNEL} c ON c.id=my.id AND c.team_id='' AND c.delete_at=0 ${onlyDMs}
+                INNER JOIN ${CHANNEL_MEMBERSHIP} cm ON cm.channel_id=my.id
+                INNER JOIN ${USER} u ON u.id=cm.user_id AND (cm.user_id != '${uId}' AND ${username})
+                OR ${displayname}
+                ORDER BY my.last_viewed_at DESC
+                LIMIT ${take}`),
             ).observe();
         }),
     );
@@ -462,13 +462,13 @@ export const observeNotDirectChannelsByTerm = (database: Database, term: string,
     const teammateNameSetting = observeTeammateNameDisplay(database);
 
     const value = Q.sanitizeLikeString(term.startsWith('@') ? term.substring(1) : term);
-    let username = `u.username like '${value}%'`;
-    let nickname = `u.nickname like '${value}%'`;
-    let displayname = `(u.first_name || ' ' || u.last_name) like '${value}%'`;
+    let username = `u.username LIKE '${value}%'`;
+    let nickname = `u.nickname LIKE '${value}%'`;
+    let displayname = `(u.first_name || ' ' || u.last_name) LIKE '${value}%'`;
     if (!matchStart) {
-        username = `(u.username like '%${value}%' and u.username not like '${value}%')`;
-        nickname = `(u.nickname like '%${value}%' and u.nickname not like '${value}%')`;
-        displayname = `((u.first_name || ' ' || u.last_name) like '%${value}%' and (u.first_name || ' ' || u.last_name) not like '${value}%')`;
+        username = `(u.username LIKE '%${value}%' AND u.username NOT LIKE '${value}%')`;
+        nickname = `(u.nickname LIKE '%${value}%' AND u.nickname NOT LIKE '${value}%')`;
+        displayname = `((u.first_name || ' ' || u.last_name) LIKE '%${value}%' AND (u.first_name || ' ' || u.last_name) NOT LIKE '${value}%')`;
     }
 
     return teammateNameSetting.pipe(
@@ -476,21 +476,21 @@ export const observeNotDirectChannelsByTerm = (database: Database, term: string,
             let sortBy = '';
             switch (setting) {
                 case General.TEAMMATE_NAME_DISPLAY.SHOW_NICKNAME_FULLNAME:
-                    sortBy = "order by case u.nickname when '' then 1 else 0 end, case (u.first_name || ' ' || u.last_name) when '' then 1 else 0 end, u.username";
+                    sortBy = "ORDER BY CASE u.nickname WHEN '' THEN 1 ELSE 0 END, CASE (u.first_name || ' ' || u.last_name) WHEN '' THEN 1 ELSE 0 END, u.username";
                     break;
                 case General.TEAMMATE_NAME_DISPLAY.SHOW_FULLNAME:
-                    sortBy = "order by case (u.first_name || ' ' || u.last_name) when '' then 1 else 0 end, u.username";
+                    sortBy = "ORDER BY CASE (u.first_name || ' ' || u.last_name) WHEN '' THEN 1 ELSE 0 END, u.username";
                     break;
                 default:
-                    sortBy = 'order u.username';
+                    sortBy = 'ORDER BY u.username';
                     break;
             }
 
             return database.get<UserModel>(USER).query(
-                Q.unsafeSqlQuery(`select distinct u.* from User u
-                left join ChannelMembership cm ON cm.user_id=u.id
-                where cm.user_id IS NULL and (${displayname} or ${username} or ${nickname})
-                ${sortBy} limit ${take}`),
+                Q.unsafeSqlQuery(`SELECT DISTINCT u.* FROM User u
+                LEFT JOIN ChannelMembership cm ON cm.user_id=u.id
+                WHERE cm.user_id IS NULL AND (${displayname} OR ${username} OR ${nickname})
+                ${sortBy} LIMIT ${take}`),
             ).observe();
         }),
     );
@@ -502,15 +502,15 @@ export const observeJoinedChannelsByTerm = (database: Database, term: string, ta
     }
 
     const value = Q.sanitizeLikeString(term);
-    let displayname = `c.display_name like '${value}%'`;
+    let displayname = `c.display_name LIKE '${value}%'`;
     if (!matchStart) {
-        displayname = `c.display_name like '%${value}%' and c.display_name not like '${value}%'`;
+        displayname = `c.display_name LIKE '%${value}%' AND c.display_name NOT LIKE '${value}%'`;
     }
     return database.get<MyChannelModel>(MY_CHANNEL).query(
-        Q.unsafeSqlQuery(`select distinct my.* from ${MY_CHANNEL} my
-        inner join ${CHANNEL} c on c.id=my.id and c.delete_at=0 and c.team_id !='' and ${displayname}
-        order by my.last_viewed_at desc
-        limit ${take}`),
+        Q.unsafeSqlQuery(`SELECT DISTINCT my.* FROM ${MY_CHANNEL} my
+        INNER JOIN ${CHANNEL} c ON c.id=my.id AND c.delete_at=0 AND c.team_id !='' AND ${displayname}
+        ORDER BY my.last_viewed_at DESC
+        LIMIT ${take}`),
     ).observe();
 };
 
@@ -520,11 +520,14 @@ export const observeArchiveChannelsByTerm = (database: Database, term: string, t
     }
 
     const value = Q.sanitizeLikeString(term);
-    const displayname = `c.display_name like '%${value}%'`;
+    const displayname = `%${value}%`;
     return database.get<MyChannelModel>(MY_CHANNEL).query(
-        Q.unsafeSqlQuery(`select distinct my.* from ${MY_CHANNEL} my
-        inner join ${CHANNEL} c on c.id=my.id and c.delete_at != 0 and c.team_id !='' and ${displayname}
-        order by my.last_viewed_at desc
-        limit ${take}`),
+        Q.on(CHANNEL, Q.and(
+            Q.where('delete_at', Q.gt(0)),
+            Q.where('team_id', Q.notEq('')),
+            Q.where('display_name', Q.like(displayname)),
+        )),
+        Q.sortBy('last_viewed_at'),
+        Q.take(take),
     ).observe();
 };

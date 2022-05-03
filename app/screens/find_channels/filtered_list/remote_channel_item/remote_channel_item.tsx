@@ -60,10 +60,7 @@ const RemoteChannelItem = ({onPress, channel, teamDisplayName, testID}: Props) =
     const theme = useTheme();
     const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
-
-    const height = useMemo(() => {
-        return (teamDisplayName && !isTablet) ? 58 : 44;
-    }, [teamDisplayName, isTablet]);
+    const height = (teamDisplayName && !isTablet) ? 58 : 44;
 
     const handleOnPress = useCallback(() => {
         onPress(channel.id, channel.display_name);

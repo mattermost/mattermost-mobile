@@ -486,6 +486,9 @@ export async function joinChannel(serverUrl: string, userId: string, teamId: str
         return {error};
     }
 
+    if (channelId || channel?.id) {
+        EphemeralStore.removeJoiningChanel(channelId || channel!.id);
+    }
     return {channel, member};
 }
 
