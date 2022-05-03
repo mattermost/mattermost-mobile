@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {Text, View} from 'react-native';
+import {Insets, Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -84,6 +84,8 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         height: 40,
     },
 }));
+
+const hitSlop: Insets = {top: 10, bottom: 30, left: 20, right: 20};
 
 const ChannelListHeader = ({
     canCreateChannels,
@@ -178,6 +180,7 @@ const ChannelListHeader = ({
                         </View>
                     </TouchableWithFeedback>
                     <TouchableWithFeedback
+                        hitSlop={hitSlop}
                         onPress={onPress}
                         style={styles.plusButton}
                         testID='channel_list_header.plus.button'
@@ -226,7 +229,7 @@ const ChannelListHeader = ({
                 </View>
                 <TouchableWithFeedback
                     onPress={onLogoutPress}
-                    testID='channel_list_header.plus.button'
+                    testID='channel_list_header.logout.button'
                     type='opacity'
                 >
                     <Text

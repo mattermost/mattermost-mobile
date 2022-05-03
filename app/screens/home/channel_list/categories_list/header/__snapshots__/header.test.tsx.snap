@@ -89,6 +89,14 @@ exports[`components/channel_list/header Channel List Header Component should mat
       accessible={true}
       collapsable={false}
       focusable={true}
+      hitSlop={
+        Object {
+          "bottom": 30,
+          "left": 20,
+          "right": 20,
+          "top": 10,
+        }
+      }
       onClick={[Function]}
       onResponderGrant={[Function]}
       onResponderMove={[Function]}
