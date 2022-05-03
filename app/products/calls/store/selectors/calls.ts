@@ -61,3 +61,7 @@ export function isSupportedServer(state: GlobalState) {
 
     return false;
 }
+
+export function isCallsPluginEnabled(state: GlobalState) {
+    return state.entities.calls.pluginEnabled;
+}

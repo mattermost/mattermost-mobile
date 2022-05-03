@@ -2,13 +2,14 @@
 // See LICENSE.txt for license information.
 import {EventEmitter} from 'events';
 
+import Calls from '@constants/calls';
 import {encode} from '@msgpack/msgpack/dist';
 
 export default class WebSocketClient extends EventEmitter {
     private ws: WebSocket | null;
     private seqNo = 0;
     private connID = '';
-    private eventPrefix = 'custom_com.mattermost.calls';
+    private eventPrefix = `custom_${Calls.PluginId}`;
 
     constructor(connURL: string) {
         super();
