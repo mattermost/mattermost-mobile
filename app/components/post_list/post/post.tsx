@@ -184,16 +184,16 @@ const Post = ({
         }
     };
 
-    const [,rerender] = useState(false);
+    const [, rerender] = useState(false);
     useEffect(() => {
         if (post.pendingPostId === post.id && !isFailed) {
-            const timeout = setTimeout(() => rerender(true), TIME_TO_FAIL - (Date.now()-post.createAt));
+            const timeout = setTimeout(() => rerender(true), TIME_TO_FAIL - (Date.now() - post.createAt));
             return () => {
                 clearTimeout(timeout);
-            }
+            };
         }
-        return () => {/*Do nothing*/}
-    }, [post.id])
+        return () => {/*Do nothing*/};
+    }, [post.id]);
 
     const highlightSaved = isSaved && !skipSavedHeader;
     const hightlightPinned = post.isPinned && !skipPinnedHeader;
