@@ -251,38 +251,40 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
 
     try {
         if (userId === currentUser?.id) {
-            if (!EphemeralStore.isJoiningChannel(channelId)) {
-                const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
-                if (channels && memberships) {
-                    const prepare = await prepareMyChannelsForTeam(operator, teamId, channels, memberships);
-                    if (prepare.length) {
-                        const prepareModels = await Promise.all(prepare);
-                        const flattenedModels = prepareModels.flat();
-                        if (flattenedModels?.length > 0) {
-                            await operator.batchRecords(flattenedModels);
-                        }
-                    }
+            if (EphemeralStore.isAddingToTeam(teamId) || EphemeralStore.isJoiningChannel(channelId)) {
+                return;
+            }
 
-                    const categoriesModels = await addChannelToDefaultCategory(serverUrl, channels[0], true);
-                    if (categoriesModels.models?.length) {
-                        models.push(...categoriesModels.models);
+            const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
+            if (channels && memberships) {
+                const prepare = await prepareMyChannelsForTeam(operator, teamId, channels, memberships);
+                if (prepare.length) {
+                    const prepareModels = await Promise.all(prepare);
+                    const flattenedModels = prepareModels.flat();
+                    if (flattenedModels?.length > 0) {
+                        await operator.batchRecords(flattenedModels);
                     }
                 }
 
-                const {posts, order, authors, actionType, previousPostId} = await fetchPostsForChannel(serverUrl, channelId, true);
-                if (actionType) {
-                    models.push(...await operator.handlePosts({
-                        actionType,
-                        order,
-                        posts,
-                        previousPostId,
-                        prepareRecordsOnly: true,
-                    }));
+                const categoriesModels = await addChannelToDefaultCategory(serverUrl, channels[0], true);
+                if (categoriesModels.models?.length) {
+                    models.push(...categoriesModels.models);
                 }
+            }
 
-                if (authors?.length) {
-                    models.push(...await operator.handleUsers({users: authors, prepareRecordsOnly: true}));
-                }
+            const {posts, order, authors, actionType, previousPostId} = await fetchPostsForChannel(serverUrl, channelId, true);
+            if (actionType) {
+                models.push(...await operator.handlePosts({
+                    actionType,
+                    order,
+                    posts,
+                    previousPostId,
+                    prepareRecordsOnly: true,
+                }));
+            }
+
+            if (authors?.length) {
+                models.push(...await operator.handleUsers({users: authors, prepareRecordsOnly: true}));
             }
         } else {
             const addedUser = getUserById(database, userId);

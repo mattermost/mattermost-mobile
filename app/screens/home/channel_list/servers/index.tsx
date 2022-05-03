@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
 import {StyleSheet} from 'react-native';
 
@@ -48,7 +48,11 @@ const sortServers = (servers: ServersModel[], intl: IntlShape) => {
     });
 };
 
-export default function Servers() {
+export type ServersRef = {
+    openServers: () => void;
+}
+
+const Servers = React.forwardRef<ServersRef>((props, ref) => {
     const intl = useIntl();
     const [total, setTotal] = useState<UnreadMessages>({mentions: 0, unread: false});
     const registeredServers = useRef<ServersModel[]|undefined>();
@@ -136,6 +140,10 @@ export default function Servers() {
         }
     }, [isTablet, theme]);
 
+    useImperativeHandle(ref, () => ({
+        openServers: onPress,
+    }), [onPress]);
+
     useEffect(() => {
         const subscription = subscribeAllServers(serversObserver);
 
@@ -157,5 +165,8 @@ export default function Servers() {
             testID={'channel_list.servers.server_icon'}
         />
     );
-}
+});
 
+Servers.displayName = 'Servers';
+
+export default Servers;

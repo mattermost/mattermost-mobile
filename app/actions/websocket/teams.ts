@@ -5,16 +5,19 @@ import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {removeUserFromTeam} from '@actions/local/team';
-import {fetchRolesIfNeeded} from '@actions/remote/role';
+import {fetchMyChannelsForTeam} from '@actions/remote/channel';
+import {fetchRoles} from '@actions/remote/role';
 import {fetchAllTeams, handleTeamChange, fetchMyTeam} from '@actions/remote/team';
 import {updateUsersNoLongerVisible} from '@actions/remote/user';
 import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl} from '@queries/app/servers';
-import {getCurrentTeamId} from '@queries/servers/system';
-import {getLastTeam, prepareMyTeams} from '@queries/servers/team';
+import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
+import {prepareMyChannelsForTeam} from '@queries/servers/channel';
+import {getCurrentTeam, getLastTeam, prepareMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
-import {dismissAllModals, popToRoot} from '@screens/navigation';
+import {dismissAllModals, popToRoot, resetToTeams} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 
 export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMessage) {
     const database = DatabaseManager.serverDatabases[serverUrl];
@@ -22,7 +25,7 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
         return;
     }
 
-    const currentTeamId = await getCurrentTeamId(database.database);
+    const currentTeam = await getCurrentTeam(database.database);
     const user = await getCurrentUser(database.database);
     if (!user) {
         return;
@@ -37,7 +40,7 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
             updateUsersNoLongerVisible(serverUrl);
         }
 
-        if (currentTeamId === teamId) {
+        if (currentTeam?.id === teamId) {
             const appDatabase = DatabaseManager.appDatabase?.database;
             let currentServer = '';
             if (appDatabase) {
@@ -45,7 +48,7 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
             }
 
             if (currentServer === serverUrl) {
-                DeviceEventEmitter.emit(Events.LEAVE_TEAM);
+                DeviceEventEmitter.emit(Events.LEAVE_TEAM, currentTeam?.displayName);
                 await dismissAllModals();
                 await popToRoot();
             }
@@ -53,7 +56,9 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
             const teamToJumpTo = await getLastTeam(database.database);
             if (teamToJumpTo) {
                 handleTeamChange(serverUrl, teamToJumpTo);
-            } // TODO else jump to "join a team" screen
+            } else if (currentServer === serverUrl) {
+                resetToTeams();
+            }
         }
     }
 }
@@ -70,57 +75,43 @@ export async function handleUpdateTeamEvent(serverUrl: string, msg: WebSocketMes
             teams: [team],
             prepareRecordsOnly: false,
         });
-    } catch {
+    } catch (err) {
         // Do nothing
     }
 }
 
-// As of today, the server sends a duplicated event to add the user to the team.
-// If we do not handle this, this ends up showing some errors in the database, apart
-// of the extra computation time. We use this to track the events that are being handled
-// and make sure we only handle one.
-const addingTeam: {[id: string]: boolean} = {};
-
 export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSocketMessage) {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return;
     }
     const {team_id: teamId} = msg.data;
 
     // Ignore duplicated team join events sent by the server
-    if (addingTeam[teamId]) {
+    if (EphemeralStore.isAddingToTeam(teamId)) {
         return;
     }
-    addingTeam[teamId] = true;
+    EphemeralStore.startAddingToTeam(teamId);
 
     const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, teamId, true);
 
     const modelPromises: Array<Promise<Model[]>> = [];
     if (teams?.length && teamMemberships?.length) {
-        const myMember = teamMemberships[0];
-        if (myMember.roles) {
-            const rolesToLoad = new Set<string>();
-            for (const role of myMember.roles.split(' ')) {
-                rolesToLoad.add(role);
-            }
-            const serverRoles = await fetchRolesIfNeeded(serverUrl, Array.from(rolesToLoad), true);
-            if (serverRoles.roles?.length) {
-                const preparedRoleModels = database.operator.handleRole({
-                    roles: serverRoles.roles,
-                    prepareRecordsOnly: true,
-                });
-                modelPromises.push(preparedRoleModels);
-            }
-        }
+        const {channels, memberships, categories} = await fetchMyChannelsForTeam(serverUrl, teamId, false, 0, true);
+        modelPromises.push(prepareCategories(operator, categories));
+        modelPromises.push(prepareCategoryChannels(operator, categories));
+        modelPromises.push(...await prepareMyChannelsForTeam(operator, teamId, channels || [], memberships || []));
+
+        const {roles} = await fetchRoles(serverUrl, teamMemberships, memberships, undefined, true);
+        modelPromises.push(operator.handleRole({roles, prepareRecordsOnly: true}));
     }
 
     if (teams && teamMemberships) {
-        modelPromises.push(...prepareMyTeams(database.operator, teams, teamMemberships));
+        modelPromises.push(...prepareMyTeams(operator, teams, teamMemberships));
     }
 
     const models = await Promise.all(modelPromises);
-    await database.operator.batchRecords(models.flat());
+    await operator.batchRecords(models.flat());
 
-    delete addingTeam[teamId];
+    EphemeralStore.finishAddingToTeam(teamId);
 }

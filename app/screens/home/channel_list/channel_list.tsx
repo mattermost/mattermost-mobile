@@ -3,7 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {useIsFocused, useRoute} from '@react-navigation/native';
-import React from 'react';
+import React, {useEffect} from 'react';
 import {StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -12,6 +12,7 @@ import FreezeScreen from '@components/freeze_screen';
 import TeamSidebar from '@components/team_sidebar';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {resetToTeams} from '@screens/navigation';
 
 import AdditionalTabletView from './additional_tablet_view';
 import CategoriesList from './categories_list';
@@ -28,9 +29,6 @@ type ChannelProps = {
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
 const styles = StyleSheet.create({
-    flex: {
-        flex: 1,
-    },
     content: {
         flex: 1,
         flexDirection: 'row',
@@ -68,6 +66,12 @@ const ChannelListScreen = (props: ChannelProps) => {
     const top = useAnimatedStyle(() => {
         return {height: insets.top, backgroundColor: theme.sidebarBg};
     }, [theme]);
+
+    useEffect(() => {
+        if (!props.teamsCount) {
+            resetToTeams();
+        }
+    }, [Boolean(props.teamsCount)]);
 
     return (
         <FreezeScreen freeze={!isFocused}>
