@@ -10,4 +10,6 @@ const RequiredServer = {
     PATCH_VERSION: 0,
 };
 
-export default {RequiredServer, RefreshConfigMillis};
+const PluginId = 'com.mattermost.calls';
+
+export default {RequiredServer, RefreshConfigMillis, PluginId};

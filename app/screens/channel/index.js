@@ -18,7 +18,10 @@ import {getCurrentUserId, getCurrentUserRoles, shouldShowTermsOfService} from '@
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {isSystemAdmin as checkIsSystemAdmin} from '@mm-redux/utils/user_utils';
 import {batchLoadCalls} from '@mmproducts/calls/store/actions/calls';
-import {isSupportedServer as isSupportedServerForCalls} from '@mmproducts/calls/store/selectors/calls';
+import {
+    isCallsPluginEnabled,
+    isSupportedServer as isSupportedServerForCalls,
+} from '@mmproducts/calls/store/selectors/calls';
 import {getViewingGlobalThreads} from '@selectors/threads';
 
 import Channel from './channel';
@@ -44,6 +47,7 @@ function mapStateToProps(state) {
     const currentChannelId = currentTeam?.delete_at === 0 ? getCurrentChannelId(state) : '';
     const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
     const isSupportedServerCalls = isSupportedServerForCalls(state);
+    const isCallsEnabled = isCallsPluginEnabled(state);
 
     return {
         currentChannelId,
@@ -58,6 +62,7 @@ function mapStateToProps(state) {
         theme: getTheme(state),
         viewingGlobalThreads: collapsedThreadsEnabled && getViewingGlobalThreads(state),
         isSupportedServerCalls,
+        isCallsEnabled,
     };
 }
 
