@@ -28,6 +28,7 @@ type Props = {
     channelId: string;
     contentContainerStyle?: StyleProp<ViewStyle>;
     currentTimezone: string | null;
+    currentUserId: string;
     currentUsername: string;
     highlightedId?: PostModel['id'];
     highlightPinnedOrSaved?: boolean;
@@ -79,6 +80,7 @@ const PostList = ({
     channelId,
     contentContainerStyle,
     currentTimezone,
+    currentUserId,
     currentUsername,
     footer,
     highlightedId,
@@ -106,7 +108,7 @@ const PostList = ({
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const orderedPosts = useMemo(() => {
-        return preparePostList(posts, lastViewedAt, showNewMessageLine, currentUsername, shouldShowJoinLeaveMessages, isTimezoneEnabled, currentTimezone, location === Screens.THREAD);
+        return preparePostList(posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, isTimezoneEnabled, currentTimezone, location === Screens.THREAD);
     }, [posts, lastViewedAt, showNewMessageLine, currentTimezone, currentUsername, shouldShowJoinLeaveMessages, isTimezoneEnabled, location]);
 
     const initialIndex = useMemo(() => {

@@ -9,10 +9,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {observeMyChannel} from '@queries/servers/channel';
 import {queryPostsChunk, queryPostsInThread} from '@queries/servers/post';
-import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
-import {observeCurrentUser} from '@queries/servers/user';
-import {getTimezone} from '@utils/user';
 
 import ThreadPostList from './thread_post_list';
 
@@ -25,13 +22,8 @@ type Props = WithDatabaseArgs & {
 };
 
 const enhanced = withObservables(['forceQueryAfterAppState', 'rootPost'], ({database, rootPost}: Props) => {
-    const currentUser = observeCurrentUser(database);
-
     return {
-        currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
-        currentUsername: currentUser.pipe((switchMap((user) => of$(user?.username || '')))),
         isCRTEnabled: observeIsCRTEnabled(database),
-        isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
         lastViewedAt: observeMyChannel(database, rootPost.channelId).pipe(
             switchMap((myChannel) => of$(myChannel?.viewedAt)),
         ),

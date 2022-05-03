@@ -4,6 +4,7 @@
 import moment from 'moment-timezone';
 
 import {Post} from '@constants';
+import {isFromWebhook} from '@utils/post';
 
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -170,7 +171,7 @@ function isJoinLeavePostForUsername(post: PostModel, currentUsername: string): b
 
 // are we going to do something with selectedPostId as in v1?
 export function selectOrderedPosts(
-    posts: PostModel[], lastViewedAt: number, indicateNewMessages: boolean, currentUsername: string, showJoinLeave: boolean,
+    posts: PostModel[], lastViewedAt: number, indicateNewMessages: boolean, currentUserId: string, currentUsername: string, showJoinLeave: boolean,
     timezoneEnabled: boolean, currentTimezone: string | null, isThreadScreen = false) {
     if (posts.length === 0) {
         return [];
@@ -218,6 +219,7 @@ export function selectOrderedPosts(
         if (
             lastViewedAt &&
             post.createAt > lastViewedAt &&
+            (post.userId !== currentUserId || isFromWebhook(post)) &&
             !addedNewMessagesIndicator &&
             indicateNewMessages
         ) {
@@ -359,9 +361,9 @@ export function isThreadOverview(item: string) {
 }
 
 export function preparePostList(
-    posts: PostModel[], lastViewedAt: number, indicateNewMessages: boolean, currentUsername: string, showJoinLeave: boolean,
+    posts: PostModel[], lastViewedAt: number, indicateNewMessages: boolean, currentUserId: string, currentUsername: string, showJoinLeave: boolean,
     timezoneEnabled: boolean, currentTimezone: string | null, isThreadScreen = false) {
-    const orderedPosts = selectOrderedPosts(posts, lastViewedAt, indicateNewMessages, currentUsername, showJoinLeave, timezoneEnabled, currentTimezone, isThreadScreen);
+    const orderedPosts = selectOrderedPosts(posts, lastViewedAt, indicateNewMessages, currentUserId, currentUsername, showJoinLeave, timezoneEnabled, currentTimezone, isThreadScreen);
     return combineUserActivityPosts(orderedPosts);
 }
 
