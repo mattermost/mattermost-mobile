@@ -39,6 +39,12 @@ jest.mock('@client/rest', () => ({
             DefaultEnabled: true,
             last_retrieved_at: 1234,
         })),
+        getPluginsManifests: jest.fn(() => (
+            [
+                {id: 'playbooks'},
+                {id: 'com.mattermost.calls'},
+            ]
+        )),
         enableChannelCalls: jest.fn(() => null),
         disableChannelCalls: jest.fn(() => null),
     },
@@ -150,6 +156,7 @@ describe('Actions.Calls', () => {
 
     it('batchLoadConfig', async () => {
         await store.dispatch(CallsActions.batchLoadCalls());
+        expect(Client4.getPluginsManifests).toBeCalledWith();
         expect(Client4.getCallsConfig).toBeCalledWith();
         expect(Client4.getCalls).toBeCalledWith();
 
