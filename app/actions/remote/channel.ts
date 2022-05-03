@@ -16,7 +16,7 @@ import NetworkManager from '@managers/network_manager';
 import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
-import {prepareMyTeams, getNthLastChannelFromTeam, getMyTeamById, getTeamById, getTeamByName} from '@queries/servers/team';
+import {prepareMyTeams, getNthLastChannelFromTeam, getMyTeamById, getTeamById, getTeamByName, queryMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {generateChannelNameFromDisplayName, getDirectChannelName, isDMorGM} from '@utils/channel';
@@ -440,10 +440,12 @@ export async function joinChannel(serverUrl: string, userId: string, teamId: str
     let channel: Channel | undefined;
     try {
         if (channelId) {
+            EphemeralStore.addJoiningChannel(channelId);
             member = await client.addToChannel(userId, channelId);
             channel = await client.getChannel(channelId);
         } else if (channelName) {
             channel = await client.getChannelByName(teamId, channelName, true);
+            EphemeralStore.addJoiningChannel(channel.id);
             if (isDMorGM(channel)) {
                 member = await client.getChannelMember(channel.id, userId);
             } else {
@@ -451,6 +453,9 @@ export async function joinChannel(serverUrl: string, userId: string, teamId: str
             }
         }
     } catch (error) {
+        if (channelId || channel?.id) {
+            EphemeralStore.removeJoiningChanel(channelId || channel!.id);
+        }
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
@@ -478,10 +483,35 @@ export async function joinChannel(serverUrl: string, userId: string, teamId: str
             }
         }
     } catch (error) {
+        if (channelId || channel?.id) {
+            EphemeralStore.removeJoiningChanel(channelId || channel!.id);
+        }
         return {error};
     }
 
+    if (channelId || channel?.id) {
+        EphemeralStore.removeJoiningChanel(channelId || channel!.id);
+    }
     return {channel, member};
+}
+
+export async function joinChannelIfNeeded(serverUrl: string, channelId: string) {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const myChannel = await getMyChannel(database, channelId);
+        if (myChannel) {
+            return {error: undefined};
+        }
+
+        const userId = await getCurrentUserId(database);
+        return joinChannel(serverUrl, userId, '', channelId);
+    } catch (error) {
+        return {error};
+    }
 }
 
 export async function markChannelAsRead(serverUrl: string, channelId: string) {
@@ -933,14 +963,14 @@ export async function getChannelTimezones(serverUrl: string, channelId: string) 
     }
 }
 
-export async function switchToChannelById(serverUrl: string, channelId: string, teamId?: string) {
+export async function switchToChannelById(serverUrl: string, channelId: string, teamId?: string, skipLastUnread = false) {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
     }
 
     fetchPostsForChannel(serverUrl, channelId);
-    await switchToChannel(serverUrl, channelId, teamId);
+    await switchToChannel(serverUrl, channelId, teamId, skipLastUnread);
     markChannelAsRead(serverUrl, channelId);
     fetchChannelStats(serverUrl, channelId);
 
@@ -998,6 +1028,28 @@ export async function fetchChannelById(serverUrl: string, id: string) {
     try {
         const channel = await client.getChannel(id);
         return {channel};
+    } catch (error) {
+        return {error};
+    }
+}
+
+export async function searchAllChannels(serverUrl: string, term: string, archivedOnly = false) {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const myTeamIds = await queryMyTeams(database).fetchIds();
+        const channels = await client.searchAllChannels(term, myTeamIds, archivedOnly);
+        return {channels};
     } catch (error) {
         return {error};
     }

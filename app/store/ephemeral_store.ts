@@ -15,6 +15,7 @@ class EphemeralStore {
     // of the extra computation time. We use this to track the events that are being handled
     // and make sure we only handle one.
     private addingTeam = new Set<string>();
+    private joiningChannels = new Set<string>();
 
     addNavigationComponentId = (componentId: string) => {
         this.addToNavigationComponentIdStack(componentId);
@@ -119,6 +120,19 @@ class EphemeralStore {
 
             found = !this.navigationComponentIdStack.includes(componentId);
         }
+    };
+
+    // Ephemeral control when joining a channel locally
+    addJoiningChannel = (channelId: string) => {
+        this.joiningChannels.add(channelId);
+    };
+
+    isJoiningChannel = (channelId: string) => {
+        return this.joiningChannels.has(channelId);
+    };
+
+    removeJoiningChanel = (channelId: string) => {
+        this.joiningChannels.delete(channelId);
     };
 
     startAddingToTeam = (teamId: string) => {

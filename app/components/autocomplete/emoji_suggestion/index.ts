@@ -26,9 +26,10 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
                 of$(emptyEmojiList)),
             ),
         ),
-        skinTone: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_EMOJI, Preferences.EMOJI_SKINTONE).observe().pipe(
-            switchMap((prefs) => of$(prefs?.[0]?.value ?? 'default')),
-        ),
+        skinTone: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_EMOJI, Preferences.EMOJI_SKINTONE).
+            observeWithColumns(['value']).pipe(
+                switchMap((prefs) => of$(prefs?.[0]?.value ?? 'default')),
+            ),
     };
 });
 

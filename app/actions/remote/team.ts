@@ -196,7 +196,7 @@ export const fetchTeamsChannelsAndUnreadPosts = async (serverUrl: string, since:
     const myTeams = teams.filter((t) => membershipSet.has(t.id) && t.id !== excludeTeamId);
 
     for await (const team of myTeams) {
-        const {channels, memberships: members} = await fetchMyChannelsForTeam(serverUrl, team.id, since > 0, since, false, true);
+        const {channels, memberships: members} = await fetchMyChannelsForTeam(serverUrl, team.id, true, since, false, true);
 
         if (channels?.length && members?.length) {
             fetchPostsForUnreadChannels(serverUrl, channels, members);

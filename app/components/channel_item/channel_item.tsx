@@ -175,7 +175,7 @@ const ChannelListItem = ({
     ],
     [height, isActive, isInfo, styles]);
 
-    if ((channel.deleteAt > 0 && !isActive) || !myChannel || !isVisible) {
+    if (!myChannel || !isVisible) {
         return null;
     }
 
@@ -229,7 +229,12 @@ const ChannelListItem = ({
                                 </Text>
                                 }
                             </View>
-                            {Boolean(teammateId) && <CustomStatus userId={teammateId!}/>}
+                            {Boolean(teammateId) &&
+                                <CustomStatus
+                                    isInfo={isInfo}
+                                    userId={teammateId!}
+                                />
+                            }
                             {isInfo && Boolean(teamDisplayName) && isTablet &&
                                 <Text
                                     ellipsizeMode='tail'
