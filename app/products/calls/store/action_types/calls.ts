@@ -24,4 +24,5 @@ export default keyMirror({
     SET_SCREENSHARE_URL: null,
     SET_SPEAKERPHONE: null,
     RECEIVED_CONFIG: null,
+    RECEIVED_PLUGIN_ENABLED: null,
 });

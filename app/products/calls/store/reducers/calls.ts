@@ -216,6 +216,16 @@ function speakerphoneOn(state = false, action: GenericAction) {
     }
 }
 
+function pluginEnabled(state = false, action: GenericAction) {
+    switch (action.type) {
+    case CallsTypes.RECEIVED_PLUGIN_ENABLED: {
+        return action.data;
+    }
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     calls,
     enabled,
@@ -223,4 +233,5 @@ export default combineReducers({
     screenShareURL,
     speakerphoneOn,
     config,
+    pluginEnabled,
 });
