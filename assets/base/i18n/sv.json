@@ -415,6 +415,8 @@
   "mobile.message_length.message": "Ditt meddelande är för långt. Nuvarande antal tecken: {max}/{count}",
   "mobile.message_length.message_split_left": "Meddelandet överskrider teckenbegränsningen",
   "mobile.message_length.title": "Meddelandelängd",
+  "mobile.microphone_permission_denied_description": "För att delta i samtalet, öppna Inställningar och ge Mattermost tillåtelse att använda mikrofonen.",
+  "mobile.microphone_permission_denied_title": "{applicationName} behöver åtkomst till din mikrofon",
   "mobile.more_dms.add_more": "Du kan lägga till {remaining, number} användare",
   "mobile.more_dms.cannot_add_more": "Du kan lägga till 1 till användare",
   "mobile.more_dms.one_more": "Du kan lägga till 1 till användare",
