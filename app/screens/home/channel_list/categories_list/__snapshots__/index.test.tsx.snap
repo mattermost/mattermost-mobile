@@ -109,6 +109,14 @@ exports[`components/categories_list should render channels error 1`] = `
         accessible={true}
         collapsable={false}
         focusable={true}
+        hitSlop={
+          Object {
+            "bottom": 30,
+            "left": 20,
+            "right": 20,
+            "top": 10,
+          }
+        }
         onClick={[Function]}
         onResponderGrant={[Function]}
         onResponderMove={[Function]}
@@ -368,7 +376,7 @@ exports[`components/categories_list should render team error 1`] = `
             "opacity": 1,
           }
         }
-        testID="channel_list_header.plus.button"
+        testID="channel_list_header.logout.button"
       >
         <Text
           style={
