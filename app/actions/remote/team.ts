@@ -38,7 +38,7 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
     }
 
     try {
-        EphemeralStore.addingTeam[teamId] = true;
+        EphemeralStore.startAddingToTeam(teamId);
         const member = await client.addToTeam(teamId, userId);
 
         if (!fetchOnly) {
@@ -69,10 +69,10 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
                 }
             }
         }
-        delete EphemeralStore.addingTeam[teamId];
+        EphemeralStore.finishAddingToTeam(teamId);
         return {member};
     } catch (error) {
-        delete EphemeralStore.addingTeam[teamId];
+        EphemeralStore.finishAddingToTeam(teamId);
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }

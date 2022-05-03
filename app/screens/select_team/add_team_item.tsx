@@ -7,7 +7,9 @@ import {Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {goToScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -55,7 +57,7 @@ export default function AddTeamItem() {
     const intl = useIntl();
     const onPress = useCallback(async () => {
         // TODO https://mattermost.atlassian.net/browse/MM-43622
-        //goToScreen(Screens.CREATE_TEAM, 'Create team');
+        goToScreen(Screens.CREATE_TEAM, 'Create team');
     }, []);
 
     return (

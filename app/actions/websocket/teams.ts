@@ -88,10 +88,10 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
     const {team_id: teamId} = msg.data;
 
     // Ignore duplicated team join events sent by the server
-    if (EphemeralStore.addingTeam[teamId]) {
+    if (EphemeralStore.isAddingToTeam(teamId)) {
         return;
     }
-    EphemeralStore.addingTeam[teamId] = true;
+    EphemeralStore.startAddingToTeam(teamId);
 
     const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, teamId, true);
 
@@ -113,5 +113,5 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
     const models = await Promise.all(modelPromises);
     await operator.batchRecords(models.flat());
 
-    delete EphemeralStore.addingTeam[teamId];
+    EphemeralStore.finishAddingToTeam(teamId);
 }
