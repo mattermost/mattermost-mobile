@@ -29,18 +29,18 @@ export const queryCategoriesByTeamIds = (database: Database, teamIds: string[]) 
     return database.get<CategoryModel>(CATEGORY).query(Q.where('team_id', Q.oneOf(teamIds)));
 };
 
-export const prepareCategories = (operator: ServerDataOperator, categories: CategoryWithChannels[]) => {
+export const prepareCategories = (operator: ServerDataOperator, categories?: CategoryWithChannels[]) => {
     return operator.handleCategories({categories, prepareRecordsOnly: true});
 };
 
 export async function prepareCategoryChannels(
     operator: ServerDataOperator,
-    categories: CategoryWithChannels[],
+    categories?: CategoryWithChannels[],
 ): Promise<CategoryChannelModel[]> {
     try {
         const categoryChannels: CategoryChannel[] = [];
 
-        categories.forEach((category) => {
+        categories?.forEach((category) => {
             category.channel_ids.forEach((channelId, index) => {
                 categoryChannels.push({
                     id: makeCategoryChannelId(category.team_id, channelId),

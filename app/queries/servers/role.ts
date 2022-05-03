@@ -9,6 +9,9 @@ import {Database as DatabaseConstants, General, Permissions} from '@constants';
 import {isDMorGM} from '@utils/channel';
 import {hasPermission} from '@utils/role';
 
+import {observeChannel, observeMyChannel} from './channel';
+import {observeMyTeam} from './team';
+
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type RoleModel from '@typings/database/models/servers/role';
@@ -35,8 +38,9 @@ export const queryRolesByNames = (database: Database, names: string[]) => {
 };
 
 export function observePermissionForChannel(channel: ChannelModel, user: UserModel, permission: string, defaultValue: boolean) {
-    const myChannel = channel.membership.observe();
-    const myTeam = channel.teamId ? channel.team.observe().pipe(switchMap((t) => (t ? t.myTeam.observe() : of$(undefined)))) : of$(undefined);
+    const database = channel.database;
+    const myChannel = observeMyChannel(database, channel.id);
+    const myTeam = channel.teamId ? observeMyTeam(database, channel.teamId) : of$(undefined);
 
     return combineLatest([myChannel, myTeam]).pipe(switchMap(([mc, mt]) => {
         const rolesArray = [...user.roles.split(' ')];
@@ -46,32 +50,35 @@ export function observePermissionForChannel(channel: ChannelModel, user: UserMod
         if (mt) {
             rolesArray.push(...mt.roles.split(' '));
         }
-        return queryRolesByNames(user.database, rolesArray).observe().pipe(
+        return queryRolesByNames(database, rolesArray).observeWithColumns(['permissions']).pipe(
             switchMap((r) => of$(hasPermission(r, permission, defaultValue))),
         );
     }));
 }
 
 export function observePermissionForTeam(team: TeamModel, user: UserModel, permission: string, defaultValue: boolean) {
-    return team.myTeam.observe().pipe(switchMap((myTeam) => {
-        const rolesArray = [...user.roles.split(' ')];
+    const database = team.database;
+    return observeMyTeam(database, team.id).pipe(
+        switchMap((myTeam) => {
+            const rolesArray = [...user.roles.split(' ')];
 
-        if (myTeam) {
-            rolesArray.push(...myTeam.roles.split(' '));
-        }
+            if (myTeam) {
+                rolesArray.push(...myTeam.roles.split(' '));
+            }
 
-        return queryRolesByNames(user.database, rolesArray).observe().pipe(
-            switchMap((roles) => of$(hasPermission(roles, permission, defaultValue))),
-        );
-    }));
+            return queryRolesByNames(database, rolesArray).observeWithColumns(['permissions']).pipe(
+                switchMap((roles) => of$(hasPermission(roles, permission, defaultValue))),
+            );
+        }),
+    );
 }
 
 export function observePermissionForPost(post: PostModel, user: UserModel, permission: string, defaultValue: boolean) {
-    return post.channel.observe().pipe(switchMap((c) => (c ? observePermissionForChannel(c, user, permission, defaultValue) : of$(defaultValue))));
+    return observeChannel(post.database, post.channelId).pipe(switchMap((c) => (c ? observePermissionForChannel(c, user, permission, defaultValue) : of$(defaultValue))));
 }
 
 export function observeCanManageChannelMembers(post: PostModel, user: UserModel) {
-    return post.channel.observe().pipe((switchMap((c) => {
+    return observeChannel(post.database, post.channelId).pipe((switchMap((c) => {
         if (!c || c.deleteAt !== 0 || isDMorGM(c) || c.name === General.DEFAULT_CHANNEL) {
             return of$(false);
         }

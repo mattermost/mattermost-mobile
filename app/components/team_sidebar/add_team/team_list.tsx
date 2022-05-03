@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {ListRenderItemInfo, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler'; // Keep the FlatList from gesture handler so it works well with bottom sheet
 
 import FormattedText from '@components/formatted_text';
+import Empty from '@components/illustrations/no_team';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -13,10 +14,12 @@ import TeamListItem from './team_list_item';
 
 import type TeamModel from '@typings/database/models/servers/team';
 
-const Empty = require('./no_teams.svg').default;
-
 type Props = {
-    teams: TeamModel[];
+    teams: Array<Team|TeamModel>;
+    textColor?: string;
+    iconTextColor?: string;
+    iconBackgroundColor?: string;
+    onTeamAdded: (id: string) => void;
     testID?: string;
 }
 
@@ -49,19 +52,23 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const renderTeam = ({item: t}: ListRenderItemInfo<TeamModel>) => {
-    return (
-        <TeamListItem
-            team={t}
-        />
-    );
-};
-
 const keyExtractor = (item: TeamModel) => item.id;
 
-export default function TeamList({teams, testID}: Props) {
+export default function TeamList({teams, textColor, iconTextColor, iconBackgroundColor, onTeamAdded, testID}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+
+    const renderTeam = useCallback(({item: t}: ListRenderItemInfo<Team|TeamModel>) => {
+        return (
+            <TeamListItem
+                team={t}
+                textColor={textColor}
+                iconBackgroundColor={iconBackgroundColor}
+                iconTextColor={iconTextColor}
+                onTeamAdded={onTeamAdded}
+            />
+        );
+    }, [textColor, iconTextColor, iconBackgroundColor, onTeamAdded]);
 
     if (teams.length) {
         return (
@@ -79,7 +86,7 @@ export default function TeamList({teams, testID}: Props) {
 
     return (
         <View style={styles.empty}>
-            <Empty/>
+            <Empty theme={theme}/>
             <FormattedText
                 id='team_list.no_other_teams.title'
                 defaultMessage='No additional teams to join'
