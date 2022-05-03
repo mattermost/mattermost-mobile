@@ -17,7 +17,7 @@ import {patchTeamHistory, getConfig, getTeamHistory, observeCurrentTeamId} from 
 import {observeThreadMentionCount} from './thread';
 import {getCurrentUser} from './user';
 
-import type {MyChannelModel} from '@app/database/models/server';
+import type {MyChannelModel} from '@database/models/server';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';

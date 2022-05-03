@@ -6,8 +6,8 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
-import {observeChannel} from '@app/queries/servers/channel';
 import {General, Permissions} from '@constants';
+import {observeChannel} from '@queries/servers/channel';
 import {observePermissionForPost} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';

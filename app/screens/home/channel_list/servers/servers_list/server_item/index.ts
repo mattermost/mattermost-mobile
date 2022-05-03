@@ -4,7 +4,7 @@
 import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 
-import {observeMultiServerTutorial} from '@app/queries/app/global';
+import {observeMultiServerTutorial} from '@queries/app/global';
 
 import ServerItem from './server_item';
 
