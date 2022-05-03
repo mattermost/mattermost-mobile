@@ -3,7 +3,7 @@
 
 import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$, combineLatest} from 'rxjs';
-import {switchMap, catchError} from 'rxjs/operators';
+import {switchMap} from 'rxjs/operators';
 
 import {Database as DatabaseConstants, General, Permissions} from '@constants';
 import {isDMorGM} from '@utils/channel';
@@ -70,7 +70,6 @@ export function observePermissionForTeam(team: TeamModel, user: UserModel, permi
                 switchMap((roles) => of$(hasPermission(roles, permission, defaultValue))),
             );
         }),
-        catchError(() => of$(defaultValue)),
     );
 }
 
