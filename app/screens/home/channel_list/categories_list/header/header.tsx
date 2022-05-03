@@ -7,14 +7,16 @@ import {Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {logout} from '@actions/remote/session';
 import CompassIcon from '@components/compass_icon';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {useServerDisplayName} from '@context/server';
+import {useServerDisplayName, useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
+import {alertServerLogout} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -61,6 +63,16 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.sidebarText, 0.8),
         fontSize: 18,
     },
+    noTeamHeadingStyles: {
+        color: changeOpacity(theme.sidebarText, 0.64),
+        ...typography('Body', 100, 'SemiBold'),
+    },
+    noTeamHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        height: 40,
+    },
 }));
 
 const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, iconPad, onHeaderPress}: Props) => {
@@ -74,6 +86,7 @@ const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, ico
     const animatedStyle = useAnimatedStyle(() => ({
         marginLeft: withTiming(marginLeft.value, {duration: 350}),
     }), []);
+    const serverUrl = useServerUrl();
 
     useEffect(() => {
         marginLeft.value = iconPad ? 44 : 0;
@@ -108,51 +121,87 @@ const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, ico
         });
     }, [intl, insets, isTablet, theme]);
 
-    return (
-        <Animated.View style={animatedStyle}>
-            {Boolean(displayName) &&
-            <View style={styles.headerRow}>
-                <TouchableWithFeedback
-                    onPress={onHeaderPress}
-                    type='opacity'
-                >
-                    <View style={styles.headerRow}>
-                        <Text
-                            style={styles.headingStyles}
-                            testID='channel_list_header.team_display_name'
-                        >
-                            {displayName}
-                        </Text>
-                        <View
-                            style={styles.chevronButton}
-                            testID='channel_list_header.chevron.button'
-                        >
-                            <CompassIcon
-                                style={styles.chevronIcon}
-                                name={'chevron-down'}
-                            />
+    const onLogoutPress = useCallback(() => {
+        alertServerLogout(serverDisplayName, () => logout(serverUrl), intl);
+    }, []);
+
+    let header;
+    if (displayName) {
+        header = (
+            <>
+                <View style={styles.headerRow}>
+                    <TouchableWithFeedback
+                        onPress={onHeaderPress}
+                        type='opacity'
+                    >
+                        <View style={styles.headerRow}>
+                            <Text
+                                style={styles.headingStyles}
+                                testID='channel_list_header.team_display_name'
+                            >
+                                {displayName}
+                            </Text>
+                            <View
+                                style={styles.chevronButton}
+                                testID='channel_list_header.chevron.button'
+                            >
+                                <CompassIcon
+                                    style={styles.chevronIcon}
+                                    name={'chevron-down'}
+                                />
+                            </View>
                         </View>
-                    </View>
-                </TouchableWithFeedback>
+                    </TouchableWithFeedback>
+                    <TouchableWithFeedback
+                        onPress={onPress}
+                        style={styles.plusButton}
+                        testID='channel_list_header.plus.button'
+                        type='opacity'
+                    >
+                        <CompassIcon
+                            style={styles.plusIcon}
+                            name={'plus'}
+                        />
+                    </TouchableWithFeedback>
+                </View>
+                <Text
+                    style={styles.subHeadingStyles}
+                    testID='channel_list_header.server_display_name'
+                >
+                    {serverDisplayName}
+                </Text>
+            </>
+        );
+    } else {
+        header = (
+            <View style={styles.noTeamHeaderRow}>
+                <View style={styles.noTeamHeaderRow}>
+                    <Text
+                        style={styles.noTeamHeadingStyles}
+                        testID='channel_list_header.team_display_name'
+                    >
+                        {serverDisplayName}
+                    </Text>
+                </View>
                 <TouchableWithFeedback
-                    onPress={onPress}
-                    style={styles.plusButton}
+                    onPress={onLogoutPress}
                     testID='channel_list_header.plus.button'
                     type='opacity'
                 >
-                    <CompassIcon
-                        style={styles.plusIcon}
-                        name={'plus'}
-                    />
+                    <Text
+                        style={styles.noTeamHeadingStyles}
+                        testID='channel_list_header.team_display_name'
+                    >
+                        {intl.formatMessage({id: 'account.logout', defaultMessage: 'Log out'})}
+                    </Text>
                 </TouchableWithFeedback>
             </View>
-            }
-            <Text
-                style={styles.subHeadingStyles}
-                testID='channel_list_header.server_display_name'
-            >
-                {serverDisplayName}
-            </Text>
+        );
+    }
+
+    return (
+        <Animated.View style={animatedStyle}>
+            {header}
         </Animated.View>
     );
 };

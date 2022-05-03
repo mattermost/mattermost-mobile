@@ -10,6 +10,12 @@ class EphemeralStore {
     creatingChannel = false;
     creatingDMorGMTeammates: string[] = [];
 
+    // As of today, the server sends a duplicated event to add the user to the team.
+    // If we do not handle this, this ends up showing some errors in the database, apart
+    // of the extra computation time. We use this to track the events that are being handled
+    // and make sure we only handle one.
+    private addingTeam = new Set<string>();
+
     addNavigationComponentId = (componentId: string) => {
         this.addToNavigationComponentIdStack(componentId);
         this.addToAllNavigationComponentIds(componentId);
@@ -113,6 +119,18 @@ class EphemeralStore {
 
             found = !this.navigationComponentIdStack.includes(componentId);
         }
+    };
+
+    startAddingToTeam = (teamId: string) => {
+        this.addingTeam.add(teamId);
+    };
+
+    finishAddingToTeam = (teamId: string) => {
+        this.addingTeam.delete(teamId);
+    };
+
+    isAddingToTeam = (teamId: string) => {
+        return this.addingTeam.has(teamId);
     };
 }
 
