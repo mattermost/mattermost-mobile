@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactNode, useMemo, useRef} from 'react';
+import React, {ReactNode, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, StyleProp, View, ViewStyle, TouchableHighlight} from 'react-native';
 
@@ -183,6 +183,17 @@ const Post = ({
             showModalOverCurrentContext(Screens.POST_OPTIONS, passProps, bottomSheetModalOptions(theme));
         }
     };
+
+    const [,rerender] = useState(false);
+    useEffect(() => {
+        if (post.pendingPostId === post.id && !isFailed) {
+            const timeout = setTimeout(() => rerender(true), TIME_TO_FAIL - (Date.now()-post.createAt));
+            return () => {
+                clearTimeout(timeout);
+            }
+        }
+        return () => {/*Do nothing*/}
+    }, [post.id])
 
     const highlightSaved = isSaved && !skipSavedHeader;
     const hightlightPinned = post.isPinned && !skipPinnedHeader;
