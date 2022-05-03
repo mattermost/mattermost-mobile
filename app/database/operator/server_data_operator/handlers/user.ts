@@ -2,11 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import DataOperatorException from '@database/exceptions/data_operator_exception';
-import {
-    isRecordPreferenceEqualToRaw,
-    isRecordUserEqualToRaw,
-} from '@database/operator/server_data_operator/comparators';
+import {buildPreferenceKey} from '@database/operator/server_data_operator/comparators';
 import {
     transformPreferenceRecord,
     transformUserRecord,
@@ -37,18 +33,24 @@ const UserHandler = (superclass: any) => class extends superclass {
      * @returns {Promise<PreferenceModel[]>}
      */
     handlePreferences = async ({preferences, prepareRecordsOnly = true, sync = false}: HandlePreferencesArgs): Promise<PreferenceModel[]> => {
-        if (!preferences.length) {
-            throw new DataOperatorException(
-                'An empty "preferences" array has been passed to the handlePreferences method',
+        if (!preferences?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "preferences" array has been passed to the handlePreferences method',
             );
+            return [];
         }
 
         // WE NEED TO SYNC THE PREFS FROM WHAT WE GOT AND WHAT WE HAVE
         const deleteValues: PreferenceModel[] = [];
         if (sync) {
             const stored = await this.database.get(PREFERENCE).query().fetch() as PreferenceModel[];
+            const preferenceMap = preferences.reduce((r: Record<string, boolean>, p) => {
+                r[`${p.category}-${p.name}`] = true;
+                return r;
+            }, {});
             for (const pref of stored) {
-                const exists = preferences.findIndex((p) => p.category === pref.category && p.name === pref.name) > -1;
+                const exists = preferenceMap[`${pref.category}-${pref.name}`];
                 if (!exists) {
                     pref.prepareDestroyPermanently();
                     deleteValues.push(pref);
@@ -58,7 +60,7 @@ const UserHandler = (superclass: any) => class extends superclass {
 
         const records: PreferenceModel[] = await this.handleRecords({
             fieldName: 'user_id',
-            findMatchingRecordBy: isRecordPreferenceEqualToRaw,
+            buildKeyRecordBy: buildPreferenceKey,
             transformer: transformPreferenceRecord,
             prepareRecordsOnly: true,
             createOrUpdateRawValues: preferences,
@@ -85,17 +87,18 @@ const UserHandler = (superclass: any) => class extends superclass {
      * @returns {Promise<UserModel[]>}
      */
     handleUsers = async ({users, prepareRecordsOnly = true}: HandleUsersArgs): Promise<UserModel[]> => {
-        if (!users.length) {
-            throw new DataOperatorException(
-                'An empty "users" array has been passed to the handleUsers method',
+        if (!users?.length) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                'An empty or undefined "users" array has been passed to the handleUsers method',
             );
+            return [];
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: users, key: 'id'});
 
         return this.handleRecords({
             fieldName: 'id',
-            findMatchingRecordBy: isRecordUserEqualToRaw,
             transformer: transformUserRecord,
             createOrUpdateRawValues,
             tableName: USER,

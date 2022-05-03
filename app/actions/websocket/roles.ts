@@ -3,9 +3,9 @@
 
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import DatabaseManager from '@database/manager';
-import {queryRoleById} from '@queries/servers/role';
-import {queryCurrentUserId} from '@queries/servers/system';
-import {queryCurrentUser} from '@queries/servers/user';
+import {getRoleById} from '@queries/servers/role';
+import {getCurrentUserId} from '@queries/servers/system';
+import {getCurrentUser} from '@queries/servers/user';
 
 import type {Model} from '@nozbe/watermelondb';
 
@@ -18,7 +18,7 @@ export async function handleRoleUpdatedEvent(serverUrl: string, msg: WebSocketMe
     // only update Role records that exist in the Role Table
     try {
         const role = JSON.parse(msg.data.role) as Role;
-        const dbRole = await queryRoleById(operator.database, role.id);
+        const dbRole = await getRoleById(operator.database, role.id);
         if (!dbRole) {
             return;
         }
@@ -38,7 +38,7 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
         return;
     }
 
-    const currentUserId = await queryCurrentUserId(operator.database);
+    const currentUserId = await getCurrentUserId(operator.database);
     if (currentUserId !== msg.data.user_id) {
         return;
     }
@@ -54,13 +54,11 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
             prepareRecordsOnly: true,
         });
 
-        if (preparedRoleModels.length) {
-            models.push(...preparedRoleModels);
-        }
+        models.push(...preparedRoleModels);
     }
 
     // update User Table record
-    const user = await queryCurrentUser(operator.database);
+    const user = await getCurrentUser(operator.database);
     if (user) {
         user!.prepareUpdate((u) => {
             u.roles = msg.data.roles;
@@ -68,9 +66,7 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
         models.push(user);
     }
 
-    if (models?.length) {
-        await operator.batchRecords(models);
-    }
+    await operator.batchRecords(models);
 }
 
 export async function handleTeamMemberRoleUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
@@ -80,9 +76,13 @@ export async function handleTeamMemberRoleUpdatedEvent(serverUrl: string, msg: W
     }
 
     try {
-        const member = JSON.parse(msg.data.member);
+        const member: TeamMembership = JSON.parse(msg.data.member);
 
-        const currentUserId = await queryCurrentUserId(operator.database);
+        if (member.delete_at > 0) {
+            return;
+        }
+
+        const currentUserId = await getCurrentUserId(operator.database);
         if (currentUserId !== member.user_id) {
             return;
         }
@@ -109,13 +109,9 @@ export async function handleTeamMemberRoleUpdatedEvent(serverUrl: string, msg: W
             myTeams,
         });
 
-        if (myTeamRecords.length) {
-            models.push(...myTeamRecords);
-        }
+        models.push(...myTeamRecords);
 
-        if (models?.length) {
-            await operator.batchRecords(models);
-        }
+        await operator.batchRecords(models);
     } catch {
         // do nothing
     }

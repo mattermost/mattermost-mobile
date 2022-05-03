@@ -1,21 +1,21 @@
 package com.mattermost.rnbeta;
 
 import android.app.Notification;
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.RemoteInput;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
+
+import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.Person;
 
 import android.util.Log;
 import java.io.IOException;
+import java.util.Objects;
 
 import okhttp3.Call;
 import okhttp3.MediaType;
@@ -29,10 +29,8 @@ import org.json.JSONException;
 
 import com.mattermost.helpers.*;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.WritableMap;
 
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
-import com.wix.reactnativenotifications.core.ProxyService;
 import com.wix.reactnativenotifications.core.notification.PushNotificationProps;
 
 public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
@@ -42,25 +40,30 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+        try {
             final CharSequence message = getReplyMessage(intent);
             if (message == null) {
                 return;
             }
 
             mContext = context;
-            bundle = NotificationIntentAdapter.extractPendingNotificationDataFromIntent(intent);
+            bundle = intent.getBundleExtra(CustomPushNotificationHelper.NOTIFICATION);
             notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-            final ReactApplicationContext reactApplicationContext = new ReactApplicationContext(context);
             final int notificationId = intent.getIntExtra(CustomPushNotificationHelper.NOTIFICATION_ID, -1);
-            final Bundle notification = intent.getBundleExtra(CustomPushNotificationHelper.NOTIFICATION);
-            final String serverUrl = notification.getString("serverUrl");
-            final String token = Credentials.getCredentialsForServerSync(reactApplicationContext, serverUrl);
+            final String serverUrl = bundle.getString("server_url");
+            if (serverUrl != null) {
+                final ReactApplicationContext reactApplicationContext = new ReactApplicationContext(context);
+                final String token = Credentials.getCredentialsForServerSync(reactApplicationContext, serverUrl);
 
-            if (token != null) {
-                replyToMessage(serverUrl, token, notificationId, message);
+                if (token != null) {
+                    replyToMessage(serverUrl, token, notificationId, message);
+                }
+            } else {
+                onReplyFailed(notificationId);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -80,7 +83,7 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
         final OkHttpClient client = new OkHttpClient();
         final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         String json = buildReplyPost(channelId, rootId, message.toString());
-        RequestBody body = RequestBody.create(JSON, json);
+        RequestBody body = RequestBody.create(json, JSON);
 
         String postsEndpoint = "/api/v4/posts?set_online=false";
         String url = String.format("%s%s", serverUrl.replaceAll("/$", ""), postsEndpoint);
@@ -94,18 +97,23 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
 
         client.newCall(request).enqueue(new okhttp3.Callback() {
             @Override
-            public void onFailure(Call call, IOException e) {
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 Log.i("ReactNative", String.format("Reply FAILED exception %s", e.getMessage()));
                 onReplyFailed(notificationId);
             }
 
             @Override
-            public void onResponse(Call call, final Response response) throws IOException {
+            public void onResponse(@NonNull Call call, @NonNull final Response response) throws IOException {
                 if (response.isSuccessful()) {
                     onReplySuccess(notificationId, message);
                     Log.i("ReactNative", "Reply SUCCESS");
                 } else {
-                    Log.i("ReactNative", String.format("Reply FAILED status %s BODY %s", response.code(), response.body().string()));
+                    Log.i("ReactNative",
+                            String.format("Reply FAILED status %s BODY %s",
+                                    response.code(),
+                                    Objects.requireNonNull(response.body()).string()
+                            )
+                    );
                     onReplyFailed(notificationId);
                 }
             }
@@ -133,9 +141,8 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
     }
 
     private void recreateNotification(int notificationId, final CharSequence message) {
-        final Intent cta = new Intent(mContext, ProxyService.class);
         final PushNotificationProps notificationProps = new PushNotificationProps(bundle);
-        final PendingIntent pendingIntent = NotificationIntentAdapter.createPendingNotificationIntent(mContext, cta, notificationProps);
+        final PendingIntent pendingIntent = NotificationIntentAdapter.createPendingNotificationIntent(mContext, notificationProps);
         NotificationCompat.Builder builder = CustomPushNotificationHelper.createNotificationBuilder(mContext, pendingIntent, bundle, false);
         Notification notification =  builder.build();
         NotificationCompat.MessagingStyle messagingStyle = NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(notification);

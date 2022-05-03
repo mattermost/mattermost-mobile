@@ -14,12 +14,13 @@ import NavigationConstants from '@constants/navigation';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import EphemeralStore from '@store/ephemeral_store';
 import {LaunchProps, LaunchType} from '@typings/launch';
-import {NavButtons} from '@typings/screens/navigation';
+import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
+
+import type {NavButtons} from '@typings/screens/navigation';
 
 const {MattermostManaged} = NativeModules;
 const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
-export const appearanceControlledScreens = [Screens.SERVER, Screens.LOGIN, Screens.FORGOT_PASSWORD, Screens.MFA, Screens.SSO];
 
 const alpha = {
     from: 0,
@@ -75,26 +76,45 @@ export const loginAnimationOptions = () => {
     };
 };
 
-export const bottomSheetModalOptions = (theme: Theme, closeButtonId: string) => {
-    const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
+export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string) => {
+    if (closeButtonId) {
+        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
+        return {
+            modalPresentationStyle: OptionsModalPresentationStyle.formSheet,
+            modal: {
+                swipeToDismiss: true,
+            },
+            topBar: {
+                leftButtons: [{
+                    id: closeButtonId,
+                    icon: closeButton,
+                    testID: closeButtonId,
+                }],
+                leftButtonColor: changeOpacity(theme.centerChannelColor, 0.56),
+                background: {
+                    color: theme.centerChannelBg,
+                },
+                title: {
+                    color: theme.centerChannelColor,
+                },
+            },
+        };
+    }
+
     return {
-        modalPresentationStyle: OptionsModalPresentationStyle.formSheet,
-        modal: {
-            swipeToDismiss: true,
+        animations: {
+            showModal: {
+                enabled: false,
+            },
+            dismissModal: {
+                enabled: false,
+            },
         },
-        topBar: {
-            leftButtons: [{
-                id: closeButtonId,
-                icon: closeButton,
-                testID: closeButtonId,
-            }],
-            leftButtonColor: changeOpacity(theme.centerChannelColor, 0.56),
-            background: {
-                color: theme.centerChannelBg,
-            },
-            title: {
-                color: theme.centerChannelColor,
-            },
+        modal: {swipeToDismiss: true},
+        statusBar: {
+            backgroundColor: null,
+            drawBehind: true,
+            translucent: true,
         },
     };
 };
@@ -122,11 +142,12 @@ Navigation.setDefaultOptions({
 Appearance.addChangeListener(() => {
     const theme = getThemeFromState();
     const screens = EphemeralStore.getAllNavigationComponents();
+
     if (screens.includes(Screens.SERVER)) {
         for (const screen of screens) {
-            if (appearanceControlledScreens.includes(screen)) {
+            if (appearanceControlledScreens.has(screen)) {
                 Navigation.updateProps(screen, {theme});
-                setNavigatorStyles(screen, theme, loginAnimationOptions(), theme.centerChannelBg);
+                setNavigatorStyles(screen, theme, loginAnimationOptions(), theme.sidebarBg);
             }
         }
     }
@@ -163,6 +184,8 @@ export function resetToHome(passProps: LaunchProps = {launchType: LaunchType.Nor
 
     if (passProps.launchType === LaunchType.AddServer) {
         dismissModal({componentId: Screens.SERVER});
+        dismissModal({componentId: Screens.LOGIN});
+        dismissModal({componentId: Screens.SSO});
         dismissModal({componentId: Screens.BOTTOM_SHEET});
         return;
     }
@@ -187,7 +210,7 @@ export function resetToHome(passProps: LaunchProps = {launchType: LaunchType.Nor
                         visible: false,
                         height: 0,
                         background: {
-                            color: theme.sidebarHeaderBg,
+                            color: theme.sidebarBg,
                         },
                         backButton: {
                             visible: false,
@@ -206,7 +229,7 @@ export function resetToHome(passProps: LaunchProps = {launchType: LaunchType.Nor
 
 export function resetToSelectServer(passProps: LaunchProps) {
     const theme = getDefaultThemeByAppearance();
-    const isDark = tinyColor(theme.centerChannelBg).isDark();
+    const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
     EphemeralStore.clearNavigationComponents();
@@ -234,7 +257,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
                         title: '',
                     },
                     background: {
-                        color: theme.sidebarHeaderBg,
+                        color: theme.sidebarBg,
                     },
                     visible: false,
                     height: 0,
@@ -276,7 +299,7 @@ export function resetToTeams(name: string, title: string, passProps = {}, option
                 title: '',
             },
             background: {
-                color: theme.sidebarHeaderBg,
+                color: theme.sidebarBg,
             },
         },
     };
@@ -330,7 +353,7 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
                 testID: 'screen.back.button',
             },
             background: {
-                color: theme.sidebarHeaderBg,
+                color: theme.sidebarBg,
             },
             title: {
                 color: theme.sidebarHeaderTextColor,
@@ -430,7 +453,7 @@ export function showModal(name: string, title: string, passProps = {}, options =
                 title: '',
             },
             background: {
-                color: theme.sidebarHeaderBg,
+                color: theme.sidebarBg,
             },
             title: {
                 color: theme.sidebarHeaderTextColor,
@@ -572,7 +595,7 @@ export async function dismissAllModals() {
     }
 }
 
-export const buildNavigationButton = (id: string, testID: string, icon?: ImageResource): OptionsTopBarButton => ({
+export const buildNavigationButton = (id: string, testID: string, icon?: ImageResource, text?: string): OptionsTopBarButton => ({
     fontSize: 16,
     fontFamily: 'OpenSans-SemiBold',
     fontWeight: '600',
@@ -580,6 +603,7 @@ export const buildNavigationButton = (id: string, testID: string, icon?: ImageRe
     icon,
     showAsAction: 'always',
     testID,
+    text,
 });
 
 export function setButtons(componentId: string, buttons: NavButtons = {leftButtons: [], rightButtons: []}) {
@@ -590,10 +614,6 @@ export function setButtons(componentId: string, buttons: NavButtons = {leftButto
     };
 
     mergeNavigationOptions(componentId, options);
-}
-
-export function mergeNavigationOptions(componentId: string, options: Options) {
-    Navigation.mergeOptions(componentId, options);
 }
 
 export function showOverlay(name: string, passProps = {}, options = {}) {
@@ -655,7 +675,7 @@ export async function bottomSheet({title, renderContent, snapPoints, initialSnap
             initialSnapIndex,
             renderContent,
             snapPoints,
-        }, {modal: {swipeToDismiss: true}});
+        }, bottomSheetModalOptions(theme));
     }
 }
 
@@ -663,3 +683,8 @@ export async function dismissBottomSheet(alternativeScreen = Screens.BOTTOM_SHEE
     DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
     await EphemeralStore.waitUntilScreensIsRemoved(alternativeScreen);
 }
+
+export const showAppForm = async (form: AppForm, call: AppCallRequest) => {
+    const passProps = {form, call};
+    showModal(Screens.APP_FORM, form.title || '', passProps);
+};

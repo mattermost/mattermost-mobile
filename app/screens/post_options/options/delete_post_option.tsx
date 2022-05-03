@@ -6,12 +6,11 @@ import {useIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {deletePost} from '@actions/remote/post';
+import {BaseOption} from '@components/common_post_options';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
-
-import BaseOption from './base_option';
 
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -50,7 +49,7 @@ const DeletePostOption = ({combinedPost, post}: Props) => {
             defaultMessage='Delete'
             iconName='trash-can-outline'
             onPress={onPress}
-            testID='post.options.delete.post'
+            testID='post_options.delete.post.option'
             isDestructive={true}
         />
     );

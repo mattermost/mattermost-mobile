@@ -86,7 +86,7 @@ const MarkTableImage = ({disabled, imagesMetadata, location, postId, serverURL, 
             type: 'image',
         };
         openGalleryAtIndex(galleryIdentifier, 0, [item]);
-    }, []);
+    }, [metadata, source, serverURL, currentServerUrl, postId]);
 
     const {ref, onGestureEvent, styles} = useGalleryItem(
         galleryIdentifier,

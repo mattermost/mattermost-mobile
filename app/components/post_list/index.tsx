@@ -31,6 +31,7 @@ type Props = {
     currentUsername: string;
     highlightedId?: PostModel['id'];
     highlightPinnedOrSaved?: boolean;
+    isCRTEnabled?: boolean;
     isTimezoneEnabled: boolean;
     lastViewedAt: number;
     location: string;
@@ -82,6 +83,7 @@ const PostList = ({
     footer,
     highlightedId,
     highlightPinnedOrSaved = true,
+    isCRTEnabled,
     isTimezoneEnabled,
     lastViewedAt,
     location,
@@ -99,7 +101,7 @@ const PostList = ({
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
     const scrolledToHighlighted = useRef(false);
-    const [offsetY, setOffsetY] = useState(0);
+    const [enableRefreshControl, setEnableRefreshControl] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -113,7 +115,7 @@ const PostList = ({
 
     useEffect(() => {
         listRef.current?.scrollToOffset({offset: 0, animated: false});
-    }, [channelId, listRef.current]);
+    }, [channelId]);
 
     useEffect(() => {
         const scrollToBottom = (screen: string) => {
@@ -145,13 +147,9 @@ const PostList = ({
     const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
         if (Platform.OS === 'android') {
             const {y} = event.nativeEvent.contentOffset;
-            if (y === 0) {
-                setOffsetY(y);
-            } else if (offsetY === 0 && y !== 0) {
-                setOffsetY(y);
-            }
+            setEnableRefreshControl(y === 0);
         }
-    }, [offsetY]);
+    }, []);
 
     const onScrollToIndexFailed = useCallback((info: ScrollIndexFailed) => {
         const index = Math.min(info.highestMeasuredFrameIndex, info.index);
@@ -235,6 +233,7 @@ const PostList = ({
                     <ThreadOverview
                         rootId={rootId!}
                         testID={`${testID}.thread_overview`}
+                        style={styles.scale}
                     />
                 );
             }
@@ -303,6 +302,7 @@ const PostList = ({
 
         return (
             <Post
+                isCRTEnabled={isCRTEnabled}
                 key={item.id}
                 post={item}
                 style={styles.scale}
@@ -310,13 +310,13 @@ const PostList = ({
                 {...postProps}
             />
         );
-    }, [currentTimezone, highlightPinnedOrSaved, isTimezoneEnabled, orderedPosts, shouldRenderReplyButton, theme]);
+    }, [currentTimezone, highlightPinnedOrSaved, isCRTEnabled, isTimezoneEnabled, orderedPosts, shouldRenderReplyButton, theme]);
 
-    const scrollToIndex = useCallback((index: number, animated = true) => {
+    const scrollToIndex = useCallback((index: number, animated = true, applyOffset = true) => {
         listRef.current?.scrollToIndex({
             animated,
             index,
-            viewOffset: 0,
+            viewOffset: applyOffset ? Platform.select({ios: -45, default: 0}) : 0,
             viewPosition: 1, // 0 is at bottom
         });
     }, []);
@@ -339,7 +339,7 @@ const PostList = ({
     return (
         <>
             <PostListRefreshControl
-                enabled={offsetY === 0}
+                enabled={enableRefreshControl}
                 refreshing={refreshing}
                 onRefresh={onRefresh}
                 style={styles.container}
@@ -351,7 +351,6 @@ const PostList = ({
                     keyboardShouldPersistTaps='handled'
                     keyExtractor={keyExtractor}
                     initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
-                    listKey={`postList-${channelId}`}
                     ListFooterComponent={footer}
                     maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
                     maxToRenderPerBatch={10}
@@ -367,7 +366,7 @@ const PostList = ({
                     scrollEventThrottle={60}
                     style={styles.flex}
                     viewabilityConfig={VIEWABILITY_CONFIG}
-                    testID={testID}
+                    testID={`${testID}.flat_list`}
                 />
             </PostListRefreshControl>
             {showMoreMessages &&

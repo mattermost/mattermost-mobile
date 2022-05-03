@@ -6,7 +6,7 @@
 
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {ActivityIndicatorProps, Platform, StyleProp, TextInput, TextInputProps, TextStyle, TouchableOpacityProps, ViewStyle} from 'react-native';
+import {ActivityIndicatorProps, Keyboard, Platform, StyleProp, TextInput, TextInputProps, TextStyle, TouchableOpacityProps, ViewStyle} from 'react-native';
 import {SearchBar} from 'react-native-elements';
 
 import CompassIcon from '@components/compass_icon';
@@ -26,6 +26,7 @@ export type SearchProps = TextInputProps & {
     };
     cancelButtonTitle?: string;
     clearIcon?: React.ReactElement;
+    clearIconColor?: string;
     containerStyle?: StyleProp<ViewStyle>;
     inputContainerStyle?: StyleProp<ViewStyle>;
     inputStyle?: StyleProp<TextStyle>;
@@ -35,6 +36,8 @@ export type SearchProps = TextInputProps & {
     onClear?(): void;
     rightIconContainerStyle?: StyleProp<ViewStyle>;
     searchIcon?: React.ReactElement;
+    searchIconColor?: string;
+    selectionColor?: string;
     showCancel?: boolean;
     showLoading?: boolean;
 };
@@ -54,13 +57,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingBottom: 0,
     },
     inputContainerStyle: {
-        backgroundColor: changeOpacity(theme.sidebarText, 0.12),
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.12),
         borderRadius: 8,
         height: SEARCH_INPUT_HEIGHT,
         marginLeft: 0,
     },
     inputStyle: {
-        color: theme.sidebarText,
+        color: theme.centerChannelColor,
         marginLeft: Platform.select({ios: 6, android: 14}),
         top: Platform.select({android: 1}),
         ...typography('Body', 200, 'Regular'),
@@ -79,9 +82,10 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
     const searchInputTestID = `${props.testID}.search.input`;
 
     const onCancel = useCallback(() => {
+        Keyboard.dismiss();
         setValue('');
         props.onCancel?.();
-    }, []);
+    }, [props.onCancel]);
 
     const onClear = useCallback(() => {
         setValue('');
@@ -91,11 +95,11 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
     const onChangeText = useCallback((text: string) => {
         setValue(text);
         props.onChangeText?.(text);
-    }, []);
+    }, [props.onChangeText]);
 
     const cancelButtonProps = useMemo(() => ({
         buttonTextStyle: {
-            color: changeOpacity(theme.sidebarText, 0.72),
+            color: changeOpacity(theme.centerChannelColor, 0.72),
             ...typography('Body', 100, 'Regular'),
         },
     }), [theme]);
@@ -104,37 +108,34 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
         setValue(props.defaultValue || value || '');
     }, [props.defaultValue]);
 
-    const clearIcon = useMemo(() => {
-        return (
-            <CompassIcon
-                color={changeOpacity(theme.sidebarText, Platform.select({android: 0.56, default: 0.72}))}
-                name={Platform.select({android: 'close', default: 'close-circle'})}
-                onPress={searchRef.current?.clear}
-                size={Platform.select({android: 24, default: 18})}
-                testID={searchClearButtonTestID}
-            />
-        );
-    }, [searchRef.current, theme]);
-
-    const searchIcon = useMemo(() => (
+    const clearIcon = (
         <CompassIcon
-            color={changeOpacity(theme.sidebarText, Platform.select({android: 0.56, default: 0.72}))}
+            color={changeOpacity(props.clearIconColor || theme.centerChannelColor, Platform.select({android: 0.56, default: 0.72}))}
+            name={Platform.select({android: 'close', default: 'close-circle'})}
+            onPress={searchRef.current?.clear}
+            size={Platform.select({android: 24, default: 18})}
+            testID={searchClearButtonTestID}
+        />
+    );
+
+    const searchIcon = (
+        <CompassIcon
+            color={changeOpacity(props.searchIconColor || theme.centerChannelColor, Platform.select({android: 0.56, default: 0.72}))}
             name='magnify'
+            onPress={searchRef.current?.focus}
             size={24}
         />
-    ), [theme]);
+    );
 
-    const cancelIcon = useMemo(() => (
+    const cancelIcon = (
         <CompassIcon
-            color={changeOpacity(theme.sidebarText, Platform.select({android: 0.56, default: 0.72}))}
+            color={changeOpacity(props.cancelButtonProps?.color || theme.centerChannelColor, Platform.select({android: 0.56, default: 0.72}))}
             name='arrow-left'
-
-            // @ts-expect-error cancel is not part of TextInput does exist in SearchBar
-            onPress={searchRef.current?.cancel}
+            onPress={onCancel}
             size={24}
             testID={searchCancelButtonTestID}
         />
-    ), [searchRef.current, theme]);
+    );
 
     useImperativeHandle(ref, () => ({
         blur: () => {
@@ -172,13 +173,13 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
             // @ts-expect-error onChangeText type definition is wrong in elements
             onChangeText={onChangeText}
             placeholder={props.placeholder || intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-            placeholderTextColor={props.placeholderTextColor || changeOpacity(theme.sidebarText, Platform.select({android: 0.56, default: 0.72}))}
+            placeholderTextColor={props.placeholderTextColor || changeOpacity(theme.centerChannelColor, Platform.select({android: 0.56, default: 0.72}))}
             platform={Platform.select({android: 'android', default: 'ios'})}
             ref={searchRef}
 
             // @ts-expect-error searchIcon definition does not include a ReactElement
             searchIcon={searchIcon}
-            selectionColor={Platform.select({android: changeOpacity(theme.sidebarText, 0.24), default: theme.sidebarText})}
+            selectionColor={Platform.select({android: changeOpacity(props.selectionColor || theme.centerChannelColor, 0.24), default: props.selectionColor || theme.centerChannelColor})}
             testID={searchInputTestID}
             value={value}
         />

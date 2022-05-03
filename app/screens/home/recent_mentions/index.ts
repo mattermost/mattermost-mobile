@@ -8,41 +8,30 @@ import compose from 'lodash/fp/compose';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {SYSTEM_IDENTIFIERS, MM_TABLES} from '@constants/database';
-import {SystemModel, UserModel} from '@database/models/server';
+import {queryPostsById} from '@queries/servers/post';
+import {observeConfigBooleanValue, observeRecentMentions} from '@queries/servers/system';
+import {observeCurrentUser} from '@queries/servers/user';
 import {getTimezone} from '@utils/user';
 
 import RecentMentionsScreen from './recent_mentions';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const {USER, SYSTEM, POST} = MM_TABLES.SERVER;
-
 const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
-    const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap((currentUserId) => database.get<UserModel>(USER).findAndObserve(currentUserId.value)),
-    );
+    const currentUser = observeCurrentUser(database);
 
     return {
-        mentions: database.get<SystemModel>(SYSTEM).query(
-            Q.where('id', SYSTEM_IDENTIFIERS.RECENT_MENTIONS),
-            Q.take(1),
-        ).observeWithColumns(['value']).pipe(
-            switchMap((rows) => {
-                if (!rows.length || !rows[0].value.length) {
+        mentions: observeRecentMentions(database).pipe(
+            switchMap((recentMentions) => {
+                if (!recentMentions.length) {
                     return of$([]);
                 }
-                const row = rows[0];
-                return database.get(POST).query(
-                    Q.where('id', Q.oneOf(row.value)),
-                    Q.sortBy('create_at', Q.asc),
-                ).observe();
+                return queryPostsById(database, recentMentions, Q.asc).observe();
             }),
         ),
-        currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user.timezone))))),
-        isTimezoneEnabled: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-            switchMap((config) => of$(config.value.ExperimentalTimezone === 'true')),
-        ),
+        currentUser,
+        currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
+        isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
     };
 });
 

@@ -38,12 +38,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.sidebarText, 0.4),
         },
         iconActive: {
-            color: theme.sidebarTextActiveColor,
+            color: theme.sidebarText,
         },
         iconUnread: {
             color: theme.sidebarUnreadText,
         },
         iconInfo: {
+            color: changeOpacity(theme.centerChannelColor, 0.72),
+        },
+        iconInfoUnread: {
             color: theme.centerChannelColor,
         },
         groupBox: {
@@ -53,7 +56,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center',
         },
         groupBoxActive: {
-            backgroundColor: changeOpacity(theme.sidebarTextActiveColor, 0.3),
+            backgroundColor: changeOpacity(theme.sidebarText, 0.3),
         },
         groupBoxUnread: {
             backgroundColor: changeOpacity(theme.sidebarUnreadText, 0.3),
@@ -66,12 +69,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Body', 75, 'SemiBold'),
         },
         groupActive: {
-            color: theme.sidebarTextActiveColor,
+            color: theme.sidebarText,
         },
         groupUnread: {
             color: theme.sidebarUnreadText,
         },
         groupInfo: {
+            color: changeOpacity(theme.centerChannelColor, 0.72),
+        },
+        groupInfoUnread: {
             color: theme.centerChannelColor,
         },
         muted: {
@@ -81,19 +87,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const ChannelIcon = ({
-    hasDraft = false,
-    isActive = false,
-    isArchived = false,
-    isInfo = false,
-    isUnread = false,
-    isMuted = false,
-    membersCount = 0,
-    name,
-    shared,
-    size = 12,
-    style,
-    testID,
-    type,
+    hasDraft = false, isActive = false, isArchived = false,
+    isInfo = false, isUnread = false, isMuted = false,
+    membersCount = 0, name,
+    shared, size = 12, style, testID, type,
 }: ChannelIconProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -119,9 +116,9 @@ const ChannelIcon = ({
     }
 
     if (isInfo) {
-        activeIcon = styles.iconInfo;
+        activeIcon = isUnread ? styles.iconInfoUnread : styles.iconInfo;
         activeGroupBox = styles.groupBoxInfo;
-        activeGroup = styles.groupInfo;
+        activeGroup = isUnread ? styles.groupInfoUnread : styles.groupInfo;
     }
 
     if (isMuted) {
@@ -186,7 +183,11 @@ const ChannelIcon = ({
             </View>
         );
     } else if (type === General.DM_CHANNEL) {
-        icon = (<DmAvatar channelName={name}/>);
+        icon = (
+            <DmAvatar
+                channelName={name}
+                isInfo={isInfo}
+            />);
     }
 
     return (
@@ -196,4 +197,4 @@ const ChannelIcon = ({
     );
 };
 
-export default ChannelIcon;
+export default React.memo(ChannelIcon);

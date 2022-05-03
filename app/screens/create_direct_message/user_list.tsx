@@ -4,15 +4,17 @@
 import React, {useCallback, useMemo} from 'react';
 import {FlatList, Keyboard, ListRenderItemInfo, Platform, SectionList, SectionListData, Text, View} from 'react-native';
 
-import {typography} from '@app/utils/typography';
-import FormattedText from '@components/formatted_text';
+import Loading from '@components/loading';
+import NoResultsWithTerm from '@components/no_results_with_term';
 import UserListRow from '@components/user_list_row';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
+import {useKeyboardHeight} from '@hooks/device';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
 } from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const INITIAL_BATCH_TO_RENDER = 15;
 const SCROLL_EVENT_THROTTLE = 60;
@@ -73,28 +75,20 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         container: {
             flexGrow: 1,
         },
-        separator: {
-            height: 1,
+        loadingContainer: {
             flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+            justifyContent: 'center' as const,
+            alignItems: 'center' as const,
         },
-        listView: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg,
-            ...Platform.select({
-                android: {
-                    marginBottom: 20,
-                },
-            }),
+        loading: {
+            height: 32,
+            width: 32,
+            justifyContent: 'center' as const,
         },
-        loadingText: {
-            color: changeOpacity(theme.centerChannelColor, 0.6),
-        },
-        searching: {
-            backgroundColor: theme.centerChannelBg,
-            height: '100%',
-            position: 'absolute',
-            width: '100%',
+        noResultContainer: {
+            flexGrow: 1,
+            alignItems: 'center' as const,
+            justifyContent: 'center' as const,
         },
         sectionContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
@@ -109,16 +103,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             ...typography('Body', 300, 'SemiBold'),
         },
-        noResultContainer: {
-            flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        noResultText: {
-            fontSize: 26,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-        },
     };
 });
 
@@ -132,7 +116,7 @@ type Props = {
     showNoResults: boolean;
     selectedIds: {[id: string]: UserProfile};
     testID?: string;
-    isSearch: boolean;
+    term?: string;
 }
 
 export default function UserList({
@@ -144,11 +128,16 @@ export default function UserList({
     fetchMore,
     loading,
     showNoResults,
-    isSearch,
+    term,
     testID,
 }: Props) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
+    const keyboardHeight = useKeyboardHeight();
+    const noResutsStyle = useMemo(() => [
+        style.noResultContainer,
+        {paddingBottom: keyboardHeight},
+    ], [style, keyboardHeight]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<UserProfile>) => {
         // The list will re-render when the selection changes because it's passed into the list as extraData
@@ -164,7 +153,7 @@ export default function UserList({
                 selectable={canAdd}
                 selected={selected}
                 enabled={canAdd}
-                testID='more_direct_messages.user_list.user_item'
+                testID='create_direct_message.user_list.user_item'
                 teammateNameDisplay={teammateNameDisplay}
                 user={item}
             />
@@ -177,31 +166,25 @@ export default function UserList({
         }
 
         return (
-            <View style={style.loadingContainer}>
-                <FormattedText
-                    id='mobile.loading_members'
-                    defaultMessage='Loading Members...'
-                    style={style.loadingText}
-                />
-            </View>
+            <Loading
+                containerStyle={style.loadingContainer}
+                style={style.loading}
+                color={theme.buttonBg}
+            />
         );
-    }, [loading && style]);
+    }, [loading, theme]);
 
     const renderNoResults = useCallback(() => {
-        if (!showNoResults) {
+        if (!showNoResults || !term) {
             return null;
         }
 
         return (
-            <View style={style.noResultContainer}>
-                <FormattedText
-                    id='mobile.custom_list.no_results'
-                    defaultMessage='No Results'
-                    style={style.noResultText}
-                />
+            <View style={noResutsStyle}>
+                <NoResultsWithTerm term={term}/>
             </View>
         );
-    }, [showNoResults && style]);
+    }, [showNoResults && style, term, noResutsStyle]);
 
     const renderSectionHeader = useCallback(({section}: {section: SectionListData<UserProfile>}) => {
         return (
@@ -230,7 +213,7 @@ export default function UserList({
                 renderItem={renderItem}
                 scrollEventThrottle={SCROLL_EVENT_THROTTLE}
                 style={style.list}
-                testID={testID}
+                testID={`${testID}.flat_list`}
             />
         );
     };
@@ -254,20 +237,20 @@ export default function UserList({
                 sections={data}
                 style={style.list}
                 stickySectionHeadersEnabled={false}
-                testID={testID}
+                testID={`${testID}.section_list`}
                 onEndReached={fetchMore}
             />
         );
     };
 
     const data = useMemo(() => {
-        if (isSearch) {
+        if (term) {
             return profiles;
         }
         return createProfilesSections(profiles);
-    }, [isSearch, profiles]);
+    }, [term, profiles]);
 
-    if (isSearch) {
+    if (term) {
         return renderFlatList(data as UserProfile[]);
     }
     return renderSectionList(data as Array<SectionListData<UserProfile>>);

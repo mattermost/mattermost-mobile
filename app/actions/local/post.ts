@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {postActionWithCookie} from '@actions/remote/post';
 import {ActionType, Post} from '@constants';
 import DatabaseManager from '@database/manager';
-import {prepareDeletePost, queryPostById} from '@queries/servers/post';
-import {queryCurrentUserId} from '@queries/servers/system';
+import {getPostById, prepareDeletePost} from '@queries/servers/post';
+import {getCurrentUserId} from '@queries/servers/system';
 import {generateId} from '@utils/general';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
@@ -66,7 +65,7 @@ export const sendEphemeralPost = async (serverUrl: string, message: string, chan
 
     let authorId = userId;
     if (!authorId) {
-        authorId = await queryCurrentUserId(operator.database);
+        authorId = await getCurrentUserId(operator.database);
     }
 
     const timestamp = Date.now();
@@ -100,7 +99,7 @@ export const sendEphemeralPost = async (serverUrl: string, message: string, chan
     return {post};
 };
 
-export const removePost = async (serverUrl: string, post: PostModel | Post) => {
+export async function removePost(serverUrl: string, post: PostModel | Post) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -110,7 +109,7 @@ export const removePost = async (serverUrl: string, post: PostModel | Post) => {
         const systemPostIds = getPostIdsForCombinedUserActivityPost(post.id);
         const removeModels = [];
         for await (const id of systemPostIds) {
-            const postModel = await queryPostById(operator.database, id);
+            const postModel = await getPostById(operator.database, id);
             if (postModel) {
                 const preparedPost = await prepareDeletePost(postModel);
                 removeModels.push(...preparedPost);
@@ -121,7 +120,7 @@ export const removePost = async (serverUrl: string, post: PostModel | Post) => {
             await operator.batchRecords(removeModels);
         }
     } else {
-        const postModel = await queryPostById(operator.database, post.id);
+        const postModel = await getPostById(operator.database, post.id);
         if (postModel) {
             const preparedPost = await prepareDeletePost(postModel);
             if (preparedPost.length) {
@@ -131,55 +130,28 @@ export const removePost = async (serverUrl: string, post: PostModel | Post) => {
     }
 
     return {post};
-};
+}
 
-export const selectAttachmentMenuAction = (serverUrl: string, postId: string, actionId: string, selectedOption: string) => {
-    return postActionWithCookie(serverUrl, postId, actionId, '', selectedOption);
-};
-
-export const markPostAsDeleted = async (serverUrl: string, post: Post) => {
+export async function markPostAsDeleted(serverUrl: string, post: Post, prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
-    const dbPost = await queryPostById(operator.database, post.id);
+    const dbPost = await getPostById(operator.database, post.id);
     if (!dbPost) {
-        return {};
+        return {error: 'Post not found'};
     }
 
-    dbPost.prepareUpdate((p) => {
+    const model = dbPost.prepareUpdate((p) => {
         p.deleteAt = Date.now();
         p.message = '';
         p.metadata = null;
         p.props = undefined;
     });
 
-    operator.batchRecords([dbPost]);
-
-    return {post: dbPost};
-};
-
-export const processPostsFetched = async (serverUrl: string, actionType: string, data: PostResponse, fetchOnly = false) => {
-    const order = data.order;
-    const posts = Object.values(data.posts) as Post[];
-    const previousPostId = data.prev_post_id;
-
-    if (!fetchOnly) {
-        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-        if (operator) {
-            await operator.handlePosts({
-                actionType,
-                order,
-                posts,
-                previousPostId,
-            });
-        }
+    if (!prepareRecordsOnly) {
+        await operator.batchRecords([dbPost]);
     }
-
-    return {
-        posts,
-        order,
-        previousPostId,
-    };
-};
+    return {model};
+}

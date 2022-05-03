@@ -22,11 +22,13 @@ import {expect} from 'detox';
 describe('Server Login - Login by Email', () => {
     const {
         backButton,
+        descriptionEnterCredentials,
         forgotPasswordButton,
         passwordInput,
         passwordInputError,
         signinButton,
         signinButtonDisabled,
+        titleLoginToAccount,
         usernameInput,
     } = LoginScreen;
     const serverOneDisplayName = 'Server 1';
@@ -48,6 +50,8 @@ describe('Server Login - Login by Email', () => {
     it('MM-T4677_1 - should match elements on login screen', async () => {
         // * Verify basic elements on login screen
         await expect(backButton).toBeVisible();
+        await expect(titleLoginToAccount).toHaveText('Log In to Your Account');
+        await expect(descriptionEnterCredentials).toHaveText('Enter your login details below.');
         await expect(usernameInput).toBeVisible();
         await expect(passwordInput).toBeVisible();
         await expect(forgotPasswordButton).toBeVisible();

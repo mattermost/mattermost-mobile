@@ -10,6 +10,7 @@ import type MyTeamModel from '@typings/database/models/servers/my_team';
 
 type Props = {
     myOrderedTeams: MyTeamModel[];
+    testID?: string;
 }
 
 const keyExtractor = (item: MyTeamModel) => item.id;
@@ -22,7 +23,7 @@ const renderTeam = ({item: t}: ListRenderItemInfo<MyTeamModel>) => {
     );
 };
 
-export default function TeamList({myOrderedTeams}: Props) {
+export default function TeamList({myOrderedTeams, testID}: Props) {
     return (
         <View style={styles.container}>
             <FlatList
@@ -33,6 +34,7 @@ export default function TeamList({myOrderedTeams}: Props) {
                 keyExtractor={keyExtractor}
                 renderItem={renderTeam}
                 showsVerticalScrollIndicator={false}
+                testID={`${testID}.flat_list`}
             />
         </View>
     );

@@ -10,10 +10,10 @@ const {TEAM} = MM_TABLES.SERVER;
 export default tableSchema({
     name: TEAM,
     columns: [
-        {name: 'is_allow_open_invite', type: 'boolean'},
         {name: 'allowed_domains', type: 'string'},
         {name: 'description', type: 'string'},
         {name: 'display_name', type: 'string'},
+        {name: 'is_allow_open_invite', type: 'boolean'},
         {name: 'is_group_constrained', type: 'boolean'},
         {name: 'last_team_icon_updated_at', type: 'number'},
         {name: 'name', type: 'string'},

@@ -2,10 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {timeouts} from '@support/utils';
+import {expect} from 'detox';
 
 class ServerScreen {
     testID = {
         serverScreen: 'server.screen',
+        closeButton: 'close-server',
         headerTitleAddServer: 'server_header.title.add_server',
         headerTitleConnectToServer: 'server_header.title.connect_to_server',
         headerWelcome: 'server_header.welcome',
@@ -20,6 +22,7 @@ class ServerScreen {
     };
 
     serverScreen = element(by.id(this.testID.serverScreen));
+    closeButton = element(by.id(this.testID.closeButton));
     headerTitleAddServer = element(by.id(this.testID.headerTitleAddServer));
     headerTitleConnectToServer = element(by.id(this.testID.headerTitleConnectToServer));
     headerWelcome = element(by.id(this.testID.headerWelcome));
@@ -44,6 +47,11 @@ class ServerScreen {
         await this.serverUrlInput.replaceText(serverUrl);
         await this.serverDisplayNameInput.replaceText(serverDisplayName);
         await this.connectButton.tap();
+    };
+
+    close = async () => {
+        await this.closeButton.tap();
+        await expect(this.serverScreen).not.toBeVisible();
     };
 }
 

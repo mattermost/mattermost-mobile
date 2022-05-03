@@ -6,18 +6,19 @@ import {Alert} from 'react-native';
 
 import {showPermalink} from '@actions/remote/permalink';
 import {Client} from '@client/rest';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DeepLinkTypes from '@constants/deep_linking';
 import DatabaseManager from '@database/manager';
-import NetworkManager from '@init/network_manager';
-import {queryChannelsById} from '@queries/servers/channel';
-import {queryConfig, queryCurrentTeamId} from '@queries/servers/system';
-import {queryUsersByUsername} from '@queries/servers/user';
+import IntegrationsManager from '@managers/integrations_manager';
+import NetworkManager from '@managers/network_manager';
+import {getChannelById} from '@queries/servers/channel';
+import {getConfig, getCurrentTeamId} from '@queries/servers/system';
+import {getTeammateNameDisplay, queryUsersByUsername} from '@queries/servers/user';
 import {showModal} from '@screens/navigation';
 import * as DraftUtils from '@utils/draft';
 import {matchDeepLink, tryOpenURL} from '@utils/url';
+import {displayUsername} from '@utils/user';
 
-import {getOrCreateDirectChannel, switchToChannelById, switchToChannelByName} from './channel';
+import {makeDirectChannel, switchToChannelById, switchToChannelByName} from './channel';
 
 import type {DeepLinkChannel, DeepLinkPermalink, DeepLinkDM, DeepLinkGM, DeepLinkPlugin} from '@typings/launch';
 
@@ -34,7 +35,6 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
         return {error: error as ClientErrorProps};
     }
 
-    // TODO https://mattermost.atlassian.net/browse/MM-41234
     // const config = await queryConfig(operator.database)
     // if (config.FeatureFlagAppsEnabled) {
     //     const parser = new AppCommandParser(serverUrl, intl, channelId, rootId);
@@ -43,8 +43,8 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
     //     }
     // }
 
-    const channel = (await queryChannelsById(operator.database, [channelId]))?.[0];
-    const teamId = channel?.teamId || (await queryCurrentTeamId(operator.database));
+    const channel = await getChannelById(operator.database, channelId);
+    const teamId = channel?.teamId || (await getCurrentTeamId(operator.database));
 
     const args: CommandArgs = {
         channel_id: channelId,
@@ -71,10 +71,7 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
     }
 
     if (data?.trigger_id) { //eslint-disable-line camelcase
-        operator.handleSystem({
-            systems: [{id: SYSTEM_IDENTIFIERS.INTEGRATION_TRIGGER_ID, value: data.trigger_id}],
-            prepareRecordsOnly: false,
-        });
+        IntegrationsManager.getManager(serverUrl)?.setTriggerId(data.trigger_id);
     }
 
     return {data};
@@ -128,9 +125,10 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+    const {database} = operator;
 
-    const config = await queryConfig(operator.database);
-    const match = matchDeepLink(location, serverUrl, config.SiteURL);
+    const config = await getConfig(database);
+    const match = matchDeepLink(location, serverUrl, config?.SiteURL);
 
     if (match) {
         switch (match.type) {
@@ -151,20 +149,18 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
                     return {data: false};
                 }
 
-                let serverDatabase = operator.database;
                 if (data.serverUrl !== serverUrl) {
-                    serverDatabase = DatabaseManager.serverDatabases[serverUrl]?.database;
-                    if (!serverDatabase) {
+                    if (!database) {
                         return {error: `${serverUrl} database not found`};
                     }
                 }
-                const user = (await queryUsersByUsername(serverDatabase, [data.userName]))?.[0];
+                const user = (await queryUsersByUsername(database, [data.userName]).fetch())[0];
                 if (!user) {
                     DraftUtils.errorUnkownUser(intl);
                     return {data: false};
                 }
 
-                getOrCreateDirectChannel(data.serverUrl, user.id);
+                makeDirectChannel(data.serverUrl, user.id, displayUsername(user, intl.locale, await getTeammateNameDisplay(database)), true);
                 break;
             }
             case DeepLinkTypes.GROUPCHANNEL: {
@@ -199,4 +195,33 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
         tryOpenURL(location, onError);
     }
     return {data: true};
+};
+
+export const fetchCommands = async (serverUrl: string, teamId: string) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error: error as ClientErrorProps};
+    }
+    try {
+        return {commands: await client.getCommandsList(teamId)};
+    } catch (error) {
+        return {error: error as ClientErrorProps};
+    }
+};
+
+export const fetchSuggestions = async (serverUrl: string, term: string, teamId: string, channelId: string, rootId?: string) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error: error as ClientErrorProps};
+    }
+
+    try {
+        return {suggestions: await client.getCommandAutocompleteSuggestionsList(term, teamId, channelId, rootId)};
+    } catch (error) {
+        return {error: error as ClientErrorProps};
+    }
 };

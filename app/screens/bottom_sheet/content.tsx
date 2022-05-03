@@ -8,6 +8,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import Button from '@screens/bottom_sheet/button';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type Props = {
     buttonIcon?: string;
@@ -27,12 +28,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             flex: 1,
         },
-        titleContainer: {marginVertical: 4},
+        titleContainer: {
+            marginTop: 4,
+            marginBottom: 12,
+        },
         titleText: {
             color: theme.centerChannelColor,
-            lineHeight: 30,
-            fontSize: 25,
-            fontFamily: 'OpenSans-SemiBold',
+            ...typography('Heading', 600, 'SemiBold'),
         },
         separator: {
             height: 1,

@@ -8,6 +8,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type PostsInThreadModelInterface from '@typings/database/models/servers/posts_in_thread';
 
 const {POST, POSTS_IN_THREAD} = MM_TABLES.SERVER;
 
@@ -15,15 +16,15 @@ const {POST, POSTS_IN_THREAD} = MM_TABLES.SERVER;
  * PostsInThread model helps us to combine adjacent threads together without leaving
  * gaps in between for an efficient user reading experience for threads.
  */
-export default class PostsInThreadModel extends Model {
+export default class PostsInThreadModel extends Model implements PostsInThreadModelInterface {
     /** table (name) : PostsInThread */
     static table = POSTS_IN_THREAD;
 
     /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
-        /** A POST can have a POSTS_IN_THREAD.(relationship is 1:1)*/
-        [POST]: {type: 'belongs_to', key: 'id'},
+        /** A POST can have multiple POSTS_IN_THREAD. (relationship is 1:N)*/
+        [POST]: {type: 'belongs_to', key: 'root_id'},
     };
 
     /** root_id: Associated root post identifier */

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {ActivityIndicator, DeviceEventEmitter, View, ViewToken} from 'react-native';
+import {ActivityIndicator, DeviceEventEmitter, Platform, View, ViewToken} from 'react-native';
 import Animated, {interpolate, useAnimatedStyle, useSharedValue, withSpring} from 'react-native-reanimated';
 
 import {resetMessageCount} from '@actions/local/channel';
@@ -11,6 +11,7 @@ import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
+import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme, hexToHue} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -23,14 +24,14 @@ type Props = {
     posts: Array<string | PostModel>;
     registerScrollEndIndexListener: (fn: (endIndex: number) => void) => () => void;
     registerViewableItemsListener: (fn: (viewableItems: ViewToken[]) => void) => () => void;
-    scrollToIndex: (index: number, animated?: boolean) => void;
+    scrollToIndex: (index: number, animated?: boolean, applyOffset?: boolean) => void;
     unreadCount: number;
     theme: Theme;
     testID: string;
 }
 
 const HIDDEN_TOP = -60;
-const SHOWN_TOP = 0;
+const SHOWN_TOP = Platform.select({ios: 50, default: 5});
 const MIN_INPUT = 0;
 const MAX_INPUT = 1;
 
@@ -101,12 +102,15 @@ const MoreMessages = ({
     theme,
 }: Props) => {
     const serverUrl = useServerUrl();
+    const isTablet = useIsTablet();
     const pressed = useRef(false);
     const resetting = useRef(false);
+    const initialScroll = useRef(false);
     const [loading, setLoading] = useState(false);
     const [remaining, setRemaining] = useState(0);
     const underlayColor = useMemo(() => `hsl(${hexToHue(theme.buttonBg)}, 50%, 38%)`, [theme]);
     const top = useSharedValue(0);
+    const shownTop = isTablet ? 5 : SHOWN_TOP;
     const BARS_FACTOR = Math.abs((1) / (HIDDEN_TOP - SHOWN_TOP));
     const styles = getStyleSheet(theme);
     const animatedStyle = useAnimatedStyle(() => ({
@@ -122,13 +126,13 @@ const MoreMessages = ({
                 [
                     HIDDEN_TOP,
                     HIDDEN_TOP,
-                    SHOWN_TOP,
-                    SHOWN_TOP,
+                    shownTop,
+                    shownTop,
                 ],
                 Animated.Extrapolate.CLAMP,
             ), {damping: 15}),
         }],
-    }), []);
+    }), [isTablet, shownTop]);
 
     const resetCount = async () => {
         if (resetting.current) {
@@ -149,13 +153,14 @@ const MoreMessages = ({
 
         const lastViewableIndex = viewableItems.filter((v) => v.isViewable)[viewableItems.length - 1]?.index || 0;
         const nextViewableIndex = lastViewableIndex + 1;
-        if (viewableItems[0].index === 0 && nextViewableIndex > newMessageLineIndex) {
+        if (viewableItems[0].index === 0 && nextViewableIndex > newMessageLineIndex && !initialScroll.current) {
             // Auto scroll if the first post is viewable and
             // * the new message line is viewable OR
             // * the new message line will be the first next viewable item
-            scrollToIndex(newMessageLineIndex, true);
+            scrollToIndex(newMessageLineIndex, true, false);
             resetCount();
             top.value = 0;
+            initialScroll.current = true;
             return;
         }
 
@@ -212,6 +217,7 @@ const MoreMessages = ({
 
     useEffect(() => {
         resetting.current = false;
+        initialScroll.current = false;
     }, [channelId]);
 
     return (

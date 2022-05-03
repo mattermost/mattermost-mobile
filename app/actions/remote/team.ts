@@ -5,12 +5,14 @@ import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {removeUserFromTeam as localRemoveUserFromTeam} from '@actions/local/team';
-import {Events} from '@constants';
+import {switchToGlobalThreads} from '@actions/local/thread';
+import {Events, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
-import NetworkManager from '@init/network_manager';
-import {prepareMyChannelsForTeam, queryDefaultChannelForTeam} from '@queries/servers/channel';
-import {prepareCommonSystemValues, queryCurrentTeamId, queryWebSocketLastDisconnected} from '@queries/servers/system';
-import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, queryNthLastChannelFromTeam, queryTeamsById, syncTeamTable} from '@queries/servers/team';
+import NetworkManager from '@managers/network_manager';
+import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
+import {prepareMyChannelsForTeam, getDefaultChannelForTeam} from '@queries/servers/channel';
+import {prepareCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected} from '@queries/servers/system';
+import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, syncTeamTable} from '@queries/servers/team';
 import {isTablet} from '@utils/helpers';
 
 import {fetchMyChannelsForTeam, switchToChannelById} from './channel';
@@ -26,7 +28,7 @@ export type MyTeamsRequest = {
     error?: unknown;
 }
 
-export const addUserToTeam = async (serverUrl: string, teamId: string, userId: string, fetchOnly = false) => {
+export async function addUserToTeam(serverUrl: string, teamId: string, userId: string, fetchOnly = false) {
     let client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -39,7 +41,7 @@ export const addUserToTeam = async (serverUrl: string, teamId: string, userId: s
 
         if (!fetchOnly) {
             fetchRolesIfNeeded(serverUrl, member.roles.split(' '));
-            const {channels, memberships: channelMembers} = await fetchMyChannelsForTeam(serverUrl, teamId, false, 0, true);
+            const {channels, memberships: channelMembers, categories} = await fetchMyChannelsForTeam(serverUrl, teamId, false, 0, true);
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             if (operator) {
                 const myTeams: MyTeam[] = [{
@@ -47,21 +49,18 @@ export const addUserToTeam = async (serverUrl: string, teamId: string, userId: s
                     roles: member.roles,
                 }];
 
-                const models = await Promise.all([
+                const models: Model[] = (await Promise.all([
                     operator.handleMyTeam({myTeams, prepareRecordsOnly: true}),
                     operator.handleTeamMemberships({teamMemberships: [member], prepareRecordsOnly: true}),
-                    prepareMyChannelsForTeam(operator, teamId, channels || [], channelMembers || []),
-                ]);
+                    ...await prepareMyChannelsForTeam(operator, teamId, channels || [], channelMembers || []),
+                    prepareCategories(operator, categories || []),
+                    prepareCategoryChannels(operator, categories || []),
+                ])).flat();
 
-                if (models.length) {
-                    const flattenedModels = models.flat() as Model[];
-                    if (flattenedModels?.length > 0) {
-                        await operator.batchRecords(flattenedModels);
-                    }
-                }
+                await operator.batchRecords(models);
 
                 if (await isTablet()) {
-                    const channel = await queryDefaultChannelForTeam(operator.database, teamId);
+                    const channel = await getDefaultChannelForTeam(operator.database, teamId);
                     if (channel) {
                         fetchPostsForChannel(serverUrl, channel.id);
                     }
@@ -74,9 +73,9 @@ export const addUserToTeam = async (serverUrl: string, teamId: string, userId: s
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
-};
+}
 
-export const fetchMyTeams = async (serverUrl: string, fetchOnly = false): Promise<MyTeamsRequest> => {
+export async function fetchMyTeams(serverUrl: string, fetchOnly = false): Promise<MyTeamsRequest> {
     let client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -94,27 +93,25 @@ export const fetchMyTeams = async (serverUrl: string, fetchOnly = false): Promis
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             const modelPromises: Array<Promise<Model[]>> = [];
             if (operator) {
-                const removeTeamIds = memberships.filter((m) => m.delete_at > 0).map((m) => m.team_id);
-                const remainingTeams = teams.filter((t) => !removeTeamIds.includes(t.id));
+                const removeTeamIds = new Set(memberships.filter((m) => m.delete_at > 0).map((m) => m.team_id));
+                const remainingTeams = teams.filter((t) => !removeTeamIds.has(t.id));
                 const prepare = prepareMyTeams(operator, remainingTeams, memberships);
                 if (prepare) {
                     modelPromises.push(...prepare);
                 }
 
-                if (removeTeamIds.length) {
-                    if (removeTeamIds?.length) {
-                        // Immediately delete myTeams so that the UI renders only teams the user is a member of.
-                        const removeTeams = await queryTeamsById(operator.database, removeTeamIds);
-                        removeTeams?.forEach((team) => {
-                            modelPromises.push(prepareDeleteTeam(team));
-                        });
-                    }
+                if (removeTeamIds.size) {
+                    // Immediately delete myTeams so that the UI renders only teams the user is a member of.
+                    const removeTeams = await queryTeamsById(operator.database, Array.from(removeTeamIds)).fetch();
+                    removeTeams.forEach((team) => {
+                        modelPromises.push(prepareDeleteTeam(team));
+                    });
                 }
 
                 if (modelPromises.length) {
                     const models = await Promise.all(modelPromises);
-                    const flattenedModels = models.flat() as Model[];
-                    if (flattenedModels?.length > 0) {
+                    const flattenedModels = models.flat();
+                    if (flattenedModels.length > 0) {
                         await operator.batchRecords(flattenedModels);
                     }
                 }
@@ -126,9 +123,9 @@ export const fetchMyTeams = async (serverUrl: string, fetchOnly = false): Promis
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
-};
+}
 
-export const fetchMyTeam = async (serverUrl: string, teamId: string, fetchOnly = false): Promise<MyTeamsRequest> => {
+export async function fetchMyTeam(serverUrl: string, teamId: string, fetchOnly = false): Promise<MyTeamsRequest> {
     let client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -143,15 +140,11 @@ export const fetchMyTeam = async (serverUrl: string, teamId: string, fetchOnly =
         ]);
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-            const modelPromises: Array<Promise<Model[]>> = [];
             if (operator) {
-                const prepare = prepareMyTeams(operator, [team], [membership]);
-                if (prepare) {
-                    modelPromises.push(...prepare);
-                }
+                const modelPromises = prepareMyTeams(operator, [team], [membership]);
                 if (modelPromises.length) {
                     const models = await Promise.all(modelPromises);
-                    const flattenedModels = models.flat() as Model[];
+                    const flattenedModels = models.flat();
                     if (flattenedModels?.length > 0) {
                         await operator.batchRecords(flattenedModels);
                     }
@@ -164,7 +157,7 @@ export const fetchMyTeam = async (serverUrl: string, teamId: string, fetchOnly =
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
-};
+}
 
 export const fetchAllTeams = async (serverUrl: string, fetchOnly = false): Promise<MyTeamsRequest> => {
     let client;
@@ -176,7 +169,6 @@ export const fetchAllTeams = async (serverUrl: string, fetchOnly = false): Promi
 
     try {
         const teams = await client.getTeams();
-
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             if (operator) {
@@ -197,7 +189,8 @@ export const fetchTeamsChannelsAndUnreadPosts = async (serverUrl: string, since:
         return {error: `${serverUrl} database not found`};
     }
 
-    const myTeams = teams.filter((t) => memberships.find((m) => m.team_id === t.id && t.id !== excludeTeamId));
+    const membershipSet = new Set(memberships.map((m) => m.team_id));
+    const myTeams = teams.filter((t) => membershipSet.has(t.id) && t.id !== excludeTeamId);
 
     for await (const team of myTeams) {
         const {channels, memberships: members} = await fetchMyChannelsForTeam(serverUrl, team.id, since > 0, since, false, true);
@@ -210,7 +203,7 @@ export const fetchTeamsChannelsAndUnreadPosts = async (serverUrl: string, since:
     return {error: undefined};
 };
 
-export const fetchTeamByName = async (serverUrl: string, teamName: string, fetchOnly = false) => {
+export async function fetchTeamByName(serverUrl: string, teamName: string, fetchOnly = false) {
     let client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -224,10 +217,8 @@ export const fetchTeamByName = async (serverUrl: string, teamName: string, fetch
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             if (operator) {
-                const model = await operator.handleTeam({teams: [team], prepareRecordsOnly: true});
-                if (model) {
-                    await operator.batchRecords(model);
-                }
+                const models = await operator.handleTeam({teams: [team], prepareRecordsOnly: true});
+                await operator.batchRecords(models);
             }
         }
 
@@ -236,7 +227,7 @@ export const fetchTeamByName = async (serverUrl: string, teamName: string, fetch
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
-};
+}
 
 export const removeUserFromTeam = async (serverUrl: string, teamId: string, userId: string, fetchOnly = false) => {
     let client;
@@ -261,14 +252,14 @@ export const removeUserFromTeam = async (serverUrl: string, teamId: string, user
     }
 };
 
-export const handleTeamChange = async (serverUrl: string, teamId: string) => {
+export async function handleTeamChange(serverUrl: string, teamId: string) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return;
     }
 
     const {database} = operator;
-    const currentTeamId = await queryCurrentTeamId(database);
+    const currentTeamId = await getCurrentTeamId(database);
 
     if (currentTeamId === teamId) {
         return;
@@ -276,15 +267,20 @@ export const handleTeamChange = async (serverUrl: string, teamId: string) => {
 
     let channelId = '';
     if (await isTablet()) {
-        channelId = await queryNthLastChannelFromTeam(database, teamId);
+        channelId = await getNthLastChannelFromTeam(database, teamId);
         if (channelId) {
-            await switchToChannelById(serverUrl, channelId, teamId);
+            if (channelId === Screens.GLOBAL_THREADS) {
+                await switchToGlobalThreads(serverUrl);
+            } else {
+                await switchToChannelById(serverUrl, channelId, teamId);
+            }
+            completeTeamChange(serverUrl, teamId, channelId);
             return;
         }
     }
 
     const models = [];
-    const system = await prepareCommonSystemValues(operator, {currentChannelId: channelId, currentTeamId: teamId});
+    const system = await prepareCommonSystemValues(operator, {currentChannelId: channelId, currentTeamId: teamId, lastUnreadChannelId: ''});
     if (system?.length) {
         models.push(...system);
     }
@@ -297,8 +293,17 @@ export const handleTeamChange = async (serverUrl: string, teamId: string) => {
         await operator.batchRecords(models);
     }
 
+    completeTeamChange(serverUrl, teamId, channelId);
+}
+
+const completeTeamChange = async (serverUrl: string, teamId: string, channelId: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return;
+    }
+
     // If WebSocket is not disconnected we fetch everything since this moment
-    const lastDisconnectedAt = (await queryWebSocketLastDisconnected(database)) || Date.now();
+    const lastDisconnectedAt = (await getWebSocketLastDisconnected(database)) || Date.now();
     const {channels, memberships, error} = await fetchMyChannelsForTeam(serverUrl, teamId, true, lastDisconnectedAt, false, true);
 
     if (error) {

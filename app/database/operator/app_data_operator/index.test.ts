@@ -2,10 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import {
-    isRecordInfoEqualToRaw,
-    isRecordGlobalEqualToRaw,
-} from '@database/operator/app_data_operator/comparator';
+import {buildAppInfoKey} from '@database/operator/app_data_operator/comparator';
 import {
     transformInfoRecord,
     transformGlobalRecord,
@@ -44,7 +41,7 @@ describe('** APP DATA OPERATOR **', () => {
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'version_number',
             transformer: transformInfoRecord,
-            findMatchingRecordBy: isRecordInfoEqualToRaw,
+            buildKeyRecordBy: buildAppInfoKey,
             createOrUpdateRawValues: [
                 {
                     build_number: 'build-10x',
@@ -69,18 +66,17 @@ describe('** APP DATA OPERATOR **', () => {
         expect(appOperator).toBeTruthy();
 
         const spyOnHandleRecords = jest.spyOn(appOperator as any, 'handleRecords');
-        const global: IdValue[] = [{id: 'global-1-name', value: 'global-1-value'}];
+        const globals: IdValue[] = [{id: 'global-1-name', value: 'global-1-value'}];
 
         await appOperator?.handleGlobal({
-            global,
+            globals,
             prepareRecordsOnly: false,
         });
 
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            findMatchingRecordBy: isRecordGlobalEqualToRaw,
             fieldName: 'id',
             transformer: transformGlobalRecord,
-            createOrUpdateRawValues: global,
+            createOrUpdateRawValues: globals,
             tableName: 'Global',
             prepareRecordsOnly: false,
         });

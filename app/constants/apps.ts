@@ -20,13 +20,6 @@ export const AppCallResponseTypes: { [name: string]: AppCallResponseType } = {
     NAVIGATE: 'navigate',
 };
 
-export const AppCallTypes: { [name: string]: AppCallType } = {
-    SUBMIT: 'submit',
-    LOOKUP: 'lookup',
-    FORM: 'form',
-    CANCEL: 'cancel',
-};
-
 export const AppExpandLevels: { [name: string]: AppExpandLevel } = {
     EXPAND_DEFAULT: '',
     EXPAND_NONE: 'none',
@@ -44,11 +37,17 @@ export const AppFieldTypes: { [name: string]: AppFieldType } = {
     MARKDOWN: 'markdown',
 };
 
+export const COMMAND_SUGGESTION_ERROR = 'error';
+export const COMMAND_SUGGESTION_CHANNEL = 'channel';
+export const COMMAND_SUGGESTION_USER = 'user';
+
 export default {
     AppBindingLocations,
     AppBindingPresentations,
     AppCallResponseTypes,
-    AppCallTypes,
     AppExpandLevels,
     AppFieldTypes,
+    COMMAND_SUGGESTION_ERROR,
+    COMMAND_SUGGESTION_CHANNEL,
+    COMMAND_SUGGESTION_USER,
 };

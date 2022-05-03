@@ -57,6 +57,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.ABOUT:
             screen = withServerDatabase(require('@screens/about').default);
             break;
+        case Screens.APP_FORM:
+            screen = withServerDatabase(require('@screens/apps_form').default);
+            break;
         case Screens.BOTTOM_SHEET:
             screen = withServerDatabase(
                 require('@screens/bottom_sheet').default,
@@ -70,6 +73,12 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CHANNEL:
             screen = withServerDatabase(require('@screens/channel').default);
             break;
+        case Screens.CODE:
+            screen = withServerDatabase(require('@screens/code').default);
+            break;
+        case Screens.CREATE_OR_EDIT_CHANNEL:
+            screen = withServerDatabase(require('@screens/create_or_edit_channel').default);
+            break;
         case Screens.CUSTOM_STATUS:
             screen = withServerDatabase(
                 require('@screens/custom_status').default,
@@ -79,6 +88,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             screen = withServerDatabase(
                 require('@screens/custom_status_clear_after').default,
             );
+            break;
+        case Screens.CREATE_DIRECT_MESSAGE:
+            screen = withServerDatabase(require('@screens/create_direct_message').default);
             break;
         case Screens.EDIT_POST:
             screen = withServerDatabase(require('@screens/edit_post').default);
@@ -92,15 +104,22 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             screen = withIntl(require('@screens/edit_server').default);
             break;
         case Screens.EMOJI_PICKER:
-            screen = withServerDatabase(
-                require('@screens/emoji_picker').default,
-            );
+            screen = withServerDatabase(require('@screens/emoji_picker').default);
+            break;
+        case Screens.FIND_CHANNELS:
+            screen = withServerDatabase(require('@screens/find_channels').default);
             break;
         case Screens.FORGOT_PASSWORD:
             screen = withIntl(require('@screens/forgot_password').default);
             break;
         case Screens.GALLERY:
             screen = withServerDatabase(require('@screens/gallery').default);
+            break;
+        case Screens.GLOBAL_THREADS:
+            screen = withServerDatabase(require('@screens/global_threads').default);
+            break;
+        case Screens.INTERACTIVE_DIALOG:
+            screen = withServerDatabase(require('@screens/interactive_dialog').default);
             break;
         case Screens.IN_APP_NOTIFICATION: {
             const notificationScreen =
@@ -113,6 +132,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             );
             return;
         }
+        case Screens.LATEX:
+            screen = withServerDatabase(require('@screens/latex').default);
+            break;
         case Screens.LOGIN:
             screen = withIntl(require('@screens/login').default);
             break;
@@ -127,8 +149,11 @@ Navigation.setLazyComponentRegistrator((screenName) => {
                 require('@screens/post_options').default,
             );
             break;
+        case Screens.REACTIONS:
+            screen = withServerDatabase(require('@screens/reactions').default);
+            break;
         case Screens.SAVED_POSTS:
-            screen = withServerDatabase((require('@screens/home/saved_posts').default));
+            screen = withServerDatabase((require('@screens/saved_posts').default));
             break;
         case Screens.SSO:
             screen = withIntl(require('@screens/sso').default);
@@ -136,16 +161,26 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.THREAD:
             screen = withServerDatabase(require('@screens/thread').default);
             break;
+        case Screens.THREAD_FOLLOW_BUTTON:
+            Navigation.registerComponent(Screens.THREAD_FOLLOW_BUTTON, () => withServerDatabase(
+                require('@screens/thread/thread_follow_button').default,
+            ));
+            break;
+        case Screens.THREAD_OPTIONS:
+            screen = withServerDatabase(
+                require('@screens/thread_options').default,
+            );
+            break;
     }
 
     if (screen) {
-        Navigation.registerComponent(screenName, () => withGestures(withSafeAreaInsets(withManagedConfig(screen)), extraStyles));
+        Navigation.registerComponent(screenName, () => withGestures(withSafeAreaInsets(withManagedConfig<ManagedConfig>(screen)), extraStyles));
     }
 });
 
 export function registerScreens() {
     const homeScreen = require('@screens/home').default;
     const serverScreen = require('@screens/server').default;
-    Navigation.registerComponent(Screens.SERVER, () => withGestures(withIntl(withManagedConfig(serverScreen)), undefined));
-    Navigation.registerComponent(Screens.HOME, () => withGestures(withSafeAreaInsets(withServerDatabase(withManagedConfig(homeScreen))), undefined));
+    Navigation.registerComponent(Screens.SERVER, () => withGestures(withIntl(withManagedConfig<ManagedConfig>(serverScreen)), undefined));
+    Navigation.registerComponent(Screens.HOME, () => withGestures(withSafeAreaInsets(withServerDatabase(withManagedConfig<ManagedConfig>(homeScreen))), undefined));
 }

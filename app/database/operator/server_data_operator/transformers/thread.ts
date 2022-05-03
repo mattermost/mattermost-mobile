@@ -7,11 +7,13 @@ import {OperationType} from '@typings/database/enums';
 
 import type {TransformerArgs} from '@typings/database/database';
 import type ThreadModel from '@typings/database/models/servers/thread';
+import type ThreadInTeamModel from '@typings/database/models/servers/thread_in_team';
 import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
 
 const {
     THREAD,
     THREAD_PARTICIPANT,
+    THREADS_IN_TEAM,
 } = MM_TABLES.SERVER;
 
 /**
@@ -30,12 +32,12 @@ export const transformThreadRecord = ({action, database, value}: TransformerArgs
     const fieldsMapper = (thread: ThreadModel) => {
         thread._raw.id = isCreateAction ? (raw?.id ?? thread.id) : record.id;
         thread.lastReplyAt = raw.last_reply_at;
-        thread.lastViewedAt = raw.last_viewed_at;
+        thread.lastViewedAt = raw.last_viewed_at ?? record?.lastViewedAt ?? 0;
         thread.replyCount = raw.reply_count;
         thread.isFollowing = raw.is_following ?? record?.isFollowing;
-        thread.unreadReplies = raw.unread_replies;
-        thread.unreadMentions = raw.unread_mentions;
-        thread.loadedInGlobalThreads = raw.loaded_in_global_threads || record?.loadedInGlobalThreads;
+        thread.unreadReplies = raw.unread_replies ?? record?.unreadReplies ?? 0;
+        thread.unreadMentions = raw.unread_mentions ?? record?.unreadMentions ?? 0;
+        thread.viewedAt = record?.viewedAt || 0;
     };
 
     return prepareBaseRecord({
@@ -70,4 +72,25 @@ export const transformThreadParticipantRecord = ({action, database, value}: Tran
         value,
         fieldsMapper,
     }) as Promise<ThreadParticipantModel>;
+};
+
+export const transformThreadInTeamRecord = ({action, database, value}: TransformerArgs): Promise<ThreadInTeamModel> => {
+    const raw = value.raw as ThreadInTeam;
+    const record = value.record as ThreadInTeamModel;
+
+    const fieldsMapper = (threadInTeam: ThreadInTeamModel) => {
+        threadInTeam.threadId = raw.thread_id;
+        threadInTeam.teamId = raw.team_id;
+
+        // if it's already loaded don't change it
+        threadInTeam.loadedInGlobalThreads = record?.loadedInGlobalThreads || raw.loaded_in_global_threads;
+    };
+
+    return prepareBaseRecord({
+        action,
+        database,
+        tableName: THREADS_IN_TEAM,
+        value,
+        fieldsMapper,
+    }) as Promise<ThreadInTeamModel>;
 };

@@ -7,7 +7,7 @@ import FastImage from 'react-native-fast-image';
 
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
@@ -15,9 +15,10 @@ type Props = {
     lastIconUpdate: number;
     displayName: string;
     selected: boolean;
+    testID?: string;
 }
 
-export default function TeamIcon({id, lastIconUpdate, displayName, selected}: Props) {
+export default function TeamIcon({id, lastIconUpdate, displayName, selected, testID}: Props) {
     const [imageError, setImageError] = useState(false);
     const ref = useRef<View>(null);
     const theme = useTheme();
@@ -41,8 +42,9 @@ export default function TeamIcon({id, lastIconUpdate, displayName, selected}: Pr
         teamIconContent = (
             <Text
                 style={styles.text}
+                testID={`${testID}.display_name_abbreviation`}
             >
-                {displayName?.substr(0, 2).toUpperCase()}
+                {displayName?.substring(0, 2).toUpperCase()}
             </Text>
         );
     } else {
@@ -59,6 +61,7 @@ export default function TeamIcon({id, lastIconUpdate, displayName, selected}: Pr
         <View
             style={selected ? styles.containerSelected : styles.container}
             ref={ref}
+            testID={testID}
         >
             {teamIconContent}
         </View>

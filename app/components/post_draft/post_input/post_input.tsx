@@ -116,7 +116,7 @@ export default function PostInput({
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
-    const managedConfig = useManagedConfig();
+    const managedConfig = useManagedConfig<ManagedConfig>();
 
     const lastTypingEventSent = useRef(0);
     const input = useRef<PasteInputRef>();

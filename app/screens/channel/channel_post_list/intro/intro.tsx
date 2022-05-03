@@ -20,10 +20,12 @@ type Props = {
     roles: RoleModel[];
 }
 
+const PADDING_TOP = Platform.select({ios: 150, default: 100});
+
 const styles = StyleSheet.create({
     container: {
         marginVertical: 12,
-        paddingTop: 50,
+        paddingTop: PADDING_TOP,
         overflow: 'hidden',
         ...Platform.select({
             android: {

@@ -5,7 +5,7 @@
         "lib": [
             "es6", "ES2019"
         ],
-        "allowJs": true,
+        "allowJs": false,
         "skipLibCheck": true,
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
@@ -46,6 +46,7 @@
             "@hooks/*": ["app/hooks/*"],
             "@i18n": ["app/i18n/index"],
             "@init/*": ["app/init/*"],
+            "@managers/*": ["app/managers/*"],
             "@notifications": ["app/notifications/index"],
             "@queries/*": ["app/queries/*"],
             "@screens/*": ["app/screens/*"],
@@ -53,24 +54,21 @@
             "@share/*": ["share_extension/*"],
             "@store": ["app/store/index"],
             "@store/*": ["app/store/*"],
-            "@support/*": ["detox/e2e/support/*"],
             "@telemetry/*": ["/app/telemetry/*"],
             "@typings/*": ["types/*"],
             "@test/*": ["test/*"],
             "@utils/*": ["app/utils/*"],
             "@websocket": ["app/client/websocket"],
             "*": ["./*", "node_modules/*"],
-            "react-native-redash/lib/module/v1": [
-                "./node_modules/react-native-redash/lib/typescript/v1/index.d.ts"
-            ]
         }
     },
-    "include": ["app/**/*", "share_extensionn/**/*", "test/**/*", "detox/**/*", "types/**/*"],
+    "include": ["app/**/*", "share_extensionn/**/*", "test/**/*", "types/**/*"],
     "exclude": [
         "node_modules",
         "build",
         "babel.config.js",
         "metro.config.js",
         "jest.config.js",
+        "detox/**/*",
     ],
 }

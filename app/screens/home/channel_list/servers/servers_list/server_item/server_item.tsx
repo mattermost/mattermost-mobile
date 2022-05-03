@@ -9,7 +9,9 @@ import Swipeable from 'react-native-gesture-handler/Swipeable';
 
 import {storeMultiServerTutorial} from '@actions/app/global';
 import {appEntry} from '@actions/remote/entry';
+import {doPing} from '@actions/remote/general';
 import {logout} from '@actions/remote/session';
+import {fetchConfigAndLicense} from '@actions/remote/systems';
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import ServerIcon from '@components/server_icon';
@@ -21,7 +23,7 @@ import DatabaseManager from '@database/manager';
 import {subscribeServerUnreadAndMentions} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
 import {dismissBottomSheet} from '@screens/navigation';
-import {addNewServer, alertServerLogout, alertServerRemove, editServer} from '@utils/server';
+import {alertServerError, alertServerLogout, alertServerRemove, editServer, loginToServer} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {removeProtocol, stripTrailingSlashes} from '@utils/url';
@@ -136,13 +138,14 @@ const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
         displayName = intl.formatMessage({id: 'servers.default', defaultMessage: 'Default Server'});
     }
 
-    const unreadsSubscription = (myChannels: MyChannelModel[]) => {
+    const unreadsSubscription = ({myChannels, threadMentionCount}: {myChannels: MyChannelModel[]; threadMentionCount: number}) => {
         let mentions = 0;
         let isUnread = false;
         for (const myChannel of myChannels) {
             mentions += myChannel.mentionsCount;
             isUnread = isUnread || myChannel.isUnread;
         }
+        mentions += threadMentionCount;
 
         setBadge({isUnread, mentions});
     };
@@ -194,8 +197,22 @@ const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
         return style;
     }, [server.lastActiveAt]);
 
-    const handleLogin = useCallback(() => {
-        addNewServer(theme, server.url, displayName);
+    const handleLogin = useCallback(async () => {
+        swipeable.current?.close();
+        setSwitching(true);
+        const result = await doPing(server.url);
+        if (result.error) {
+            alertServerError(intl, result.error as ClientErrorProps);
+            setSwitching(false);
+            return;
+        }
+        const data = await fetchConfigAndLicense(server.url, true);
+        if (data.error) {
+            alertServerError(intl, data.error as ClientErrorProps);
+            setSwitching(false);
+            return;
+        }
+        loginToServer(theme, server.url, displayName, data.config!, data.license!);
     }, [server, theme, intl]);
 
     const handleDismissTutorial = useCallback(() => {

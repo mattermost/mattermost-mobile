@@ -1,26 +1,28 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model, Q} from '@nozbe/watermelondb';
+/* eslint-disable max-lines */
+
+import {Model} from '@nozbe/watermelondb';
 import {chunk} from 'lodash';
 
 import {updateChannelsDisplayName} from '@actions/local/channel';
+import {getUserTimezone} from '@actions/local/timezone';
 import {updateRecentCustomStatuses, updateLocalUser} from '@actions/local/user';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
-import {removeUserFromList} from '@app/utils/user';
-import {Database, General} from '@constants';
-import {MM_TABLES} from '@constants/database';
+import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
-import NetworkManager from '@init/network_manager';
-import {queryCurrentTeamId, queryCurrentUserId} from '@queries/servers/system';
-import {prepareUsers, queryAllUsers, queryCurrentUser, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
+import NetworkManager from '@managers/network_manager';
+import {getMembersCountByChannelsId, queryChannelsByTypes} from '@queries/servers/channel';
+import {getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
+import {getCurrentUser, getUserById, prepareUsers, queryAllUsers, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
+import {removeUserFromList} from '@utils/user';
 
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
 import type ClientError from '@client/rest/error';
-import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
 
 export type MyUserRequest = {
@@ -38,8 +40,6 @@ export type ProfilesInChannelRequest = {
     channelId: string;
     error?: unknown;
 }
-
-const {SERVER: {CHANNEL}} = MM_TABLES;
 
 export const fetchMe = async (serverUrl: string, fetchOnly = false): Promise<MyUserRequest> => {
     let client;
@@ -71,7 +71,7 @@ export const fetchMe = async (serverUrl: string, fetchOnly = false): Promise<MyU
     }
 };
 
-export const fetchProfilesInChannel = async (serverUrl: string, channelId: string, excludeUserId?: string, fetchOnly = false): Promise<ProfilesInChannelRequest> => {
+export async function fetchProfilesInChannel(serverUrl: string, channelId: string, excludeUserId?: string, fetchOnly = false): Promise<ProfilesInChannelRequest> {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -96,14 +96,10 @@ export const fetchProfilesInChannel = async (serverUrl: string, channelId: strin
                     prepareRecordsOnly: true,
                 }));
                 const prepare = prepareUsers(operator, filteredUsers);
-                if (prepare) {
-                    modelPromises.push(prepare);
-                }
+                modelPromises.push(prepare);
 
-                if (modelPromises.length) {
-                    const models = await Promise.all(modelPromises);
-                    await operator.batchRecords(models.flat());
-                }
+                const models = await Promise.all(modelPromises);
+                await operator.batchRecords(models.flat());
             }
         }
 
@@ -112,13 +108,25 @@ export const fetchProfilesInChannel = async (serverUrl: string, channelId: strin
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {channelId, error};
     }
-};
+}
 
-export const fetchProfilesPerChannels = async (serverUrl: string, channelIds: string[], excludeUserId?: string, fetchOnly = false): Promise<ProfilesPerChannelRequest> => {
+export async function fetchProfilesPerChannels(serverUrl: string, channelIds: string[], excludeUserId?: string, fetchOnly = false): Promise<ProfilesPerChannelRequest> {
     try {
+        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+        if (!operator) {
+            return {error: `${serverUrl} database not found`};
+        }
+
+        const {database} = operator;
+
+        // let's filter those channels that we already have the users
+        const membersCount = await getMembersCountByChannelsId(database, channelIds);
+        const channelsToFetch = channelIds.filter((c) => membersCount[c] <= 1);
+
         // Batch fetching profiles per channel by chunks of 50
-        const channels = chunk(channelIds, 50);
+        const channels = chunk(channelsToFetch, 50);
         const data: ProfilesInChannelRequest[] = [];
+
         for await (const cIds of channels) {
             const requests = cIds.map((id) => fetchProfilesInChannel(serverUrl, id, excludeUserId, true));
             const response = await Promise.all(requests);
@@ -126,45 +134,41 @@ export const fetchProfilesPerChannels = async (serverUrl: string, channelIds: st
         }
 
         if (!fetchOnly) {
-            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-            if (operator) {
-                const modelPromises: Array<Promise<Model[]>> = [];
-                const users = new Set<UserProfile>();
-                const memberships: Array<{channel_id: string; user_id: string}> = [];
-                for (const item of data) {
-                    if (item.users?.length) {
-                        item.users.forEach((u) => {
-                            users.add(u);
-                            memberships.push({channel_id: item.channelId, user_id: u.id});
-                        });
-                    }
+            const modelPromises: Array<Promise<Model[]>> = [];
+            const users = new Set<UserProfile>();
+            const memberships: Array<{channel_id: string; user_id: string}> = [];
+            for (const item of data) {
+                if (item.users?.length) {
+                    item.users.forEach((u) => {
+                        users.add(u);
+                        memberships.push({channel_id: item.channelId, user_id: u.id});
+                    });
                 }
+            }
+            if (memberships.length) {
                 modelPromises.push(operator.handleChannelMembership({
                     channelMemberships: memberships,
                     prepareRecordsOnly: true,
                 }));
-                const prepare = prepareUsers(operator, Array.from(users).filter((u) => u.id !== excludeUserId));
-                if (prepare) {
-                    modelPromises.push(prepare);
-                }
-
-                if (modelPromises.length) {
-                    const models = await Promise.all(modelPromises);
-                    await operator.batchRecords(models.flat());
-                }
             }
+            if (users.size) {
+                const prepare = prepareUsers(operator, Array.from(users).filter((u) => u.id !== excludeUserId));
+                modelPromises.push(prepare);
+            }
+
+            const models = await Promise.all(modelPromises);
+            await operator.batchRecords(models.flat());
         }
 
         return {data};
     } catch (error) {
         return {error};
     }
-};
+}
 
 export const updateMe = async (serverUrl: string, user: Partial<UserProfile>) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!database) {
+    if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
@@ -187,9 +191,7 @@ export const updateMe = async (serverUrl: string, user: Partial<UserProfile>) =>
         operator.handleUsers({prepareRecordsOnly: false, users: [data]});
 
         const updatedRoles: string[] = data.roles.split(' ');
-        if (updatedRoles.length) {
-            await fetchRolesIfNeeded(serverUrl, updatedRoles);
-        }
+        await fetchRolesIfNeeded(serverUrl, updatedRoles);
     }
 
     return {data};
@@ -207,7 +209,7 @@ export const fetchStatusInBatch = (serverUrl: string, id: string) => {
     return debouncedFetchStatusesByIds.apply(null, [serverUrl]);
 };
 
-export const fetchStatusByIds = async (serverUrl: string, userIds: string[], fetchOnly = false) => {
+export async function fetchStatusByIds(serverUrl: string, userIds: string[], fetchOnly = false) {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -224,9 +226,14 @@ export const fetchStatusByIds = async (serverUrl: string, userIds: string[], fet
         if (!fetchOnly && DatabaseManager.serverDatabases[serverUrl]) {
             const {database, operator} = DatabaseManager.serverDatabases[serverUrl];
             if (operator) {
-                const users = await database.get(Database.MM_TABLES.SERVER.USER).query(Q.where('id', Q.oneOf(userIds))).fetch() as UserModel[];
+                const users = await queryUsersById(database, userIds).fetch();
+                const userStatuses = statuses.reduce((result: Record<string, UserStatus>, s) => {
+                    result[s.user_id] = s;
+                    return result;
+                }, {});
+
                 for (const user of users) {
-                    const status = statuses.find((s) => s.user_id === user.id);
+                    const status = userStatuses[user.id];
                     user.prepareStatus(status?.status || General.OFFLINE);
                 }
 
@@ -239,7 +246,7 @@ export const fetchStatusByIds = async (serverUrl: string, userIds: string[], fet
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
-};
+}
 
 export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetchOnly = false) => {
     let client: Client;
@@ -258,12 +265,16 @@ export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetc
     }
 
     try {
-        const currentUser = await queryCurrentUser(operator.database);
-        const existingUsers = await queryUsersById(operator.database, userIds);
+        const currentUser = await getCurrentUser(operator.database);
+        const existingUsers = await queryUsersById(operator.database, userIds).fetch();
         if (userIds.includes(currentUser!.id)) {
             existingUsers.push(currentUser!);
         }
-        const usersToLoad = new Set(userIds.filter((id) => (!existingUsers.find((u) => u.id === id))));
+        const exisitingUsersMap = existingUsers.reduce((result: Record<string, UserModel>, u) => {
+            result[u.id] = u;
+            return result;
+        }, {});
+        const usersToLoad = new Set(userIds.filter((id) => !exisitingUsersMap[id]));
         if (usersToLoad.size === 0) {
             return {users: [], existingUsers};
         }
@@ -299,9 +310,17 @@ export const fetchUsersByUsernames = async (serverUrl: string, usernames: string
     }
 
     try {
-        const currentUser = await queryCurrentUser(operator.database);
-        const exisingUsers = await queryUsersByUsername(operator.database, usernames);
-        const usersToLoad = usernames.filter((username) => (username !== currentUser?.username && !exisingUsers.find((u) => u.username === username)));
+        const currentUser = await getCurrentUser(operator.database);
+        const existingUsers = await queryUsersByUsername(operator.database, usernames).fetch();
+        const exisitingUsersMap = existingUsers.reduce((result: Record<string, UserModel>, u) => {
+            result[u.username] = u;
+            return result;
+        }, {});
+        const usersToLoad = usernames.filter((username) => (username !== currentUser?.username && !exisitingUsersMap[username]));
+        if (!usersToLoad.length) {
+            return {users: []};
+        }
+
         const users = await client.getProfilesByUsernames([...new Set(usersToLoad)]);
 
         if (!fetchOnly) {
@@ -335,7 +354,7 @@ export const fetchProfiles = async (serverUrl: string, page = 0, perPage: number
         const users = await client.getProfiles(page, perPage, options);
 
         if (!fetchOnly) {
-            const currentUserId = await queryCurrentUserId(operator.database);
+            const currentUserId = await getCurrentUserId(operator.database);
             const toStore = removeUserFromList(currentUserId, users);
             await operator.handleUsers({
                 users: toStore,
@@ -367,7 +386,7 @@ export const fetchProfilesInTeam = async (serverUrl: string, teamId: string, pag
         const users = await client.getProfilesInTeam(teamId, page, perPage, sort, options);
 
         if (!fetchOnly) {
-            const currentUserId = await queryCurrentUserId(operator.database);
+            const currentUserId = await getCurrentUserId(operator.database);
             const toStore = removeUserFromList(currentUserId, users);
 
             await operator.handleUsers({
@@ -397,15 +416,17 @@ export const searchProfiles = async (serverUrl: string, term: string, options: a
     }
 
     try {
-        const currentUserId = await queryCurrentUserId(operator.database);
+        const currentUserId = await getCurrentUserId(operator.database);
         const users = await client.searchUsers(term, options);
 
         if (!fetchOnly) {
             const toStore = removeUserFromList(currentUserId, users);
-            await operator.handleUsers({
-                users: toStore,
-                prepareRecordsOnly: false,
-            });
+            if (toStore.length) {
+                await operator.handleUsers({
+                    users: toStore,
+                    prepareRecordsOnly: false,
+                });
+            }
         }
 
         return {data: users};
@@ -453,7 +474,7 @@ export const fetchMissingProfilesByUsernames = async (serverUrl: string, usernam
     }
 };
 
-export const updateAllUsersSince = async (serverUrl: string, since: number, fetchOnly = false) => {
+export async function updateAllUsersSince(serverUrl: string, since: number, fetchOnly = false) {
     if (!since) {
         return {users: []};
     }
@@ -462,6 +483,7 @@ export const updateAllUsersSince = async (serverUrl: string, since: number, fetc
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+    const database = operator.database;
 
     let client: Client;
     try {
@@ -470,9 +492,8 @@ export const updateAllUsersSince = async (serverUrl: string, since: number, fetc
         return {error};
     }
 
-    const currentUserId = await queryCurrentUserId(operator.database);
-    const users = await queryAllUsers(operator.database);
-    const userIds = users.map((u) => u.id).filter((id) => id !== currentUserId);
+    const currentUserId = await getCurrentUserId(database);
+    const userIds = (await queryAllUsers(database).fetchIds()).filter((id) => id !== currentUserId);
     let userUpdates: UserProfile[] = [];
     try {
         userUpdates = await client.getProfilesByIds(userIds, {since});
@@ -480,26 +501,22 @@ export const updateAllUsersSince = async (serverUrl: string, since: number, fetc
             const modelsToBatch: Model[] = [];
             const userModels = await operator.handleUsers({users: userUpdates, prepareRecordsOnly: true});
             modelsToBatch.push(...userModels);
-            const directChannels = await operator.database.get<ChannelModel>(CHANNEL).
-                query(Q.where('type', Q.oneOf([General.DM_CHANNEL, General.GM_CHANNEL]))).
-                fetch();
+            const directChannels = await queryChannelsByTypes(database, [General.DM_CHANNEL, General.GM_CHANNEL]).fetch();
             const {models} = await updateChannelsDisplayName(serverUrl, directChannels, userUpdates, true);
             if (models?.length) {
                 modelsToBatch.push(...models);
             }
 
-            if (modelsToBatch.length) {
-                await operator.batchRecords(modelsToBatch);
-            }
+            await operator.batchRecords(modelsToBatch);
         }
     } catch {
         // Do nothing
     }
 
     return {users: userUpdates};
-};
+}
 
-export const updateUsersNoLongerVisible = async (serverUrl: string, prepareRecordsOnly = false): Promise<{error?: unknown; models?: Model[]}> => {
+export async function updateUsersNoLongerVisible(serverUrl: string, prepareRecordsOnly = false): Promise<{error?: unknown; models?: Model[]}> {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -515,10 +532,10 @@ export const updateUsersNoLongerVisible = async (serverUrl: string, prepareRecor
     const models: Model[] = [];
     try {
         const knownUsers = new Set(await client.getKnownUsers());
-        const currentUserId = await queryCurrentUserId(serverDatabase.database);
+        const currentUserId = await getCurrentUserId(serverDatabase.database);
         knownUsers.add(currentUserId);
 
-        const allUsers = await queryAllUsers(serverDatabase.database);
+        const allUsers = await queryAllUsers(serverDatabase.database).fetch();
         for (const user of allUsers) {
             if (!knownUsers.has(user.id)) {
                 user.prepareDestroyPermanently();
@@ -534,7 +551,7 @@ export const updateUsersNoLongerVisible = async (serverUrl: string, prepareRecor
     }
 
     return {models};
-};
+}
 
 export const setStatus = async (serverUrl: string, status: UserStatus) => {
     let client: Client;
@@ -557,7 +574,7 @@ export const setStatus = async (serverUrl: string, status: UserStatus) => {
     }
 };
 
-export const updateCustomStatus = async (serverUrl: string, user: UserModel, customStatus: UserCustomStatus) => {
+export const updateCustomStatus = async (serverUrl: string, customStatus: UserCustomStatus) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -566,6 +583,9 @@ export const updateCustomStatus = async (serverUrl: string, user: UserModel, cus
     }
 
     try {
+        if (!customStatus.duration) {
+            delete customStatus.expires_at;
+        }
         await client.updateCustomStatus(customStatus);
         return {data: true};
     } catch (error) {
@@ -648,7 +668,7 @@ export const uploadUserProfileImage = async (serverUrl: string, localPath: strin
     }
 
     try {
-        const currentUser = await queryCurrentUser(database);
+        const currentUser = await getCurrentUser(database);
         if (currentUser) {
             const endpoint = `${client.getUserRoute(currentUser.id)}/image`;
 
@@ -680,7 +700,7 @@ export const searchUsers = async (serverUrl: string, term: string, channelId?: s
     }
 
     try {
-        const currentTeamId = await queryCurrentTeamId(database);
+        const currentTeamId = await getCurrentTeamId(database);
         const users = await client.autocompleteUsers(term, currentTeamId, channelId);
         return {users};
     } catch (error) {
@@ -697,4 +717,26 @@ export const buildProfileImageUrl = (serverUrl: string, userId: string, timestam
     }
 
     return client.getProfilePictureUrl(userId, timestamp);
+};
+
+export const autoUpdateTimezone = async (serverUrl: string, {deviceTimezone, userId}: {deviceTimezone: string; userId: string}) => {
+    const database = DatabaseManager.serverDatabases[serverUrl].database;
+    if (!database) {
+        return {error: `No database present for ${serverUrl}`};
+    }
+
+    const currentUser = await getUserById(database, userId);
+
+    if (!currentUser) {
+        return null;
+    }
+
+    const currentTimezone = getUserTimezone(currentUser);
+    const newTimezoneExists = currentTimezone.automaticTimezone !== deviceTimezone;
+
+    if (currentTimezone.useAutomaticTimezone && newTimezoneExists) {
+        const timezone = {useAutomaticTimezone: 'true', automaticTimezone: deviceTimezone, manualTimezone: currentTimezone.manualTimezone};
+        await updateMe(serverUrl, {timezone});
+    }
+    return null;
 };

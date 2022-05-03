@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useManagedConfig, ManagedConfig} from '@mattermost/react-native-emm';
+import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Platform, useWindowDimensions, View} from 'react-native';
@@ -15,15 +15,16 @@ import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import ClientError from '@client/rest/error';
 import AppVersion from '@components/app_version';
-import {Screens, Sso} from '@constants';
+import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {queryServerByDisplayName, queryServerByIdentifier} from '@queries/app/servers';
 import Background from '@screens/background';
 import {dismissModal, goToScreen, loginAnimationOptions} from '@screens/navigation';
 import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {getErrorMessage} from '@utils/client_error';
+import {loginOptions} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 
@@ -70,8 +71,8 @@ const Server = ({
     const {formatMessage} = intl;
 
     useEffect(() => {
-        let serverName = defaultDisplayName || managedConfig?.serverName || LocalConfig.DefaultServerName;
-        let serverUrl = defaultServerUrl || managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
+        let serverName: string | undefined = defaultDisplayName || managedConfig?.serverName || LocalConfig.DefaultServerName;
+        let serverUrl: string | undefined = defaultServerUrl || managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
         let autoconnect = managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl;
 
         if (launchType === LaunchType.DeepLink) {
@@ -136,6 +137,7 @@ const Server = ({
     useEffect(() => {
         const navigationEvents = Navigation.events().registerNavigationButtonPressedListener(({buttonId}) => {
             if (closeButtonId && buttonId === closeButtonId) {
+                NetworkManager.invalidateClient(url);
                 dismissModal({componentId});
             }
         });
@@ -144,24 +146,7 @@ const Server = ({
     }, []);
 
     const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
-        const isLicensed = license.IsLicensed === 'true';
-        const samlEnabled = config.EnableSaml === 'true' && isLicensed && license.SAML === 'true';
-        const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
-        const googleEnabled = config.EnableSignUpWithGoogle === 'true' && isLicensed;
-        const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && isLicensed && license.Office365OAuth === 'true';
-        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && isLicensed;
-        const ldapEnabled = isLicensed && config.EnableLdap === 'true' && license.LDAP === 'true';
-        const hasLoginForm = config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true' || ldapEnabled;
-        const ssoOptions: Record<string, boolean> = {
-            [Sso.SAML]: samlEnabled,
-            [Sso.GITLAB]: gitlabEnabled,
-            [Sso.GOOGLE]: googleEnabled,
-            [Sso.OFFICE365]: o365Enabled,
-            [Sso.OPENID]: openIdEnabled,
-        };
-        const enabledSSOs = Object.keys(ssoOptions).filter((key) => ssoOptions[key]);
-        const numberSSOs = enabledSSOs.length;
-
+        const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config, license);
         const passProps = {
             config,
             extra,
@@ -319,7 +304,6 @@ const Server = ({
             <AnimatedSafeArea
                 key={'server_content'}
                 style={[styles.flex, transform]}
-                testID='select_server.screen'
             >
                 <KeyboardAwareScrollView
                     bounces={false}

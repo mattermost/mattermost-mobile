@@ -13,7 +13,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
 import {useGalleryItem} from '@hooks/gallery';
-import DraftUploadManager from '@init/draft_upload_manager';
+import DraftUploadManager from '@managers/draft_upload_manager';
 import {isImage} from '@utils/file';
 import {changeOpacity} from '@utils/theme';
 

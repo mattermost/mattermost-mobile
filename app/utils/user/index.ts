@@ -6,10 +6,10 @@ import {Alert} from 'react-native';
 
 import {General, Permissions, Preferences} from '@constants';
 import {CustomStatusDuration} from '@constants/custom_status';
-import {UserModel} from '@database/models/server';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import {toTitleCase} from '@utils/helpers';
 
+import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
 
 export function displayUsername(user?: UserProfile | UserModel, locale?: string, teammateDisplayNameSetting?: string, useFallbackUsername = true) {
@@ -40,7 +40,7 @@ export function displayGroupMessageName(users: Array<UserProfile | UserModel>, l
 
     users.forEach((u) => {
         if (u.id !== excludeUserId) {
-            names.push(displayUsername(u, locale, teammateDisplayNameSetting));
+            names.push(displayUsername(u, locale, teammateDisplayNameSetting, false) || u.username);
         }
     });
 
@@ -51,7 +51,7 @@ export function getFullName(user: UserProfile | UserModel): string {
     let firstName: string;
     let lastName: string;
 
-    if (user instanceof UserModel) {
+    if ('lastName' in user) {
         firstName = user.firstName;
         lastName = user.lastName;
     } else {
@@ -123,19 +123,23 @@ export const getTimezone = (timezone: UserTimezone | null) => {
     return timezone.manualTimezone;
 };
 
-export const getUserCustomStatus = (user: UserModel | UserProfile): UserCustomStatus | undefined => {
+export const getUserCustomStatus = (user?: UserModel | UserProfile): UserCustomStatus | undefined => {
     try {
-        if (typeof user.props?.customStatus === 'string') {
+        if (typeof user?.props?.customStatus === 'string') {
             return JSON.parse(user.props.customStatus) as UserCustomStatus;
         }
 
-        return user.props?.customStatus;
+        return user?.props?.customStatus;
     } catch {
         return undefined;
     }
 };
 
-export function isCustomStatusExpired(user: UserModel) {
+export function isCustomStatusExpired(user?: UserModel) {
+    if (!user) {
+        return true;
+    }
+
     const customStatus = getUserCustomStatus(user);
 
     if (!customStatus) {
@@ -192,8 +196,12 @@ export function confirmOutOfOfficeDisabled(intl: IntlShape, status: string, upda
     );
 }
 
-export function isShared(user: UserProfile): boolean {
-    return Boolean(user.remote_id);
+export function isBot(user: UserProfile | UserModel): boolean {
+    return 'is_bot' in user ? Boolean(user.is_bot) : Boolean(user.isBot);
+}
+
+export function isShared(user: UserProfile | UserModel): boolean {
+    return ('remoteId' in user) ? Boolean(user.remoteId) : Boolean(user.remote_id);
 }
 
 export function removeUserFromList(userId: string, originalList: UserProfile[]): UserProfile[] {

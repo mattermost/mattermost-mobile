@@ -6,12 +6,16 @@ import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, Text, TextStyle, TouchableOpacity, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
+import SyntaxHighlighter from '@components/syntax_highlight';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {bottomSheet, dismissBottomSheet, goToScreen} from '@screens/navigation';
-import {getDisplayNameForLanguage} from '@utils/markdown';
+import {bottomSheetSnapPoint} from '@utils/helpers';
+import {getHighlightLanguageFromNameOrAlias, getHighlightLanguageName} from '@utils/markdown';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -34,35 +38,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderWidth: StyleSheet.hairlineWidth,
             flexDirection: 'row',
         },
-        lineNumbers: {
-            alignItems: 'center',
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.05),
-            borderRightColor: changeOpacity(theme.centerChannelColor, 0.15),
-            borderRightWidth: StyleSheet.hairlineWidth,
-            flexDirection: 'column',
-            justifyContent: 'flex-start',
-            paddingVertical: 4,
-            width: 21,
-        },
-        lineNumbersText: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 12,
-            lineHeight: 18,
-        },
-        rightColumn: {
-            flexDirection: 'column',
-            flex: 1,
-            paddingHorizontal: 6,
-            paddingVertical: 4,
-        },
         code: {
             flexDirection: 'row',
             overflow: 'scroll', // Doesn't actually cause a scrollbar, but stops text from wrapping
-        },
-        codeText: {
-            color: changeOpacity(theme.centerChannelColor, 0.65),
-            fontSize: 12,
-            lineHeight: 18,
         },
         plusMoreLinesText: {
             color: changeOpacity(theme.centerChannelColor, 0.4),
@@ -88,17 +66,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBlockProps) => {
     const intl = useIntl();
-    const managedConfig = useManagedConfig();
+    const managedConfig = useManagedConfig<ManagedConfig>();
     const theme = useTheme();
+    const insets = useSafeAreaInsets();
     const style = getStyleSheet(theme);
 
-    const handlePress = preventDoubleTap(() => {
-        const screen = 'Code';
+    const handlePress = useCallback(preventDoubleTap(() => {
+        const screen = Screens.CODE;
         const passProps = {
-            content,
+            code: content,
+            language,
+            textStyle,
         };
 
-        const languageDisplayName = getDisplayNameForLanguage(language);
+        const languageDisplayName = getHighlightLanguageName(language);
         let title: string;
         if (languageDisplayName) {
             title = intl.formatMessage(
@@ -121,7 +102,7 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
         requestAnimationFrame(() => {
             goToScreen(screen, title, passProps);
         });
-    });
+    }), [content, intl.locale, language]);
 
     const handleLongPress = useCallback(() => {
         if (managedConfig?.copyAndPasteProtection !== 'true') {
@@ -156,12 +137,12 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
             bottomSheet({
                 closeButtonId: 'close-code-block',
                 renderContent,
-                snapPoints: [3 * ITEM_HEIGHT, 10],
+                snapPoints: [bottomSheetSnapPoint(2, ITEM_HEIGHT, insets.bottom), 10],
                 title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
                 theme,
             });
         }
-    }, [managedConfig, intl, theme]);
+    }, [managedConfig, intl, insets, theme]);
 
     const trimContent = (text: string) => {
         const lines = text.split('\n');
@@ -182,7 +163,7 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
 
     const renderLanguageBlock = () => {
         if (language) {
-            const languageDisplayName = getDisplayNameForLanguage(language);
+            const languageDisplayName = getHighlightLanguageName(language);
 
             if (languageDisplayName) {
                 return (
@@ -198,15 +179,6 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
     };
 
     const {content: codeContent, numberOfLines} = trimContent(content);
-
-    const getLineNumbers = () => {
-        let lineNumbers = '1';
-        for (let i = 1; i < Math.min(numberOfLines, MAX_LINES); i++) {
-            const line = (i + 1).toString();
-            lineNumbers += '\n' + line;
-        }
-        return lineNumbers;
-    };
 
     const renderPlusMoreLines = () => {
         if (numberOfLines > MAX_LINES) {
@@ -225,26 +197,28 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
     };
 
     return (
-        <TouchableOpacity
-            onPress={handlePress}
-            onLongPress={handleLongPress}
-        >
-            <View style={style.container}>
-                <View style={style.lineNumbers}>
-                    <Text style={style.lineNumbersText}>{getLineNumbers()}</Text>
-                </View>
-                <View style={style.rightColumn}>
-                    <View style={style.code}>
-                        <Text style={[style.codeText, textStyle]}>
-                            {codeContent}
-                        </Text>
+        <>
+            <TouchableOpacity
+                onPress={handlePress}
+                onLongPress={handleLongPress}
+            >
+                <View style={style.container}>
+                    <View>
+                        <View style={style.code}>
+                            <SyntaxHighlighter
+                                code={codeContent}
+                                language={getHighlightLanguageFromNameOrAlias(language)}
+                                textStyle={textStyle}
+                            />
+                        </View>
+                        {renderPlusMoreLines()}
                     </View>
-                    {renderPlusMoreLines()}
+                    {renderLanguageBlock()}
                 </View>
-                {renderLanguageBlock()}
-            </View>
-        </TouchableOpacity>
+            </TouchableOpacity>
+        </>
     );
 };
 
 export default MarkdownCodeBlock;
+

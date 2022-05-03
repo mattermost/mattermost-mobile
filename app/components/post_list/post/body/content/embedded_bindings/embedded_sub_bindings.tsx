@@ -18,7 +18,7 @@ const EmbeddedSubBindings = ({bindings, post, theme}: Props) => {
     const content = [] as React.ReactNode[];
 
     bindings.forEach((binding) => {
-        if (!binding.app_id || !binding.call) {
+        if (!binding.app_id || !(binding.submit || binding.form?.submit || binding.form?.source || binding.bindings?.length)) {
             return;
         }
 
@@ -28,7 +28,6 @@ const EmbeddedSubBindings = ({bindings, post, theme}: Props) => {
                     key={binding.location}
                     binding={binding}
                     post={post}
-                    theme={theme}
                 />,
             );
             return;

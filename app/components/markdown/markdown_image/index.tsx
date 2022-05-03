@@ -7,6 +7,7 @@ import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Platform, StyleProp, Text, TextStyle, TouchableWithoutFeedback, View} from 'react-native';
 import Animated from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {SvgUri} from 'react-native-svg';
 import parseUrl from 'url-parse';
 
@@ -24,6 +25,7 @@ import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {lookupMimeType} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {generateId} from '@utils/general';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
 import {getMarkdownImageSize} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -69,22 +71,17 @@ const MarkdownImage = ({
 }: MarkdownImageProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
+    const insets = useSafeAreaInsets();
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const managedConfig = useManagedConfig();
+    const managedConfig = useManagedConfig<ManagedConfig>();
     const genericFileId = useRef(generateId('uid')).current;
     const metadata = imagesMetadata?.[source] || Object.values(imagesMetadata || {})[0];
     const [failed, setFailed] = useState(isGifTooLarge(metadata));
     const originalSize = getMarkdownImageSize(isReplyPost, isTablet, sourceSize, metadata, layoutWidth);
     const serverUrl = useServerUrl();
     const galleryIdentifier = `${postId}-${genericFileId}-${location}`;
-    const uri = useMemo(() => {
-        if (source.startsWith('/')) {
-            return serverUrl + source;
-        }
-
-        return source;
-    }, [source, serverUrl]);
+    const uri = source.startsWith('/') ? serverUrl + source : source;
 
     const fileInfo = useMemo(() => {
         const link = decodeURIComponent(uri);
@@ -116,7 +113,7 @@ const MarkdownImage = ({
             type: 'image',
         };
         openGalleryAtIndex(galleryIdentifier, 0, [item]);
-    }, []);
+    }, [fileInfo]);
 
     const {ref, onGestureEvent, styles} = useGalleryItem(
         galleryIdentifier,
@@ -180,12 +177,12 @@ const MarkdownImage = ({
             bottomSheet({
                 closeButtonId: 'close-mardown-image',
                 renderContent,
-                snapPoints: [3 * ITEM_HEIGHT, 10],
+                snapPoints: [bottomSheetSnapPoint(2, ITEM_HEIGHT, insets.bottom), 10],
                 title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
                 theme,
             });
         }
-    }, [managedConfig, intl, theme]);
+    }, [managedConfig, intl.locale, insets.bottom, theme]);
 
     const handleOnError = useCallback(() => {
         setFailed(true);

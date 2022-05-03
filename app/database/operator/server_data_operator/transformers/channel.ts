@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {General} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
+import {extractChannelDisplayName} from '@helpers/database';
+import {getIsCRTEnabled} from '@queries/servers/thread';
 import {OperationType} from '@typings/database/enums';
 
 import type {TransformerArgs} from '@typings/database/database';
@@ -40,25 +41,7 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
         channel.creatorId = raw.creator_id;
         channel.deleteAt = raw.delete_at;
 
-        // for DM & GM's  channels do not override the display name
-        // until we get the new info if there is any
-        let displayName;
-        if (raw.type === General.DM_CHANNEL && record?.displayName) {
-            displayName = raw.display_name || record?.displayName;
-        } else if (raw.type === General.GM_CHANNEL) {
-            const rawMembers = raw.display_name.split(',').length;
-            const recordMembers = record?.displayName.split(',').length || rawMembers;
-
-            if (recordMembers < rawMembers) {
-                displayName = record.displayName;
-            } else {
-                displayName = raw.display_name;
-            }
-        } else {
-            displayName = raw.display_name;
-        }
-
-        channel.displayName = displayName;
+        channel.displayName = extractChannelDisplayName(raw, record);
         channel.isGroupConstrained = Boolean(raw.group_constrained);
         channel.name = raw.name;
         channel.shared = Boolean(raw.shared);
@@ -109,17 +92,17 @@ export const transformMyChannelSettingsRecord = ({action, database, value}: Tran
  * @returns {Promise<ChannelInfoModel>}
  */
 export const transformChannelInfoRecord = ({action, database, value}: TransformerArgs): Promise<ChannelInfoModel> => {
-    const raw = value.raw as ChannelInfo;
+    const raw = value.raw as Partial<ChannelInfo>;
     const record = value.record as ChannelInfoModel;
     const isCreateAction = action === OperationType.CREATE;
 
     const fieldsMapper = (channelInfo: ChannelInfoModel) => {
         channelInfo._raw.id = isCreateAction ? (raw.id || channelInfo.id) : record.id;
-        channelInfo.guestCount = raw.guest_count;
-        channelInfo.header = raw.header;
-        channelInfo.memberCount = raw.member_count;
-        channelInfo.pinnedPostCount = raw.pinned_post_count;
-        channelInfo.purpose = raw.purpose;
+        channelInfo.guestCount = raw.guest_count ?? channelInfo.guestCount ?? 0;
+        channelInfo.header = raw.header ?? channelInfo.header ?? '';
+        channelInfo.memberCount = raw.member_count ?? channelInfo.memberCount ?? 0;
+        channelInfo.pinnedPostCount = raw.pinned_post_count ?? channelInfo.pinnedPostCount ?? 0;
+        channelInfo.purpose = raw.purpose ?? channelInfo.purpose ?? '';
     };
 
     return prepareBaseRecord({
@@ -138,18 +121,20 @@ export const transformChannelInfoRecord = ({action, database, value}: Transforme
  * @param {RecordPair} operator.value
  * @returns {Promise<MyChannelModel>}
  */
-export const transformMyChannelRecord = ({action, database, value}: TransformerArgs): Promise<MyChannelModel> => {
+export const transformMyChannelRecord = async ({action, database, value}: TransformerArgs): Promise<MyChannelModel> => {
     const raw = value.raw as ChannelMembership;
     const record = value.record as MyChannelModel;
     const isCreateAction = action === OperationType.CREATE;
 
+    const isCRTEnabled = await getIsCRTEnabled(database);
+
     const fieldsMapper = (myChannel: MyChannelModel) => {
         myChannel._raw.id = isCreateAction ? (raw.channel_id || myChannel.id) : record.id;
         myChannel.roles = raw.roles;
-        myChannel.messageCount = raw.msg_count;
+        myChannel.messageCount = isCRTEnabled ? raw.msg_count_root! : raw.msg_count;
         myChannel.isUnread = Boolean(raw.is_unread);
-        myChannel.mentionsCount = raw.mention_count;
-        myChannel.lastPostAt = raw.last_post_at || 0;
+        myChannel.mentionsCount = isCRTEnabled ? raw.mention_count_root! : raw.mention_count;
+        myChannel.lastPostAt = (isCRTEnabled ? (raw.last_root_post_at || raw.last_post_at) : raw.last_post_at) || 0;
         myChannel.lastViewedAt = raw.last_viewed_at;
         myChannel.viewedAt = record?.viewedAt || 0;
     };

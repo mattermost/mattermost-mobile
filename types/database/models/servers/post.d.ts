@@ -4,6 +4,14 @@
 import {Query, Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
+import type ChannelModel from './channel';
+import type DraftModel from './draft';
+import type FileModel from './file';
+import type PostsInThreadModel from './posts_in_thread';
+import type ReactionModel from './reaction';
+import type ThreadModel from './thread';
+import type UserModel from './user';
+
 /**
  * The Post model is the building block of communication in the Mattermost app.
  */
@@ -61,14 +69,14 @@ export default class PostModel extends Model {
     /** props : Additional attributes for this props */
     props: any;
 
-    /** drafts  : Every drafts associated with this Post */
+    /** drafts  : Every draft associated with this Post */
     drafts: Query<DraftModel>;
 
     /** files: All the files associated with this Post */
     files: Query<FileModel>;
 
     /** postsInThread: Every posts associated to a thread */
-    postsInThread: Query<PostInThreadModel>;
+    postsInThread: Query<PostsInThreadModel>;
 
     /** reactions: All the reactions associated with this Post */
     reactions: Query<ReactionModel>;

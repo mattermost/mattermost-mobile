@@ -72,7 +72,7 @@ export default function ChannelDropdown({
             items += 1;
         }
 
-        const itemsSnap = ((items + 1) * ITEM_HEIGHT) + (insets.bottom * 2) + TITLE_HEIGHT;
+        const itemsSnap = ((items + 1) * ITEM_HEIGHT) + (insets.bottom * 3) + TITLE_HEIGHT;
         bottomSheet({
             title: intl.formatMessage({id: 'browse_channels.dropdownTitle', defaultMessage: 'Show'}),
             renderContent,
@@ -89,14 +89,12 @@ export default function ChannelDropdown({
         channelDropdownText = intl.formatMessage({id: 'browse_channels.showArchivedChannels', defaultMessage: 'Show: Archived Channels'});
     }
     return (
-        <View
-            testID='browse_channels.channel.dropdown'
-        >
+        <View testID='browse_channels.channel_dropdown'>
             <Text
                 accessibilityRole={'button'}
                 style={style.channelDropdown}
                 onPress={handleDropdownClick}
-                testID={`browse_channels.channel.dropdown.${typeOfChannels}`}
+                testID={`browse_channels.channel_dropdown.text.${typeOfChannels}`}
             >
                 {channelDropdownText}
                 {'  '}

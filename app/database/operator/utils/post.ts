@@ -13,9 +13,10 @@ import type {ChainPostsArgs, SanitizePostsArgs} from '@typings/database/database
 export const sanitizePosts = ({posts, orders}: SanitizePostsArgs) => {
     const orderedPosts: Post[] = [];
     const unOrderedPosts: Post[] = [];
+    const ordersSet = new Set(orders);
 
     posts.forEach((post) => {
-        if (post?.id && orders.includes(post.id)) {
+        if (post?.id && ordersSet.has(post.id)) {
             orderedPosts.push(post);
         } else {
             unOrderedPosts.push(post);
@@ -37,9 +38,13 @@ export const sanitizePosts = ({posts, orders}: SanitizePostsArgs) => {
  * @param {string} chainPosts.previousPostId
  * @returns {Post[]}
  */
-export const createPostsChain = ({order, posts, previousPostId = ''}: ChainPostsArgs) => {
+export const createPostsChain = ({order = [], posts, previousPostId = ''}: ChainPostsArgs) => {
+    const postsByIds = posts.reduce((result: Record<string, Post>, p) => {
+        result[p.id] = p;
+        return result;
+    }, {});
     return order.reduce((result, id, index) => {
-        const post = posts.find((p) => p.id === id);
+        const post = postsByIds[id];
 
         if (post) {
             if (index === order.length - 1) {

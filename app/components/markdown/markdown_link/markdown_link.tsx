@@ -6,6 +6,7 @@ import Clipboard from '@react-native-community/clipboard';
 import React, {Children, ReactElement, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, StyleSheet, Text, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import urlParse from 'url-parse';
 
 import {switchToChannelByName} from '@actions/remote/channel';
@@ -16,6 +17,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {bottomSheet, dismissAllModals, dismissBottomSheet, popToRoot} from '@screens/navigation';
 import {errorBadChannel} from '@utils/draft';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {matchDeepLink, normalizeProtocol, tryOpenURL} from '@utils/url';
 
@@ -34,15 +36,29 @@ const style = StyleSheet.create({
     },
 });
 
+const parseLinkLiteral = (literal: string) => {
+    let nextLiteral = literal;
+
+    const WWW_REGEX = /\b^(?:www.)/i;
+    if (nextLiteral.match(WWW_REGEX)) {
+        nextLiteral = literal.replace(WWW_REGEX, 'www.');
+    }
+
+    const parsed = urlParse(nextLiteral, {});
+
+    return parsed.href;
+};
+
 const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteURL}: MarkdownLinkProps) => {
     const intl = useIntl();
-    const managedConfig = useManagedConfig();
+    const insets = useSafeAreaInsets();
+    const managedConfig = useManagedConfig<ManagedConfig>();
     const serverUrl = useServerUrl();
     const theme = useTheme();
 
     const {formatMessage} = intl;
 
-    const handlePress = preventDoubleTap(async () => {
+    const handlePress = useCallback(preventDoubleTap(async () => {
         const url = normalizeProtocol(href);
 
         if (!url) {
@@ -77,22 +93,9 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
 
             tryOpenURL(url, onError);
         }
-    });
+    }), [href, intl.locale, serverUrl, siteURL]);
 
-    const parseLinkLiteral = (literal: string) => {
-        let nextLiteral = literal;
-
-        const WWW_REGEX = /\b^(?:www.)/i;
-        if (nextLiteral.match(WWW_REGEX)) {
-            nextLiteral = literal.replace(WWW_REGEX, 'www.');
-        }
-
-        const parsed = urlParse(nextLiteral, {});
-
-        return parsed.href;
-    };
-
-    const parseChildren = () => {
+    const parseChildren = useCallback(() => {
         return Children.map(children, (child: ReactElement) => {
             if (!child.props.literal || typeof child.props.literal !== 'string' || (child.props.context && child.props.context.length && !child.props.context.includes('link'))) {
                 return child;
@@ -112,7 +115,7 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
                 ...otherChildProps,
             };
         });
-    };
+    }, [children]);
 
     const handleLongPress = useCallback(() => {
         if (managedConfig?.copyAndPasteProtection !== 'true') {
@@ -147,12 +150,12 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
             bottomSheet({
                 closeButtonId: 'close-mardown-link',
                 renderContent,
-                snapPoints: [3 * ITEM_HEIGHT, 10],
+                snapPoints: [bottomSheetSnapPoint(2, ITEM_HEIGHT, insets.bottom), 10],
                 title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
                 theme,
             });
         }
-    }, [managedConfig, intl, theme]);
+    }, [managedConfig, intl, insets, theme]);
 
     const renderChildren = experimentalNormalizeMarkdownLinks ? parseChildren() : children;
 

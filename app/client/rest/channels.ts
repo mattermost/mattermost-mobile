@@ -278,7 +278,8 @@ const ClientChannels = (superclass: any) => class extends superclass {
     };
 
     viewMyChannel = async (channelId: string, prevChannelId?: string) => {
-        const data = {channel_id: channelId, prev_channel_id: prevChannelId};
+        // collapsed_threads_supported is not based on user preferences but to know if "CLIENT" supports CRT
+        const data = {channel_id: channelId, prev_channel_id: prevChannelId, collapsed_threads_supported: true};
         return this.doFetch(
             `${this.getChannelsRoute()}/members/me/view`,
             {method: 'post', body: data},

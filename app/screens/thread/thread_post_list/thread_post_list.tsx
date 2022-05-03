@@ -1,48 +1,62 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
-import {StyleProp, StyleSheet, ViewStyle} from 'react-native';
+import React, {useEffect, useMemo, useRef} from 'react';
+import {StyleSheet, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import {updateThreadRead} from '@actions/remote/thread';
 import PostList from '@components/post_list';
 import {Screens} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
-    channelId: string;
-    contentContainerStyle?: StyleProp<ViewStyle>;
     currentTimezone: string | null;
     currentUsername: string;
+    isCRTEnabled: boolean;
     isTimezoneEnabled: boolean;
     lastViewedAt: number;
     nativeID: string;
     posts: PostModel[];
     rootPost: PostModel;
+    teamId: string;
 }
 
 const edges: Edge[] = ['bottom'];
 
 const styles = StyleSheet.create({
+    container: {marginTop: 10},
     flex: {flex: 1},
+    footer: {height: 20},
 });
 
 const ThreadPostList = ({
-    channelId, contentContainerStyle, currentTimezone, currentUsername,
-    isTimezoneEnabled, lastViewedAt, nativeID, posts, rootPost,
+    currentTimezone, currentUsername,
+    isCRTEnabled, isTimezoneEnabled, lastViewedAt, nativeID, posts, rootPost, teamId,
 }: Props) => {
     const isTablet = useIsTablet();
+    const serverUrl = useServerUrl();
 
     const threadPosts = useMemo(() => {
         return [...posts, rootPost];
     }, [posts, rootPost]);
 
+    // If CRT is enabled, When new post arrives and thread modal is open, mark thread as read
+    const oldPostsCount = useRef<number>(posts.length);
+    useEffect(() => {
+        if (isCRTEnabled && oldPostsCount.current < posts.length) {
+            oldPostsCount.current = posts.length;
+            updateThreadRead(serverUrl, teamId, rootPost.id, Date.now());
+        }
+    }, [isCRTEnabled, posts, rootPost, serverUrl, teamId]);
+
     const postList = (
         <PostList
-            channelId={channelId}
-            contentContainerStyle={contentContainerStyle}
+            channelId={rootPost.channelId}
+            contentContainerStyle={styles.container}
             currentTimezone={currentTimezone}
             currentUsername={currentUsername}
             isTimezoneEnabled={isTimezoneEnabled}
@@ -54,6 +68,7 @@ const ThreadPostList = ({
             shouldShowJoinLeaveMessages={false}
             showMoreMessages={false}
             showNewMessageLine={false}
+            footer={<View style={styles.footer}/>}
             testID='thread.post_list'
         />
     );

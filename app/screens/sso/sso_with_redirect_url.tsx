@@ -12,7 +12,7 @@ import urlParse from 'url-parse';
 
 import FormattedText from '@components/formatted_text';
 import {Sso} from '@constants';
-import NetworkManager from '@init/network_manager';
+import NetworkManager from '@managers/network_manager';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';

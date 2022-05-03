@@ -1,28 +1,32 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model, Q} from '@nozbe/watermelondb';
+import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {General, Navigation as NavigationConstants, Preferences, Screens} from '@constants';
-import {MM_TABLES} from '@constants/database';
+import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@constants/categories';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
-import {prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannelIds, queryChannelsById, queryMyChannel} from '@queries/servers/channel';
+import {extractChannelDisplayName} from '@helpers/database';
+import PushNotifications from '@init/push_notifications';
+import {prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannel, getMyChannel, getChannelById, queryUsersOnChannel} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, queryCommonSystemValues, queryCurrentTeamId, setCurrentChannelId} from '@queries/servers/system';
-import {addChannelToTeamHistory, addTeamToTeamHistory, queryTeamById, removeChannelFromTeamHistory} from '@queries/servers/team';
-import {queryCurrentUser} from '@queries/servers/user';
+import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
+import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, queryMyTeams, removeChannelFromTeamHistory} from '@queries/servers/team';
+import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
+import {makeCategoryChannelId, makeCategoryId} from '@utils/categories';
+import {isDMorGM} from '@utils/channel';
 import {isTablet} from '@utils/helpers';
+import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
 import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from '@utils/user';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {CHANNEL_MEMBERSHIP, USER}} = MM_TABLES;
-
-export const switchToChannel = async (serverUrl: string, channelId: string, teamId?: string, prepareRecordsOnly = false) => {
+export async function switchToChannel(serverUrl: string, channelId: string, teamId?: string, prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -33,72 +37,91 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
     try {
         const dt = Date.now();
         const isTabletDevice = await isTablet();
-        const system = await queryCommonSystemValues(database);
-        const member = await queryMyChannel(database, channelId);
+        const system = await getCommonSystemValues(database);
+        const member = await getMyChannel(database, channelId);
 
         if (member) {
-            const channel: ChannelModel = await member.channel.fetch();
-            if (!channel.teamId && teamId) {
-                const team = await queryTeamById(database, teamId);
-                if (!team) {
-                    return {error: `team with id ${teamId} not found`};
+            const channel = await member.channel.fetch();
+            if (channel) {
+                if (!channel.teamId && teamId) {
+                    const team = await getTeamById(database, teamId);
+                    if (!team) {
+                        return {error: `team with id ${teamId} not found`};
+                    }
                 }
-            }
-            const toTeamId = channel.teamId || teamId || system.currentTeamId;
+                const toTeamId = channel.teamId || teamId || system.currentTeamId;
 
-            if (isTabletDevice && system.currentChannelId !== channelId) {
-                // On tablet, the channel is being rendered, by setting the channel to empty first we speed up
-                // the switch by ~3x
-                await setCurrentChannelId(operator, '');
-            }
+                if (isTabletDevice && system.currentChannelId !== channelId) {
+                    // On tablet, the channel is being rendered, by setting the channel to empty first we speed up
+                    // the switch by ~3x
+                    await setCurrentChannelId(operator, '');
+                }
 
-            if (system.currentTeamId !== toTeamId) {
-                const history = await addTeamToTeamHistory(operator, toTeamId, true);
-                models.push(...history);
-            }
+                if (system.currentTeamId !== toTeamId) {
+                    const history = await addTeamToTeamHistory(operator, toTeamId, true);
+                    models.push(...history);
+                }
 
-            if ((system.currentTeamId !== toTeamId) || (system.currentChannelId !== channelId)) {
                 const commonValues: PrepareCommonSystemValuesArgs = {
-                    currentChannelId: system.currentChannelId === channelId ? undefined : channelId,
-                    currentTeamId: system.currentTeamId === toTeamId ? undefined : toTeamId,
+                    lastUnreadChannelId: member.isUnread ? channelId : '',
                 };
+
+                if ((system.currentTeamId !== toTeamId) || (system.currentChannelId !== channelId)) {
+                    commonValues.currentChannelId = system.currentChannelId === channelId ? undefined : channelId;
+                    commonValues.currentTeamId = system.currentTeamId === toTeamId ? undefined : toTeamId;
+                }
+
                 const common = await prepareCommonSystemValues(operator, commonValues);
                 if (common) {
                     models.push(...common);
                 }
-            }
 
-            if (system.currentChannelId !== channelId || system.currentTeamId !== toTeamId) {
-                const history = await addChannelToTeamHistory(operator, toTeamId, channelId, true);
-                models.push(...history);
-            }
+                if (system.currentChannelId !== channelId || system.currentTeamId !== toTeamId) {
+                    const history = await addChannelToTeamHistory(operator, toTeamId, channelId, true);
+                    models.push(...history);
+                }
 
-            const {member: viewedAt} = await markChannelAsViewed(serverUrl, channelId, true);
-            if (viewedAt) {
-                models.push(viewedAt);
-            }
+                const {member: viewedAt} = await markChannelAsViewed(serverUrl, channelId, true);
+                if (viewedAt) {
+                    models.push(viewedAt);
+                }
 
-            if (models.length && !prepareRecordsOnly) {
-                await operator.batchRecords(models);
-            }
+                if (models.length && !prepareRecordsOnly) {
+                    await operator.batchRecords(models);
+                }
 
-            if (isTabletDevice) {
-                dismissAllModalsAndPopToRoot();
-                DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME);
-            } else {
-                dismissAllModalsAndPopToScreen(Screens.CHANNEL, '', undefined, {topBar: {visible: false}});
-            }
+                PushNotifications.cancelChannelNotifications(channelId);
 
-            console.log('channel switch to', channel?.displayName, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
+                if (!EphemeralStore.theme) {
+                    // When opening the app from a push notification the theme may not be set in the EphemeralStore
+                    // causing the goToScreen to use the Appearance theme instead and that causes the screen background color to potentially
+                    // not match the theme
+                    const themes = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_THEME, toTeamId).fetch();
+                    let theme = Preferences.THEMES.denim;
+                    if (themes.length) {
+                        theme = setThemeDefaults(JSON.parse(themes[0].value) as Theme);
+                    }
+                    updateThemeIfNeeded(theme, true);
+                }
+
+                if (isTabletDevice) {
+                    dismissAllModalsAndPopToRoot();
+                    DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME, Screens.CHANNEL);
+                } else {
+                    dismissAllModalsAndPopToScreen(Screens.CHANNEL, '', undefined, {topBar: {visible: false}});
+                }
+
+                console.log('channel switch to', channel?.displayName, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
+            }
         }
     } catch (error) {
         return {error};
     }
 
     return {models};
-};
+}
 
-export const removeCurrentUserFromChannel = async (serverUrl: string, channelId: string, prepareRecordsOnly = false) => {
+export async function removeCurrentUserFromChannel(serverUrl: string, channelId: string, prepareRecordsOnly = false) {
     const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
     if (!serverDatabase) {
         return {error: `${serverUrl} database not found`};
@@ -107,13 +130,13 @@ export const removeCurrentUserFromChannel = async (serverUrl: string, channelId:
     const {operator, database} = serverDatabase;
 
     const models: Model[] = [];
-    const myChannel = await queryMyChannel(database, channelId);
+    const myChannel = await getMyChannel(database, channelId);
     if (myChannel) {
         const channel = await myChannel.channel.fetch() as ChannelModel;
         models.push(...await prepareDeleteChannel(channel));
         let teamId = channel.teamId;
         if (teamId) {
-            teamId = await queryCurrentTeamId(database);
+            teamId = await getCurrentTeamId(database);
         }
         const system = await removeChannelFromTeamHistory(operator, teamId, channel.id, true);
         if (system) {
@@ -129,9 +152,9 @@ export const removeCurrentUserFromChannel = async (serverUrl: string, channelId:
         }
     }
     return {models};
-};
+}
 
-export const setChannelDeleteAt = async (serverUrl: string, channelId: string, deleteAt: number) => {
+export async function setChannelDeleteAt(serverUrl: string, channelId: string, deleteAt: number) {
     const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
     if (!serverDatabase) {
         return;
@@ -139,12 +162,11 @@ export const setChannelDeleteAt = async (serverUrl: string, channelId: string, d
 
     const {operator, database} = serverDatabase;
 
-    const channels = await queryChannelsById(database, [channelId]);
-    if (!channels?.length) {
+    const channel = await getChannelById(database, channelId);
+    if (!channel) {
         return;
     }
 
-    const channel = channels[0];
     const model = channel.prepareUpdate((c) => {
         c.deleteAt = deleteAt;
     });
@@ -155,24 +177,24 @@ export const setChannelDeleteAt = async (serverUrl: string, channelId: string, d
         // eslint-disable-next-line no-console
         console.log('FAILED TO BATCH CHANGES FOR CHANNEL DELETE AT');
     }
-};
+}
 
-export const selectAllMyChannelIds = async (serverUrl: string) => {
+export async function selectAllMyChannelIds(serverUrl: string) {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return [];
     }
 
-    return queryAllMyChannelIds(database);
-};
+    return queryAllMyChannel(database).fetchIds();
+}
 
-export const markChannelAsViewed = async (serverUrl: string, channelId: string, prepareRecordsOnly = false) => {
+export async function markChannelAsViewed(serverUrl: string, channelId: string, prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
-    const member = await queryMyChannel(operator.database, channelId);
+    const member = await getMyChannel(operator.database, channelId);
     if (!member) {
         return {error: 'not a member'};
     }
@@ -194,15 +216,15 @@ export const markChannelAsViewed = async (serverUrl: string, channelId: string, 
     } catch (error) {
         return {error};
     }
-};
+}
 
-export const markChannelAsUnread = async (serverUrl: string, channelId: string, messageCount: number, mentionsCount: number, lastViewed: number, prepareRecordsOnly = false) => {
+export async function markChannelAsUnread(serverUrl: string, channelId: string, messageCount: number, mentionsCount: number, lastViewed: number, prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
-    const member = await queryMyChannel(operator.database, channelId);
+    const member = await getMyChannel(operator.database, channelId);
     if (!member) {
         return {error: 'not a member'};
     }
@@ -225,15 +247,15 @@ export const markChannelAsUnread = async (serverUrl: string, channelId: string, 
     } catch (error) {
         return {error};
     }
-};
+}
 
-export const resetMessageCount = async (serverUrl: string, channelId: string) => {
+export async function resetMessageCount(serverUrl: string, channelId: string) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
-    const member = await queryMyChannel(operator.database, channelId);
+    const member = await getMyChannel(operator.database, channelId);
     if (!member) {
         return {error: 'not a member'};
     }
@@ -248,27 +270,29 @@ export const resetMessageCount = async (serverUrl: string, channelId: string) =>
     } catch (error) {
         return {error};
     }
-};
+}
 
-export const storeMyChannelsForTeam = async (serverUrl: string, teamId: string, channels: Channel[], memberships: ChannelMembership[], prepareRecordsOnly = false) => {
+export async function storeMyChannelsForTeam(serverUrl: string, teamId: string, channels: Channel[], memberships: ChannelMembership[], prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
-    const modelPromises: Array<Promise<Model[]>> = [];
-    const prepare = await prepareMyChannelsForTeam(operator, teamId, channels, memberships);
-    if (prepare) {
-        modelPromises.push(...prepare);
-    }
+    const modelPromises: Array<Promise<Model[]>> = [
+        ...await prepareMyChannelsForTeam(operator, teamId, channels, memberships),
+    ];
 
     const models = await Promise.all(modelPromises);
+    if (!models.length) {
+        return {models: []};
+    }
+
     const flattenedModels = models.flat() as Model[];
 
     if (prepareRecordsOnly) {
         return {models: flattenedModels};
     }
 
-    if (flattenedModels?.length > 0) {
+    if (flattenedModels.length) {
         try {
             await operator.batchRecords(flattenedModels);
         } catch (error) {
@@ -279,15 +303,51 @@ export const storeMyChannelsForTeam = async (serverUrl: string, teamId: string, 
     }
 
     return {models: flattenedModels};
-};
+}
 
-export const updateLastPostAt = async (serverUrl: string, channelId: string, lastPostAt: number, prepareRecordsOnly = false) => {
+export async function updateMyChannelFromWebsocket(serverUrl: string, channelMember: ChannelMembership, prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
-    const member = await queryMyChannel(operator.database, channelId);
+    const member = await getMyChannel(operator.database, channelMember.channel_id);
+    if (member) {
+        member.prepareUpdate((m) => {
+            m.roles = channelMember.roles;
+        });
+        if (!prepareRecordsOnly) {
+            operator.batchRecords([member]);
+        }
+    }
+    return {model: member};
+}
+
+export async function updateChannelInfoFromChannel(serverUrl: string, channel: Channel, prepareRecordsOnly = false) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const newInfo = await operator.handleChannelInfo({channelInfos: [{
+        header: channel.header,
+        purpose: channel.purpose,
+        id: channel.id,
+    }],
+    prepareRecordsOnly: true});
+    if (!prepareRecordsOnly) {
+        operator.batchRecords(newInfo);
+    }
+    return {model: newInfo};
+}
+
+export async function updateLastPostAt(serverUrl: string, channelId: string, lastPostAt: number, prepareRecordsOnly = false) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const member = await getMyChannel(operator.database, channelId);
     if (!member) {
         return {error: 'not a member'};
     }
@@ -304,10 +364,12 @@ export const updateLastPostAt = async (serverUrl: string, channelId: string, las
         } catch (error) {
             return {error};
         }
+
+        return {member};
     }
 
     return {member: undefined};
-};
+}
 
 export async function updateChannelsDisplayName(serverUrl: string, channels: ChannelModel[], users: UserProfile[], prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -316,13 +378,13 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
     }
 
     const {database} = operator;
-    const currentUser = await queryCurrentUser(database);
+    const currentUser = await getCurrentUser(database);
     if (!currentUser) {
         return {};
     }
 
-    const {config, license} = await queryCommonSystemValues(database);
-    const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
+    const {config, license} = await getCommonSystemValues(database);
+    const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT).fetch();
     const displaySettings = getTeammateNameDisplaySetting(preferences, config, license);
     const models: Model[] = [];
     for await (const channel of channels) {
@@ -330,14 +392,14 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
         if (channel.type === General.DM_CHANNEL) {
             const otherUserId = getUserIdFromChannelName(currentUser.id, channel.name);
             const user = users.find((u) => u.id === otherUserId);
-            newDisplayName = displayUsername(user, currentUser.locale, displaySettings);
+            newDisplayName = displayUsername(user, currentUser.locale, displaySettings, false);
         } else {
-            const dbProfiles = await database.get<UserModel>(USER).query(Q.on(CHANNEL_MEMBERSHIP, Q.where('channel_id', channel.id))).fetch();
-            const profileIds = dbProfiles.map((p) => p.id);
-            const gmUsers = users.filter((u) => profileIds.includes(u.id));
+            const dbProfiles = await queryUsersOnChannel(database, channel.id).fetch();
+            const profileIds = new Set(dbProfiles.map((p) => p.id));
+            const gmUsers = users.filter((u) => profileIds.has(u.id));
             if (gmUsers.length) {
-                const uIds = gmUsers.map((u) => u.id);
-                const newProfiles: Array<UserModel|UserProfile> = dbProfiles.filter((u) => !uIds.includes(u.id));
+                const uIds = new Set(gmUsers.map((u) => u.id));
+                const newProfiles: Array<UserModel|UserProfile> = dbProfiles.filter((u) => !uIds.has(u.id));
                 newProfiles.push(...gmUsers);
                 newDisplayName = displayGroupMessageName(newProfiles, currentUser.locale, displaySettings, currentUser.id);
             }
@@ -345,7 +407,7 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
 
         if (channel.displayName !== newDisplayName) {
             channel.prepareUpdate((c) => {
-                c.displayName = newDisplayName;
+                c.displayName = extractChannelDisplayName({type: c.type, display_name: newDisplayName}, c);
             });
             models.push(channel);
         }
@@ -353,6 +415,54 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
 
     if (models.length && !prepareRecordsOnly) {
         await operator.batchRecords(models);
+    }
+
+    return {models};
+}
+
+export async function addChannelToDefaultCategory(serverUrl: string, channel: Channel | ChannelModel, prepareRecordsOnly = false) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const {database} = operator;
+
+    const teamId = 'teamId' in channel ? channel.teamId : channel.team_id;
+    const userId = await getCurrentUserId(database);
+    if (!userId) {
+        return {error: 'no current user id'};
+    }
+
+    if (!isDMorGM(channel)) {
+        const models = await operator.handleCategoryChannels({categoryChannels: [{
+            category_id: makeCategoryId(CHANNELS_CATEGORY, userId, teamId),
+            channel_id: channel.id,
+            sort_order: 0,
+            id: makeCategoryChannelId(teamId, channel.id),
+        }],
+        prepareRecordsOnly});
+
+        return {models};
+    }
+
+    const allTeams = await queryMyTeams(database).fetch();
+    const models = (
+        await Promise.all(
+            allTeams.map(
+                (t) => operator.handleCategoryChannels({categoryChannels: [{
+                    category_id: makeCategoryId(DMS_CATEGORY, userId, t.id),
+                    channel_id: channel.id,
+                    sort_order: 0,
+                    id: makeCategoryChannelId(t.id, channel.id),
+                }],
+                prepareRecordsOnly: true}),
+            ),
+        )
+    ).flat();
+
+    if (models.length && !prepareRecordsOnly) {
+        operator.batchRecords(models);
     }
 
     return {models};

@@ -4,6 +4,7 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {removePost} from '@actions/local/post';
 import {retryPost} from '@actions/remote/post';
@@ -11,6 +12,7 @@ import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {useServerUrl} from '@context/server';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -31,7 +33,9 @@ const styles = StyleSheet.create({
 
 const Failed = ({post, theme}: FailedProps) => {
     const intl = useIntl();
+    const insets = useSafeAreaInsets();
     const serverUrl = useServerUrl();
+
     const onPress = useCallback(() => {
         const renderContent = () => {
             return (
@@ -65,11 +69,11 @@ const Failed = ({post, theme}: FailedProps) => {
         bottomSheet({
             closeButtonId: 'close-post-failed',
             renderContent,
-            snapPoints: [3 * ITEM_HEIGHT, 10],
+            snapPoints: [bottomSheetSnapPoint(2, ITEM_HEIGHT, insets.bottom), 10],
             title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
             theme,
         });
-    }, []);
+    }, [insets]);
 
     return (
         <TouchableOpacity
