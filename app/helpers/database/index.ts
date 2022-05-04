@@ -11,19 +11,17 @@ export const extractRecordsForTable = <T>(records: Model[], tableName: string): 
     return records.filter((r) => r.constructor.table === tableName) as T[];
 };
 
-export function extractChannelDisplayName(raw: Pick<Channel, 'type' | 'display_name'>, record?: ChannelModel) {
+export function extractChannelDisplayName(raw: Pick<Channel, 'type' | 'display_name' | 'fake'>, record?: ChannelModel) {
     let displayName = '';
     switch (raw.type) {
         case General.DM_CHANNEL:
             displayName = raw.display_name.trim() || record?.displayName || '';
             break;
         case General.GM_CHANNEL: {
-            const rawMembers = raw.display_name.split(',').length;
-            const recordMembers = record?.displayName.split(',').length || rawMembers;
-            if (recordMembers < rawMembers && record?.displayName) {
-                displayName = record.displayName;
-            } else {
+            if (raw.fake) {
                 displayName = raw.display_name;
+            } else {
+                displayName = record?.displayName || raw.display_name;
             }
             break;
         }

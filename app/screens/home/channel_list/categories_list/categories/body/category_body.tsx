@@ -52,7 +52,7 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChan
         sharedValue.value = category.collapsed;
     }, [category.collapsed]);
 
-    const height = ids.length ? ids.length * 44 : 0;
+    const height = ids.length ? ids.length * 40 : 0;
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
