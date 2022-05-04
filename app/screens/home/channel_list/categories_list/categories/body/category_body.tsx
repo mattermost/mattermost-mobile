@@ -44,7 +44,7 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChan
                 onPress={onChannelSwitch}
             />
         );
-    }, [category.collapsed, onChannelSwitch]);
+    }, [onChannelSwitch]);
 
     const sharedValue = useSharedValue(category.collapsed);
 
