@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {TouchableOpacity, View} from 'react-native';
 
 import ClearButton from '@components/custom_status/clear_button';
 import CustomStatusText from '@components/custom_status/custom_status_text';
@@ -30,14 +30,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: theme.centerChannelBg,
             flexDirection: 'row',
             minHeight: 50,
+            alignItems: 'center',
         },
         iconContainer: {
-            width: 45,
-            height: 46,
-            left: 14,
-            top: 12,
-            marginRight: 6,
-            color: theme.centerChannelColor,
+            marginLeft: 14,
+            marginRight: 10,
         },
         wrapper: {
             flex: 1,
@@ -48,11 +45,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center',
             width: '70%',
             flex: 1,
-        },
-        clearButtonContainer: {
-            position: 'absolute',
-            top: 4,
-            right: 13,
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
@@ -87,7 +79,7 @@ const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handl
 
     const clearButton =
         handleClear && expires_at ? (
-            <View style={style.clearButtonContainer}>
+            <View>
                 <ClearButton
                     handlePress={handleSuggestionClear}
                     theme={theme}
@@ -105,12 +97,12 @@ const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handl
         >
             <View style={style.container}>
                 {emoji && (
-                    <Text style={style.iconContainer}>
+                    <View style={style.iconContainer}>
                         <Emoji
                             emojiName={emoji}
                             size={20}
                         />
-                    </Text>
+                    </View>
                 )}
                 <View style={style.wrapper}>
                     <View style={style.textContainer}>
@@ -133,9 +125,9 @@ const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handl
                             </View>
                         )}
                     </View>
-                    {clearButton}
                     {separator && <View style={style.divider}/>}
                 </View>
+                {clearButton}
             </View>
         </TouchableOpacity>
     );
