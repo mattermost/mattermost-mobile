@@ -394,6 +394,7 @@ export async function fetchMissingSidebarInfo(serverUrl: string, directChannels:
         const displayName = displayNameByChannel[c.id];
         if (displayName) {
             c.display_name = displayName;
+            c.fake = true;
         }
     });
 

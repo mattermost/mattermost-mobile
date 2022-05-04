@@ -7,7 +7,7 @@ import React from 'react';
 import {of as of$, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {Preferences} from '@constants';
+import {General, Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {observeMyChannel} from '@queries/servers/channel';
 import {queryDraft} from '@queries/servers/drafts';
@@ -79,6 +79,11 @@ const enhance = withObservables(['channel', 'isUnreads', 'showTeamName'], ({chan
         );
     }
 
+    let membersCount = of$(0);
+    if (channel.type === General.GM_CHANNEL) {
+        membersCount = channel.members.observeCount();
+    }
+
     return {
         channel: channel.observe(),
         currentUserId,
@@ -86,6 +91,7 @@ const enhance = withObservables(['channel', 'isUnreads', 'showTeamName'], ({chan
         isActive,
         isMuted,
         isVisible,
+        membersCount,
         myChannel,
         teamDisplayName,
     };
