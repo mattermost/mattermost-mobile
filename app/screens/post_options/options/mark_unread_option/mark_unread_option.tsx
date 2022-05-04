@@ -30,7 +30,7 @@ const MarkAsUnreadOption = ({location, post, teamId}: Props) => {
             markPostAsUnread(serverUrl, post.id);
         }
         dismissBottomSheet(Screens.POST_OPTIONS);
-    }, [serverUrl, post, teamId]);
+    }, [location, post, serverUrl, teamId]);
 
     return (
         <BaseOption

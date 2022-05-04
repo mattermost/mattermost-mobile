@@ -26,7 +26,7 @@ const MarkAsUnreadOption = ({teamId, thread}: Props) => {
             markThreadAsUnread(serverUrl, teamId, thread.id, thread.id);
         }
         dismissBottomSheet(Screens.THREAD_OPTIONS);
-    }, [serverUrl, thread]);
+    }, [serverUrl, teamId, thread]);
 
     const id = thread.unreadReplies ? t('global_threads.options.mark_as_read') : t('mobile.post_info.mark_unread');
     const defaultMessage = thread.unreadReplies ? 'Mark as Read' : 'Mark as Unread';
