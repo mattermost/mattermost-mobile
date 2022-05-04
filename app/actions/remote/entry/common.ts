@@ -7,10 +7,6 @@ import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preferen
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
 import {fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
-import {gqlEntry} from '@app/client/graphQL/entry';
-import {gqlToClientChannel, gqlToClientChannelMembership, gqlToClientPreference, gqlToClientRole, gqlToClientSidebarCategory, gqlToClientTeam, gqlToClientTeamMembership, gqlToClientUser} from '@app/client/graphQL/types';
-import {prepareModels} from '@app/queries/servers/entry';
-import {isTablet} from '@app/utils/helpers';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/preference';
@@ -19,12 +15,10 @@ import {DEFAULT_LOCALE} from '@i18n';
 import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {queryAllServers} from '@queries/app/servers';
-import {queryAllChannels, queryAllChannelsForTeam} from '@queries/servers/channel';
-import {getConfig, prepareCommonSystemValues} from '@queries/servers/system';
-import {addChannelToTeamHistory, addTeamToTeamHistory, deleteMyTeams, getAvailableTeamIds, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
-import ChannelModel from '@typings/database/models/servers/channel';
-import TeamModel from '@typings/database/models/servers/team';
-import {isDMorGM, selectDefaultChannelForTeam} from '@utils/channel';
+import {queryAllChannelsForTeam} from '@queries/servers/channel';
+import {getConfig} from '@queries/servers/system';
+import {deleteMyTeams, getAvailableTeamIds, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
+import {isDMorGM} from '@utils/channel';
 import {isCRTEnabled} from '@utils/thread';
 
 import {fetchNewThreads} from '../thread';
@@ -193,7 +187,7 @@ export const fetchAlternateTeamData = async (
 export async function deferredAppEntryActions(
     serverUrl: string, since: number, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined,
     config: ClientConfig, license: ClientLicense, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
-    initialTeamId?: string, initialChannelId?: string, useGraphQL = false) {
+    initialTeamId?: string, initialChannelId?: string) {
     // defer fetching posts for initial channel
     if (initialChannelId) {
         fetchPostsForChannel(serverUrl, initialChannelId);
@@ -205,7 +199,7 @@ export async function deferredAppEntryActions(
     if (chData?.channels?.length && chData.memberships?.length) {
         const directChannels = chData.channels.filter(isDMorGM);
         const channelsToFetchProfiles = new Set<Channel>(directChannels);
-        if (!useGraphQL && channelsToFetchProfiles.size) {
+        if (channelsToFetchProfiles.size) {
             const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config, license);
             await fetchMissingSidebarInfo(serverUrl, Array.from(channelsToFetchProfiles), currentUserLocale, teammateDisplayNameSetting, currentUserId);
         }
@@ -215,7 +209,7 @@ export async function deferredAppEntryActions(
     }
 
     // defer fetch channels and unread posts for other teams
-    if (!useGraphQL && teamData.teams?.length && teamData.memberships?.length) {
+    if (teamData.teams?.length && teamData.memberships?.length) {
         await fetchTeamsChannelsAndUnreadPosts(serverUrl, since, teamData.teams, teamData.memberships, initialTeamId);
     }
 
@@ -293,149 +287,4 @@ const syncAllChannelMembers = async (serverUrl: string) => {
     } catch {
         // Do nothing
     }
-};
-
-export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, currentTeamId: string, currentChannelId: string) => {
-    console.log('using graphQL');
-    const dt = Date.now();
-
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-    const {database} = operator;
-
-    const isTabletDevice = await isTablet();
-
-    let response;
-    try {
-        response = await gqlEntry(serverUrl);
-    } catch (error) {
-        return {error: (error as ClientError).message};
-    }
-
-    if ('error' in response) {
-        console.log('error1', response);
-        return {error: response.error};
-    }
-
-    if ('errors' in response && response.errors?.length) {
-        console.log('error2', response);
-        return {error: response.errors[0].message};
-    }
-
-    const fetchedData = response.data;
-
-    const config = fetchedData.config || {} as ClientConfig;
-    const license = fetchedData.license || {} as ClientLicense;
-
-    const teamData = {
-        teams: fetchedData.teamMembers.map((m) => gqlToClientTeam(m.team!)),
-        memberships: fetchedData.teamMembers.map((m) => gqlToClientTeamMembership(m)),
-    };
-
-    const chData = {
-        channels: fetchedData.channelMembers?.map((m) => gqlToClientChannel(m.channel!)),
-        memberships: fetchedData.channelMembers?.map((m) => gqlToClientChannelMembership(m)),
-        categories: fetchedData.teamMembers.map((m) => m.sidebarCategories!.map((c) => gqlToClientSidebarCategory(c, m.team!.id!))).flat(),
-    };
-
-    const prefData = {
-        preferences: fetchedData.user?.preferences?.map((p) => gqlToClientPreference(p)),
-    };
-
-    const meData = {
-        user: gqlToClientUser(fetchedData.user!),
-    };
-
-    const roles = [
-        ...fetchedData.user?.roles || [],
-        ...fetchedData.channelMembers?.map((m) => m.roles).flat() || [],
-        ...fetchedData.teamMembers?.map((m) => m.roles).flat() || [],
-    ].filter((v, i, a) => a.slice(0, i).find((v2) => v?.name === v2?.name)).map((r) => gqlToClientRole(r!));
-
-    let removeTeams: TeamModel[] = [];
-    const removeChannels: ChannelModel[] = [];
-
-    if (syncDatabase) {
-        const removeTeamIds = [];
-
-        const removedFromTeam = teamData.memberships?.filter((m) => m.delete_at > 0);
-        if (removedFromTeam?.length) {
-            removeTeamIds.push(...removedFromTeam.map((m) => m.team_id));
-        }
-
-        if (teamData.teams?.length === 0) {
-            // User is no longer a member of any team
-            const myTeams = await queryMyTeams(database).fetch();
-            removeTeamIds.push(...(myTeams?.map((myTeam) => myTeam.id) || []));
-        }
-
-        removeTeams = await teamsToRemove(serverUrl, removeTeamIds);
-
-        if (chData?.channels) {
-            const fetchedChannelIds = chData.channels.map((channel) => channel.id);
-
-            const channels = await queryAllChannels(database).fetch();
-            for (const channel of channels) {
-                if (!fetchedChannelIds.includes(channel.id)) {
-                    removeChannels.push(channel);
-                }
-            }
-        }
-    }
-
-    let initialTeamId = currentTeamId;
-    if (!teamData.teams.length) {
-        initialTeamId = '';
-    } else if (!initialTeamId || !teamData.teams.find((t) => t.id === currentTeamId)) {
-        const teamOrderPreference = getPreferenceValue(prefData.preferences!, Preferences.TEAMS_ORDER, '', '') as string;
-        initialTeamId = selectDefaultTeam(teamData.teams, meData.user.locale, teamOrderPreference, config.ExperimentalPrimaryTeam)?.id || '';
-    }
-    console.log('initial team id', initialTeamId);
-
-    let initialChannelId = currentChannelId;
-    if (initialTeamId !== currentTeamId || !chData.channels?.find((c) => c.id === currentChannelId)) {
-        initialChannelId = '';
-        if (isTabletDevice && chData.channels && chData.memberships) {
-            initialChannelId = selectDefaultChannelForTeam(chData.channels, chData.memberships, initialTeamId, roles, meData.user.locale)?.id || '';
-        }
-    }
-
-    const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData});
-    modelPromises.push(operator.handleRole({roles, prepareRecordsOnly: true}));
-    modelPromises.push(prepareCommonSystemValues(
-        operator,
-        {
-            config,
-            license,
-            currentTeamId: initialTeamId,
-            currentChannelId: initialChannelId,
-        },
-    ));
-
-    if (initialTeamId && initialTeamId !== currentTeamId) {
-        const th = addTeamToTeamHistory(operator, initialTeamId, true);
-        modelPromises.push(th);
-    }
-
-    if (initialTeamId !== currentTeamId && initialChannelId) {
-        try {
-            const tch = addChannelToTeamHistory(operator, initialTeamId, initialChannelId, true);
-            modelPromises.push(tch);
-        } catch {
-            // do nothing
-        }
-    }
-
-    const models = await Promise.all(modelPromises);
-    if (models.length) {
-        await operator.batchRecords(models.flat());
-    }
-
-    deferredAppEntryActions(serverUrl, 0, meData.user.id, meData.user.locale, prefData.preferences, config, license, teamData, chData, initialTeamId, initialChannelId, true);
-
-    const timeElapsed = Date.now() - dt;
-    console.log('Time elapsed', Date.now() - dt);
-    return {time: timeElapsed, hasTeams: Boolean(teamData.teams.length), userId: meData.user.id};
 };

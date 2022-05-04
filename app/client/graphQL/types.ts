@@ -208,9 +208,9 @@ export const gqlToClientPreference = (m: Partial<GQLPreference>): PreferenceType
 };
 
 export type GQLChannelMembership = {
-    channel: GQLChannel;
-	user: GQLUser;
-	roles: GQLRole[];
+    channel: Partial<GQLChannel>;
+	user: Partial<GQLUser>;
+	roles: Array<Partial<GQLRole>>;
 	lastViewedAt: number;
 	msgCount: number;
 	mentionCount: number;
@@ -261,6 +261,13 @@ export type GQLChannel = {
     shared: boolean;
     lastPostAt: number;
     totalMsgCount: number;
+    stats: Partial<GQLStats>;
+}
+
+export type GQLStats = {
+    guestCount: number;
+    memberCount: number;
+    pinnePostCount: number;
 }
 
 export const gqlToClientChannel = (m: Partial<GQLChannel>): Channel => {
@@ -286,6 +293,15 @@ export const gqlToClientChannel = (m: Partial<GQLChannel>): Channel => {
         isCurrent: false,
         status: '',
         teammate_id: '',
+    };
+};
+
+export const gqlToClientChannelStats = (m: Partial<GQLChannel>): ChannelStats => {
+    return {
+        channel_id: m.id || '',
+        guest_count: m.stats?.guestCount || 0,
+        member_count: m.stats?.memberCount || 0,
+        pinnedpost_count: m.stats?.pinnePostCount || 0,
     };
 };
 

@@ -59,6 +59,54 @@ type MembershipReduce = {
     membershipsMap: Record<string, MembershipWithId>;
 }
 
+export const prepareMyGraphQLChannels = async (operator: ServerDataOperator, channels: Channel[], channelMembers: ChannelMembership[], channelStats: ChannelStats[]) => {
+    const channelInfos: ChannelInfo[] = [];
+    const {memberships, membershipsMap} = channelMembers.reduce((result, cm) => {
+        const value = {...cm, id: cm.channel_id};
+        result.memberships.push(value);
+        result.membershipsMap[value.id] = value;
+        return result;
+    }, {memberships: [], membershipsMap: {}} as MembershipReduce);
+
+    const statsMap = channelStats.reduce<{[id: string]: ChannelStats}>((acc, s) => {
+        acc[s.channel_id] = s;
+        return acc;
+    }, {});
+
+    for (const c of channels) {
+        const fetchedStats = statsMap[c.id];
+        const member_count = fetchedStats.member_count;
+        const guest_count = fetchedStats.guest_count;
+        const pinned_post_count = fetchedStats.pinnedpost_count;
+
+        const member = membershipsMap[c.id];
+        if (member) {
+            member.last_post_at = c.last_post_at;
+        }
+
+        channelInfos.push({
+            id: c.id,
+            header: c.header,
+            purpose: c.purpose,
+            guest_count,
+            member_count,
+            pinned_post_count,
+        });
+    }
+
+    try {
+        const channelRecords = operator.handleChannel({channels, prepareRecordsOnly: true});
+        const channelInfoRecords = operator.handleChannelInfo({channelInfos, prepareRecordsOnly: true});
+        const membershipRecords = operator.handleChannelMembership({channelMemberships: channelMembers, prepareRecordsOnly: true});
+        const myChannelRecords = operator.handleMyChannel({channels, myChannels: memberships, prepareRecordsOnly: true});
+        const myChannelSettingsRecords = operator.handleMyChannelSettings({settings: memberships, prepareRecordsOnly: true});
+
+        return [channelRecords, channelInfoRecords, membershipRecords, myChannelRecords, myChannelSettingsRecords];
+    } catch {
+        return [];
+    }
+};
+
 export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[]) => {
     const {database} = operator;
     const allChannelsForTeam = (await queryAllChannelsForTeam(database, teamId).fetch()).

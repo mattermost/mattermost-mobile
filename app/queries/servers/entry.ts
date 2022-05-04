@@ -4,7 +4,7 @@
 import ServerDataOperator from '@database/operator/server_data_operator';
 
 import {prepareCategories, prepareCategoryChannels} from './categories';
-import {prepareDeleteChannel, prepareMyChannelsForTeam} from './channel';
+import {prepareDeleteChannel, prepareMyChannelsForTeam, prepareMyGraphQLChannels} from './channel';
 import {prepareMyPreferences} from './preference';
 import {prepareDeleteTeam, prepareMyTeams} from './team';
 import {prepareUsers} from './user';
@@ -28,7 +28,7 @@ type PrepareModelsArgs = {
     meData?: MyUserRequest;
 }
 
-export async function prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData}: PrepareModelsArgs): Promise<Array<Promise<Model[]>>> {
+export async function prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData}: PrepareModelsArgs, isGraphQl = false): Promise<Array<Promise<Model[]>>> {
     const modelPromises: Array<Promise<Model[]>> = [];
 
     if (removeTeams?.length) {
@@ -53,7 +53,11 @@ export async function prepareModels({operator, initialTeamId, removeTeams, remov
     }
 
     if (initialTeamId && chData?.channels?.length && chData.memberships?.length) {
-        modelPromises.push(...await prepareMyChannelsForTeam(operator, initialTeamId, chData.channels, chData.memberships));
+        if (isGraphQl) {
+            modelPromises.push(...await prepareMyGraphQLChannels(operator, chData.channels, chData.memberships, chData.stats!));
+        } else {
+            modelPromises.push(...await prepareMyChannelsForTeam(operator, initialTeamId, chData.channels, chData.memberships));
+        }
     }
 
     if (prefData?.preferences?.length) {

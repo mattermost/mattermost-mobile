@@ -15,7 +15,8 @@ import {getCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
 
-import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, graphQLCommon, registerDeviceToken, syncOtherServers, teamsToRemove} from './common';
+import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, registerDeviceToken, syncOtherServers, teamsToRemove} from './common';
+import {graphQLCommon} from './gql_common';
 
 export async function appEntry(serverUrl: string, since = 0) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -61,6 +62,7 @@ const restAppEntry = async (serverUrl: string, since = 0) => {
     const tabletDevice = await isTablet();
     const currentTeamId = await getCurrentTeamId(database);
     const lastDisconnectedAt = (await getWebSocketLastDisconnected(database)) || since;
+    let t = Date.now();
     const fetchedData = await fetchAppEntryData(serverUrl, lastDisconnectedAt, currentTeamId);
     const fetchedError = (fetchedData as AppEntryError).error;
 
@@ -70,7 +72,7 @@ const restAppEntry = async (serverUrl: string, since = 0) => {
 
     const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData as AppEntryData;
     const rolesData = await fetchRoles(serverUrl, teamData?.memberships, chData?.memberships, meData?.user, true, true);
-
+    console.log('fetch', Date.now() - t);
     if (initialTeamId === currentTeamId) {
         if (tabletDevice) {
             const cId = await getNthLastChannelFromTeam(database, currentTeamId);
@@ -108,11 +110,14 @@ const restAppEntry = async (serverUrl: string, since = 0) => {
     }
 
     const models = await Promise.all(modelPromises);
+    t = Date.now();
+    console.log('models #', models.flat().length);
     await operator.batchRecords(models.flat());
+    console.log('batch', Date.now() - t);
 
     const {id: currentUserId, locale: currentUserLocale} = meData.user || (await getCurrentUser(database))!;
     const {config, license} = await getCommonSystemValues(database);
-    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
+    deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
 
     if (!since) {
         // Load data from other servers

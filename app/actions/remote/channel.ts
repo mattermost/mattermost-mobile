@@ -39,6 +39,7 @@ export type MyChannelsRequest = {
     categories?: CategoryWithChannels[];
     channels?: Channel[];
     memberships?: ChannelMembership[];
+    stats?: ChannelStats[];
     error?: unknown;
 }
 

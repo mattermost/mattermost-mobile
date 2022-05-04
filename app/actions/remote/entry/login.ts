@@ -19,7 +19,8 @@ import {selectDefaultChannelForTeam} from '@utils/channel';
 import {isTablet} from '@utils/helpers';
 import {scheduleExpiredNotification} from '@utils/notification';
 
-import {deferredAppEntryActions, graphQLCommon} from './common';
+import {deferredAppEntryActions} from './common';
+import {graphQLCommon} from './gql_common';
 
 import type {Client} from '@client/rest';
 
