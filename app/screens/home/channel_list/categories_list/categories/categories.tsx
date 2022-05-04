@@ -5,6 +5,9 @@ import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, StyleSheet} from 'react-native';
 
+import {switchToChannelById} from '@actions/remote/channel';
+import {useServerUrl} from '@context/server';
+
 import CategoryBody from './body';
 import LoadCategoriesError from './error';
 import CategoryHeader from './header';
@@ -31,10 +34,20 @@ const extractKey = (item: CategoryModel | 'UNREADS') => (item === 'UNREADS' ? 'U
 const Categories = ({categories, currentTeamId, unreadsOnTop}: Props) => {
     const intl = useIntl();
     const listRef = useRef<FlatList>(null);
+    const serverUrl = useServerUrl();
+
+    const onChannelSwitch = useCallback(async (channelId: string) => {
+        switchToChannelById(serverUrl, channelId);
+    }, [serverUrl]);
 
     const renderCategory = useCallback((data: {item: CategoryModel | 'UNREADS'}) => {
         if (data.item === 'UNREADS') {
-            return <UnreadCategories currentTeamId={currentTeamId}/>;
+            return (
+                <UnreadCategories
+                    currentTeamId={currentTeamId}
+                    onChannelSwitch={onChannelSwitch}
+                />
+            );
         }
         return (
             <>
@@ -42,10 +55,11 @@ const Categories = ({categories, currentTeamId, unreadsOnTop}: Props) => {
                 <CategoryBody
                     category={data.item}
                     locale={intl.locale}
+                    onChannelSwitch={onChannelSwitch}
                 />
             </>
         );
-    }, [intl.locale]);
+    }, [currentTeamId, intl.locale, onChannelSwitch]);
 
     useEffect(() => {
         listRef.current?.scrollToOffset({animated: false, offset: 0});

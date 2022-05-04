@@ -73,78 +73,55 @@ exports[`Loading Error should match snapshot 1`] = `
     Error description
   </Text>
   <View
-    onMoveShouldSetResponder={[Function]}
-    onMoveShouldSetResponderCapture={[Function]}
-    onResponderEnd={[Function]}
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onClick={[Function]}
     onResponderGrant={[Function]}
     onResponderMove={[Function]}
-    onResponderReject={[Function]}
     onResponderRelease={[Function]}
-    onResponderStart={[Function]}
     onResponderTerminate={[Function]}
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
-    onStartShouldSetResponderCapture={[Function]}
+    style={
+      Object {
+        "alignItems": "center",
+        "backgroundColor": "#ffffff",
+        "borderRadius": 4,
+        "flex": 0,
+        "height": 48,
+        "justifyContent": "center",
+        "marginTop": 24,
+        "opacity": 1,
+        "paddingHorizontal": 24,
+        "paddingVertical": 14,
+      }
+    }
   >
-    <View
-      accessible={true}
-      focusable={true}
-      onClick={[Function]}
-      onResponderGrant={[Function]}
-      onResponderMove={[Function]}
-      onResponderRelease={[Function]}
-      onResponderTerminate={[Function]}
-      onResponderTerminationRequest={[Function]}
-      onStartShouldSetResponder={[Function]}
+    <Text
       style={
         Array [
           Object {
-            "marginTop": 24,
+            "alignItems": "center",
+            "fontFamily": "OpenSans-SemiBold",
+            "fontWeight": "600",
+            "justifyContent": "center",
+            "padding": 1,
+            "textAlignVertical": "center",
           },
-          Array [
-            Object {
-              "alignItems": "center",
-              "borderRadius": 4,
-              "flex": 0,
-              "justifyContent": "center",
-            },
-            Object {
-              "height": 48,
-              "paddingHorizontal": 24,
-              "paddingVertical": 14,
-            },
-            Object {
-              "backgroundColor": "#ffffff",
-            },
-          ],
+          Object {
+            "fontSize": 16,
+            "lineHeight": 18,
+            "marginTop": 1,
+          },
+          Object {
+            "color": "#1c58d9",
+          },
         ]
       }
     >
-      <Text
-        style={
-          Array [
-            Object {
-              "alignItems": "center",
-              "fontFamily": "OpenSans-SemiBold",
-              "fontWeight": "600",
-              "justifyContent": "center",
-              "padding": 1,
-              "textAlignVertical": "center",
-            },
-            Object {
-              "fontSize": 16,
-              "lineHeight": 16,
-              "marginTop": 1,
-            },
-            Object {
-              "color": "#1c58d9",
-            },
-          ]
-        }
-      >
-        Retry
-      </Text>
-    </View>
+      Retry
+    </Text>
   </View>
 </View>
 `;

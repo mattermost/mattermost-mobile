@@ -21,21 +21,29 @@ export default function AddTeamSlideUp({otherTeams, canCreateTeams, showTitle = 
     const intl = useIntl();
 
     const onPressCreate = useCallback(() => {
-        //TODO Create team screen
+        //TODO Create team screen https://mattermost.atlassian.net/browse/MM-43622
+        dismissBottomSheet();
+    }, []);
+
+    const onTeamAdded = useCallback(() => {
         dismissBottomSheet();
     }, []);
 
     return (
         <BottomSheetContent
             buttonIcon='plus'
-            buttonText={intl.formatMessage({id: 'mobile.add_team.create_team', defaultMessage: 'Create a New Team'})}
+            buttonText={intl.formatMessage({id: 'mobile.add_team.create_team', defaultMessage: 'Create a new team'})}
             onPress={onPressCreate}
             showButton={canCreateTeams}
             showTitle={showTitle}
-            testID='add_team_slide_up'
+            testID='team_sidebar.add_team_slide_up'
             title={intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'})}
         >
-            <TeamList teams={otherTeams}/>
+            <TeamList
+                teams={otherTeams}
+                onTeamAdded={onTeamAdded}
+                testID='team_sidebar.add_team_slide_up.team_list'
+            />
         </BottomSheetContent>
     );
 }

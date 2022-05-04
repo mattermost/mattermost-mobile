@@ -39,6 +39,7 @@ export interface ClientChannelsMix {
     autocompleteChannelsForSearch: (teamId: string, name: string) => Promise<Channel[]>;
     searchChannels: (teamId: string, term: string) => Promise<Channel[]>;
     searchArchivedChannels: (teamId: string, term: string) => Promise<Channel[]>;
+    searchAllChannels: (term: string, teamIds: string[], archivedOnly?: boolean) => Promise<Channel[]>;
 }
 
 const ClientChannels = (superclass: any) => class extends superclass {
@@ -311,6 +312,24 @@ const ClientChannels = (superclass: any) => class extends superclass {
         return this.doFetch(
             `${this.getTeamRoute(teamId)}/channels/search_archived`,
             {method: 'post', body: {term}},
+        );
+    };
+
+    searchAllChannels = async (term: string, teamIds: string[], archivedOnly = false) => {
+        const queryParams = {include_deleted: false, system_console: false, exclude_default_channels: false};
+        const body = {
+            term,
+            team_ids: teamIds,
+            deleted: archivedOnly,
+            exclude_default_channels: true,
+            exclude_group_constrained: true,
+            public: true,
+            private: false,
+        };
+
+        return this.doFetch(
+            `${this.getChannelsRoute()}/search${buildQueryString(queryParams)}`,
+            {method: 'post', body},
         );
     };
 };

@@ -100,7 +100,7 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
     const renderItems = (items: FileInfo[], moreImagesCount = 0, includeGutter = false) => {
         const singleImage = isSingleImage();
         let nonVisibleImagesCount: number;
-        let container: StyleProp<ViewStyle> = styles.container;
+        let container: StyleProp<ViewStyle> = items.length > 1 ? styles.container : undefined;
         const containerWithGutter = [container, styles.gutter];
 
         return items.map((file, idx) => {

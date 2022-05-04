@@ -71,7 +71,7 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
     const insets = useSafeAreaInsets();
     const style = getStyleSheet(theme);
 
-    const handlePress = preventDoubleTap(() => {
+    const handlePress = useCallback(preventDoubleTap(() => {
         const screen = Screens.CODE;
         const passProps = {
             code: content,
@@ -102,7 +102,7 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
         requestAnimationFrame(() => {
             goToScreen(screen, title, passProps);
         });
-    });
+    }), [content, intl.locale, language]);
 
     const handleLongPress = useCallback(() => {
         if (managedConfig?.copyAndPasteProtection !== 'true') {

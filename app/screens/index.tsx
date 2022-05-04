@@ -57,6 +57,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.ABOUT:
             screen = withServerDatabase(require('@screens/about').default);
             break;
+        case Screens.APP_FORM:
+            screen = withServerDatabase(require('@screens/apps_form').default);
+            break;
         case Screens.BOTTOM_SHEET:
             screen = withServerDatabase(
                 require('@screens/bottom_sheet').default,
@@ -101,15 +104,22 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             screen = withIntl(require('@screens/edit_server').default);
             break;
         case Screens.EMOJI_PICKER:
-            screen = withServerDatabase(
-                require('@screens/emoji_picker').default,
-            );
+            screen = withServerDatabase(require('@screens/emoji_picker').default);
+            break;
+        case Screens.FIND_CHANNELS:
+            screen = withServerDatabase(require('@screens/find_channels').default);
             break;
         case Screens.FORGOT_PASSWORD:
             screen = withIntl(require('@screens/forgot_password').default);
             break;
         case Screens.GALLERY:
             screen = withServerDatabase(require('@screens/gallery').default);
+            break;
+        case Screens.GLOBAL_THREADS:
+            screen = withServerDatabase(require('@screens/global_threads').default);
+            break;
+        case Screens.INTERACTIVE_DIALOG:
+            screen = withServerDatabase(require('@screens/interactive_dialog').default);
             break;
         case Screens.IN_APP_NOTIFICATION: {
             const notificationScreen =
@@ -122,11 +132,17 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             );
             return;
         }
+        case Screens.LATEX:
+            screen = withServerDatabase(require('@screens/latex').default);
+            break;
         case Screens.LOGIN:
             screen = withIntl(require('@screens/login').default);
             break;
         case Screens.MFA:
             screen = withIntl(require('@screens/mfa').default);
+            break;
+        case Screens.SELECT_TEAM:
+            screen = withServerDatabase(require('@screens/select_team').default);
             break;
         case Screens.PERMALINK:
             screen = withServerDatabase(require('@screens/permalink').default);
@@ -152,6 +168,11 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             Navigation.registerComponent(Screens.THREAD_FOLLOW_BUTTON, () => withServerDatabase(
                 require('@screens/thread/thread_follow_button').default,
             ));
+            break;
+        case Screens.THREAD_OPTIONS:
+            screen = withServerDatabase(
+                require('@screens/thread_options').default,
+            );
             break;
     }
 

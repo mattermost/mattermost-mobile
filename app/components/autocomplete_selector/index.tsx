@@ -3,16 +3,20 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import React, {ReactNode, useCallback, useState} from 'react';
-import {useIntl} from 'react-intl';
+import React, {useCallback, useEffect, useState} from 'react';
+import {IntlShape, useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import CompasIcon from '@components/compass_icon';
-import FormattedText from '@components/formatted_text';
+import Footer from '@components/settings/footer';
+import Label from '@components/settings/label';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens, View as ViewConstants} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {observeTeammateNameDisplay} from '@queries/servers/user';
+import DatabaseManager from '@database/manager';
+import {getChannelById} from '@queries/servers/channel';
+import {getUserById, observeTeammateNameDisplay} from '@queries/servers/user';
 import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -20,21 +24,25 @@ import {displayUsername} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
+type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
+
 type AutoCompleteSelectorProps = {
     dataSource?: string;
     disabled?: boolean;
-    errorText?: ReactNode;
+    errorText?: string;
     getDynamicOptions?: (userInput?: string) => Promise<DialogOption[]>;
-    helpText?: ReactNode;
+    helpText?: string;
     label?: string;
-    onSelected?: (selectedItem?: PostActionOption) => Promise<void>;
+    onSelected?: (value: string | string[]) => void;
     optional?: boolean;
     options?: PostActionOption[];
-    placeholder: string;
+    placeholder?: string;
     roundedBorders?: boolean;
-    selected?: PostActionOption;
+    selected?: string | string[];
     showRequiredAsterisk?: boolean;
     teammateNameDisplay: string;
+    isMultiselect?: boolean;
+    testID: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -75,148 +83,132 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             top: 13,
             right: 12,
         },
-        labelContainer: {
-            flexDirection: 'row',
-            marginTop: 15,
-            marginBottom: 10,
-        },
-        label: {
-            fontSize: 14,
-            color: theme.centerChannelColor,
-            marginLeft: 15,
-        },
-        optional: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 14,
-            marginLeft: 5,
-        },
-        helpText: {
-            fontSize: 12,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            marginHorizontal: 15,
-            marginVertical: 10,
-        },
-        errorText: {
-            fontSize: 12,
-            color: theme.errorTextColor,
-            marginHorizontal: 15,
-            marginVertical: 10,
-        },
-        asterisk: {
-            color: theme.errorTextColor,
-            fontSize: 14,
-        },
         disabled: {
             opacity: 0.5,
         },
     };
 });
 
-const AutoCompleteSelector = ({
-    dataSource, disabled, errorText, getDynamicOptions, helpText, label, onSelected, optional = false,
-    options, placeholder, roundedBorders = true, selected, showRequiredAsterisk = false, teammateNameDisplay,
-}: AutoCompleteSelectorProps) => {
+async function getItemName(serverUrl: string, selected: string, teammateNameDisplay: string, intl: IntlShape, dataSource?: string, options?: PostActionOption[]) {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+
+    switch (dataSource) {
+        case ViewConstants.DATA_SOURCE_USERS: {
+            if (!database) {
+                return intl.formatMessage({id: 'channel_loader.someone', defaultMessage: 'Someone'});
+            }
+            const user = await getUserById(database, selected);
+            return displayUsername(user, intl.locale, teammateNameDisplay, true);
+        }
+        case ViewConstants.DATA_SOURCE_CHANNELS: {
+            if (!database) {
+                return intl.formatMessage({id: 'autocomplete_selector.unknown_channel', defaultMessage: 'Unknown channel'});
+            }
+            const channel = await getChannelById(database, selected);
+            return channel?.displayName || intl.formatMessage({id: 'autocomplete_selector.unknown_channel', defaultMessage: 'Unknown channel'});
+        }
+        default:
+            return options?.find((o) => o.value === selected)?.text || selected;
+    }
+}
+
+function getTextAndValueFromSelectedItem(item: DialogOption | Channel | UserProfile, teammateNameDisplay: string, locale: string, dataSource?: string) {
+    if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
+        const user = item as UserProfile;
+        return {text: displayUsername(user, locale, teammateNameDisplay), value: user.id};
+    } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
+        const channel = item as Channel;
+        return {text: channel.display_name, value: channel.id};
+    }
+    const option = item as DialogOption;
+    return option;
+}
+
+function AutoCompleteSelector({
+    dataSource, disabled = false, errorText, getDynamicOptions, helpText, label, onSelected, optional = false,
+    options, placeholder, roundedBorders = true, selected, teammateNameDisplay, isMultiselect = false, testID,
+}: AutoCompleteSelectorProps) {
     const intl = useIntl();
     const theme = useTheme();
-    const [itemText, setItemText] = useState(selected?.text);
+    const [itemText, setItemText] = useState('');
     const style = getStyleSheet(theme);
     const title = placeholder || intl.formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'});
+    const serverUrl = useServerUrl();
 
     const goToSelectorScreen = useCallback(preventDoubleTap(() => {
         const screen = Screens.INTEGRATION_SELECTOR;
-        goToScreen(screen, title, {dataSource, handleSelect, options, getDynamicOptions});
+        goToScreen(screen, title, {dataSource, handleSelect, options, getDynamicOptions, selected, isMultiselect});
     }), [dataSource, options, getDynamicOptions]);
 
-    const handleSelect = useCallback((item?: any) => {
+    const handleSelect = useCallback((item?: Selection) => {
         if (!item) {
             return;
         }
 
-        let selectedText;
-        let selectedValue;
-        if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-            selectedText = displayUsername(item, undefined, teammateNameDisplay);
-            selectedValue = item.id;
-        } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
-            selectedText = item.display_name;
-            selectedValue = item.id;
-        } else {
-            selectedText = item.text;
-            selectedValue = item.value;
+        if (!Array.isArray(item)) {
+            const {text: selectedText, value: selectedValue} = getTextAndValueFromSelectedItem(item, teammateNameDisplay, intl.locale, dataSource);
+            setItemText(selectedText);
+
+            if (onSelected) {
+                onSelected(selectedValue);
+            }
+            return;
         }
 
-        setItemText(selectedText);
-
+        const allSelectedTexts = [];
+        const allSelectedValues = [];
+        for (const i of item) {
+            const {text: selectedText, value: selectedValue} = getTextAndValueFromSelectedItem(i, teammateNameDisplay, intl.locale, dataSource);
+            allSelectedTexts.push(selectedText);
+            allSelectedValues.push(selectedValue);
+        }
+        setItemText(allSelectedTexts.join(', '));
         if (onSelected) {
-            onSelected({text: selectedText, value: selectedValue});
+            onSelected(allSelectedValues);
         }
+    }, [teammateNameDisplay, intl, dataSource]);
+
+    // Handle the text for the default value.
+    useEffect(() => {
+        if (!selected) {
+            return;
+        }
+
+        if (!Array.isArray(selected)) {
+            getItemName(serverUrl, selected, teammateNameDisplay, intl, dataSource, options).then((res) => setItemText(res));
+            return;
+        }
+
+        const namePromises = [];
+        for (const item of selected) {
+            namePromises.push(getItemName(serverUrl, item, teammateNameDisplay, intl, dataSource, options));
+        }
+        Promise.all(namePromises).then((names) => {
+            setItemText(names.join(', '));
+        });
     }, []);
-
-    let text = title;
-    let selectedStyle = style.dropdownPlaceholder;
-
-    if (itemText) {
-        text = itemText;
-        selectedStyle = style.dropdownSelected;
-    }
-
-    let inputStyle = style.input;
-    if (roundedBorders) {
-        inputStyle = style.roundedInput;
-    }
-
-    let optionalContent;
-    let asterisk;
-    if (optional) {
-        optionalContent = (
-            <FormattedText
-                id='channel_modal.optional'
-                defaultMessage='(optional)'
-                style={style.optional}
-            />
-        );
-    } else if (showRequiredAsterisk) {
-        asterisk = <Text style={style.asterisk}>{' *'}</Text>;
-    }
-
-    let labelContent;
-    if (label) {
-        labelContent = (
-            <View style={style.labelContainer}>
-                <Text style={style.label}>
-                    {label}
-                </Text>
-                {asterisk}
-                {optionalContent}
-            </View>
-        );
-    }
-
-    let helpTextContent;
-    if (helpText) {
-        helpTextContent = <Text style={style.helpText}>{helpText}</Text>;
-    }
-
-    let errorTextContent;
-    if (errorText) {
-        errorTextContent = <Text style={style.errorText}>{errorText}</Text>;
-    }
 
     return (
         <View style={style.container}>
-            {labelContent}
+            {Boolean(label) && (
+                <Label
+                    label={label!}
+                    optional={optional}
+                    testID={testID}
+                />
+            )}
             <TouchableWithFeedback
                 disabled={disabled}
                 onPress={goToSelectorScreen}
                 style={disabled ? style.disabled : null}
                 type='opacity'
             >
-                <View style={inputStyle}>
+                <View style={roundedBorders ? style.roundedInput : style.input}>
                     <Text
                         numberOfLines={1}
-                        style={selectedStyle}
+                        style={itemText ? style.dropdownSelected : style.dropdownPlaceholder}
                     >
-                        {text}
+                        {itemText || title}
                     </Text>
                     <CompasIcon
                         name='chevron-down'
@@ -225,11 +217,14 @@ const AutoCompleteSelector = ({
                     />
                 </View>
             </TouchableWithFeedback>
-            {helpTextContent}
-            {errorTextContent}
+            <Footer
+                disabled={disabled}
+                helpText={helpText}
+                errorText={errorText}
+            />
         </View>
     );
-};
+}
 
 const withTeammateNameDisplay = withObservables([], ({database}: WithDatabaseArgs) => {
     return {

@@ -135,7 +135,11 @@ export const getUserCustomStatus = (user?: UserModel | UserProfile): UserCustomS
     }
 };
 
-export function isCustomStatusExpired(user: UserModel) {
+export function isCustomStatusExpired(user?: UserModel) {
+    if (!user) {
+        return true;
+    }
+
     const customStatus = getUserCustomStatus(user);
 
     if (!customStatus) {

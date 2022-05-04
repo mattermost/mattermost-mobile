@@ -121,7 +121,7 @@ export async function fetchProfilesPerChannels(serverUrl: string, channelIds: st
 
         // let's filter those channels that we already have the users
         const membersCount = await getMembersCountByChannelsId(database, channelIds);
-        const channelsToFetch = channelIds.filter((c) => membersCount[c] <= 1);
+        const channelsToFetch = channelIds.filter((c) => membersCount[c] <= 1 || membersCount[c] > 2);
 
         // Batch fetching profiles per channel by chunks of 50
         const channels = chunk(channelsToFetch, 50);
@@ -420,7 +420,11 @@ export const searchProfiles = async (serverUrl: string, term: string, options: a
         const users = await client.searchUsers(term, options);
 
         if (!fetchOnly) {
-            const toStore = removeUserFromList(currentUserId, users);
+            const {database} = operator;
+            const existing = await queryUsersById(database, users.map((u) => u.id)).fetchIds();
+            const existingSet = new Set(existing);
+            const usersToAdd = users.filter((u) => !existingSet.has(u.id));
+            const toStore = removeUserFromList(currentUserId, usersToAdd);
             if (toStore.length) {
                 await operator.handleUsers({
                     users: toStore,
@@ -574,7 +578,7 @@ export const setStatus = async (serverUrl: string, status: UserStatus) => {
     }
 };
 
-export const updateCustomStatus = async (serverUrl: string, user: UserModel, customStatus: UserCustomStatus) => {
+export const updateCustomStatus = async (serverUrl: string, customStatus: UserCustomStatus) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -583,6 +587,9 @@ export const updateCustomStatus = async (serverUrl: string, user: UserModel, cus
     }
 
     try {
+        if (!customStatus.duration) {
+            delete customStatus.expires_at;
+        }
         await client.updateCustomStatus(customStatus);
         return {data: true};
     } catch (error) {

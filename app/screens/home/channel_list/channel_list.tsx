@@ -3,7 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {useIsFocused, useRoute} from '@react-navigation/native';
-import React from 'react';
+import React, {useEffect} from 'react';
 import {StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -12,14 +12,16 @@ import FreezeScreen from '@components/freeze_screen';
 import TeamSidebar from '@components/team_sidebar';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import Channel from '@screens/channel';
+import {resetToTeams} from '@screens/navigation';
 
+import AdditionalTabletView from './additional_tablet_view';
 import CategoriesList from './categories_list';
 import Servers from './servers';
 
 type ChannelProps = {
     channelsCount: number;
     currentTeamId?: string;
+    isCRTEnabled: boolean;
     teamsCount: number;
     time?: number;
 };
@@ -27,9 +29,6 @@ type ChannelProps = {
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
 const styles = StyleSheet.create({
-    flex: {
-        flex: 1,
-    },
     content: {
         flex: 1,
         flexDirection: 'row',
@@ -68,6 +67,12 @@ const ChannelListScreen = (props: ChannelProps) => {
         return {height: insets.top, backgroundColor: theme.sidebarBg};
     }, [theme]);
 
+    useEffect(() => {
+        if (!props.teamsCount) {
+            resetToTeams();
+        }
+    }, [Boolean(props.teamsCount)]);
+
     return (
         <FreezeScreen freeze={!isFocused}>
             {<Animated.View style={top}/>}
@@ -86,13 +91,14 @@ const ChannelListScreen = (props: ChannelProps) => {
                     />
                     <CategoriesList
                         iconPad={canAddOtherServers && props.teamsCount <= 1}
+                        isCRTEnabled={props.isCRTEnabled}
                         isTablet={isTablet}
                         teamsCount={props.teamsCount}
                         channelsCount={props.channelsCount}
                         currentTeamId={props.currentTeamId}
                     />
                     {isTablet && Boolean(props.currentTeamId) &&
-                        <Channel/>
+                        <AdditionalTabletView/>
                     }
                 </Animated.View>
             </SafeAreaView>

@@ -103,9 +103,10 @@ const withPost = withObservables(
         const author = post.userId ? post.author.observe() : of$(null);
         const canDelete = observePermissionForPost(post, currentUser, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false);
         const isEphemeral = of$(isPostEphemeral(post));
-        const isSaved = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, post.id).observe().pipe(
-            switchMap((pref) => of$(Boolean(pref.length))),
-        );
+        const isSaved = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, post.id).
+            observeWithColumns(['value']).pipe(
+                switchMap((pref) => of$(Boolean(pref.length))),
+            );
 
         if (post.props?.add_channel_member && isPostEphemeral(post)) {
             isPostAddChannelMember = observeCanManageChannelMembers(post, currentUser);

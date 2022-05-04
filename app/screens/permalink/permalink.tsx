@@ -23,7 +23,6 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
-    currentUsername: UserProfile['username'];
     postId: PostModel['id'];
     channel?: ChannelModel;
 }
@@ -115,7 +114,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-function Permalink({channel, postId, currentUsername}: Props) {
+function Permalink({channel, postId}: Props) {
     const [posts, setPosts] = useState<PostModel[]>([]);
     const [loading, setLoading] = useState(true);
     const theme = useTheme();
@@ -201,10 +200,7 @@ function Permalink({channel, postId, currentUsername}: Props) {
                             posts={posts}
                             location={Screens.PERMALINK}
                             lastViewedAt={0}
-                            isTimezoneEnabled={false}
                             shouldShowJoinLeaveMessages={false}
-                            currentTimezone={null}
-                            currentUsername={currentUsername}
                             channelId={channel!.id}
                             testID='permalink.post_list'
                             nativeID={Screens.PERMALINK}

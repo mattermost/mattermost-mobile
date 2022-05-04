@@ -81,7 +81,8 @@ const SystemHeader = ({isMilitaryTime, isTimezoneEnabled, createAt, theme, user}
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const config = observeConfig(database);
-    const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time').observe();
+    const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time').
+        observeWithColumns(['value']);
     const isTimezoneEnabled = config.pipe(map((cfg) => cfg?.ExperimentalTimezone === 'true'));
     const isMilitaryTime = preferences.pipe(
         map((prefs) => getPreferenceAsBool(prefs, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)),

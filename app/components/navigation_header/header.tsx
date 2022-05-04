@@ -90,6 +90,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     leftContainer: {
         height: '100%',
         justifyContent: 'center',
+        paddingLeft: 16,
         ...Platform.select({
             ios: {
                 zIndex: 5,
@@ -204,7 +205,7 @@ const Header = ({
                             {title}
                         </Animated.Text>
                         }
-                        {!isLargeTitle &&
+                        {!isLargeTitle && Boolean(subtitle || subtitleCompanion) &&
                         <View style={styles.subtitleContainer}>
                             <Text
                                 ellipsizeMode='tail'

@@ -150,6 +150,9 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
                 onCloseStart={() => {
                     backdropOpacity.value = 0;
                 }}
+                onOpenEnd={() => {
+                    backdropOpacity.value = 1;
+                }}
                 enabledBottomInitialAnimation={false}
                 renderHeader={Indicator}
                 enabledContentTapInteraction={false}

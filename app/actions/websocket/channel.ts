@@ -13,11 +13,12 @@ import {
     switchToChannel,
     updateChannelInfoFromChannel,
     updateMyChannelFromWebsocket} from '@actions/local/channel';
+import {switchToGlobalThreads} from '@actions/local/thread';
 import {fetchMissingSidebarInfo, fetchMyChannel, fetchChannelStats, fetchChannelById} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
-import Events from '@constants/events';
+import {Events, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
 import {deleteChannelMembership, getChannelById, prepareMyChannelsForTeam, getCurrentChannel} from '@queries/servers/channel';
@@ -250,6 +251,10 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
 
     try {
         if (userId === currentUser?.id) {
+            if (EphemeralStore.isAddingToTeam(teamId) || EphemeralStore.isJoiningChannel(channelId)) {
+                return;
+            }
+
             const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
             if (channels && memberships) {
                 const prepare = await prepareMyChannelsForTeam(operator, teamId, channels, memberships);
@@ -296,7 +301,10 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
                 }));
             }
         }
-        await operator.batchRecords(models);
+
+        if (models.length) {
+            await operator.batchRecords(models);
+        }
 
         await fetchChannelStats(serverUrl, channelId, false);
     } catch {
@@ -348,9 +356,16 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
                 if (await isTablet()) {
                     const channelToJumpTo = await getNthLastChannelFromTeam(database, channel?.teamId);
                     if (channelToJumpTo) {
-                        const {models: switchChannelModels} = await switchToChannel(serverUrl, channelToJumpTo, '', true);
-                        if (switchChannelModels) {
-                            models.push(...switchChannelModels);
+                        if (channelToJumpTo === Screens.GLOBAL_THREADS) {
+                            const {models: switchToGlobalThreadsModels} = await switchToGlobalThreads(serverUrl, true);
+                            if (switchToGlobalThreadsModels) {
+                                models.push(...switchToGlobalThreadsModels);
+                            }
+                        } else {
+                            const {models: switchChannelModels} = await switchToChannel(serverUrl, channelToJumpTo, '', false, true);
+                            if (switchChannelModels) {
+                                models.push(...switchChannelModels);
+                            }
                         }
                     } // TODO else jump to "join a channel" screen https://mattermost.atlassian.net/browse/MM-41051
                 } else {
@@ -410,6 +425,10 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocke
                 if (await isTablet()) {
                     const channelToJumpTo = await getNthLastChannelFromTeam(database, currentChannel?.teamId);
                     if (channelToJumpTo) {
+                        if (channelToJumpTo === Screens.GLOBAL_THREADS) {
+                            switchToGlobalThreads(serverUrl);
+                            return;
+                        }
                         switchToChannel(serverUrl, channelToJumpTo);
                     } // TODO else jump to "join a channel" screen
                 } else {

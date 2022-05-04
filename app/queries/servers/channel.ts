@@ -3,7 +3,7 @@
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 import {of as of$, Observable} from 'rxjs';
-import {switchMap, distinctUntilChanged} from 'rxjs/operators';
+import {map as map$, switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
@@ -11,7 +11,8 @@ import {hasPermission} from '@utils/role';
 
 import {prepareDeletePost} from './post';
 import {queryRoles} from './role';
-import {observeCurrentChannelId, getCurrentChannelId} from './system';
+import {observeCurrentChannelId, getCurrentChannelId, observeCurrentUserId} from './system';
+import {observeTeammateNameDisplay} from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -366,11 +367,24 @@ export const observeChannelInfo = (database: Database, channelId: string) => {
     );
 };
 
+export const queryAllMyChannelSettings = (database: Database) => {
+    return database.get<MyChannelSettingsModel>(MY_CHANNEL_SETTINGS).query();
+};
+
 export const queryMyChannelSettingsByIds = (database: Database, ids: string[]) => {
     return database.get<MyChannelSettingsModel>(MY_CHANNEL_SETTINGS).
         query(
             Q.where('id', Q.oneOf(ids)),
         );
+};
+
+export const observeAllMyChannelNotifyProps = (database: Database) => {
+    return queryAllMyChannelSettings(database).observeWithColumns(['notify_props']).pipe(
+        map$((settings) => settings.reduce<Record<string, Partial<ChannelNotifyProps>>>((obj, setting) => {
+            obj[setting.id] = setting.notifyProps;
+            return obj;
+        }, {})),
+    );
 };
 
 export const queryChannelsByNames = (database: Database, names: string[]) => {
@@ -416,3 +430,118 @@ export function observeMyChannelMentionCount(database: Database, teamId?: string
             distinctUntilChanged(),
         );
 }
+
+export function queryMyChannelsByUnread(database: Database, isUnread: boolean, sortBy: 'last_viewed_at' | 'last_post_at', take: number, excludeIds?: string[]) {
+    const clause: Q.Clause[] = [Q.where('is_unread', Q.eq(isUnread))];
+
+    if (excludeIds?.length) {
+        clause.push(Q.where('id', Q.notIn(excludeIds)));
+    }
+
+    return queryAllMyChannel(database).extend(
+        Q.on(CHANNEL, Q.where('delete_at', Q.eq(0))),
+        ...clause,
+        Q.sortBy(sortBy, Q.desc),
+        Q.take(take),
+    );
+}
+
+export const observeDirectChannelsByTerm = (database: Database, term: string, take = 20, matchStart = false) => {
+    const onlyDMs = term.startsWith('@') ? "AND c.type='D'" : '';
+    const value = Q.sanitizeLikeString(term.startsWith('@') ? term.substring(1) : term);
+    let username = `u.username LIKE '${value}%'`;
+    let displayname = `c.display_name LIKE '${value}%'`;
+    if (!matchStart) {
+        username = `u.username LIKE '%${value}%' AND u.username NOT LIKE '${value}%'`;
+        displayname = `(c.display_name LIKE '%${value}%' AND c.display_name NOT LIKE '${value}%')`;
+    }
+    const currentUserId = observeCurrentUserId(database);
+    return currentUserId.pipe(
+        switchMap((uId) => {
+            return database.get<MyChannelModel>(CHANNEL).query(
+                Q.unsafeSqlQuery(`SELECT DISTINCT my.* FROM ${MY_CHANNEL} my
+                INNER JOIN ${CHANNEL} c ON c.id=my.id AND c.team_id='' AND c.delete_at=0 ${onlyDMs}
+                INNER JOIN ${CHANNEL_MEMBERSHIP} cm ON cm.channel_id=my.id
+                INNER JOIN ${USER} u ON u.id=cm.user_id AND (cm.user_id != '${uId}' AND ${username})
+                OR ${displayname}
+                ORDER BY my.last_viewed_at DESC
+                LIMIT ${take}`),
+            ).observe();
+        }),
+    );
+};
+
+export const observeNotDirectChannelsByTerm = (database: Database, term: string, take = 20, matchStart = false) => {
+    const teammateNameSetting = observeTeammateNameDisplay(database);
+
+    const value = Q.sanitizeLikeString(term.startsWith('@') ? term.substring(1) : term);
+    let username = `u.username LIKE '${value}%'`;
+    let nickname = `u.nickname LIKE '${value}%'`;
+    let displayname = `(u.first_name || ' ' || u.last_name) LIKE '${value}%'`;
+    if (!matchStart) {
+        username = `(u.username LIKE '%${value}%' AND u.username NOT LIKE '${value}%')`;
+        nickname = `(u.nickname LIKE '%${value}%' AND u.nickname NOT LIKE '${value}%')`;
+        displayname = `((u.first_name || ' ' || u.last_name) LIKE '%${value}%' AND (u.first_name || ' ' || u.last_name) NOT LIKE '${value}%')`;
+    }
+
+    return teammateNameSetting.pipe(
+        switchMap((setting) => {
+            let sortBy = '';
+            switch (setting) {
+                case General.TEAMMATE_NAME_DISPLAY.SHOW_NICKNAME_FULLNAME:
+                    sortBy = "ORDER BY CASE u.nickname WHEN '' THEN 1 ELSE 0 END, CASE (u.first_name || ' ' || u.last_name) WHEN '' THEN 1 ELSE 0 END, u.username";
+                    break;
+                case General.TEAMMATE_NAME_DISPLAY.SHOW_FULLNAME:
+                    sortBy = "ORDER BY CASE (u.first_name || ' ' || u.last_name) WHEN '' THEN 1 ELSE 0 END, u.username";
+                    break;
+                default:
+                    sortBy = 'ORDER BY u.username';
+                    break;
+            }
+
+            return database.get<UserModel>(USER).query(
+                Q.unsafeSqlQuery(`SELECT DISTINCT u.* FROM User u
+                LEFT JOIN ChannelMembership cm ON cm.user_id=u.id
+                LEFT JOIN Channel c ON c.id=cm.id AND c.type='${General.DM_CHANNEL}'
+                WHERE cm.user_id IS NULL AND (${displayname} OR ${username} OR ${nickname})
+                ${sortBy} LIMIT ${take}`),
+            ).observe();
+        }),
+    );
+};
+
+export const observeJoinedChannelsByTerm = (database: Database, term: string, take = 20, matchStart = false) => {
+    if (term.startsWith('@')) {
+        return of$([]);
+    }
+
+    const value = Q.sanitizeLikeString(term);
+    let displayname = `c.display_name LIKE '${value}%'`;
+    if (!matchStart) {
+        displayname = `c.display_name LIKE '%${value}%' AND c.display_name NOT LIKE '${value}%'`;
+    }
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.unsafeSqlQuery(`SELECT DISTINCT my.* FROM ${MY_CHANNEL} my
+        INNER JOIN ${CHANNEL} c ON c.id=my.id AND c.delete_at=0 AND c.team_id !='' AND ${displayname}
+        ORDER BY my.last_viewed_at DESC
+        LIMIT ${take}`),
+    ).observe();
+};
+
+export const observeArchiveChannelsByTerm = (database: Database, term: string, take = 20) => {
+    if (term.startsWith('@')) {
+        return of$([]);
+    }
+
+    const value = Q.sanitizeLikeString(term);
+    const displayname = `%${value}%`;
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.on(CHANNEL, Q.and(
+            Q.where('delete_at', Q.gt(0)),
+            Q.where('team_id', Q.notEq('')),
+            Q.where('display_name', Q.like(displayname)),
+        )),
+        Q.sortBy('last_viewed_at'),
+        Q.take(take),
+    ).observe();
+};

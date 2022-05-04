@@ -41,6 +41,20 @@ describe('components/categories_list', () => {
         expect(wrapper.toJSON()).toBeTruthy();
     });
 
+    it('should render channel list with thread menu', () => {
+        const wrapper = renderWithEverything(
+            <CategoriesList
+                isCRTEnabled={true}
+                isTablet={false}
+                teamsCount={1}
+                currentTeamId={TestHelper.basicTeam!.id}
+                channelsCount={1}
+            />,
+            {database},
+        );
+        expect(wrapper.toJSON()).toBeTruthy();
+    });
+
     it('should render team error', async () => {
         await operator.handleSystem({
             systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: ''}],

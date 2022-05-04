@@ -5,13 +5,15 @@ import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {removeUserFromTeam as localRemoveUserFromTeam} from '@actions/local/team';
-import {Events} from '@constants';
+import {switchToGlobalThreads} from '@actions/local/thread';
+import {Events, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected} from '@queries/servers/system';
 import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, syncTeamTable} from '@queries/servers/team';
+import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
 
 import {fetchMyChannelsForTeam, switchToChannelById} from './channel';
@@ -36,6 +38,7 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
     }
 
     try {
+        EphemeralStore.startAddingToTeam(teamId);
         const member = await client.addToTeam(teamId, userId);
 
         if (!fetchOnly) {
@@ -66,9 +69,10 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
                 }
             }
         }
-
+        EphemeralStore.finishAddingToTeam(teamId);
         return {member};
     } catch (error) {
+        EphemeralStore.finishAddingToTeam(teamId);
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
@@ -192,7 +196,7 @@ export const fetchTeamsChannelsAndUnreadPosts = async (serverUrl: string, since:
     const myTeams = teams.filter((t) => membershipSet.has(t.id) && t.id !== excludeTeamId);
 
     for await (const team of myTeams) {
-        const {channels, memberships: members} = await fetchMyChannelsForTeam(serverUrl, team.id, since > 0, since, false, true);
+        const {channels, memberships: members} = await fetchMyChannelsForTeam(serverUrl, team.id, true, since, false, true);
 
         if (channels?.length && members?.length) {
             fetchPostsForUnreadChannels(serverUrl, channels, members);
@@ -268,7 +272,12 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     if (await isTablet()) {
         channelId = await getNthLastChannelFromTeam(database, teamId);
         if (channelId) {
-            await switchToChannelById(serverUrl, channelId, teamId);
+            if (channelId === Screens.GLOBAL_THREADS) {
+                await switchToGlobalThreads(serverUrl);
+            } else {
+                await switchToChannelById(serverUrl, channelId, teamId);
+            }
+            completeTeamChange(serverUrl, teamId, channelId);
             return;
         }
     }
@@ -287,6 +296,15 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
         await operator.batchRecords(models);
     }
 
+    completeTeamChange(serverUrl, teamId, channelId);
+}
+
+const completeTeamChange = async (serverUrl: string, teamId: string, channelId: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return;
+    }
+
     // If WebSocket is not disconnected we fetch everything since this moment
     const lastDisconnectedAt = (await getWebSocketLastDisconnected(database)) || Date.now();
     const {channels, memberships, error} = await fetchMyChannelsForTeam(serverUrl, teamId, true, lastDisconnectedAt, false, true);
@@ -298,4 +316,4 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     if (channels?.length && memberships?.length) {
         fetchPostsForUnreadChannels(serverUrl, channels, memberships, channelId);
     }
-}
+};

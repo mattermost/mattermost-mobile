@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {fetchCommands} from '@actions/remote/command';
+import {INTERACTIVE_DIALOG} from '@constants/screens';
+import {showModal} from '@screens/navigation';
 
 const TIME_TO_REFETCH_COMMANDS = 60000; // 1 minute
 class ServerIntegrationsManager {
@@ -10,6 +12,7 @@ class ServerIntegrationsManager {
     private commands: {[teamId: string]: Command[] | undefined} = {};
 
     private triggerId = '';
+    private storedDialog?: InteractiveDialogConfig;
 
     private bindings: AppBinding[] = [];
     private rhsBindings: AppBinding[] = [];
@@ -64,11 +67,26 @@ class ServerIntegrationsManager {
         this.commandForms[key] = form;
     }
 
-    public getTriggerId() {
-        return this.triggerId;
-    }
     public setTriggerId(id: string) {
         this.triggerId = id;
+        if (this.storedDialog?.trigger_id === id) {
+            this.showDialog();
+        }
+    }
+
+    public setDialog(dialog: InteractiveDialogConfig) {
+        this.storedDialog = dialog;
+        if (this.triggerId === dialog.trigger_id) {
+            this.showDialog();
+        }
+    }
+
+    private showDialog() {
+        const config = this.storedDialog;
+        if (!config) {
+            return;
+        }
+        showModal(INTERACTIVE_DIALOG, config.dialog.title, {config});
     }
 }
 

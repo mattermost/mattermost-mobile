@@ -16,7 +16,7 @@ import Loading from '@components/loading';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
 import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
-import {goToScreen, loginAnimationOptions, resetToHome} from '@screens/navigation';
+import {goToScreen, loginAnimationOptions, resetToHome, resetToTeams} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -129,8 +129,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
         const result: LoginActionResponse = await login(serverUrl!, {serverDisplayName, loginId: loginId.toLowerCase(), password, config, license});
         if (checkLoginResponse(result)) {
             if (!result.hasTeams && !result.error) {
-                // eslint-disable-next-line no-console
-                console.log('TODO: GO TO NO TEAMS');
+                resetToTeams();
                 return;
             }
             goToHome(result.time || 0, result.error as never);

@@ -5,7 +5,7 @@ import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 import {of as of$, map as map$, Observable} from 'rxjs';
 import {switchMap, distinctUntilChanged, combineLatestWith} from 'rxjs/operators';
 
-import {Database as DatabaseConstants, Preferences} from '@constants';
+import {Database as DatabaseConstants, Preferences, Screens} from '@constants';
 import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
@@ -13,7 +13,7 @@ import {DEFAULT_LOCALE} from '@i18n';
 import {prepareDeleteCategory} from './categories';
 import {prepareDeleteChannel, getDefaultChannelForTeam, observeMyChannelMentionCount} from './channel';
 import {queryPreferencesByCategoryAndName} from './preference';
-import {patchTeamHistory, getConfig, getTeamHistory, observeCurrentTeamId} from './system';
+import {patchTeamHistory, getConfig, getTeamHistory, observeCurrentTeamId, getCurrentTeamId} from './system';
 import {observeThreadMentionCount} from './thread';
 import {getCurrentUser} from './user';
 
@@ -29,13 +29,26 @@ const {
     TEAM_CHANNEL_HISTORY,
 } = DatabaseConstants.MM_TABLES.SERVER;
 
+export const getCurrentTeam = async (database: Database) => {
+    const currentTeamId = await getCurrentTeamId(database);
+    if (currentTeamId) {
+        return getTeamById(database, currentTeamId);
+    }
+
+    return undefined;
+};
+
+// Saves channels to team history & excludes & GLOBAL_THREADS from it
 export const addChannelToTeamHistory = async (operator: ServerDataOperator, teamId: string, channelId: string, prepareRecordsOnly = false) => {
     let tch: TeamChannelHistory|undefined;
 
     try {
-        const myChannel = (await operator.database.get(MY_CHANNEL).find(channelId));
-        if (!myChannel) {
-            return [];
+        // Exlude GLOBAL_THREADS from channel check
+        if (channelId !== Screens.GLOBAL_THREADS) {
+            const myChannel = (await operator.database.get(MY_CHANNEL).find(channelId));
+            if (!myChannel) {
+                return [];
+            }
         }
         const teamChannelHistory = await getTeamChannelHistory(operator.database, teamId);
         const channelIdSet = new Set(teamChannelHistory);
@@ -49,7 +62,7 @@ export const addChannelToTeamHistory = async (operator: ServerDataOperator, team
             id: teamId,
             channel_ids: channelIds.slice(0, 5),
         };
-    } catch {
+    } catch (e) {
         tch = {
             id: teamId,
             channel_ids: [channelId],
