@@ -50,7 +50,7 @@ const GlobalThreads = ({componentId}: Props) => {
             edges={edges}
             mode='margin'
             style={styles.flex}
-            testID='global_threads'
+            testID='global_threads.screen'
         >
             <NavigationHeader
                 showBackButton={!isTablet}
@@ -68,7 +68,7 @@ const GlobalThreads = ({componentId}: Props) => {
                     forceQueryAfterAppState={appState}
                     setTab={setTab}
                     tab={tab}
-                    testID={'global_threads.list'}
+                    testID={'global_threads.threads_list'}
                 />
             </View>
         </SafeAreaView>

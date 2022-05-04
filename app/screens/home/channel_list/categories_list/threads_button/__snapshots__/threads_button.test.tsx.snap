@@ -17,6 +17,7 @@ exports[`Threads Component should match snapshot 1`] = `
       "opacity": 1,
     }
   }
+  testID="channel_list.threads.button"
 >
   <View
     style={

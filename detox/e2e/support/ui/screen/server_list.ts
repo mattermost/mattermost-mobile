@@ -8,11 +8,13 @@ import {expect} from 'detox';
 class ServerListScreen {
     testID = {
         serverListScreen: 'server_list.screen',
+        serverListBackdrop: 'server_list.backdrop',
         serverListTitle: 'server_list.title',
         addServerButton: 'server_list.add_a_server.button',
     };
 
     serverListScreen = element(by.id(this.testID.serverListScreen));
+    serverListBackdrop = element(by.id(this.testID.serverListBackdrop));
     serverListTitle = element(by.id(this.testID.serverListTitle));
     addServerButton = element(by.id(this.testID.addServerButton));
 
@@ -65,7 +67,7 @@ class ServerListScreen {
     };
 
     close = async () => {
-        await this.serverListScreen.tap({x: 5, y: 10});
+        await this.serverListBackdrop.tap({x: 5, y: 10});
         await expect(this.serverListScreen).not.toBeVisible();
     };
 }
