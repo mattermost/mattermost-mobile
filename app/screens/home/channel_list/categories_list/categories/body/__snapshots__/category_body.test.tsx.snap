@@ -119,7 +119,7 @@ Object {
                         Object {
                           "color": "rgba(255,255,255,0.72)",
                           "marginTop": -1,
-                          "paddingLeft": 12,
+                          "paddingHorizontal": 12,
                         },
                         false,
                         false,
