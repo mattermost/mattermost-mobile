@@ -170,7 +170,6 @@ const FilteredList = ({
                 }, {displayName}),
             );
             return;
-            return;
         }
 
         await close();
@@ -209,7 +208,6 @@ const FilteredList = ({
             return (
                 <ChannelItem
                     channel={item}
-                    collapsed={false}
                     isInfo={true}
                     onPress={onSwitchToChannel}
                     showTeamName={showTeamName}

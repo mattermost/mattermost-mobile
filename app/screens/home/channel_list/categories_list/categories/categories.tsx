@@ -87,11 +87,7 @@ const Categories = ({categories, currentTeamId, unreadsOnTop}: Props) => {
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
             keyExtractor={extractKey}
-            removeClippedSubviews={true}
-            initialNumToRender={5}
-            windowSize={15}
-            updateCellsBatchingPeriod={10}
-            maxToRenderPerBatch={5}
+            initialNumToRender={categoriesToShow.length}
 
             // @ts-expect-error strictMode not included in the types
             strictMode={true}
