@@ -4,11 +4,12 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {of as of$, combineLatest} from 'rxjs';
-import {concatAll, map, switchMap} from 'rxjs/operators';
+import {combineLatestWith, concatAll, map, switchMap} from 'rxjs/operators';
 
+import {MyChannelModel} from '@app/database/models/server';
 import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
-import {getChannelById, queryMyChannelUnreads} from '@queries/servers/channel';
+import {getChannelById, observeAllMyChannelNotifyProps, queryMyChannelUnreads} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeLastUnreadChannelId} from '@queries/servers/system';
 
@@ -31,6 +32,16 @@ const concatenateChannelsArray = ([a, b]: CA) => {
     return of$(b ? a.filter((c) => c && c.id !== b.id).concat(b) : a);
 };
 
+type NotifyProps = {
+    [key: string]: Partial<ChannelNotifyProps>;
+}
+
+const filterMutedFromMyChannels = ([myChannels, notifyProps]: [MyChannelModel[], NotifyProps]) => {
+    return myChannels.filter(
+        (myChannel) => notifyProps[myChannel.id]?.mark_unread !== 'mention' || myChannel.mentionsCount > 0, // Muted with Mentions should still go through
+    );
+};
+
 const enhanced = withObservables(['currentTeamId'], ({currentTeamId, database}: WithDatabaseProps) => {
     const unreadsOnTop = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
         observeWithColumns(['value']).
@@ -45,8 +56,11 @@ const enhanced = withObservables(['currentTeamId'], ({currentTeamId, database}: 
             const lastUnread = observeLastUnreadChannelId(database).pipe(
                 switchMap(getC),
             );
+            const notifyProps = observeAllMyChannelNotifyProps(database);
 
             const unreads = queryMyChannelUnreads(database, currentTeamId).observe().pipe(
+                combineLatestWith(notifyProps),
+                map(filterMutedFromMyChannels),
                 map(getChannelsFromRelation),
                 concatAll(),
             );

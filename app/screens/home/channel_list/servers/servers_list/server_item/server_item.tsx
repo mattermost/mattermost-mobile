@@ -20,7 +20,7 @@ import TutorialSwipeLeft from '@components/tutorial_highlight/swipe_left';
 import {Events} from '@constants';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
-import {subscribeServerUnreadAndMentions} from '@database/subscription/unreads';
+import {subscribeServerUnreadAndMentions, UnreadObserverArgs} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
 import {dismissBottomSheet} from '@screens/navigation';
 import {alertServerError, alertServerLogout, alertServerRemove, editServer, loginToServer} from '@utils/server';
@@ -32,7 +32,6 @@ import Options from './options';
 import WebSocket from './websocket';
 
 import type ServersModel from '@typings/database/models/app/servers';
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type {Subscription} from 'rxjs';
 
 type Props = {
@@ -138,12 +137,13 @@ const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
         displayName = intl.formatMessage({id: 'servers.default', defaultMessage: 'Default Server'});
     }
 
-    const unreadsSubscription = ({myChannels, threadMentionCount}: {myChannels: MyChannelModel[]; threadMentionCount: number}) => {
+    const unreadsSubscription = ({myChannels, settings, threadMentionCount}: UnreadObserverArgs) => {
         let mentions = 0;
         let isUnread = false;
         for (const myChannel of myChannels) {
+            const isMuted = settings?.[myChannel.id]?.mark_unread === 'mention';
             mentions += myChannel.mentionsCount;
-            isUnread = isUnread || myChannel.isUnread;
+            isUnread = isUnread || (myChannel.isUnread && !isMuted);
         }
         mentions += threadMentionCount;
 

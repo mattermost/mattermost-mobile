@@ -8,11 +8,10 @@ import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {BOTTOM_TAB_ICON_SIZE} from '@constants/view';
 import {subscribeAllServers} from '@database/subscription/servers';
-import {subscribeUnreadAndMentionsByServer} from '@database/subscription/unreads';
+import {subscribeUnreadAndMentionsByServer, UnreadObserverArgs} from '@database/subscription/unreads';
 import {changeOpacity} from '@utils/theme';
 
 import type ServersModel from '@typings/database/models/app/servers';
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type {UnreadMessages, UnreadSubscription} from '@typings/database/subscriptions';
 
 type Props = {
@@ -51,14 +50,15 @@ const Home = ({isFocused, theme}: Props) => {
         setTotal({mentions, unread});
     };
 
-    const unreadsSubscription = (serverUrl: string, {myChannels, threadMentionCount}: {myChannels: MyChannelModel[]; threadMentionCount: number}) => {
+    const unreadsSubscription = (serverUrl: string, {myChannels, settings, threadMentionCount}: UnreadObserverArgs) => {
         const unreads = subscriptions.get(serverUrl);
         if (unreads) {
             let mentions = 0;
             let unread = false;
             for (const myChannel of myChannels) {
+                const isMuted = settings?.[myChannel.id]?.mark_unread === 'mention';
                 mentions += myChannel.mentionsCount;
-                unread = unread || myChannel.isUnread;
+                unread = unread || (myChannel.isUnread && !isMuted);
             }
 
             unreads.mentions = mentions + threadMentionCount;

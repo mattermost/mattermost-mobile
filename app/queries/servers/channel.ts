@@ -3,7 +3,7 @@
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 import {of as of$, Observable} from 'rxjs';
-import {switchMap, distinctUntilChanged} from 'rxjs/operators';
+import {map as map$, switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
@@ -367,11 +367,24 @@ export const observeChannelInfo = (database: Database, channelId: string) => {
     );
 };
 
+export const queryAllMyChannelSettings = (database: Database) => {
+    return database.get<MyChannelSettingsModel>(MY_CHANNEL_SETTINGS).query();
+};
+
 export const queryMyChannelSettingsByIds = (database: Database, ids: string[]) => {
     return database.get<MyChannelSettingsModel>(MY_CHANNEL_SETTINGS).
         query(
             Q.where('id', Q.oneOf(ids)),
         );
+};
+
+export const observeAllMyChannelNotifyProps = (database: Database) => {
+    return queryAllMyChannelSettings(database).observeWithColumns(['notify_props']).pipe(
+        map$((settings) => settings.reduce<Record<string, Partial<ChannelNotifyProps>>>((obj, setting) => {
+            obj[setting.id] = setting.notifyProps;
+            return obj;
+        }, {})),
+    );
 };
 
 export const queryChannelsByNames = (database: Database, names: string[]) => {
