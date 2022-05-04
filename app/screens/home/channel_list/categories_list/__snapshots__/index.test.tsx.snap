@@ -149,6 +149,8 @@ exports[`components/categories_list should render channels error 1`] = `
       </View>
     </View>
     <Text
+      ellipsizeMode="tail"
+      numberOfLines={1}
       style={
         Object {
           "color": "rgba(255,255,255,0.64)",
@@ -156,6 +158,7 @@ exports[`components/categories_list should render channels error 1`] = `
           "fontSize": 11,
           "fontWeight": "600",
           "lineHeight": 16,
+          "paddingRight": 30,
         }
       }
       testID="channel_list_header.server_display_name"
@@ -346,6 +349,8 @@ exports[`components/categories_list should render team error 1`] = `
         }
       >
         <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
           style={
             Object {
               "color": "rgba(255,255,255,0.64)",
