@@ -67,7 +67,7 @@ function SavedMessages({
     const theme = useTheme();
     const serverUrl = useServerUrl();
 
-    const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
+    const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
 
     useEffect(() => {
         fetchSavedPosts(serverUrl).finally(() => {

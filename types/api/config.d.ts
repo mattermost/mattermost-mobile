@@ -63,6 +63,7 @@ interface ClientConfig {
     EnableGuestAccounts: string;
     EnableIncomingWebhooks: string;
     EnableLatex: string;
+    EnableInlineLatex: string;
     EnableLdap: string;
     EnableLinkPreviews: string;
     EnableMarketplace: string;

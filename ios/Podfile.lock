@@ -78,6 +78,7 @@ PODS:
   - glog (0.3.5)
   - hermes-engine (0.11.0)
   - HMSegmentedControl (1.5.6)
+  - iosMath (0.9.4)
   - jail-monkey (2.6.0):
     - React-Core
   - libevent (2.1.12)
@@ -469,6 +470,8 @@ PODS:
     - React-Core
   - RNLocalize (2.2.1):
     - React-Core
+  - RNMathView (1.0.0):
+    - iosMath
   - RNPermissions (3.3.1):
     - React-Core
   - RNReactNativeHapticFeedback (1.13.1):
@@ -632,6 +635,7 @@ DEPENDENCIES:
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNLocalize (from `../node_modules/react-native-localize`)
+  - RNMathView (from `../node_modules/react-native-math-view/ios`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
@@ -664,6 +668,7 @@ SPEC REPOS:
     - fmt
     - hermes-engine
     - HMSegmentedControl
+    - iosMath
     - libevent
     - libwebp
     - OpenSSL-Universal
@@ -811,6 +816,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-keychain"
   RNLocalize:
     :path: "../node_modules/react-native-localize"
+  RNMathView:
+    :path: "../node_modules/react-native-math-view/ios"
   RNPermissions:
     :path: "../node_modules/react-native-permissions"
   RNReactNativeHapticFeedback:
@@ -865,6 +872,7 @@ SPEC CHECKSUMS:
   glog: 476ee3e89abb49e07f822b48323c51c57124b572
   hermes-engine: 84e3af1ea01dd7351ac5d8689cbbea1f9903ffc3
   HMSegmentedControl: 34c1f54d822d8308e7b24f5d901ec674dfa31352
+  iosMath: f7a6cbadf9d836d2149c2a84c435b1effc244cba
   jail-monkey: 07b83767601a373db876e939b8dbf3f5eb15f073
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   libwebp: 98a37e597e40bfdb4c911fc98f2c53d0b12d05fc
@@ -928,6 +936,7 @@ SPEC CHECKSUMS:
   RNGestureHandler: 6e757e487a4834e7280e98e9bac66d2d9c575e9c
   RNKeychain: 4f63aada75ebafd26f4bc2c670199461eab85d94
   RNLocalize: cbcb55d0e19c78086ea4eea20e03fe8000bbbced
+  RNMathView: 4c8a3c081fa671ab3136c51fa0bdca7ffb708bd5
   RNPermissions: 34d678157c800b25b22a488e4d8babb57456e796
   RNReactNativeHapticFeedback: 4085973f5a38b40d3c6793a3ee5724773eae045e
   RNReanimated: 89a32ebf01d2dac2eb35b3b1628952f626db93d7

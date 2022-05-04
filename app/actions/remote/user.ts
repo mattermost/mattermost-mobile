@@ -420,7 +420,11 @@ export const searchProfiles = async (serverUrl: string, term: string, options: a
         const users = await client.searchUsers(term, options);
 
         if (!fetchOnly) {
-            const toStore = removeUserFromList(currentUserId, users);
+            const {database} = operator;
+            const existing = await queryUsersById(database, users.map((u) => u.id)).fetchIds();
+            const existingSet = new Set(existing);
+            const usersToAdd = users.filter((u) => !existingSet.has(u.id));
+            const toStore = removeUserFromList(currentUserId, usersToAdd);
             if (toStore.length) {
                 await operator.handleUsers({
                     users: toStore,

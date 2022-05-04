@@ -20,13 +20,6 @@ export const AppCallResponseTypes: { [name: string]: AppCallResponseType } = {
     NAVIGATE: 'navigate',
 };
 
-export const AppCallTypes: { [name: string]: AppCallType } = {
-    SUBMIT: 'submit',
-    LOOKUP: 'lookup',
-    FORM: 'form',
-    CANCEL: 'cancel',
-};
-
 export const AppExpandLevels: { [name: string]: AppExpandLevel } = {
     EXPAND_DEFAULT: '',
     EXPAND_NONE: 'none',
@@ -52,7 +45,6 @@ export default {
     AppBindingLocations,
     AppBindingPresentations,
     AppCallResponseTypes,
-    AppCallTypes,
     AppExpandLevels,
     AppFieldTypes,
     COMMAND_SUGGESTION_ERROR,

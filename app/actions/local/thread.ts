@@ -1,18 +1,52 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ActionType, General, Screens} from '@constants';
+import {DeviceEventEmitter} from 'react-native';
+
+import {ActionType, General, Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getTranslations, t} from '@i18n';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
+import {getCurrentTeamId, setCurrentChannelId} from '@queries/servers/system';
+import {addChannelToTeamHistory} from '@queries/servers/team';
 import {getIsCRTEnabled, getThreadById, prepareThreadsFromReceivedPosts, queryThreadsInTeam} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import {goToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {isTablet} from '@utils/helpers';
 import {changeOpacity} from '@utils/theme';
 
 import type Model from '@nozbe/watermelondb/Model';
+
+export const switchToGlobalThreads = async (serverUrl: string, prepareRecordsOnly = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const {database} = operator;
+    const models: Model[] = [];
+    try {
+        await setCurrentChannelId(operator, '');
+        const currentTeamId = await getCurrentTeamId(database);
+        const history = await addChannelToTeamHistory(operator, currentTeamId, Screens.GLOBAL_THREADS, true);
+        models.push(...history);
+        const isTabletDevice = await isTablet();
+        if (isTabletDevice) {
+            DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_THREADS);
+        } else {
+            goToScreen(Screens.GLOBAL_THREADS, '', {}, {topBar: {visible: false}});
+        }
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords(models);
+        }
+    } catch (error) {
+        return {error};
+    }
+
+    return {models};
+};
 
 export const switchToThread = async (serverUrl: string, rootId: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -136,7 +170,7 @@ export async function createThreadFromNewPost(serverUrl: string, post: Post, pre
 }
 
 // On receiving threads, Along with the "threads" & "thread participants", extract and save "posts" & "users"
-export async function processReceivedThreads(serverUrl: string, threads: Thread[], teamId: string, prepareRecordsOnly = false, loadedInGlobalThreads = false) {
+export async function processReceivedThreads(serverUrl: string, threads: Thread[], teamId: string, loadedInGlobalThreads = false, prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};

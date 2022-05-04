@@ -55,11 +55,12 @@ export const observePost = (database: Database, postId: string) => {
 };
 
 export const observePostSaved = (database: Database, postId: string) => {
-    return queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, postId).observe().pipe(
-        switchMap(
-            (pref) => of$(Boolean(pref[0]?.value === 'true')),
-        ),
-    );
+    return queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, postId).
+        observeWithColumns(['value']).pipe(
+            switchMap(
+                (pref) => of$(Boolean(pref[0]?.value === 'true')),
+            ),
+        );
 };
 
 export const queryPostsInChannel = (database: Database, channelId: string) => {

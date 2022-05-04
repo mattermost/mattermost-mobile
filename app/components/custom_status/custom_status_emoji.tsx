@@ -2,14 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Text, TextStyle} from 'react-native';
+import {StyleProp, Text, TextStyle} from 'react-native';
 
 import Emoji from '@components/emoji';
 
 interface ComponentProps {
     customStatus: UserCustomStatus;
     emojiSize?: number;
-    style?: TextStyle;
+    style?: StyleProp<TextStyle>;
     testID?: string;
 }
 

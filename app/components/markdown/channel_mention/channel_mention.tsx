@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React from 'react';
 import {useIntl} from 'react-intl';
 import {StyleProp, Text, TextStyle} from 'react-native';
 
@@ -65,7 +65,7 @@ const ChannelMention = ({
     const serverUrl = useServerUrl();
     const channel = getChannelFromChannelName(channelName, channels, channelMentions, team.name);
 
-    const handlePress = useCallback(preventDoubleTap(async () => {
+    const handlePress = preventDoubleTap(async () => {
         let c = channel;
 
         if (!c?.id && c?.display_name) {
@@ -73,7 +73,7 @@ const ChannelMention = ({
             if (result.error || !result.channel) {
                 const joinFailedMessage = {
                     id: t('mobile.join_channel.error'),
-                    defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again.",
+                    defaultMessage: "We couldn't join the channel {displayName}.",
                 };
                 alertErrorWithFallback(intl, result.error || {}, joinFailedMessage, {displayName: c.display_name});
             } else if (result.channel) {
@@ -90,7 +90,7 @@ const ChannelMention = ({
             await dismissAllModals();
             await popToRoot();
         }
-    }), [channel?.display_name, channel?.id]);
+    });
 
     if (!channel) {
         return <Text style={textStyle}>{`~${channelName}`}</Text>;

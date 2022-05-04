@@ -20,7 +20,7 @@ const enhanced = withObservables(
         return {
             rootPost: observePost(database, rootId),
             isSaved: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, rootId).
-                observe().
+                observeWithColumns(['value']).
                 pipe(
                     switchMap((pref) => of$(Boolean(pref[0]?.value === 'true'))),
                 ),

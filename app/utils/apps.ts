@@ -1,126 +1,204 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {AppBindingLocations, AppCallResponseTypes} from '@constants/apps';
+import {AppBindingLocations, AppCallResponseTypes, AppFieldTypes} from '@constants/apps';
 
-export function copyAndFillBindings(binding?: AppBinding): AppBinding | undefined {
-    if (!binding) {
-        return undefined;
-    }
-
-    const copy = JSON.parse(JSON.stringify(binding));
-    fillAndTrimBindingsInformation(copy);
-    return copy;
+export function cleanBinding(binding: AppBinding, topLocation: string): AppBinding {
+    return cleanBindingRec(binding, topLocation, 0);
 }
 
-// fillAndTrimBindingsInformation does:
-// - Build the location (e.g. channel_header/binding)
-// - Inherit app calls
-// - Inherit app ids
-// - Trim invalid bindings (do not have an app call or app id at the leaf)
-export function fillAndTrimBindingsInformation(binding?: AppBinding) {
+function cleanBindingRec(binding: AppBinding, topLocation: string, depth: number): AppBinding {
     if (!binding) {
-        return;
+        return binding;
     }
 
-    binding.bindings?.forEach((b) => {
-        // Propagate id down if not defined
+    const toRemove: number[] = [];
+    const usedLabels: {[label: string]: boolean} = {};
+    binding.bindings?.forEach((b, i) => {
+        // Inheritance and defaults
         if (!b.app_id) {
             b.app_id = binding.app_id;
         }
 
-        // Compose location
-        b.location = binding.location + '/' + b.location;
-
-        // Propagate call down if not defined
-        if (!b.call) {
-            b.call = binding.call;
+        if (!b.label) {
+            b.label = b.location || '';
         }
 
-        fillAndTrimBindingsInformation(b);
+        b.location = binding.location + '/' + b.location;
+
+        // Validation
+        if (!b.app_id) {
+            toRemove.unshift(i);
+            return;
+        }
+
+        // No empty labels nor "whitespace" labels
+        if (!b.label.trim()) {
+            toRemove.unshift(i);
+            return;
+        }
+
+        switch (topLocation) {
+            case AppBindingLocations.COMMAND: {
+                if (b.label.match(/ |\t/)) {
+                    toRemove.unshift(i);
+                    return;
+                }
+
+                if (usedLabels[b.label]) {
+                    toRemove.unshift(i);
+                    return;
+                }
+                break;
+            }
+            case AppBindingLocations.IN_POST: {
+                if (usedLabels[b.label]) {
+                    toRemove.unshift(i);
+                    return;
+                }
+                break;
+            }
+        }
+
+        // Must have only subbindings, a form or a submit call.
+        const hasBindings = Boolean(b.bindings?.length);
+        const hasForm = Boolean(b.form);
+        const hasSubmit = Boolean(b.submit);
+        if ((!hasBindings && !hasForm && !hasSubmit) ||
+            (hasBindings && hasForm) ||
+            (hasBindings && hasSubmit) ||
+            (hasForm && hasSubmit)) {
+            toRemove.unshift(i);
+            return;
+        }
+
+        if (hasBindings) {
+            cleanBindingRec(b, topLocation, depth + 1);
+
+            // Remove invalid branches
+            if (!b.bindings?.length) {
+                toRemove.unshift(i);
+                return;
+            }
+        } else if (hasForm) {
+            if (!b.form?.submit && !b.form?.source) {
+                toRemove.unshift(i);
+                return;
+            }
+
+            cleanForm(b.form);
+        }
+
+        usedLabels[b.label] = true;
     });
 
-    // Trim branches without app_id
-    if (!binding.app_id) {
-        binding.bindings = binding.bindings?.filter((v) => v.app_id);
-    }
+    toRemove.forEach((i) => {
+        binding.bindings?.splice(i, 1);
+    });
 
-    // Trim branches without calls
-    if (!binding.call) {
-        binding.bindings = binding.bindings?.filter((v) => v.call);
-    }
-
-    // Pull up app_id if needed
-    if (binding.bindings?.length && !binding.app_id) {
-        binding.app_id = binding.bindings[0].app_id;
-    }
-
-    // Pull up call if needed
-    if (binding.bindings?.length && !binding.call) {
-        binding.call = binding.bindings[0].call;
-    }
+    return binding;
 }
 
-export function validateBindings(binding?: AppBinding) {
-    filterInvalidChannelHeaderBindings(binding);
-    filterInvalidCommands(binding);
-    filterInvalidPostMenuBindings(binding);
-    binding?.bindings?.forEach(fillAndTrimBindingsInformation);
+export function validateBindings(bindings: AppBinding[] = []): AppBinding[] {
+    const channelHeaderBindings = bindings?.filter((b) => b.location === AppBindingLocations.CHANNEL_HEADER_ICON);
+    const postMenuBindings = bindings?.filter((b) => b.location === AppBindingLocations.POST_MENU_ITEM);
+    const commandBindings = bindings?.filter((b) => b.location === AppBindingLocations.COMMAND);
+
+    channelHeaderBindings.forEach((b) => cleanBinding(b, AppBindingLocations.CHANNEL_HEADER_ICON));
+    postMenuBindings.forEach((b) => cleanBinding(b, AppBindingLocations.POST_MENU_ITEM));
+    commandBindings.forEach((b) => cleanBinding(b, AppBindingLocations.COMMAND));
+
+    const hasBindings = (b: AppBinding) => b.bindings?.length;
+    return postMenuBindings.filter(hasBindings).concat(channelHeaderBindings.filter(hasBindings), commandBindings.filter(hasBindings));
 }
 
-// filterInvalidCommands remove commands without a label
-function filterInvalidCommands(binding?: AppBinding) {
-    if (!binding) {
+export function cleanForm(form?: AppForm): void {
+    if (!form) {
         return;
     }
 
-    const isValidCommand = (b: AppBinding): boolean => {
-        return Boolean(b.label);
-    };
+    const toRemove: number[] = [];
+    const usedLabels: {[label: string]: boolean} = {};
+    form.fields?.forEach((field, i) => {
+        if (!field.name) {
+            toRemove.unshift(i);
+            return;
+        }
 
-    const validateCommand = (b: AppBinding) => {
-        b.bindings = b.bindings?.filter(isValidCommand);
-        b.bindings?.forEach(validateCommand);
-    };
+        if (field.name.match(/ |\t/)) {
+            toRemove.unshift(i);
+            return;
+        }
 
-    binding.bindings?.filter((b) => b.location === AppBindingLocations.COMMAND).forEach(validateCommand);
+        let label = field.label;
+        if (!label) {
+            label = field.name;
+        }
+
+        if (label.match(/ |\t/)) {
+            toRemove.unshift(i);
+            return;
+        }
+
+        if (usedLabels[label]) {
+            toRemove.unshift(i);
+            return;
+        }
+
+        switch (field.type) {
+            case AppFieldTypes.STATIC_SELECT:
+                cleanStaticSelect(field);
+                if (!field.options?.length) {
+                    toRemove.unshift(i);
+                    return;
+                }
+                break;
+            case AppFieldTypes.DYNAMIC_SELECT:
+                if (!field.lookup) {
+                    toRemove.unshift(i);
+                    return;
+                }
+        }
+
+        usedLabels[label] = true;
+    });
+
+    toRemove.forEach((i) => {
+        form.fields!.splice(i, 1);
+    });
 }
 
-// filterInvalidChannelHeaderBindings remove bindings
-// without a label.
-function filterInvalidChannelHeaderBindings(binding?: AppBinding) {
-    if (!binding) {
-        return;
-    }
+function cleanStaticSelect(field: AppField): void {
+    const toRemove: number[] = [];
+    const usedLabels: {[label: string]: boolean} = {};
+    const usedValues: {[label: string]: boolean} = {};
+    field.options?.forEach((option, i) => {
+        let label = option.label;
+        if (!label) {
+            label = option.value;
+        }
 
-    const isValidChannelHeaderBindings = (b: AppBinding): boolean => {
-        return Boolean(b.label);
-    };
+        if (!label) {
+            toRemove.unshift(i);
+            return;
+        }
 
-    const validateChannelHeaderBinding = (b: AppBinding) => {
-        b.bindings = b.bindings?.filter(isValidChannelHeaderBindings);
-        b.bindings?.forEach(validateChannelHeaderBinding);
-    };
+        if (usedLabels[label]) {
+            toRemove.unshift(i);
+            return;
+        }
 
-    binding.bindings?.filter((b) => b.location === AppBindingLocations.CHANNEL_HEADER_ICON).forEach(validateChannelHeaderBinding);
-}
+        if (usedValues[option.value]) {
+            toRemove.unshift(i);
+            return;
+        }
 
-// filterInvalidPostMenuBindings remove bindings
-// without a label.
-function filterInvalidPostMenuBindings(binding?: AppBinding) {
-    if (!binding) {
-        return;
-    }
+        usedLabels[label] = true;
+        usedValues[option.value] = true;
+    });
 
-    const isValidPostMenuBinding = (b: AppBinding): boolean => {
-        return Boolean(b.label);
-    };
-
-    const validatePostMenuBinding = (b: AppBinding) => {
-        b.bindings = b.bindings?.filter(isValidPostMenuBinding);
-        b.bindings?.forEach(validatePostMenuBinding);
-    };
-
-    binding.bindings?.filter((b) => b.location === AppBindingLocations.POST_MENU_ITEM).forEach(validatePostMenuBinding);
+    toRemove.forEach((i) => {
+        field.options?.splice(i, 1);
+    });
 }
 
 export function createCallContext(
@@ -147,8 +225,6 @@ export function createCallRequest(
     defaultExpand: AppExpand = {},
     values?: AppCallValues,
     rawCommand?: string,
-    query?: string,
-    selectedField?: string,
 ): AppCallRequest {
     return {
         ...call,
@@ -159,15 +235,13 @@ export function createCallRequest(
             ...call.expand,
         },
         raw_command: rawCommand,
-        query,
-        selected_field: selectedField,
     };
 }
 
-export const makeCallErrorResponse = (errMessage: string) => {
+export const makeCallErrorResponse = (errMessage: string): AppCallResponse<any> => {
     return {
         type: AppCallResponseTypes.ERROR,
-        error: errMessage,
+        text: errMessage,
     };
 };
 

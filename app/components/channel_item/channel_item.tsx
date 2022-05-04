@@ -35,7 +35,7 @@ type Props = {
     testID?: string;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flexDirection: 'row',
         paddingHorizontal: 20,
@@ -108,7 +108,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const textStyle = StyleSheet.create({
+export const textStyle = StyleSheet.create({
     bright: typography('Body', 200, 'SemiBold'),
     regular: typography('Body', 200, 'Regular'),
 });
@@ -175,7 +175,7 @@ const ChannelListItem = ({
     ],
     [height, isActive, isInfo, styles]);
 
-    if ((channel.deleteAt > 0 && !isActive) || !myChannel || !isVisible) {
+    if ((!isInfo && (channel.deleteAt > 0 && !isActive)) || !myChannel || !isVisible) {
         return null;
     }
 
@@ -229,7 +229,12 @@ const ChannelListItem = ({
                                 </Text>
                                 }
                             </View>
-                            {Boolean(teammateId) && <CustomStatus userId={teammateId!}/>}
+                            {Boolean(teammateId) &&
+                                <CustomStatus
+                                    isInfo={isInfo}
+                                    userId={teammateId!}
+                                />
+                            }
                             {isInfo && Boolean(teamDisplayName) && isTablet &&
                                 <Text
                                     ellipsizeMode='tail'
