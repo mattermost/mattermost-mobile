@@ -59,7 +59,7 @@ const enhance = withObservables(['channel', 'isUnreads', 'showTeamName'], ({chan
                 return of$(u);
             }
 
-            return u ? of$(!mc.isUnread) : of$(true);
+            return u ? of$(!mc.isUnread || !mc.mentionsCount) : of$(true);
         }),
     );
 
