@@ -1,10 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {switchToGlobalThreads} from '@actions/local/thread';
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
-import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {prepareCommonSystemValues, getCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId, getCurrentChannelId} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
@@ -47,12 +45,8 @@ export async function appEntry(serverUrl: string, since = 0) {
     // Immediately set the new team as the current team in the database so that the UI
     // renders the correct team.
     if (tabletDevice && initialChannelId) {
-        if (initialChannelId === Screens.GLOBAL_THREADS) {
-            switchToGlobalThreads(serverUrl);
-        } else {
-            switchToChannel = true;
-            switchToChannelById(serverUrl, initialChannelId, initialTeamId);
-        }
+        switchToChannel = true;
+        switchToChannelById(serverUrl, initialChannelId, initialTeamId);
     } else {
         setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
     }
