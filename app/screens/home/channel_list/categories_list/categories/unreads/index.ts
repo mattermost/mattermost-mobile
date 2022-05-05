@@ -6,7 +6,6 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$, combineLatest} from 'rxjs';
 import {combineLatestWith, concatAll, map, switchMap} from 'rxjs/operators';
 
-import {MyChannelModel} from '@app/database/models/server';
 import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {getChannelById, observeAllMyChannelNotifyProps, queryMyChannelUnreads} from '@queries/servers/channel';
@@ -19,6 +18,7 @@ import UnreadCategories from './unreads';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
 type WithDatabaseProps = WithDatabaseArgs & {
