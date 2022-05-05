@@ -2,129 +2,109 @@
 
 exports[`components/channel_list/categories/body/channel_item should match snapshot 1`] = `
 <View
-  animatedStyle={
-    Object {
-      "value": Object {
-        "height": 40,
-        "marginVertical": 2,
-        "opacity": 1,
-      },
-    }
-  }
+  accessible={true}
   collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
   style={
     Object {
-      "height": 40,
-      "marginVertical": 2,
       "opacity": 1,
     }
   }
 >
   <View
-    accessible={true}
-    collapsable={false}
-    focusable={true}
-    onClick={[Function]}
-    onResponderGrant={[Function]}
-    onResponderMove={[Function]}
-    onResponderRelease={[Function]}
-    onResponderTerminate={[Function]}
-    onResponderTerminationRequest={[Function]}
-    onStartShouldSetResponder={[Function]}
     style={
-      Object {
-        "opacity": 1,
-      }
+      Array [
+        Object {
+          "alignItems": "center",
+          "flexDirection": "row",
+          "minHeight": 40,
+          "paddingHorizontal": 20,
+        },
+        false,
+        undefined,
+        Object {
+          "minHeight": 40,
+        },
+      ]
     }
+    testID="channel_list_item.hello.collapsed.true"
   >
     <View
       style={
-        Array [
-          Object {
-            "alignItems": "center",
-            "flexDirection": "row",
-            "minHeight": 40,
-            "paddingHorizontal": 20,
-          },
-          false,
-          undefined,
-          Object {
-            "minHeight": 40,
-          },
-        ]
+        Object {
+          "flex": 1,
+          "flexDirection": "row",
+        }
       }
-      testID="channel_list_item.hello.collapsed.false"
     >
       <View
         style={
-          Object {
-            "flex": 1,
-            "flexDirection": "row",
-          }
+          Array [
+            Object {
+              "alignItems": "center",
+              "justifyContent": "center",
+            },
+            Object {
+              "height": 24,
+              "width": 24,
+            },
+            undefined,
+            undefined,
+          ]
         }
       >
-        <View
+        <Icon
+          name="globe"
           style={
             Array [
               Object {
-                "alignItems": "center",
-                "justifyContent": "center",
+                "color": "rgba(255,255,255,0.4)",
               },
+              undefined,
+              undefined,
               Object {
-                "height": 24,
-                "width": 24,
+                "fontSize": 24,
+                "left": 1,
               },
-              undefined,
-              undefined,
             ]
           }
+          testID="undefined.public"
+        />
+      </View>
+      <View>
+        <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
+          style={
+            Array [
+              Object {
+                "fontFamily": "OpenSans",
+                "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
+              },
+              Object {
+                "color": "rgba(255,255,255,0.72)",
+                "marginTop": -1,
+                "paddingLeft": 12,
+              },
+              false,
+              false,
+              null,
+              null,
+            ]
+          }
+          testID="channel_list_item.hello.display_name"
         >
-          <Icon
-            name="globe"
-            style={
-              Array [
-                Object {
-                  "color": "rgba(255,255,255,0.4)",
-                },
-                undefined,
-                undefined,
-                Object {
-                  "fontSize": 24,
-                  "left": 1,
-                },
-              ]
-            }
-            testID="undefined.public"
-          />
-        </View>
-        <View>
-          <Text
-            ellipsizeMode="tail"
-            numberOfLines={1}
-            style={
-              Array [
-                Object {
-                  "fontFamily": "OpenSans",
-                  "fontSize": 16,
-                  "fontWeight": "400",
-                  "lineHeight": 24,
-                },
-                Object {
-                  "color": "rgba(255,255,255,0.72)",
-                  "marginTop": -1,
-                  "paddingLeft": 12,
-                },
-                false,
-                false,
-                null,
-                null,
-              ]
-            }
-            testID="channel_list_item.hello.display_name"
-          >
-            Hello!
-          </Text>
-        </View>
+          Hello!
+        </Text>
       </View>
     </View>
   </View>
@@ -133,129 +113,109 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
 
 exports[`components/channel_list/categories/body/channel_item should match snapshot when it has a draft 1`] = `
 <View
-  animatedStyle={
-    Object {
-      "value": Object {
-        "height": 40,
-        "marginVertical": 2,
-        "opacity": 1,
-      },
-    }
-  }
+  accessible={true}
   collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
   style={
     Object {
-      "height": 40,
-      "marginVertical": 2,
       "opacity": 1,
     }
   }
 >
   <View
-    accessible={true}
-    collapsable={false}
-    focusable={true}
-    onClick={[Function]}
-    onResponderGrant={[Function]}
-    onResponderMove={[Function]}
-    onResponderRelease={[Function]}
-    onResponderTerminate={[Function]}
-    onResponderTerminationRequest={[Function]}
-    onStartShouldSetResponder={[Function]}
     style={
-      Object {
-        "opacity": 1,
-      }
+      Array [
+        Object {
+          "alignItems": "center",
+          "flexDirection": "row",
+          "minHeight": 40,
+          "paddingHorizontal": 20,
+        },
+        false,
+        undefined,
+        Object {
+          "minHeight": 40,
+        },
+      ]
     }
+    testID="channel_list_item.hello.collapsed.true"
   >
     <View
       style={
-        Array [
-          Object {
-            "alignItems": "center",
-            "flexDirection": "row",
-            "minHeight": 40,
-            "paddingHorizontal": 20,
-          },
-          false,
-          undefined,
-          Object {
-            "minHeight": 40,
-          },
-        ]
+        Object {
+          "flex": 1,
+          "flexDirection": "row",
+        }
       }
-      testID="channel_list_item.hello.collapsed.false"
     >
       <View
         style={
-          Object {
-            "flex": 1,
-            "flexDirection": "row",
-          }
+          Array [
+            Object {
+              "alignItems": "center",
+              "justifyContent": "center",
+            },
+            Object {
+              "height": 24,
+              "width": 24,
+            },
+            undefined,
+            undefined,
+          ]
         }
       >
-        <View
+        <Icon
+          name="pencil-outline"
           style={
             Array [
               Object {
-                "alignItems": "center",
-                "justifyContent": "center",
+                "color": "rgba(255,255,255,0.4)",
               },
+              undefined,
+              undefined,
               Object {
-                "height": 24,
-                "width": 24,
+                "fontSize": 24,
+                "left": 2,
               },
-              undefined,
-              undefined,
             ]
           }
+          testID="undefined.draft"
+        />
+      </View>
+      <View>
+        <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
+          style={
+            Array [
+              Object {
+                "fontFamily": "OpenSans",
+                "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
+              },
+              Object {
+                "color": "rgba(255,255,255,0.72)",
+                "marginTop": -1,
+                "paddingLeft": 12,
+              },
+              false,
+              false,
+              null,
+              null,
+            ]
+          }
+          testID="channel_list_item.hello.display_name"
         >
-          <Icon
-            name="pencil-outline"
-            style={
-              Array [
-                Object {
-                  "color": "rgba(255,255,255,0.4)",
-                },
-                undefined,
-                undefined,
-                Object {
-                  "fontSize": 24,
-                  "left": 2,
-                },
-              ]
-            }
-            testID="undefined.draft"
-          />
-        </View>
-        <View>
-          <Text
-            ellipsizeMode="tail"
-            numberOfLines={1}
-            style={
-              Array [
-                Object {
-                  "fontFamily": "OpenSans",
-                  "fontSize": 16,
-                  "fontWeight": "400",
-                  "lineHeight": 24,
-                },
-                Object {
-                  "color": "rgba(255,255,255,0.72)",
-                  "marginTop": -1,
-                  "paddingLeft": 12,
-                },
-                false,
-                false,
-                null,
-                null,
-              ]
-            }
-            testID="channel_list_item.hello.display_name"
-          >
-            Hello!
-          </Text>
-        </View>
+          Hello!
+        </Text>
       </View>
     </View>
   </View>

@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import Badge from '@components/badge';
 import ChannelIcon from '@components/channel_icon';
@@ -22,13 +21,11 @@ import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
 type Props = {
     channel: ChannelModel;
-    collapsed: boolean;
     currentUserId: string;
     hasDraft: boolean;
     isActive: boolean;
     isInfo?: boolean;
     isMuted: boolean;
-    isVisible: boolean;
     membersCount: number;
     myChannel?: MyChannelModel;
     onPress: (channelId: string) => void;
@@ -115,8 +112,8 @@ export const textStyle = StyleSheet.create({
 });
 
 const ChannelListItem = ({
-    channel, collapsed, currentUserId, hasDraft,
-    isActive, isInfo, isMuted, isVisible, membersCount,
+    channel, currentUserId, hasDraft,
+    isActive, isInfo, isMuted, membersCount,
     myChannel, onPress, teamDisplayName, testID}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
@@ -126,8 +123,6 @@ const ChannelListItem = ({
     // Make it brighter if it's not muted, and highlighted or has unreads
     const isBright = !isMuted && (myChannel && (myChannel.isUnread || myChannel.mentionsCount > 0));
 
-    const shouldCollapse = (collapsed && !isBright) && !isActive;
-    const sharedValue = useSharedValue(shouldCollapse);
     const height = useMemo(() => {
         let h = 40;
         if (isInfo) {
@@ -135,18 +130,6 @@ const ChannelListItem = ({
         }
         return h;
     }, [teamDisplayName, isInfo, isTablet]);
-
-    useEffect(() => {
-        sharedValue.value = shouldCollapse;
-    }, [shouldCollapse]);
-
-    const animatedStyle = useAnimatedStyle(() => {
-        return {
-            marginVertical: withTiming(sharedValue.value ? 0 : 2, {duration: 500}),
-            height: withTiming(sharedValue.value ? 0 : height, {duration: 500}),
-            opacity: withTiming(sharedValue.value ? 0 : 1, {duration: 500, easing: Easing.inOut(Easing.exp)}),
-        };
-    }, [height]);
 
     const handleOnPress = useCallback(() => {
         onPress(myChannel?.id || channel.id);
@@ -169,7 +152,7 @@ const ChannelListItem = ({
     ],
     [height, isActive, isInfo, styles]);
 
-    if ((!isInfo && (channel.deleteAt > 0 && !isActive)) || !myChannel || !isVisible) {
+    if (!myChannel) {
         return null;
     }
 
@@ -182,37 +165,36 @@ const ChannelListItem = ({
     }
 
     return (
-        <Animated.View style={animatedStyle}>
-            <TouchableOpacity onPress={handleOnPress}>
-                <>
-                    <View
-                        style={containerStyle}
-                        testID={`${testID}.${channel.name}.collapsed.${collapsed && !isActive}`}
-                    >
-                        <View style={styles.wrapper}>
-                            <ChannelIcon
-                                hasDraft={hasDraft}
-                                isActive={isInfo ? false : isActive}
-                                isInfo={isInfo}
-                                isUnread={isBright}
-                                isArchived={channel.deleteAt > 0}
-                                membersCount={membersCount}
-                                name={channel.name}
-                                shared={channel.shared}
-                                size={24}
-                                type={channel.type}
-                                isMuted={isMuted}
-                            />
-                            <View>
-                                <Text
-                                    ellipsizeMode='tail'
-                                    numberOfLines={1}
-                                    style={textStyles}
-                                    testID={`${testID}.${channel.name}.display_name`}
-                                >
-                                    {displayName}
-                                </Text>
-                                {isInfo && Boolean(teamDisplayName) && !isTablet &&
+        <TouchableOpacity onPress={handleOnPress}>
+            <>
+                <View
+                    style={containerStyle}
+                    testID={`${testID}.${channel.name}.collapsed.${!isActive}`}
+                >
+                    <View style={styles.wrapper}>
+                        <ChannelIcon
+                            hasDraft={hasDraft}
+                            isActive={isInfo ? false : isActive}
+                            isInfo={isInfo}
+                            isUnread={isBright}
+                            isArchived={channel.deleteAt > 0}
+                            membersCount={membersCount}
+                            name={channel.name}
+                            shared={channel.shared}
+                            size={24}
+                            type={channel.type}
+                            isMuted={isMuted}
+                        />
+                        <View>
+                            <Text
+                                ellipsizeMode='tail'
+                                numberOfLines={1}
+                                style={textStyles}
+                                testID={`${testID}.${channel.name}.display_name`}
+                            >
+                                {displayName}
+                            </Text>
+                            {isInfo && Boolean(teamDisplayName) && !isTablet &&
                                 <Text
                                     ellipsizeMode='tail'
                                     numberOfLines={1}
@@ -221,34 +203,33 @@ const ChannelListItem = ({
                                 >
                                     {teamDisplayName}
                                 </Text>
-                                }
-                            </View>
-                            {Boolean(teammateId) &&
-                                <CustomStatus
-                                    isInfo={isInfo}
-                                    userId={teammateId!}
-                                />
-                            }
-                            {isInfo && Boolean(teamDisplayName) && isTablet &&
-                                <Text
-                                    ellipsizeMode='tail'
-                                    numberOfLines={1}
-                                    testID={`${testID}.${teamDisplayName}.display_name`}
-                                    style={[styles.teamName, styles.teamNameTablet]}
-                                >
-                                    {teamDisplayName}
-                                </Text>
                             }
                         </View>
-                        <Badge
-                            visible={myChannel.mentionsCount > 0}
-                            value={myChannel.mentionsCount}
-                            style={[styles.badge, isMuted && styles.mutedBadge, isInfo && styles.infoBadge]}
+                        {Boolean(teammateId) &&
+                        <CustomStatus
+                            isInfo={isInfo}
+                            userId={teammateId!}
                         />
+                        }
+                        {isInfo && Boolean(teamDisplayName) && isTablet &&
+                        <Text
+                            ellipsizeMode='tail'
+                            numberOfLines={1}
+                            testID={`${testID}.${teamDisplayName}.display_name`}
+                            style={[styles.teamName, styles.teamNameTablet]}
+                        >
+                            {teamDisplayName}
+                        </Text>
+                        }
                     </View>
-                </>
-            </TouchableOpacity>
-        </Animated.View>
+                    <Badge
+                        visible={myChannel.mentionsCount > 0}
+                        value={myChannel.mentionsCount}
+                        style={[styles.badge, isMuted && styles.mutedBadge, isInfo && styles.infoBadge]}
+                    />
+                </View>
+            </>
+        </TouchableOpacity>
     );
 };
 
