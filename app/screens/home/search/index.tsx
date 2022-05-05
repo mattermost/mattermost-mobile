@@ -5,9 +5,11 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import compose from 'lodash/fp/compose';
 import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {map, switchMap} from 'rxjs/operators';
 
-import {observeConfigBooleanValue} from '@queries/servers/system';
+import {getTeamSearchHistory, queryTeamSearchHistoryById} from '@app/queries/servers/team';
+import {observeConfigBooleanValue, observeCurrentTeamId} from '@queries/servers/system';
+import {queryJoinedTeams} from '@queries/servers/team';
 import {observeCurrentUser} from '@queries/servers/user';
 import {getTimezone} from '@utils/user';
 
@@ -17,11 +19,38 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentUser = observeCurrentUser(database);
+    const currentTeamId = observeCurrentTeamId(database);
+    const viewArchivedChannels = observeConfigBooleanValue(database, 'ExperimentalViewArchivedChannels');
+    console.log('\n<><><> INSIDE enhance function');
+    const teamsCount = queryJoinedTeams(database).observe();
+    teamsCount.subscribe((count) => {
+        console.log('teamsCount', count);
+        return of$(count);
+    });
+
+    // const recent = getTeamSearchHistory(database, currentTeamId);
+    // const recent = queryTeamSearchHistoryById(database, currentTeamId);
+    // const recent = queryTeamSearchHistoryById(database, currentTeamId.pipe(map(rows) => {
+    //         return of$([]);
+    // }));
+
+    // const recent = queryTeamSearchHistoryById(database, currentTeamId.pipe((switchMap((team) => of$(team)));
 
     return {
-        currentUser,
-        currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
-        isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
+
+        // archivedPostIds,
+        currentTeamId,
+        teamsCount,
+
+        // initialValue,
+        // isSearchGettingMore,
+        // postIds,
+        // recent,
+
+        // timezoneOffsetInSeconds,
+        viewArchivedChannels,
+
+        // currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
     };
 });
 
