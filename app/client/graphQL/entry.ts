@@ -157,11 +157,11 @@ query entry {
             team {
                 id
             }
-            stats {
-                guestCount
-                memberCount
-                pinnedPostCount
-            }
+            #stats {
+            #    guestCount
+            #    memberCount
+            #    pinnedPostCount
+            #}
         }
         user {
             id
@@ -202,11 +202,11 @@ query loginNextPage {
             team {
                 id
             }
-            stats {
-                guestCount
-                memberCount
-                pinnedPostCount
-            }
+            #stats {
+            #    guestCount
+            #    memberCount
+            #    pinnedPostCount
+            #}
         }
         user {
             id

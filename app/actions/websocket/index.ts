@@ -4,6 +4,7 @@
 import {markChannelAsViewed} from '@actions/local/channel';
 import {fetchMissingSidebarInfo, markChannelAsRead, switchToChannelById} from '@actions/remote/channel';
 import {AppEntryData, AppEntryError, fetchAppEntryData, teamsToRemove} from '@actions/remote/entry/common';
+import {graphQLCommon} from '@actions/remote/entry/gql_common';
 import {fetchPostsForUnreadChannels, fetchPostsSince} from '@actions/remote/post';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
@@ -13,6 +14,7 @@ import {fetchStatusByIds, updateAllUsersSince} from '@actions/remote/user';
 import {Screens, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import ServerDataOperator from '@database/operator/server_data_operator';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {queryChannelsById, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
@@ -85,28 +87,10 @@ export async function handleClose(serverUrl: string, lastDisconnect: number) {
     });
 }
 
-async function doReconnect(serverUrl: string) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
-
+async function doReconnectRest(serverUrl: string, operator: ServerDataOperator, currentTeamId: string, currentUserId: string, config: ClientConfig, license: ClientLicense, lastDisconnectedAt: number) {
     const {database} = operator;
     const tabletDevice = await isTablet();
-    const system = await getCommonSystemValues(database);
-    const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
-
-    resetWebSocketLastDisconnected(operator);
-    let {config, license} = await fetchConfigAndLicense(serverUrl);
-    if (!config) {
-        config = system.config;
-    }
-
-    if (!license) {
-        license = system.license;
-    }
-
-    const fetchedData = await fetchAppEntryData(serverUrl, lastDisconnectedAt, system.currentTeamId);
+    const fetchedData = await fetchAppEntryData(serverUrl, lastDisconnectedAt, currentTeamId);
     const fetchedError = (fetchedData as AppEntryError).error;
 
     if (fetchedError) {
@@ -131,7 +115,7 @@ async function doReconnect(serverUrl: string) {
         }, [[], []] as Channel[][]);
 
         if (direct.length) {
-            const {directChannels, users} = await fetchMissingSidebarInfo(serverUrl, direct, meData.user?.locale, teammateDisplayNameSetting, system.currentUserId, true);
+            const {directChannels, users} = await fetchMissingSidebarInfo(serverUrl, direct, meData.user?.locale, teammateDisplayNameSetting, currentUserId, true);
             if (directChannels?.length) {
                 chData.channels.push(...directChannels);
             }
@@ -142,7 +126,7 @@ async function doReconnect(serverUrl: string) {
     }
 
     // if no longer a member of the current team
-    if (initialTeamId !== system.currentTeamId) {
+    if (initialTeamId !== currentTeamId) {
         let cId = '';
         if (tabletDevice) {
             if (!cId) {
@@ -222,6 +206,33 @@ async function doReconnect(serverUrl: string) {
                 }
             }
         }
+    }
+}
+
+async function doReconnect(serverUrl: string) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return;
+    }
+
+    const {database} = operator;
+    const system = await getCommonSystemValues(database);
+    const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
+
+    resetWebSocketLastDisconnected(operator);
+    let {config, license} = await fetchConfigAndLicense(serverUrl);
+    if (!config) {
+        config = system.config;
+    }
+
+    if (!license) {
+        license = system.license;
+    }
+
+    if (config.FeatureFlagGraphQL === 'true') {
+        await graphQLCommon(serverUrl, true, system.currentTeamId, system.currentChannelId);
+    } else {
+        await doReconnectRest(serverUrl, operator, system.currentTeamId, system.currentUserId, config, license, lastDisconnectedAt);
     }
 
     fetchAllTeams(serverUrl);
