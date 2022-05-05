@@ -13,9 +13,9 @@ type Props = {
     postMessage: string;
 }
 const CopyTextOption = ({postMessage}: Props) => {
-    const handleCopyText = useCallback(() => {
+    const handleCopyText = useCallback(async () => {
+        await dismissBottomSheet(Screens.POST_OPTIONS);
         Clipboard.setString(postMessage);
-        dismissBottomSheet(Screens.POST_OPTIONS);
     }, [postMessage]);
 
     return (

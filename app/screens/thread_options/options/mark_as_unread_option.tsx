@@ -22,9 +22,9 @@ const MarkAsUnreadOption = ({teamId, thread, post}: Props) => {
     const serverUrl = useServerUrl();
 
     const onHandlePress = useCallback(async () => {
+        await dismissBottomSheet(Screens.THREAD_OPTIONS);
         const timestamp = thread.unreadReplies ? Date.now() : post.createAt;
         updateThreadRead(serverUrl, teamId, thread.id, timestamp);
-        dismissBottomSheet(Screens.THREAD_OPTIONS);
     }, [serverUrl, thread]);
 
     const id = thread.unreadReplies ? t('global_threads.options.mark_as_read') : t('mobile.post_info.mark_unread');
