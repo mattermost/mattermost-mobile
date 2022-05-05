@@ -43,7 +43,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             height: 80,
             width: '100%',
             position: 'absolute',
-            bottom: 100,
+            bottom: 104,
         },
         toast: {
             width: '100%',

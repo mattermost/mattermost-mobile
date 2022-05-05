@@ -14,10 +14,7 @@ import {useIsTablet} from '@hooks/device';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
-    currentTimezone: string | null;
-    currentUsername: string;
     isCRTEnabled: boolean;
-    isTimezoneEnabled: boolean;
     lastViewedAt: number;
     nativeID: string;
     posts: PostModel[];
@@ -34,8 +31,8 @@ const styles = StyleSheet.create({
 });
 
 const ThreadPostList = ({
-    currentTimezone, currentUsername,
-    isCRTEnabled, isTimezoneEnabled, lastViewedAt, nativeID, posts, rootPost, teamId,
+    isCRTEnabled, lastViewedAt,
+    nativeID, posts, rootPost, teamId,
 }: Props) => {
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
@@ -57,9 +54,6 @@ const ThreadPostList = ({
         <PostList
             channelId={rootPost.channelId}
             contentContainerStyle={styles.container}
-            currentTimezone={currentTimezone}
-            currentUsername={currentUsername}
-            isTimezoneEnabled={isTimezoneEnabled}
             lastViewedAt={lastViewedAt}
             location={Screens.THREAD}
             nativeID={nativeID}

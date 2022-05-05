@@ -31,15 +31,14 @@ describe('components/channel_list/categories/body/channel_item', () => {
     it('should match snapshot', () => {
         const wrapper = renderWithIntlAndTheme(
             <ChannelItem
-                channel={{displayName: 'Hello!', type: 'G', shared: false, name: 'hello', deleteAt: 0} as ChannelModel}
+                channel={{displayName: 'Hello!', type: 'O', shared: false, name: 'hello', deleteAt: 0} as ChannelModel}
                 hasDraft={false}
                 isActive={false}
+                membersCount={0}
                 myChannel={myChannel}
                 isMuted={false}
-                collapsed={false}
                 currentUserId={'id'}
                 testID='channel_list_item'
-                isVisible={true}
                 onPress={() => undefined}
             />,
         );
@@ -53,12 +52,11 @@ describe('components/channel_list/categories/body/channel_item', () => {
                 channel={{displayName: 'Hello!', type: 'G', shared: false, name: 'hello', deleteAt: 0} as ChannelModel}
                 hasDraft={true}
                 isActive={false}
+                membersCount={3}
                 myChannel={myChannel}
                 isMuted={false}
-                collapsed={false}
                 currentUserId={'id'}
                 testID='channel_list_item'
-                isVisible={true}
                 onPress={() => undefined}
             />,
         );

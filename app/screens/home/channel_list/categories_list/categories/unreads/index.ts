@@ -4,11 +4,12 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {of as of$, combineLatest} from 'rxjs';
-import {concatAll, map, switchMap} from 'rxjs/operators';
+import {combineLatestWith, concatAll, map, switchMap} from 'rxjs/operators';
 
+import {MyChannelModel} from '@app/database/models/server';
 import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
-import {getChannelById, queryMyChannelUnreads} from '@queries/servers/channel';
+import {getChannelById, observeAllMyChannelNotifyProps, queryMyChannelUnreads} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeLastUnreadChannelId} from '@queries/servers/system';
 
@@ -20,7 +21,10 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
-type WithDatabaseProps = { currentTeamId: string } & WithDatabaseArgs
+type WithDatabaseProps = WithDatabaseArgs & {
+    currentTeamId: string;
+    isTablet: boolean;
+}
 
 type CA = [
     a: Array<ChannelModel | null>,
@@ -31,7 +35,17 @@ const concatenateChannelsArray = ([a, b]: CA) => {
     return of$(b ? a.filter((c) => c && c.id !== b.id).concat(b) : a);
 };
 
-const enhanced = withObservables(['currentTeamId'], ({currentTeamId, database}: WithDatabaseProps) => {
+type NotifyProps = {
+    [key: string]: Partial<ChannelNotifyProps>;
+}
+
+const filterMutedFromMyChannels = ([myChannels, notifyProps]: [MyChannelModel[], NotifyProps]) => {
+    return myChannels.filter(
+        (myChannel) => notifyProps[myChannel.id]?.mark_unread !== 'mention' || myChannel.mentionsCount > 0, // Muted with Mentions should still go through
+    );
+};
+
+const enhanced = withObservables(['currentTeamId', 'isTablet'], ({currentTeamId, isTablet, database}: WithDatabaseProps) => {
     const unreadsOnTop = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
         observeWithColumns(['value']).
         pipe(
@@ -42,11 +56,14 @@ const enhanced = withObservables(['currentTeamId'], ({currentTeamId, database}: 
 
     const unreadChannels = unreadsOnTop.pipe(switchMap((gU) => {
         if (gU) {
-            const lastUnread = observeLastUnreadChannelId(database).pipe(
+            const lastUnread = isTablet ? observeLastUnreadChannelId(database).pipe(
                 switchMap(getC),
-            );
+            ) : of$('');
+            const notifyProps = observeAllMyChannelNotifyProps(database);
 
             const unreads = queryMyChannelUnreads(database, currentTeamId).observe().pipe(
+                combineLatestWith(notifyProps),
+                map(filterMutedFromMyChannels),
                 map(getChannelsFromRelation),
                 concatAll(),
             );
