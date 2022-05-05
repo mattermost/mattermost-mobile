@@ -68,11 +68,11 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.sidebarText, 0.4),
     },
     badge: {
+        borderColor: theme.sidebarBg,
         position: 'relative',
         left: 0,
         top: -2,
         alignSelf: undefined,
-        borderColor: theme.sidebarBg,
     },
     infoBadge: {
         color: theme.buttonColor,
