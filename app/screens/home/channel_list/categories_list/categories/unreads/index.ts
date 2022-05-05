@@ -89,8 +89,6 @@ const filterAndSortMyChannels = ([myChannels, notifyProps]: [MyChannelModel[], N
     return [...mentions, ...unreads, ...mutedMentions];
 };
 
-type WithDatabaseProps = { currentTeamId: string } & WithDatabaseArgs
-
 const enhanced = withObservables(['currentTeamId', 'isTablet'], ({currentTeamId, isTablet, database}: WithDatabaseProps) => {
     const unreadsOnTop = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
         observeWithColumns(['value']).
