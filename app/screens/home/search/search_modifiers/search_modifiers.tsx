@@ -222,8 +222,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             height: SECTION_HEIGHT,
         },
         sectionTitle: {
-            padding: 20,
-            color: theme.centerChannel,
+            paddingVertical: 12,
+            paddingHorizontal: 20,
+            color: theme.centerChannelColor,
             ...typography('Heading', 600, 'SemiBold'),
         },
         showMore: {

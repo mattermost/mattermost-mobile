@@ -32,8 +32,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderRadius: 4,
             paddingHorizontal: 4,
             paddingVertical: 2,
-
-            // fontWeight: '600',
             fontSize: 10,
             ...typography('Body', 200, 'Regular'),
         },
