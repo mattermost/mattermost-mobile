@@ -31,25 +31,17 @@ type PostOptionsProps = {
     canReply: boolean;
     combinedPost?: Post;
     isSaved: boolean;
-    location: typeof Screens[keyof typeof Screens];
+    sourceScreen: typeof Screens[keyof typeof Screens];
     post: PostModel;
     thread?: ThreadModel;
     componentId: string;
 };
 
 const PostOptions = ({
-    canAddReaction,
-    canDelete,
-    canEdit,
-    canMarkAsUnread,
-    canPin,
-    canReply,
-    combinedPost,
-    componentId,
-    isSaved,
-    location,
-    post,
-    thread,
+    canAddReaction, canDelete, canEdit,
+    canMarkAsUnread, canPin, canReply,
+    combinedPost, componentId, isSaved,
+    sourceScreen, post, thread,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
 
@@ -75,7 +67,7 @@ const PostOptions = ({
     const canCopyPermalink = !isSystemPost && managedConfig?.copyAndPasteProtection !== 'true';
     const canCopyText = canCopyPermalink && post.message;
 
-    const shouldRenderFollow = !(location !== Screens.CHANNEL || !thread);
+    const shouldRenderFollow = !(sourceScreen !== Screens.CHANNEL || !thread);
 
     const snapPoints = [
         canAddReaction, canCopyPermalink, canCopyText,
@@ -96,17 +88,26 @@ const PostOptions = ({
                 {canMarkAsUnread && !isSystemPost &&
                     <MarkAsUnreadOption
                         post={post}
-                        location={location}
+                        sourceScreen={sourceScreen}
                     />
                 }
-                {canCopyPermalink && <CopyPermalinkOption post={post}/>}
+                {canCopyPermalink &&
+                    <CopyPermalinkOption
+                        post={post}
+                        sourceScreen={sourceScreen}
+                    />
+                }
                 {!isSystemPost &&
                     <SaveOption
                         isSaved={isSaved}
                         postId={post.id}
                     />
                 }
-                {Boolean(canCopyText && post.message) && <CopyTextOption postMessage={post.message}/>}
+                {Boolean(canCopyText && post.message) &&
+                    <CopyTextOption
+                        postMessage={post.message}
+                        sourceScreen={sourceScreen}
+                    />}
                 {canPin &&
                     <PinChannelOption
                         isPostPinned={post.isPinned}
@@ -129,7 +130,7 @@ const PostOptions = ({
     };
 
     // This fixes opening "post options modal" on top of "thread modal"
-    const additionalSnapPoints = location === Screens.THREAD ? 3 : 2;
+    const additionalSnapPoints = sourceScreen === Screens.THREAD ? 3 : 2;
 
     return (
         <BottomSheet

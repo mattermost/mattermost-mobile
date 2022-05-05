@@ -107,6 +107,7 @@ const ThreadOptions = ({
             <CopyPermalinkOption
                 key='copy-link'
                 post={post}
+                sourceScreen={Screens.THREAD_OPTIONS}
             />,
         );
     }

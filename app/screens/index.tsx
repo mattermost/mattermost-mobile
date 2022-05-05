@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {withManagedConfig} from '@mattermost/react-native-emm';
-import React from 'react';
+import React, {ComponentType} from 'react';
 import {IntlProvider} from 'react-intl';
 import {Platform, StyleProp, ViewStyle} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
@@ -169,6 +169,17 @@ Navigation.setLazyComponentRegistrator((screenName) => {
                 require('@screens/thread/thread_follow_button').default,
             ));
             break;
+        case Screens.SNACK_BAR: {
+            const snackBarScreen = withServerDatabase(require('@screens/snack_bar').default);
+
+            Navigation.registerComponent(Screens.SNACK_BAR, () =>
+                Platform.select({
+                    default: snackBarScreen,
+                    ios: withSafeAreaInsets(snackBarScreen) as ComponentType,
+                }),
+            );
+            break;
+        }
         case Screens.THREAD_OPTIONS:
             screen = withServerDatabase(
                 require('@screens/thread_options').default,

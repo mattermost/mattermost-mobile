@@ -14,23 +14,23 @@ import {dismissBottomSheet} from '@screens/navigation';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
-    location: typeof Screens[keyof typeof Screens];
+    sourceScreen: typeof Screens[keyof typeof Screens];
     post: PostModel;
     teamId: string;
 }
 
-const MarkAsUnreadOption = ({location, post, teamId}: Props) => {
+const MarkAsUnreadOption = ({sourceScreen, post, teamId}: Props) => {
     const serverUrl = useServerUrl();
 
     const onPress = useCallback(async () => {
         await dismissBottomSheet(Screens.POST_OPTIONS);
-        if (location === Screens.THREAD) {
+        if (sourceScreen === Screens.THREAD) {
             const threadId = post.rootId || post.id;
             markThreadAsUnread(serverUrl, teamId, threadId, post.id);
         } else {
             markPostAsUnread(serverUrl, post.id);
         }
-    }, [location, post, serverUrl, teamId]);
+    }, [sourceScreen, post, serverUrl, teamId]);
 
     return (
         <BaseOption
