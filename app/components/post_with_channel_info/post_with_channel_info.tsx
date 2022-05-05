@@ -11,6 +11,7 @@ import ChannelInfo from './channel_info';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
+    isCRTEnabled: boolean;
     post: PostModel;
     location: string;
 }
@@ -26,12 +27,13 @@ const styles = StyleSheet.create({
     },
 });
 
-function PostWithChannelInfo({post, location}: Props) {
+function PostWithChannelInfo({isCRTEnabled, post, location}: Props) {
     return (
         <View style={styles.container}>
             <ChannelInfo post={post}/>
             <View style={styles.content}>
                 <Post
+                    isCRTEnabled={isCRTEnabled}
                     post={post}
                     location={location}
                     highlightPinnedOrSaved={false}

@@ -53,13 +53,16 @@ const ThreadHandler = (superclass: any) => class extends superclass {
 
         // Let's process the thread data
         for (const thread of uniqueThreads) {
-            threadsParticipants.push({
-                thread_id: thread.id,
-                participants: (thread.participants || []).map((participant) => ({
-                    id: participant.id,
+            // Avoid participants field set as "null" from overriding the existing ones
+            if (Array.isArray(thread.participants)) {
+                threadsParticipants.push({
                     thread_id: thread.id,
-                })),
-            });
+                    participants: thread.participants.map((participant) => ({
+                        id: participant.id,
+                        thread_id: thread.id,
+                    })),
+                });
+            }
         }
 
         // Get thread models to be created and updated
@@ -106,14 +109,7 @@ const ThreadHandler = (superclass: any) => class extends superclass {
     handleThreadParticipants = async ({threadsParticipants, prepareRecordsOnly, skipSync = false}: HandleThreadParticipantsArgs): Promise<ThreadParticipantModel[]> => {
         const batchRecords: ThreadParticipantModel[] = [];
 
-        if (!threadsParticipants?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
-                'An empty or undefined "threadParticipants" array has been passed to the handleThreadParticipants method',
-            );
-            return [];
-        }
-
+        // NOTE: Participants list can also be an empty array
         for await (const threadParticipant of threadsParticipants) {
             const {thread_id, participants} = threadParticipant;
             const rawValues = getUniqueRawsBy({raws: participants, key: 'id'}) as ThreadParticipant[];
