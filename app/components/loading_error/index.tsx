@@ -84,6 +84,7 @@ const LoadingError = ({loading, message, onRetry, title}: Props) => {
             <TouchableWithFeedback
                 style={buttonStyle}
                 onPress={onRetry}
+                type={'opacity'}
             >
                 <Text style={buttonTextStyle(theme, 'lg', 'primary', 'inverted')}>{'Retry'}</Text>
             </TouchableWithFeedback>

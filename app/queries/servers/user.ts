@@ -65,7 +65,8 @@ export async function prepareUsers(operator: ServerDataOperator, users: UserProf
 export const observeTeammateNameDisplay = (database: Database) => {
     const config = observeConfig(database);
     const license = observeLicense(database);
-    const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observe();
+    const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).
+        observeWithColumns(['value']);
     return combineLatest([config, license, preferences]).pipe(
         switchMap(
             ([cfg, lcs, prefs]) => of$(getTeammateNameDisplaySetting(prefs, cfg, lcs)),

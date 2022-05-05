@@ -23,7 +23,8 @@ const enhanced = withObservables([], ({channel, database}: {channel: ChannelMode
     if (channel.creatorId) {
         const config = observeConfig(database);
         const license = observeLicense(database);
-        const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observe();
+        const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).
+            observeWithColumns(['value']);
         const me = observeCurrentUser(database);
         const profile = observeUser(database, channel.creatorId);
 

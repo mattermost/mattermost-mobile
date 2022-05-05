@@ -35,9 +35,9 @@ const DeletePostOption = ({combinedPost, post}: Props) => {
             }, {
                 text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
                 style: 'destructive',
-                onPress: () => {
+                onPress: async () => {
+                    await dismissBottomSheet(Screens.POST_OPTIONS);
                     deletePost(serverUrl, combinedPost || post);
-                    dismissBottomSheet(Screens.POST_OPTIONS);
                 },
             }],
         );

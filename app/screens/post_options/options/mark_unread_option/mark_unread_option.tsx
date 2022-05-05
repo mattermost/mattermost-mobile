@@ -22,14 +22,14 @@ type Props = {
 const MarkAsUnreadOption = ({location, post, teamId}: Props) => {
     const serverUrl = useServerUrl();
 
-    const onPress = useCallback(() => {
+    const onPress = useCallback(async () => {
+        await dismissBottomSheet(Screens.POST_OPTIONS);
         if (location === Screens.THREAD) {
             const threadId = post.rootId || post.id;
             markThreadAsUnread(serverUrl, teamId, threadId, post.id);
         } else {
             markPostAsUnread(serverUrl, post.id);
         }
-        dismissBottomSheet(Screens.POST_OPTIONS);
     }, [location, post, serverUrl, teamId]);
 
     return (

@@ -72,11 +72,26 @@ index 0ee59c6..4a8294b 100644
    ? null
 -  : { playVideo: (videoId) => YouTubeStandalone.playVideo(videoId) };
 +  : { playVideo: (videoId, startTime) => YouTubeStandalone.playVideo(videoId, startTime) };
+diff --git a/node_modules/react-native-youtube/android/build.gradle b/node_modules/react-native-youtube/android/build.gradle
+index 0417bc6..6249f65 100755
+--- a/node_modules/react-native-youtube/android/build.gradle
++++ b/node_modules/react-native-youtube/android/build.gradle
+@@ -6,8 +6,9 @@ def safeExtGet(prop, fallback) {
+ 
+ buildscript {
+     repositories {
++        mavenCentral()
++        mavenLocal()
+         google()
+-        jcenter()
+     }
+ 
+     dependencies {
 diff --git a/node_modules/react-native-youtube/main.d.ts b/node_modules/react-native-youtube/main.d.ts
-index d771db7..410709d 100644
+index 80c7df5..849104b 100644
 --- a/node_modules/react-native-youtube/main.d.ts
 +++ b/node_modules/react-native-youtube/main.d.ts
-@@ -35,7 +35,7 @@ declare class YouTube extends React.Component<YouTubeProps> {
+@@ -36,7 +36,7 @@ declare class YouTube extends React.Component<YouTubeProps> {
  }
  
  export declare const YouTubeStandaloneIOS: {
