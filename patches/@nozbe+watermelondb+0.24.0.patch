@@ -27,7 +27,7 @@ index 1a7c99e..0cb7b87 100644
  
      public markAsDeleted(): Promise<void>
 diff --git a/node_modules/@nozbe/watermelondb/Model/index.js b/node_modules/@nozbe/watermelondb/Model/index.js
-index 075a047..5af3995 100644
+index 075a047..75e5936 100644
 --- a/node_modules/@nozbe/watermelondb/Model/index.js
 +++ b/node_modules/@nozbe/watermelondb/Model/index.js
 @@ -78,6 +78,18 @@ var Model = /*#__PURE__*/function () {
@@ -73,6 +73,27 @@ index 1f3af50..e9fea58 100644
    s.requires_arc = true
    # simdjson is annoyingly slow without compiler optimization, disable for debugging
    s.compiler_flags = '-Os'
+diff --git a/node_modules/@nozbe/watermelondb/native/android/build.gradle b/node_modules/@nozbe/watermelondb/native/android/build.gradle
+index 90ddf7a..e5ec9ec 100644
+--- a/node_modules/@nozbe/watermelondb/native/android/build.gradle
++++ b/node_modules/@nozbe/watermelondb/native/android/build.gradle
+@@ -9,7 +9,8 @@ buildscript {
+     }
+ 
+     repositories {
+-        jcenter()
++        mavenCentral()
++        mavenLocal()
+     }
+ 
+     dependencies {
+@@ -40,5 +41,6 @@ dependencies {
+ 
+ repositories {
+     mavenCentral()
++    mavenLocal()
+ }
+ 
 diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
 index ca31e20..b45c753 100644
 --- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt

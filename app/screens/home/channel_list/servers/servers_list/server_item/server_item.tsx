@@ -60,7 +60,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
         height: 72,
         justifyContent: 'center',
-        paddingHorizontal: 18,
+        paddingLeft: 18,
     },
     container: {
         alignItems: 'center',
@@ -72,6 +72,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     details: {
         marginLeft: 14,
+        flex: 1,
     },
     logout: {
         backgroundColor: theme.centerChannelBg,
@@ -354,8 +355,20 @@ const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
                             />
                             }
                             <View style={styles.details}>
-                                <Text style={styles.name}>{displayName}</Text>
-                                <Text style={styles.url}>{removeProtocol(stripTrailingSlashes(server.url))}</Text>
+                                <Text
+                                    numberOfLines={1}
+                                    ellipsizeMode='tail'
+                                    style={styles.name}
+                                >
+                                    {displayName}
+                                </Text>
+                                <Text
+                                    numberOfLines={1}
+                                    ellipsizeMode='tail'
+                                    style={styles.url}
+                                >
+                                    {removeProtocol(stripTrailingSlashes(server.url))}
+                                </Text>
                             </View>
                         </View>
                         {!server.lastActiveAt && !switching &&

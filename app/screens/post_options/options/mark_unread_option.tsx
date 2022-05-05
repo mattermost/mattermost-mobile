@@ -17,9 +17,9 @@ type Props = {
 const MarkAsUnreadOption = ({postId}: Props) => {
     const serverUrl = useServerUrl();
 
-    const onPress = useCallback(() => {
+    const onPress = useCallback(async () => {
+        await dismissBottomSheet(Screens.POST_OPTIONS);
         markPostAsUnread(serverUrl, postId);
-        dismissBottomSheet(Screens.POST_OPTIONS);
     }, [serverUrl, postId]);
 
     return (
