@@ -46,7 +46,7 @@ export default function HomeScreen(props: HomeProps) {
         return () => {
             listener.remove();
         };
-    }, []);
+    }, [intl]);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.LEAVE_TEAM, (displayName: string) => {
@@ -56,7 +56,7 @@ export default function HomeScreen(props: HomeProps) {
         return () => {
             listener.remove();
         };
-    });
+    }, [intl]);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.LEAVE_CHANNEL, (displayName: string) => {
@@ -66,7 +66,7 @@ export default function HomeScreen(props: HomeProps) {
         return () => {
             listener.remove();
         };
-    });
+    }, [intl]);
 
     return (
         <NavigationContainer
