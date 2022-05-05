@@ -105,6 +105,8 @@ async function doReconnect(serverUrl: string) {
     }
     const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
 
+    let switchedToChannel = false;
+
     // if no longer a member of the current team or the current channel
     if (initialTeamId !== currentTeam?.id || initialChannelId !== currentChannel?.id) {
         const currentServer = await queryActiveServer(appDatabase);
@@ -121,6 +123,7 @@ async function doReconnect(serverUrl: string) {
             }
 
             if (tabletDevice && initialChannelId) {
+                switchedToChannel = true;
                 switchToChannelById(serverUrl, initialChannelId, initialTeamId);
             } else {
                 setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
@@ -134,7 +137,7 @@ async function doReconnect(serverUrl: string) {
 
     const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
     const {config, license} = await getCommonSystemValues(database);
-    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
+    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchedToChannel ? initialChannelId : undefined);
 
     // https://mattermost.atlassian.net/browse/MM-41520
 }
