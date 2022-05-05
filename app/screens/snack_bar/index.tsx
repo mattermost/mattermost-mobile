@@ -182,11 +182,7 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
             }
         }, 3000);
 
-        return () => {
-            if (baseTimer.current) {
-                clearTimeout(baseTimer.current);
-            }
-        };
+        return () => stopTimers();
     }, [isPanned.value]);
 
     // This effect dismisses the Navigation Overlay after we have hidden the snack bar
