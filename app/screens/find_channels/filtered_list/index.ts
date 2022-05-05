@@ -3,12 +3,17 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {of as of$} from 'rxjs';
+import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+import {General} from '@constants';
+import {observeArchiveChannelsByTerm, observeDirectChannelsByTerm, observeJoinedChannelsByTerm, observeNotDirectChannelsByTerm} from '@queries/servers/channel';
+import {observeConfig, observeCurrentTeamId} from '@queries/servers/system';
 import {queryJoinedTeams} from '@queries/servers/team';
+import {observeTeammateNameDisplay} from '@queries/servers/user';
+import {retrieveChannels} from '@screens/find_channels/utils';
 
-import FilteredList from './filtered_list';
+import FilteredList, {MAX_RESULTS} from './filtered_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -16,11 +21,50 @@ type EnhanceProps = WithDatabaseArgs & {
     term: string;
 }
 
-const enhanced = withObservables([], ({database}: EnhanceProps) => {
-    const teamsCount = queryJoinedTeams(database).observeCount();
+const enhanced = withObservables(['term'], ({database, term}: EnhanceProps) => {
+    const teamIds = queryJoinedTeams(database).observe().pipe(
+        // eslint-disable-next-line max-nested-callbacks
+        switchMap((teams) => of$(new Set(teams.map((t) => t.id)))),
+    );
+    const joinedChannelsMatchStart = observeJoinedChannelsByTerm(database, term, MAX_RESULTS, true);
+    const joinedChannelsMatch = observeJoinedChannelsByTerm(database, term, MAX_RESULTS);
+    const directChannelsMatchStart = observeDirectChannelsByTerm(database, term, MAX_RESULTS, true);
+    const directChannelsMatch = observeDirectChannelsByTerm(database, term, MAX_RESULTS);
+
+    const channelsMatchStart = combineLatest([joinedChannelsMatchStart, directChannelsMatchStart]).pipe(
+        switchMap((matchStart) => {
+            return retrieveChannels(database, matchStart.flat(), true);
+        }),
+    );
+
+    const channelsMatch = combineLatest([joinedChannelsMatch, directChannelsMatch]).pipe(
+        switchMap((matched) => retrieveChannels(database, matched.flat(), true)),
+    );
+
+    const archivedChannels = observeArchiveChannelsByTerm(database, term, MAX_RESULTS).pipe(
+        switchMap((archived) => retrieveChannels(database, archived)),
+    );
+
+    const usersMatchStart = observeNotDirectChannelsByTerm(database, term, MAX_RESULTS, true);
+    const usersMatch = observeNotDirectChannelsByTerm(database, term, MAX_RESULTS);
+
+    const restrictDirectMessage = observeConfig(database).pipe(
+        switchMap((cfg) => of$(cfg?.RestrictDirectMessage !== General.RESTRICT_DIRECT_MESSAGE_ANY)),
+    );
+
+    const teammateDisplayNameSetting = observeTeammateNameDisplay(database);
 
     return {
-        showTeamName: teamsCount.pipe(switchMap((count) => of$(count > 1))),
+        archivedChannels,
+        channelsMatch,
+        channelsMatchStart,
+        currentTeamId: observeCurrentTeamId(database),
+        restrictDirectMessage,
+        showTeamName: teamIds.pipe(switchMap((ids) => of$(ids.size > 1))),
+        teamIds,
+        teammateDisplayNameSetting,
+        usersMatchStart,
+        usersMatch,
     };
 });
 

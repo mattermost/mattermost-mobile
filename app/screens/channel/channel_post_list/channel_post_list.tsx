@@ -20,10 +20,7 @@ import type PostModel from '@typings/database/models/servers/post';
 type Props = {
     channelId: string;
     contentContainerStyle?: StyleProp<ViewStyle>;
-    currentTimezone: string | null;
-    currentUsername: string;
     isCRTEnabled: boolean;
-    isTimezoneEnabled: boolean;
     lastViewedAt: number;
     nativeID: string;
     posts: PostModel[];
@@ -36,8 +33,8 @@ const styles = StyleSheet.create({
 });
 
 const ChannelPostList = ({
-    channelId, contentContainerStyle, currentTimezone, currentUsername,
-    isCRTEnabled, isTimezoneEnabled, lastViewedAt, nativeID, posts, shouldShowJoinLeaveMessages,
+    channelId, contentContainerStyle, isCRTEnabled,
+    lastViewedAt, nativeID, posts, shouldShowJoinLeaveMessages,
 }: Props) => {
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
@@ -60,10 +57,7 @@ const ChannelPostList = ({
         <PostList
             channelId={channelId}
             contentContainerStyle={contentContainerStyle}
-            currentTimezone={currentTimezone}
-            currentUsername={currentUsername}
             isCRTEnabled={isCRTEnabled}
-            isTimezoneEnabled={isTimezoneEnabled}
             footer={intro}
             lastViewedAt={lastViewedAt}
             location={Screens.CHANNEL}

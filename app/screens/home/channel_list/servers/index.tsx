@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
 import {StyleSheet} from 'react-native';
 
@@ -9,14 +9,13 @@ import ServerIcon from '@components/server_icon';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {subscribeAllServers} from '@database/subscription/servers';
-import {subscribeUnreadAndMentionsByServer} from '@database/subscription/unreads';
+import {subscribeUnreadAndMentionsByServer, UnreadObserverArgs} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheet} from '@screens/navigation';
 
 import ServerList from './servers_list';
 
 import type ServersModel from '@typings/database/models/app/servers';
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type {UnreadMessages, UnreadSubscription} from '@typings/database/subscriptions';
 
 const subscriptions: Map<string, UnreadSubscription> = new Map();
@@ -48,7 +47,11 @@ const sortServers = (servers: ServersModel[], intl: IntlShape) => {
     });
 };
 
-export default function Servers() {
+export type ServersRef = {
+    openServers: () => void;
+}
+
+const Servers = React.forwardRef<ServersRef>((props, ref) => {
     const intl = useIntl();
     const [total, setTotal] = useState<UnreadMessages>({mentions: 0, unread: false});
     const registeredServers = useRef<ServersModel[]|undefined>();
@@ -66,14 +69,15 @@ export default function Servers() {
         setTotal({mentions, unread});
     };
 
-    const unreadsSubscription = (serverUrl: string, {myChannels, threadMentionCount}: {myChannels: MyChannelModel[]; threadMentionCount: number}) => {
+    const unreadsSubscription = (serverUrl: string, {myChannels, settings, threadMentionCount}: UnreadObserverArgs) => {
         const unreads = subscriptions.get(serverUrl);
         if (unreads) {
             let mentions = 0;
             let unread = false;
             for (const myChannel of myChannels) {
+                const isMuted = settings?.[myChannel.id]?.mark_unread === 'mention';
                 mentions += myChannel.mentionsCount;
-                unread = unread || myChannel.isUnread;
+                unread = unread || (myChannel.isUnread && !isMuted);
             }
 
             unreads.mentions = mentions + threadMentionCount;
@@ -136,6 +140,10 @@ export default function Servers() {
         }
     }, [isTablet, theme]);
 
+    useImperativeHandle(ref, () => ({
+        openServers: onPress,
+    }), [onPress]);
+
     useEffect(() => {
         const subscription = subscribeAllServers(serversObserver);
 
@@ -157,5 +165,8 @@ export default function Servers() {
             testID={'channel_list.servers.server_icon'}
         />
     );
-}
+});
 
+Servers.displayName = 'Servers';
+
+export default Servers;
