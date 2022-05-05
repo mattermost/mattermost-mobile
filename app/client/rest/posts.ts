@@ -145,9 +145,12 @@ const ClientPosts = (superclass: any) => class extends superclass {
     markPostAsUnread = async (userId: string, postId: string) => {
         this.analytics.trackAPI('api_post_set_unread_post');
 
+        // collapsed_threads_supported is not based on user preferences but to know if "CLIENT" supports CRT
+        const body = JSON.stringify({collapsed_threads_supported: true});
+
         return this.doFetch(
             `${this.getUserRoute(userId)}/posts/${postId}/set_unread`,
-            {method: 'post'},
+            {method: 'post', body},
         );
     };
 

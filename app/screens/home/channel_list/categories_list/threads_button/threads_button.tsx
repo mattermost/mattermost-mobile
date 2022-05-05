@@ -30,6 +30,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     iconActive: {
         color: theme.sidebarText,
     },
+    text: {
+        flex: 1,
+    },
 }));
 
 type Props = {
@@ -67,6 +70,7 @@ const ThreadsButton = ({currentChannelId, unreadsAndMentions}: Props) => {
         ];
 
         const text = [
+            customStyles.text,
             unreads ? channelItemTextStyle.bright : channelItemTextStyle.regular,
             styles.text,
             unreads ? styles.highlight : undefined,
