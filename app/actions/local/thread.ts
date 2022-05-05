@@ -207,12 +207,15 @@ export async function processReceivedThreads(serverUrl: string, threads: Thread[
         loadedInGlobalThreads,
     });
 
-    const userModels = await operator.handleUsers({
-        users,
-        prepareRecordsOnly: true,
-    });
+    const models = [...postModels, ...threadModels];
 
-    const models = [...postModels, ...threadModels, ...userModels];
+    if (users.length) {
+        const userModels = await operator.handleUsers({
+            users,
+            prepareRecordsOnly: true,
+        });
+        models.push(...userModels);
+    }
 
     if (!prepareRecordsOnly) {
         await operator.batchRecords(models);
