@@ -74,7 +74,7 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, style, testID}: Props)
     const showPostOptions = useCallback(preventDoubleTap(() => {
         Keyboard.dismiss();
         if (rootPost?.id) {
-            const passProps = {location: Screens.THREAD, post: rootPost, showAddReaction: true};
+            const passProps = {sourceScreen: Screens.THREAD, post: rootPost, showAddReaction: true};
             const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
             if (isTablet) {

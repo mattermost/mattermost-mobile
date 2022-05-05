@@ -179,6 +179,38 @@ export const updateThreadRead = async (serverUrl: string, teamId: string, thread
     }
 };
 
+export const markThreadAsUnread = async (serverUrl: string, teamId: string, threadId: string, postId: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const data = await client.markThreadAsUnread('me', teamId, threadId, postId);
+
+        // Update locally
+        const post = await getPostById(database, threadId);
+        if (post) {
+            await updateThread(serverUrl, threadId, {
+                last_viewed_at: post.createAt - 1,
+            });
+        }
+
+        return {data};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
 export const updateThreadFollowing = async (serverUrl: string, teamId: string, threadId: string, state: boolean) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
 

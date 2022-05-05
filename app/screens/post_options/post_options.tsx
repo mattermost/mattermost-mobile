@@ -86,7 +86,10 @@ const PostOptions = ({
                     <FollowThreadOption thread={thread}/>
                 }
                 {canMarkAsUnread && !isSystemPost &&
-                    <MarkAsUnreadOption postId={post.id}/>
+                    <MarkAsUnreadOption
+                        post={post}
+                        sourceScreen={sourceScreen}
+                    />
                 }
                 {canCopyPermalink &&
                     <CopyPermalinkOption

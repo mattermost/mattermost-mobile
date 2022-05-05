@@ -55,6 +55,9 @@ exports[`Threads Component should match snapshot 1`] = `
         style={
           Array [
             Object {
+              "flex": 1,
+            },
+            Object {
               "fontFamily": "OpenSans",
               "fontSize": 16,
               "fontWeight": "400",
@@ -63,7 +66,7 @@ exports[`Threads Component should match snapshot 1`] = `
             Object {
               "color": "rgba(255,255,255,0.72)",
               "marginTop": -1,
-              "paddingLeft": 12,
+              "paddingHorizontal": 12,
             },
             undefined,
             undefined,

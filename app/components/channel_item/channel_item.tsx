@@ -55,7 +55,7 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     text: {
         marginTop: -1,
         color: changeOpacity(theme.sidebarText, 0.72),
-        paddingLeft: 12,
+        paddingHorizontal: 12,
     },
     highlight: {
         color: theme.sidebarText,
@@ -68,9 +68,10 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.sidebarText, 0.4),
     },
     badge: {
+        borderColor: theme.sidebarBg,
         position: 'relative',
         left: 0,
-        top: 0,
+        top: -2,
         alignSelf: undefined,
     },
     infoBadge: {

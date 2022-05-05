@@ -92,7 +92,6 @@ const ThreadOptions = ({
             key='mark-as-unread'
             teamId={team.id}
             thread={thread}
-            post={post}
         />,
         <SaveOption
             key='save'
