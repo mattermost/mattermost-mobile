@@ -21,6 +21,11 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
+type WithDatabaseProps = WithDatabaseArgs & {
+    currentTeamId: string;
+    isTablet: boolean;
+}
+
 type CA = [
     a: Array<ChannelModel | null>,
     b: ChannelModel | undefined,
@@ -86,7 +91,7 @@ const filterAndSortMyChannels = ([myChannels, notifyProps]: [MyChannelModel[], N
 
 type WithDatabaseProps = { currentTeamId: string } & WithDatabaseArgs
 
-const enhanced = withObservables(['currentTeamId'], ({currentTeamId, database}: WithDatabaseProps) => {
+const enhanced = withObservables(['currentTeamId', 'isTablet'], ({currentTeamId, isTablet, database}: WithDatabaseProps) => {
     const unreadsOnTop = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
         observeWithColumns(['value']).
         pipe(
@@ -97,9 +102,9 @@ const enhanced = withObservables(['currentTeamId'], ({currentTeamId, database}: 
 
     const unreadChannels = unreadsOnTop.pipe(switchMap((gU) => {
         if (gU) {
-            const lastUnread = observeLastUnreadChannelId(database).pipe(
+            const lastUnread = isTablet ? observeLastUnreadChannelId(database).pipe(
                 switchMap(getC),
-            );
+            ) : of$('');
             const notifyProps = observeAllMyChannelNotifyProps(database);
 
             const unreads = queryMyChannelUnreads(database, currentTeamId).observe().pipe(

@@ -37,10 +37,8 @@ describe('components/channel_list/categories/body/channel_item', () => {
                 membersCount={0}
                 myChannel={myChannel}
                 isMuted={false}
-                collapsed={false}
                 currentUserId={'id'}
                 testID='channel_list_item'
-                isVisible={true}
                 onPress={() => undefined}
             />,
         );
@@ -57,10 +55,8 @@ describe('components/channel_list/categories/body/channel_item', () => {
                 membersCount={3}
                 myChannel={myChannel}
                 isMuted={false}
-                collapsed={false}
                 currentUserId={'id'}
                 testID='channel_list_item'
-                isVisible={true}
                 onPress={() => undefined}
             />,
         );

@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {FlatList} from 'react-native';
+import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import ChannelItem from '@components/channel_item';
 import {DMS_CATEGORY} from '@constants/categories';
@@ -39,26 +40,40 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChan
         return (
             <ChannelItem
                 channel={item}
-                collapsed={category.collapsed}
                 testID={`category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_list_item`}
                 onPress={onChannelSwitch}
             />
         );
-    }, [category.collapsed, onChannelSwitch]);
+    }, [onChannelSwitch]);
+
+    const sharedValue = useSharedValue(category.collapsed);
+
+    useEffect(() => {
+        sharedValue.value = category.collapsed;
+    }, [category.collapsed]);
+
+    const height = ids.length ? ids.length * 40 : 0;
+
+    const animatedStyle = useAnimatedStyle(() => {
+        return {
+            height: withTiming(sharedValue.value ? 1 : height, {duration: 300}),
+            opacity: withTiming(sharedValue.value ? 0 : 1, {duration: sharedValue.value ? 200 : 300, easing: Easing.inOut(Easing.exp)}),
+        };
+    }, [height]);
 
     return (
-        <FlatList
-            data={ids}
-            renderItem={renderItem}
-            keyExtractor={extractKey}
-            removeClippedSubviews={true}
-            initialNumToRender={20}
-            windowSize={15}
-            updateCellsBatchingPeriod={10}
+        <Animated.View
+            style={animatedStyle}
+        >
+            <FlatList
+                data={ids}
+                renderItem={renderItem}
+                keyExtractor={extractKey}
 
-            // @ts-expect-error strictMode not exposed on the types
-            strictMode={true}
-        />
+                // @ts-expect-error strictMode not exposed on the types
+                strictMode={true}
+            />
+        </Animated.View>
     );
 };
 
