@@ -357,7 +357,7 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
                     const channelToJumpTo = await getNthLastChannelFromTeam(database, channel?.teamId);
                     if (channelToJumpTo) {
                         if (channelToJumpTo === Screens.GLOBAL_THREADS) {
-                            const {models: switchToGlobalThreadsModels} = await switchToGlobalThreads(serverUrl, true);
+                            const {models: switchToGlobalThreadsModels} = await switchToGlobalThreads(serverUrl, channel?.teamId, true);
                             if (switchToGlobalThreadsModels) {
                                 models.push(...switchToGlobalThreadsModels);
                             }
@@ -423,10 +423,10 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocke
                 await popToRoot();
 
                 if (await isTablet()) {
-                    const channelToJumpTo = await getNthLastChannelFromTeam(database, currentChannel?.teamId);
+                    const channelToJumpTo = await getNthLastChannelFromTeam(database, currentChannel.teamId);
                     if (channelToJumpTo) {
                         if (channelToJumpTo === Screens.GLOBAL_THREADS) {
-                            switchToGlobalThreads(serverUrl);
+                            switchToGlobalThreads(serverUrl, currentChannel.teamId);
                             return;
                         }
                         switchToChannel(serverUrl, channelToJumpTo);
