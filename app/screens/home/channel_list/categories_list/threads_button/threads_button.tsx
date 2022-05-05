@@ -81,7 +81,10 @@ const ThreadsButton = ({currentChannelId, unreadsAndMentions}: Props) => {
     }, [customStyles, isActive, styles, unreads]);
 
     return (
-        <TouchableOpacity onPress={handlePress}>
+        <TouchableOpacity
+            onPress={handlePress}
+            testID='channel_list.threads.button'
+        >
             <View style={customStyles.baseContainer}>
                 <View style={containerStyle}>
                     <CompassIcon

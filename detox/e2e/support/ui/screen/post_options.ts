@@ -9,6 +9,7 @@ class PostOptionsScreen {
     testID = {
         reactionEmojiPrefix: 'post_options.reaction_bar.reaction.',
         postOptionsScreen: 'post_options.screen',
+        postOptionsBackdrop: 'post_options.backdrop',
         pickReaction: 'post_options.reaction_bar.pick_reaction',
         replyPostOption: 'post_options.reply.post.option',
         copyLinkOption: 'post_options.copy.permalink.option',
@@ -24,6 +25,7 @@ class PostOptionsScreen {
     };
 
     postOptionsScreen = element(by.id(this.testID.postOptionsScreen));
+    postOptionsBackdrop = element(by.id(this.testID.postOptionsBackdrop));
     pickReaction = element(by.id(this.testID.pickReaction));
     replyPostOption = element(by.id(this.testID.replyPostOption));
     copyLinkOption = element(by.id(this.testID.copyLinkOption));
@@ -48,7 +50,7 @@ class PostOptionsScreen {
     };
 
     close = async () => {
-        await this.postOptionsScreen.tap({x: 5, y: 10});
+        await this.postOptionsBackdrop.tap({x: 5, y: 10});
         await expect(this.postOptionsScreen).not.toBeVisible();
     };
 
@@ -66,11 +68,11 @@ class PostOptionsScreen {
         if (confirm) {
             await deleteButton.tap();
             await wait(timeouts.ONE_SEC);
-            await expect(this.postOptionsScreen).not.toBeVisible();
+            await expect(this.postOptionsScreen).not.toExist();
         } else {
             await cancelButton.tap();
             await wait(timeouts.ONE_SEC);
-            await expect(this.postOptionsScreen).toBeVisible();
+            await expect(this.postOptionsScreen).toExist();
             await this.close();
         }
     };

@@ -38,6 +38,7 @@ const Thread = ({rootPost}: ThreadProps) => {
                 style={styles.flex}
                 mode='margin'
                 edges={edges}
+                testID='thread.screen'
             >
                 {Boolean(rootPost?.id) &&
                 <>
