@@ -35,6 +35,7 @@ describe('components/channel_list/categories/body', () => {
             <CategoryBody
                 category={category}
                 locale={DEFAULT_LOCALE}
+                isTablet={false}
                 onChannelSwitch={() => undefined}
             />,
             {database},

@@ -36,7 +36,6 @@ const UnreadCategories = ({onChannelSwitch, unreadChannels}: UnreadCategoriesPro
         return (
             <ChannelItem
                 channel={item}
-                isUnreads={true}
                 onPress={onChannelSwitch}
             />
         );
