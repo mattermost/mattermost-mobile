@@ -54,7 +54,7 @@ const ThreadHandler = (superclass: any) => class extends superclass {
         // Let's process the thread data
         for (const thread of uniqueThreads) {
             // Avoid participants field set as "null" from overriding the existing ones
-            if (thread.participants) {
+            if (Array.isArray(thread.participants)) {
                 threadsParticipants.push({
                     thread_id: thread.id,
                     participants: thread.participants.map((participant) => ({
