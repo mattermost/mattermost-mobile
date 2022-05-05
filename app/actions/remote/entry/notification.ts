@@ -72,17 +72,15 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         }
     }
 
-    // If in the end the selected team or channel is different than the one from the notification
-    // we switch again
-    if (selectedTeamId !== teamId || selectedChannelId !== channelId) {
-        setCurrentTeamAndChannelId(operator, selectedTeamId, selectedChannelId);
-    }
-
     let switchedToChannel = false;
     if (isTabletDevice || (selectedChannelId === channelId)) {
         // Make switch again to get the missing data and make sure the team is the correct one
         switchedToChannel = true;
         switchToChannelById(serverUrl, selectedChannelId, selectedTeamId);
+    } else if (selectedTeamId !== teamId || selectedChannelId !== channelId) {
+        // If in the end the selected team or channel is different than the one from the notification
+        // we switch again
+        setCurrentTeamAndChannelId(operator, selectedTeamId, selectedChannelId);
     }
 
     if (selectedTeamId !== teamId) {
