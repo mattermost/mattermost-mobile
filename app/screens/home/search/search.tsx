@@ -43,8 +43,6 @@ const subtitle = '';
 const title = 'Search';
 const hasSearch = true;
 const showBackButton = false;
-const addLeftComponent = false;
-const addRightButtons = false;
 
 //    static propTypes = {
 //     actions: PropTypes.shape({
@@ -110,35 +108,6 @@ const SearchScreen = ({teamsCount, archivedPostIds, currentTeamId, initialValue,
             transform: [{translateX: withTiming(stateIndex < searchScreenIndex ? 25 : -25, {duration: 150})}],
         };
     }, [isFocused, stateIndex]);
-
-    let leftComponent;
-    if (addLeftComponent) {
-        leftComponent = (
-            <View>
-                <Badge
-                    type='Small'
-                    visible={true}
-                    value={1}
-                    style={{top: 0, left: 2, position: 'relative'}}
-                    borderColor='transparent'
-                />
-            </View>
-        );
-    }
-
-    let rightButtons: HeaderRightButton[] | undefined;
-    if (addRightButtons) {
-        rightButtons = [{
-            iconName: 'magnify',
-            onPress: () => true,
-        }, {
-            iconName: Platform.select({android: 'dots-vertical', default: 'dots-horizontal'}),
-            onPress: () => true,
-            rippleRadius: 15,
-            borderless: true,
-            buttonType: 'opacity',
-        }];
-    }
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll} = useCollapsibleHeader<FlatList<string>>(isLargeTitle, Boolean(subtitle), hasSearch);
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop}), [scrollPaddingTop]);
@@ -401,12 +370,10 @@ const SearchScreen = ({teamsCount, archivedPostIds, currentTeamId, initialValue,
         <FreezeScreen freeze={!isFocused}>
             <NavigationHeader
                 isLargeTitle={isLargeTitle}
-                leftComponent={leftComponent}
                 onBackPress={() => {
                     // eslint-disable-next-line no-console
                     console.log('BACK');
                 }}
-                rightButtons={rightButtons}
                 showBackButton={showBackButton}
                 subtitle={subtitle}
                 title={title}
