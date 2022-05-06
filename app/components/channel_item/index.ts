@@ -41,8 +41,9 @@ const enhance = withObservables(['channel', 'showTeamName', 'isCategoryMuted'], 
             if (!mc) {
                 return of$(false);
             }
-            return observeIsMutedSetting(mc) || of$(isCategoryMuted);
+            return observeIsMutedSetting(mc);
         }),
+        switchMap((muted) => of$(isCategoryMuted || muted)),
     );
 
     let teamDisplayName = of$('');
