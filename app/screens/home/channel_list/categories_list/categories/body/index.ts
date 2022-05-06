@@ -155,12 +155,10 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
 
     const notifyProps = observeAllMyChannelNotifyProps(database);
     const lastUnreadId = isTablet ? observeLastUnreadChannelId(database) : of$(undefined);
-    const unreadChannelIds = category.myChannels.observeWithColumns(['mentions_count', 'is_unread']).pipe(
-        combineLatestWith(unreadsOnTop, notifyProps, lastUnreadId),
-        map(([my, unreadTop, settings, lastUnread]) => {
-            if (!unreadTop) {
-                return new Set();
-            }
+    const unreadChannels = category.myChannels.observeWithColumns(['mentions_count', 'is_unread']);
+    const filterUnreads = unreadChannels.pipe(
+        combineLatestWith(notifyProps, lastUnreadId),
+        map(([my, settings, lastUnread]) => {
             return my.reduce<Set<string>>((set, m) => {
                 const isMuted = settings[m.id]?.mark_unread === 'mention';
                 if ((isMuted && m.mentionsCount) || (!isMuted && m.isUnread) || m.id === lastUnread) {
@@ -173,9 +171,9 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
 
     const currentChannelId = observeCurrentChannelId(database);
     const filtered = sortedChannels.pipe(
-        combineLatestWith(currentChannelId, unreadChannelIds),
-        map(([channels, ccId, unreadIds]) => {
-            return channels.filter((c) => c && ((c.deleteAt > 0 && c.id === ccId) || !c.deleteAt) && !unreadIds.has(c.id));
+        combineLatestWith(currentChannelId, filterUnreads, unreadsOnTop),
+        map(([channels, ccId, unreadIds, unreadTop]) => {
+            return channels.filter((c) => c && ((c.deleteAt > 0 && c.id === ccId) || !c.deleteAt) && (unreadTop ? !unreadIds.has(c.id) : true));
         }),
     );
 
@@ -184,6 +182,10 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
         hiddenChannelIds,
         sortedChannels: filtered,
         category: observedCategory,
+        unreadChannels: sortedChannels.pipe(
+            combineLatestWith(filterUnreads, unreadsOnTop),
+            map(([sorted, unreadIds, unreadsTop]) => (unreadsTop ? [] : sorted.filter((c) => c && unreadIds.has(c.id)))),
+        ),
     };
 });
 
