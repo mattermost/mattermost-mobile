@@ -65,7 +65,7 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingRight: 20,
     },
     muted: {
-        color: changeOpacity(theme.sidebarText, 0.4),
+        color: changeOpacity(theme.sidebarText, 0.32),
     },
     badge: {
         borderColor: theme.sidebarBg,
@@ -80,7 +80,7 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderColor: theme.centerChannelBg,
     },
     mutedBadge: {
-        opacity: 0.4,
+        opacity: 0.32,
     },
     activeItem: {
         backgroundColor: changeOpacity(theme.sidebarTextActiveColor, 0.1),
