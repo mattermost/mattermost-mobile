@@ -40,7 +40,6 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     subHeadingStyles: {
         color: changeOpacity(theme.sidebarText, 0.64),
-        paddingRight: 30,
         ...typography('Heading', 50),
     },
     headerRow: {
@@ -73,6 +72,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     subHeadingView: {
         flexDirection: 'row',
         alignItems: 'center',
+        paddingRight: 60,
     },
     noTeamHeadingStyles: {
         color: changeOpacity(theme.sidebarText, 0.64),
@@ -107,7 +107,6 @@ const ChannelListHeader = ({
         marginLeft: withTiming(marginLeft.value, {duration: 350}),
     }), []);
     const serverUrl = useServerUrl();
-
     useEffect(() => {
         marginLeft.value = iconPad ? 44 : 0;
     }, [iconPad]);
@@ -222,7 +221,7 @@ const ChannelListHeader = ({
     } else {
         header = (
             <View style={styles.noTeamHeaderRow}>
-                <View style={styles.noTeamHeaderRow}>
+                <View style={[styles.noTeamHeaderRow, {flex: 1}]}>
                     <Text
                         numberOfLines={1}
                         ellipsizeMode='tail'

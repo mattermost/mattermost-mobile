@@ -90,6 +90,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     name: {
         color: theme.centerChannelColor,
         ...typography('Body', 200, 'SemiBold'),
+        flex: 1,
     },
     offline: {
         opacity: 0.5,
@@ -109,6 +110,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     url: {
         color: changeOpacity(theme.centerChannelColor, 0.72),
         ...typography('Body', 75, 'Regular'),
+        marginRight: 7,
     },
     switching: {
         height: 40,
@@ -123,10 +125,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     nameView: {
         flexDirection: 'row',
-        alignItems: 'baseline',
+        marginRight: 7,
     },
     pushAlert: {
         marginLeft: 7,
+        alignSelf: 'center',
     },
     pushAlertText: {
         color: theme.errorTextColor,
