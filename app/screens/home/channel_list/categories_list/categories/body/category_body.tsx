@@ -42,6 +42,7 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChan
                 channel={item}
                 testID={`category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_list_item`}
                 onPress={onChannelSwitch}
+                isCategoryMuted={category.muted}
             />
         );
     }, [onChannelSwitch]);
