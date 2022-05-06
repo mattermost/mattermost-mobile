@@ -17,8 +17,8 @@ type Props = {
 }
 const CopyTextOption = ({postMessage, sourceScreen}: Props) => {
     const handleCopyText = useCallback(async () => {
-        Clipboard.setString(postMessage);
         await dismissBottomSheet(Screens.POST_OPTIONS);
+        Clipboard.setString(postMessage);
         showSnackBar({barType: SNACK_BAR_TYPE.MESSAGE_COPIED, sourceScreen});
     }, [postMessage]);
 

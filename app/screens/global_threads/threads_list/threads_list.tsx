@@ -139,7 +139,7 @@ const ThreadsList = ({
                 setTab={setTab}
                 tab={tab}
                 teamId={teamId}
-                testID={testID}
+                testID={`${testID}.header`}
                 unreadsCount={unreadsCount}
             />
             <FlatList
@@ -151,6 +151,7 @@ const ThreadsList = ({
                 onEndReached={handleEndReached}
                 removeClippedSubviews={true}
                 renderItem={renderItem}
+                testID={`${testID}.flat_list`}
             />
         </>
     );

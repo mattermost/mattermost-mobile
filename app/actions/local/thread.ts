@@ -8,7 +8,7 @@ import DatabaseManager from '@database/manager';
 import {getTranslations, t} from '@i18n';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
-import {getCurrentTeamId, setCurrentChannelId} from '@queries/servers/system';
+import {getCurrentTeamId, getCurrentUserId, setCurrentChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory} from '@queries/servers/team';
 import {getIsCRTEnabled, getThreadById, prepareThreadsFromReceivedPosts, queryThreadsInTeam} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
@@ -176,6 +176,9 @@ export async function processReceivedThreads(serverUrl: string, threads: Thread[
         return {error: `${serverUrl} database not found`};
     }
 
+    const {database} = operator;
+    const currentUserId = await getCurrentUserId(database);
+
     const posts: Post[] = [];
     const users: UserProfile[] = [];
 
@@ -183,7 +186,11 @@ export async function processReceivedThreads(serverUrl: string, threads: Thread[
     for (let i = 0; i < threads.length; i++) {
         const {participants, post} = threads[i];
         posts.push(post);
-        participants.forEach((participant) => users.push(participant));
+        participants.forEach((participant) => {
+            if (currentUserId !== participant.id) {
+                users.push(participant);
+            }
+        });
     }
 
     const postModels = await operator.handlePosts({
@@ -200,12 +207,15 @@ export async function processReceivedThreads(serverUrl: string, threads: Thread[
         loadedInGlobalThreads,
     });
 
-    const userModels = await operator.handleUsers({
-        users,
-        prepareRecordsOnly: true,
-    });
+    const models = [...postModels, ...threadModels];
 
-    const models = [...postModels, ...threadModels, ...userModels];
+    if (users.length) {
+        const userModels = await operator.handleUsers({
+            users,
+            prepareRecordsOnly: true,
+        });
+        models.push(...userModels);
+    }
 
     if (!prepareRecordsOnly) {
         await operator.batchRecords(models);

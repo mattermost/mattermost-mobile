@@ -98,7 +98,7 @@ export type HandleThreadsArgs = {
 export type HandleThreadParticipantsArgs = {
   prepareRecordsOnly: boolean;
   skipSync?: boolean;
-  threadsParticipants?: ParticipantsPerThread[];
+  threadsParticipants: ParticipantsPerThread[];
 };
 
 export type HandleThreadInTeamArgs = {

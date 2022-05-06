@@ -8,7 +8,9 @@ import ChannelDropdownMenuScreen from './channel_dropdown_menu';
 import ChannelListScreen from './channel_list';
 import CreateDirectMessageScreen from './create_direct_message';
 import CreateOrEditChannelScreen from './create_or_edit_channel';
+import EditPostScreen from './edit_post';
 import EditServerScreen from './edit_server';
+import GlobalThreadsScreen from './global_threads';
 import HomeScreen from './home';
 import LoginScreen from './login';
 import PostOptionsScreen from './post_options';
@@ -24,7 +26,9 @@ export {
     ChannelListScreen,
     CreateDirectMessageScreen,
     CreateOrEditChannelScreen,
+    EditPostScreen,
     EditServerScreen,
+    GlobalThreadsScreen,
     HomeScreen,
     LoginScreen,
     PostOptionsScreen,

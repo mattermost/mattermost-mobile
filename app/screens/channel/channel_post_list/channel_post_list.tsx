@@ -11,7 +11,6 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {debounce} from '@helpers/api/general';
 import {useIsTablet} from '@hooks/device';
-import {sortPostsByNewest} from '@utils/post';
 
 import Intro from './intro';
 
@@ -44,7 +43,7 @@ const ChannelPostList = ({
     const onEndReached = useCallback(debounce(async () => {
         if (!fetchingPosts.current && canLoadPosts.current && posts.length) {
             fetchingPosts.current = true;
-            const lastPost = sortPostsByNewest(posts)[0];
+            const lastPost = posts[posts.length - 1];
             const result = await fetchPostsBefore(serverUrl, channelId, lastPost.id);
             canLoadPosts.current = ((result as ProcessedPosts).posts?.length ?? 1) > 0;
             fetchingPosts.current = false;

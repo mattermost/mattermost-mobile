@@ -229,8 +229,6 @@ describe('Server Login - Server List', () => {
 
         // # Log back in to first server
         await ServerListScreen.getServerItemLoginOption(serverOneDisplayName).tap();
-        await expect(ServerScreen.headerTitleAddServer).toBeVisible();
-        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(serverOneUser);
     });
 

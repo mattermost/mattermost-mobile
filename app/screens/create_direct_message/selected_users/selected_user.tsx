@@ -42,8 +42,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             alignItems: 'center',
+            justifyContent: 'center',
             flexDirection: 'row',
-            height: 32,
             borderRadius: 16,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             marginBottom: 8,
@@ -57,8 +57,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         text: {
             color: theme.centerChannelColor,
-            textAlignVertical: 'center',
-            height: 32,
             ...typography('Body', 100, 'SemiBold'),
         },
     };

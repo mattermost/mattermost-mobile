@@ -86,7 +86,10 @@ const PostOptions = ({
                     <FollowThreadOption thread={thread}/>
                 }
                 {canMarkAsUnread && !isSystemPost &&
-                    <MarkAsUnreadOption postId={post.id}/>
+                    <MarkAsUnreadOption
+                        post={post}
+                        sourceScreen={sourceScreen}
+                    />
                 }
                 {canCopyPermalink &&
                     <CopyPermalinkOption
@@ -126,8 +129,7 @@ const PostOptions = ({
         );
     };
 
-    // This fixes opening "post options modal" on top of "thread modal"
-    const additionalSnapPoints = sourceScreen === Screens.THREAD ? 3 : 2;
+    const additionalSnapPoints = 2;
 
     return (
         <BottomSheet
