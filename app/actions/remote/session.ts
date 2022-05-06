@@ -50,22 +50,28 @@ export const completeLogin = async (serverUrl: string, user: UserProfile) => {
 
     await DatabaseManager.setActiveServerDatabase(serverUrl);
 
+    const systems: IdValue[] = [];
+
     // Set push proxy verification
-    const ppVerification = EphemeralStore.pushProxyVerification[serverUrl];
+    const ppVerification = EphemeralStore.getPuhsProxyVerificationState(serverUrl);
     if (ppVerification) {
-        operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS, value: ppVerification}], prepareRecordsOnly: false});
+        systems.push({id: SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS, value: ppVerification});
     }
 
     // Start websocket
     const credentials = await getServerCredentials(serverUrl);
     if (credentials?.token) {
         WebsocketManager.createClient(serverUrl, credentials.token);
-        return operator.handleSystem({systems: [{
+        systems.push({
             id: SYSTEM_IDENTIFIERS.WEBSOCKET,
             value: 0,
-        }],
-        prepareRecordsOnly: false});
+        });
     }
+
+    if (systems.length) {
+        operator.handleSystem({systems, prepareRecordsOnly: false});
+    }
+
     return null;
 };
 

@@ -232,15 +232,15 @@ const ServerItem = ({
 
         switch (result.canReceiveNotifications) {
             case PUSH_PROXY_RESPONSE_NOT_AVAILABLE:
-                EphemeralStore.pushProxyVerification[server.url] = PUSH_PROXY_STATUS_NOT_AVAILABLE;
+                EphemeralStore.setPushProxyVerificationState(server.url, PUSH_PROXY_STATUS_NOT_AVAILABLE);
                 alertPushProxyError(intl);
                 break;
             case PUSH_PROXY_RESPONSE_UNKNOWN:
-                EphemeralStore.pushProxyVerification[server.url] = PUSH_PROXY_STATUS_UNKNOWN;
+                EphemeralStore.setPushProxyVerificationState(server.url, PUSH_PROXY_STATUS_UNKNOWN);
                 alertPushProxyUnknown(intl);
                 break;
             default:
-                EphemeralStore.pushProxyVerification[server.url] = PUSH_PROXY_STATUS_VERIFIED;
+                EphemeralStore.setPushProxyVerificationState(server.url, PUSH_PROXY_STATUS_VERIFIED);
         }
 
         const data = await fetchConfigAndLicense(server.url, true);

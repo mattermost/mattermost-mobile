@@ -9,7 +9,8 @@ class EphemeralStore {
     visibleTab = 'Home';
     creatingChannel = false;
     creatingDMorGMTeammates: string[] = [];
-    pushProxyVerification: {[x: string]: string | undefined} = {};
+
+    private pushProxyVerification: {[x: string]: string | undefined} = {};
 
     // As of today, the server sends a duplicated event to add the user to the team.
     // If we do not handle this, this ends up showing some errors in the database, apart
@@ -146,6 +147,14 @@ class EphemeralStore {
 
     isAddingToTeam = (teamId: string) => {
         return this.addingTeam.has(teamId);
+    };
+
+    setPushProxyVerificationState = (serverUrl: string, state: string) => {
+        this.pushProxyVerification[serverUrl] = state;
+    };
+
+    getPuhsProxyVerificationState = (serverUrl: string) => {
+        return this.pushProxyVerification[serverUrl];
     };
 }
 
