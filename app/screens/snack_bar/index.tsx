@@ -71,12 +71,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 type SnackBarProps = {
     componentId: string;
-    onUndoPress?: () => void;
+    onAction?: () => void;
     barType: keyof typeof SNACK_BAR_TYPE;
     sourceScreen: typeof Screens[keyof typeof Screens];
 }
 
-const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarProps) => {
+const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps) => {
     const [showSnackBar, setShowSnackBar] = useState<boolean | undefined>();
     const intl = useIntl();
     const theme = useTheme();
@@ -88,11 +88,6 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
 
     const config = SNACK_BAR_CONFIG[barType];
     const styles = getStyleSheet(theme);
-
-    const onPressHandler = useCallback(() => {
-        dismissOverlay(componentId);
-        onUndoPress?.();
-    }, [onUndoPress, componentId]);
 
     const snackBarStyle = useMemo(() => {
         const diffWidth = windowWidth - TABLET_SIDEBAR_WIDTH;
@@ -146,9 +141,9 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
         };
     }, [offset.value, isPanned.value]);
 
-    const hideSnackBar = () => {
+    const hideSnackBar = useCallback(() => {
         setShowSnackBar(false);
-    };
+    }, []);
 
     const stopTimers = () => {
         if (baseTimer.current) {
@@ -174,6 +169,10 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
         offset.value = withTiming(200, {duration}, () => runOnJS(hideSnackBar)());
     };
 
+    const onUndoPressHandler = useCallback(() => {
+        animateHiding(false);
+    }, [animateHiding]);
+
     // This effect hides the snack bar after 3 seconds
     useEffect(() => {
         baseTimer.current = setTimeout(() => {
@@ -188,9 +187,10 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
     // This effect dismisses the Navigation Overlay after we have hidden the snack bar
     useEffect(() => {
         if (showSnackBar === false) {
+            onAction?.();
             dismissOverlay(componentId);
         }
-    }, [showSnackBar]);
+    }, [showSnackBar, onAction]);
 
     // This effect checks if we are navigating away and if so, it dismisses the snack bar
     useEffect(() => {
@@ -222,8 +222,8 @@ const SnackBar = ({barType, componentId, onUndoPress, sourceScreen}: SnackBarPro
                         textStyle={styles.text}
                         style={styles.toast}
                     >
-                        {config.canUndo && onUndoPress && (
-                            <TouchableOpacity onPress={onPressHandler}>
+                        {config.canUndo && (
+                            <TouchableOpacity onPress={onUndoPressHandler}>
                                 <Text style={styles.undo}>
                                     {intl.formatMessage({
                                         id: 'snack.bar.undo',

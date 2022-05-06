@@ -1063,7 +1063,7 @@ export async function searchAllChannels(serverUrl: string, term: string, archive
     }
 }
 
-export const updateChannelNotifyProps = async (serverUrl: string, userId: string, channelId: string, props: ChannelNotifyProps) => {
+export const updateChannelNotifyProps = async (serverUrl: string, channelId: string, props: Partial<ChannelNotifyProps>) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -1077,7 +1077,11 @@ export const updateChannelNotifyProps = async (serverUrl: string, userId: string
     }
 
     try {
+        const userId = await getCurrentUserId(database);
         const notifyProps = {...props, channel_id: channelId, user_id: userId};
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore only feed the changed notification property
         await client.updateChannelNotifyProps(notifyProps);
 
         const channelSettings = await queryMyChannelSettingsByIds(database, [channelId]).fetch();
