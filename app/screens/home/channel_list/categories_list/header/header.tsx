@@ -40,6 +40,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     subHeadingStyles: {
         color: changeOpacity(theme.sidebarText, 0.64),
+        paddingRight: 30,
         ...typography('Heading', 50),
     },
     headerRow: {
@@ -194,6 +195,8 @@ const ChannelListHeader = ({
                 </View>
                 <View style={styles.subHeadingView}>
                     <Text
+                        numberOfLines={1}
+                        ellipsizeMode='tail'
                         style={styles.subHeadingStyles}
                         testID='channel_list_header.server_display_name'
                     >
@@ -221,6 +224,8 @@ const ChannelListHeader = ({
             <View style={styles.noTeamHeaderRow}>
                 <View style={styles.noTeamHeaderRow}>
                     <Text
+                        numberOfLines={1}
+                        ellipsizeMode='tail'
                         style={styles.noTeamHeadingStyles}
                         testID='channel_list_header.team_display_name'
                     >

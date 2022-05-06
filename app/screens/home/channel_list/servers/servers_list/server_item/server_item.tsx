@@ -21,7 +21,7 @@ import {Events} from '@constants';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
-import {subscribeServerUnreadAndMentions} from '@database/subscription/unreads';
+import {subscribeServerUnreadAndMentions, UnreadObserverArgs} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
 import {dismissBottomSheet} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -35,7 +35,6 @@ import Options from './options';
 import WebSocket from './websocket';
 
 import type ServersModel from '@typings/database/models/app/servers';
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type {Subscription} from 'rxjs';
 
 type Props = {
@@ -65,7 +64,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
         height: 72,
         justifyContent: 'center',
-        paddingHorizontal: 18,
+        paddingLeft: 18,
     },
     container: {
         alignItems: 'center',
@@ -77,6 +76,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     details: {
         marginLeft: 14,
+        flex: 1,
     },
     logout: {
         backgroundColor: theme.centerChannelBg,
@@ -160,12 +160,13 @@ const ServerItem = ({
         displayName = intl.formatMessage({id: 'servers.default', defaultMessage: 'Default Server'});
     }
 
-    const unreadsSubscription = ({myChannels, threadMentionCount}: {myChannels: MyChannelModel[]; threadMentionCount: number}) => {
+    const unreadsSubscription = ({myChannels, settings, threadMentionCount}: UnreadObserverArgs) => {
         let mentions = 0;
         let isUnread = false;
         for (const myChannel of myChannels) {
+            const isMuted = settings?.[myChannel.id]?.mark_unread === 'mention';
             mentions += myChannel.mentionsCount;
-            isUnread = isUnread || myChannel.isUnread;
+            isUnread = isUnread || (myChannel.isUnread && !isMuted);
         }
         mentions += threadMentionCount;
 
@@ -401,7 +402,13 @@ const ServerItem = ({
                             }
                             <View style={styles.details}>
                                 <View style={styles.nameView}>
-                                    <Text style={styles.name}>{displayName}</Text>
+                                    <Text
+                                        numberOfLines={1}
+                                        ellipsizeMode='tail'
+                                        style={styles.name}
+                                    >
+                                        {displayName}
+                                    </Text>
                                     {pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED && (
                                         <CompassIcon
                                             name='alert-outline'
@@ -411,7 +418,13 @@ const ServerItem = ({
                                         />
                                     )}
                                 </View>
-                                <Text style={styles.url}>{removeProtocol(stripTrailingSlashes(server.url))}</Text>
+                                <Text
+                                    numberOfLines={1}
+                                    ellipsizeMode='tail'
+                                    style={styles.url}
+                                >
+                                    {removeProtocol(stripTrailingSlashes(server.url))}
+                                </Text>
                             </View>
                         </View>
                         {!server.lastActiveAt && !switching &&

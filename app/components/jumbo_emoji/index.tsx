@@ -92,7 +92,10 @@ const JumboEmoji = ({baseTextStyle, isEdited, value}: JumboEmojiProps) => {
         ];
 
         return (
-            <Text style={styles}>
+            <Text
+                style={styles}
+                testID='edited_indicator'
+            >
                 {spacer}
                 <FormattedText
                     id='post_message_view.edited'

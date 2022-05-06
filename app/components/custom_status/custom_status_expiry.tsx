@@ -126,11 +126,12 @@ const CustomStatusExpiry = ({currentUser, isMilitaryTime, showPrefix, showTimeCo
 };
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    isMilitaryTime: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observe().pipe(
-        switchMap(
-            (preferences) => of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)),
+    isMilitaryTime: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).
+        observeWithColumns(['value']).pipe(
+            switchMap(
+                (preferences) => of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)),
+            ),
         ),
-    ),
 }));
 
 export default withDatabase(enhanced(CustomStatusExpiry));

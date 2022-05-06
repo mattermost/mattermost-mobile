@@ -11,7 +11,6 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {debounce} from '@helpers/api/general';
 import {useIsTablet} from '@hooks/device';
-import {sortPostsByNewest} from '@utils/post';
 
 import Intro from './intro';
 
@@ -20,10 +19,7 @@ import type PostModel from '@typings/database/models/servers/post';
 type Props = {
     channelId: string;
     contentContainerStyle?: StyleProp<ViewStyle>;
-    currentTimezone: string | null;
-    currentUsername: string;
     isCRTEnabled: boolean;
-    isTimezoneEnabled: boolean;
     lastViewedAt: number;
     nativeID: string;
     posts: PostModel[];
@@ -36,8 +32,8 @@ const styles = StyleSheet.create({
 });
 
 const ChannelPostList = ({
-    channelId, contentContainerStyle, currentTimezone, currentUsername,
-    isCRTEnabled, isTimezoneEnabled, lastViewedAt, nativeID, posts, shouldShowJoinLeaveMessages,
+    channelId, contentContainerStyle, isCRTEnabled,
+    lastViewedAt, nativeID, posts, shouldShowJoinLeaveMessages,
 }: Props) => {
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
@@ -47,7 +43,7 @@ const ChannelPostList = ({
     const onEndReached = useCallback(debounce(async () => {
         if (!fetchingPosts.current && canLoadPosts.current && posts.length) {
             fetchingPosts.current = true;
-            const lastPost = sortPostsByNewest(posts)[0];
+            const lastPost = posts[posts.length - 1];
             const result = await fetchPostsBefore(serverUrl, channelId, lastPost.id);
             canLoadPosts.current = ((result as ProcessedPosts).posts?.length ?? 1) > 0;
             fetchingPosts.current = false;
@@ -60,10 +56,7 @@ const ChannelPostList = ({
         <PostList
             channelId={channelId}
             contentContainerStyle={contentContainerStyle}
-            currentTimezone={currentTimezone}
-            currentUsername={currentUsername}
             isCRTEnabled={isCRTEnabled}
-            isTimezoneEnabled={isTimezoneEnabled}
             footer={intro}
             lastViewedAt={lastViewedAt}
             location={Screens.CHANNEL}

@@ -2,21 +2,21 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Text, TextStyle} from 'react-native';
+import {StyleProp, TextStyle, View} from 'react-native';
 
 import Emoji from '@components/emoji';
 
 interface ComponentProps {
     customStatus: UserCustomStatus;
     emojiSize?: number;
-    style?: TextStyle;
+    style?: StyleProp<TextStyle>;
     testID?: string;
 }
 
 const CustomStatusEmoji = ({customStatus, emojiSize = 16, style, testID}: ComponentProps) => {
     const testIdPrefix = testID ? `${testID}.` : '';
     return (
-        <Text
+        <View
             style={style}
             testID={`${testIdPrefix}custom_status_emoji.${customStatus.emoji}`}
         >
@@ -24,7 +24,7 @@ const CustomStatusEmoji = ({customStatus, emojiSize = 16, style, testID}: Compon
                 size={emojiSize}
                 emojiName={customStatus.emoji!}
             />
-        </Text>
+        </View>
     );
 };
 

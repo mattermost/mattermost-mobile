@@ -26,7 +26,7 @@ import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
 
-export async function switchToChannel(serverUrl: string, channelId: string, teamId?: string, prepareRecordsOnly = false) {
+export async function switchToChannel(serverUrl: string, channelId: string, teamId?: string, skipLastUnread = false, prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -63,7 +63,7 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                 }
 
                 const commonValues: PrepareCommonSystemValuesArgs = {
-                    lastUnreadChannelId: member.isUnread ? channelId : '',
+                    lastUnreadChannelId: member.isUnread && !skipLastUnread ? channelId : '',
                 };
 
                 if ((system.currentTeamId !== toTeamId) || (system.currentChannelId !== channelId)) {

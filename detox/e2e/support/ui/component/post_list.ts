@@ -31,6 +31,7 @@ class PostList {
         const {
             postItem,
             postItemBlockQuote,
+            postItemEditedIndicator,
             postItemEmoji,
             postItemHeaderCommentedOn,
             postItemHeaderDateTime,
@@ -54,6 +55,7 @@ class PostList {
         return {
             postListPostItem: postItem,
             postListPostItemBlockQuote: postItemBlockQuote,
+            postListPostItemEditedIndicator: postItemEditedIndicator,
             postListPostItemEmoji: postItemEmoji,
             postListPostItemHeaderCommentedOn: postItemHeaderCommentedOn,
             postListPostItemHeaderDateTime: postItemHeaderDateTime,

@@ -137,6 +137,8 @@ exports[`components/channel_list/header Channel List Header Component should mat
     }
   >
     <Text
+      ellipsizeMode="tail"
+      numberOfLines={1}
       style={
         Object {
           "color": "rgba(255,255,255,0.64)",
@@ -144,6 +146,7 @@ exports[`components/channel_list/header Channel List Header Component should mat
           "fontSize": 11,
           "fontWeight": "600",
           "lineHeight": 16,
+          "paddingRight": 30,
         }
       }
       testID="channel_list_header.server_display_name"

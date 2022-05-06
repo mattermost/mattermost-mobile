@@ -76,7 +76,6 @@ const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, un
         return (
             <ChannelItem
                 channel={item}
-                collapsed={false}
                 isInfo={true}
                 onPress={onPress}
                 showTeamName={showTeamName}

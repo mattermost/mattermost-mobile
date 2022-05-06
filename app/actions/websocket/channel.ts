@@ -251,9 +251,10 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
 
     try {
         if (userId === currentUser?.id) {
-            if (EphemeralStore.isAddingToTeam(teamId)) {
+            if (EphemeralStore.isAddingToTeam(teamId) || EphemeralStore.isJoiningChannel(channelId)) {
                 return;
             }
+
             const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
             if (channels && memberships) {
                 const prepare = await prepareMyChannelsForTeam(operator, teamId, channels, memberships);
@@ -300,7 +301,10 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
                 }));
             }
         }
-        await operator.batchRecords(models);
+
+        if (models.length) {
+            await operator.batchRecords(models);
+        }
 
         await fetchChannelStats(serverUrl, channelId, false);
     } catch {
@@ -358,7 +362,7 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
                                 models.push(...switchToGlobalThreadsModels);
                             }
                         } else {
-                            const {models: switchChannelModels} = await switchToChannel(serverUrl, channelToJumpTo, '', true);
+                            const {models: switchChannelModels} = await switchToChannel(serverUrl, channelToJumpTo, '', false, true);
                             if (switchChannelModels) {
                                 models.push(...switchChannelModels);
                             }
