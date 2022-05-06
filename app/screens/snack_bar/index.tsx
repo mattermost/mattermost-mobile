@@ -86,6 +86,7 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
     const isPanned = useSharedValue(false);
     const baseTimer = useRef<NodeJS.Timeout>();
     const mounted = useRef(false);
+    const userHasUndo = useRef(false);
 
     const config = SNACK_BAR_CONFIG[barType];
     const styles = getStyleSheet(theme);
@@ -173,6 +174,7 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
     };
 
     const onUndoPressHandler = () => {
+        userHasUndo.current = true;
         animateHiding(false);
     };
 
@@ -194,7 +196,9 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
     // This effect dismisses the Navigation Overlay after we have hidden the snack bar
     useEffect(() => {
         if (showSnackBar === false) {
-            onAction?.();
+            if (!userHasUndo?.current) {
+                onAction?.();
+            }
             dismissOverlay(componentId);
         }
     }, [showSnackBar, onAction]);
