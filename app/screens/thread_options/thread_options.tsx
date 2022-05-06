@@ -92,7 +92,6 @@ const ThreadOptions = ({
             key='mark-as-unread'
             teamId={team.id}
             thread={thread}
-            post={post}
         />,
         <SaveOption
             key='save'
@@ -108,6 +107,7 @@ const ThreadOptions = ({
             <CopyPermalinkOption
                 key='copy-link'
                 post={post}
+                sourceScreen={Screens.THREAD_OPTIONS}
             />,
         );
     }

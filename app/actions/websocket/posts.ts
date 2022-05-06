@@ -14,7 +14,7 @@ import {ActionType, Events, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
-import {getCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
+import {getCurrentChannelId, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
@@ -239,7 +239,11 @@ export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage
 
                 const channel = await getChannelById(database, post.channel_id);
                 if (channel) {
-                    fetchThread(serverUrl, channel.teamId, post.root_id);
+                    let {teamId} = channel;
+                    if (!teamId) {
+                        teamId = await getCurrentTeamId(database); // In case of DM/GM
+                    }
+                    fetchThread(serverUrl, teamId, post.root_id);
                 }
             }
         }

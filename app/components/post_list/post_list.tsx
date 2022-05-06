@@ -116,8 +116,12 @@ const PostList = ({
     }, [orderedPosts]);
 
     useEffect(() => {
-        listRef.current?.scrollToOffset({offset: 0, animated: false});
-    }, [channelId]);
+        const t = setTimeout(() => {
+            listRef.current?.scrollToOffset({offset: 0, animated: false});
+        }, 200);
+
+        return () => clearTimeout(t);
+    }, [channelId, rootId]);
 
     useEffect(() => {
         const scrollToBottom = (screen: string) => {

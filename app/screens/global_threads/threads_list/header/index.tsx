@@ -143,14 +143,12 @@ const Header = ({setTab, tab, teamId, testID, unreadsCount}: Props) => {
         hasUnreads ? undefined : styles.markAllReadIconDisabled,
     ], [styles, hasUnreads]);
 
-    const testIDPrefix = `${testID}.header`;
-
     return (
         <View style={styles.container}>
             <View style={styles.menuContainer}>
                 <TouchableOpacity
                     onPress={handleViewAllThreads}
-                    testID={`${testIDPrefix}.all_threads`}
+                    testID={`${testID}.all_threads.button`}
                 >
                     <View style={allThreadsContainerStyle}>
                         <FormattedText
@@ -162,7 +160,7 @@ const Header = ({setTab, tab, teamId, testID, unreadsCount}: Props) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                     onPress={handleViewUnreadThreads}
-                    testID={`${testIDPrefix}.unread_threads`}
+                    testID={`${testID}.unread_threads.button`}
                 >
                     <View style={unreadsContainerStyle}>
                         <View>
@@ -174,7 +172,7 @@ const Header = ({setTab, tab, teamId, testID, unreadsCount}: Props) => {
                             {hasUnreads ? (
                                 <View
                                     style={styles.unreadsDot}
-                                    testID={`${testIDPrefix}.unreads_dot`}
+                                    testID={`${testID}.unreads_dot`}
                                 />
                             ) : null}
                         </View>
@@ -185,7 +183,7 @@ const Header = ({setTab, tab, teamId, testID, unreadsCount}: Props) => {
                 <TouchableOpacity
                     disabled={!hasUnreads}
                     onPress={handleMarkAllAsRead}
-                    testID={`${testIDPrefix}.mark_all_read`}
+                    testID={`${testID}.mark_all_as_read.button`}
                 >
                     <CompassIcon
                         name='playlist-check'

@@ -26,6 +26,7 @@ import Preferences from './preferences';
 import Profile from './profile';
 import Screens from './screens';
 import ServerErrors from './server_errors';
+import SnackBar from './snack_bar';
 import Sso from './sso';
 import SupportedServer from './supported_server';
 import View from './view';
@@ -35,9 +36,9 @@ export {
     ActionType,
     Apps,
     Categories,
+    Channel,
     Config,
     CustomStatusDuration,
-    Channel,
     Database,
     DateTime,
     DeepLink,
@@ -57,8 +58,9 @@ export {
     Profile,
     Screens,
     ServerErrors,
-    SupportedServer,
+    SnackBar,
     Sso,
+    SupportedServer,
     View,
     WebsocketEvents,
 };
