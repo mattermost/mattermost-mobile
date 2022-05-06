@@ -17,11 +17,12 @@ type Props = {
     category: CategoryModel;
     limit: number;
     onChannelSwitch: (channelId: string) => void;
+    unreadChannelIds: Set<string>;
 };
 
 const extractKey = (item: ChannelModel) => item.id;
 
-const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChannelSwitch}: Props) => {
+const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChannelSwitch, unreadChannelIds}: Props) => {
     const ids = useMemo(() => {
         let filteredChannels = sortedChannels;
 
@@ -35,6 +36,10 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChan
         }
         return filteredChannels;
     }, [category.type, limit, hiddenChannelIds, sortedChannels]);
+
+    const unread = useMemo(() => {
+        return ids.filter((c) => unreadChannelIds.has(c.id));
+    }, [ids]);
 
     const renderItem = useCallback(({item}: {item: ChannelModel}) => {
         return (
@@ -54,27 +59,40 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChan
     }, [category.collapsed]);
 
     const height = ids.length ? ids.length * 40 : 0;
+    const unreadHeight = unread.length ? unread.length * 40 : 0;
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
-            height: withTiming(sharedValue.value ? 1 : height, {duration: 300}),
+            height: withTiming(sharedValue.value ? 0 : height, {duration: 300}),
             opacity: withTiming(sharedValue.value ? 0 : 1, {duration: sharedValue.value ? 200 : 300, easing: Easing.inOut(Easing.exp)}),
         };
     }, [height]);
 
-    return (
-        <Animated.View
-            style={animatedStyle}
-        >
-            <FlatList
-                data={ids}
-                renderItem={renderItem}
-                keyExtractor={extractKey}
+    const unreadAnimatedStyle = useAnimatedStyle(() => {
+        return {
+            height: withTiming(sharedValue.value ? unreadHeight : 0, {duration: sharedValue.value ? 600 : 200}),
+            opacity: withTiming(sharedValue.value ? 1 : 0, {duration: 100, easing: Easing.inOut(Easing.exp)}),
+        };
+    }, [unreadHeight]);
 
-                // @ts-expect-error strictMode not exposed on the types
-                strictMode={true}
-            />
-        </Animated.View>
+    return (
+        <>
+            <Animated.View style={unreadAnimatedStyle}>
+                {category.collapsed && unread.map((item) => renderItem({item}))}
+            </Animated.View>
+            <Animated.View
+                style={animatedStyle}
+            >
+                <FlatList
+                    data={ids}
+                    renderItem={renderItem}
+                    keyExtractor={extractKey}
+
+                    // @ts-expect-error strictMode not exposed on the types
+                    strictMode={true}
+                />
+            </Animated.View>
+        </>
     );
 };
 
