@@ -59,35 +59,25 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChan
     const unreadHeight = unreadChannels.length ? unreadChannels.length * 40 : 0;
 
     const animatedStyle = useAnimatedStyle(() => {
+        const opacity = unreadHeight > 0 ? 1 : 0;
+        const heightDuration = unreadHeight > 0 ? 200 : 300;
         return {
-            height: withTiming(sharedValue.value ? 0 : height, {duration: 300}),
-            opacity: withTiming(sharedValue.value ? 0 : 1, {duration: sharedValue.value ? 200 : 300, easing: Easing.inOut(Easing.exp)}),
+            height: withTiming(sharedValue.value ? unreadHeight : height, {duration: heightDuration}),
+            opacity: withTiming(sharedValue.value ? opacity : 1, {duration: sharedValue.value ? 200 : 300, easing: Easing.inOut(Easing.exp)}),
         };
-    }, [height]);
-
-    const unreadAnimatedStyle = useAnimatedStyle(() => {
-        return {
-            height: withTiming(sharedValue.value ? unreadHeight : 0, {duration: sharedValue.value ? 600 : 200}),
-            opacity: withTiming(sharedValue.value ? 1 : 0, {duration: 100, easing: Easing.inOut(Easing.exp)}),
-        };
-    }, [unreadHeight]);
+    }, [height, unreadHeight]);
 
     return (
-        <>
-            {category.collapsed && <Animated.View style={unreadAnimatedStyle}>
-                {unreadChannels.map((item) => renderItem({item}))}
-            </Animated.View>}
-            <Animated.View style={animatedStyle}>
-                <FlatList
-                    data={ids}
-                    renderItem={renderItem}
-                    keyExtractor={extractKey}
+        <Animated.View style={animatedStyle}>
+            <FlatList
+                data={category.collapsed ? unreadChannels : ids}
+                renderItem={renderItem}
+                keyExtractor={extractKey}
 
-                    // @ts-expect-error strictMode not exposed on the types
-                    strictMode={true}
-                />
-            </Animated.View>
-        </>
+                // @ts-expect-error strictMode not exposed on the types
+                strictMode={true}
+            />
+        </Animated.View>
     );
 };
 

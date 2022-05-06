@@ -183,8 +183,8 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
         sortedChannels: filtered,
         category: observedCategory,
         unreadChannels: sortedChannels.pipe(
-            combineLatestWith(filterUnreads),
-            map(([sorted, unreadIds]) => sorted.filter((c) => c && unreadIds.has(c.id))),
+            combineLatestWith(filterUnreads, unreadsOnTop),
+            map(([sorted, unreadIds, unreadsTop]) => (unreadsTop ? [] : sorted.filter((c) => c && unreadIds.has(c.id)))),
         ),
     };
 });
