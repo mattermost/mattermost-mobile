@@ -10,12 +10,15 @@ import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import {THREAD_ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useAppState} from '@hooks/device';
+import useDidUpdate from '@hooks/did_update';
+import {popTopScreen} from '@screens/navigation';
 
 import ThreadPostList from './thread_post_list';
 
 import type PostModel from '@typings/database/models/servers/post';
 
 type ThreadProps = {
+    componentId: string;
     rootPost?: PostModel;
 };
 
@@ -27,10 +30,16 @@ const getStyleSheet = StyleSheet.create(() => ({
     },
 }));
 
-const Thread = ({rootPost}: ThreadProps) => {
+const Thread = ({componentId, rootPost}: ThreadProps) => {
     const appState = useAppState();
     const styles = getStyleSheet();
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
+
+    useDidUpdate(() => {
+        if (!rootPost) {
+            popTopScreen(componentId);
+        }
+    }, [componentId, rootPost]);
 
     return (
         <FreezeScreen>
