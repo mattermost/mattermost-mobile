@@ -89,7 +89,6 @@ function Typing({
             return;
         }
 
-        const isShown = Boolean(typing.current.length);
         typing.current = typing.current.filter(({id, now}) => id !== msg.userId && now !== msg.now);
 
         if (timeoutToDisappear.current) {
@@ -97,7 +96,7 @@ function Typing({
             timeoutToDisappear.current = undefined;
         }
 
-        if (isShown && typing.current.length === 0) {
+        if (typing.current.length === 0) {
             timeoutToDisappear.current = setTimeout(() => {
                 setRefresh(Date.now());
                 timeoutToDisappear.current = undefined;
