@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Text, TouchableOpacity, useWindowDimensions, ViewStyle} from 'react-native';
 import {Gesture, GestureDetector, GestureHandlerRootView} from 'react-native-gesture-handler';
@@ -85,6 +85,7 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
     const offset = useSharedValue(0);
     const isPanned = useSharedValue(false);
     const baseTimer = useRef<NodeJS.Timeout>();
+    const mounted = useRef(false);
 
     const config = SNACK_BAR_CONFIG[barType];
     const styles = getStyleSheet(theme);
@@ -141,12 +142,14 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
         };
     }, [offset.value, isPanned.value]);
 
-    const hideSnackBar = useCallback(() => {
-        setShowSnackBar(false);
-    }, []);
+    const hideSnackBar = () => {
+        if (mounted?.current) {
+            setShowSnackBar(false);
+        }
+    };
 
     const stopTimers = () => {
-        if (baseTimer.current) {
+        if (baseTimer?.current) {
             clearTimeout(baseTimer.current);
         }
     };
@@ -169,19 +172,23 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
         offset.value = withTiming(200, {duration}, () => runOnJS(hideSnackBar)());
     };
 
-    const onUndoPressHandler = useCallback(() => {
+    const onUndoPressHandler = () => {
         animateHiding(false);
-    }, [animateHiding]);
+    };
 
     // This effect hides the snack bar after 3 seconds
     useEffect(() => {
+        mounted.current = true;
         baseTimer.current = setTimeout(() => {
             if (!isPanned.value) {
                 animateHiding(false);
             }
         }, 3000);
 
-        return () => stopTimers();
+        return () => {
+            stopTimers();
+            mounted.current = false;
+        };
     }, [isPanned.value]);
 
     // This effect dismisses the Navigation Overlay after we have hidden the snack bar
