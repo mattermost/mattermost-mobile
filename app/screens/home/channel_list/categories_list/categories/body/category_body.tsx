@@ -17,12 +17,12 @@ type Props = {
     category: CategoryModel;
     limit: number;
     onChannelSwitch: (channelId: string) => void;
-    unreadChannelIds: Set<string>;
+    unreadChannels: ChannelModel[];
 };
 
 const extractKey = (item: ChannelModel) => item.id;
 
-const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChannelSwitch, unreadChannelIds}: Props) => {
+const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChannelSwitch, unreadChannels}: Props) => {
     const ids = useMemo(() => {
         let filteredChannels = sortedChannels;
 
@@ -37,10 +37,6 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChan
         return filteredChannels;
     }, [category.type, limit, hiddenChannelIds, sortedChannels]);
 
-    const unread = useMemo(() => {
-        return ids.filter((c) => unreadChannelIds.has(c.id));
-    }, [ids]);
-
     const renderItem = useCallback(({item}: {item: ChannelModel}) => {
         return (
             <ChannelItem
@@ -48,6 +44,7 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChan
                 testID={`category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_list_item`}
                 onPress={onChannelSwitch}
                 isCategoryMuted={category.muted}
+                key={item.id}
             />
         );
     }, [onChannelSwitch]);
@@ -59,7 +56,7 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChan
     }, [category.collapsed]);
 
     const height = ids.length ? ids.length * 40 : 0;
-    const unreadHeight = unread.length ? unread.length * 40 : 0;
+    const unreadHeight = unreadChannels.length ? unreadChannels.length * 40 : 0;
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
@@ -77,12 +74,10 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChan
 
     return (
         <>
-            <Animated.View style={unreadAnimatedStyle}>
-                {category.collapsed && unread.map((item) => renderItem({item}))}
-            </Animated.View>
-            <Animated.View
-                style={animatedStyle}
-            >
+            {category.collapsed && <Animated.View style={unreadAnimatedStyle}>
+                {unreadChannels.map((item) => renderItem({item}))}
+            </Animated.View>}
+            <Animated.View style={animatedStyle}>
                 <FlatList
                     data={ids}
                     renderItem={renderItem}
