@@ -55,11 +55,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     subtitleContainer: {
         flexDirection: 'row',
         justifyContent: Platform.select({android: 'flex-start', ios: 'center'}),
+        left: Platform.select({ios: undefined, default: 3}),
     },
     subtitle: {
         color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
-        fontFamily: 'OpenSans',
-        fontSize: 12,
+        ...typography('Body', 75),
         lineHeight: 12,
         marginBottom: 8,
         marginTop: 2,

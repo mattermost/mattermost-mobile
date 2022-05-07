@@ -131,6 +131,9 @@ Navigation.setDefaultOptions({
             fontSize: 18,
             fontWeight: '600',
         },
+        backButton: {
+            enableMenu: false,
+        },
         subtitle: {
             fontFamily: 'OpenSans',
             fontSize: 12,
