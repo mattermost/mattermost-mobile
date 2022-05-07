@@ -12,7 +12,7 @@ import Categories from './categories';
 import ChannelListHeader from './header';
 import LoadChannelsError from './load_channels_error';
 import LoadTeamsError from './load_teams_error';
-import SearchField from './search';
+import SubHeader from './subheader';
 import ThreadsButton from './threads_button';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -68,7 +68,7 @@ const CategoriesList = ({channelsCount, currentTeamId, iconPad, isCRTEnabled, is
     } else {
         content = (
             <>
-                <SearchField/>
+                <SubHeader/>
                 {isCRTEnabled && <ThreadsButton/>}
                 <Categories
                     currentTeamId={currentTeamId}

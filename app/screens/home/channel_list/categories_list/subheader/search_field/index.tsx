@@ -18,7 +18,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flexDirection: 'row',
         justifyContent: 'flex-start',
-        width: '100%',
+        flex: 1,
         backgroundColor: changeOpacity(theme.sidebarText, 0.12),
         borderRadius: 8,
         padding: 8,
