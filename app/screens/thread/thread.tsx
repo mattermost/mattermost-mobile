@@ -8,6 +8,7 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
+import RoundedHeaderContext from '@components/rounded_header_context';
 import {THREAD_ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useAppState} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
@@ -24,15 +25,12 @@ type ThreadProps = {
 
 const edges: Edge[] = ['left', 'right'];
 
-const getStyleSheet = StyleSheet.create(() => ({
-    flex: {
-        flex: 1,
-    },
-}));
+const styles = StyleSheet.create({
+    flex: {flex: 1},
+});
 
 const Thread = ({componentId, rootPost}: ThreadProps) => {
     const appState = useAppState();
-    const styles = getStyleSheet();
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
 
     useDidUpdate(() => {
@@ -49,6 +47,7 @@ const Thread = ({componentId, rootPost}: ThreadProps) => {
                 edges={edges}
                 testID='thread.screen'
             >
+                <RoundedHeaderContext/>
                 {Boolean(rootPost?.id) &&
                 <>
                     <View style={styles.flex}>
