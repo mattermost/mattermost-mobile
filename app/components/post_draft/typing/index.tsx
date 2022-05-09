@@ -43,6 +43,7 @@ function Typing({
     const typingAnimatedStyle = useAnimatedStyle(() => {
         return {
             height: withTiming(typingHeight.value),
+            marginBottom: 4,
         };
     });
 
