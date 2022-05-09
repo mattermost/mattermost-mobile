@@ -1,13 +1,17 @@
 # Server Database - Schema Version 1
+
 # Please bump the version by 1, any time the schema changes.
+
 # Also, include the migration plan under app/database/migration/server,
+
 # update all models, relationships and types.
+
 # Lastly, export all PNGs, SVGs, etc under the source project (./docs/database)
+
 # If you have any question/queries that you would like to clarify, please reach out to the Mobile Platform Team.
 
+## Category
 
-Category
--
 id PK string # server-generated
 collapsed bool
 display_name string
@@ -15,19 +19,17 @@ muted bool
 sort_order number
 sorting string # alpha, recent, manual
 team_id string INDEX FK >- Team.id
-type string  # 'channels' | 'direct_messages' | 'favorites' | 'custom'
+type string # 'channels' | 'direct_messages' | 'favorites' | 'custom'
 
+## CategoryChannel
 
-CategoryChannel
--
 id PK string # composition ID Team.id_Channel.id
 category_id string INDEX FK >- Category.id
 channel_id string INDEX
 sort_order number
 
+## Channel
 
-Channel
--
 id PK string FK - CategoryChannel.channel_id # server-generated
 create_at string
 creator_id string INDEX FK >- User.id
@@ -40,9 +42,8 @@ team_id string INDEX FK >- Team.id
 type string
 update_at number
 
+## ChannelInfo
 
-ChannelInfo
--
 id PK string FK - Channel.id# same value as Channel.id
 guest_count number
 header string
@@ -50,43 +51,65 @@ member_count number
 pinned_post_count number
 purpose string
 
-ChannelMembership
--
+## ChannelMembership
+
 id PK string # composition ID Channel.id-User.id
 channel_id string INDEX FK >- Channel.id
 user_id string INDEX FK >- User.id
 
-CustomEmoji
--
+## CustomEmoji
+
 id PK string # auto-generated
 name string
 
+## Draft
 
-Draft
--
 id PK string # auto-generated
-channel_id string  INDEX FK >- Channel.id
+channel_id string INDEX FK >- Channel.id
 files string #stringify (array)
 message string
 root_id string INDEX NULL FK >- Post.id
 
+## File
 
-File
--
 id PK string # server-generated
 extension string
 height number
 image_thumbnail string #base64 data string or filepath for video thumbnails
-local_path  string NULL
+local_path string NULL
 mime_type string
 name string
 post_id string INDEX FK >- Post.id
 size number
 width number
 
+## Group
 
-MyChannel
--
+id PK string # server-generated FK >- GroupChannel.group_id
+name string
+display_name string
+description string
+
+## GroupChannel
+
+id PK string # composition ID Group.id-Channel.id
+group_id string FK >- Group.id
+channel_id string FK >- Channel.id
+
+## GroupTeam
+
+id PK string # composition ID Group.id-Team.id
+group_id string FK >- Group.id
+team_id string FK >- Team.id
+
+## GroupMembership
+
+id PK string # composition ID Group.id-User.id
+group_id string FK >- Group.id
+user_id string INDEX FK >- User.id
+
+## MyChannel
+
 id PK string FK - Channel.id # same as Channel.id
 is_unread boolean
 last_post_at number
@@ -97,22 +120,18 @@ message_count number
 roles string
 viewed_at number
 
+## MyChannelSettings
 
-MyChannelSettings
--
 id PK string FK - MyChannel.id # same as Channel.id
 notify_props string
 
-
 MyTeam
-- 
-id PK string FK - Team.id # same as Team.id
-roles string
 
+- id PK string FK - Team.id # same as Team.id
+  roles string
 
+## Post
 
-Post
--
 id PK string # server generated
 channel_id string INDEX FK >- Channel.id
 create_at number
@@ -128,58 +147,51 @@ props string
 root_id string
 type string
 update_at number
-user_id string INDEX  FK >- User.id
+user_id string INDEX FK >- User.id
 
+## PostsInChannel
 
-PostsInChannel
--
-id PK string  # auto-generated
+id PK string # auto-generated
 channel_id string INDEX FK >- Channel.id
 earliest number
 latest number
 
+## PostsInThread
 
-PostsInThread
--
 id PK string # auto-generated
 earliest number
 latest number
 root_id string FK >- Post.id
 
+## Preference
 
-Preference
--
 id string PK # server-generated
 category string INDEX
 name string
 user_id string INDEX FK >- User.id
 value string
 
+## Reaction
 
-Reaction
--
 id PK string # server-generated
 create_at number
 emoji_name string
 post_id string INDEX FK >- Post.id
 user_id string INDEX FK >- User.id
 
+## Role
 
-Role
--
 id PK string # server-generated
 name string
 permissions string #stringify array
 
+## System
 
-System
--
 id PK string # SYSTEM_IDENTIFIERS
 value string
 
+## Team
 
-Team
--
 id PK string # server-generated
 allowed_domains string
 description string
@@ -191,31 +203,27 @@ name string
 type string
 update_at number
 
+## TeamChannelHistory
 
-TeamChannelHistory
--
 id PK string FK - Team.id # same as Team.id
 channel_ids string # stringified JSON array; FIFO
 
+## TeamMembership
 
-TeamMembership
--
 id PK string # auto-generated
 team_id string INDEX FK >- Team.id
 user_id string INDEX FK >- User.id
 
+## TeamSearchHistory
 
-TeamSearchHistory
--
 id PK string # auto-generated
 created_at number
 display_term string
 team_id string FK >- Team.id
 term string
 
+## Thread
 
-Thread
--
 id PK string FK - Post.id # similar to Post.id but for root post only
 is_following boolean
 last_reply_at number
@@ -225,24 +233,21 @@ unread_mentions number
 unread_replies number  
 viewed_at number
 
+## ThreadsInTeam
 
-ThreadsInTeam
--
 id PK string # auto-generated
 loaded_in_global_threads boolean
 team_id string INDEX FK >- Team.id
 thread_id string INDEX
 
+## ThreadParticipant # who is participating in this conversation
 
-ThreadParticipant # who is participating in this conversation
--
 id PK string # auto-generated
 thread_id string INDEX FK >- Thread.id
 user_id string INDEX FK >- User.id
 
+## User
 
-User
--
 id PK string # server generated
 auth_service string
 delete_at number
@@ -262,4 +267,4 @@ roles string
 status string
 timezone string
 update_at number
-username string 
+username string

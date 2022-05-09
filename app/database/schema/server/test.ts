@@ -16,6 +16,10 @@ const {
     CUSTOM_EMOJI,
     DRAFT,
     FILE,
+    GROUP,
+    GROUP_CHANNEL,
+    GROUP_MEMBERSHIP,
+    GROUP_TEAM,
     MY_CHANNEL,
     MY_CHANNEL_SETTINGS,
     MY_TEAM,
@@ -235,6 +239,56 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'post_id', type: 'string', isIndexed: true},
                         {name: 'size', type: 'number'},
                         {name: 'width', type: 'number'},
+                    ],
+                },
+                [GROUP]: {
+                    name: GROUP,
+                    unsafeSql: undefined,
+                    columns: {
+                        display_name: {name: 'display_name', type: 'string'},
+                        name: {name: 'name', type: 'string'},
+                        description: {name: 'description', type: 'string'},
+                    },
+                    columnArray: [
+                        {name: 'display_name', type: 'string'},
+                        {name: 'name', type: 'string'},
+                        {name: 'description', type: 'string'},
+                    ],
+                },
+                [GROUP_CHANNEL]: {
+                    name: GROUP_CHANNEL,
+                    unsafeSql: undefined,
+                    columns: {
+                        group_id: {name: 'group_id', type: 'string', isIndexed: true},
+                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
+                    },
+                    columnArray: [
+                        {name: 'group_id', type: 'string', isIndexed: true},
+                        {name: 'channel_id', type: 'string', isIndexed: true},
+                    ],
+                },
+                [GROUP_MEMBERSHIP]: {
+                    name: GROUP_MEMBERSHIP,
+                    unsafeSql: undefined,
+                    columns: {
+                        group_id: {name: 'group_id', type: 'string', isIndexed: true},
+                        user_id: {name: 'user_id', type: 'string', isIndexed: true},
+                    },
+                    columnArray: [
+                        {name: 'group_id', type: 'string', isIndexed: true},
+                        {name: 'user_id', type: 'string', isIndexed: true},
+                    ],
+                },
+                [GROUP_TEAM]: {
+                    name: GROUP_TEAM,
+                    unsafeSql: undefined,
+                    columns: {
+                        group_id: {name: 'group_id', type: 'string', isIndexed: true},
+                        team_id: {name: 'team_id', type: 'string', isIndexed: true},
+                    },
+                    columnArray: [
+                        {name: 'group_id', type: 'string', isIndexed: true},
+                        {name: 'team_id', type: 'string', isIndexed: true},
                     ],
                 },
                 [POSTS_IN_THREAD]: {

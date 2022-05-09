@@ -1,0 +1,39 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import {Query} from '@nozbe/watermelondb';
+import {lazy} from '@nozbe/watermelondb/decorators';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
+
+import type ChannelModel from './channel';
+import type TeamModel from './team';
+import type UserModel from './user';
+
+/**
+ * A Group is a collection of users, associated to teams and/or channels
+ */
+export default class GroupModel extends Model {
+    /** table (name) : Group */
+    static table: string;
+
+    /** associations : Describes every relationship to this table. */
+    static associations: Associations;
+
+    /** name : The name of the group */
+    name: string;
+
+    /** display_name : The display name for the group */
+    displayName: string;
+
+    /** description : A short description of the group */
+    description: string;
+
+    /** channels : All the channels associated with this group */
+    @lazy channels: Query<ChannelModel>;
+
+    /** teams : All the teams associated with this group */
+    @lazy teams: Query<TeamModel>;
+
+    /** members : All the members (users) of this group */
+    @lazy members: Query<UserModel>;
+}
