@@ -18,11 +18,14 @@ import ServerIcon from '@components/server_icon';
 import TutorialHighlight from '@components/tutorial_highlight';
 import TutorialSwipeLeft from '@components/tutorial_highlight/swipe_left';
 import {Events} from '@constants';
+import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {subscribeServerUnreadAndMentions, UnreadObserverArgs} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
 import {dismissBottomSheet} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
+import {alertPushProxyError, alertPushProxyUnknown} from '@utils/push_proxy';
 import {alertServerError, alertServerLogout, alertServerRemove, editServer, loginToServer} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -39,6 +42,7 @@ type Props = {
     isActive: boolean;
     server: ServersModel;
     tutorialWatched: boolean;
+    pushProxyStatus: string;
 }
 
 type BadgeValues = {
@@ -86,6 +90,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     name: {
         color: theme.centerChannelColor,
         ...typography('Body', 200, 'SemiBold'),
+        flex: 1,
     },
     offline: {
         opacity: 0.5,
@@ -105,6 +110,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     url: {
         color: changeOpacity(theme.centerChannelColor, 0.72),
         ...typography('Body', 75, 'Regular'),
+        marginRight: 7,
     },
     switching: {
         height: 40,
@@ -117,9 +123,28 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     tutorialTablet: {
         top: -80,
     },
+    nameView: {
+        flexDirection: 'row',
+        marginRight: 7,
+    },
+    pushAlert: {
+        marginLeft: 7,
+        alignSelf: 'center',
+    },
+    pushAlertText: {
+        color: theme.errorTextColor,
+        ...typography('Body', 75, 'Regular'),
+        marginBottom: 12,
+    },
 }));
 
-const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
+const ServerItem = ({
+    highlight,
+    isActive,
+    server,
+    tutorialWatched,
+    pushProxyStatus,
+}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -201,12 +226,26 @@ const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
     const handleLogin = useCallback(async () => {
         swipeable.current?.close();
         setSwitching(true);
-        const result = await doPing(server.url);
+        const result = await doPing(server.url, true);
         if (result.error) {
             alertServerError(intl, result.error as ClientErrorProps);
             setSwitching(false);
             return;
         }
+
+        switch (result.canReceiveNotifications) {
+            case PUSH_PROXY_RESPONSE_NOT_AVAILABLE:
+                EphemeralStore.setPushProxyVerificationState(server.url, PUSH_PROXY_STATUS_NOT_AVAILABLE);
+                alertPushProxyError(intl);
+                break;
+            case PUSH_PROXY_RESPONSE_UNKNOWN:
+                EphemeralStore.setPushProxyVerificationState(server.url, PUSH_PROXY_STATUS_UNKNOWN);
+                alertPushProxyUnknown(intl);
+                break;
+            default:
+                EphemeralStore.setPushProxyVerificationState(server.url, PUSH_PROXY_STATUS_VERIFIED);
+        }
+
         const data = await fetchConfigAndLicense(server.url, true);
         if (data.error) {
             alertServerError(intl, data.error as ClientErrorProps);
@@ -311,6 +350,16 @@ const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
     const serverItem = `server_list.server_item.${server.displayName.replace(/ /g, '_').toLocaleLowerCase()}`;
     const serverItemTestId = isActive ? `${serverItem}.active` : `${serverItem}.inactive`;
 
+    const pushAlertText = pushProxyStatus === PUSH_PROXY_STATUS_NOT_AVAILABLE ?
+        intl.formatMessage({
+            id: 'server_list.push_proxy_error',
+            defaultMessage: 'Notifications cannot be received from this server because of its configuration. Contact your system admin.',
+        }) :
+        intl.formatMessage({
+            id: 'server_list.push_proxy_unknown',
+            defaultMessage: 'Notifications could not be received from this server because of its configuration. Log out and Log in again to retry.',
+        });
+
     return (
         <>
             <Swipeable
@@ -355,13 +404,23 @@ const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
                             />
                             }
                             <View style={styles.details}>
-                                <Text
-                                    numberOfLines={1}
-                                    ellipsizeMode='tail'
-                                    style={styles.name}
-                                >
-                                    {displayName}
-                                </Text>
+                                <View style={styles.nameView}>
+                                    <Text
+                                        numberOfLines={1}
+                                        ellipsizeMode='tail'
+                                        style={styles.name}
+                                    >
+                                        {displayName}
+                                    </Text>
+                                    {pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED && (
+                                        <CompassIcon
+                                            name='alert-outline'
+                                            color={theme.errorTextColor}
+                                            size={14}
+                                            style={styles.pushAlert}
+                                        />
+                                    )}
+                                </View>
                                 <Text
                                     numberOfLines={1}
                                     ellipsizeMode='tail'
@@ -383,6 +442,12 @@ const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
                     </RectButton>
                 </View>
             </Swipeable>
+            {pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED && (
+                <Text style={styles.pushAlertText}>
+                    {pushAlertText}
+                </Text>
+            )}
+
             {Boolean(database) && server.lastActiveAt > 0 &&
             <WebSocket
                 database={database}

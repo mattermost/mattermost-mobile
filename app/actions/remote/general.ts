@@ -2,17 +2,40 @@
 // See LICENSE.txt for license information.
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {PUSH_PROXY_RESPONSE_VERIFIED, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
 import NetworkManager from '@managers/network_manager';
-import {getExpandedLinks} from '@queries/servers/system';
+import {getDeviceToken} from '@queries/app/global';
+import {getExpandedLinks, getPushVerificationStatus} from '@queries/servers/system';
 
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
 import type {ClientResponse} from '@mattermost/react-native-network-client';
 
-export const doPing = async (serverUrl: string) => {
+async function getDeviceIdForPing(serverUrl: string, checkDeviceId: boolean) {
+    if (!checkDeviceId) {
+        return undefined;
+    }
+
+    const serverDatabase = DatabaseManager.serverDatabases?.[serverUrl]?.database;
+    if (serverDatabase) {
+        const status = await getPushVerificationStatus(serverDatabase);
+        if (status === PUSH_PROXY_STATUS_VERIFIED) {
+            return undefined;
+        }
+    }
+
+    const appDatabase = DatabaseManager.appDatabase?.database;
+    if (!appDatabase) {
+        return '';
+    }
+
+    return getDeviceToken(appDatabase);
+}
+
+export const doPing = async (serverUrl: string, verifyPushProxy: boolean) => {
     let client: Client;
     try {
         client = await NetworkManager.createClient(serverUrl);
@@ -30,9 +53,11 @@ export const doPing = async (serverUrl: string) => {
         defaultMessage: 'Cannot connect to the server.',
     };
 
+    const deviceId = await getDeviceIdForPing(serverUrl, verifyPushProxy);
+
     let response: ClientResponse;
     try {
-        response = await client.ping();
+        response = await client.ping(deviceId);
 
         if (response.code === 401) {
             // Don't invalidate the client since we want to eventually
@@ -48,6 +73,17 @@ export const doPing = async (serverUrl: string) => {
     } catch (error) {
         NetworkManager.invalidateClient(serverUrl);
         return {error: {intl: pingError}};
+    }
+
+    if (verifyPushProxy) {
+        let canReceiveNotifications = response?.data?.CanReceiveNotifications;
+
+        // Already verified or old server
+        if (deviceId === undefined || canReceiveNotifications === null) {
+            canReceiveNotifications = PUSH_PROXY_RESPONSE_VERIFIED;
+        }
+
+        return {canReceiveNotifications, error: undefined};
     }
 
     return {error: undefined};
