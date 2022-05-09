@@ -85,7 +85,7 @@ export async function loginEntry({serverUrl, user, deviceToken}: AfterLoginArgs)
             switchToChannel = true;
             switchToChannelById(serverUrl, initialChannelId, initialTeamId);
         } else {
-            setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
+            setCurrentTeamAndChannelId(operator, initialTeamId, '');
         }
 
         await operator.batchRecords(models);
