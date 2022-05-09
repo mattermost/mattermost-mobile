@@ -14,7 +14,6 @@ import java.util.Map;
 
 import com.airbnb.android.react.lottie.LottiePackage;
 import com.mattermost.helpers.RealPathUtil;
-import com.mattermost.share.ShareModule;
 import com.wix.reactnativenotifications.RNNotificationsPackage;
 
 import com.reactnativenavigation.NavigationApplication;
@@ -73,8 +72,6 @@ public class MainApplication extends NavigationApplication implements INotificat
                   switch (name) {
                   case "MattermostManaged":
                       return MattermostManagedModule.getInstance(reactContext);
-                    case "MattermostShare":
-                      return new ShareModule(instance, reactContext);
                     case "NotificationPreferences":
                       return NotificationPreferencesModule.getInstance(instance, reactContext);
                     default:
@@ -87,7 +84,6 @@ public class MainApplication extends NavigationApplication implements INotificat
                   return () -> {
                     Map<String, ReactModuleInfo> map = new HashMap<>();
                     map.put("MattermostManaged", new ReactModuleInfo("MattermostManaged", "com.mattermost.rnbeta.MattermostManagedModule", false, false, false, false, false));
-                    map.put("MattermostShare", new ReactModuleInfo("MattermostShare", "com.mattermost.share.ShareModule", false, false, true, false, false));
                     map.put("NotificationPreferences", new ReactModuleInfo("NotificationPreferences", "com.mattermost.rnbeta.NotificationPreferencesModule", false, false, false, false, false));
                     return map;
                   };

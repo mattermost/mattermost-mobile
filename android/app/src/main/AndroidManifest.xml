@@ -71,23 +71,5 @@
         android:resizeableActivity="true"
         android:exported="true"
       />
-      <activity
-        android:name="com.mattermost.share.ShareActivity"
-        android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize"
-        android:label="@string/app_name"
-        android:screenOrientation="portrait"
-        android:theme="@style/AppTheme"
-        android:taskAffinity="com.mattermost.share"
-        android:launchMode="singleInstance"
-        android:exported="true"
-      >
-          <intent-filter>
-              <action android:name="android.intent.action.SEND" />
-              <action android:name="android.intent.action.SEND_MULTIPLE" />
-              <category android:name="android.intent.category.DEFAULT" />
-              <!-- for sharing-->
-              <data android:mimeType="*/*" />
-          </intent-filter>
-      </activity>
   </application>
 </manifest>
