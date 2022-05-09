@@ -16,14 +16,17 @@ import LocalConfig from '@assets/config.json';
 import ClientError from '@client/rest/error';
 import AppVersion from '@components/app_version';
 import {Screens} from '@constants';
+import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
 import NetworkManager from '@managers/network_manager';
 import {queryServerByDisplayName, queryServerByIdentifier} from '@queries/app/servers';
 import Background from '@screens/background';
 import {dismissModal, goToScreen, loginAnimationOptions} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {getErrorMessage} from '@utils/client_error';
+import {alertPushProxyError, alertPushProxyUnknown} from '@utils/push_proxy';
 import {loginOptions} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
@@ -247,7 +250,7 @@ const Server = ({
         };
 
         const serverUrl = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp);
-        const result = await doPing(serverUrl);
+        const result = await doPing(serverUrl, true);
 
         if (canceled) {
             return;
@@ -263,6 +266,19 @@ const Server = ({
                 setConnecting(false);
             }
             return;
+        }
+
+        switch (result.canReceiveNotifications) {
+            case PUSH_PROXY_RESPONSE_NOT_AVAILABLE:
+                EphemeralStore.setPushProxyVerificationState(serverUrl, PUSH_PROXY_STATUS_NOT_AVAILABLE);
+                alertPushProxyError(intl);
+                break;
+            case PUSH_PROXY_RESPONSE_UNKNOWN:
+                EphemeralStore.setPushProxyVerificationState(serverUrl, PUSH_PROXY_STATUS_UNKNOWN);
+                alertPushProxyUnknown(intl);
+                break;
+            default:
+                EphemeralStore.setPushProxyVerificationState(serverUrl, PUSH_PROXY_STATUS_VERIFIED);
         }
 
         const data = await fetchConfigAndLicense(serverUrl, true);

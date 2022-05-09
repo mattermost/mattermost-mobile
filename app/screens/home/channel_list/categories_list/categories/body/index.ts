@@ -39,6 +39,10 @@ const sortAlpha = (locale: string, a: ChannelData, b: ChannelData) => {
     return a.displayName.localeCompare(b.displayName, locale, {numeric: true});
 };
 
+const filterArchived = (channels: Array<ChannelModel | null>, currentChannelId: string) => {
+    return channels.filter((c): c is ChannelModel => c != null && ((c.deleteAt > 0 && c.id === currentChannelId) || !c.deleteAt));
+};
+
 const buildAlphaData = (channels: ChannelModel[], settings: MyChannelSettingsModel[], locale: string) => {
     const settingsById = settings.reduce((result: Record<string, MyChannelSettingsModel>, s) => {
         result[s.id] = s;
@@ -112,8 +116,11 @@ const withUserId = withObservables([], ({database}: WithDatabaseArgs) => ({curre
 
 const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, locale, isTablet, database, currentUserId}: EnhanceProps) => {
     const observedCategory = category.observe();
+    const currentChannelId = observeCurrentChannelId(database);
     const sortedChannels = observedCategory.pipe(
         switchMap((c) => getSortedChannels(database, c, locale)),
+        combineLatestWith(currentChannelId),
+        map(([cs, ccId]) => filterArchived(cs, ccId)),
     );
 
     const dmMap = (p: PreferenceModel) => getDirectChannelName(p.name, currentUserId);
@@ -169,11 +176,10 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
         }),
     );
 
-    const currentChannelId = observeCurrentChannelId(database);
     const filtered = sortedChannels.pipe(
-        combineLatestWith(currentChannelId, filterUnreads, unreadsOnTop),
-        map(([channels, ccId, unreadIds, unreadTop]) => {
-            return channels.filter((c) => c && ((c.deleteAt > 0 && c.id === ccId) || !c.deleteAt) && (unreadTop ? !unreadIds.has(c.id) : true));
+        combineLatestWith(filterUnreads, unreadsOnTop),
+        map(([channels, unreadIds, unreadTop]) => {
+            return channels.filter((c) => (unreadTop ? !unreadIds.has(c.id) : true));
         }),
     );
 
@@ -184,7 +190,7 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
         category: observedCategory,
         unreadChannels: sortedChannels.pipe(
             combineLatestWith(filterUnreads, unreadsOnTop),
-            map(([sorted, unreadIds, unreadsTop]) => (unreadsTop ? [] : sorted.filter((c) => c && unreadIds.has(c.id)))),
+            map(([sorted, unreadIds, unreadsTop]) => (unreadsTop ? [] : sorted.filter((c) => unreadIds.has(c.id)))),
         ),
     };
 });

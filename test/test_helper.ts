@@ -10,6 +10,8 @@ import nock from 'nock';
 
 import Config from '@assets/config.json';
 import {Client} from '@client/rest';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
 import {prepareCommonSystemValues} from '@queries/servers/system';
 import {generateId} from '@utils/general';
@@ -105,6 +107,11 @@ class TestHelper {
         if (systems?.length) {
             await operator.batchRecords(systems);
         }
+
+        await operator.handleSystem({
+            prepareRecordsOnly: false,
+            systems: [{id: SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS, value: PUSH_PROXY_STATUS_VERIFIED}],
+        });
 
         return {database, operator};
     };
