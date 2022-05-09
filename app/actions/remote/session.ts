@@ -53,7 +53,7 @@ export const completeLogin = async (serverUrl: string, user: UserProfile) => {
     const systems: IdValue[] = [];
 
     // Set push proxy verification
-    const ppVerification = EphemeralStore.getPuhsProxyVerificationState(serverUrl);
+    const ppVerification = EphemeralStore.getPushProxyVerificationState(serverUrl);
     if (ppVerification) {
         systems.push({id: SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS, value: ppVerification});
     }

@@ -153,6 +153,7 @@ exports[`components/categories_list should render channels error 1`] = `
         Object {
           "alignItems": "center",
           "flexDirection": "row",
+          "paddingRight": 60,
         }
       }
     >
@@ -166,7 +167,6 @@ exports[`components/categories_list should render channels error 1`] = `
             "fontSize": 11,
             "fontWeight": "600",
             "lineHeight": 16,
-            "paddingRight": 30,
           }
         }
         testID="channel_list_header.server_display_name"
@@ -349,12 +349,17 @@ exports[`components/categories_list should render team error 1`] = `
     >
       <View
         style={
-          Object {
-            "alignItems": "center",
-            "flexDirection": "row",
-            "height": 40,
-            "justifyContent": "space-between",
-          }
+          Array [
+            Object {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "height": 40,
+              "justifyContent": "space-between",
+            },
+            Object {
+              "flex": 1,
+            },
+          ]
         }
       >
         <Text

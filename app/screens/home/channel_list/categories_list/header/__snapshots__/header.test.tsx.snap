@@ -133,6 +133,7 @@ exports[`components/channel_list/header Channel List Header Component should mat
       Object {
         "alignItems": "center",
         "flexDirection": "row",
+        "paddingRight": 60,
       }
     }
   >
@@ -146,7 +147,6 @@ exports[`components/channel_list/header Channel List Header Component should mat
           "fontSize": 11,
           "fontWeight": "600",
           "lineHeight": 16,
-          "paddingRight": 30,
         }
       }
       testID="channel_list_header.server_display_name"

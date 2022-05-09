@@ -153,7 +153,7 @@ class EphemeralStore {
         this.pushProxyVerification[serverUrl] = state;
     };
 
-    getPuhsProxyVerificationState = (serverUrl: string) => {
+    getPushProxyVerificationState = (serverUrl: string) => {
         return this.pushProxyVerification[serverUrl];
     };
 }
