@@ -54,6 +54,7 @@ export const SYSTEM_IDENTIFIERS = {
     DATA_RETENTION_POLICIES: 'dataRetentionPolicies',
     EXPANDED_LINKS: 'expandedLinks',
     LICENSE: 'license',
+    ONLY_UNREADS: 'onlyUnreads',
     PUSH_VERIFICATION_STATUS: 'pushVerificationStatus',
     RECENT_CUSTOM_STATUS: 'recentCustomStatus',
     RECENT_MENTIONS: 'recentMentions',

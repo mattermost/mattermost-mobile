@@ -10,6 +10,7 @@ import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {queryCategoriesByTeamIds} from '@queries/servers/categories';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeOnlyUnreads} from '@queries/servers/system';
 
 import Categories from './categories';
 
@@ -31,6 +32,7 @@ const enhanced = withObservables(
 
         return {
             categories,
+            onlyUnreads: observeOnlyUnreads(database),
             unreadsOnTop,
         };
     });
