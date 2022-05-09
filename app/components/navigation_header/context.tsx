@@ -37,7 +37,7 @@ const NavigationHeaderContext = ({
         return {
             position: 'absolute',
             width: '100%',
-            height: 16,
+            height: '100%',
             marginTop: margin,
         };
     }, [defaultHeight, largeHeight, isLargeTitle, hasSearch]);

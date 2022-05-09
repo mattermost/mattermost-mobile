@@ -90,9 +90,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     leftContainer: {
         height: '100%',
         justifyContent: 'center',
-        paddingLeft: 16,
         ...Platform.select({
             ios: {
+                paddingLeft: 16,
                 zIndex: 5,
                 position: 'absolute',
                 bottom: 0,

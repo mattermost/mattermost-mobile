@@ -117,6 +117,10 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
                     color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
                     text: subtitle,
                 },
+                noBorder: true,
+                scrollEdgeAppearance: {
+                    noBorder: true,
+                },
                 rightButtons,
             },
         });

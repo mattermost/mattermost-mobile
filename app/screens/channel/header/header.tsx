@@ -11,7 +11,7 @@ import NavigationHeader from '@components/navigation_header';
 import {Navigation} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {popTopScreen} from '@screens/navigation';
+import {popTopScreen, showModal} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -83,7 +83,7 @@ const ChannelHeader = ({
         iconName: Platform.select({android: 'dots-vertical', default: 'dots-horizontal'}),
         onPress: () => true,
         buttonType: 'opacity',
-    }]), [channelId, isTablet, searchTerm]);
+    }]), [isTablet, searchTerm]);
 
     const onBackPress = useCallback(() => {
         Keyboard.dismiss();
@@ -92,7 +92,8 @@ const ChannelHeader = ({
 
     const onTitlePress = useCallback(() => {
         // eslint-disable-next-line no-console
-        console.log('Title Press go to Channel Info', displayName);
+        console.log('Title Press go to Channel Info');
+        showModal('ChannelInfo', '', {channelId});
     }, [channelId]);
 
     let title = displayName;
@@ -101,43 +102,46 @@ const ChannelHeader = ({
     }
 
     let subtitle;
-    let subtitleCompanion;
     if (memberCount) {
         subtitle = formatMessage({id: 'channel', defaultMessage: '{count, plural, one {# member} other {# members}}'}, {count: memberCount});
     } else if (!customStatus || isCustomStatusExpired) {
         subtitle = formatMessage({id: 'channel.details', defaultMessage: 'View details'});
     }
 
-    if (memberCount || !customStatus || isCustomStatusExpired) {
-        subtitleCompanion = (
-            <CompassIcon
-                color={changeOpacity(theme.sidebarHeaderTextColor, 0.72)}
-                name='chevron-right'
-                size={14}
-            />
-        );
-    } else if (customStatus && customStatus.text) {
-        subtitleCompanion = (
-            <View style={styles.customStatusContainer}>
-                {Boolean(customStatus.emoji) &&
-                <CustomStatusEmoji
-                    customStatus={customStatus}
-                    emojiSize={13}
-                    style={styles.customStatusEmoji}
+    const subtitleCompanion = useMemo(() => {
+        if (memberCount || !customStatus || isCustomStatusExpired) {
+            return (
+                <CompassIcon
+                    color={changeOpacity(theme.sidebarHeaderTextColor, 0.72)}
+                    name='chevron-right'
+                    size={14}
                 />
-                }
-                <View style={styles.customStatusText}>
-                    <Text
-                        numberOfLines={1}
-                        ellipsizeMode='tail'
-                        style={styles.subtitle}
-                    >
-                        {customStatus.text}
-                    </Text>
+            );
+        } else if (customStatus && customStatus.text) {
+            return (
+                <View style={styles.customStatusContainer}>
+                    {Boolean(customStatus.emoji) &&
+                    <CustomStatusEmoji
+                        customStatus={customStatus}
+                        emojiSize={13}
+                        style={styles.customStatusEmoji}
+                    />
+                    }
+                    <View style={styles.customStatusText}>
+                        <Text
+                            numberOfLines={1}
+                            ellipsizeMode='tail'
+                            style={styles.subtitle}
+                        >
+                            {customStatus.text}
+                        </Text>
+                    </View>
                 </View>
-            </View>
-        );
-    }
+            );
+        }
+
+        return undefined;
+    }, [memberCount, customStatus, isCustomStatusExpired]);
 
     return (
         <NavigationHeader
