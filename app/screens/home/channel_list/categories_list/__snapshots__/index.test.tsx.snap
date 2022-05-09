@@ -148,23 +148,32 @@ exports[`components/categories_list should render channels error 1`] = `
         />
       </View>
     </View>
-    <Text
-      ellipsizeMode="tail"
-      numberOfLines={1}
+    <View
       style={
         Object {
-          "color": "rgba(255,255,255,0.64)",
-          "fontFamily": "OpenSans-SemiBold",
-          "fontSize": 11,
-          "fontWeight": "600",
-          "lineHeight": 16,
-          "paddingRight": 30,
+          "alignItems": "center",
+          "flexDirection": "row",
+          "paddingRight": 60,
         }
       }
-      testID="channel_list_header.server_display_name"
     >
-      
-    </Text>
+      <Text
+        ellipsizeMode="tail"
+        numberOfLines={1}
+        style={
+          Object {
+            "color": "rgba(255,255,255,0.64)",
+            "fontFamily": "OpenSans-SemiBold",
+            "fontSize": 11,
+            "fontWeight": "600",
+            "lineHeight": 16,
+          }
+        }
+        testID="channel_list_header.server_display_name"
+      >
+        
+      </Text>
+    </View>
   </View>
   <View
     style={
@@ -340,12 +349,17 @@ exports[`components/categories_list should render team error 1`] = `
     >
       <View
         style={
-          Object {
-            "alignItems": "center",
-            "flexDirection": "row",
-            "height": 40,
-            "justifyContent": "space-between",
-          }
+          Array [
+            Object {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "height": 40,
+              "justifyContent": "space-between",
+            },
+            Object {
+              "flex": 1,
+            },
+          ]
         }
       >
         <Text
