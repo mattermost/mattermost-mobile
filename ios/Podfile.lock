@@ -123,9 +123,6 @@ PODS:
     - RCT-Folly (= 2021.06.28.00-v2)
     - RCTRequired (= 0.68.0)
     - React-Core (= 0.68.0)
-  - RCTYouTube (2.0.2):
-    - React
-    - YoutubePlayer-in-WKWebView (~> 0.3.1)
   - React (0.68.0):
     - React-Core (= 0.68.0)
     - React-Core/DevSupport (= 0.68.0)
@@ -536,11 +533,9 @@ PODS:
   - WatermelonDB (0.24.0):
     - React
     - React-jsi
-  - XCDYouTubeKit (2.8.2)
   - Yoga (1.14.0)
   - YogaKit (1.18.1):
     - Yoga (~> 1.14)
-  - YoutubePlayer-in-WKWebView (0.3.8)
 
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
@@ -581,7 +576,6 @@ DEPENDENCIES:
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
   - RCTTypeSafety (from `../node_modules/react-native/Libraries/TypeSafety`)
-  - RCTYouTube (from `../node_modules/react-native-youtube`)
   - React (from `../node_modules/react-native/`)
   - React-callinvoker (from `../node_modules/react-native/ReactCommon/callinvoker`)
   - React-Codegen (from `build/generated/ios`)
@@ -649,7 +643,6 @@ DEPENDENCIES:
   - Starscream (from `https://github.com/mattermost/Starscream.git`, commit `cb83dd247339ff6c155f0e749d6fe2cc145f5283`)
   - Swime (= 3.0.6)
   - "WatermelonDB (from `../node_modules/@nozbe/watermelondb`)"
-  - XCDYouTubeKit (= 2.8.2)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -679,9 +672,7 @@ SPEC REPOS:
     - SocketRocket
     - SwiftyJSON
     - Swime
-    - XCDYouTubeKit
     - YogaKit
-    - YoutubePlayer-in-WKWebView
 
 EXTERNAL SOURCES:
   boost:
@@ -712,8 +703,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/Libraries/RCTRequired"
   RCTTypeSafety:
     :path: "../node_modules/react-native/Libraries/TypeSafety"
-  RCTYouTube:
-    :path: "../node_modules/react-native-youtube"
   React:
     :path: "../node_modules/react-native/"
   React-callinvoker:
@@ -884,7 +873,6 @@ SPEC CHECKSUMS:
   RCT-Folly: 4d8508a426467c48885f1151029bc15fa5d7b3b8
   RCTRequired: bab4a7c3d7eb9553b13773ee190f279712efd1fc
   RCTTypeSafety: efbeb6e450ff6cef8e19c2cb5314c6d8bfeeef77
-  RCTYouTube: a8bb45705622a6fc9decf64be04128d3658ed411
   React: 28e4d45839b7d0fd9512af899e0379a17a5172ec
   React-callinvoker: 5585d1ef6795786f288690b19e08bed253c33155
   React-Codegen: 80ce98fda08a8ddb6f47116375ae2c1670bf8cda
@@ -956,11 +944,9 @@ SPEC CHECKSUMS:
   SwiftyJSON: 2f33a42c6fbc52764d96f13368585094bfd8aa5e
   Swime: d7b2c277503b6cea317774aedc2dce05613f8b0b
   WatermelonDB: baec390a1039dcebeee959218900c978af3407c9
-  XCDYouTubeKit: 79baadb0560673a67c771eba45f83e353fd12c1f
   Yoga: 6671cf077f614314c22fd09ddf87d7abeee64e96
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
-  YoutubePlayer-in-WKWebView: 4fca3b4f6f09940077bfbae7bddb771f2b43aacd
 
-PODFILE CHECKSUM: 9b7206e144619146e3d5456de646e7d0c34b25ec
+PODFILE CHECKSUM: bb161ae7bf12d0d04e6c9584b673aeeee5bf3639
 
 COCOAPODS: 1.11.3

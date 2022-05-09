@@ -17,11 +17,12 @@ type Props = {
     category: CategoryModel;
     limit: number;
     onChannelSwitch: (channelId: string) => void;
+    unreadChannels: ChannelModel[];
 };
 
 const extractKey = (item: ChannelModel) => item.id;
 
-const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChannelSwitch}: Props) => {
+const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChannelSwitch, unreadChannels}: Props) => {
     const ids = useMemo(() => {
         let filteredChannels = sortedChannels;
 
@@ -43,6 +44,7 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChan
                 testID={`category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_list_item`}
                 onPress={onChannelSwitch}
                 isCategoryMuted={category.muted}
+                key={item.id}
             />
         );
     }, [onChannelSwitch]);
@@ -54,20 +56,21 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChan
     }, [category.collapsed]);
 
     const height = ids.length ? ids.length * 40 : 0;
+    const unreadHeight = unreadChannels.length ? unreadChannels.length * 40 : 0;
 
     const animatedStyle = useAnimatedStyle(() => {
+        const opacity = unreadHeight > 0 ? 1 : 0;
+        const heightDuration = unreadHeight > 0 ? 200 : 300;
         return {
-            height: withTiming(sharedValue.value ? 1 : height, {duration: 300}),
-            opacity: withTiming(sharedValue.value ? 0 : 1, {duration: sharedValue.value ? 200 : 300, easing: Easing.inOut(Easing.exp)}),
+            height: withTiming(sharedValue.value ? unreadHeight : height, {duration: heightDuration}),
+            opacity: withTiming(sharedValue.value ? opacity : 1, {duration: sharedValue.value ? 200 : 300, easing: Easing.inOut(Easing.exp)}),
         };
-    }, [height]);
+    }, [height, unreadHeight]);
 
     return (
-        <Animated.View
-            style={animatedStyle}
-        >
+        <Animated.View style={animatedStyle}>
             <FlatList
-                data={ids}
+                data={category.collapsed ? unreadChannels : ids}
                 renderItem={renderItem}
                 keyExtractor={extractKey}
 
