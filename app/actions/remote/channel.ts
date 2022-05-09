@@ -1071,10 +1071,8 @@ export const updateChannelNotifyProps = async (serverUrl: string, channelId: str
 
     try {
         const userId = await getCurrentUserId(database);
-        const notifyProps = {...props, channel_id: channelId, user_id: userId};
+        const notifyProps = {...props, channel_id: channelId, user_id: userId} as ChannelNotifyProps & {channel_id: string; user_id: string};
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore only feed the changed notification property
         await client.updateChannelNotifyProps(notifyProps);
 
         return {
