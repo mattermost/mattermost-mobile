@@ -104,12 +104,12 @@ const ChannelHeader = ({
     let subtitle;
     if (memberCount) {
         subtitle = formatMessage({id: 'channel', defaultMessage: '{count, plural, one {# member} other {# members}}'}, {count: memberCount});
-    } else if (!customStatus || isCustomStatusExpired) {
+    } else if (!customStatus || !customStatus.text || isCustomStatusExpired) {
         subtitle = formatMessage({id: 'channel.details', defaultMessage: 'View details'});
     }
 
     const subtitleCompanion = useMemo(() => {
-        if (memberCount || !customStatus || isCustomStatusExpired) {
+        if (memberCount || !customStatus || !customStatus.text || isCustomStatusExpired) {
             return (
                 <CompassIcon
                     color={changeOpacity(theme.sidebarHeaderTextColor, 0.72)}

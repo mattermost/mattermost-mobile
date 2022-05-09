@@ -137,7 +137,7 @@ Navigation.setDefaultOptions({
         subtitle: {
             fontFamily: 'OpenSans',
             fontSize: 12,
-            fontWeight: '500',
+            fontWeight: '400',
         },
     },
 });
