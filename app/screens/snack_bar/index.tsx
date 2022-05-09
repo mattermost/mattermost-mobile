@@ -196,7 +196,7 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
     // This effect dismisses the Navigation Overlay after we have hidden the snack bar
     useEffect(() => {
         if (showSnackBar === false) {
-            if (!userHasUndo?.current) {
+            if (userHasUndo?.current) {
                 onAction?.();
             }
             dismissOverlay(componentId);
