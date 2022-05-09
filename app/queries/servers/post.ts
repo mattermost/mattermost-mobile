@@ -36,6 +36,23 @@ export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
         models?.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
     }));
 
+    try {
+        const thread = await post.thread.fetch();
+        if (thread) {
+            const participants = await thread.participants.fetch();
+            if (participants.length) {
+                preparedModels.push(...participants.map((p) => p.prepareDestroyPermanently()));
+            }
+            const threadsInTeam = await thread.threadsInTeam.fetch();
+            if (threadsInTeam.length) {
+                preparedModels.push(...threadsInTeam.map((t) => t.prepareDestroyPermanently()));
+            }
+            preparedModels.push(thread.prepareDestroyPermanently());
+        }
+    } catch {
+        // Thread not found, do nothing
+    }
+
     return preparedModels;
 };
 
