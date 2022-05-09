@@ -5,6 +5,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {prepareMissingChannelsForAllTeams} from '@queries/servers/channel';
+import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import {processPostsFetched} from '@utils/post';
 
@@ -66,6 +67,11 @@ export async function fetchRecentMentions(serverUrl: string): Promise<PostSearch
         }));
 
         if (postsArray.length) {
+            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            if (isCRTEnabled) {
+                promises.push(prepareThreadsFromReceivedPosts(operator, postsArray));
+            }
+
             const {authors} = await fetchPostAuthors(serverUrl, postsArray, true);
             const {channels, channelMemberships} = await fetchMissingChannelsFromPosts(serverUrl, postsArray, true);
 

@@ -21,7 +21,11 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
-type WithDatabaseProps = { currentTeamId: string } & WithDatabaseArgs
+type WithDatabaseProps = WithDatabaseArgs & {
+    currentTeamId: string;
+    isTablet: boolean;
+    onlyUnreads: boolean;
+}
 
 type CA = [
     a: Array<ChannelModel | null>,
@@ -36,13 +40,57 @@ type NotifyProps = {
     [key: string]: Partial<ChannelNotifyProps>;
 }
 
-const filterMutedFromMyChannels = ([myChannels, notifyProps]: [MyChannelModel[], NotifyProps]) => {
-    return myChannels.filter(
-        (myChannel) => notifyProps[myChannel.id]?.mark_unread !== 'mention' || myChannel.mentionsCount > 0, // Muted with Mentions should still go through
-    );
+const mostRecentFirst = (a: MyChannelModel, b: MyChannelModel) => {
+    return b.lastPostAt - a.lastPostAt;
 };
 
-const enhanced = withObservables(['currentTeamId'], ({currentTeamId, database}: WithDatabaseProps) => {
+/**
+ * Filtering / Sorting:
+ *
+ * Unreads, Mentions, and Muted Mentions Only
+ *
+ * Mentions on top, then unreads, then muted channels with mentions.
+ * Secondary sorting within each of those is by recent posting.
+ */
+
+const filterAndSortMyChannels = ([myChannels, notifyProps]: [MyChannelModel[], NotifyProps]): MyChannelModel[] => {
+    const mentions: MyChannelModel[] = [];
+    const unreads: MyChannelModel[] = [];
+    const mutedMentions: MyChannelModel[] = [];
+
+    const isMuted = (id: string) => {
+        return notifyProps[id]?.mark_unread === 'mention';
+    };
+
+    for (const myChannel of myChannels) {
+        // is it a mention?
+        if (!isMuted(myChannel.id) && myChannel.mentionsCount > 0) {
+            mentions.push(myChannel);
+            continue;
+        }
+
+        // is it unread?
+        if (!isMuted(myChannel.id) && myChannel.isUnread) {
+            unreads.push(myChannel);
+            continue;
+        }
+
+        // is it a muted mention?
+        if (isMuted(myChannel.id) && myChannel.mentionsCount > 0) {
+            mutedMentions.push(myChannel);
+            continue;
+        }
+    }
+
+    // Sort
+    mentions.sort(mostRecentFirst);
+    unreads.sort(mostRecentFirst);
+    mutedMentions.sort(mostRecentFirst);
+
+    return [...mentions, ...unreads, ...mutedMentions];
+};
+
+const enhanced = withObservables(['currentTeamId', 'isTablet', 'onlyUnreads'], ({currentTeamId, isTablet, database, onlyUnreads}: WithDatabaseProps) => {
     const unreadsOnTop = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
         observeWithColumns(['value']).
         pipe(
@@ -52,15 +100,15 @@ const enhanced = withObservables(['currentTeamId'], ({currentTeamId, database}: 
     const getC = (lastUnreadChannelId: string) => getChannelById(database, lastUnreadChannelId);
 
     const unreadChannels = unreadsOnTop.pipe(switchMap((gU) => {
-        if (gU) {
-            const lastUnread = observeLastUnreadChannelId(database).pipe(
+        if (gU || onlyUnreads) {
+            const lastUnread = isTablet ? observeLastUnreadChannelId(database).pipe(
                 switchMap(getC),
-            );
+            ) : of$('');
             const notifyProps = observeAllMyChannelNotifyProps(database);
 
             const unreads = queryMyChannelUnreads(database, currentTeamId).observe().pipe(
                 combineLatestWith(notifyProps),
-                map(filterMutedFromMyChannels),
+                map(filterAndSortMyChannels),
                 map(getChannelsFromRelation),
                 concatAll(),
             );

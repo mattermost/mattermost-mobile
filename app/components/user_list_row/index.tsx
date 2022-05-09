@@ -42,7 +42,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
         },
         textContainer: {
-            marginLeft: 10,
+            paddingHorizontal: 10,
             justifyContent: 'center',
             flexDirection: 'column',
             flex: 1,
@@ -54,6 +54,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         username: {
             fontSize: 15,
             color: theme.centerChannelColor,
+            maxWidth: '80%',
         },
         indicatorContainer: {
             flexDirection: 'row',
@@ -169,23 +170,21 @@ export default function UserListRow({
                     />
                 </View>
                 <View style={style.textContainer}>
-                    <View>
-                        <View style={style.indicatorContainer}>
-                            <Text
-                                style={style.username}
-                                ellipsizeMode='tail'
-                                numberOfLines={1}
-                                testID={displayNameTestID}
-                            >
-                                {usernameDisplay}
-                            </Text>
-                            <BotTag
-                                show={Boolean(user.is_bot)}
-                            />
-                            <GuestTag
-                                show={isGuest(user.roles)}
-                            />
-                        </View>
+                    <View style={style.indicatorContainer}>
+                        <Text
+                            style={style.username}
+                            ellipsizeMode='tail'
+                            numberOfLines={1}
+                            testID={displayNameTestID}
+                        >
+                            {usernameDisplay}
+                        </Text>
+                        <BotTag
+                            show={Boolean(user.is_bot)}
+                        />
+                        <GuestTag
+                            show={isGuest(user.roles)}
+                        />
                     </View>
                     {showTeammateDisplay &&
                     <View>

@@ -9,6 +9,7 @@
 
 import {
     Setup,
+    System,
     Team,
 } from '@support/server_api';
 import {
@@ -21,6 +22,7 @@ import {
     ChannelListScreen,
     CreateDirectMessageScreen,
     CreateOrEditChannelScreen,
+    GlobalThreadsScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
@@ -38,6 +40,12 @@ describe('Channels - Channel List', () => {
     let testUser: any;
 
     beforeAll(async () => {
+        System.apiUpdateConfig(siteOneUrl, {
+            ServiceSettings: {
+                CollapsedThreads: 'default_on',
+            },
+        });
+
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testTeam = team;
@@ -83,7 +91,7 @@ describe('Channels - Channel List', () => {
         await expect(ChannelScreen.introDisplayName).toHaveText(testChannel.display_name);
 
         // # Go back to channel list screen and tap on a second channel
-        await ChannelScreen.backButton.tap();
+        await ChannelScreen.back();
         await ChannelListScreen.toBeVisible();
         await ChannelListScreen.getChannelListItemDisplayName(channelsCategory, offTopicChannelName).tap();
 
@@ -98,9 +106,8 @@ describe('Channels - Channel List', () => {
 
     it('MM-T4728_3 - should be able to collapse and expand categories', async () => {
         // # Go to a channel to make it active and go back to channel list screen
-        await ChannelListScreen.getChannelListItemDisplayName(channelsCategory, testChannel.name).tap();
-        await ChannelScreen.toBeVisible();
-        await ChannelScreen.backButton.tap();
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.back();
 
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
@@ -160,8 +167,15 @@ describe('Channels - Channel List', () => {
         await CreateOrEditChannelScreen.close();
     });
 
-    xit('MM-T4728_7 - should be able to go to threads screen', async () => {
-        // NOT YET IMPLEMENTED
+    it('MM-T4728_7 - should be able to go to global threads screen', async () => {
+        // # Tap on threads button
+        await ChannelListScreen.threadsButton.tap();
+
+        // * Verify on global threads screen
+        await GlobalThreadsScreen.toBeVisible();
+
+        // # Go back to channel list screen
+        await GlobalThreadsScreen.back();
     });
 
     xit('MM-T4728_8 - should be able to find channels', async () => {
@@ -169,9 +183,10 @@ describe('Channels - Channel List', () => {
     });
 
     it('MM-T4728_9 - should be able to switch between teams', async () => {
-        // # As admin, create a second team and add user to the second team
+        // # As admin, create a second team and add user to the second team; as user, terminate app and relaunch app
         const {team: testTeamTwo} = await Team.apiCreateTeam(siteOneUrl, {prefix: 'a'});
         await Team.apiAddUserToTeam(siteOneUrl, testUser.id, testTeamTwo.id);
+        await device.reloadReactNative();
 
         // * Verify on first team and team sidebar item is selected and has correct display name abbreviation
         await expect(ChannelListScreen.headerTeamDisplayName).toHaveText(testTeam.display_name);

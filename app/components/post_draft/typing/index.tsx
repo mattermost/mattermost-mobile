@@ -47,6 +47,7 @@ function Typing({
 }: Props) {
     const typingHeight = useSharedValue(0);
     const typing = useRef<Array<{id: string; now: number; username: string}>>([]);
+    const timeoutToDisappear = useRef<NodeJS.Timeout>();
     const [refresh, setRefresh] = useState(0);
 
     const theme = useTheme();
@@ -71,6 +72,10 @@ function Typing({
 
         typing.current = typing.current.filter(({id}) => id !== msg.userId);
         typing.current.push({id: msg.userId, now: msg.now, username: msg.username});
+        if (timeoutToDisappear.current) {
+            clearTimeout(timeoutToDisappear.current);
+            timeoutToDisappear.current = undefined;
+        }
         setRefresh(Date.now());
     }, [channelId, rootId]);
 
@@ -85,7 +90,20 @@ function Typing({
         }
 
         typing.current = typing.current.filter(({id, now}) => id !== msg.userId && now !== msg.now);
-        setRefresh(Date.now());
+
+        if (timeoutToDisappear.current) {
+            clearTimeout(timeoutToDisappear.current);
+            timeoutToDisappear.current = undefined;
+        }
+
+        if (typing.current.length === 0) {
+            timeoutToDisappear.current = setTimeout(() => {
+                setRefresh(Date.now());
+                timeoutToDisappear.current = undefined;
+            }, 500);
+        } else {
+            setRefresh(Date.now());
+        }
     }, []);
 
     useEffect(() => {

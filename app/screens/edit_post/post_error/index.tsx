@@ -38,14 +38,14 @@ const PostError = ({errorLine, errorExtra}: PostErrorProps) => {
         >
             {Boolean(errorLine) && (
                 <ErrorText
-                    testID='edit_post.error.text'
+                    testID='edit_post.message.input.error'
                     error={errorLine!}
                     textStyle={styles.errorWrap}
                 />
             )}
             {Boolean(errorExtra) && (
                 <ErrorText
-                    testID='edit_post.error.text.extra'
+                    testID='edit_post.message.input.error.extra'
                     error={errorExtra!}
                     textStyle={!errorLine && styles.errorWrapper}
                 />

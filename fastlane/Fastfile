@@ -403,20 +403,6 @@ platform :ios do
         new_string: notification_bundle_id
     )
 
-    # Set the share extension bundle identifier
-    extension_bundle_id = ENV['EXTENSION_APP_IDENTIFIER'] || 'com.mattermost.rnbeta.MattermostShare'
-    update_app_identifier(
-        xcodeproj: './ios/Mattermost.xcodeproj',
-        plist_path: 'MattermostShare/Info.plist',
-        app_identifier: extension_bundle_id
-    )
-
-    find_replace_string(
-        path_to_file: './ios/Mattermost.xcodeproj/project.pbxproj',
-        old_string: 'com.mattermost.rnbeta.MattermostShare',
-        new_string: extension_bundle_id
-    )
-
     # Set the app bundle id
     app_bundle_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.mattermost.rnbeta'
     update_app_identifier(
@@ -468,19 +454,6 @@ platform :ios do
     update_info_plist(
       xcodeproj: './ios/Mattermost.xcodeproj',
       plist_path: 'Mattermost/Info.plist',
-      block: proc do |plist|
-        plist["AppGroupIdentifier"] = app_group_id
-      end
-    )
-
-    update_app_group_identifiers(
-        entitlements_file: './ios/MattermostShare/MattermostShare.entitlements',
-        app_group_identifiers: [app_group_id]
-    )
-
-    update_info_plist(
-      xcodeproj: './ios/Mattermost.xcodeproj',
-      plist_path: 'MattermostShare/Info.plist',
       block: proc do |plist|
         plist["AppGroupIdentifier"] = app_group_id
       end
@@ -547,8 +520,6 @@ platform :ios do
       target = 'Mattermost'
       if id.include? 'NotificationService'
         target = 'NotificationService'
-      elsif id.include? 'MattermostShare'
-        target = 'MattermostShare'
       end
 
       profile = "sigh_#{id}_#{ENV['MATCH_TYPE']}"
@@ -674,14 +645,6 @@ platform :android do
             path_to_file: item[1..-1],
             old_string: 'package com.mattermost.rnbeta;',
             new_string: "package #{package_id};"
-        )
-      end
-
-      Dir.glob('../android/app/src/main/java/com/mattermost/share/*.java') do |item|
-        find_replace_string(
-            path_to_file: item[1..-1],
-            old_string: 'import com.mattermost.rnbeta.MainApplication;',
-            new_string: "import #{package_id}.MainApplication;"
         )
       end
 

@@ -7,6 +7,7 @@ import {FlatList, StyleSheet} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import {useServerUrl} from '@context/server';
+import {useIsTablet} from '@hooks/device';
 
 import CategoryBody from './body';
 import LoadCategoriesError from './error';
@@ -18,6 +19,7 @@ import type CategoryModel from '@typings/database/models/servers/category';
 type Props = {
     categories: CategoryModel[];
     currentTeamId: string;
+    onlyUnreads: boolean;
     unreadsOnTop: boolean;
 }
 
@@ -31,10 +33,11 @@ const styles = StyleSheet.create({
 
 const extractKey = (item: CategoryModel | 'UNREADS') => (item === 'UNREADS' ? 'UNREADS' : item.id);
 
-const Categories = ({categories, currentTeamId, unreadsOnTop}: Props) => {
+const Categories = ({categories, currentTeamId, onlyUnreads, unreadsOnTop}: Props) => {
     const intl = useIntl();
     const listRef = useRef<FlatList>(null);
     const serverUrl = useServerUrl();
+    const isTablet = useIsTablet();
 
     const onChannelSwitch = useCallback(async (channelId: string) => {
         switchToChannelById(serverUrl, channelId);
@@ -45,7 +48,9 @@ const Categories = ({categories, currentTeamId, unreadsOnTop}: Props) => {
             return (
                 <UnreadCategories
                     currentTeamId={currentTeamId}
+                    isTablet={isTablet}
                     onChannelSwitch={onChannelSwitch}
+                    onlyUnreads={onlyUnreads}
                 />
             );
         }
@@ -54,25 +59,29 @@ const Categories = ({categories, currentTeamId, unreadsOnTop}: Props) => {
                 <CategoryHeader category={data.item}/>
                 <CategoryBody
                     category={data.item}
+                    isTablet={isTablet}
                     locale={intl.locale}
                     onChannelSwitch={onChannelSwitch}
                 />
             </>
         );
-    }, [currentTeamId, intl.locale, onChannelSwitch]);
+    }, [currentTeamId, intl.locale, isTablet, onChannelSwitch, onlyUnreads]);
 
     useEffect(() => {
         listRef.current?.scrollToOffset({animated: false, offset: 0});
     }, [currentTeamId]);
 
     const categoriesToShow = useMemo(() => {
+        if (onlyUnreads && !unreadsOnTop) {
+            return ['UNREADS' as const];
+        }
         const orderedCategories = [...categories];
         orderedCategories.sort((a, b) => a.sortOrder - b.sortOrder);
         if (unreadsOnTop) {
             return ['UNREADS' as const, ...orderedCategories];
         }
         return orderedCategories;
-    }, [categories, unreadsOnTop]);
+    }, [categories, onlyUnreads, unreadsOnTop]);
 
     if (!categories.length) {
         return <LoadCategoriesError/>;
@@ -87,11 +96,7 @@ const Categories = ({categories, currentTeamId, unreadsOnTop}: Props) => {
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
             keyExtractor={extractKey}
-            removeClippedSubviews={true}
-            initialNumToRender={5}
-            windowSize={15}
-            updateCellsBatchingPeriod={10}
-            maxToRenderPerBatch={5}
+            initialNumToRender={categoriesToShow.length}
 
             // @ts-expect-error strictMode not included in the types
             strictMode={true}

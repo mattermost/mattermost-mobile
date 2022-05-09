@@ -6,6 +6,9 @@ import {of as of$} from 'rxjs';
 import {catchError, switchMap} from 'rxjs/operators';
 
 import {GLOBAL_IDENTIFIERS, MM_TABLES} from '@constants/database';
+import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
+import DatabaseManager from '@database/manager';
+import {observePushVerificationStatus} from '@queries/servers/system';
 
 import ServerItem from './server_item';
 
@@ -24,9 +27,12 @@ const enhance = withObservables(['highlight'], ({highlight, server}: {highlight:
         );
     }
 
+    const serverDatabase = DatabaseManager.serverDatabases[server.url]?.database;
+
     return {
         server: server.observe(),
         tutorialWatched,
+        pushProxyStatus: serverDatabase ? observePushVerificationStatus(serverDatabase) : of$(PUSH_PROXY_STATUS_UNKNOWN),
     };
 });
 
