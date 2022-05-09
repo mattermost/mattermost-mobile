@@ -36,6 +36,7 @@ export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
         models?.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
     }));
 
+    // If thread exists, delete thread, participants and threadsInTeam
     try {
         const thread = await post.thread.fetch();
         if (thread) {

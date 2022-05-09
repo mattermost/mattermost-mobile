@@ -7,7 +7,6 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {observeChannel} from '@queries/servers/channel';
-import {observePost} from '@queries/servers/post';
 import {observeUser} from '@queries/servers/user';
 
 import Thread from './thread';
@@ -16,7 +15,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type ThreadModel from '@typings/database/models/servers/thread';
 
 const enhanced = withObservables([], ({database, thread}: WithDatabaseArgs & {thread: ThreadModel}) => {
-    const post = observePost(database, thread.id);
+    const post = thread.post.observe();
     return {
         post,
         thread: thread.observe(),

@@ -131,7 +131,12 @@ export default class PostModel extends Model implements PostModelInterface {
             Q.where('root_id', this.id),
         ).destroyAllPermanently();
         try {
-            (await this.thread.fetch())?.destroyPermanently();
+            const thread = await this.thread.fetch();
+            if (thread) {
+                await thread.destroyPermanently();
+                await thread.participants.destroyAllPermanently();
+                await thread.threadsInTeam.destroyAllPermanently();
+            }
         } catch {
             // there is no thread record for this post
         }
