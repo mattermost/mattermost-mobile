@@ -4,14 +4,14 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
-import {observeCurrentChannelId} from '@queries/servers/system';
+import {observeOnlyUnreads} from '@queries/servers/system';
 
-import Channel from './channel';
+import UnreadFilter from './unread_filter';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    channelId: observeCurrentChannelId(database),
+    onlyUnreads: observeOnlyUnreads(database),
 }));
 
-export default withDatabase(enhanced(Channel));
+export default withDatabase(enhanced(UnreadFilter));

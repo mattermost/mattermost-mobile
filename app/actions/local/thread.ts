@@ -97,13 +97,12 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
         const translations = getTranslations(user.locale);
 
         // Get title translation or default title message
-        let title = translations[t('thread.header.thread')] || 'Thread';
-        if (channel.type === General.DM_CHANNEL) {
-            title = translations[t('thread.header.thread_dm')] || 'Direct Message Thread';
-        }
+        const title = translations[t('thread.header.thread')] || 'Thread';
 
         let subtitle = '';
-        if (channel?.type !== General.DM_CHANNEL) {
+        if (channel?.type === General.DM_CHANNEL) {
+            subtitle = channel.displayName;
+        } else {
             // Get translation or default message
             subtitle = translations[t('thread.header.thread_in')] || 'in {channelName}';
             subtitle = subtitle.replace('{channelName}', channel.displayName);
@@ -117,6 +116,10 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
                 subtitle: {
                     color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
                     text: subtitle,
+                },
+                noBorder: true,
+                scrollEdgeAppearance: {
+                    noBorder: true,
                 },
                 rightButtons,
             },

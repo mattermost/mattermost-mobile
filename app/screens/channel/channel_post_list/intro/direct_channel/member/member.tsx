@@ -8,7 +8,6 @@ import {StyleProp, StyleSheet, ViewStyle} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Screens} from '@constants';
 import {showModal} from '@screens/navigation';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -32,7 +31,8 @@ const styles = StyleSheet.create({
 const Member = ({containerStyle, size = 72, showStatus = true, theme, user}: Props) => {
     const intl = useIntl();
     const onPress = useCallback(() => {
-        const screen = Screens.USER_PROFILE;
+        // const screen = Screens.USER_PROFILE;
+        const screen = 'UserProfile';
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const passProps = {
             userId: user.id,

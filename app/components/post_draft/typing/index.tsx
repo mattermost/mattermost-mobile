@@ -2,18 +2,15 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {
-    DeviceEventEmitter,
-    Platform,
-    Text,
-} from 'react-native';
+import {DeviceEventEmitter} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import FormattedText from '@components/formatted_text';
 import {Events} from '@constants';
 import {TYPING_HEIGHT} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type Props = {
     channelId: string;
@@ -23,20 +20,9 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         typing: {
-            position: 'absolute',
-            paddingLeft: 10,
-            paddingTop: 3,
-            fontSize: 11,
-            ...Platform.select({
-                android: {
-                    marginBottom: 5,
-                },
-                ios: {
-                    marginBottom: 2,
-                },
-            }),
-            color: theme.centerChannelColor,
-            backgroundColor: 'transparent',
+            color: changeOpacity(theme.centerChannelColor, 0.7),
+            paddingHorizontal: 10,
+            ...typography('Body', 75),
         },
     };
 });
@@ -57,6 +43,7 @@ function Typing({
     const typingAnimatedStyle = useAnimatedStyle(() => {
         return {
             height: withTiming(typingHeight.value),
+            marginBottom: 4,
         };
     });
 
@@ -65,7 +52,7 @@ function Typing({
             return;
         }
 
-        const msgRootId = msg.parentId || '';
+        const msgRootId = msg.parentId || msg.rootId || '';
         if (rootId !== msgRootId) {
             return;
         }
@@ -84,7 +71,7 @@ function Typing({
             return;
         }
 
-        const msgRootId = msg.parentId || '';
+        const msgRootId = msg.parentId || msg.rootId || '';
         if (rootId !== msgRootId) {
             return;
         }
@@ -140,6 +127,9 @@ function Typing({
                     <FormattedText
                         id='msg_typing.isTyping'
                         defaultMessage='{user} is typing...'
+                        style={style.typing}
+                        ellipsizeMode='tail'
+                        numberOfLines={1}
                         values={{
                             user: nextTyping[0],
                         }}
@@ -151,6 +141,9 @@ function Typing({
                     <FormattedText
                         id='msg_typing.areTyping'
                         defaultMessage='{users} and {last} are typing...'
+                        style={style.typing}
+                        ellipsizeMode='tail'
+                        numberOfLines={1}
                         values={{
                             users: (nextTyping.join(', ')),
                             last,
@@ -163,15 +156,10 @@ function Typing({
 
     return (
         <Animated.View style={typingAnimatedStyle}>
-            <Text
-                style={style.typing}
-                ellipsizeMode='tail'
-                numberOfLines={1}
-            >
-                {renderTyping()}
-            </Text>
+            {renderTyping()}
         </Animated.View>
     );
 }
 
 export default React.memo(Typing);
+

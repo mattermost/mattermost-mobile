@@ -7,7 +7,7 @@ import ClientError from './error';
 
 export interface ClientGeneralMix {
     getOpenGraphMetadata: (url: string) => Promise<any>;
-    ping: () => Promise<any>;
+    ping: (deviceId?: string) => Promise<any>;
     logClientError: (message: string, level?: string) => Promise<any>;
     getClientConfigOld: () => Promise<ClientConfig>;
     getClientLicenseOld: () => Promise<ClientLicense>;
@@ -25,9 +25,13 @@ const ClientGeneral = (superclass: any) => class extends superclass {
         );
     };
 
-    ping = async () => {
+    ping = async (deviceId?: string) => {
+        let url = `${this.urlVersion}/system/ping?time=${Date.now()}`;
+        if (deviceId) {
+            url = `${url}&device_id=${deviceId}`;
+        }
         return this.doFetch(
-            `${this.urlVersion}/system/ping?time=${Date.now()}`,
+            url,
             {method: 'get'},
             false,
         );
