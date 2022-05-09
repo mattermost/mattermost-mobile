@@ -116,6 +116,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         height: 40,
         width: 40,
         justifyContent: 'center',
+        marginRight: 5,
     },
     tutorial: {
         top: -30,
@@ -404,7 +405,7 @@ const ServerItem = ({
                             }
                             {switching &&
                             <Loading
-                                style={styles.swithing}
+                                style={styles.switching}
                                 color={theme.buttonBg}
                             />
                             }

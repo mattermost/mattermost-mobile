@@ -93,7 +93,8 @@ export default {
     THREAD,
     THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
-    USER_PROFILE,
+
+    // USER_PROFILE,
     SNACK_BAR,
 };
 
