@@ -39,6 +39,10 @@ const sortAlpha = (locale: string, a: ChannelData, b: ChannelData) => {
     return a.displayName.localeCompare(b.displayName, locale, {numeric: true});
 };
 
+const filterArchived = (channels: Array<ChannelModel | null>, currentChannelId: string) => {
+    return channels.filter((c): c is ChannelModel => c != null && ((c.deleteAt > 0 && c.id === currentChannelId) || !c.deleteAt));
+};
+
 const buildAlphaData = (channels: ChannelModel[], settings: MyChannelSettingsModel[], locale: string) => {
     const settingsById = settings.reduce((result: Record<string, MyChannelSettingsModel>, s) => {
         result[s.id] = s;
@@ -112,8 +116,11 @@ const withUserId = withObservables([], ({database}: WithDatabaseArgs) => ({curre
 
 const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, locale, isTablet, database, currentUserId}: EnhanceProps) => {
     const observedCategory = category.observe();
+    const currentChannelId = observeCurrentChannelId(database);
     const sortedChannels = observedCategory.pipe(
         switchMap((c) => getSortedChannels(database, c, locale)),
+        combineLatestWith(currentChannelId),
+        map(([cs, ccId]) => filterArchived(cs, ccId)),
     );
 
     const dmMap = (p: PreferenceModel) => getDirectChannelName(p.name, currentUserId);
@@ -155,12 +162,10 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
 
     const notifyProps = observeAllMyChannelNotifyProps(database);
     const lastUnreadId = isTablet ? observeLastUnreadChannelId(database) : of$(undefined);
-    const unreadChannelIds = category.myChannels.observeWithColumns(['mentions_count', 'is_unread']).pipe(
-        combineLatestWith(unreadsOnTop, notifyProps, lastUnreadId),
-        map(([my, unreadTop, settings, lastUnread]) => {
-            if (!unreadTop) {
-                return new Set();
-            }
+    const unreadChannels = category.myChannels.observeWithColumns(['mentions_count', 'is_unread']);
+    const filterUnreads = unreadChannels.pipe(
+        combineLatestWith(notifyProps, lastUnreadId),
+        map(([my, settings, lastUnread]) => {
             return my.reduce<Set<string>>((set, m) => {
                 const isMuted = settings[m.id]?.mark_unread === 'mention';
                 if ((isMuted && m.mentionsCount) || (!isMuted && m.isUnread) || m.id === lastUnread) {
@@ -171,11 +176,10 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
         }),
     );
 
-    const currentChannelId = observeCurrentChannelId(database);
     const filtered = sortedChannels.pipe(
-        combineLatestWith(currentChannelId, unreadChannelIds),
-        map(([channels, ccId, unreadIds]) => {
-            return channels.filter((c) => c && ((c.deleteAt > 0 && c.id === ccId) || !c.deleteAt) && !unreadIds.has(c.id));
+        combineLatestWith(filterUnreads, unreadsOnTop),
+        map(([channels, unreadIds, unreadTop]) => {
+            return channels.filter((c) => (unreadTop ? !unreadIds.has(c.id) : true));
         }),
     );
 
@@ -184,6 +188,10 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
         hiddenChannelIds,
         sortedChannels: filtered,
         category: observedCategory,
+        unreadChannels: sortedChannels.pipe(
+            combineLatestWith(filterUnreads, unreadsOnTop),
+            map(([sorted, unreadIds, unreadsTop]) => (unreadsTop ? [] : sorted.filter((c) => unreadIds.has(c.id)))),
+        ),
     };
 });
 
