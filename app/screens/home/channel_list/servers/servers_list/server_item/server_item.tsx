@@ -350,15 +350,20 @@ const ServerItem = ({
     const serverItem = `server_list.server_item.${server.displayName.replace(/ /g, '_').toLocaleLowerCase()}`;
     const serverItemTestId = isActive ? `${serverItem}.active` : `${serverItem}.inactive`;
 
-    const pushAlertText = pushProxyStatus === PUSH_PROXY_STATUS_NOT_AVAILABLE ?
-        intl.formatMessage({
-            id: 'server_list.push_proxy_error',
-            defaultMessage: 'Notifications cannot be received from this server because of its configuration. Contact your system admin.',
-        }) :
-        intl.formatMessage({
-            id: 'server_list.push_proxy_unknown',
-            defaultMessage: 'Notifications could not be received from this server because of its configuration. Log out and Log in again to retry.',
-        });
+    let pushAlertText;
+    if (server.lastActiveAt) {
+        if (pushProxyStatus === PUSH_PROXY_STATUS_NOT_AVAILABLE) {
+            intl.formatMessage({
+                id: 'server_list.push_proxy_error',
+                defaultMessage: 'Notifications cannot be received from this server because of its configuration. Contact your system admin.',
+            });
+        } else {
+            intl.formatMessage({
+                id: 'server_list.push_proxy_unknown',
+                defaultMessage: 'Notifications could not be received from this server because of its configuration. Log out and Log in again to retry.',
+            });
+        }
+    }
 
     return (
         <>
@@ -412,7 +417,7 @@ const ServerItem = ({
                                     >
                                         {displayName}
                                     </Text>
-                                    {pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED && (
+                                    {server.lastActiveAt > 0 && pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED && (
                                         <CompassIcon
                                             name='alert-outline'
                                             color={theme.errorTextColor}
@@ -442,7 +447,7 @@ const ServerItem = ({
                     </RectButton>
                 </View>
             </Swipeable>
-            {pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED && (
+            {Boolean(pushAlertText && pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED) && (
                 <Text style={styles.pushAlertText}>
                     {pushAlertText}
                 </Text>
