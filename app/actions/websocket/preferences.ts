@@ -20,38 +20,17 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
         const preference = JSON.parse(msg.data.preference) as PreferenceType;
         handleSavePostAdded(serverUrl, [preference]);
 
-        const userId = msg.broadcast.user_id;
-
         if (operator) {
             await operator.handlePreferences({
                 prepareRecordsOnly: false,
                 preferences: [preference],
             });
         }
-        if (userId) {
-            await updateChannelDisplayName(serverUrl, userId);
-        }
+        updateChannelDisplayName(serverUrl, msg.broadcast.user_id);
     } catch (error) {
         // Do nothing
     }
 }
-
-const updateChannelDisplayName = async (serverUrl: string, userId: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    const user = await queryUsersById(database, [userId]).fetch();
-    const channels = await queryChannelsByTypes(database, ['G', 'D']).fetch();
-    await updateChannelsDisplayName(
-        serverUrl,
-        channels,
-        user as unknown as UserProfile[],
-        false,
-    );
-    return {channels};
-};
 
 export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -62,7 +41,6 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
     try {
         const preferences = JSON.parse(msg.data.preferences) as PreferenceType[];
 
-        const userId = msg.broadcast.user_id;
         handleSavePostAdded(serverUrl, preferences);
 
         if (operator) {
@@ -72,9 +50,7 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
             });
         }
 
-        if (userId) {
-            await updateChannelDisplayName(serverUrl, userId);
-        }
+        updateChannelDisplayName(serverUrl, msg.broadcast.user_id);
     } catch (error) {
         // Do nothing
     }
@@ -109,3 +85,28 @@ async function handleSavePostAdded(serverUrl: string, preferences: PreferenceTyp
         }
     }
 }
+
+const updateChannelDisplayName = async (serverUrl: string, userId: string) => {
+    if (!userId) {
+        return {error: 'userId is required'};
+    }
+
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const user = await queryUsersById(database, [userId]).fetch();
+        const channels = await queryChannelsByTypes(database, ['G', 'D']).fetch();
+        await updateChannelsDisplayName(
+            serverUrl,
+            channels,
+            user as unknown as UserProfile[],
+            false,
+        );
+        return {channels};
+    } catch (error) {
+        return {error};
+    }
+};
