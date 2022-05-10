@@ -6,6 +6,7 @@ import {Text, TouchableHighlight, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -49,10 +50,11 @@ export type ModifierItem = {
 
 type Props = {
     item: ModifierItem;
-    setModifierValue: (val: string) => void;
+    setSearchValue: (value: string) => void;
+    searchValue?: string;
 }
 
-const Modifier = ({item, setModifierValue}: Props) => {
+const Modifier = ({item, searchValue, setSearchValue}: Props) => {
     const theme = useTheme();
 
     const handlePress = useCallback(() => {
@@ -60,6 +62,20 @@ const Modifier = ({item, setModifierValue}: Props) => {
     }, [item.value]);
 
     const style = getStyleFromTheme(theme);
+
+    const setModifierValue = preventDoubleTap((modifier) => {
+        let newValue = '';
+
+        if (!searchValue) {
+            newValue = modifier;
+        } else if (searchValue.endsWith(' ')) {
+            newValue = `${searchValue}${modifier}`;
+        } else {
+            newValue = `${searchValue} ${modifier}`;
+        }
+
+        setSearchValue(newValue);
+    });
 
     return (
         <TouchableHighlight

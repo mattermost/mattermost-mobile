@@ -7,7 +7,6 @@ import Animated, {useSharedValue, useAnimatedStyle, withTiming} from 'react-nati
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -114,25 +113,11 @@ const SearchModifiers = ({searchValue, setSearchValue}: Props) => {
             <Modifier
                 key={item.value}
                 item={item}
-                setModifierValue={setModifierValue}
+                searchValue={searchValue}
+                setSearchValue={setSearchValue}
             />
         );
     };
-
-    // put in modifier component
-    const setModifierValue = preventDoubleTap((modifier) => {
-        let newValue = '';
-
-        if (!searchValue) {
-            newValue = modifier;
-        } else if (searchValue.endsWith(' ')) {
-            newValue = `${searchValue}${modifier}`;
-        } else {
-            newValue = `${searchValue} ${modifier}`;
-        }
-
-        setSearchValue(newValue);
-    });
 
     return (
         <>
