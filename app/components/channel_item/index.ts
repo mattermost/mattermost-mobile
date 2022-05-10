@@ -26,7 +26,7 @@ type EnhanceProps = WithDatabaseArgs & {
 
 const observeIsMutedSetting = (mc: MyChannelModel) => mc.settings.observe().pipe(switchMap((s) => of$(s?.notifyProps?.mark_unread === 'mention')));
 
-const enhance = withObservables(['showTeamName', 'isCategoryMuted'], ({channel, database, showTeamName, isCategoryMuted}: EnhanceProps) => {
+const enhance = withObservables(['channel', 'showTeamName', 'isCategoryMuted'], ({channel, database, showTeamName, isCategoryMuted}: EnhanceProps) => {
     const currentUserId = observeCurrentUserId(database);
     const myChannel = observeMyChannel(database, channel.id);
 
@@ -74,6 +74,7 @@ const enhance = withObservables(['showTeamName', 'isCategoryMuted'], ({channel, 
     );
 
     return {
+        channel: channel.observe(),
         currentUserId,
         hasDraft,
         isActive,
