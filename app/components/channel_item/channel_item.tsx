@@ -29,6 +29,7 @@ type Props = {
     isUnread: boolean;
     mentionsCount: number;
     onPress: (channelId: string) => void;
+    hasMember: boolean;
     teamDisplayName?: string;
     testID?: string;
 }
@@ -114,7 +115,7 @@ export const textStyle = StyleSheet.create({
 
 const ChannelListItem = ({
     channel, currentUserId, hasDraft,
-    isActive, isInfo, isMuted, membersCount,
+    isActive, isInfo, isMuted, membersCount, hasMember,
     isUnread, mentionsCount, onPress, teamDisplayName, testID}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
@@ -152,6 +153,10 @@ const ChannelListItem = ({
         {minHeight: height},
     ],
     [height, isActive, isInfo, styles]);
+
+    if (!hasMember) {
+        return null;
+    }
 
     const teammateId = (channel.type === General.DM_CHANNEL) ? getUserIdFromChannelName(currentUserId, channel.name) : undefined;
     const isOwnDirectMessage = (channel.type === General.DM_CHANNEL) && currentUserId === teammateId;

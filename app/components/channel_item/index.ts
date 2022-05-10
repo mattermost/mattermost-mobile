@@ -73,6 +73,11 @@ const enhance = withObservables(['channel', 'showTeamName', 'isCategoryMuted'], 
         distinctUntilChanged(),
     );
 
+    const hasMember = myChannel.pipe(
+        switchMap((mc) => of$(Boolean(mc))),
+        distinctUntilChanged(),
+    );
+
     return {
         channel: channel.observe(),
         currentUserId,
@@ -83,6 +88,7 @@ const enhance = withObservables(['channel', 'showTeamName', 'isCategoryMuted'], 
         isUnread,
         mentionsCount,
         teamDisplayName,
+        hasMember,
     };
 });
 

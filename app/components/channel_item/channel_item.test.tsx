@@ -41,6 +41,7 @@ describe('components/channel_list/categories/body/channel_item', () => {
                 onPress={() => undefined}
                 isUnread={myChannel.isUnread}
                 mentionsCount={myChannel.mentionsCount}
+                hasMember={Boolean(myChannel)}
             />,
         );
 
@@ -60,6 +61,7 @@ describe('components/channel_list/categories/body/channel_item', () => {
                 onPress={() => undefined}
                 isUnread={myChannel.isUnread}
                 mentionsCount={myChannel.mentionsCount}
+                hasMember={Boolean(myChannel)}
             />,
         );
 
