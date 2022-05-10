@@ -269,6 +269,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     }
 
     let channelId = '';
+    DeviceEventEmitter.emit(Events.TEAM_SWITCH, true);
     if (await isTablet()) {
         channelId = await getNthLastChannelFromTeam(database, teamId);
         if (channelId) {
@@ -277,12 +278,12 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
             } else {
                 await switchToChannelById(serverUrl, channelId, teamId);
             }
+            DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);
             completeTeamChange(serverUrl, teamId, channelId);
             return;
         }
     }
 
-    DeviceEventEmitter.emit(Events.TEAM_SWITCH, true);
     const models = [];
     const system = await prepareCommonSystemValues(operator, {currentChannelId: channelId, currentTeamId: teamId, lastUnreadChannelId: ''});
     if (system?.length) {
