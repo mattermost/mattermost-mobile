@@ -16,7 +16,7 @@ type Props = {
 const style = StyleSheet.create({
     customStatusEmoji: {
         color: '#000',
-        marginHorizontal: 5,
+        marginHorizontal: -5,
         top: 3,
     },
     info: {
