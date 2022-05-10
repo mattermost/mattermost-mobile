@@ -282,6 +282,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
         }
     }
 
+    DeviceEventEmitter.emit(Events.TEAM_SWITCH, true);
     const models = [];
     const system = await prepareCommonSystemValues(operator, {currentChannelId: channelId, currentTeamId: teamId, lastUnreadChannelId: ''});
     if (system?.length) {
@@ -295,6 +296,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     if (models.length) {
         await operator.batchRecords(models);
     }
+    DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);
 
     completeTeamChange(serverUrl, teamId, channelId);
 }

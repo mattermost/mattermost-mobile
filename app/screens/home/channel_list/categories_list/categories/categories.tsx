@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, FlatList, StyleSheet, View} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import Loading from '@components/loading';
+import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
-import useDidUpdate from '@hooks/did_update';
 
 import CategoryBody from './body';
 import LoadCategoriesError from './error';
@@ -73,16 +73,7 @@ const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
                 />
             </>
         );
-
-        // We should not depend on the teamId, because it will trigger the re-render of
-        // all the elements during the switch. Instead, we depend on isLoading, that effectively
-        // mark a team switch.
-    }, [isLoading, intl.locale, isTablet, onChannelSwitch, onlyUnreads]);
-
-    useDidUpdate(() => {
-        listRef.current?.scrollToOffset({animated: false, offset: 0});
-        setLoading(true);
-    }, [teamId]);
+    }, [teamId, intl.locale, isTablet, onChannelSwitch, onlyUnreads]);
 
     const categoriesToShow = useMemo(() => {
         if (onlyUnreads && !unreadsOnTop) {
@@ -96,15 +87,26 @@ const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
         return orderedCategories;
     }, [categories, onlyUnreads, unreadsOnTop]);
 
-    const categoriesAfterLoading = useRef(categoriesToShow);
-
-    useDidUpdate(() => {
-        const t = setTimeout(() => {
-            categoriesAfterLoading.current = categoriesToShow;
-            setLoading(false);
-        }, 350);
-        return () => clearTimeout(t);
-    }, [categoriesToShow]);
+    useEffect(() => {
+        let time: NodeJS.Timeout | undefined;
+        const l = DeviceEventEmitter.addListener(Events.TEAM_SWITCH, (switching) => {
+            if (time) {
+                clearTimeout(time);
+            }
+            if (switching) {
+                setLoading(true);
+            } else {
+                // eslint-disable-next-line max-nested-callbacks
+                time = setTimeout(() => setLoading(false), 200);
+            }
+        });
+        return () => {
+            l.remove();
+            if (time) {
+                clearTimeout(time);
+            }
+        };
+    }, []);
 
     if (!categories.length) {
         return <LoadCategoriesError/>;
@@ -114,7 +116,7 @@ const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
         <>
             {!isLoading && (
                 <FlatList
-                    data={categoriesAfterLoading.current}
+                    data={categoriesToShow}
                     ref={listRef}
                     renderItem={renderCategory}
                     style={styles.mainList}
