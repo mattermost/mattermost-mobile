@@ -8,6 +8,7 @@ import {Text, TouchableHighlight, TouchableOpacity, View} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 export const RECENT_LABEL_HEIGHT = 42;
 
@@ -18,13 +19,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
             height: RECENT_LABEL_HEIGHT,
+            marginLeft: 16,
         },
         recentItemLabel: {
+            marginLeft: 16,
             color: theme.centerChannelColor,
-            fontSize: 14,
-            height: 20,
-            flex: 1,
-            paddingHorizontal: 16,
+            ...typography('Body', 400, 'Regular'),
         },
         recentRemove: {
             alignItems: 'center',
@@ -70,6 +70,11 @@ const RecentItem = ({item, removeSearchTerms, setRecentValue}: Props) => {
                 testID={testID}
                 style={style.recentItemContainer}
             >
+                <CompassIcon
+                    name='clock-outline'
+                    size={24}
+                    color={changeOpacity(theme.centerChannelColor, 0.6)}
+                />
                 <Text
                     style={style.recentItemLabel}
                 >
@@ -82,7 +87,7 @@ const RecentItem = ({item, removeSearchTerms, setRecentValue}: Props) => {
                 >
                     <CompassIcon
                         name='close-circle-outline'
-                        size={20}
+                        size={24}
                         color={changeOpacity(theme.centerChannelColor, 0.6)}
                     />
                 </TouchableOpacity>

@@ -1,60 +1,104 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
-import compose from 'lodash/fp/compose';
-import {of as of$} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
+import React, {useMemo, useState, useEffect} from 'react';
+import {useIntl} from 'react-intl';
+import {Text, ScrollView, View} from 'react-native';
+import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {getTeamSearchHistory, queryTeamSearchHistoryById} from '@app/queries/servers/team';
-import {observeConfigBooleanValue, observeCurrentTeamId} from '@queries/servers/system';
-import {queryJoinedTeams} from '@queries/servers/team';
-import {observeCurrentUser} from '@queries/servers/user';
-import {getTimezone} from '@utils/user';
+import FreezeScreen from '@components/freeze_screen';
+import NavigationHeader from '@components/navigation_header';
+import {useTheme} from '@context/theme';
+import {useCollapsibleHeader} from '@hooks/header';
 
-import SearchScreen from './search';
+import SearchModifiers from './search_modifiers/search_modifiers';
 
-import type {WithDatabaseArgs} from '@typings/database/database';
+const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
-const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
-    const currentUser = observeCurrentUser(database);
-    const currentTeamId = observeCurrentTeamId(database);
-    const viewArchivedChannels = observeConfigBooleanValue(database, 'ExperimentalViewArchivedChannels');
-    console.log('\n<><><> INSIDE enhance function');
-    const teamsCount = queryJoinedTeams(database).observe();
-    teamsCount.subscribe((count) => {
-        console.log('teamsCount', count);
-        return of$(count);
-    });
+const SearchScreen = () => {
+    const nav = useNavigation();
+    const isFocused = useIsFocused();
+    const theme = useTheme();
+    const intl = useIntl();
+    const searchScreenIndex = 1;
+    const stateIndex = nav.getState().index;
+    const {searchTerm} = nav.getState().routes[stateIndex].params;
 
-    // const recent = getTeamSearchHistory(database, currentTeamId);
-    // const recent = queryTeamSearchHistoryById(database, currentTeamId);
-    // const recent = queryTeamSearchHistoryById(database, currentTeamId.pipe(map(rows) => {
-    //         return of$([]);
-    // }));
+    const [searchValue, setSearchValue] = useState<string>(searchTerm);
 
-    // const recent = queryTeamSearchHistoryById(database, currentTeamId.pipe((switchMap((team) => of$(team)));
+    useEffect(() => {
+        setSearchValue(searchTerm);
+    }, [searchTerm]);
 
-    return {
+    const animated = useAnimatedStyle(() => {
+        if (isFocused) {
+            return {
+                opacity: withTiming(1, {duration: 150}),
+                transform: [{translateX: withTiming(0, {duration: 150})}],
+            };
+        }
 
-        // archivedPostIds,
-        currentTeamId,
-        teamsCount,
+        return {
+            opacity: withTiming(0, {duration: 150}),
+            transform: [{translateX: withTiming(stateIndex < searchScreenIndex ? 25 : -25, {duration: 150})}],
+        };
+    }, [isFocused, stateIndex]);
 
-        // initialValue,
-        // isSearchGettingMore,
-        // postIds,
-        // recent,
+    const isLargeTitle = true;
+    const hasSearch = true;
 
-        // timezoneOffsetInSeconds,
-        viewArchivedChannels,
+    const {scrollPaddingTop, scrollRef, scrollValue, onScroll} = useCollapsibleHeader<ScrollView>(isLargeTitle, false, hasSearch);
+    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop}), [scrollPaddingTop]);
 
-        // currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
-    };
-});
+    return (
+        <FreezeScreen freeze={!isFocused}>
+            <NavigationHeader
+                isLargeTitle={isLargeTitle}
+                onBackPress={() => {
+                    // eslint-disable-next-line no-console
+                    console.log('BACK');
+                }}
+                showBackButton={false}
+                title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
+                hasSearch={hasSearch}
+                scrollValue={scrollValue}
+                forwardedRef={scrollRef}
+                onChangeText={setSearchValue}
+                onSubmitEditing={() => {
+                    // eslint-disable-next-line no-console
+                    console.log('Execute search');
+                }}
+                blurOnSubmit={true}
+                placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
+                value={searchValue}
+            />
+            <SafeAreaView
+                style={{flex: 1}}
+                edges={['bottom', 'left', 'right']}
+            >
+                <Animated.View style={[{flex: 1}, animated]}>
+                    <AnimatedScrollView
+                        contentContainerStyle={paddingTop}
+                        nestedScrollEnabled={true}
+                        scrollToOverflowEnabled={true}
+                        showsVerticalScrollIndicator={false}
+                        indicatorStyle='black'
+                        onScroll={onScroll}
+                        scrollEventThrottle={16}
+                        ref={scrollRef}
+                    >
+                        <SearchModifiers
+                            setSearchValue={setSearchValue}
+                            searchValue={searchValue}
+                        />
+                    </AnimatedScrollView>
+                </Animated.View>
+            </SafeAreaView>
+        </FreezeScreen>
+    );
+};
 
-export default compose(
-    withDatabase,
-    enhance,
-)(SearchScreen);
+export default SearchScreen;
+

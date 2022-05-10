@@ -4,7 +4,7 @@
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useEffect, useMemo, useState, useRef, useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {LayoutChangeEvent, DeviceEventEmitter, Keyboard, Text, FlatList, View, Platform, SectionList, SectionListData} from 'react-native';
+import {LayoutChangeEvent, DeviceEventEmitter, Keyboard, Text, FlatList, View, Platform, SectionList, SectionListData, ScrollView} from 'react-native';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, Edge} from 'react-native-safe-area-context';
@@ -39,7 +39,6 @@ const FAILURE = 'failure';
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
 
 const isLargeTitle = true;
-const subtitle = '';
 const title = 'Search';
 const hasSearch = true;
 const showBackButton = false;
@@ -66,11 +65,11 @@ type Props = {
 }
 
 const SearchScreen = ({teamsCount, archivedPostIds, currentTeamId, initialValue, isSearchGettingMore, postIds, recent, timezoneOffsetInSeconds, viewArchivedChannels}: Props) => {
-    console.log('\n<><><> enhanced SearchScreen Component');
-    console.log('currentTeamId', currentTeamId);
+    // console.log('\n<><><> enhanced SearchScreen Component');
+    // console.log('currentTeamId', currentTeamId);
 
-    console.log('teamsCount', teamsCount);
-    console.log('viewArchivedChannels', viewArchivedChannels);
+    // console.log('teamsCount', teamsCount);
+    // console.log('viewArchivedChannels', viewArchivedChannels);
 
     // console.log('recent', recent);
     const nav = useNavigation();
@@ -80,7 +79,6 @@ const SearchScreen = ({teamsCount, archivedPostIds, currentTeamId, initialValue,
     const formatMessage = intl.formatMessage;
 
     const listRef = useRef(null);
-    const searchBarRef = useRef<TextInput>(null);
 
     const [cursorPosition, setCursorPosition] = useState(0);
     const [searchValue, setValue] = useState(initialValue);
@@ -109,7 +107,8 @@ const SearchScreen = ({teamsCount, archivedPostIds, currentTeamId, initialValue,
         };
     }, [isFocused, stateIndex]);
 
-    const {scrollPaddingTop, scrollRef, scrollValue, onScroll} = useCollapsibleHeader<FlatList<string>>(isLargeTitle, Boolean(subtitle), hasSearch);
+    const {scrollPaddingTop, scrollRef, scrollValue, onScroll} = useCollapsibleHeader<FlatList<string>>(isLargeTitle, false, hasSearch);
+
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop}), [scrollPaddingTop]);
 
     useEffect(() => {
@@ -121,36 +120,36 @@ const SearchScreen = ({teamsCount, archivedPostIds, currentTeamId, initialValue,
         }
 
         // setTimeout(() => {
-        if (searchBarRef && !searchValue) {
-            searchBarRef.current?.focus();
-        }
+        // if (searchBarRef && !searchValue) {
+        //     searchBarRef.current?.focus();
+        // }
 
         // }, 150);
         return () => HWKeyboardEvent.removeOnHWKeyPressed();
     }, [searchValue]);
 
     useEffect(() => {
-        const shouldScroll = (isLoaded || didFail) &&
-            !isSearchGettingMore && recent.length;
+        // const shouldScroll = (isLoaded || didFail) &&
+        //     !isSearchGettingMore && recent.length;
 
-        if (shouldScroll) {
-            setTimeout(() => {
-                const recentLabelsHeight = recent.length * RECENT_LABEL_HEIGHT;
-                const recentSeparatorsHeight = (recent.length - 1) * RECENT_SEPARATOR_HEIGHT;
-                const modifiersCount = 5;
-                const modifiersHeight = modifiersCount * MODIFIER_LABEL_HEIGHT;
-                const modifiersSeparatorHeight = (modifiersCount - 1) * RECENT_SEPARATOR_HEIGHT;
-                const offset = modifiersHeight + modifiersSeparatorHeight + SECTION_HEIGHT + recentLabelsHeight + recentSeparatorsHeight;
-                Keyboard.dismiss();
-
-                //             if (this.listRef?._wrapperListRef) {
-                //                 this.listRef._wrapperListRef.getListRef().scrollToOffset({
-                //                     animated: true,
-                //                     offset,
-                //                 });
-                //             }
-            }, 250);
-        }
+        // if (shouldScroll) {
+        //     setTimeout(() => {
+        //         const recentLabelsHeight = recent.length * RECENT_LABEL_HEIGHT;
+        //         const recentSeparatorsHeight = (recent.length - 1) * RECENT_SEPARATOR_HEIGHT;
+        //         const modifiersCount = 5;
+        //         const modifiersHeight = modifiersCount * MODIFIER_LABEL_HEIGHT;
+        //         const modifiersSeparatorHeight = (modifiersCount - 1) * RECENT_SEPARATOR_HEIGHT;
+        //         const offset = modifiersHeight + modifiersSeparatorHeight + SECTION_HEIGHT + recentLabelsHeight + recentSeparatorsHeight;
+        //         Keyboard.dismiss();
+        //
+        //         //             if (this.listRef?._wrapperListRef) {
+        //         //                 this.listRef._wrapperListRef.getListRef().scrollToOffset({
+        //         //                     animated: true,
+        //         //                     offset,
+        //         //                 });
+        //         //             }
+        //     }, 250);
+        // }
 
         //     const {status: prevStatus} = prevState;
         //     const shouldScroll = prevStatus !== status &&
@@ -310,55 +309,55 @@ const SearchScreen = ({teamsCount, archivedPostIds, currentTeamId, initialValue,
         // setStatus(error ? 'didFail' : 'isLoaded');
     };
 
-    let results;
-    if (didFail) {
-        if (postIds.length) {
-            results = postIds;
-        } else {
-            results = [{
-                id: FAILURE,
-                component: (
-                    <View style={styles.searching}>
-                        {/* <PostListRetry */}
-                        {/*     retry={retry} */}
-                        {/*     theme={theme} */}
-                        {/* /> */}
-                        <Text>
-                            {'did fail not yet implemented'}
-                        </Text>
-                    </View>
-                ),
-            }];
-        }
-    } else if (isLoading) {
-        if (isSearchGettingMore) {
-            results = postIds;
-        } else {
-            results = [{
-                id: SEARCHING,
-                component: (
-                    <View style={styles.searching}>
-                        <Loading color={theme.centerChannelColor}/>
-                    </View>
-                ),
-            }];
-        }
-    } else if (isLoaded) {
-        if (postIds.length) {
-            results = postIds;
-        } else if (searchValue) {
-            results = [{
-                id: NO_RESULTS,
-                component: (
-                    <FormattedText
-                        id='mobile.search.no_results'
-                        defaultMessage='No Results Found'
-                        style={styles.noResults}
-                    />
-                ),
-            }];
-        }
-    }
+    // let results;
+    // if (didFail) {
+    //     if (postIds.length) {
+    //         results = postIds;
+    //     } else {
+    //         results = [{
+    //             id: FAILURE,
+    //             component: (
+    //                 <View style={styles.searching}>
+    //                     {/* <PostListRetry */}
+    //                     {/*     retry={retry} */}
+    //                     {/*     theme={theme} */}
+    //                     {/* /> */}
+    //                     <Text>
+    //                         {'did fail not yet implemented'}
+    //                     </Text>
+    //                 </View>
+    //             ),
+    //         }];
+    //     }
+    // } else if (isLoading) {
+    //     if (isSearchGettingMore) {
+    //         results = postIds;
+    //     } else {
+    //         results = [{
+    //             id: SEARCHING,
+    //             component: (
+    //                 <View style={styles.searching}>
+    //                     <Loading color={theme.centerChannelColor}/>
+    //                 </View>
+    //             ),
+    //         }];
+    //     }
+    // } else if (isLoaded) {
+    //     if (postIds.length) {
+    //         results = postIds;
+    //     } else if (searchValue) {
+    //         results = [{
+    //             id: NO_RESULTS,
+    //             component: (
+    //                 <FormattedText
+    //                     id='mobile.search.no_results'
+    //                     defaultMessage='No Results Found'
+    //                     style={styles.noResults}
+    //                 />
+    //             ),
+    //         }];
+    //     }
+    // }
 
     // const searchBarInput = {
     //     backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
@@ -375,12 +374,9 @@ const SearchScreen = ({teamsCount, archivedPostIds, currentTeamId, initialValue,
                     console.log('BACK');
                 }}
                 showBackButton={showBackButton}
-                subtitle={subtitle}
                 title={title}
                 hasSearch={hasSearch}
                 scrollValue={scrollValue}
-
-                // forwardedRef={searchBarRef}
                 forwardedRef={scrollRef}
                 onChangeText={(text) => {
                     // eslint-disable-next-line no-console
@@ -400,22 +396,27 @@ const SearchScreen = ({teamsCount, archivedPostIds, currentTeamId, initialValue,
                 edges={EDGES}
             >
                 <Animated.View style={[styles.flex, animated]}>
-                    <SearchModifiers
-                        handleTextChanged={handleTextChanged}
-                        paddingTop={paddingTop}
-                        searchValue={searchValue}
-                    />
-                    <RecentSearches
-                        handleTextChanged={handleTextChanged}
-                        recent={recent}
-                        searchValue={searchValue}
-                    />
-                    {(results || true) &&
-                        <SearchResults
-                            results={results}
-                            paddingTop={paddingTop}
-                        />
-                    }
+                    <Animated.ScrollView/>
+                    {/* <SearchModifiers */}
+                    {/*     handleTextChanged={handleTextChanged} */}
+                    {/*     onScroll={onScroll} */}
+                    {/*     paddingTop={paddingTop} */}
+                    {/*     ref={scrollRef} */}
+                    {/*     searchValue={searchValue} */}
+                    {/* /> */}
+                    {/* <RecentSearches */}
+                    {/*     handleTextChanged={handleTextChanged} */}
+                    {/*     paddingTop={paddingTop} */}
+                    {/*     recent={recent} */}
+                    {/*     ref={scrollRef} */}
+                    {/*     searchValue={searchValue} */}
+                    {/* /> */}
+                    {/* {(results || true) && */}
+                    {/*     <SearchResults */}
+                    {/*         results={results} */}
+                    {/*         paddingTop={paddingTop} */}
+                    {/*     /> */}
+                    {/* } */}
 
                 </Animated.View>
 

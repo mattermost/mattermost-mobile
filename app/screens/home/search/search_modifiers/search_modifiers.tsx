@@ -1,25 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, useCallback} from 'react';
+import React, {useMemo, useState, useCallback} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
-import {Text, FlatList, View, Platform, SectionList, SectionListData} from 'react-native';
-import Animated from 'react-native-reanimated';
+import {StyleProp, FlatList, ListRenderItem, Platform, NativeSyntheticEvent, NativeScrollEvent, ViewStyle} from 'react-native';
+import Animated, {useSharedValue, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
+import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import Modifier, {ModifierItem} from './modifier';
+import Modifier, {ModifierItem, MODIFIER_LABEL_HEIGHT} from './modifier';
 import ShowMoreButton from './show_more';
 
-const AnimatedSectionList = Animated.createAnimatedComponent(SectionList);
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 const SECTION_HEIGHT = 20;
 const RECENT_SEPARATOR_HEIGHT = 3;
-
-const emptySections: Array<SectionListData<ModifierItem | boolean>> = [];
 
 //    static propTypes = {
 //     actions: PropTypes.shape({
@@ -31,7 +30,7 @@ const emptySections: Array<SectionListData<ModifierItem | boolean>> = [];
 //     }).isRequired,
 // };
 
-const getModifiersSectionsData = (intl: IntlShape, showMore: boolean): ModifierItem[] => {
+const getModifiersSectionsData = (intl: IntlShape): ModifierItem[] => {
     const formatMessage = intl.formatMessage;
     const sectionsData = [
         {
@@ -58,100 +57,85 @@ const getModifiersSectionsData = (intl: IntlShape, showMore: boolean): ModifierI
                 id: 'mobile.search.on_modifier_description',
                 defaultMessage: ' a specific date',
             }),
-        }];
+        }, {
 
-    if (showMore) {
-        sectionsData.push(
-            {
-
-                // TODO: After is not shown in figma
-                value: 'After:',
-                testID: 'search.after_section',
-                modifier: 'YYYY-MM-DD',
-                description: formatMessage({
-                    id: 'mobile.search.after_modifier_description',
-                    defaultMessage: ' after a date',
-                }),
-            }, {
-                value: 'Before:',
-                testID: 'search.before_section',
-                modifier: 'YYYY-MM-DD',
-                description: formatMessage({
-                    id: 'mobile.search.before_modifier_description',
-                    defaultMessage: ' before a date',
-                }),
-            }, {
-                value: '-',
-                testID: 'search.exclude_section',
-                modifier: 'YYYY-MM-DD',
-                description: formatMessage({
-                    id: 'mobile.search.exclude_modifier_description',
-                    defaultMessage: ' exclude search terms',
-                }),
-            }, {
-                value: '""',
-                testID: 'search.phrases_section',
-                modifier: 'YYYY-MM-DD',
-                description: formatMessage({
-                    id: 'mobile.search.phrases_modifier_description',
-                    defaultMessage: ' messages with phrases',
-                }),
-            },
-        );
-    }
+            // TODO: After is not shown in figma
+            value: 'After:',
+            testID: 'search.after_section',
+            modifier: 'YYYY-MM-DD',
+            description: formatMessage({
+                id: 'mobile.search.after_modifier_description',
+                defaultMessage: ' after a date',
+            }),
+        }, {
+            value: 'Before:',
+            testID: 'search.before_section',
+            modifier: 'YYYY-MM-DD',
+            description: formatMessage({
+                id: 'mobile.search.before_modifier_description',
+                defaultMessage: ' before a date',
+            }),
+        }, {
+            value: '-',
+            testID: 'search.exclude_section',
+            modifier: 'YYYY-MM-DD',
+            description: formatMessage({
+                id: 'mobile.search.exclude_modifier_description',
+                defaultMessage: ' exclude search terms',
+            }),
+        }, {
+            value: '""',
+            testID: 'search.phrases_section',
+            modifier: 'YYYY-MM-DD',
+            description: formatMessage({
+                id: 'mobile.search.phrases_modifier_description',
+                defaultMessage: ' messages with phrases',
+            }),
+        },
+    ];
     return sectionsData;
 };
 
-const keyModifierExtractor = (item: ModifierItem) => {
-    return `modifier-${item.value}`;
-};
-
 type Props = {
-    handleTextChanged?: any;
+    setSearchValue: (value: string) => void;
     searchValue?: string;
-    paddingTop?: any;
 }
-const SearchModifiers = ({searchValue, handleTextChanged, paddingTop}: Props) => {
+const SearchModifiers = ({searchValue, setSearchValue}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
 
-    // const [sections, setSections] = useState<Array<SectionListData<Channel>>>(emptySections);
     const [showMore, setShowMore] = useState(false);
+    const show = useSharedValue(3 * MODIFIER_LABEL_HEIGHT);
 
     const styles = getStyleFromTheme(theme);
-    const renderModifiers = useCallback(({item}: ModifierItem) => {
+    const animatedStyle = useAnimatedStyle(() => (
+        {
+            width: '100%',
+            height: withTiming(show.value, {duration: 300}),
+        }
+    ));
+
+    const renderModifier = (item: ModifierItem) => {
         return (
             <Modifier
+                key={item.value}
                 item={item}
                 setModifierValue={setModifierValue}
             />
         );
-    }, []);
-
-    const renderShowMoreItem = useCallback(() => {
-        return (
-            <ShowMoreButton
-                theme={theme}
-                onPress={() => {
-                    setShowMore(!showMore);
-                }}
-                showMore={showMore}
-            />
-        );
-    }, [showMore]);
-
-    const renderSectionHeader = ({section}) => {
-        const {title} = section;
-        if (title) {
-            return (
-                <Text style={styles.sectionTitle}>
-                    {title}
-                </Text>
-            );
-        }
-        return <View/>;
     };
 
+    const renderHeader = () => {
+        return (
+            <FormattedText
+                style={styles.title}
+                id={'screen.search.modifier.header'}
+                defaultMessage='Search options'
+            />
+        );
+    };
+
+    // put in modifier component
     const setModifierValue = preventDoubleTap((modifier) => {
         let newValue = '';
 
@@ -163,46 +147,27 @@ const SearchModifiers = ({searchValue, handleTextChanged, paddingTop}: Props) =>
             newValue = `${searchValue} ${modifier}`;
         }
 
-        handleTextChanged(newValue, true);
+        setSearchValue(newValue);
     });
 
-    const sectionsData = getModifiersSectionsData(intl, showMore);
-
-    const sections: typeof emptySections = [{
-        data: sectionsData,
-        key: 'modifiers',
-        title: 'Search options',
-        renderItem: renderModifiers,
-        keyExtractor: keyModifierExtractor,
-    }];
-
-    sections.push({
-        data: [showMore],
-        renderItem: renderShowMoreItem,
-    });
+    const data = useMemo(() => getModifiersSectionsData(intl), [intl]);
 
     return (
-        <AnimatedSectionList
-
-            contentContainerStyle={paddingTop}
-
-            // ref={scrollRef}
-            //     style={style.sectionList}
-            removeClippedSubviews={true}
-            renderSectionHeader={renderSectionHeader}
-            sections={sections}
-            keyboardShouldPersistTaps='always'
-            keyboardDismissMode='interactive'
-            stickySectionHeadersEnabled={Platform.OS === 'ios'}
-
-            // onLayout={handleLayout}
-            // onScroll={handleScroll}
-            scrollEventThrottle={60}
-
-            // SectionSeparatorComponent={renderRecentSeparator}
-            //                 onViewableItemsChanged={onViewableItemsChanged}
-            testID='search.results_list'
-        />
+        <>
+            <Animated.View
+                style={animatedStyle}
+            >
+                {data.map((item) => renderModifier(item))}
+            </Animated.View>
+            <ShowMoreButton
+                theme={theme}
+                onPress={() => {
+                    setShowMore(!showMore);
+                    show.value = showMore ? data.length : 3 * MODIFIER_LABEL_HEIGHT;
+                }}
+                showMore={showMore}
+            />
+        </>
     );
 };
 
@@ -221,7 +186,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingLeft: 20,
             height: SECTION_HEIGHT,
         },
-        sectionTitle: {
+        title: {
             paddingVertical: 12,
             paddingHorizontal: 20,
             color: theme.centerChannelColor,

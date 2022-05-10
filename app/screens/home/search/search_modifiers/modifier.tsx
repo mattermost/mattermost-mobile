@@ -26,15 +26,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             flexDirection: 'row',
         },
-        modifierLabelValueContainer: {
-            alignItems: 'center',
-            marginRight: 5,
-            borderRadius: 4,
-            paddingHorizontal: 4,
-            paddingVertical: 2,
-            fontSize: 10,
-            ...typography('Body', 200, 'Regular'),
-        },
         modifierLabelValue: {
             marginLeft: 16,
             ...typography('Body', 400, 'SemiBold'),
@@ -43,9 +34,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         modifierItemDescription: {
             fontSize: 16,
             ...typography('Body', 400, 'Regular'),
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-
-            // marginTop: 5,
+            color: theme.centerChannelColor,
         },
     };
 });
