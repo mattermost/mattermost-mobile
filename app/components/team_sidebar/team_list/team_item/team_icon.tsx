@@ -9,6 +9,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import NetworkManager from '@managers/network_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -30,9 +31,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         text: {
             color: theme.sidebarText,
-            fontFamily: 'OpenSans',
-            fontWeight: 'bold',
-            fontSize: 15,
+            ...typography('Heading', 400, 'SemiBold'),
         },
         image: {
             borderRadius: 6,
@@ -102,12 +101,14 @@ export default function TeamIcon({
 
     let teamIconContent;
     if (nameOnly) {
+        const first = displayName[0].toUpperCase();
+        const second = displayName[1]?.toLowerCase() || '';
         teamIconContent = (
             <Text
                 style={textColor ? [styles.text, {color: textColor}] : styles.text}
                 testID={`${testID}.display_name_abbreviation`}
             >
-                {displayName?.substring(0, 2).toUpperCase()}
+                {`${first}${second}`}
             </Text>
         );
     } else {
