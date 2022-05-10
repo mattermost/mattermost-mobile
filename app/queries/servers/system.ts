@@ -398,3 +398,10 @@ export const getLastUnreadChannelId = async (serverDatabase: Database): Promise<
         return '';
     }
 };
+
+export const observeOnlyUnreads = (database: Database) => {
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.ONLY_UNREADS).observeWithColumns(['value']).pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$({value: false}))),
+        switchMap((model) => of$(model.value as boolean)),
+    );
+};

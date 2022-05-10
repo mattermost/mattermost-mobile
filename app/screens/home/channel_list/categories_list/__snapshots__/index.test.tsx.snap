@@ -415,53 +415,112 @@ exports[`components/categories_list should render team error 1`] = `
     </View>
   </View>
   <View
-    accessible={true}
-    focusable={true}
-    onClick={[Function]}
-    onResponderGrant={[Function]}
-    onResponderMove={[Function]}
-    onResponderRelease={[Function]}
-    onResponderTerminate={[Function]}
-    onResponderTerminationRequest={[Function]}
-    onStartShouldSetResponder={[Function]}
     style={
       Object {
-        "backgroundColor": "rgba(255,255,255,0.12)",
-        "borderRadius": 8,
         "flexDirection": "row",
-        "height": 40,
-        "justifyContent": "flex-start",
-        "marginVertical": 20,
-        "padding": 8,
-        "width": "100%",
       }
     }
   >
-    <Icon
-      name="magnify"
-      style={
+    <View
+      animatedStyle={
         Object {
-          "color": "rgba(255,255,255,0.72)",
-          "fontSize": 24,
-          "width": 24,
+          "value": Object {
+            "marginRight": 8,
+            "opacity": 1,
+            "width": 40,
+          },
         }
       }
-    />
-    <Text
+      collapsable={false}
       style={
         Object {
-          "color": "rgba(255,255,255,0.72)",
-          "fontFamily": "OpenSans",
-          "fontSize": 16,
-          "fontWeight": "400",
-          "lineHeight": 24,
-          "marginLeft": 5,
-          "marginTop": 1,
+          "marginRight": 8,
+          "opacity": 1,
+          "width": 40,
         }
       }
     >
-      Find channels...
-    </Text>
+      <View
+        accessible={true}
+        focusable={true}
+        onClick={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          Array [
+            Object {
+              "alignItems": "center",
+              "backgroundColor": "rgba(255,255,255,0.12)",
+              "borderRadius": 8,
+              "height": 40,
+              "justifyContent": "center",
+              "marginVertical": 20,
+              "width": 40,
+            },
+            false,
+          ]
+        }
+      >
+        <Icon
+          color="rgba(255,255,255,0.56)"
+          name="filter-variant"
+          size={24}
+        />
+      </View>
+    </View>
+    <View
+      accessible={true}
+      focusable={true}
+      onClick={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        Object {
+          "backgroundColor": "rgba(255,255,255,0.12)",
+          "borderRadius": 8,
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 40,
+          "justifyContent": "flex-start",
+          "marginVertical": 20,
+          "padding": 8,
+        }
+      }
+    >
+      <Icon
+        name="magnify"
+        style={
+          Object {
+            "color": "rgba(255,255,255,0.72)",
+            "fontSize": 24,
+            "width": 24,
+          }
+        }
+      />
+      <Text
+        style={
+          Object {
+            "color": "rgba(255,255,255,0.72)",
+            "fontFamily": "OpenSans",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "lineHeight": 24,
+            "marginLeft": 5,
+            "marginTop": 1,
+          }
+        }
+      >
+        Find channels...
+      </Text>
+    </View>
   </View>
   <View
     style={
