@@ -545,3 +545,16 @@ export const observeArchiveChannelsByTerm = (database: Database, term: string, t
         Q.take(take),
     ).observe();
 };
+
+export const queryJoinedChannels = (database: Database, teamId: string) => {
+    return database.get<ChannelModel>(CHANNEL).query(
+        Q.where('team_id', Q.oneOf([teamId, ''])),
+        Q.on(MY_CHANNEL, Q.where('id', Q.notEq(''))),
+    );
+};
+
+export const queryMyChannelsForTeam = (database: Database, teamId: string) => {
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.on(CHANNEL, Q.where('team_id', Q.oneOf([teamId, '']))),
+    );
+};

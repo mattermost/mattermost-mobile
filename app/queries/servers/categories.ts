@@ -4,13 +4,13 @@
 import {Database, Model, Q, Query} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
+import CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import {makeCategoryChannelId} from '@utils/categories';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type CategoryModel from '@typings/database/models/servers/category';
-import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
 
-const {SERVER: {CATEGORY}} = MM_TABLES;
+const {SERVER: {CATEGORY, CATEGORY_CHANNEL}} = MM_TABLES;
 
 export const getCategoryById = async (database: Database, categoryId: string) => {
     try {
@@ -27,6 +27,13 @@ export const queryCategoriesById = (database: Database, categoryIds: string[]) =
 
 export const queryCategoriesByTeamIds = (database: Database, teamIds: string[]) => {
     return database.get<CategoryModel>(CATEGORY).query(Q.where('team_id', Q.oneOf(teamIds)));
+};
+
+export const queryCategoryChannelsByTeam = (database: Database, teamId: string) => {
+    return database.get<CategoryChannelModel>(CATEGORY_CHANNEL).query(
+        Q.on(CATEGORY, Q.where('team_id', Q.eq(teamId))),
+        Q.sortBy('sort_order'),
+    );
 };
 
 export const prepareCategories = (operator: ServerDataOperator, categories?: CategoryWithChannels[]) => {
