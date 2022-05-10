@@ -1,13 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, StyleSheet} from 'react-native';
+import {FlatList, StyleSheet, View} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
+import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
+import useDidUpdate from '@hooks/did_update';
 
 import CategoryBody from './body';
 import LoadCategoriesError from './error';
@@ -18,7 +20,6 @@ import type CategoryModel from '@typings/database/models/servers/category';
 
 type Props = {
     categories: CategoryModel[];
-    currentTeamId: string;
     unreadsOnTop: boolean;
 }
 
@@ -28,15 +29,21 @@ const styles = StyleSheet.create({
         marginLeft: -18,
         marginRight: -20,
     },
+    loadingView: {
+        alignItems: 'center',
+        flex: 1,
+    },
+    loading: {flex: 1},
 });
 
 const extractKey = (item: CategoryModel | 'UNREADS') => (item === 'UNREADS' ? 'UNREADS' : item.id);
 
-const Categories = ({categories, currentTeamId, unreadsOnTop}: Props) => {
+const Categories = ({categories, unreadsOnTop}: Props) => {
     const intl = useIntl();
     const listRef = useRef<FlatList>(null);
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
+    const teamId = categories[0]?.teamId;
 
     const onChannelSwitch = useCallback(async (channelId: string) => {
         switchToChannelById(serverUrl, channelId);
@@ -46,7 +53,7 @@ const Categories = ({categories, currentTeamId, unreadsOnTop}: Props) => {
         if (data.item === 'UNREADS') {
             return (
                 <UnreadCategories
-                    currentTeamId={currentTeamId}
+                    currentTeamId={teamId}
                     isTablet={isTablet}
                     onChannelSwitch={onChannelSwitch}
                 />
@@ -63,11 +70,11 @@ const Categories = ({categories, currentTeamId, unreadsOnTop}: Props) => {
                 />
             </>
         );
-    }, [currentTeamId, intl.locale, isTablet, onChannelSwitch]);
+    }, [teamId, intl.locale, isTablet, onChannelSwitch]);
 
     useEffect(() => {
         listRef.current?.scrollToOffset({animated: false, offset: 0});
-    }, [currentTeamId]);
+    }, [teamId]);
 
     const categoriesToShow = useMemo(() => {
         const orderedCategories = [...categories];
@@ -78,24 +85,45 @@ const Categories = ({categories, currentTeamId, unreadsOnTop}: Props) => {
         return orderedCategories;
     }, [categories, unreadsOnTop]);
 
+    const categoriesAfterLoading = useRef(categoriesToShow);
+    const [isLoading, setLoading] = useState(false);
+
+    useDidUpdate(() => {
+        setLoading(true);
+        const t = setTimeout(() => {
+            categoriesAfterLoading.current = categoriesToShow;
+            setLoading(false);
+        }, 350);
+        return () => clearTimeout(t);
+    }, [categoriesToShow]);
+
     if (!categories.length) {
         return <LoadCategoriesError/>;
     }
 
     return (
-        <FlatList
-            data={categoriesToShow}
-            ref={listRef}
-            renderItem={renderCategory}
-            style={styles.mainList}
-            showsHorizontalScrollIndicator={false}
-            showsVerticalScrollIndicator={false}
-            keyExtractor={extractKey}
-            initialNumToRender={categoriesToShow.length}
+        <>
+            {!isLoading && (
+                <FlatList
+                    data={categoriesAfterLoading.current}
+                    ref={listRef}
+                    renderItem={renderCategory}
+                    style={styles.mainList}
+                    showsHorizontalScrollIndicator={false}
+                    showsVerticalScrollIndicator={false}
+                    keyExtractor={extractKey}
+                    initialNumToRender={categoriesToShow.length}
 
-            // @ts-expect-error strictMode not included in the types
-            strictMode={true}
-        />
+                    // @ts-expect-error strictMode not included in the types
+                    strictMode={true}
+                />
+            )}
+            {isLoading && (
+                <View style={styles.loadingView}>
+                    <Loading style={styles.loading}/>
+                </View>
+            )}
+        </>
     );
 };
 

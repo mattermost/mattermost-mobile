@@ -26,15 +26,19 @@ type EnhanceProps = WithDatabaseArgs & {
 
 const observeIsMutedSetting = (mc: MyChannelModel) => mc.settings.observe().pipe(switchMap((s) => of$(s?.notifyProps?.mark_unread === 'mention')));
 
-const enhance = withObservables(['channel', 'showTeamName', 'isCategoryMuted'], ({channel, database, showTeamName, isCategoryMuted}: EnhanceProps) => {
+const enhance = withObservables(['showTeamName', 'isCategoryMuted'], ({channel, database, showTeamName, isCategoryMuted}: EnhanceProps) => {
     const currentUserId = observeCurrentUserId(database);
     const myChannel = observeMyChannel(database, channel.id);
 
     const hasDraft = queryDraft(database, channel.id).observeWithColumns(['message', 'files']).pipe(
         switchMap((draft) => of$(draft.length > 0)),
+        distinctUntilChanged(),
     );
 
-    const isActive = observeCurrentChannelId(database).pipe(switchMap((id) => of$(id ? id === channel.id : false)), distinctUntilChanged());
+    const isActive = observeCurrentChannelId(database).pipe(
+        switchMap((id) => of$(id ? id === channel.id : false)),
+        distinctUntilChanged(),
+    );
 
     const isMuted = myChannel.pipe(
         switchMap((mc) => {
@@ -50,6 +54,7 @@ const enhance = withObservables(['channel', 'showTeamName', 'isCategoryMuted'], 
     if (channel.teamId && showTeamName) {
         teamDisplayName = channel.team.observe().pipe(
             switchMap((team) => of$(team?.displayName || '')),
+            distinctUntilChanged(),
         );
     }
 
@@ -58,14 +63,24 @@ const enhance = withObservables(['channel', 'showTeamName', 'isCategoryMuted'], 
         membersCount = channel.members.observeCount();
     }
 
+    const isUnread = myChannel.pipe(
+        switchMap((mc) => of$(mc?.isUnread)),
+        distinctUntilChanged(),
+    );
+
+    const mentionsCount = myChannel.pipe(
+        switchMap((mc) => of$(mc?.mentionsCount)),
+        distinctUntilChanged(),
+    );
+
     return {
-        channel: channel.observe(),
         currentUserId,
         hasDraft,
         isActive,
         isMuted,
         membersCount,
-        myChannel,
+        isUnread,
+        mentionsCount,
         teamDisplayName,
     };
 });

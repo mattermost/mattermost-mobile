@@ -18,7 +18,7 @@ describe('components/channel_list/categories', () => {
 
     it('render without error', () => {
         const wrapper = renderWithEverything(
-            <Categories currentTeamId={TestHelper.basicTeam!.id}/>,
+            <Categories/>,
             {database},
         );
 

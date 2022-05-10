@@ -35,11 +35,12 @@ describe('components/channel_list/categories/body/channel_item', () => {
                 hasDraft={false}
                 isActive={false}
                 membersCount={0}
-                myChannel={myChannel}
                 isMuted={false}
                 currentUserId={'id'}
                 testID='channel_list_item'
                 onPress={() => undefined}
+                isUnread={myChannel.isUnread}
+                mentionsCount={myChannel.mentionsCount}
             />,
         );
 
@@ -53,11 +54,12 @@ describe('components/channel_list/categories/body/channel_item', () => {
                 hasDraft={true}
                 isActive={false}
                 membersCount={3}
-                myChannel={myChannel}
                 isMuted={false}
                 currentUserId={'id'}
                 testID='channel_list_item'
                 onPress={() => undefined}
+                isUnread={myChannel.isUnread}
+                mentionsCount={myChannel.mentionsCount}
             />,
         );
 

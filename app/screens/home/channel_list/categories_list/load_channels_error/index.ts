@@ -6,18 +6,21 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeTeam} from '@queries/servers/team';
+import {observeCurrentTeam} from '@queries/servers/team';
 
 import LoadChannelsError from './load_channel_error';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enhanced = withObservables(['teamId'], ({database, teamId}: {teamId: string} & WithDatabaseArgs) => {
-    const team = observeTeam(database, teamId);
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+    const team = observeCurrentTeam(database);
 
     return {
         teamDisplayName: team.pipe(
             switchMap((t) => of$(t?.displayName)),
+        ),
+        teamId: team.pipe(
+            switchMap((t) => of$(t?.id)),
         ),
     };
 });

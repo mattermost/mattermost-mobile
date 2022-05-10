@@ -17,7 +17,6 @@ import {getUserIdFromChannelName} from '@utils/user';
 import CustomStatus from './custom_status';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
 type Props = {
     channel: ChannelModel;
@@ -27,7 +26,8 @@ type Props = {
     isInfo?: boolean;
     isMuted: boolean;
     membersCount: number;
-    myChannel?: MyChannelModel;
+    isUnread: boolean;
+    mentionsCount: number;
     onPress: (channelId: string) => void;
     teamDisplayName?: string;
     testID?: string;
@@ -115,14 +115,14 @@ export const textStyle = StyleSheet.create({
 const ChannelListItem = ({
     channel, currentUserId, hasDraft,
     isActive, isInfo, isMuted, membersCount,
-    myChannel, onPress, teamDisplayName, testID}: Props) => {
+    isUnread, mentionsCount, onPress, teamDisplayName, testID}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
 
     // Make it brighter if it's not muted, and highlighted or has unreads
-    const isBright = myChannel && (myChannel.isUnread || myChannel.mentionsCount > 0);
+    const isBright = isUnread || mentionsCount > 0;
 
     const height = useMemo(() => {
         let h = 40;
@@ -133,8 +133,8 @@ const ChannelListItem = ({
     }, [teamDisplayName, isInfo, isTablet]);
 
     const handleOnPress = useCallback(() => {
-        onPress(myChannel?.id || channel.id);
-    }, [channel.id, myChannel?.id]);
+        onPress(channel.id);
+    }, [channel.id]);
 
     const textStyles = useMemo(() => [
         isBright ? textStyle.bright : textStyle.regular,
@@ -153,10 +153,6 @@ const ChannelListItem = ({
     ],
     [height, isActive, isInfo, styles]);
 
-    if (!myChannel) {
-        return null;
-    }
-
     const teammateId = (channel.type === General.DM_CHANNEL) ? getUserIdFromChannelName(currentUserId, channel.name) : undefined;
     const isOwnDirectMessage = (channel.type === General.DM_CHANNEL) && currentUserId === teammateId;
 
@@ -167,69 +163,67 @@ const ChannelListItem = ({
 
     return (
         <TouchableOpacity onPress={handleOnPress}>
-            <>
-                <View
-                    style={containerStyle}
-                    testID={`${testID}.${channel.name}.collapsed.${!isActive}`}
-                >
-                    <View style={styles.wrapper}>
-                        <ChannelIcon
-                            hasDraft={hasDraft}
-                            isActive={isInfo ? false : isActive}
-                            isInfo={isInfo}
-                            isUnread={isBright}
-                            isArchived={channel.deleteAt > 0}
-                            membersCount={membersCount}
-                            name={channel.name}
-                            shared={channel.shared}
-                            size={24}
-                            type={channel.type}
-                            isMuted={isMuted}
-                        />
-                        <View>
-                            <Text
-                                ellipsizeMode='tail'
-                                numberOfLines={1}
-                                style={textStyles}
-                                testID={`${testID}.${channel.name}.display_name`}
-                            >
-                                {displayName}
-                            </Text>
-                            {isInfo && Boolean(teamDisplayName) && !isTablet &&
-                                <Text
-                                    ellipsizeMode='tail'
-                                    numberOfLines={1}
-                                    testID={`${testID}.${teamDisplayName}.display_name`}
-                                    style={styles.teamName}
-                                >
-                                    {teamDisplayName}
-                                </Text>
-                            }
-                        </View>
-                        {Boolean(teammateId) &&
-                        <CustomStatus
-                            isInfo={isInfo}
-                            userId={teammateId!}
-                        />
-                        }
-                        {isInfo && Boolean(teamDisplayName) && isTablet &&
+            <View
+                style={containerStyle}
+                testID={`${testID}.${channel.name}.collapsed.${!isActive}`}
+            >
+                <View style={styles.wrapper}>
+                    <ChannelIcon
+                        hasDraft={hasDraft}
+                        isActive={isInfo ? false : isActive}
+                        isInfo={isInfo}
+                        isUnread={isBright}
+                        isArchived={channel.deleteAt > 0}
+                        membersCount={membersCount}
+                        name={channel.name}
+                        shared={channel.shared}
+                        size={24}
+                        type={channel.type}
+                        isMuted={isMuted}
+                    />
+                    <View>
                         <Text
                             ellipsizeMode='tail'
                             numberOfLines={1}
-                            testID={`${testID}.${teamDisplayName}.display_name`}
-                            style={[styles.teamName, styles.teamNameTablet]}
+                            style={textStyles}
+                            testID={`${testID}.${channel.name}.display_name`}
                         >
-                            {teamDisplayName}
+                            {displayName}
                         </Text>
+                        {isInfo && Boolean(teamDisplayName) && !isTablet &&
+                            <Text
+                                ellipsizeMode='tail'
+                                numberOfLines={1}
+                                testID={`${testID}.${teamDisplayName}.display_name`}
+                                style={styles.teamName}
+                            >
+                                {teamDisplayName}
+                            </Text>
                         }
                     </View>
-                    <Badge
-                        visible={myChannel.mentionsCount > 0}
-                        value={myChannel.mentionsCount}
-                        style={[styles.badge, isMuted && styles.mutedBadge, isInfo && styles.infoBadge]}
+                    {Boolean(teammateId) &&
+                    <CustomStatus
+                        isInfo={isInfo}
+                        userId={teammateId!}
                     />
+                    }
+                    {isInfo && Boolean(teamDisplayName) && isTablet &&
+                    <Text
+                        ellipsizeMode='tail'
+                        numberOfLines={1}
+                        testID={`${testID}.${teamDisplayName}.display_name`}
+                        style={[styles.teamName, styles.teamNameTablet]}
+                    >
+                        {teamDisplayName}
+                    </Text>
+                    }
                 </View>
-            </>
+                <Badge
+                    visible={mentionsCount > 0}
+                    value={mentionsCount}
+                    style={[styles.badge, isMuted && styles.mutedBadge, isInfo && styles.infoBadge]}
+                />
+            </View>
         </TouchableOpacity>
     );
 };

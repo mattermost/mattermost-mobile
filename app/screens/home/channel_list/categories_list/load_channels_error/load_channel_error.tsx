@@ -8,6 +8,8 @@ import {retryInitialChannel} from '@actions/remote/retry';
 import LoadingError from '@components/loading_error';
 import {useServerUrl} from '@context/server';
 
+import LoadTeamsError from '../load_teams_error';
+
 type Props = {
     teamDisplayName: string;
     teamId: string;
@@ -27,6 +29,9 @@ const LoadChannelsError = ({teamDisplayName, teamId}: Props) => {
         }
     }, [teamId]);
 
+    if (!teamId) {
+        <LoadTeamsError/>;
+    }
     return (
         <LoadingError
             loading={loading}
