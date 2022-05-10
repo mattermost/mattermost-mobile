@@ -5,9 +5,10 @@ import {updateChannelsDisplayName} from '@actions/local/channel';
 import {fetchPostById} from '@actions/remote/post';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
+import {getPreferenceValue} from '@helpers/api/preference';
 import {queryUserChannelsByTypes} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
-import {deletePreferences} from '@queries/servers/preference';
+import {deletePreferences, queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {queryUsersById} from '@queries/servers/user';
 import {getUserIdFromChannelName} from '@utils/user';
 
@@ -19,6 +20,7 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
 
     try {
         const preference = JSON.parse(msg.data.preference) as PreferenceType;
+
         handleSavePostAdded(serverUrl, [preference]);
 
         if (operator) {
@@ -27,7 +29,8 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
                 preferences: [preference],
             });
         }
-        updateChannelDisplayName(serverUrl, msg.broadcast.user_id);
+
+        updateChannelDisplayName(serverUrl, msg.broadcast.user_id, [preference]);
     } catch (error) {
         // Do nothing
     }
@@ -38,7 +41,6 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
     if (!operator) {
         return;
     }
-
     try {
         const preferences = JSON.parse(msg.data.preferences) as PreferenceType[];
 
@@ -51,7 +53,7 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
             });
         }
 
-        updateChannelDisplayName(serverUrl, msg.broadcast.user_id);
+        updateChannelDisplayName(serverUrl, msg.broadcast.user_id, preferences);
     } catch (error) {
         // Do nothing
     }
@@ -87,17 +89,18 @@ async function handleSavePostAdded(serverUrl: string, preferences: PreferenceTyp
     }
 }
 
-const updateChannelDisplayName = async (serverUrl: string, userId: string) => {
-    if (!userId) {
-        return {error: 'userId is required'};
-    }
-
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
+const updateChannelDisplayName = async (serverUrl: string, userId: string, preferences: PreferenceType[]) => {
     try {
+        const {error} = await guardDisplayName(serverUrl, userId, preferences);
+        if (error) {
+            return {error};
+        }
+
+        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+        if (!database) {
+            return {error: `${serverUrl} database not found`};
+        }
+
         const channels = await queryUserChannelsByTypes(database, userId, ['G', 'D']).fetch();
         const userIds = channels.map((ch) => getUserIdFromChannelName(userId, ch.name));
         const users = await queryUsersById(database, userIds).fetch();
@@ -108,4 +111,30 @@ const updateChannelDisplayName = async (serverUrl: string, userId: string) => {
     } catch (error) {
         return {error};
     }
+};
+
+const guardDisplayName = async (serverUrl: string, userId: string, preferences: PreferenceType[]) => {
+    if (!userId) {
+        return {error: 'userId is required'};
+    }
+
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const displayPref = getPreferenceValue(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT) as string;
+    const currentPref = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT, displayPref).fetch();
+
+    if (currentPref.length > 0) {
+        return {error: 'The Preference table has the same value for the display name format'};
+    }
+
+    if (displayPref === '') {
+        return {error: 'The display_settings for `name_format` is not present in the preferences'};
+    }
+
+    return {
+        error: undefined,
+    };
 };
