@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, FlatList, StyleSheet, View} from 'react-native';
+import {FlatList, StyleSheet, View} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import Loading from '@components/loading';
-import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
+import {useTeamSwitch} from '@hooks/team_switch';
 
 import CategoryBody from './body';
 import LoadCategoriesError from './error';
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     loading: {
-        justifyContent: 'center' as const,
+        justifyContent: 'center',
         height: 32,
         width: 32,
     },
@@ -49,8 +49,8 @@ const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
     const listRef = useRef<FlatList>(null);
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
+    const switchingTeam = useTeamSwitch();
     const teamId = categories[0]?.teamId;
-    const [isLoading, setLoading] = useState(false);
 
     const onChannelSwitch = useCallback(async (channelId: string) => {
         switchToChannelById(serverUrl, channelId);
@@ -92,34 +92,13 @@ const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
         return orderedCategories;
     }, [categories, onlyUnreads, unreadsOnTop]);
 
-    useEffect(() => {
-        let time: NodeJS.Timeout | undefined;
-        const l = DeviceEventEmitter.addListener(Events.TEAM_SWITCH, (switching) => {
-            if (time) {
-                clearTimeout(time);
-            }
-            if (switching) {
-                setLoading(true);
-            } else {
-                // eslint-disable-next-line max-nested-callbacks
-                time = setTimeout(() => setLoading(false), 200);
-            }
-        });
-        return () => {
-            l.remove();
-            if (time) {
-                clearTimeout(time);
-            }
-        };
-    }, []);
-
     if (!categories.length) {
         return <LoadCategoriesError/>;
     }
 
     return (
         <>
-            {!isLoading && (
+            {!switchingTeam && (
                 <FlatList
                     data={categoriesToShow}
                     ref={listRef}
@@ -134,7 +113,7 @@ const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
                     strictMode={true}
                 />
             )}
-            {isLoading && (
+            {switchingTeam && (
                 <View style={styles.loadingView}>
                     <Loading style={styles.loading}/>
                 </View>
