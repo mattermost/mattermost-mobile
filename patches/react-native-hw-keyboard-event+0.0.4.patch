@@ -12,12 +12,49 @@ index a70aace..6443899 100644
          versionCode 1
          versionName "1.0"
 diff --git a/node_modules/react-native-hw-keyboard-event/index.d.ts b/node_modules/react-native-hw-keyboard-event/index.d.ts
-index 91999f1..53c7a42 100644
+index 91999f1..116b725 100644
 --- a/node_modules/react-native-hw-keyboard-event/index.d.ts
 +++ b/node_modules/react-native-hw-keyboard-event/index.d.ts
-@@ -1,4 +1,4 @@
+@@ -1,4 +1,5 @@
++import {EventSubscription} from "react-native";
++
  declare module "react-native-hw-keyboard-event";
  
 -export function onHWKeyPressed(hwKeyEvent: { pressedKey: string }): void;
-+export function onHWKeyPressed(callback: (hwKeyEvent: { pressedKey: string }) => void): void;
- export function removeOnHWKeyPressed(): void;
+-export function removeOnHWKeyPressed(): void;
++export function onHWKeyPressed(callback: (hwKeyEvent: { pressedKey: string }) => void): EventSubscription;
+diff --git a/node_modules/react-native-hw-keyboard-event/index.js b/node_modules/react-native-hw-keyboard-event/index.js
+index 30d4dd9..3dcff70 100644
+--- a/node_modules/react-native-hw-keyboard-event/index.js
++++ b/node_modules/react-native-hw-keyboard-event/index.js
+@@ -7,28 +7,9 @@ import {
+ 
+ class HWKeyboardEvent {
+   onHWKeyPressed(cb) {
+-    this.removeOnHWKeyPressed(true);
+-    if (!this.cbStack) {
+-      this.cbStack = [];
+-    }
+-    this.cbStack.push(cb);
+     let keyEvent = new NativeEventEmitter(NativeModules.RNHWKeyboardEvent);
+-    this.listener = keyEvent.addListener("onHWKeyPressed", cb);
+-  }
+-
+-  removeOnHWKeyPressed(newCbAdded) {
+-    if (this.listener) {
+-      this.listener.remove();
+-      this.listener = null;
+-    }
+-    if (!this.cbStack) return;
+-    if (!newCbAdded) {
+-      this.cbStack.pop();
+-      if (this.cbStack.length > 0) {
+-        // re-add removed listeners in case there where any
+-        this.onHWKeyPressed(this.cbStack[this.cbStack.length - 1]);
+-      }
+-    }
++    const listener = keyEvent.addListener("onHWKeyPressed", cb);
++    return listener;
+   }
+ }
+ 
