@@ -68,7 +68,7 @@ const ThreadHandler = (superclass: any) => class extends superclass {
             if (threadsToDelete.length) {
                 await database.write(async () => {
                     const promises: Array<Promise<void>> = [];
-                    threadsToDelete.forEach(async (thread) => {
+                    threadsToDelete.forEach((thread) => {
                         promises.push(thread.destroyPermanently());
                         promises.push(thread.threadsInTeam.destroyAllPermanently());
                         promises.push(thread.participants.destroyAllPermanently());
