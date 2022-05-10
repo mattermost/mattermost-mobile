@@ -8,14 +8,14 @@ import {General, Navigation as NavigationConstants, Preferences, Screens} from '
 import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@constants/categories';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {extractChannelDisplayName} from '@helpers/database';
 import PushNotifications from '@init/push_notifications';
-import {prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannel, getMyChannel, getChannelById, queryUsersOnChannel} from '@queries/servers/channel';
+import {prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannel, getMyChannel, getChannelById, queryUsersOnChannel, queryUserChannelsByTypes} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, queryMyTeams, removeChannelFromTeamHistory} from '@queries/servers/team';
-import {getCurrentUser} from '@queries/servers/user';
+import {getCurrentUser, queryUsersById} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {makeCategoryChannelId, makeCategoryId} from '@utils/categories';
@@ -484,3 +484,53 @@ export async function showUnreadChannelsOnly(serverUrl: string, onlyUnreads: boo
         prepareRecordsOnly: false,
     });
 }
+
+export const checkChannelsDisplayName = async (serverUrl: string, userId: string, preferences: PreferenceType[]) => {
+    try {
+        const {error} = await guardDisplayName(serverUrl, userId, preferences);
+        if (error) {
+            return {error};
+        }
+
+        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+        if (!database) {
+            return {error: `${serverUrl} database not found`};
+        }
+
+        const channels = await queryUserChannelsByTypes(database, userId, ['G', 'D']).fetch();
+        const userIds = channels.map((ch) => getUserIdFromChannelName(userId, ch.name));
+        const users = await queryUsersById(database, userIds).fetch();
+
+        await updateChannelsDisplayName(serverUrl, channels, users, false);
+
+        return {channels};
+    } catch (error) {
+        return {error};
+    }
+};
+
+const guardDisplayName = async (serverUrl: string, userId: string, preferences: PreferenceType[]) => {
+    if (!userId) {
+        return {error: 'userId is required'};
+    }
+
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const displayPref = getPreferenceValue(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT) as string;
+    const currentPref = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT, displayPref).fetch();
+
+    if (currentPref.length > 0) {
+        return {error: 'The Preference table has the same value for the display name format'};
+    }
+
+    if (displayPref === '') {
+        return {error: 'The display_settings for `name_format` is not present in the preferences'};
+    }
+
+    return {
+        error: undefined,
+    };
+};
