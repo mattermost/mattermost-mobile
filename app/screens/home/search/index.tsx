@@ -4,13 +4,12 @@
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useMemo, useState, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {Text, ScrollView, View} from 'react-native';
+import {ScrollView} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FreezeScreen from '@components/freeze_screen';
 import NavigationHeader from '@components/navigation_header';
-import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
 
 import SearchModifiers from './search_modifiers/search_modifiers';
@@ -20,7 +19,6 @@ const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 const SearchScreen = () => {
     const nav = useNavigation();
     const isFocused = useIsFocused();
-    const theme = useTheme();
     const intl = useIntl();
     const searchScreenIndex = 1;
     const stateIndex = nav.getState().index;

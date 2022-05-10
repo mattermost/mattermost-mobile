@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo, useState, useCallback} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
-import {StyleProp, FlatList, ListRenderItem, Platform, NativeSyntheticEvent, NativeScrollEvent, ViewStyle} from 'react-native';
 import Animated, {useSharedValue, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import FormattedText from '@components/formatted_text';
@@ -15,20 +14,8 @@ import {typography} from '@utils/typography';
 import Modifier, {ModifierItem, MODIFIER_LABEL_HEIGHT} from './modifier';
 import ShowMoreButton from './show_more';
 
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
-
 const SECTION_HEIGHT = 20;
 const RECENT_SEPARATOR_HEIGHT = 3;
-
-//    static propTypes = {
-//     actions: PropTypes.shape({
-//         clearSearch: PropTypes.func.isRequired,
-//         handleSearchDraftChanged: PropTypes.func.isRequired,
-//         removeSearchTerms: PropTypes.func.isRequired,
-//         searchPostsWithParams: PropTypes.func.isRequired,
-//         getMorePostsForSearch: PropTypes.func.isRequired,
-//     }).isRequired,
-// };
 
 const getModifiersSectionsData = (intl: IntlShape): ModifierItem[] => {
     const formatMessage = intl.formatMessage;
@@ -106,14 +93,21 @@ const SearchModifiers = ({searchValue, setSearchValue}: Props) => {
 
     const [showMore, setShowMore] = useState(false);
     const show = useSharedValue(3 * MODIFIER_LABEL_HEIGHT);
+    const data = useMemo(() => getModifiersSectionsData(intl), [intl]);
 
     const styles = getStyleFromTheme(theme);
     const animatedStyle = useAnimatedStyle(() => (
         {
             width: '100%',
             height: withTiming(show.value, {duration: 300}),
+            overflow: 'hidden',
         }
     ));
+
+    const handleShowMore = useCallback(() => {
+        setShowMore(!showMore);
+        show.value = (showMore ? 3 : data.length) * MODIFIER_LABEL_HEIGHT;
+    }, [showMore]);
 
     const renderModifier = (item: ModifierItem) => {
         return (
@@ -121,16 +115,6 @@ const SearchModifiers = ({searchValue, setSearchValue}: Props) => {
                 key={item.value}
                 item={item}
                 setModifierValue={setModifierValue}
-            />
-        );
-    };
-
-    const renderHeader = () => {
-        return (
-            <FormattedText
-                style={styles.title}
-                id={'screen.search.modifier.header'}
-                defaultMessage='Search options'
             />
         );
     };
@@ -150,21 +134,19 @@ const SearchModifiers = ({searchValue, setSearchValue}: Props) => {
         setSearchValue(newValue);
     });
 
-    const data = useMemo(() => getModifiersSectionsData(intl), [intl]);
-
     return (
         <>
-            <Animated.View
-                style={animatedStyle}
-            >
+            <FormattedText
+                style={styles.title}
+                id={'screen.search.modifier.header'}
+                defaultMessage='Search options'
+            />
+            <Animated.View style={animatedStyle}>
                 {data.map((item) => renderModifier(item))}
             </Animated.View>
             <ShowMoreButton
                 theme={theme}
-                onPress={() => {
-                    setShowMore(!showMore);
-                    show.value = showMore ? data.length : 3 * MODIFIER_LABEL_HEIGHT;
-                }}
+                onPress={handleShowMore}
                 showMore={showMore}
             />
         </>

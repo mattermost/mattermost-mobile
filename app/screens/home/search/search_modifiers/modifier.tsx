@@ -9,11 +9,12 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+export const MODIFIER_LABEL_HEIGHT = 48;
+
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         modifierItemContainer: {
             alignItems: 'center',
-            flex: 1,
             flexDirection: 'row',
             height: MODIFIER_LABEL_HEIGHT,
         },
@@ -38,8 +39,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-
-export const MODIFIER_LABEL_HEIGHT = 48;
 
 export type ModifierItem = {
         description: string;
@@ -67,27 +66,24 @@ const Modifier = ({item, setModifierValue}: Props) => {
             key={item.modifier}
             underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
             onPress={handlePress}
+            testID={item.testID}
+            style={style.modifierItemContainer}
         >
-            <View
-                testID={item.testID}
-                style={style.modifierItemContainer}
-            >
-                <View style={style.modifierItemWrapper}>
-                    <View style={style.modifierItemLabelContainer}>
-                        <CompassIcon
-                            name='plus-box-outline'
-                            size={24}
-                            color={changeOpacity(theme.centerChannelColor, 0.6)}
-                        />
-                        <Text
-                            style={style.modifierLabelValue}
-                        >
-                            {item.value}
-                        </Text>
-                        <Text style={style.modifierItemDescription}>
-                            {item.description}
-                        </Text>
-                    </View>
+            <View style={style.modifierItemWrapper}>
+                <View style={style.modifierItemLabelContainer}>
+                    <CompassIcon
+                        name='plus-box-outline'
+                        size={24}
+                        color={changeOpacity(theme.centerChannelColor, 0.6)}
+                    />
+                    <Text
+                        style={style.modifierLabelValue}
+                    >
+                        {item.value}
+                    </Text>
+                    <Text style={style.modifierItemDescription}>
+                        {item.description}
+                    </Text>
                 </View>
             </View>
         </TouchableHighlight>
