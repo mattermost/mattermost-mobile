@@ -11,7 +11,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import Categories from './categories';
 import ChannelListHeader from './header';
 import LoadChannelsError from './load_channels_error';
-import SearchField from './search';
+import SubHeader from './subheader';
 import ThreadsButton from './threads_button';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -64,7 +64,7 @@ const CategoriesList = ({channelsCount, iconPad, isCRTEnabled, isTablet, teamsCo
     } else {
         content = (
             <>
-                <SearchField/>
+                <SubHeader/>
                 {isCRTEnabled && <ThreadsButton/>}
                 <Categories/>
             </>

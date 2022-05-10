@@ -129,7 +129,6 @@ const NavigationHeader = ({
                 isLargeTitle={isLargeTitle}
                 largeHeight={largeHeight}
                 scrollValue={scrollValue}
-                theme={theme}
                 top={insets.top}
             />
             }

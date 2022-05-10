@@ -29,6 +29,7 @@ type Props = {
 const edges: Edge[] = ['bottom'];
 const styles = StyleSheet.create({
     flex: {flex: 1},
+    containerStyle: {paddingTop: 12},
 });
 
 const ChannelPostList = ({
@@ -55,7 +56,7 @@ const ChannelPostList = ({
     const postList = (
         <PostList
             channelId={channelId}
-            contentContainerStyle={contentContainerStyle}
+            contentContainerStyle={[contentContainerStyle, !isCRTEnabled && styles.containerStyle]}
             isCRTEnabled={isCRTEnabled}
             footer={intro}
             lastViewedAt={lastViewedAt}

@@ -24,6 +24,7 @@ import type PreferenceModel from '@typings/database/models/servers/preference';
 type WithDatabaseProps = WithDatabaseArgs & {
     currentTeamId: string;
     isTablet: boolean;
+    onlyUnreads: boolean;
 }
 
 type CA = [
@@ -89,7 +90,7 @@ const filterAndSortMyChannels = ([myChannels, notifyProps]: [MyChannelModel[], N
     return [...mentions, ...unreads, ...mutedMentions];
 };
 
-const enhanced = withObservables(['currentTeamId', 'isTablet'], ({currentTeamId, isTablet, database}: WithDatabaseProps) => {
+const enhanced = withObservables(['currentTeamId', 'isTablet', 'onlyUnreads'], ({currentTeamId, isTablet, database, onlyUnreads}: WithDatabaseProps) => {
     const unreadsOnTop = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
         observeWithColumns(['value']).
         pipe(
@@ -99,7 +100,7 @@ const enhanced = withObservables(['currentTeamId', 'isTablet'], ({currentTeamId,
     const getC = (lastUnreadChannelId: string) => getChannelById(database, lastUnreadChannelId);
 
     const unreadChannels = unreadsOnTop.pipe(switchMap((gU) => {
-        if (gU) {
+        if (gU || onlyUnreads) {
             const lastUnread = isTablet ? observeLastUnreadChannelId(database).pipe(
                 switchMap(getC),
             ) : of$('');

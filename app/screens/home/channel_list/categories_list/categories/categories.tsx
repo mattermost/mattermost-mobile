@@ -20,6 +20,7 @@ import type CategoryModel from '@typings/database/models/servers/category';
 
 type Props = {
     categories: CategoryModel[];
+    onlyUnreads: boolean;
     unreadsOnTop: boolean;
 }
 
@@ -38,7 +39,7 @@ const styles = StyleSheet.create({
 
 const extractKey = (item: CategoryModel | 'UNREADS') => (item === 'UNREADS' ? 'UNREADS' : item.id);
 
-const Categories = ({categories, unreadsOnTop}: Props) => {
+const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
     const intl = useIntl();
     const listRef = useRef<FlatList>(null);
     const serverUrl = useServerUrl();
@@ -56,6 +57,7 @@ const Categories = ({categories, unreadsOnTop}: Props) => {
                     currentTeamId={teamId}
                     isTablet={isTablet}
                     onChannelSwitch={onChannelSwitch}
+                    onlyUnreads={onlyUnreads}
                 />
             );
         }
@@ -70,20 +72,23 @@ const Categories = ({categories, unreadsOnTop}: Props) => {
                 />
             </>
         );
-    }, [teamId, intl.locale, isTablet, onChannelSwitch]);
+    }, [intl.locale, isTablet, onChannelSwitch, onlyUnreads]);
 
     useEffect(() => {
         listRef.current?.scrollToOffset({animated: false, offset: 0});
     }, [teamId]);
 
     const categoriesToShow = useMemo(() => {
+        if (onlyUnreads && !unreadsOnTop) {
+            return ['UNREADS' as const];
+        }
         const orderedCategories = [...categories];
         orderedCategories.sort((a, b) => a.sortOrder - b.sortOrder);
         if (unreadsOnTop) {
             return ['UNREADS' as const, ...orderedCategories];
         }
         return orderedCategories;
-    }, [categories, unreadsOnTop]);
+    }, [categories, onlyUnreads, unreadsOnTop]);
 
     const categoriesAfterLoading = useRef(categoriesToShow);
     const [isLoading, setLoading] = useState(false);
