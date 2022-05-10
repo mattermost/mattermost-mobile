@@ -3,13 +3,16 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Image, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {Alert, StyleSheet, TouchableOpacity, View} from 'react-native';
+import FastImage from 'react-native-fast-image';
 
-import ProgressiveImage from '@components/progressive_image';
 import {useIsTablet} from '@hooks/device';
 import {emptyFunction} from '@utils/general';
 import {calculateDimensions, getViewPortWidth} from '@utils/images';
 import {getYouTubeVideoId, tryOpenURL} from '@utils/url';
+
+// @ts-expect-error import svg
+import YouTubeLogo from './youtube.svg';
 
 type YouTubeProps = {
     isReplyPost: boolean;
@@ -17,21 +20,21 @@ type YouTubeProps = {
     metadata: PostMetadata;
 }
 
-const MAX_YOUTUBE_IMAGE_HEIGHT = 202;
-const MAX_YOUTUBE_IMAGE_WIDTH = 360;
+const MAX_YOUTUBE_IMAGE_HEIGHT = 280;
+const MAX_YOUTUBE_IMAGE_WIDTH = 500;
 
 const styles = StyleSheet.create({
     imageContainer: {
         alignItems: 'flex-start',
         justifyContent: 'flex-start',
+        borderRadius: 4,
         marginBottom: 6,
         marginTop: 10,
     },
     image: {
         alignItems: 'center',
-        borderRadius: 3,
+        borderRadius: 4,
         justifyContent: 'center',
-        marginVertical: 1,
     },
     playButton: {
         flex: 1,
@@ -48,7 +51,7 @@ const YouTube = ({isReplyPost, layoutWidth, metadata}: YouTubeProps) => {
     const dimensions = calculateDimensions(
         MAX_YOUTUBE_IMAGE_HEIGHT,
         MAX_YOUTUBE_IMAGE_WIDTH,
-        layoutWidth || getViewPortWidth(isReplyPost, isTablet),
+        layoutWidth || (getViewPortWidth(isReplyPost, isTablet) - 15),
     );
 
     const playYouTubeVideo = useCallback(() => {
@@ -80,21 +83,20 @@ const YouTube = ({isReplyPost, layoutWidth, metadata}: YouTubeProps) => {
 
     return (
         <TouchableOpacity
-            style={[styles.imageContainer, {height: dimensions.height}]}
+            style={[styles.imageContainer, {height: dimensions.height, width: dimensions.width}]}
             onPress={playYouTubeVideo}
         >
-            <ProgressiveImage
-                id={imgUrl}
-                isBackgroundImage={true}
-                imageUri={imgUrl}
-                style={[styles.image, dimensions]}
-                resizeMode='cover'
+            <FastImage
                 onError={emptyFunction}
-            >
+                resizeMode='cover'
+                style={[styles.image, dimensions]}
+                source={{uri: imgUrl}}
+            />
+            <View style={StyleSheet.absoluteFill}>
                 <View style={styles.playButton}>
-                    <Image source={require('@assets/images/icons/youtube-play-icon.png')}/>
+                    <YouTubeLogo/>
                 </View>
-            </ProgressiveImage>
+            </View>
         </TouchableOpacity>
     );
 };
