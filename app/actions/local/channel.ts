@@ -371,7 +371,8 @@ export async function updateLastPostAt(serverUrl: string, channelId: string, las
     return {member: undefined};
 }
 
-export async function updateChannelsDisplayName(serverUrl: string, channels: ChannelModel[], users: UserProfile[], prepareRecordsOnly = false) {
+type User = UserProfile | UserModel;
+export async function updateChannelsDisplayName(serverUrl: string, channels: ChannelModel[], users: User[], prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {};

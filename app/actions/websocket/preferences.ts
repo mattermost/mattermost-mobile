@@ -102,8 +102,6 @@ const updateChannelDisplayName = async (serverUrl: string, userId: string) => {
         const userIds = channels.map((ch) => getUserIdFromChannelName(userId, ch.name));
         const users = await queryUsersById(database, userIds).fetch();
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         await updateChannelsDisplayName(serverUrl, channels, users, false);
 
         return {channels};
