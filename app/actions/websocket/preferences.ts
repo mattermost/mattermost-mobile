@@ -5,10 +5,11 @@ import {updateChannelsDisplayName} from '@actions/local/channel';
 import {fetchPostById} from '@actions/remote/post';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
-import {queryChannelsByTypes} from '@queries/servers/channel';
+import {queryUserChannelsByTypes} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {deletePreferences} from '@queries/servers/preference';
 import {queryUsersById} from '@queries/servers/user';
+import {getUserIdFromChannelName} from '@utils/user';
 
 export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const operator = DatabaseManager.serverDatabases[serverUrl].operator;
@@ -97,12 +98,13 @@ const updateChannelDisplayName = async (serverUrl: string, userId: string) => {
     }
 
     try {
-        const user = await queryUsersById(database, [userId]).fetch();
-        const channels = await queryChannelsByTypes(database, ['G', 'D']).fetch();
+        const channels = await queryUserChannelsByTypes(database, userId, ['G', 'D']).fetch();
+        const userIds = channels.map((ch) => getUserIdFromChannelName(userId, ch.name));
+        const users = await queryUsersById(database, userIds);
         await updateChannelsDisplayName(
             serverUrl,
             channels,
-            user as unknown as UserProfile[],
+            users as unknown as UserProfile[],
             false,
         );
         return {channels};
