@@ -100,13 +100,12 @@ const updateChannelDisplayName = async (serverUrl: string, userId: string) => {
     try {
         const channels = await queryUserChannelsByTypes(database, userId, ['G', 'D']).fetch();
         const userIds = channels.map((ch) => getUserIdFromChannelName(userId, ch.name));
-        const users = await queryUsersById(database, userIds);
-        await updateChannelsDisplayName(
-            serverUrl,
-            channels,
-            users as unknown as UserProfile[],
-            false,
-        );
+        const users = await queryUsersById(database, userIds).fetch();
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        await updateChannelsDisplayName(serverUrl, channels, users, false);
+
         return {channels};
     } catch (error) {
         return {error};
