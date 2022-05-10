@@ -11,7 +11,6 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import Categories from './categories';
 import ChannelListHeader from './header';
 import LoadChannelsError from './load_channels_error';
-import LoadTeamsError from './load_teams_error';
 import SubHeader from './subheader';
 import ThreadsButton from './threads_button';
 
@@ -27,7 +26,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 type ChannelListProps = {
     channelsCount: number;
-    currentTeamId?: string;
     iconPad?: boolean;
     isCRTEnabled?: boolean;
     isTablet: boolean;
@@ -38,7 +36,7 @@ const getTabletWidth = (teamsCount: number) => {
     return TABLET_SIDEBAR_WIDTH - (teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0);
 };
 
-const CategoriesList = ({channelsCount, currentTeamId, iconPad, isCRTEnabled, isTablet, teamsCount}: ChannelListProps) => {
+const CategoriesList = ({channelsCount, iconPad, isCRTEnabled, isTablet, teamsCount}: ChannelListProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const tabletWidth = useSharedValue(isTablet ? getTabletWidth(teamsCount) : 0);
@@ -61,18 +59,14 @@ const CategoriesList = ({channelsCount, currentTeamId, iconPad, isCRTEnabled, is
 
     let content;
 
-    if (!currentTeamId) {
-        content = (<LoadTeamsError/>);
-    } else if (channelsCount < 1) {
-        content = (<LoadChannelsError teamId={currentTeamId}/>);
+    if (channelsCount < 1) {
+        content = (<LoadChannelsError/>);
     } else {
         content = (
             <>
                 <SubHeader/>
                 {isCRTEnabled && <ThreadsButton/>}
-                <Categories
-                    currentTeamId={currentTeamId}
-                />
+                <Categories/>
             </>
         );
     }

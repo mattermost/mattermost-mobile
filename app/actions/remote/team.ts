@@ -269,6 +269,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     }
 
     let channelId = '';
+    DeviceEventEmitter.emit(Events.TEAM_SWITCH, true);
     if (await isTablet()) {
         channelId = await getNthLastChannelFromTeam(database, teamId);
         if (channelId) {
@@ -277,6 +278,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
             } else {
                 await switchToChannelById(serverUrl, channelId, teamId);
             }
+            DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);
             completeTeamChange(serverUrl, teamId, channelId);
             return;
         }
@@ -295,6 +297,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     if (models.length) {
         await operator.batchRecords(models);
     }
+    DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);
 
     completeTeamChange(serverUrl, teamId, channelId);
 }

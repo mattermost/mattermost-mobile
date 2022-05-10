@@ -1,13 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, StyleSheet} from 'react-native';
+import {FlatList, StyleSheet, View} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
+import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
+import {useTeamSwitch} from '@hooks/team_switch';
 
 import CategoryBody from './body';
 import LoadCategoriesError from './error';
@@ -18,7 +20,6 @@ import type CategoryModel from '@typings/database/models/servers/category';
 
 type Props = {
     categories: CategoryModel[];
-    currentTeamId: string;
     onlyUnreads: boolean;
     unreadsOnTop: boolean;
 }
@@ -29,15 +30,27 @@ const styles = StyleSheet.create({
         marginLeft: -18,
         marginRight: -20,
     },
+    loadingView: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1,
+    },
+    loading: {
+        justifyContent: 'center',
+        height: 32,
+        width: 32,
+    },
 });
 
 const extractKey = (item: CategoryModel | 'UNREADS') => (item === 'UNREADS' ? 'UNREADS' : item.id);
 
-const Categories = ({categories, currentTeamId, onlyUnreads, unreadsOnTop}: Props) => {
+const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
     const intl = useIntl();
     const listRef = useRef<FlatList>(null);
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
+    const switchingTeam = useTeamSwitch();
+    const teamId = categories[0]?.teamId;
 
     const onChannelSwitch = useCallback(async (channelId: string) => {
         switchToChannelById(serverUrl, channelId);
@@ -47,7 +60,7 @@ const Categories = ({categories, currentTeamId, onlyUnreads, unreadsOnTop}: Prop
         if (data.item === 'UNREADS') {
             return (
                 <UnreadCategories
-                    currentTeamId={currentTeamId}
+                    currentTeamId={teamId}
                     isTablet={isTablet}
                     onChannelSwitch={onChannelSwitch}
                     onlyUnreads={onlyUnreads}
@@ -65,11 +78,7 @@ const Categories = ({categories, currentTeamId, onlyUnreads, unreadsOnTop}: Prop
                 />
             </>
         );
-    }, [currentTeamId, intl.locale, isTablet, onChannelSwitch, onlyUnreads]);
-
-    useEffect(() => {
-        listRef.current?.scrollToOffset({animated: false, offset: 0});
-    }, [currentTeamId]);
+    }, [teamId, intl.locale, isTablet, onChannelSwitch, onlyUnreads]);
 
     const categoriesToShow = useMemo(() => {
         if (onlyUnreads && !unreadsOnTop) {
@@ -88,19 +97,28 @@ const Categories = ({categories, currentTeamId, onlyUnreads, unreadsOnTop}: Prop
     }
 
     return (
-        <FlatList
-            data={categoriesToShow}
-            ref={listRef}
-            renderItem={renderCategory}
-            style={styles.mainList}
-            showsHorizontalScrollIndicator={false}
-            showsVerticalScrollIndicator={false}
-            keyExtractor={extractKey}
-            initialNumToRender={categoriesToShow.length}
+        <>
+            {!switchingTeam && (
+                <FlatList
+                    data={categoriesToShow}
+                    ref={listRef}
+                    renderItem={renderCategory}
+                    style={styles.mainList}
+                    showsHorizontalScrollIndicator={false}
+                    showsVerticalScrollIndicator={false}
+                    keyExtractor={extractKey}
+                    initialNumToRender={categoriesToShow.length}
 
-            // @ts-expect-error strictMode not included in the types
-            strictMode={true}
-        />
+                    // @ts-expect-error strictMode not included in the types
+                    strictMode={true}
+                />
+            )}
+            {switchingTeam && (
+                <View style={styles.loadingView}>
+                    <Loading style={styles.loading}/>
+                </View>
+            )}
+        </>
     );
 };
 
