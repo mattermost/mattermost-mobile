@@ -168,34 +168,35 @@ const ChannelListItem = ({
 
     return (
         <TouchableOpacity onPress={handleOnPress}>
-            <View
-                style={containerStyle}
-                testID={`${testID}.${channel.name}.collapsed.${!isActive}`}
-            >
-                <View style={styles.wrapper}>
-                    <ChannelIcon
-                        hasDraft={hasDraft}
-                        isActive={isInfo ? false : isActive}
-                        isInfo={isInfo}
-                        isUnread={isBright}
-                        isArchived={channel.deleteAt > 0}
-                        membersCount={membersCount}
-                        name={channel.name}
-                        shared={channel.shared}
-                        size={24}
-                        type={channel.type}
-                        isMuted={isMuted}
-                    />
-                    <View>
-                        <Text
-                            ellipsizeMode='tail'
-                            numberOfLines={1}
-                            style={textStyles}
-                            testID={`${testID}.${channel.name}.display_name`}
-                        >
-                            {displayName}
-                        </Text>
-                        {isInfo && Boolean(teamDisplayName) && !isTablet &&
+            <>
+                <View
+                    style={containerStyle}
+                    testID={`${testID}.${channel.name}.collapsed.${!isActive}`}
+                >
+                    <View style={styles.wrapper}>
+                        <ChannelIcon
+                            hasDraft={hasDraft}
+                            isActive={isInfo ? false : isActive}
+                            isInfo={isInfo}
+                            isUnread={isBright}
+                            isArchived={channel.deleteAt > 0}
+                            membersCount={membersCount}
+                            name={channel.name}
+                            shared={channel.shared}
+                            size={24}
+                            type={channel.type}
+                            isMuted={isMuted}
+                        />
+                        <View>
+                            <Text
+                                ellipsizeMode='tail'
+                                numberOfLines={1}
+                                style={textStyles}
+                                testID={`${testID}.${channel.name}.display_name`}
+                            >
+                                {displayName}
+                            </Text>
+                            {isInfo && Boolean(teamDisplayName) && !isTablet &&
                             <Text
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
@@ -204,31 +205,32 @@ const ChannelListItem = ({
                             >
                                 {teamDisplayName}
                             </Text>
+                            }
+                        </View>
+                        {Boolean(teammateId) &&
+                        <CustomStatus
+                            isInfo={isInfo}
+                            userId={teammateId!}
+                        />
+                        }
+                        {isInfo && Boolean(teamDisplayName) && isTablet &&
+                        <Text
+                            ellipsizeMode='tail'
+                            numberOfLines={1}
+                            testID={`${testID}.${teamDisplayName}.display_name`}
+                            style={[styles.teamName, styles.teamNameTablet]}
+                        >
+                            {teamDisplayName}
+                        </Text>
                         }
                     </View>
-                    {Boolean(teammateId) &&
-                    <CustomStatus
-                        isInfo={isInfo}
-                        userId={teammateId!}
+                    <Badge
+                        visible={mentionsCount > 0}
+                        value={mentionsCount}
+                        style={[styles.badge, isMuted && styles.mutedBadge, isInfo && styles.infoBadge]}
                     />
-                    }
-                    {isInfo && Boolean(teamDisplayName) && isTablet &&
-                    <Text
-                        ellipsizeMode='tail'
-                        numberOfLines={1}
-                        testID={`${testID}.${teamDisplayName}.display_name`}
-                        style={[styles.teamName, styles.teamNameTablet]}
-                    >
-                        {teamDisplayName}
-                    </Text>
-                    }
                 </View>
-                <Badge
-                    visible={mentionsCount > 0}
-                    value={mentionsCount}
-                    style={[styles.badge, isMuted && styles.mutedBadge, isInfo && styles.infoBadge]}
-                />
-            </View>
+            </>
         </TouchableOpacity>
     );
 };

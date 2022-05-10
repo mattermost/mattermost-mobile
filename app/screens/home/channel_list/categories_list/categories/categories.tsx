@@ -32,9 +32,14 @@ const styles = StyleSheet.create({
     },
     loadingView: {
         alignItems: 'center',
+        justifyContent: 'center',
         flex: 1,
     },
-    loading: {flex: 1},
+    loading: {
+        justifyContent: 'center' as const,
+        height: 32,
+        width: 32,
+    },
 });
 
 const extractKey = (item: CategoryModel | 'UNREADS') => (item === 'UNREADS' ? 'UNREADS' : item.id);
