@@ -45,6 +45,7 @@ const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
     const teamId = categories[0]?.teamId;
+    const [isLoading, setLoading] = useState(false);
 
     const onChannelSwitch = useCallback(async (channelId: string) => {
         switchToChannelById(serverUrl, channelId);
@@ -72,10 +73,15 @@ const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
                 />
             </>
         );
-    }, [intl.locale, isTablet, onChannelSwitch, onlyUnreads]);
 
-    useEffect(() => {
+        // We should not depend on the teamId, because it will trigger the re-render of
+        // all the elements during the switch. Instead, we depend on isLoading, that effectively
+        // mark a team switch.
+    }, [isLoading, intl.locale, isTablet, onChannelSwitch, onlyUnreads]);
+
+    useDidUpdate(() => {
         listRef.current?.scrollToOffset({animated: false, offset: 0});
+        setLoading(true);
     }, [teamId]);
 
     const categoriesToShow = useMemo(() => {
@@ -91,10 +97,8 @@ const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
     }, [categories, onlyUnreads, unreadsOnTop]);
 
     const categoriesAfterLoading = useRef(categoriesToShow);
-    const [isLoading, setLoading] = useState(false);
 
     useDidUpdate(() => {
-        setLoading(true);
         const t = setTimeout(() => {
             categoriesAfterLoading.current = categoriesToShow;
             setLoading(false);
