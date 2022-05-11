@@ -57,7 +57,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.ABOUT:
             screen = withServerDatabase(require('@screens/about').default);
             break;
-        case Screens.APP_FORM:
+        case Screens.APPS_FORM:
             screen = withServerDatabase(require('@screens/apps_form').default);
             break;
         case Screens.BOTTOM_SHEET:
