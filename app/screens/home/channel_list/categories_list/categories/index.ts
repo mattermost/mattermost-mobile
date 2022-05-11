@@ -6,10 +6,11 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$, combineLatest} from 'rxjs';
 import {switchMap, combineLatestWith} from 'rxjs/operators';
 
+import {queryAllChannelDrafts} from '@app/queries/servers/drafts';
 import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {queryCategoriesByTeamIds, queryCategoryChannelsByTeam} from '@queries/servers/categories';
-import {observeAllMyChannelNotifyProps, queryJoinedChannels, queryMyChannelsForTeam} from '@queries/servers/channel';
+import {queryJoinedChannels, queryMyChannelSettingsByTeam, queryMyChannelsForTeam} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCurrentChannelId, observeCurrentTeamId, observeCurrentUserId, observeLastUnreadChannelId, observeOnlyUnreads} from '@queries/servers/system';
 import {getDirectChannelName} from '@utils/channel';
@@ -49,6 +50,7 @@ const enhanced = withObservables(
                     return val[0] ? of$(parseInt(val[0].value, 10)) : of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
                 }),
             );
+
         return {
             categories,
             onlyUnreads: observeOnlyUnreads(database),
@@ -58,9 +60,11 @@ const enhanced = withObservables(
             allCategoriesChannels: currentTeamId.pipe(switchMap((ctid) => queryCategoryChannelsByTeam(database, ctid).observe())),
             hiddenChannels,
             dmLimit,
-            notifyProps: observeAllMyChannelNotifyProps(database),
+            allChannelSettings: currentTeamId.pipe(switchMap((ctid) => queryMyChannelSettingsByTeam(database, ctid).observe())),
             lastUnreadId: observeLastUnreadChannelId(database),
             currentChannelId: observeCurrentChannelId(database),
+            currentUserId,
+            drafts: queryAllChannelDrafts(database).observeWithColumns(['message', 'files']),
         };
     });
 

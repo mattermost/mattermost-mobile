@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {SectionList, SectionListData, SectionListRenderItemInfo, StyleSheet, Text, View} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
+import {MyChannelSettingsModel} from '@app/database/models/server';
 import ChannelItem from '@components/channel_item';
 import Loading from '@components/loading';
 import {DMS_CATEGORY} from '@constants/categories';
@@ -14,6 +15,7 @@ import {useIsTablet} from '@hooks/device';
 import {useTeamSwitch} from '@hooks/team_switch';
 import CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import ChannelModel from '@typings/database/models/servers/channel';
+import DraftModel from '@typings/database/models/servers/draft';
 import MyChannelModel from '@typings/database/models/servers/my_channel';
 
 import LoadCategoriesError from './error';
@@ -29,12 +31,14 @@ type Props = {
     allCategoriesChannels: CategoryChannelModel[];
     hiddenChannels: Set<string>;
     dmLimit: number;
-    notifyProps: Record<string, Partial<ChannelNotifyProps>>;
+    allChannelSettings: MyChannelSettingsModel[];
     lastUnreadId: string;
     currentChannelId: string;
+    currentUserId: string;
+    drafts: DraftModel[];
 }
 
-const isUnread = (c: MyChannelModel, settings: Partial<ChannelNotifyProps>) => c.mentionsCount > 0 || (c.isUnread && settings.mark_unread !== 'mention');
+const isUnread = (c: MyChannelModel, settings: {[id: string]: MyChannelSettingsModel}) => c.mentionsCount > 0 || (c.isUnread && settings[c.id]?.notifyProps?.mark_unread !== 'mention');
 const styles = StyleSheet.create({
     mainList: {
         flex: 1,
@@ -54,15 +58,20 @@ const styles = StyleSheet.create({
 });
 
 const unreadsSectionKey = 'UNREADS';
-const addToSection = (section: {[id: string]: ChannelModel[]}, channel: ChannelModel, id: string) => {
+
+type ItemType = {channel: ChannelModel; myChannel: MyChannelModel; settings: MyChannelSettingsModel; draft: DraftModel}
+const addToSection = (section: {[id: string]: ItemType[]}, channel: ChannelModel, myChannel: MyChannelModel, settings: MyChannelSettingsModel, draft: DraftModel, id: string) => {
     if (section[id]) {
-        section[id].push(channel);
+        section[id].push({channel, myChannel, settings, draft});
     } else {
-        section[id] = [channel];
+        section[id] = [{channel, myChannel, settings, draft}];
     }
 };
 
-const keyExtractor = (channel: ChannelModel) => channel.id;
+const keyExtractor = (item: ItemType) => item.channel.id;
+
+const ITEM_HEIGHT = 40;
+const getItemLayout = (data: Array<SectionListData<ItemType, { category: CategoryModel | 'UNREADS' }>> | null, index: number) => ({length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index});
 
 const Categories = ({
     categories,
@@ -73,9 +82,11 @@ const Categories = ({
     unreadsOnTop,
     hiddenChannels,
     dmLimit,
-    notifyProps,
+    allChannelSettings,
     lastUnreadId,
     currentChannelId,
+    currentUserId,
+    drafts,
 }: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -88,7 +99,7 @@ const Categories = ({
 
     const sections = useMemo(() => {
         // Make only unreads
-        const s: Array<SectionListData<ChannelModel, {category: CategoryModel | 'UNREADS'}>> = [];
+        const s: Array<SectionListData<ItemType, {category: CategoryModel | 'UNREADS'}>> = [];
 
         const categoryById: {[id: string]: CategoryModel} = {};
         for (const c of categories) {
@@ -103,10 +114,24 @@ const Categories = ({
         for (const c of allMyChannels) {
             myChannelById[c.id] = c;
         }
-        const categoryData: {[id: string]: ChannelModel[]} = {};
+
+        const settingsById: {[id: string]: MyChannelSettingsModel} = {};
+        for (const c of allChannelSettings) {
+            settingsById[c.id] = c;
+        }
+
+        const draftsById: {[id: string]: DraftModel} = {};
+        for (const d of drafts) {
+            draftsById[d.channelId] = d;
+        }
+
+        const categoryData: {[id: string]: ItemType[]} = {};
         for (const c of allCategoriesChannels) {
             const channel = channelById[c.channelId];
             const myChannel = myChannelById[c.channelId];
+            const settings = settingsById[c.channelId];
+            const draft = draftsById[c.channelId];
+
             if (!channel || !myChannel) {
                 continue;
             }
@@ -116,11 +141,11 @@ const Categories = ({
             if (channel.deleteAt > 0 && currentChannelId !== channel.id) {
                 continue;
             }
-            const unread = isUnread(myChannel, notifyProps[c.channelId]);
+            const unread = isUnread(myChannel, settingsById);
             if ((onlyUnreads || unreadsOnTop) && (unread || (isTablet && lastUnreadId === c.channelId))) {
-                addToSection(categoryData, channel, unreadsSectionKey);
-            } else if (!categoryById[c.categoryId].collapsed || unread) {
-                addToSection(categoryData, channel, c.categoryId);
+                addToSection(categoryData, channel, myChannel, settings, draft, unreadsSectionKey);
+            } else if (!categoryById[c.categoryId]?.collapsed || unread) {
+                addToSection(categoryData, channel, myChannel, settings, draft, c.categoryId);
             }
         }
 
@@ -140,16 +165,16 @@ const Categories = ({
                 data.sort((a, b) => {
                     switch (c.sorting) {
                         case 'alpha':
-                            if ((notifyProps[a.id].mark_unread === 'mention') && !(notifyProps[b.id].mark_unread === 'mention')) {
+                            if ((settingsById[a.channel.id]?.notifyProps?.mark_unread === 'mention') && !(settingsById[b.channel.id]?.notifyProps?.mark_unread === 'mention')) {
                                 return 1;
                             }
-                            if (!(notifyProps[a.id].mark_unread === 'mention') && (notifyProps[b.id].mark_unread === 'mention')) {
+                            if (!(settingsById[a.channel.id]?.notifyProps?.mark_unread === 'mention') && (settingsById[b.channel.id]?.notifyProps?.mark_unread === 'mention')) {
                                 return -1;
                             }
 
-                            return a.displayName.localeCompare(b.displayName, intl.locale, {numeric: true});
+                            return a.channel.displayName.localeCompare(b.channel.displayName, intl.locale, {numeric: true});
                         default:
-                            return myChannelById[a.id].lastPostAt - myChannelById[b.id].lastPostAt;
+                            return myChannelById[a.channel.id].lastPostAt - myChannelById[b.channel.id].lastPostAt;
                     }
                 });
             }
@@ -160,27 +185,32 @@ const Categories = ({
             s.push({data, category: c, key: c.id});
         }
         return s;
-    }, [onlyUnreads, unreadsOnTop, allMyChannels, allCategoriesChannels, categories, allMyChannels, hiddenChannels, notifyProps, currentChannelId, intl.locale]);
+    }, [onlyUnreads, unreadsOnTop, allMyChannels, allCategoriesChannels, categories, allMyChannels, hiddenChannels, allChannelSettings, currentChannelId, intl.locale]);
 
-    const renderSectionHeader = (info: {section: SectionListData<ChannelModel, {category: CategoryModel | 'UNREADS'}>}) => {
+    const renderSectionHeader = useCallback((info: {section: SectionListData<ItemType, {category: CategoryModel | 'UNREADS'}>}) => {
         if (info.section.category === 'UNREADS') {
             return (<Text >
                 {intl.formatMessage({id: 'mobile.channel_list.unreads', defaultMessage: 'UNREADS'})}
             </Text>);
         }
         return <CategoryHeader category={info.section.category}/>;
-    };
+    }, [intl]);
 
-    const renderItem = useCallback((info: SectionListRenderItemInfo<ChannelModel, {category: CategoryModel | 'UNREADS'}>) => {
+    const renderItem = useCallback((info: SectionListRenderItemInfo<ItemType, {category: CategoryModel | 'UNREADS'}>) => {
         const name = info.section.category === 'UNREADS' ? 'unreads' : info.section.category.displayName;
         const muted = info.section.category === 'UNREADS' ? false : info.section.category.muted;
         return (
             <ChannelItem
-                channel={info.item}
+                channel={info.item.channel}
+                myChannel={info.item.myChannel}
+                settings={info.item.settings}
                 testID={`category.${name.replace(/ /g, '_').toLocaleLowerCase()}.channel_list_item`}
                 onPress={onChannelSwitch}
                 isCategoryMuted={muted}
-                key={info.item.id}
+                currentUserId={currentUserId}
+                hasDraft={Boolean(info.item.draft)}
+                key={info.item.channel.id}
+                isActive={info.item.channel.id === currentChannelId}
             />
         );
     }, [onChannelSwitch]);
@@ -197,6 +227,12 @@ const Categories = ({
                     renderSectionHeader={renderSectionHeader}
                     renderItem={renderItem}
                     keyExtractor={keyExtractor}
+                    initialNumToRender={5}
+                    maxToRenderPerBatch={5}
+                    updateCellsBatchingPeriod={10}
+                    windowSize={10}
+                    getItemLayout={getItemLayout}
+                    removeClippedSubviews={true}
                 />
             )}
             {switchingTeam && (

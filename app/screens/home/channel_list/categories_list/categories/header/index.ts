@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import withObservables from '@nozbe/with-observables';
+import React from 'react';
 
 import CategoryHeader from './header';
 
@@ -12,4 +13,4 @@ const enhanced = withObservables(['category'], ({category}: {category: CategoryM
     hasChannels: category.hasChannels,
 }));
 
-export default enhanced(CategoryHeader);
+export default React.memo(enhanced(CategoryHeader));

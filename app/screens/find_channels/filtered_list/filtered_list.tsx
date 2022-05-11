@@ -9,7 +9,6 @@ import Animated, {FadeInDown, FadeOutUp} from 'react-native-reanimated';
 
 import {joinChannelIfNeeded, makeDirectChannel, searchAllChannels, switchToChannelById} from '@actions/remote/channel';
 import {searchProfiles} from '@actions/remote/user';
-import ChannelItem from '@components/channel_item';
 import Loading from '@components/loading';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {useServerUrl} from '@context/server';
@@ -205,14 +204,16 @@ const FilteredList = ({
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<ChannelModel|Channel|UserModel>) => {
         if ('teamId' in item) {
-            return (
-                <ChannelItem
-                    channel={item}
-                    isInfo={true}
-                    onPress={onSwitchToChannel}
-                    showTeamName={showTeamName}
-                />
-            );
+            return null;
+
+            // return (
+            //     <ChannelItem
+            //         channel={item}
+            //         isInfo={true}
+            //         onPress={onSwitchToChannel}
+            //         showTeamName={showTeamName}
+            //     />
+            // );
         } else if ('username' in item) {
             return (
                 <UserItem

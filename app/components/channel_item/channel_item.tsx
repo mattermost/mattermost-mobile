@@ -17,21 +17,22 @@ import {getUserIdFromChannelName} from '@utils/user';
 import CustomStatus from './custom_status';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
+import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 
 type Props = {
     channel: ChannelModel;
+    myChannel: MyChannelModel;
+    settings: MyChannelSettingsModel;
     currentUserId: string;
     hasDraft: boolean;
     isActive: boolean;
     isInfo?: boolean;
-    isMuted: boolean;
     membersCount: number;
-    isUnread: boolean;
-    mentionsCount: number;
     onPress: (channelId: string) => void;
-    hasMember: boolean;
     teamDisplayName?: string;
     testID?: string;
+    isCategoryMuted: boolean;
 }
 
 export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -114,16 +115,16 @@ export const textStyle = StyleSheet.create({
 });
 
 const ChannelListItem = ({
-    channel, currentUserId, hasDraft,
-    isActive, isInfo, isMuted, membersCount, hasMember,
-    isUnread, mentionsCount, onPress, teamDisplayName, testID}: Props) => {
+    channel, myChannel, settings, currentUserId, hasDraft,
+    isCategoryMuted, isActive, isInfo, membersCount,
+    onPress, teamDisplayName, testID}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
 
     // Make it brighter if it's not muted, and highlighted or has unreads
-    const isBright = isUnread || mentionsCount > 0;
+    const isBright = myChannel.isUnread || myChannel.mentionsCount > 0;
 
     const height = useMemo(() => {
         let h = 40;
@@ -137,6 +138,7 @@ const ChannelListItem = ({
         onPress(channel.id);
     }, [channel.id]);
 
+    const isMuted = settings.notifyProps.mark_unread === 'mention' || isCategoryMuted;
     const textStyles = useMemo(() => [
         isBright ? textStyle.bright : textStyle.regular,
         styles.text,
@@ -144,7 +146,7 @@ const ChannelListItem = ({
         isMuted && styles.muted,
         isActive && !isInfo ? styles.textActive : null,
         isInfo ? styles.textInfo : null,
-    ], [isBright, styles, isMuted, isActive, isInfo]);
+    ], [isBright, styles, settings.notifyProps.mark_unread, isActive, isInfo]);
 
     const containerStyle = useMemo(() => [
         styles.container,
@@ -154,7 +156,7 @@ const ChannelListItem = ({
     ],
     [height, isActive, isInfo, styles]);
 
-    if (!hasMember) {
+    if (!myChannel) {
         return null;
     }
 
@@ -225,8 +227,8 @@ const ChannelListItem = ({
                         }
                     </View>
                     <Badge
-                        visible={mentionsCount > 0}
-                        value={mentionsCount}
+                        visible={myChannel.mentionsCount > 0}
+                        value={myChannel.mentionsCount}
                         style={[styles.badge, isMuted && styles.mutedBadge, isInfo && styles.infoBadge]}
                     />
                 </View>

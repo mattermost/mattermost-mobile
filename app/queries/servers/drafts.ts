@@ -25,3 +25,9 @@ export const queryDraft = (database: Database, channelId: string, rootId = '') =
         Q.where('root_id', rootId),
     );
 };
+
+export const queryAllChannelDrafts = (database: Database) => {
+    return database.collections.get<DraftModel>(DRAFT).query(
+        Q.where('root_id', ''),
+    );
+};

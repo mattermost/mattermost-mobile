@@ -7,6 +7,7 @@ import {map as map$, switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 import {hasPermission} from '@utils/role';
 
 import {prepareDeletePost} from './post';
@@ -19,7 +20,6 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
-import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 import type UserModel from '@typings/database/models/servers/user';
 
 const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP, MY_CHANNEL_SETTINGS, CHANNEL_INFO, USER}} = MM_TABLES;
@@ -375,6 +375,13 @@ export const observeChannelInfo = (database: Database, channelId: string) => {
 
 export const queryAllMyChannelSettings = (database: Database) => {
     return database.get<MyChannelSettingsModel>(MY_CHANNEL_SETTINGS).query();
+};
+
+export const queryMyChannelSettingsByTeam = (database: Database, teamId: string) => {
+    return database.get<MyChannelSettingsModel>(MY_CHANNEL_SETTINGS).query(
+        Q.experimentalNestedJoin(MY_CHANNEL, CHANNEL),
+        Q.on(MY_CHANNEL, Q.on(CHANNEL, Q.where('team_id', Q.oneOf([teamId, ''])))),
+    );
 };
 
 export const queryMyChannelSettingsByIds = (database: Database, ids: string[]) => {

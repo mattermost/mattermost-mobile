@@ -3,11 +3,10 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {SectionList, SectionListRenderItemInfo, StyleSheet} from 'react-native';
+import {SectionList, StyleSheet} from 'react-native';
 import Animated, {FadeInDown, FadeOutUp} from 'react-native-reanimated';
 
 import {switchToChannelById} from '@actions/remote/channel';
-import ChannelItem from '@components/channel_item';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 
@@ -72,15 +71,17 @@ const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, un
         <FindChannelsHeader sectionName={intl.formatMessage({id: section.id, defaultMessage: section.defaultMessage})}/>
     ), [intl.locale]);
 
-    const renderSectionItem = useCallback(({item}: SectionListRenderItemInfo<ChannelModel>) => {
-        return (
-            <ChannelItem
-                channel={item}
-                isInfo={true}
-                onPress={onPress}
-                showTeamName={showTeamName}
-            />
-        );
+    const renderSectionItem = useCallback(() => {//{item}: SectionListRenderItemInfo<ChannelModel>) => {
+        return null;
+
+        // return (
+        //     <ChannelItem
+        //         channel={item}
+        //         isInfo={true}
+        //         onPress={onPress}
+        //         showTeamName={showTeamName}
+        //     />
+        // );
     }, [onPress, showTeamName]);
 
     useEffect(() => {
