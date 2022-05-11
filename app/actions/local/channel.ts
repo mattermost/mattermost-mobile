@@ -485,11 +485,13 @@ export async function showUnreadChannelsOnly(serverUrl: string, onlyUnreads: boo
     });
 }
 
-export const checkChannelsDisplayName = async (serverUrl: string, userId: string, preferences: PreferenceType[]) => {
+export const checkChannelsDisplayName = async (serverUrl: string, preferences?: PreferenceType[]) => {
     try {
-        const {error} = await guardDisplayName(serverUrl, userId, preferences);
-        if (error) {
-            return {error};
+        if (preferences) {
+            const {error} = await guardDisplayName(serverUrl, preferences);
+            if (error) {
+                return {error};
+            }
         }
 
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -497,8 +499,13 @@ export const checkChannelsDisplayName = async (serverUrl: string, userId: string
             return {error: `${serverUrl} database not found`};
         }
 
-        const channels = await queryUserChannelsByTypes(database, userId, ['G', 'D']).fetch();
-        const userIds = channels.map((ch) => getUserIdFromChannelName(userId, ch.name));
+        const currentUserId = await getCurrentUserId(database);
+        if (!currentUserId) {
+            return {error: 'The current user id could not be retrieved from the database'};
+        }
+
+        const channels = await queryUserChannelsByTypes(database, currentUserId, ['G', 'D']).fetch();
+        const userIds = channels.map((ch) => getUserIdFromChannelName(currentUserId, ch.name));
         const users = await queryUsersById(database, userIds).fetch();
 
         await updateChannelsDisplayName(serverUrl, channels, users, false);
@@ -509,11 +516,7 @@ export const checkChannelsDisplayName = async (serverUrl: string, userId: string
     }
 };
 
-const guardDisplayName = async (serverUrl: string, userId: string, preferences: PreferenceType[]) => {
-    if (!userId) {
-        return {error: 'userId is required'};
-    }
-
+const guardDisplayName = async (serverUrl: string, preferences: PreferenceType[]) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};

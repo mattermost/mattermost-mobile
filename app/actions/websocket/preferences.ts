@@ -26,7 +26,7 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
             });
         }
 
-        checkChannelsDisplayName(serverUrl, msg.broadcast.user_id, [preference]);
+        checkChannelsDisplayName(serverUrl, [preference]);
     } catch (error) {
         // Do nothing
     }
@@ -49,7 +49,7 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
             });
         }
 
-        checkChannelsDisplayName(serverUrl, msg.broadcast.user_id, preferences);
+        checkChannelsDisplayName(serverUrl, preferences);
     } catch (error) {
         // Do nothing
     }
