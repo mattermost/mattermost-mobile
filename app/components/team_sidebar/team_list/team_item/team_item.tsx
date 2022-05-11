@@ -19,7 +19,7 @@ type Props = {
     team: TeamModel;
     hasUnreads: boolean;
     mentionCount: number;
-    currentTeamId: string;
+    selected: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -57,11 +57,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default function TeamItem({team, hasUnreads, mentionCount, currentTeamId}: Props) {
+export default function TeamItem({team, hasUnreads, mentionCount, selected}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
-    const selected = team.id === currentTeamId;
 
     const hasBadge = Boolean(mentionCount || hasUnreads);
     let badgeStyle = styles.unread;

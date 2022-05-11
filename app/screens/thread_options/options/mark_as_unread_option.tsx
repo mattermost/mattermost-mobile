@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 
-import {markThreadAsUnread, updateThreadRead} from '@actions/remote/thread';
+import {markThreadAsRead, markThreadAsUnread} from '@actions/remote/thread';
 import {BaseOption} from '@components/common_post_options';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -22,7 +22,7 @@ const MarkAsUnreadOption = ({teamId, thread}: Props) => {
     const onHandlePress = useCallback(async () => {
         await dismissBottomSheet(Screens.THREAD_OPTIONS);
         if (thread.unreadReplies) {
-            updateThreadRead(serverUrl, teamId, thread.id, Date.now());
+            markThreadAsRead(serverUrl, teamId, thread.id);
         } else {
             markThreadAsUnread(serverUrl, teamId, thread.id, thread.id);
         }

@@ -10,19 +10,18 @@ import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {queryCategoriesByTeamIds} from '@queries/servers/categories';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {observeOnlyUnreads} from '@queries/servers/system';
+import {observeCurrentTeamId, observeOnlyUnreads} from '@queries/servers/system';
 
 import Categories from './categories';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
-type WithDatabaseProps = { currentTeamId: string } & WithDatabaseArgs
-
 const enhanced = withObservables(
-    ['currentTeamId'],
-    ({currentTeamId, database}: WithDatabaseProps) => {
-        const categories = queryCategoriesByTeamIds(database, [currentTeamId]).observeWithColumns(['sort_order']);
+    [],
+    ({database}: WithDatabaseArgs) => {
+        const currentTeamId = observeCurrentTeamId(database);
+        const categories = currentTeamId.pipe(switchMap((ctid) => queryCategoriesByTeamIds(database, [ctid]).observeWithColumns(['sort_order'])));
 
         const unreadsOnTop = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
             observeWithColumns(['value']).

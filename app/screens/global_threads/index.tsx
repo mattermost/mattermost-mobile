@@ -9,6 +9,7 @@ import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-cont
 import NavigationHeader from '@components/navigation_header';
 import {useAppState, useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import {useTeamSwitch} from '@hooks/team_switch';
 import {popTopScreen} from '@screens/navigation';
 
 import ThreadsList from './threads_list';
@@ -29,6 +30,7 @@ const GlobalThreads = ({componentId}: Props) => {
     const appState = useAppState();
     const intl = useIntl();
     const insets = useSafeAreaInsets();
+    const switchingTeam = useTeamSwitch();
     const isTablet = useIsTablet();
 
     const defaultHeight = useDefaultHeaderHeight();
@@ -63,6 +65,7 @@ const GlobalThreads = ({componentId}: Props) => {
                     })
                 }
             />
+            {!switchingTeam &&
             <View style={containerStyle}>
                 <ThreadsList
                     forceQueryAfterAppState={appState}
@@ -71,6 +74,7 @@ const GlobalThreads = ({componentId}: Props) => {
                     testID={'global_threads.threads_list'}
                 />
             </View>
+            }
         </SafeAreaView>
     );
 };

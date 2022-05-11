@@ -14,6 +14,7 @@ type SelectedView = {
 }
 
 type Props = {
+    onTeam: boolean;
     currentChannelId: string;
     isCRTEnabled: boolean;
 }
@@ -26,7 +27,7 @@ const ComponentsList: Record<string, React.ReactNode> = {
 const channelScreen: SelectedView = {id: Screens.CHANNEL, Component: Channel};
 const globalScreen: SelectedView = {id: Screens.GLOBAL_THREADS, Component: GlobalThreads};
 
-const AdditionalTabletView = ({currentChannelId, isCRTEnabled}: Props) => {
+const AdditionalTabletView = ({onTeam, currentChannelId, isCRTEnabled}: Props) => {
     const [selected, setSelected] = useState<SelectedView>(isCRTEnabled && !currentChannelId ? globalScreen : channelScreen);
 
     useEffect(() => {
@@ -43,7 +44,7 @@ const AdditionalTabletView = ({currentChannelId, isCRTEnabled}: Props) => {
         return () => listener.remove();
     }, []);
 
-    if (!selected) {
+    if (!selected || !onTeam) {
         return null;
     }
 

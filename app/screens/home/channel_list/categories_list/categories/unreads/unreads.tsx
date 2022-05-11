@@ -27,6 +27,8 @@ type UnreadCategoriesProps = {
     onChannelSwitch: (channelId: string) => void;
 }
 
+const extractKey = (item: ChannelModel) => item.id;
+
 const UnreadCategories = ({onChannelSwitch, unreadChannels}: UnreadCategoriesProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -54,6 +56,8 @@ const UnreadCategories = ({onChannelSwitch, unreadChannels}: UnreadCategoriesPro
             <FlatList
                 data={unreadChannels}
                 renderItem={renderItem}
+                keyExtractor={extractKey}
+                removeClippedSubviews={true}
             />
         </>
     );

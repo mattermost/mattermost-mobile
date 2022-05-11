@@ -19,6 +19,7 @@ export default keyMirror({
     SERVER_VERSION_CHANGED: null,
     TAB_BAR_VISIBLE: null,
     TEAM_LOAD_ERROR: null,
+    TEAM_SWITCH: null,
     USER_TYPING: null,
     USER_STOP_TYPING: null,
     POST_LIST_SCROLL_TO_BOTTOM: null,
