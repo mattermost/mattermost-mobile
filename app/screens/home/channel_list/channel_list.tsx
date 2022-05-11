@@ -20,7 +20,6 @@ import Servers from './servers';
 
 type ChannelProps = {
     channelsCount: number;
-    currentTeamId?: string;
     isCRTEnabled: boolean;
     teamsCount: number;
     time?: number;
@@ -95,9 +94,8 @@ const ChannelListScreen = (props: ChannelProps) => {
                         isTablet={isTablet}
                         teamsCount={props.teamsCount}
                         channelsCount={props.channelsCount}
-                        currentTeamId={props.currentTeamId}
                     />
-                    {isTablet && Boolean(props.currentTeamId) &&
+                    {isTablet &&
                         <AdditionalTabletView/>
                     }
                 </Animated.View>

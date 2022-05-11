@@ -1,15 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, SectionList, SectionListData, SectionListRenderItemInfo, Text} from 'react-native';
+import {SectionList, SectionListData, SectionListRenderItemInfo, StyleSheet, Text, View} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import ChannelItem from '@components/channel_item';
+import Loading from '@components/loading';
 import {DMS_CATEGORY} from '@constants/categories';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
+import {useTeamSwitch} from '@hooks/team_switch';
 import CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import ChannelModel from '@typings/database/models/servers/channel';
 import MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -20,7 +22,6 @@ import CategoryHeader from './header';
 import type CategoryModel from '@typings/database/models/servers/category';
 type Props = {
     categories: CategoryModel[];
-    currentTeamId: string;
     onlyUnreads: boolean;
     unreadsOnTop: boolean;
     allChannels: ChannelModel[];
@@ -34,6 +35,23 @@ type Props = {
 }
 
 const isUnread = (c: MyChannelModel, settings: Partial<ChannelNotifyProps>) => c.mentionsCount > 0 || (c.isUnread && settings.mark_unread !== 'mention');
+const styles = StyleSheet.create({
+    mainList: {
+        flex: 1,
+        marginLeft: -18,
+        marginRight: -20,
+    },
+    loadingView: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1,
+    },
+    loading: {
+        justifyContent: 'center',
+        height: 32,
+        width: 32,
+    },
+});
 
 const unreadsSectionKey = 'UNREADS';
 const addToSection = (section: {[id: string]: ChannelModel[]}, channel: ChannelModel, id: string) => {
@@ -51,7 +69,6 @@ const Categories = ({
     allChannels,
     allMyChannels,
     allCategoriesChannels,
-    currentTeamId,
     onlyUnreads,
     unreadsOnTop,
     hiddenChannels,
@@ -61,17 +78,13 @@ const Categories = ({
     currentChannelId,
 }: Props) => {
     const intl = useIntl();
-    const listRef = useRef<FlatList>(null);
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
+    const switchingTeam = useTeamSwitch();
 
     const onChannelSwitch = useCallback(async (channelId: string) => {
         switchToChannelById(serverUrl, channelId);
     }, [serverUrl]);
-
-    useEffect(() => {
-        listRef.current?.scrollToOffset({animated: false, offset: 0});
-    }, [currentTeamId]);
 
     const sections = useMemo(() => {
         // Make only unreads
@@ -177,12 +190,21 @@ const Categories = ({
     }
 
     return (
-        <SectionList
-            sections={sections}
-            renderSectionHeader={renderSectionHeader}
-            renderItem={renderItem}
-            keyExtractor={keyExtractor}
-        />
+        <>
+            {!switchingTeam && (
+                <SectionList
+                    sections={sections}
+                    renderSectionHeader={renderSectionHeader}
+                    renderItem={renderItem}
+                    keyExtractor={keyExtractor}
+                />
+            )}
+            {switchingTeam && (
+                <View style={styles.loadingView}>
+                    <Loading style={styles.loading}/>
+                </View>
+            )}
+        </>
     );
 };
 

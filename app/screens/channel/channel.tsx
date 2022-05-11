@@ -12,6 +12,7 @@ import {Events} from '@constants';
 import {ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useAppState, useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import {useTeamSwitch} from '@hooks/team_switch';
 
 import ChannelPostList from './channel_post_list';
 import ChannelHeader from './header';
@@ -34,6 +35,7 @@ const Channel = ({channelId, componentId}: ChannelProps) => {
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
     const [shouldRenderPosts, setShouldRenderPosts] = useState(false);
+    const switchingTeam = useTeamSwitch();
     const defaultHeight = useDefaultHeaderHeight();
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
 
@@ -70,7 +72,7 @@ const Channel = ({channelId, componentId}: ChannelProps) => {
                 testID='channel.screen'
             >
                 <ChannelHeader componentId={componentId}/>
-                {shouldRenderPosts && Boolean(channelId) &&
+                {!switchingTeam && shouldRenderPosts && Boolean(channelId) &&
                 <>
                     <View style={[styles.flex, {marginTop}]}>
                         <ChannelPostList

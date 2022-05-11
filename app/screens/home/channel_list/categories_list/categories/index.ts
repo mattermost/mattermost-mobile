@@ -11,7 +11,7 @@ import {getPreferenceAsBool} from '@helpers/api/preference';
 import {queryCategoriesByTeamIds, queryCategoryChannelsByTeam} from '@queries/servers/categories';
 import {observeAllMyChannelNotifyProps, queryJoinedChannels, queryMyChannelsForTeam} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {observeCurrentChannelId, observeCurrentUserId, observeLastUnreadChannelId, observeOnlyUnreads} from '@queries/servers/system';
+import {observeCurrentChannelId, observeCurrentTeamId, observeCurrentUserId, observeLastUnreadChannelId, observeOnlyUnreads} from '@queries/servers/system';
 import {getDirectChannelName} from '@utils/channel';
 
 import Categories from './categories';
@@ -19,15 +19,14 @@ import Categories from './categories';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
-type WithDatabaseProps = { currentTeamId: string } & WithDatabaseArgs
-
 const dmNames = (id: string) => (v: PreferenceModel) => getDirectChannelName(id, v.name);
 const gmNames = (v: PreferenceModel) => v.name;
 const enhanced = withObservables(
-    ['currentTeamId'],
-    ({currentTeamId, database}: WithDatabaseProps) => {
+    [],
+    ({database}: WithDatabaseArgs) => {
+        const currentTeamId = observeCurrentTeamId(database);
         const currentUserId = observeCurrentUserId(database);
-        const categories = queryCategoriesByTeamIds(database, [currentTeamId]).observeWithColumns(['sort_order', 'collapsed', 'muted']);
+        const categories = currentTeamId.pipe(switchMap((ctid) => queryCategoriesByTeamIds(database, [ctid]).observeWithColumns(['sort_order', 'collapsed', 'muted'])));
         const hiddenDmNames = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, undefined, 'false').observeWithColumns(['value']).pipe(
             combineLatestWith(currentUserId),
             switchMap(([prefs, id]) => of$(prefs.map(dmNames(id)))),
@@ -54,9 +53,9 @@ const enhanced = withObservables(
             categories,
             onlyUnreads: observeOnlyUnreads(database),
             unreadsOnTop,
-            allChannels: queryJoinedChannels(database, currentTeamId).observe(),
-            allMyChannels: queryMyChannelsForTeam(database, currentTeamId).observe(),
-            allCategoriesChannels: queryCategoryChannelsByTeam(database, currentTeamId).observe(),
+            allChannels: currentTeamId.pipe(switchMap((ctid) => queryJoinedChannels(database, ctid).observe())),
+            allMyChannels: currentTeamId.pipe(switchMap((ctid) => queryMyChannelsForTeam(database, ctid).observe())),
+            allCategoriesChannels: currentTeamId.pipe(switchMap((ctid) => queryCategoryChannelsByTeam(database, ctid).observe())),
             hiddenChannels,
             dmLimit,
             notifyProps: observeAllMyChannelNotifyProps(database),
