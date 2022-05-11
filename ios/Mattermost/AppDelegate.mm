@@ -242,17 +242,24 @@ RNHWKeyboardEvent *hwKeyEvent = nil;
   if ([hwKeyEvent isListening]) {
     UIKeyCommand *enter = [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:0 action:@selector(sendEnter:)];
     UIKeyCommand *shiftEnter = [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:UIKeyModifierShift action:@selector(sendShiftEnter:)];
+    UIKeyCommand *findChannels = [UIKeyCommand keyCommandWithInput:@"k" modifierFlags:UIKeyModifierCommand action:@selector(sendFindChannels:)];
     if (@available(iOS 13.0, *)) {
       [enter setTitle:@"Send message"];
+      [enter setDiscoverabilityTitle:@"Send message"];
       [shiftEnter setTitle:@"Add new line"];
+      [shiftEnter setDiscoverabilityTitle:@"Add new line"];
+      [findChannels setTitle:@"Find channels"];
+      [findChannels setDiscoverabilityTitle:@"Find channels"];
     }
     if (@available(iOS 15.0, *)) {
       [enter setWantsPriorityOverSystemBehavior:YES];
       [shiftEnter setWantsPriorityOverSystemBehavior:YES];
+      [findChannels setWantsPriorityOverSystemBehavior:YES];
     }
     
     [commands addObject: enter];
     [commands addObject: shiftEnter];
+    [commands addObject: findChannels];
   }
   
   return commands;
@@ -265,6 +272,10 @@ RNHWKeyboardEvent *hwKeyEvent = nil;
 - (void)sendShiftEnter:(UIKeyCommand *)sender {
   NSString *selected = sender.input;
   [hwKeyEvent sendHWKeyEvent:@"shift-enter"];
+}
+- (void)sendFindChannels:(UIKeyCommand *)sender {
+  NSString *selected = sender.input;
+  [hwKeyEvent sendHWKeyEvent:@"find-channels"];
 }
 
 #if RCT_NEW_ARCH_ENABLED
