@@ -48,8 +48,8 @@ const checkDisplayNameByConfig = async (serverUrl: string, newConfig: ClientConf
         return {error: `${serverUrl} database not found`};
     }
 
-    if (!newConfig.LockTeammateNameDisplay) {
-        return {error: 'LockTeammateNameDisplay config did not change'};
+    if (!('LockTeammateNameDisplay' in newConfig)) {
+        return {error: 'LockTeammateNameDisplay not present'};
     }
 
     if (prevConfig?.LockTeammateNameDisplay === newConfig.LockTeammateNameDisplay) {
