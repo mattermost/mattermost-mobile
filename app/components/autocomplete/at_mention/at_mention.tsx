@@ -287,8 +287,8 @@ const AtMention = ({
     }, [cursorPosition]);
 
     useEffect(() => {
-        if (useGroupMentions) {
-            getGroupsForAutocomplete(serverUrl, channelId || '').then((res) => {
+        if (useGroupMentions && matchTerm && matchTerm !== '') {
+            getGroupsForAutocomplete(serverUrl, matchTerm || '').then((res) => {
                 setGroups(res.length ? res : emptyGroupList);
             }).catch(() => {
                 setGroups(emptyGroupList);
@@ -296,7 +296,7 @@ const AtMention = ({
         } else {
             setGroups(emptyGroupList);
         }
-    }, [channelId, useGroupMentions]);
+    }, [matchTerm, useGroupMentions]);
 
     useEffect(() => {
         if (matchTerm === null) {

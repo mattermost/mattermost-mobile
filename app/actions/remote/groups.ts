@@ -4,7 +4,7 @@
 import {Client} from '@client/rest';
 import NetworkManager from '@managers/network_manager';
 
-export const getGroupsForAutocomplete = async (serverUrl: string, channelId: string) => {
+export const getGroupsForAutocomplete = async (serverUrl: string, query: string) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -12,5 +12,5 @@ export const getGroupsForAutocomplete = async (serverUrl: string, channelId: str
         return [];
     }
 
-    return client.getAllGroupsAssociatedToChannel(channelId, true);
+    return client.getGroups(query);
 };
