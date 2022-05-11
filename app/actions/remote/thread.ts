@@ -52,7 +52,7 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string) 
             if (thread?.unreadReplies || thread?.unreadMentions) {
                 const channel = await getChannelById(database, post.channelId);
                 if (channel) {
-                    updateThreadRead(serverUrl, channel.teamId, thread.id, Date.now());
+                    markThreadAsRead(serverUrl, channel.teamId, thread.id);
                 }
             }
         }
@@ -156,7 +156,13 @@ export const updateTeamThreadsAsRead = async (serverUrl: string, teamId: string)
     }
 };
 
-export const updateThreadRead = async (serverUrl: string, teamId: string, threadId: string, timestamp: number) => {
+export const markThreadAsRead = async (serverUrl: string, teamId: string, threadId: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
     let client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -165,11 +171,20 @@ export const updateThreadRead = async (serverUrl: string, teamId: string, thread
     }
 
     try {
-        const data = await client.updateThreadRead('me', teamId, threadId, timestamp);
+        const timestamp = Date.now();
+
+        // DM/GM doesn't have a teamId, so we pass the current team id
+        let threadTeamId = teamId;
+        if (!threadTeamId) {
+            threadTeamId = await getCurrentTeamId(database);
+        }
+        const data = await client.markThreadAsRead('me', threadTeamId, threadId, timestamp);
 
         // Update locally
         await updateThread(serverUrl, threadId, {
             last_viewed_at: timestamp,
+            unread_replies: 0,
+            unread_mentions: 0,
         });
 
         return {data};
@@ -194,7 +209,13 @@ export const markThreadAsUnread = async (serverUrl: string, teamId: string, thre
     }
 
     try {
-        const data = await client.markThreadAsUnread('me', teamId, threadId, postId);
+        // DM/GM doesn't have a teamId, so we pass the current team id
+        let threadTeamId = teamId;
+        if (!threadTeamId) {
+            threadTeamId = await getCurrentTeamId(database);
+        }
+
+        const data = await client.markThreadAsUnread('me', threadTeamId, threadId, postId);
 
         // Update locally
         const post = await getPostById(database, threadId);

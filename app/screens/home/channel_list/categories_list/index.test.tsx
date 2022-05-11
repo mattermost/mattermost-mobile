@@ -33,7 +33,6 @@ describe('components/categories_list', () => {
             <CategoriesList
                 isTablet={false}
                 teamsCount={1}
-                currentTeamId={TestHelper.basicTeam!.id}
                 channelsCount={1}
             />,
             {database},
@@ -47,7 +46,6 @@ describe('components/categories_list', () => {
                 isCRTEnabled={true}
                 isTablet={false}
                 teamsCount={1}
-                currentTeamId={TestHelper.basicTeam!.id}
                 channelsCount={1}
             />,
             {database},
@@ -65,7 +63,6 @@ describe('components/categories_list', () => {
             <CategoriesList
                 isTablet={false}
                 teamsCount={0}
-                currentTeamId='TestHelper.basicTeam!.id'
                 channelsCount={1}
             />,
             {database},
@@ -84,7 +81,6 @@ describe('components/categories_list', () => {
             <CategoriesList
                 isTablet={false}
                 teamsCount={1}
-                currentTeamId={TestHelper.basicTeam!.id}
                 channelsCount={0}
             />,
             {database},

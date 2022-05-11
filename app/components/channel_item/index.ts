@@ -32,9 +32,13 @@ const enhance = withObservables(['channel', 'showTeamName', 'isCategoryMuted'], 
 
     const hasDraft = queryDraft(database, channel.id).observeWithColumns(['message', 'files']).pipe(
         switchMap((draft) => of$(draft.length > 0)),
+        distinctUntilChanged(),
     );
 
-    const isActive = observeCurrentChannelId(database).pipe(switchMap((id) => of$(id ? id === channel.id : false)), distinctUntilChanged());
+    const isActive = observeCurrentChannelId(database).pipe(
+        switchMap((id) => of$(id ? id === channel.id : false)),
+        distinctUntilChanged(),
+    );
 
     const isMuted = myChannel.pipe(
         switchMap((mc) => {
@@ -50,6 +54,7 @@ const enhance = withObservables(['channel', 'showTeamName', 'isCategoryMuted'], 
     if (channel.teamId && showTeamName) {
         teamDisplayName = channel.team.observe().pipe(
             switchMap((team) => of$(team?.displayName || '')),
+            distinctUntilChanged(),
         );
     }
 
@@ -58,6 +63,21 @@ const enhance = withObservables(['channel', 'showTeamName', 'isCategoryMuted'], 
         membersCount = channel.members.observeCount();
     }
 
+    const isUnread = myChannel.pipe(
+        switchMap((mc) => of$(mc?.isUnread)),
+        distinctUntilChanged(),
+    );
+
+    const mentionsCount = myChannel.pipe(
+        switchMap((mc) => of$(mc?.mentionsCount)),
+        distinctUntilChanged(),
+    );
+
+    const hasMember = myChannel.pipe(
+        switchMap((mc) => of$(Boolean(mc))),
+        distinctUntilChanged(),
+    );
+
     return {
         channel: channel.observe(),
         currentUserId,
@@ -65,8 +85,10 @@ const enhance = withObservables(['channel', 'showTeamName', 'isCategoryMuted'], 
         isActive,
         isMuted,
         membersCount,
-        myChannel,
+        isUnread,
+        mentionsCount,
         teamDisplayName,
+        hasMember,
     };
 });
 
