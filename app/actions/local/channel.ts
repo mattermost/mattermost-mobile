@@ -488,7 +488,7 @@ export async function showUnreadChannelsOnly(serverUrl: string, onlyUnreads: boo
 export const checkChannelsDisplayName = async (serverUrl: string, preferences?: PreferenceType[]) => {
     try {
         if (preferences) {
-            const {error} = await guardDisplayName(serverUrl, preferences);
+            const {error} = await guardDisplayNamePref(serverUrl, preferences);
             if (error) {
                 return {error};
             }
@@ -516,7 +516,7 @@ export const checkChannelsDisplayName = async (serverUrl: string, preferences?: 
     }
 };
 
-const guardDisplayName = async (serverUrl: string, preferences: PreferenceType[]) => {
+const guardDisplayNamePref = async (serverUrl: string, preferences: PreferenceType[]) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};

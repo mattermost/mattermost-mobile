@@ -14,11 +14,11 @@ export async function handleLicenseChangedEvent(serverUrl: string, msg: WebSocke
 
     try {
         const license = msg.data.license;
-        const systems: IdValue[] = [{
-            id: SYSTEM_IDENTIFIERS.LICENSE,
-            value: JSON.stringify(license),
-        }];
+        const systems: IdValue[] = [{id: SYSTEM_IDENTIFIERS.LICENSE, value: JSON.stringify(license)}];
+
+        const prevLicense = await getConfig(operator.database);
         await operator.handleSystem({systems, prepareRecordsOnly: false});
+        checkDisplayNameSettings(serverUrl, license, prevLicense);
     } catch {
         // do nothing
     }
@@ -36,23 +36,24 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
 
         const prevConfig = await getConfig(operator.database);
         await operator.handleSystem({systems, prepareRecordsOnly: false});
-        checkDisplayNameByConfig(serverUrl, config, prevConfig);
+        checkDisplayNameSettings(serverUrl, config, prevConfig);
     } catch {
         // do nothing
     }
 }
 
-const checkDisplayNameByConfig = async (serverUrl: string, newConfig: ClientConfig, prevConfig?: ClientConfig) => {
+type ServerSettings = ClientConfig | ClientLicense;
+const checkDisplayNameSettings = async (serverUrl: string, newSettings: ServerSettings, prevSetting?: ServerSettings) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
     }
 
-    if (!('LockTeammateNameDisplay' in newConfig)) {
+    if (!('LockTeammateNameDisplay' in newSettings)) {
         return {error: 'LockTeammateNameDisplay not present'};
     }
 
-    if (prevConfig?.LockTeammateNameDisplay === newConfig.LockTeammateNameDisplay) {
+    if (prevSetting?.LockTeammateNameDisplay === newSettings.LockTeammateNameDisplay) {
         return {error: 'No change in LockTeammateNameDisplay config'};
     }
 
