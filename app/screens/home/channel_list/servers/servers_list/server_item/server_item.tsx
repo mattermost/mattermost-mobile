@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Text, View} from 'react-native';
+import {DeviceEventEmitter, Platform, Text, View} from 'react-native';
 import {RectButton} from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 
@@ -407,7 +407,7 @@ const ServerItem = ({
                             <Loading
                                 containerStyle={styles.switching}
                                 color={theme.buttonBg}
-                                size='large'
+                                size={Platform.select({ios: 'small', default: 'large'})}
                             />
                             }
                             <View style={styles.details}>
