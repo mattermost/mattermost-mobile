@@ -186,7 +186,7 @@ const FilteredList = ({
             return (
                 <Loading
                     containerStyle={style.noResultContainer}
-                    style={style.loading}
+                    size='large'
                     color={theme.buttonBg}
                 />
             );

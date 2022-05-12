@@ -405,8 +405,9 @@ const ServerItem = ({
                             }
                             {switching &&
                             <Loading
-                                style={styles.switching}
+                                containerStyle={styles.switching}
                                 color={theme.buttonBg}
+                                size='large'
                             />
                             }
                             <View style={styles.details}>

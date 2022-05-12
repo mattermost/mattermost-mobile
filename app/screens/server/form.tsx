@@ -68,10 +68,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         padding: 0,
         top: -2,
     },
-    loading: {
-        height: 20,
-        width: 20,
-    },
 }));
 
 const ServerForm = ({
@@ -154,7 +150,7 @@ const ServerForm = ({
         buttonIcon = (
             <Loading
                 containerStyle={styles.loadingContainerStyle}
-                style={styles.loading}
+                color={theme.buttonColor}
             />
         );
     }
