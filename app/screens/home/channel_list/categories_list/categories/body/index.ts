@@ -5,13 +5,14 @@ import {Database} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
-import {map, switchMap, concatAll} from 'rxjs/operators';
+import {map, switchMap, concatAll, combineLatestWith} from 'rxjs/operators';
 
 import {General, Preferences} from '@constants';
 import {DMS_CATEGORY} from '@constants/categories';
-import {queryChannelsByNames, queryMyChannelSettingsByIds} from '@queries/servers/channel';
+import {getPreferenceAsBool} from '@helpers/api/preference';
+import {observeAllMyChannelNotifyProps, queryChannelsByNames, queryMyChannelSettingsByIds} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {observeCurrentUserId} from '@queries/servers/system';
+import {observeCurrentChannelId, observeCurrentUserId, observeLastUnreadChannelId} from '@queries/servers/system';
 import {WithDatabaseArgs} from '@typings/database/database';
 import {getDirectChannelName} from '@utils/channel';
 
@@ -36,6 +37,10 @@ const sortAlpha = (locale: string, a: ChannelData, b: ChannelData) => {
     }
 
     return a.displayName.localeCompare(b.displayName, locale, {numeric: true});
+};
+
+const filterArchived = (channels: Array<ChannelModel | null>, currentChannelId: string) => {
+    return channels.filter((c): c is ChannelModel => c != null && ((c.deleteAt > 0 && c.id === currentChannelId) || !c.deleteAt));
 };
 
 const buildAlphaData = (channels: ChannelModel[], settings: MyChannelSettingsModel[], locale: string) => {
@@ -104,20 +109,24 @@ type EnhanceProps = {
     category: CategoryModel;
     locale: string;
     currentUserId: string;
+    isTablet: boolean;
 } & WithDatabaseArgs
 
 const withUserId = withObservables([], ({database}: WithDatabaseArgs) => ({currentUserId: observeCurrentUserId(database)}));
 
-const enhance = withObservables(['category', 'locale'], ({category, locale, database, currentUserId}: EnhanceProps) => {
+const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, locale, isTablet, database, currentUserId}: EnhanceProps) => {
     const observedCategory = category.observe();
+    const currentChannelId = observeCurrentChannelId(database);
     const sortedChannels = observedCategory.pipe(
         switchMap((c) => getSortedChannels(database, c, locale)),
+        combineLatestWith(currentChannelId),
+        map(([cs, ccId]) => filterArchived(cs, ccId)),
     );
 
     const dmMap = (p: PreferenceModel) => getDirectChannelName(p.name, currentUserId);
 
     const hiddenDmIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, undefined, 'false').
-        observe().pipe(
+        observeWithColumns(['value']).pipe(
             switchMap((prefs: PreferenceModel[]) => {
                 const names = prefs.map(dmMap);
                 const channels = queryChannelsByNames(database, names).observe();
@@ -129,26 +138,60 @@ const enhance = withObservables(['category', 'locale'], ({category, locale, data
         );
 
     const hiddenGmIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_GROUP_CHANNEL_SHOW, undefined, 'false').
-        observe().pipe(switchMap(mapPrefName));
+        observeWithColumns(['value']).pipe(switchMap(mapPrefName));
 
     let limit = of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
     if (category.type === DMS_CATEGORY) {
-        limit = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_LIMIT_DMS).observe().pipe(
-            switchMap((val) => {
-                return val[0] ? of$(parseInt(val[0].value, 10)) : of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
-            }),
-        );
+        limit = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_LIMIT_DMS).
+            observeWithColumns(['value']).pipe(
+                switchMap((val) => {
+                    return val[0] ? of$(parseInt(val[0].value, 10)) : of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
+                }),
+            );
     }
 
     const hiddenChannelIds = combineLatest([hiddenDmIds, hiddenGmIds]).pipe(switchMap(
         ([a, b]) => of$(new Set(a.concat(b))),
     ));
 
+    const unreadsOnTop = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
+        observeWithColumns(['value']).
+        pipe(
+            switchMap((prefs: PreferenceModel[]) => of$(getPreferenceAsBool(prefs, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS, false))),
+        );
+
+    const notifyProps = observeAllMyChannelNotifyProps(database);
+    const lastUnreadId = isTablet ? observeLastUnreadChannelId(database) : of$(undefined);
+    const unreadChannels = category.myChannels.observeWithColumns(['mentions_count', 'is_unread']);
+    const filterUnreads = unreadChannels.pipe(
+        combineLatestWith(notifyProps, lastUnreadId),
+        map(([my, settings, lastUnread]) => {
+            return my.reduce<Set<string>>((set, m) => {
+                const isMuted = settings[m.id]?.mark_unread === 'mention';
+                if ((isMuted && m.mentionsCount) || (!isMuted && m.isUnread) || m.id === lastUnread) {
+                    set.add(m.id);
+                }
+                return set;
+            }, new Set());
+        }),
+    );
+
+    const filtered = sortedChannels.pipe(
+        combineLatestWith(filterUnreads, unreadsOnTop),
+        map(([channels, unreadIds, unreadTop]) => {
+            return channels.filter((c) => (unreadTop ? !unreadIds.has(c.id) : true));
+        }),
+    );
+
     return {
         limit,
         hiddenChannelIds,
-        sortedChannels,
+        sortedChannels: filtered,
         category: observedCategory,
+        unreadChannels: sortedChannels.pipe(
+            combineLatestWith(filterUnreads, unreadsOnTop),
+            map(([sorted, unreadIds, unreadsTop]) => (unreadsTop ? [] : sorted.filter((c) => unreadIds.has(c.id)))),
+        ),
     };
 });
 

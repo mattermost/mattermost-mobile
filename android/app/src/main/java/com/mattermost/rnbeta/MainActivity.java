@@ -43,10 +43,19 @@ public class MainActivity extends NavigationActivity {
     */
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (HWKeyboardConnected && event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
-            String keyPressed = event.isShiftPressed() ? "shift-enter" : "enter";
-            HWKeyboardEventModule.getInstance().keyPressed(keyPressed);
-            return true;
+        if (HWKeyboardConnected) {
+            int keyCode = event.getKeyCode();
+            int keyAction = event.getAction();
+            if (keyAction == KeyEvent.ACTION_UP) {
+                if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                    String keyPressed = event.isShiftPressed() ? "shift-enter" : "enter";
+                    HWKeyboardEventModule.getInstance().keyPressed(keyPressed);
+                    return true;
+                } else if (keyCode == KeyEvent.KEYCODE_K && event.isCtrlPressed()) {
+                    HWKeyboardEventModule.getInstance().keyPressed("find-channels");
+                    return true;
+                }
+            }
         }
         return super.dispatchKeyEvent(event);
     };

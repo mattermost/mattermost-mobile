@@ -6,6 +6,7 @@ import {of as of$, Observable} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type SystemModel from '@typings/database/models/servers/system';
@@ -70,6 +71,22 @@ export const getCurrentUserId = async (serverDatabase: Database): Promise<string
 export const observeCurrentUserId = (database: Database): Observable<string> => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.CURRENT_USER_ID).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: ''}))),
+        switchMap((model) => of$(model.value)),
+    );
+};
+
+export const getPushVerificationStatus = async (serverDatabase: Database): Promise<string> => {
+    try {
+        const status = await serverDatabase.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS);
+        return status?.value || '';
+    } catch {
+        return '';
+    }
+};
+
+export const observePushVerificationStatus = (database: Database): Observable<string> => {
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$({value: PUSH_PROXY_STATUS_UNKNOWN}))),
         switchMap((model) => of$(model.value)),
     );
 };
@@ -370,4 +387,11 @@ export const getLastUnreadChannelId = async (serverDatabase: Database): Promise<
     } catch {
         return '';
     }
+};
+
+export const observeOnlyUnreads = (database: Database) => {
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.ONLY_UNREADS).observeWithColumns(['value']).pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$({value: false}))),
+        switchMap((model) => of$(model.value as boolean)),
+    );
 };

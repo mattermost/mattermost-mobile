@@ -28,7 +28,8 @@ const withHeaderProps = withObservables(
     ({post, database, differentThreadSequence}: WithDatabaseArgs & HeaderInputProps) => {
         const config = observeConfig(database);
         const license = observeLicense(database);
-        const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observe();
+        const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).
+            observeWithColumns(['value']);
         const author = post.author.observe();
         const enablePostUsernameOverride = config.pipe(map((cfg) => cfg?.EnablePostUsernameOverride === 'true'));
         const isTimezoneEnabled = config.pipe(map((cfg) => cfg?.ExperimentalTimezone === 'true'));

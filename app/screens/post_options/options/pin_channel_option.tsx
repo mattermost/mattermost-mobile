@@ -18,9 +18,9 @@ type PinChannelProps = {
 const PinChannelOption = ({isPostPinned, postId}: PinChannelProps) => {
     const serverUrl = useServerUrl();
 
-    const onPress = useCallback(() => {
+    const onPress = useCallback(async () => {
+        await dismissBottomSheet(Screens.POST_OPTIONS);
         togglePinPost(serverUrl, postId);
-        dismissBottomSheet(Screens.POST_OPTIONS);
     }, [postId, serverUrl]);
 
     let defaultMessage;

@@ -178,7 +178,7 @@ const ChannelIcon = ({
                     style={[styles.group, unreadGroup, activeGroup, {fontSize}]}
                     testID={`${testID}.gm_member_count`}
                 >
-                    {membersCount}
+                    {membersCount - 1}
                 </Text>
             </View>
         );

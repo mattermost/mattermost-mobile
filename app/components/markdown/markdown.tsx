@@ -209,6 +209,7 @@ const Markdown = ({
         return (
             <Text
                 style={styles}
+                testID='edited_indicator'
             >
                 {spacer}
                 <FormattedText

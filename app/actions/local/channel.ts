@@ -6,6 +6,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {General, Navigation as NavigationConstants, Preferences, Screens} from '@constants';
 import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@constants/categories';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {extractChannelDisplayName} from '@helpers/database';
@@ -26,7 +27,7 @@ import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
 
-export async function switchToChannel(serverUrl: string, channelId: string, teamId?: string, prepareRecordsOnly = false) {
+export async function switchToChannel(serverUrl: string, channelId: string, teamId?: string, skipLastUnread = false, prepareRecordsOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -63,7 +64,7 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                 }
 
                 const commonValues: PrepareCommonSystemValuesArgs = {
-                    lastUnreadChannelId: member.isUnread ? channelId : '',
+                    lastUnreadChannelId: member.isUnread && !skipLastUnread ? channelId : '',
                 };
 
                 if ((system.currentTeamId !== toTeamId) || (system.currentChannelId !== channelId)) {
@@ -469,4 +470,19 @@ export async function addChannelToDefaultCategory(serverUrl: string, channel: Ch
     }
 
     return {models};
+}
+
+export async function showUnreadChannelsOnly(serverUrl: string, onlyUnreads: boolean) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    return operator.handleSystem({
+        systems: [{
+            id: SYSTEM_IDENTIFIERS.ONLY_UNREADS,
+            value: JSON.stringify(onlyUnreads),
+        }],
+        prepareRecordsOnly: false,
+    });
 }

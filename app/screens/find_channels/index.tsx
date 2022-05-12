@@ -43,6 +43,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const FindChannels = ({closeButtonId, componentId}: Props) => {
     const theme = useTheme();
     const [term, setTerm] = useState('');
+    const [loading, setLoading] = useState(false);
     const styles = getStyleSheet(theme);
     const color = useMemo(() => changeOpacity(theme.centerChannelColor, 0.72), [theme]);
     const keyboardHeight = useKeyboardHeight();
@@ -66,6 +67,9 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
 
     const onChangeText = useCallback((text) => {
         setTerm(text);
+        if (!text) {
+            setLoading(false);
+        }
     }, []);
 
     useEffect(() => {
@@ -83,16 +87,17 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
             <SearchBar
                 autoCapitalize='none'
                 autoFocus={true}
-                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                clearIconColor={color}
-                searchIconColor={color}
                 cancelButtonProps={cancelButtonProps}
-                placeholderTextColor={color}
-                inputStyle={styles.inputStyle}
+                clearIconColor={color}
                 inputContainerStyle={styles.inputContainerStyle}
-                selectionColor={color}
+                inputStyle={styles.inputStyle}
+                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                 onCancel={onCancel}
                 onChangeText={onChangeText}
+                placeholderTextColor={color}
+                searchIconColor={color}
+                selectionColor={color}
+                showLoading={loading}
                 value={term}
             />
             {term === '' && <QuickOptions close={close}/>}
@@ -107,6 +112,8 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
                 <FilteredList
                     close={close}
                     keyboardHeight={keyboardHeight}
+                    loading={loading}
+                    onLoading={setLoading}
                     term={term}
                 />
                 }

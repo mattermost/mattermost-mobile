@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter, LogBox, Platform} from 'react-native';
+import {DeviceEventEmitter, LogBox} from 'react-native';
 import {RUNNING_E2E} from 'react-native-dotenv';
 import 'react-native-gesture-handler';
 import {ComponentDidAppearEvent, ComponentDidDisappearEvent, Navigation} from 'react-native-navigation';
@@ -50,12 +50,6 @@ if (global.HermesInternal) {
     require('@formatjs/intl-numberformat/polyfill');
     require('@formatjs/intl-datetimeformat/polyfill');
     require('@formatjs/intl-datetimeformat/add-golden-tz');
-}
-
-if (Platform.OS === 'android') {
-    const ShareExtension = require('share_extension/index.tsx').default;
-    const AppRegistry = require('react-native/Libraries/ReactNative/AppRegistry');
-    AppRegistry.registerComponent('MattermostShare', () => ShareExtension);
 }
 
 let alreadyInitialized = false;

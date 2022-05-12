@@ -7,6 +7,7 @@ class Post {
     testID = {
         postProfilePicturePrefix: 'post_profile_picture.profile_picture.',
         blockQuote: 'markdown_block_quote',
+        editedIndicator: 'edited_indicator',
         emoji: 'markdown_emoji',
         image: 'markdown_image',
         message: 'markdown_text',
@@ -28,6 +29,7 @@ class Post {
     getPost = (postItemSourceTestID: string, postId: string, postMessage: string, postProfileOptions: any = {}) => {
         const postItemMatcher = this.getPostItemMatcher(postItemSourceTestID, postId, postMessage);
         const postItemBlockQuoteMatcher = by.id(this.testID.blockQuote).withAncestor(postItemMatcher);
+        const postItemEditedIndicator = by.id(this.testID.editedIndicator).withAncestor(postItemMatcher);
         const postItemEmojiMatcher = by.id(this.testID.emoji).withAncestor(postItemMatcher);
         const postItemImageMatcher = by.id(this.testID.image).withAncestor(postItemMatcher);
         const postItemMessageMatcher = by.id(this.testID.message).withAncestor(postItemMatcher);
@@ -41,6 +43,7 @@ class Post {
         return {
             postItem: element(postItemMatcher),
             postItemBlockQuote: element(postItemBlockQuoteMatcher),
+            postItemEditedIndicator: element(postItemEditedIndicator),
             postItemEmoji: element(postItemEmojiMatcher),
             postItemImage: element(postItemImageMatcher),
             postItemMessage: element(postItemMessageMatcher),

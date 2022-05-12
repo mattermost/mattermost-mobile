@@ -11,7 +11,7 @@ import type GlobalModel from '@typings/database/models/app/global';
 
 const {APP: {GLOBAL}} = MM_TABLES;
 
-export const getDeviceToken = async (appDatabase: Database) => {
+export const getDeviceToken = async (appDatabase: Database): Promise<string> => {
     try {
         const tokens = await appDatabase.get<GlobalModel>(GLOBAL).find(GLOBAL_IDENTIFIERS.DEVICE_TOKEN);
         return tokens?.value || '';

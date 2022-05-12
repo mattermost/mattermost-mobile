@@ -19,11 +19,10 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {t} from '@i18n';
+import EphemeralStore from '@store/ephemeral_store';
 import {extractFileInfo} from '@utils/file';
 import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
-
-const HW_EVENT_IN_SCREEN = ['Channel', 'Thread'];
 
 type Props = {
     testID?: string;
@@ -220,7 +219,14 @@ export default function PostInput({
     }, [addFiles, intl]);
 
     const handleHardwareEnterPress = useCallback((keyEvent: {pressedKey: string}) => {
-        if (HW_EVENT_IN_SCREEN.includes(rootId ? Screens.THREAD : Screens.CHANNEL)) {
+        const topScreen = EphemeralStore.getNavigationTopComponentId();
+        let sourceScreen = Screens.CHANNEL;
+        if (rootId) {
+            sourceScreen = Screens.THREAD;
+        } else if (isTablet) {
+            sourceScreen = Screens.HOME;
+        }
+        if (topScreen === sourceScreen) {
             switch (keyEvent.pressedKey) {
                 case 'enter':
                     sendMessage();
@@ -231,7 +237,7 @@ export default function PostInput({
                     break;
             }
         }
-    }, [sendMessage, updateValue, value, cursorPosition]);
+    }, [sendMessage, updateValue, value, cursorPosition, isTablet]);
 
     const onAppStateChange = useCallback((appState: AppStateStatus) => {
         if (appState !== 'active' && previousAppState.current === 'active') {
@@ -271,9 +277,9 @@ export default function PostInput({
     }, [value]);
 
     useEffect(() => {
-        HWKeyboardEvent.onHWKeyPressed(handleHardwareEnterPress);
+        const listener = HWKeyboardEvent.onHWKeyPressed(handleHardwareEnterPress);
         return () => {
-            HWKeyboardEvent.removeOnHWKeyPressed();
+            listener.remove();
         };
     }, [handleHardwareEnterPress]);
 

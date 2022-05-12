@@ -15,6 +15,7 @@ import FastImage, {ImageStyle} from 'react-native-fast-image';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+import {fetchCustomEmojiInBatch} from '@actions/remote/custom_emoji';
 import {useServerUrl} from '@context/server';
 import NetworkManager from '@managers/network_manager';
 import {queryCustomEmojisByName} from '@queries/servers/custom_emoji';
@@ -68,6 +69,8 @@ const Emoji = (props: Props) => {
             } catch {
                 // do nothing
             }
+        } else {
+            fetchCustomEmojiInBatch(serverUrl, emojiName);
         }
     }
 

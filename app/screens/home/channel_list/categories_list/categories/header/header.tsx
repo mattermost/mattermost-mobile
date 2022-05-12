@@ -34,6 +34,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         width: 20,
         height: 20,
     },
+    muted: {
+        opacity: 0.32,
+    },
 }));
 
 type Props = {
@@ -79,7 +82,7 @@ const CategoryHeader = ({category, hasChannels}: Props) => {
             onPress={toggleCollapse}
             testID={`category_header.${category.type}.collapsed.${category.collapsed}`}
         >
-            <View style={styles.container}>
+            <View style={[styles.container, category.muted ? styles.muted : null]}>
                 <AnimatedCompassIcon
                     name={'chevron-down'}
                     style={[styles.chevron, animatedStyle]}
