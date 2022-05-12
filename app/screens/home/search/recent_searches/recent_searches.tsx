@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, useRef, useCallback} from 'react';
+import React, {useState} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleProp, LayoutChangeEvent, Keyboard, Text, FlatList, View, ViewStyle, Platform} from 'react-native';
-import HWKeyboardEvent from 'react-native-hw-keyboard-event';
+import {Keyboard, FlatList, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import FormattedText from '@components/formatted_text';
@@ -20,111 +19,59 @@ const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 const SECTION_HEIGHT = 20;
 const RECENT_SEPARATOR_HEIGHT = 3;
 
-// const emptySections: Array<SectionListData<RecentItemType | boolean>> = [];
-
 type Props = {
-    ref: React.RefObject<Animated.ScrollView>;
-    handleTextChanged: any;
-    paddingTop?: StyleProp<ViewStyle>;
-    recent: [];
-    searchValue: string;
+    setSearchValue: (value: string) => void;
 }
 
-const keyRecentExtractor = (item: RecentItemType) => {
-    return `recent-${item.terms}`;
-};
-
-const RecentSearches = ({handleTextChanged, recent, searchModifiers, searchValue, paddingTop, ref}: Props) => {
+const RecentSearches = ({setSearchValue}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
     const formatMessage = intl.formatMessage;
-    const listRef = useRef(null);
-    const [recentValues, setRecent] = useState(recent || []);
+    const [recentValues, setRecent] = useState([]);
 
     const styles = getStyleFromTheme(theme);
 
-    const handleLayout = useCallback((event: LayoutChangeEvent) => {
-        const {height} = event.nativeEvent.layout;
-        this.setState({searchListHeight: height});
-    }, []);
-
-    const renderRecentSeparator = () => {
-        return (
-            <View style={styles.separatorContainer}>
-                <View style={styles.separator}/>
-            </View>
-        );
-    };
-
-    // TODO add useCallback
-    const removeSearchTerms = preventDoubleTap((item) => {
-        const {actions} = this.props;
-        const newRecent = [...recentValues];
-        const index = recentValues.indexOf(item);
-
-        if (index !== -1) {
-            recentValues.splice(index, 1);
-            setRecent({newRecent});
-        }
-
-        actions.removeSearchTerms(currentTeamId, item.terms);
-    });
     const renderRecentItem = ({item}) => {
-        console.log('item', item);
         return (
             <RecentItem
                 item={item}
-                removeSearchTerms={removeSearchTerms}
-                setRecentValue={setRecentValue}
+                setSearchValue={setSearchValue}
             />
         );
     };
 
     const setRecentValue = preventDoubleTap(({recentNew}: RecentItemType) => {
         const {terms, isOrSearch} = recentNew;
-        handleTextChanged(terms, false);
+        setSearchValue(terms);
 
         // search(terms, isOrSearch);
         Keyboard.dismiss();
     });
 
-    if (recentValues.length) {
-        sections.push({
-            data: recentValues,
-            key: 'recent',
-            title: formatMessage({id: 'mobile.search.recent_title', defaultMessage: 'Recent Searches'}),
-            renderItem: renderRecentItem,
-            keyExtractor: keyRecentExtractor,
-            ItemSeparatorComponent: renderRecentSeparator,
-        });
-    }
-
     const renderHeader = () => {
         return (
             <>
-                {searchModifiers}
                 <View style={styles.divider}/>
                 <FormattedText
                     style={styles.title}
                     id={'screen.search.recent.header'}
-                    defaultMessage='Recent searches'
+                    defaultMessage={formatMessage({id: 'mobile.search.recent_title', defaultMessage: 'Recent searches'})}
                 />
             </>
         );
     };
 
     const data = [
-        {terms: 'Recent Search 1'},
-        {terms: 'Recent Search 2'},
-        {terms: 'Recent Search 3'},
+        {terms: 'Welcome in:town-square'},
+        {terms: 'Figma'},
+        {terms: 'RC Test from:amy.blais'},
         {terms: 'Recent Search 4'},
         {terms: 'Recent Search 5'},
     ];
+
     return (
         <AnimatedFlatList
-            contentContainerStyle={paddingTop}
             data={data}
-            ref={ref}
             keyboardShouldPersistTaps='always'
             keyboardDismissMode='interactive'
             ListHeaderComponent={renderHeader}
@@ -134,11 +81,7 @@ const RecentSearches = ({handleTextChanged, recent, searchModifiers, searchValue
 
             //removeClippedSubviews={true}
             // stickySectionHeadersEnabled={Platform.OS === 'ios'}
-            // onLayout={handleLayout}
-            // onScroll={handleScroll}
-            //     style={style.sectionList}
-            // SectionSeparatorComponent={renderRecentSeparator}
-            //                 onViewableItemsChanged={onViewableItemsChanged}
+            // onViewableItemsChanged={onViewableItemsChanged}
         />
     );
 };
@@ -152,16 +95,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             height: 1,
             marginHorizontal: 15,
-        },
-        sectionWrapper: {
-            marginBottom: 12,
-            height: 48,
-            backgroundColor: theme.centerChannelBg,
-        },
-        sectionContainer: {
-            justifyContent: 'center',
-            paddingLeft: 20,
-            height: SECTION_HEIGHT,
         },
         title: {
             padding: 20,
@@ -198,9 +131,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             height: 1,
-        },
-        sectionList: {
-            flex: 1,
         },
     };
 });

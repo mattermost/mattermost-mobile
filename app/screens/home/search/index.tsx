@@ -12,6 +12,7 @@ import FreezeScreen from '@components/freeze_screen';
 import NavigationHeader from '@components/navigation_header';
 import {useCollapsibleHeader} from '@hooks/header';
 
+import RecentSearches from './recent_searches/recent_searches';
 import SearchModifiers from './search_modifiers/search_modifiers';
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
@@ -29,6 +30,15 @@ const SearchScreen = () => {
     useEffect(() => {
         setSearchValue(searchTerm);
     }, [searchTerm]);
+
+    const handleSearch = () => {
+        // execute the search for the text in the navigation text box
+        // handle recent searches
+        // - add recent if doesn't exist
+        // - updated recent createdAt if exists??
+
+        console.log('execute the search for : ', searchValue);
+    };
 
     const animated = useAnimatedStyle(() => {
         if (isFocused) {
@@ -64,13 +74,10 @@ const SearchScreen = () => {
                 scrollValue={scrollValue}
                 forwardedRef={scrollRef}
                 onChangeText={setSearchValue}
-                onSubmitEditing={() => {
-                    // eslint-disable-next-line no-console
-                    console.log('Execute search');
-                }}
+                onSubmitEditing={handleSearch}
                 blurOnSubmit={true}
                 placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
-                value={searchValue}
+                defaultValue={searchValue}
             />
             <SafeAreaView
                 style={{flex: 1}}
@@ -90,6 +97,9 @@ const SearchScreen = () => {
                         <SearchModifiers
                             setSearchValue={setSearchValue}
                             searchValue={searchValue}
+                        />
+                        <RecentSearches
+                            setSearchValue={setSearchValue}
                         />
                     </AnimatedScrollView>
                 </Animated.View>

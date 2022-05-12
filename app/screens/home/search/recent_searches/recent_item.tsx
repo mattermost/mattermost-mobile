@@ -1,36 +1,32 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import PropTypes from 'prop-types';
 import React, {useCallback} from 'react';
-import {Text, TouchableHighlight, TouchableOpacity, View} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import MenuItem from '@components/menu_item';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-export const RECENT_LABEL_HEIGHT = 42;
+export const RECENT_LABEL_HEIGHT = 48;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        recentItemContainer: {
+        recentItemLabelContainer: {
+            marginLeft: 20,
             alignItems: 'center',
-            flex: 1,
             flexDirection: 'row',
-            height: RECENT_LABEL_HEIGHT,
-            marginLeft: 16,
         },
         recentItemLabel: {
+            flex: 1,
             marginLeft: 16,
             color: theme.centerChannelColor,
             ...typography('Body', 400, 'Regular'),
         },
         recentRemove: {
-            alignItems: 'center',
-            height: RECENT_LABEL_HEIGHT,
-            justifyContent: 'center',
-            width: 50,
+            marginRight: 12,
         },
     };
 });
@@ -41,16 +37,32 @@ export type RecentItemType = {
 }
 
 type Props = {
-        item: RecentItemType;
-        removeSearchTerms: PropTypes.func.isRequired;
-        setRecentValue: PropTypes.func.isRequired;
+    setSearchValue: (value: string) => void;
+    item: RecentItemType;
 }
 
-const RecentItem = ({item, removeSearchTerms, setRecentValue}: Props) => {
+const RecentItem = ({item, removeSearchTerms, setSearchValue}: Props) => {
     const theme = useTheme();
 
+    // TODO add useCallback
+    // const removeSearchTerms = preventDoubleTap((item) => {
+    //     // const {actions} = this.props;
+    //     const newRecent = [...recentValues];
+    //     const index = recentValues.indexOf(item);
+    //
+    //     if (index !== -1) {
+    //         recentValues.splice(index, 1);
+    //         setRecent({newRecent});
+    //     }
+    //
+    //     actions.removeSearchTerms(currentTeamId, item.terms);
+    // });
+    //
     const handlePress = useCallback(() => {
-        setRecentValue(item);
+        setSearchValue(item.terms);
+        console.log('pressed recent value : ', item.terms);
+
+        //        setRecentValue(item);
     }, [item]);
 
     const handleRemove = useCallback(() => {
@@ -61,38 +73,34 @@ const RecentItem = ({item, removeSearchTerms, setRecentValue}: Props) => {
     const testID = `search.recent_item.${item.terms}`;
 
     return (
-        <TouchableHighlight
-            key={item.terms}
-            underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
+        <MenuItem
+
+            // testID={item.testID}
             onPress={handlePress}
-        >
-            <View
-                testID={testID}
-                style={style.recentItemContainer}
-            >
-                <CompassIcon
-                    name='clock-outline'
-                    size={24}
-                    color={changeOpacity(theme.centerChannelColor, 0.6)}
-                />
-                <Text
-                    style={style.recentItemLabel}
-                >
-                    {item.terms}
-                </Text>
-                <TouchableOpacity
-                    onPress={handleRemove}
-                    style={style.recentRemove}
-                    testID={`${testID}.remove.button`}
-                >
+            labelComponent={
+                <View style={style.recentItemLabelContainer}>
                     <CompassIcon
-                        name='close-circle-outline'
+                        name='clock-outline'
                         size={24}
                         color={changeOpacity(theme.centerChannelColor, 0.6)}
                     />
-                </TouchableOpacity>
-            </View>
-        </TouchableHighlight>
+                    <Text style={style.recentItemLabel}>{item.terms}</Text>
+                    <TouchableOpacity
+                        onPress={handleRemove}
+                        style={style.recentRemove}
+                        testID={`${testID}.remove.button`}
+                    >
+                        <CompassIcon
+                            name='close'
+                            size={24}
+                            color={changeOpacity(theme.centerChannelColor, 0.64)}
+                        />
+                    </TouchableOpacity>
+                </View>
+            }
+            separator={false}
+            theme={theme}
+        />
     );
 };
 
