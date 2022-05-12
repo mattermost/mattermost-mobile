@@ -3,7 +3,7 @@
 
 import {chunk} from 'lodash';
 import React, {useCallback, useMemo, useRef, useState} from 'react';
-import {NativeScrollEvent, NativeSyntheticEvent, SectionList, StyleSheet, View} from 'react-native';
+import {NativeScrollEvent, NativeSyntheticEvent, SectionList, SectionListData, StyleSheet, View} from 'react-native';
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
 import {fetchCustomEmojis} from '@actions/remote/custom_emoji';
@@ -180,9 +180,9 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
         setSectionIndex(index);
     };
 
-    const renderSectionHeader = useCallback(({section}) => {
+    const renderSectionHeader = useCallback(({section}: {section: SectionListData<EmojiAlias[], EmojiSection>}) => {
         return (
-            <SectionHeader section={section as EmojiSection}/>
+            <SectionHeader section={section}/>
         );
     }, []);
 

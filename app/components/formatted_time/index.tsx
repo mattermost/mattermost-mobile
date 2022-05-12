@@ -19,9 +19,11 @@ const FormattedTime = ({isMilitaryTime, timezone, value, ...props}: FormattedTim
             format = localeFormat?.includes('A') ? localeFormat : 'h:mm A';
         }
 
-        let zone = timezone as string;
+        let zone: string;
         if (typeof timezone === 'object') {
             zone = timezone.useAutomaticTimezone ? timezone.automaticTimezone : timezone.manualTimezone;
+        } else {
+            zone = timezone;
         }
 
         return timezone ? moment.tz(value, zone).format(format) : moment(value).format(format);

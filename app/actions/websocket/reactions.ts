@@ -11,7 +11,7 @@ export async function handleAddCustomEmoji(serverUrl: string, msg: WebSocketMess
     }
 
     try {
-        const emoji = JSON.parse(msg.data.emoji) as CustomEmoji;
+        const emoji: CustomEmoji = JSON.parse(msg.data.emoji);
         await operator.handleCustomEmojis({
             prepareRecordsOnly: false,
             emojis: [emoji],
@@ -28,7 +28,7 @@ export async function handleReactionAddedToPostEvent(serverUrl: string, msg: Web
     }
 
     try {
-        const reaction = JSON.parse(msg.data.reaction) as Reaction;
+        const reaction: Reaction = JSON.parse(msg.data.reaction);
         await operator.handleReactions({
             prepareRecordsOnly: false,
             skipSync: true,
@@ -49,7 +49,7 @@ export async function handleReactionRemovedFromPostEvent(serverUrl: string, msg:
     }
 
     try {
-        const msgReaction = JSON.parse(msg.data.reaction) as Reaction;
+        const msgReaction: Reaction = JSON.parse(msg.data.reaction);
         const reaction = await queryReaction(database, msgReaction.emoji_name, msgReaction.post_id, msgReaction.user_id).fetch();
 
         if (reaction.length) {

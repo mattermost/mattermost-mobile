@@ -78,7 +78,7 @@ const Footer = ({
 
     let userDisplayName;
     if (enablePostUsernameOverride && post?.props?.override_username) {
-        userDisplayName = post?.props.override_username as string;
+        userDisplayName = post.props.override_username as string;
     } else {
         userDisplayName = displayUsername(author, undefined, teammateNameDisplay);
     }

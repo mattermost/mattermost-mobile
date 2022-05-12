@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
-import {BackHandler, StyleProp} from 'react-native';
+import {BackHandler} from 'react-native';
 import FastImage, {ImageStyle} from 'react-native-fast-image';
 import Animated, {runOnJS, runOnUI, useAnimatedReaction} from 'react-native-reanimated';
 
@@ -146,7 +146,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
             return (
                 <AnimatedImage
                     source={{uri: item.posterUri}}
-                    style={info.itemStyles as StyleProp<ImageStyle>}
+                    style={info.itemStyles as ImageStyle}
                 />
             );
         }

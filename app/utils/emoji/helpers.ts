@@ -344,7 +344,7 @@ export const searchEmojis = (fuse: Fuse<string>, searchTerm: string) => {
     const fuzz = fuse.search(searchTermLowerCase);
 
     if (fuzz) {
-        const results = fuzz.reduce((values, r) => {
+        const results = fuzz.reduce<string[]>((values, r) => {
             const score = r?.score === undefined ? 1 : r.score;
             const v = r?.matches?.[0]?.value;
             if (score < 0.2 && v) {
@@ -352,7 +352,7 @@ export const searchEmojis = (fuse: Fuse<string>, searchTerm: string) => {
             }
 
             return values;
-        }, [] as string[]);
+        }, []);
 
         return results.sort(sorter);
     }

@@ -197,9 +197,7 @@ export const isGif = (file?: FileInfo | FileModel) => {
         return false;
     }
 
-    const fi = file as FileInfo;
-    const fm = file as FileModel;
-    let mime = fi.mime_type || fm.mimeType || '';
+    let mime = 'mime_type' in file ? file.mime_type : file.mimeType;
     if (mime && mime.includes(';')) {
         mime = mime.split(';')[0];
     } else if (!mime && file?.name) {
@@ -213,10 +211,8 @@ export const isImage = (file?: FileInfo | FileModel) => {
     if (!file) {
         return false;
     }
-    const fi = file as FileInfo;
-    const fm = file as FileModel;
 
-    const mimeType = fi.mime_type || fm.mimeType || '';
+    const mimeType = 'mime_type' in file ? file.mime_type : file.mimeType;
 
     return (isGif(file) || mimeType.startsWith('image/'));
 };
@@ -226,9 +222,7 @@ export const isDocument = (file?: FileInfo | FileModel) => {
         return false;
     }
 
-    const fi = file as FileInfo;
-    const fm = file as FileModel;
-    let mime = fi.mime_type || fm.mimeType || '';
+    let mime = 'mime_type' in file ? file.mime_type : file.mimeType;
     if (mime && mime.includes(';')) {
         mime = mime.split(';')[0];
     } else if (!mime && file?.name) {
@@ -243,9 +237,7 @@ export const isVideo = (file?: FileInfo | FileModel) => {
         return false;
     }
 
-    const fi = file as FileInfo;
-    const fm = file as FileModel;
-    let mime = fi.mime_type || fm.mimeType || '';
+    let mime = 'mime_type' in file ? file.mime_type : file.mimeType;
     if (mime && mime.includes(';')) {
         mime = mime.split(';')[0];
     } else if (!mime && file?.name) {
@@ -256,7 +248,7 @@ export const isVideo = (file?: FileInfo | FileModel) => {
 };
 
 export function getFormattedFileSize(bytes: number): string {
-    const fileSizes = [
+    const fileSizes: Array<[string, number]> = [
         ['TB', 1024 * 1024 * 1024 * 1024],
         ['GB', 1024 * 1024 * 1024],
         ['MB', 1024 * 1024],
@@ -268,7 +260,7 @@ export function getFormattedFileSize(bytes: number): string {
     });
 
     if (size) {
-        return `${Math.floor(bytes / (size[1] as number))} ${size[0]}`;
+        return `${Math.floor(bytes / (size[1]))} ${size[0]}`;
     }
 
     return `${bytes} B`;

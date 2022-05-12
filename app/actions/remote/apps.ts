@@ -75,7 +75,7 @@ export async function doAppSubmit<Res=unknown>(serverUrl: string, inCall: AppCal
                 track_as_submit: true,
             },
         };
-        const res = await client.executeAppCall(call, true) as AppCallResponse<Res>;
+        const res = await client.executeAppCall<Res>(call, true);
         const responseType = res.type || AppCallResponseTypes.OK;
 
         switch (responseType) {
@@ -134,7 +134,7 @@ export async function doAppFetchForm<Res=unknown>(serverUrl: string, call: AppCa
     }
 
     try {
-        const res = await client.executeAppCall(call, false) as AppCallResponse<Res>;
+        const res = await client.executeAppCall<Res>(call, false);
         const responseType = res.type || AppCallResponseTypes.OK;
 
         switch (responseType) {
@@ -176,7 +176,7 @@ export async function doAppLookup<Res=unknown>(serverUrl: string, call: AppCallR
     }
 
     try {
-        const res = await client.executeAppCall(call, false) as AppCallResponse<Res>;
+        const res = await client.executeAppCall<Res>(call, false);
         const responseType = res.type || AppCallResponseTypes.OK;
 
         switch (responseType) {

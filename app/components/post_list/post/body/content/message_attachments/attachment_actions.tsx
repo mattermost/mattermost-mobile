@@ -12,7 +12,7 @@ type Props = {
     theme: Theme;
 }
 const AttachmentActions = ({actions, postId, theme}: Props) => {
-    const content = [] as React.ReactNode[];
+    const content: React.ReactNode[] = [];
 
     actions.forEach((action) => {
         if (!action.id || !action.name) {

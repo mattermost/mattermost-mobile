@@ -62,7 +62,7 @@ export function renderWithEverything(ui: ReactElement, {locale = 'en', database,
         }
 
         return (
-            <DatabaseProvider database={database as unknown as Database}>
+            <DatabaseProvider database={database}>
                 <IntlProvider
                     locale={locale}
                     messages={getTranslations(locale)}

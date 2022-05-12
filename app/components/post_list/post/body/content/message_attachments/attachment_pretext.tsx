@@ -39,7 +39,7 @@ export default function AttachmentPreText(props: Props) {
     return (
         <View style={style.container}>
             <Markdown
-                baseTextStyle={baseTextStyle as never}
+                baseTextStyle={baseTextStyle}
                 textStyles={textStyles}
                 blockStyles={blockStyles}
                 disableGallery={true}

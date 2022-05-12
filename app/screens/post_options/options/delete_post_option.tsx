@@ -15,7 +15,7 @@ import {dismissBottomSheet} from '@screens/navigation';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
-    combinedPost?: Post;
+    combinedPost?: Post | PostModel;
     post: PostModel;
 }
 const DeletePostOption = ({combinedPost, post}: Props) => {
