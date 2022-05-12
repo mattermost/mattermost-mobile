@@ -8,7 +8,7 @@ import {General, Navigation as NavigationConstants, Preferences, Screens} from '
 import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@constants/categories';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {extractChannelDisplayName} from '@helpers/database';
 import PushNotifications from '@init/push_notifications';
 import {prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannel, getMyChannel, getChannelById, queryUsersOnChannel, queryUserChannelsByTypes} from '@queries/servers/channel';
@@ -489,27 +489,20 @@ export async function showUnreadChannelsOnly(serverUrl: string, onlyUnreads: boo
     });
 }
 
-export const checkChannelsDisplayName = async (serverUrl: string, preferences?: PreferenceType[]) => {
+export const updateDmGmDisplayName = async (serverUrl: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
     try {
-        if (preferences) {
-            const {error} = await guardDisplayNamePref(serverUrl, preferences);
-            if (error) {
-                return {error};
-            }
-        }
-
-        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-        if (!database) {
-            return {error: `${serverUrl} database not found`};
-        }
-
         const currentUserId = await getCurrentUserId(database);
         if (!currentUserId) {
             return {error: 'The current user id could not be retrieved from the database'};
         }
 
         const channels = await queryUserChannelsByTypes(database, currentUserId, ['G', 'D']).fetch();
-        const userIds = channels.map((ch) => getUserIdFromChannelName(currentUserId, ch.name));
+        const userIds = channels.map((ch) => getUserIdFromChannelName(currentUserId, ch.name)).filter((uid) => uid !== undefined);
         const users = await queryUsersById(database, userIds).fetch();
 
         await updateChannelsDisplayName(serverUrl, channels, users, false);
@@ -520,24 +513,3 @@ export const checkChannelsDisplayName = async (serverUrl: string, preferences?: 
     }
 };
 
-const guardDisplayNamePref = async (serverUrl: string, preferences: PreferenceType[]) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    const displayPref = getPreferenceValue(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT) as string;
-    const currentPref = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT, displayPref).fetch();
-
-    if (currentPref.length > 0) {
-        return {error: 'The Preference table has the same value for the display name format'};
-    }
-
-    if (displayPref === '') {
-        return {error: 'The display_settings for `name_format` is not present in the preferences'};
-    }
-
-    return {
-        error: undefined,
-    };
-};

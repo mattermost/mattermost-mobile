@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {checkChannelsDisplayName} from '@actions/local/channel';
+import {updateDmGmDisplayName} from '@actions/local/channel';
 import {fetchPostById} from '@actions/remote/post';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
+import {getPreferenceValue} from '@helpers/api/preference';
 import {getPostById} from '@queries/servers/post';
-import {deletePreferences} from '@queries/servers/preference';
+import {deletePreferences, queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 
 export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const operator = DatabaseManager.serverDatabases[serverUrl].operator;
@@ -26,7 +27,10 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
             });
         }
 
-        checkChannelsDisplayName(serverUrl, [preference]);
+        const shouldUpdate = await hasDisplayNamePrefChanged(serverUrl, [preference]);
+        if (shouldUpdate) {
+            updateDmGmDisplayName(serverUrl);
+        }
     } catch (error) {
         // Do nothing
     }
@@ -49,7 +53,10 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
             });
         }
 
-        checkChannelsDisplayName(serverUrl, preferences);
+        const shouldUpdate = await hasDisplayNamePrefChanged(serverUrl, preferences);
+        if (shouldUpdate) {
+            updateDmGmDisplayName(serverUrl);
+        }
     } catch (error) {
         // Do nothing
     }
@@ -85,3 +92,21 @@ async function handleSavePostAdded(serverUrl: string, preferences: PreferenceTyp
     }
 }
 
+const hasDisplayNamePrefChanged = async (serverUrl: string, preferences: PreferenceType[]) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return false;
+    }
+
+    const displayPref = getPreferenceValue(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT) as string;
+    if (displayPref === '') {
+        return false;
+    }
+
+    const currentPref = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT, displayPref).fetch();
+    if (currentPref.length > 0) {
+        return false;
+    }
+
+    return true;
+};
