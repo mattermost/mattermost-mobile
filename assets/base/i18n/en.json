@@ -446,6 +446,8 @@
   "mobile.search.on_modifier_description": " a specific date",
   "mobile.search.phrases_modifier_description": " messages with phrases",
   "mobile.search.recent_title": "Recent Searches",
+  "mobile.search.show_more": "Show more",
+  "mobile.search.show_less": "Show less",
   "mobile.server_identifier.exists": "You are already connected to this server.",
   "mobile.server_link.error.text": "The link could not be found on this server.",
   "mobile.server_link.error.title": "Link Error",

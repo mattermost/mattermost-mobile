@@ -23,6 +23,7 @@ const getModifiersSectionsData = (intl: IntlShape): ModifierItem[] => {
             value: 'From:',
             testID: 'search.from_section',
             modifier: `${formatMessage({id: 'mobile.search.from_modifier_title', defaultMessage: 'username'})}`,
+            id: 'mobile.search.from_modifier_title',
             description: formatMessage({
                 id: 'mobile.search.from_modifier_description',
                 defaultMessage: ' a specific user',
@@ -35,6 +36,7 @@ const getModifiersSectionsData = (intl: IntlShape): ModifierItem[] => {
                 id: 'mobile.search.in_modifier_description',
                 defaultMessage: ' a specific channel',
             }),
+
         }, {
             value: 'On:',
             testID: 'search.on_section',
@@ -130,7 +132,6 @@ const SearchModifiers = ({searchValue, setSearchValue}: Props) => {
                 {data.map((item) => renderModifier(item))}
             </Animated.View>
             <ShowMoreButton
-                theme={theme}
                 onPress={handleShowMore}
                 showMore={showMore}
             />

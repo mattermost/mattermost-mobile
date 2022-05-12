@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {Text, TouchableHighlight, View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import MenuItem from '@components/menu_item';
 import {useTheme} from '@context/theme';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -14,29 +15,25 @@ export const MODIFIER_LABEL_HEIGHT = 48;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        modifierItemContainer: {
-            alignItems: 'center',
-            flexDirection: 'row',
-            height: MODIFIER_LABEL_HEIGHT,
-        },
-        modifierItemWrapper: {
-            flex: 1,
-            flexDirection: 'column',
-            paddingHorizontal: 16,
-        },
         modifierItemLabelContainer: {
+            marginLeft: 20,
+            height: 48,
             alignItems: 'center',
+            textAlign: 'center',
+            margin: 'auto',
             flexDirection: 'row',
         },
         modifierLabelValue: {
+            marginBottom: 4,
             marginLeft: 16,
-            ...typography('Body', 400, 'SemiBold'),
             color: theme.centerChannelColor,
+            ...typography('Body', 400, 'SemiBold'),
         },
         modifierItemDescription: {
+            marginBottom: 4,
             fontSize: 16,
-            ...typography('Body', 400, 'Regular'),
             color: theme.centerChannelColor,
+            ...typography('Body', 400, 'Regular'),
         },
     };
 });
@@ -45,6 +42,7 @@ export type ModifierItem = {
         description: string;
         modifier: string;
         testID: string;
+        id: string;
         value: string;
 }
 
@@ -78,31 +76,25 @@ const Modifier = ({item, searchValue, setSearchValue}: Props) => {
     });
 
     return (
-        <TouchableHighlight
-            key={item.modifier}
-            underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
-            onPress={handlePress}
+        <MenuItem
             testID={item.testID}
-            style={style.modifierItemContainer}
-        >
-            <View style={style.modifierItemWrapper}>
+            onPress={handlePress}
+            labelComponent={
                 <View style={style.modifierItemLabelContainer}>
                     <CompassIcon
                         name='plus-box-outline'
                         size={24}
                         color={changeOpacity(theme.centerChannelColor, 0.6)}
                     />
-                    <Text
-                        style={style.modifierLabelValue}
-                    >
-                        {item.value}
-                    </Text>
-                    <Text style={style.modifierItemDescription}>
-                        {item.description}
-                    </Text>
+                    <Text style={style.modifierLabelValue}>{item.value}</Text>
+                    <Text style={style.modifierItemDescription}>{item.description}</Text>
                 </View>
-            </View>
-        </TouchableHighlight>
+            }
+
+            i18nId={item.id}
+            separator={false}
+            theme={theme}
+        />
     );
 };
 
