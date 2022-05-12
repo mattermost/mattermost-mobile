@@ -74,12 +74,12 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
         }, {});
 
     const channelInfos: ChannelInfo[] = [];
-    const {memberships, membershipsMap} = channelMembers.reduce((result, cm) => {
+    const {memberships, membershipsMap} = channelMembers.reduce<MembershipReduce>((result, cm) => {
         const value = {...cm, id: cm.channel_id};
         result.memberships.push(value);
         result.membershipsMap[value.id] = value;
         return result;
-    }, {memberships: [], membershipsMap: {}} as MembershipReduce);
+    }, {memberships: [], membershipsMap: {}});
 
     for (const c of channels) {
         const storedChannel = allChannelsForTeam[c.id];
@@ -293,7 +293,7 @@ export const observeCurrentChannel = (database: Database) => {
 
 export async function deleteChannelMembership(operator: ServerDataOperator, userId: string, channelId: string, prepareRecordsOnly = false) {
     try {
-        const channelMembership = await operator.database.get(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('channel_id', Q.eq(channelId))).fetch();
+        const channelMembership = await operator.database.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('channel_id', Q.eq(channelId))).fetch();
         const models: Model[] = [];
         for (const membership of channelMembership) {
             models.push(membership.prepareDestroyPermanently());

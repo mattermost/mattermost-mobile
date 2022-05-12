@@ -16,8 +16,7 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
     }
 
     try {
-        const preference = JSON.parse(msg.data.preference) as PreferenceType;
-
+        const preference: PreferenceType = JSON.parse(msg.data.preference);
         handleSavePostAdded(serverUrl, [preference]);
 
         if (operator) {
@@ -42,8 +41,7 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
         return;
     }
     try {
-        const preferences = JSON.parse(msg.data.preferences) as PreferenceType[];
-
+        const preferences: PreferenceType[] = JSON.parse(msg.data.preferences);
         handleSavePostAdded(serverUrl, preferences);
 
         if (operator) {
@@ -69,7 +67,7 @@ export async function handlePreferencesDeletedEvent(serverUrl: string, msg: WebS
     }
 
     try {
-        const preferences = JSON.parse(msg.data.preferences) as PreferenceType[];
+        const preferences: PreferenceType[] = JSON.parse(msg.data.preferences);
         deletePreferences(database, preferences);
     } catch {
         // Do nothing

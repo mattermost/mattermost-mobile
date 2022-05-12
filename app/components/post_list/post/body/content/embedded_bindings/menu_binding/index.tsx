@@ -50,7 +50,7 @@ const MenuBinding = ({binding, currentTeamId, post, teamID}: Props) => {
 
         const res = await handleBindingClick(serverUrl, bind, context, intl);
         if (res.error) {
-            const errorResponse = res.error as AppCallResponse<unknown>;
+            const errorResponse = res.error;
             const errorMessage = errorResponse.text || intl.formatMessage({
                 id: 'apps.error.unknown',
                 defaultMessage: 'Unknown error occurred.',

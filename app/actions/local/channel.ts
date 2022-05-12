@@ -133,7 +133,10 @@ export async function removeCurrentUserFromChannel(serverUrl: string, channelId:
     const models: Model[] = [];
     const myChannel = await getMyChannel(database, channelId);
     if (myChannel) {
-        const channel = await myChannel.channel.fetch() as ChannelModel;
+        const channel = await myChannel.channel.fetch();
+        if (!channel) {
+            return {error: 'myChannel present but no channel on the database'};
+        }
         models.push(...await prepareDeleteChannel(channel));
         let teamId = channel.teamId;
         if (teamId) {
@@ -287,7 +290,7 @@ export async function storeMyChannelsForTeam(serverUrl: string, teamId: string, 
         return {models: []};
     }
 
-    const flattenedModels = models.flat() as Model[];
+    const flattenedModels = models.flat();
 
     if (prepareRecordsOnly) {
         return {models: flattenedModels};

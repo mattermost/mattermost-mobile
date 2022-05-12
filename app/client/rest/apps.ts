@@ -4,12 +4,12 @@
 import {buildQueryString} from '@utils/helpers';
 
 export interface ClientAppsMix {
-    executeAppCall: (call: AppCallRequest, trackAsSubmit: boolean) => Promise<AppCallResponse>;
+    executeAppCall: <Res = unknown>(call: AppCallRequest, trackAsSubmit: boolean) => Promise<AppCallResponse<Res>>;
     getAppsBindings: (userID: string, channelID: string, teamID: string) => Promise<AppBinding[]>;
 }
 
 const ClientApps = (superclass: any) => class extends superclass {
-    executeAppCall = async (call: AppCallRequest, trackAsSubmit: boolean) => {
+    executeAppCall = async <Res = unknown>(call: AppCallRequest, trackAsSubmit: boolean): Promise<AppCallResponse<Res>> => {
         const callCopy = {
             ...call,
             context: {

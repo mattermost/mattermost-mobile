@@ -71,7 +71,15 @@ class EphemeralStore {
 
     hasModalsOpened = () => this.navigationModalStack.length > 0;
 
+    private removeNavigationComponent = (componentId: string) => {
+        const index = this.allNavigationComponentIds.indexOf(componentId);
+        if (index >= 0) {
+            this.allNavigationComponentIds.splice(index, 1);
+        }
+    };
+
     removeNavigationComponentId = (componentId: string) => {
+        this.removeNavigationComponent(componentId);
         const index = this.navigationComponentIdStack.indexOf(componentId);
         if (index >= 0) {
             this.navigationComponentIdStack.splice(index, 1);
@@ -79,6 +87,7 @@ class EphemeralStore {
     };
 
     removeNavigationModal = (componentId: string) => {
+        this.removeNavigationComponent(componentId);
         const index = this.navigationModalStack.indexOf(componentId);
 
         if (index >= 0) {

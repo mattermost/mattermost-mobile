@@ -7,7 +7,7 @@ import AndroidOpenSettings from 'react-native-android-open-settings';
 import DeviceInfo from 'react-native-device-info';
 import DocumentPicker, {DocumentPickerResponse} from 'react-native-document-picker';
 import {Asset, CameraOptions, ImageLibraryOptions, ImagePickerResponse, launchCamera, launchImageLibrary} from 'react-native-image-picker';
-import Permissions, {AndroidPermission, IOSPermission} from 'react-native-permissions';
+import Permissions from 'react-native-permissions';
 
 import {dismissBottomSheet} from '@screens/navigation';
 import {extractFileInfo, lookupMimeType} from '@utils/file';
@@ -147,8 +147,8 @@ export default class FilePickerUtil {
 
         const targetSource = Platform.select({
             ios: source === 'camera' ? Permissions.PERMISSIONS.IOS.CAMERA : Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY,
-            android: Permissions.PERMISSIONS.ANDROID.CAMERA,
-        }) as AndroidPermission | IOSPermission;
+            default: Permissions.PERMISSIONS.ANDROID.CAMERA,
+        });
 
         const hasPhotoLibraryPermission = await Permissions.check(targetSource);
 
@@ -274,7 +274,9 @@ export default class FilePickerUtil {
                     return doc;
                 });
 
-                const docs = await Promise.all(proDocs) as unknown as DocumentPickerResponse[];
+                const docs = (await Promise.all(proDocs)).filter(
+                    (item): item is DocumentPickerResponse => item !== undefined,
+                );
 
                 await this.prepareFileUpload(docs);
             } catch (error) {

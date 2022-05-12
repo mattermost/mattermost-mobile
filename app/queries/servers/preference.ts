@@ -33,12 +33,12 @@ export const queryPreferencesByCategoryAndName = (database: Database, category: 
     return database.get<PreferenceModel>(PREFERENCE).query(...clauses);
 };
 
-export const getThemeForCurrentTeam = async (database: Database) => {
+export const getThemeForCurrentTeam = async (database: Database): Promise<Theme | undefined> => {
     const currentTeamId = await getCurrentTeamId(database);
     const teamTheme = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_THEME, currentTeamId).fetch();
     if (teamTheme.length) {
         try {
-            return JSON.parse(teamTheme[0].value) as Theme;
+            return JSON.parse(teamTheme[0].value);
         } catch {
             return undefined;
         }

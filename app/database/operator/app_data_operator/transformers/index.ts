@@ -21,11 +21,11 @@ const {INFO, GLOBAL} = MM_TABLES.APP;
  */
 export const transformInfoRecord = ({action, database, value}: TransformerArgs): Promise<Model> => {
     const raw = value.raw as AppInfo;
-    const record = value.record as InfoModel;
+    const record = value.record as InfoModel | undefined;
     const isCreateAction = action === OperationType.CREATE;
 
     const fieldsMapper = (app: InfoModel) => {
-        app._raw.id = isCreateAction ? app.id : record.id;
+        app._raw.id = isCreateAction ? app.id : record?.id ?? app.id;
         app.buildNumber = raw?.build_number;
         app.createdAt = raw?.created_at;
         app.versionNumber = raw?.version_number;

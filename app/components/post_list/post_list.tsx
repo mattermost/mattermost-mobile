@@ -117,8 +117,8 @@ const PostList = ({
 
     useEffect(() => {
         const t = setTimeout(() => {
-            listRef.current?.scrollToOffset({offset: 0, animated: false});
-        }, 200);
+            listRef.current?.scrollToOffset({offset: 0, animated: true});
+        }, 300);
 
         return () => clearTimeout(t);
     }, [channelId, rootId]);

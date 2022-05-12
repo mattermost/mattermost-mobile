@@ -103,9 +103,8 @@ const getExtraPropsForNode = (node: any) => {
     return extraProps;
 };
 
-const computeTextStyle = (textStyles: MarkdownTextStyles, baseStyle: StyleProp<TextStyle>, context: any) => {
-    type TextType = keyof typeof textStyles;
-    const contextStyles: TextStyle[] = context.map((type: any) => textStyles[type as TextType]).filter((f: any) => f !== undefined);
+const computeTextStyle = (textStyles: MarkdownTextStyles, baseStyle: StyleProp<TextStyle>, context: string[]) => {
+    const contextStyles: TextStyle[] = context.map((type) => textStyles[type]).filter((f) => f !== undefined);
     return contextStyles.length ? concatStyles(baseStyle, contextStyles) : baseStyle;
 };
 

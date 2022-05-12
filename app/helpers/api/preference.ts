@@ -5,8 +5,8 @@ import {General, Preferences} from '@constants';
 
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
-export function getPreferenceValue(preferences: PreferenceType[] | PreferenceModel[], category: string, name: string, defaultValue: unknown = '') {
-    const pref = (preferences as PreferenceType[]).find((p) => p.category === category && p.name === name);
+export function getPreferenceValue(preferences: Array<PreferenceType | PreferenceModel>, category: string, name: string, defaultValue: unknown = '') {
+    const pref = preferences.find((p) => p.category === category && p.name === name);
 
     return pref?.value || defaultValue;
 }
