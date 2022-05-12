@@ -461,6 +461,17 @@ class DatabaseManager {
     private getDatabaseFilePath = (dbName: string): string => {
         return Platform.OS === 'ios' ? `${this.databaseDirectory}/${dbName}.db` : `${this.databaseDirectory}/${dbName}.db`;
     };
+
+    /**
+     * searchUrl returns the serverUrl that matches the passed string among the servers currently loaded.
+     * Returns undefined if none found.
+     *
+     * @param {string} toFind
+     * @returns {string|undefined}
+     */
+    public searchUrl = (toFind: string): string | undefined => {
+        return Object.keys(this.serverDatabases).find((k) => k.endsWith(toFind));
+    };
 }
 
 if (!__DEV__) {
