@@ -169,7 +169,8 @@ function getThemeFromState(): Theme {
 // crashes when trying to load a screen that does
 // NOT exists, this should be removed for GA
 function isScreenRegistered(screen: string) {
-    if (NOT_READY.includes(screen)) {
+    const notImplemented = NOT_READY.includes(screen) || !Object.values(Screens).includes(screen);
+    if (notImplemented) {
         Alert.alert(
             'Temporary error ' + screen,
             'The functionality you are trying to use has not been implemented yet',
