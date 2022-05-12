@@ -1,52 +1,47 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
 import React from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
 
+import FormattedText from '@components/formatted_text';
+import MenuItem from '@components/menu_item';
+import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type ShowMoreButtonProps = {
     onPress: () => void;
     showMore: boolean;
-    theme: Theme;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         showMore: {
-            paddingLeft: 20,
-            paddingTop: 12,
             color: theme.buttonBg,
+            paddingLeft: 20,
+            paddingVertical: 12,
             ...typography('Body', 400, 'SemiBold'),
-        },
-        container: {
-            flexDirection: 'row',
-            position: 'relative',
-            marginBottom: 10,
         },
     };
 });
 
-const ShowMoreButton = ({onPress, showMore = true, theme}: ShowMoreButtonProps) => {
+const ShowMoreButton = ({onPress, showMore}: ShowMoreButtonProps) => {
+    const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    let text = 'Show less';
-    if (!showMore) {
-        text = 'Show more';
-    }
-
     return (
-        <View style={style.container}>
-            <TouchableOpacity
-                onPress={onPress}
-            >
-                <Text style={style.showMore}>
-                    {text}
-                </Text>
-            </TouchableOpacity>
-        </View>
+        <MenuItem
+            testID={'mobile.search.show_more'}
+            onPress={onPress}
+            labelComponent={
+                <FormattedText
+                    id={showMore ? 'mobile.search.show_less' : 'mobile.search.show_more'}
+                    defaultMessage={showMore ? 'Show less' : 'Show more'}
+                    style={style.showMore}
+                />
+            }
+            separator={false}
+            theme={theme}
+        />
     );
 };
 
