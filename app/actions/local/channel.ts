@@ -409,7 +409,11 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
 
         if (channel.displayName !== newDisplayName) {
             channel.prepareUpdate((c) => {
-                c.displayName = extractChannelDisplayName({type: c.type, display_name: newDisplayName}, c);
+                c.displayName = extractChannelDisplayName({
+                    type: c.type,
+                    display_name: newDisplayName,
+                    fake: true,
+                }, c);
             });
             models.push(channel);
         }

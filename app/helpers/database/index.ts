@@ -18,8 +18,8 @@ export function extractChannelDisplayName(raw: Pick<Channel, 'type' | 'display_n
             displayName = raw.display_name.trim() || record?.displayName || '';
             break;
         case General.GM_CHANNEL: {
-            if (raw.fake || raw.display_name) {
-                displayName = raw.display_name.trim();
+            if (raw.fake) {
+                displayName = raw.display_name;
             } else {
                 displayName = record?.displayName || raw.display_name;
             }
