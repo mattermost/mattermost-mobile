@@ -56,9 +56,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         paddingHorizontal: 15,
     },
     loading: {
-        height: 20,
-        width: 20,
-        color: theme.centerChannelBg,
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     textInput: {
         marginTop: 30,
@@ -195,7 +195,9 @@ export default function ChannelInfoForm({
             <View style={styles.container}>
                 <StatusBar/>
                 <Loading
-                    style={styles.loading}
+                    containerStyle={styles.loading}
+                    color={theme.centerChannelColor}
+                    size='large'
                 />
             </View>
         );

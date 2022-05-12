@@ -67,11 +67,6 @@ const style = StyleSheet.create({
         justifyContent: 'center' as const,
         alignItems: 'center' as const,
     },
-    loading: {
-        height: 32,
-        width: 32,
-        justifyContent: 'center' as const,
-    },
 });
 
 type Props = {
@@ -198,7 +193,7 @@ export default function BrowseChannels(props: Props) {
         content = (
             <Loading
                 containerStyle={style.loadingContainer}
-                style={style.loading}
+                size='large'
                 color={theme.buttonBg}
             />
         );
