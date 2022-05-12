@@ -15,7 +15,7 @@ export default tableSchema({
         {name: 'description', type: 'string'},
         {name: 'source', type: 'string'},
         {name: 'remote_id', type: 'string'},
-        {name: 'create_at', type: 'number'},
+        {name: 'created_at', type: 'number'},
         {name: 'updated_at', type: 'number'},
         {name: 'deleted_at', type: 'number'},
     ],

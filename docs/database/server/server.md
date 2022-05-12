@@ -92,7 +92,6 @@ display_name string
 description string
 remote_id string
 source string
-member_count number
 created_at number
 updated_at number
 deleted_at number

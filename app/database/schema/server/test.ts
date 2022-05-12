@@ -248,11 +248,21 @@ describe('*** Test schema for SERVER database ***', () => {
                         display_name: {name: 'display_name', type: 'string'},
                         name: {name: 'name', type: 'string'},
                         description: {name: 'description', type: 'string'},
+                        source: {name: 'source', type: 'string'},
+                        remote_id: {name: 'remote_id', type: 'string'},
+                        created_at: {name: 'created_at', type: 'number'},
+                        updated_at: {name: 'updated_at', type: 'number'},
+                        deleted_at: {name: 'deleted_at', type: 'number'},
                     },
                     columnArray: [
                         {name: 'display_name', type: 'string'},
                         {name: 'name', type: 'string'},
                         {name: 'description', type: 'string'},
+                        {name: 'source', type: 'string'},
+                        {name: 'remote_id', type: 'string'},
+                        {name: 'created_at', type: 'number'},
+                        {name: 'updated_at', type: 'number'},
+                        {name: 'deleted_at', type: 'number'},
                     ],
                 },
                 [GROUP_CHANNEL]: {
@@ -261,10 +271,16 @@ describe('*** Test schema for SERVER database ***', () => {
                     columns: {
                         group_id: {name: 'group_id', type: 'string', isIndexed: true},
                         channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
+                        created_at: {name: 'created_at', type: 'number'},
+                        updated_at: {name: 'updated_at', type: 'number'},
+                        deleted_at: {name: 'deleted_at', type: 'number'},
                     },
                     columnArray: [
                         {name: 'group_id', type: 'string', isIndexed: true},
                         {name: 'channel_id', type: 'string', isIndexed: true},
+                        {name: 'created_at', type: 'number'},
+                        {name: 'updated_at', type: 'number'},
+                        {name: 'deleted_at', type: 'number'},
                     ],
                 },
                 [GROUP_MEMBERSHIP]: {
@@ -273,10 +289,16 @@ describe('*** Test schema for SERVER database ***', () => {
                     columns: {
                         group_id: {name: 'group_id', type: 'string', isIndexed: true},
                         user_id: {name: 'user_id', type: 'string', isIndexed: true},
+                        created_at: {name: 'created_at', type: 'number'},
+                        updated_at: {name: 'updated_at', type: 'number'},
+                        deleted_at: {name: 'deleted_at', type: 'number'},
                     },
                     columnArray: [
                         {name: 'group_id', type: 'string', isIndexed: true},
                         {name: 'user_id', type: 'string', isIndexed: true},
+                        {name: 'created_at', type: 'number'},
+                        {name: 'updated_at', type: 'number'},
+                        {name: 'deleted_at', type: 'number'},
                     ],
                 },
                 [GROUP_TEAM]: {
@@ -285,10 +307,16 @@ describe('*** Test schema for SERVER database ***', () => {
                     columns: {
                         group_id: {name: 'group_id', type: 'string', isIndexed: true},
                         team_id: {name: 'team_id', type: 'string', isIndexed: true},
+                        created_at: {name: 'created_at', type: 'number'},
+                        updated_at: {name: 'updated_at', type: 'number'},
+                        deleted_at: {name: 'deleted_at', type: 'number'},
                     },
                     columnArray: [
                         {name: 'group_id', type: 'string', isIndexed: true},
                         {name: 'team_id', type: 'string', isIndexed: true},
+                        {name: 'created_at', type: 'number'},
+                        {name: 'updated_at', type: 'number'},
+                        {name: 'deleted_at', type: 'number'},
                     ],
                 },
                 [POSTS_IN_THREAD]: {
