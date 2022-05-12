@@ -19,6 +19,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     heading: {
         color: changeOpacity(theme.centerChannelColor, 0.64),
+        textTransform: 'uppercase',
         ...typography('Heading', 75, 'SemiBold'),
     },
 }));
