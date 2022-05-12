@@ -12,5 +12,8 @@ export default tableSchema({
     columns: [
         {name: 'group_id', type: 'string', isIndexed: true},
         {name: 'team_id', type: 'string', isIndexed: true},
+        {name: 'create_at', type: 'number'},
+        {name: 'updated_at', type: 'number'},
+        {name: 'deleted_at', type: 'number'},
     ],
 });

@@ -51,6 +51,21 @@ export default class GroupModel extends Model implements GroupInterface {
     /** description : The display name for the group */
     @field('description') description!: string;
 
+    /** remote_id : The source for the group (i.e. custom) */
+    @field('source') source!: string;
+
+    /** remote_id : The remote id for the group (i.e. in a shared channel) */
+    @field('remote_id') remoteId!: string;
+
+    /** created_at : The creation date for this row */
+    @field('created_at') createdAt!: number;
+
+    /** updated_at : The update date for this row */
+    @field('updated_at') updatedAt!: number;
+
+    /** deleted_at : The delete date for this row */
+    @field('deleted_at') deletedAt!: number;
+
     /** channels : Retrieves all the channels that are associated to this group */
     @lazy channels = this.collections.
         get<ChannelModel>(CHANNEL).

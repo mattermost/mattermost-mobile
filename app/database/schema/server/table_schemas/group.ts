@@ -13,5 +13,10 @@ export default tableSchema({
         {name: 'display_name', type: 'string'},
         {name: 'name', type: 'string'},
         {name: 'description', type: 'string'},
+        {name: 'source', type: 'string'},
+        {name: 'remote_id', type: 'string'},
+        {name: 'create_at', type: 'number'},
+        {name: 'updated_at', type: 'number'},
+        {name: 'deleted_at', type: 'number'},
     ],
 });

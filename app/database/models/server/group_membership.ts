@@ -37,6 +37,15 @@ export default class GroupMembershipModel extends Model implements GroupMembersh
     /** user_id : The foreign key to the related User record */
     @field('user_id') userId!: string;
 
+    /** created_at : The creation date for this row */
+    @field('created_at') createdAt!: number;
+
+    /** updated_at : The update date for this row */
+    @field('updated_at') updatedAt!: number;
+
+    /** deleted_at : The delete date for this row */
+    @field('deleted_at') deletedAt!: number;
+
     /** group : The related group */
     @immutableRelation(GROUP, 'group_id') group!: Relation<GroupModel>;
 
