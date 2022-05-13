@@ -505,7 +505,14 @@ export const updateDmGmDisplayName = async (serverUrl: string) => {
         }
 
         const channels = await queryUserChannelsByTypes(database, currentUserId, ['G', 'D']).fetch();
-        const userIds = channels.map((ch) => getUserIdFromChannelName(currentUserId, ch.name)).filter((uid) => uid !== undefined);
+        const userIds = channels.reduce((acc: string[], ch) => {
+            const uid = getUserIdFromChannelName(currentUserId, ch.name);
+            if (uid) {
+                acc.push(uid);
+            }
+            return acc;
+        }, []);
+
         const users = await queryUsersById(database, userIds).fetch();
 
         await updateChannelsDisplayName(serverUrl, channels, users, false);
