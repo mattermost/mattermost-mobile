@@ -341,6 +341,7 @@ const Server = ({
                         theme={theme}
                     />
                     <ServerForm
+                        autoFocus={launchType === LaunchType.AddServer}
                         buttonDisabled={buttonDisabled}
                         connecting={connecting}
                         displayName={displayName}

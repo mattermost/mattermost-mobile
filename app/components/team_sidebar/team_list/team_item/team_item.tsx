@@ -44,15 +44,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         mentionsOneDigit: {
             top: 1,
-            left: 28,
+            left: 31,
         },
         mentionsTwoDigits: {
             top: 1,
-            left: 26,
+            left: 30,
         },
         mentionsThreeDigits: {
             top: 1,
-            left: 23,
+            left: 28,
         },
     };
 });
