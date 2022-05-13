@@ -133,7 +133,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
 
     const showThreadOptions = useCallback(() => {
         const passProps = {thread};
-        const title = isTablet ? intl.formatMessage({id: 'thread.options.title', defaultMessage: 'THREAD ACTIONS'}) : '';
+        const title = isTablet ? intl.formatMessage({id: 'thread.options.title', defaultMessage: 'Thread Actions'}) : '';
 
         if (isTablet) {
             showModal(Screens.THREAD_OPTIONS, title, passProps, bottomSheetModalOptions(theme, 'close-thread-options'));

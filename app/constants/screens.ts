@@ -4,7 +4,7 @@
 export const ABOUT = 'About';
 export const ACCOUNT = 'Account';
 export const EMOJI_PICKER = 'EmojiPicker';
-export const APP_FORM = 'AppForm';
+export const APPS_FORM = 'AppForm';
 export const BOTTOM_SHEET = 'BottomSheet';
 export const BROWSE_CHANNELS = 'BrowseChannels';
 export const CHANNEL = 'Channel';
@@ -33,14 +33,12 @@ export const LOGIN = 'Login';
 export const MENTIONS = 'Mentions';
 export const MFA = 'MFA';
 export const SELECT_TEAM = 'SelectTeam';
-export const PARTICIPANTS_LIST = 'ParticipantsList';
 export const PERMALINK = 'Permalink';
 export const POST_OPTIONS = 'PostOptions';
 export const REACTIONS = 'Reactions';
 export const SAVED_POSTS = 'SavedPosts';
 export const SEARCH = 'Search';
 export const SERVER = 'Server';
-export const SETTINGS_SIDEBAR = 'SettingsSidebar';
 export const SSO = 'SSO';
 export const THREAD = 'Thread';
 export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
@@ -52,7 +50,7 @@ export default {
     ABOUT,
     ACCOUNT,
     EMOJI_PICKER,
-    APP_FORM,
+    APPS_FORM,
     BOTTOM_SHEET,
     BROWSE_CHANNELS,
     CHANNEL,
@@ -81,27 +79,42 @@ export default {
     MENTIONS,
     MFA,
     SELECT_TEAM,
-    PARTICIPANTS_LIST,
     PERMALINK,
     POST_OPTIONS,
     REACTIONS,
     SAVED_POSTS,
     SEARCH,
     SERVER,
-    SETTINGS_SIDEBAR,
     SSO,
     THREAD,
     THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
-
-    // USER_PROFILE,
+    USER_PROFILE,
     SNACK_BAR,
 };
 
 export const MODAL_SCREENS_WITHOUT_BACK = [
+    BROWSE_CHANNELS,
+    CHANNEL_DETAILS,
     CREATE_DIRECT_MESSAGE,
+    CREATE_TEAM,
+    CUSTOM_STATUS,
     EMOJI_PICKER,
     EDIT_POST,
+    EDIT_PROFILE,
+    EDIT_SERVER,
+    GALLERY,
     FIND_CHANNELS,
     PERMALINK,
+    REACTIONS,
+    SAVED_POSTS,
+];
+
+export const NOT_READY = [
+    CHANNEL_ADD_PEOPLE,
+    CHANNEL_DETAILS,
+    CREATE_TEAM,
+    INTEGRATION_SELECTOR,
+    INTERACTIVE_DIALOG,
+    USER_PROFILE,
 ];
