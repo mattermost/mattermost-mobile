@@ -17,6 +17,8 @@ import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+import type UserModel from '@typings/database/models/servers/user';
+
 const SECTION_KEY_TEAM_MEMBERS = 'teamMembers';
 const SECTION_KEY_IN_CHANNEL = 'inChannel';
 const SECTION_KEY_OUT_OF_CHANNEL = 'outChannel';
@@ -29,7 +31,7 @@ type SpecialMention = {
     defaultMessage: string;
 }
 
-type UserMentionSections = Array<SectionListData<UserProfile|Group|SpecialMention>>
+type UserMentionSections = Array<SectionListData<UserProfile|UserModel|Group|SpecialMention>>
 
 const getMatchTermForAtMention = (() => {
     let lastMatchTerm: string | null = null;
@@ -80,16 +82,54 @@ const keyExtractor = (item: UserProfile) => {
     return item.id;
 };
 
-const makeSections = (teamMembers: UserProfile[], usersInChannel: UserProfile[], usersOutOfChannel: UserProfile[], groups: Group[], showSpecialMentions: boolean, isSearch = false) => {
+const filterLocalResults = (users: UserModel[], term: string) => {
+    return users.filter((u) =>
+        u.username.toLowerCase().startsWith(term) ||
+        u.nickname.toLowerCase().startsWith(term) ||
+        u.firstName.toLowerCase().startsWith(term) ||
+        u.lastName.toLowerCase().startsWith(term),
+    );
+};
+
+const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersInChannel: Array<UserProfile | UserModel>, usersOutOfChannel: Array<UserProfile | UserModel>, groups: Group[], showSpecialMentions: boolean, isLocal = false, isSearch = false) => {
     const newSections: UserMentionSections = [];
 
     if (isSearch) {
-        newSections.push({
-            id: t('mobile.suggestion.members'),
-            defaultMessage: 'Members',
-            data: teamMembers,
-            key: SECTION_KEY_TEAM_MEMBERS,
-        });
+        if (teamMembers.length) {
+            newSections.push({
+                id: t('mobile.suggestion.members'),
+                defaultMessage: 'Members',
+                data: teamMembers,
+                key: SECTION_KEY_TEAM_MEMBERS,
+            });
+        }
+    } else if (isLocal) {
+        if (teamMembers.length) {
+            newSections.push({
+                id: t('mobile.suggestion.members'),
+                defaultMessage: 'Members',
+                data: teamMembers,
+                key: SECTION_KEY_TEAM_MEMBERS,
+            });
+        }
+
+        if (groups.length) {
+            newSections.push({
+                id: t('suggestion.mention.groups'),
+                defaultMessage: 'Group Mentions',
+                data: groups,
+                key: SECTION_KEY_GROUPS,
+            });
+        }
+
+        if (showSpecialMentions) {
+            newSections.push({
+                id: t('suggestion.mention.special'),
+                defaultMessage: 'Special Mentions',
+                data: getSpecialMentions(),
+                key: SECTION_KEY_SPECIAL,
+            });
+        }
     } else {
         if (usersInChannel.length) {
             newSections.push({
@@ -141,6 +181,7 @@ type Props = {
     nestedScrollEnabled: boolean;
     useChannelMentions: boolean;
     useGroupMentions: boolean;
+    localUsers: UserModel[];
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -153,6 +194,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 });
 
 const emptyProfileList: UserProfile[] = [];
+const emptyModelList: UserModel[] = [];
 const empytSectionList: UserMentionSections = [];
 const emptyGroupList: Group[] = [];
 
@@ -167,6 +209,7 @@ const AtMention = ({
     nestedScrollEnabled,
     useChannelMentions,
     useGroupMentions,
+    localUsers,
 }: Props) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -179,11 +222,18 @@ const AtMention = ({
     const [loading, setLoading] = useState(false);
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
     const [localCursorPosition, setLocalCursorPosition] = useState(cursorPosition); // To avoid errors due to delay between value changes and cursor position changes.
+    const [useLocal, setUseLocal] = useState(true);
+    const [filteredLocalUsers, setFilteredLocalUsers] = useState(emptyModelList);
 
-    const runSearch = useMemo(() => debounce(async (sUrl: string, term: string, cId?: string) => {
+    const runSearch = useMemo(() => debounce(async (sUrl: string, term: string, fallbackUsers: UserModel[], cId?: string) => {
         setLoading(true);
-        const {users: receivedUsers} = await searchUsers(sUrl, term, cId);
-        if (receivedUsers) {
+        const {users: receivedUsers, error} = await searchUsers(sUrl, term, cId);
+
+        setUseLocal(Boolean(error));
+        if (error) {
+            const filteredUsers = filterLocalResults(fallbackUsers, term);
+            setFilteredLocalUsers(filteredUsers.length ? filteredUsers : emptyModelList);
+        } else if (receivedUsers) {
             setUsersInChannel(receivedUsers.users.length ? receivedUsers.users : emptyProfileList);
             setUsersOutOfChannel(receivedUsers.out_of_channel?.length ? receivedUsers.out_of_channel : emptyProfileList);
         }
@@ -200,6 +250,7 @@ const AtMention = ({
     const resetState = () => {
         setUsersInChannel(emptyProfileList);
         setUsersOutOfChannel(emptyProfileList);
+        setFilteredLocalUsers(emptyModelList);
         setSections(empytSectionList);
         runSearch.cancel();
     };
@@ -249,7 +300,7 @@ const AtMention = ({
         );
     }, [completeMention]);
 
-    const renderAtMentions = useCallback((item: UserProfile) => {
+    const renderAtMentions = useCallback((item: UserProfile | UserModel) => {
         return (
             <AtMentionItem
                 testID={`autocomplete.at_mention.item.${item}`}
@@ -310,13 +361,18 @@ const AtMention = ({
         }
 
         setNoResultsTerm(null);
-        runSearch(serverUrl, matchTerm, channelId);
+        runSearch(serverUrl, matchTerm, localUsers, channelId);
     }, [matchTerm]);
 
     useEffect(() => {
         const showSpecialMentions = useChannelMentions && matchTerm != null && checkSpecialMentions(matchTerm);
         const buildMemberSection = isSearch || (!channelId && teamMembers.length > 0);
-        const newSections = makeSections(teamMembers, usersInChannel, usersOutOfChannel, groups, showSpecialMentions, buildMemberSection);
+        let newSections;
+        if (useLocal) {
+            newSections = makeSections(filteredLocalUsers, [], [], groups, showSpecialMentions, true, buildMemberSection);
+        } else {
+            newSections = makeSections(teamMembers, usersInChannel, usersOutOfChannel, groups, showSpecialMentions, buildMemberSection);
+        }
         const nSections = newSections.length;
 
         if (!loading && !nSections && noResultsTerm == null) {
@@ -324,7 +380,7 @@ const AtMention = ({
         }
         setSections(nSections ? newSections : empytSectionList);
         onShowingChange(Boolean(nSections));
-    }, [usersInChannel, usersOutOfChannel, teamMembers, groups, loading, channelId]);
+    }, [!useLocal && usersInChannel, !useLocal && usersOutOfChannel, teamMembers, groups, loading, channelId, useLocal && filteredLocalUsers]);
 
     if (sections.length === 0 || noResultsTerm != null) {
         // If we are not in an active state or the mention has been completed return null so nothing is rendered

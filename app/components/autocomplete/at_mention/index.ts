@@ -10,7 +10,7 @@ import {Permissions} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
 import {observePermissionForChannel} from '@queries/servers/role';
 import {observeLicense} from '@queries/servers/system';
-import {observeCurrentUser} from '@queries/servers/user';
+import {observeCurrentUser, queryAllUsers} from '@queries/servers/user';
 
 import AtMention from './at_mention';
 
@@ -26,6 +26,7 @@ const enhanced = withObservables([], ({database, channelId}: WithDatabaseArgs & 
 
     let useChannelMentions: Observable<boolean>;
     let useGroupMentions: Observable<boolean>;
+
     if (channelId) {
         const currentChannel = observeChannel(database, channelId);
         useChannelMentions = combineLatest([currentUser, currentChannel]).pipe(switchMap(([u, c]) => (u && c ? observePermissionForChannel(c, u, Permissions.USE_CHANNEL_MENTIONS, false) : of$(false))));
@@ -40,6 +41,7 @@ const enhanced = withObservables([], ({database, channelId}: WithDatabaseArgs & 
     return {
         useChannelMentions,
         useGroupMentions,
+        localUsers: queryAllUsers(database).observe(),
     };
 });
 
