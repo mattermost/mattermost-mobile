@@ -21,6 +21,8 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import ErrorBoundry from '../error_boundry';
+
 const MAX_LINES = 2;
 
 type Props = {
@@ -194,21 +196,26 @@ const LatexCodeBlock = ({content, theme}: Props) => {
             type={'opacity'}
         >
             <View style={styles.container}>
-                <View style={styles.rightColumn}>
-                    {split.lines?.map((latexCode) => (
-                        <View
-                            style={styles.code}
-                            key={latexCode}
-                        >
-                            <MathView
-                                math={latexCode}
-                                renderError={onRenderErrorMessage}
-                                resizeMode={'cover'}
-                            />
-                        </View>
-                    ))}
-                    {plusMoreLines}
-                </View>
+                <ErrorBoundry
+                    error={intl.formatMessage({id: 'markdown.latex.error', defaultMessage: 'Latex render error'})}
+                    theme={theme}
+                >
+                    <View style={styles.rightColumn}>
+                        {split.lines?.map((latexCode) => (
+                            <View
+                                style={styles.code}
+                                key={latexCode}
+                            >
+                                <MathView
+                                    math={latexCode}
+                                    renderError={onRenderErrorMessage}
+                                    resizeMode={'cover'}
+                                />
+                            </View>
+                        ))}
+                        {plusMoreLines}
+                    </View>
+                </ErrorBoundry>
                 <View style={styles.language}>
                     <Text style={styles.languageText}>
                         {languageDisplayName}
