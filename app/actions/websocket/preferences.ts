@@ -19,6 +19,8 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
         const preference: PreferenceType = JSON.parse(msg.data.preference);
         handleSavePostAdded(serverUrl, [preference]);
 
+        const hasDiffNameFormatPref = await differsFromLocalNameFormat(serverUrl, [preference]);
+
         if (operator) {
             await operator.handlePreferences({
                 prepareRecordsOnly: false,
@@ -26,8 +28,7 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
             });
         }
 
-        const shouldUpdate = await differsFromLocalNameFormat(serverUrl, [preference]);
-        if (shouldUpdate) {
+        if (hasDiffNameFormatPref) {
             updateDmGmDisplayName(serverUrl);
         }
     } catch (error) {
@@ -44,6 +45,8 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
         const preferences: PreferenceType[] = JSON.parse(msg.data.preferences);
         handleSavePostAdded(serverUrl, preferences);
 
+        const hasDiffNameFormatPref = await differsFromLocalNameFormat(serverUrl, preferences);
+
         if (operator) {
             await operator.handlePreferences({
                 prepareRecordsOnly: false,
@@ -51,8 +54,7 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
             });
         }
 
-        const shouldUpdate = await differsFromLocalNameFormat(serverUrl, preferences);
-        if (shouldUpdate) {
+        if (hasDiffNameFormatPref) {
             updateDmGmDisplayName(serverUrl);
         }
     } catch (error) {
