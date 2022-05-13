@@ -3,8 +3,11 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
-import {queryAllMyChannel} from '@queries/servers/channel';
+import {queryAllChannelsForTeam, queryAllMyChannel} from '@queries/servers/channel';
+import {observeCurrentTeamId} from '@queries/servers/system';
 
 import ChannelMention from './channel_mention';
 
@@ -13,6 +16,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         myMembers: queryAllMyChannel(database).observe(),
+        localChannels: observeCurrentTeamId(database).pipe(switchMap((id) => (id ? queryAllChannelsForTeam(database, id).observe() : of$([])))),
     };
 });
 
