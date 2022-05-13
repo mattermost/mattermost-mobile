@@ -14,7 +14,9 @@ import SpecialMentionItem from '@components/autocomplete/special_mention_item';
 import {AT_MENTION_REGEX, AT_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
+import {queryAllUsers} from '@queries/servers/user';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -181,7 +183,6 @@ type Props = {
     nestedScrollEnabled: boolean;
     useChannelMentions: boolean;
     useGroupMentions: boolean;
-    localUsers: UserModel[];
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -198,6 +199,15 @@ const emptyModelList: UserModel[] = [];
 const empytSectionList: UserMentionSections = [];
 const emptyGroupList: Group[] = [];
 
+const getAllUsers = async (serverUrl: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return [];
+    }
+
+    return queryAllUsers(database).fetch();
+};
+
 const AtMention = ({
     channelId,
     cursorPosition,
@@ -209,7 +219,6 @@ const AtMention = ({
     nestedScrollEnabled,
     useChannelMentions,
     useGroupMentions,
-    localUsers,
 }: Props) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -223,14 +232,20 @@ const AtMention = ({
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
     const [localCursorPosition, setLocalCursorPosition] = useState(cursorPosition); // To avoid errors due to delay between value changes and cursor position changes.
     const [useLocal, setUseLocal] = useState(true);
+    const [localUsers, setLocalUsers] = useState<UserModel[]>();
     const [filteredLocalUsers, setFilteredLocalUsers] = useState(emptyModelList);
 
-    const runSearch = useMemo(() => debounce(async (sUrl: string, term: string, fallbackUsers: UserModel[], cId?: string) => {
+    const runSearch = useMemo(() => debounce(async (sUrl: string, term: string, cId?: string) => {
         setLoading(true);
         const {users: receivedUsers, error} = await searchUsers(sUrl, term, cId);
 
         setUseLocal(Boolean(error));
         if (error) {
+            let fallbackUsers = localUsers;
+            if (!fallbackUsers) {
+                fallbackUsers = await getAllUsers(sUrl);
+                setLocalUsers(fallbackUsers);
+            }
             const filteredUsers = filterLocalResults(fallbackUsers, term);
             setFilteredLocalUsers(filteredUsers.length ? filteredUsers : emptyModelList);
         } else if (receivedUsers) {
@@ -361,7 +376,7 @@ const AtMention = ({
         }
 
         setNoResultsTerm(null);
-        runSearch(serverUrl, matchTerm, localUsers, channelId);
+        runSearch(serverUrl, matchTerm, channelId);
     }, [matchTerm]);
 
     useEffect(() => {

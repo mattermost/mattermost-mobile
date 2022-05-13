@@ -10,7 +10,7 @@ import {Permissions} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
 import {observePermissionForChannel} from '@queries/servers/role';
 import {observeLicense} from '@queries/servers/system';
-import {observeCurrentUser, queryAllUsers} from '@queries/servers/user';
+import {observeCurrentUser} from '@queries/servers/user';
 
 import AtMention from './at_mention';
 
@@ -41,7 +41,6 @@ const enhanced = withObservables([], ({database, channelId}: WithDatabaseArgs & 
     return {
         useChannelMentions,
         useGroupMentions,
-        localUsers: queryAllUsers(database).observe(),
     };
 });
 
