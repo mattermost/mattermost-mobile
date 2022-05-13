@@ -5,6 +5,8 @@ import {Database, Model, Q} from '@nozbe/watermelondb';
 
 import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import DatabaseManager from '@database/manager';
+import {getPreferenceValue} from '@helpers/api/preference';
 import {ServerDatabase} from '@typings/database/database';
 
 import {getCurrentTeamId} from './system';
@@ -64,3 +66,22 @@ export async function deletePreferences(database: ServerDatabase, preferences: P
         return false;
     }
 }
+
+export const differsFromLocalNameFormat = async (serverUrl: string, preferences: PreferenceType[]) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return false;
+    }
+
+    const displayPref = getPreferenceValue(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT) as string;
+    if (displayPref === '') {
+        return false;
+    }
+
+    const currentPref = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT, displayPref).fetch();
+    if (currentPref.length > 0) {
+        return false;
+    }
+
+    return true;
+};
