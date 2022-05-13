@@ -410,7 +410,7 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
             }
         }
 
-        if (channel.displayName !== newDisplayName) {
+        if (newDisplayName && channel.displayName !== newDisplayName) {
             channel.prepareUpdate((c) => {
                 c.displayName = extractChannelDisplayName({
                     type: c.type,
