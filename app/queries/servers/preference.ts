@@ -5,7 +5,6 @@ import {Database, Model, Q} from '@nozbe/watermelondb';
 
 import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
-import DatabaseManager from '@database/manager';
 import {getPreferenceValue} from '@helpers/api/preference';
 import {ServerDatabase} from '@typings/database/database';
 
@@ -67,12 +66,7 @@ export async function deletePreferences(database: ServerDatabase, preferences: P
     }
 }
 
-export const differsFromLocalNameFormat = async (serverUrl: string, preferences: PreferenceType[]) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return false;
-    }
-
+export const differsFromLocalNameFormat = async (database: Database, preferences: PreferenceType[]) => {
     const displayPref = getPreferenceValue(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT) as string;
     if (displayPref === '') {
         return false;

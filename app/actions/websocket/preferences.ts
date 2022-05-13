@@ -18,7 +18,7 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
         const preference: PreferenceType = JSON.parse(msg.data.preference);
         handleSavePostAdded(serverUrl, [preference]);
 
-        const hasDiffNameFormatPref = await differsFromLocalNameFormat(serverUrl, [preference]);
+        const hasDiffNameFormatPref = await differsFromLocalNameFormat(operator.database, [preference]);
 
         if (operator) {
             await operator.handlePreferences({
@@ -44,7 +44,7 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
         const preferences: PreferenceType[] = JSON.parse(msg.data.preferences);
         handleSavePostAdded(serverUrl, preferences);
 
-        const hasDiffNameFormatPref = await differsFromLocalNameFormat(serverUrl, preferences);
+        const hasDiffNameFormatPref = await differsFromLocalNameFormat(operator.database, preferences);
 
         if (operator) {
             await operator.handlePreferences({
