@@ -506,11 +506,10 @@ export const updateDmGmDisplayName = async (serverUrl: string) => {
 
         const channels = await queryUserChannelsByTypes(database, currentUserId, ['G', 'D']).fetch();
         const userIds = channels.reduce((acc: string[], ch) => {
-            if (ch.name.includes('_')) {
-                const uid = getUserIdFromChannelName(currentUserId, ch.name);
+            const uid = getUserIdFromChannelName(currentUserId, ch.name);
+            if (uid) {
                 acc.push(uid);
             }
-            acc.push(ch.displayName);
             return acc;
         }, []);
 
