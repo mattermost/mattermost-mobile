@@ -20,7 +20,7 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
         handleSavePostAdded(serverUrl, [preference]);
 
         if (operator) {
-            operator.handlePreferences({
+            await operator.handlePreferences({
                 prepareRecordsOnly: false,
                 preferences: [preference],
             });
@@ -45,7 +45,7 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
         handleSavePostAdded(serverUrl, preferences);
 
         if (operator) {
-            operator.handlePreferences({
+            await operator.handlePreferences({
                 prepareRecordsOnly: false,
                 preferences,
             });
