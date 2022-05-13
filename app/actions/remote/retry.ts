@@ -12,6 +12,7 @@ import {prepareMyPreferences, queryPreferencesByCategoryAndName} from '@queries/
 import {prepareCommonSystemValues, getCommonSystemValues} from '@queries/servers/system';
 import {prepareMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
+import TeamModel from '@typings/database/models/servers/team';
 import {isDMorGM, selectDefaultChannelForTeam} from '@utils/channel';
 
 import {fetchMissingSidebarInfo, fetchMyChannelsForTeam, MyChannelsRequest} from './channel';
@@ -38,7 +39,7 @@ export async function retryInitialTeamAndChannel(serverUrl: string) {
     }
 
     try {
-        let initialTeam: Team|undefined;
+        let initialTeam: Team|TeamModel|undefined;
         let initialChannel: Channel|undefined;
 
         const user = await getCurrentUser(database);

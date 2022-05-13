@@ -12,6 +12,7 @@ import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getCurrentUserId, getCommonSystemValues} from '@queries/servers/system';
+import EphemeralStore from '@store/ephemeral_store';
 import {getCSRFFromCookie} from '@utils/security';
 
 import {loginEntry} from './entry';
@@ -49,16 +50,28 @@ export const completeLogin = async (serverUrl: string, user: UserProfile) => {
 
     await DatabaseManager.setActiveServerDatabase(serverUrl);
 
+    const systems: IdValue[] = [];
+
+    // Set push proxy verification
+    const ppVerification = EphemeralStore.getPushProxyVerificationState(serverUrl);
+    if (ppVerification) {
+        systems.push({id: SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS, value: ppVerification});
+    }
+
     // Start websocket
     const credentials = await getServerCredentials(serverUrl);
     if (credentials?.token) {
         WebsocketManager.createClient(serverUrl, credentials.token);
-        return operator.handleSystem({systems: [{
+        systems.push({
             id: SYSTEM_IDENTIFIERS.WEBSOCKET,
             value: 0,
-        }],
-        prepareRecordsOnly: false});
+        });
     }
+
+    if (systems.length) {
+        operator.handleSystem({systems, prepareRecordsOnly: false});
+    }
+
     return null;
 };
 

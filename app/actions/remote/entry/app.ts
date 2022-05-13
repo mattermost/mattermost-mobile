@@ -9,7 +9,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
 
-import {deferredAppEntryActions, entry, registerDeviceToken, syncOtherServers} from './common';
+import {deferredAppEntryActions, entry, registerDeviceToken, syncOtherServers, verifyPushProxy} from './common';
 
 export async function appEntry(serverUrl: string, since = 0) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -61,6 +61,8 @@ export async function appEntry(serverUrl: string, since = 0) {
         // Load data from other servers
         syncOtherServers(serverUrl);
     }
+
+    verifyPushProxy(serverUrl);
 
     return {userId: currentUserId};
 }

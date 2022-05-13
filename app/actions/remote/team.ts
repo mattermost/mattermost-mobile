@@ -10,7 +10,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam, getDefaultChannelForTeam} from '@queries/servers/channel';
-import {prepareCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected} from '@queries/servers/system';
+import {prepareCommonSystemValues, getCurrentTeamId} from '@queries/servers/system';
 import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, syncTeamTable} from '@queries/servers/team';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
@@ -268,11 +268,12 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     }
 
     let channelId = '';
+    DeviceEventEmitter.emit(Events.TEAM_SWITCH, true);
     if (await isTablet()) {
         channelId = await getNthLastChannelFromTeam(database, teamId);
         if (channelId) {
             await switchToChannelById(serverUrl, channelId, teamId);
-            completeTeamChange(serverUrl, teamId, channelId);
+            DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);
             return;
         }
     }
@@ -290,25 +291,5 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     if (models.length) {
         await operator.batchRecords(models);
     }
-
-    completeTeamChange(serverUrl, teamId, channelId);
+    DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);
 }
-
-const completeTeamChange = async (serverUrl: string, teamId: string, channelId: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return;
-    }
-
-    // If WebSocket is not disconnected we fetch everything since this moment
-    const lastDisconnectedAt = (await getWebSocketLastDisconnected(database)) || Date.now();
-    const {channels, memberships, error} = await fetchMyChannelsForTeam(serverUrl, teamId, true, lastDisconnectedAt, false, true);
-
-    if (error) {
-        DeviceEventEmitter.emit(Events.TEAM_LOAD_ERROR, serverUrl, error);
-    }
-
-    if (channels?.length && memberships?.length) {
-        fetchPostsForUnreadChannels(serverUrl, channels, memberships, channelId);
-    }
-};

@@ -218,7 +218,7 @@ export const getLaunchPropsFromNotification = async (notification: NotificationW
     };
 
     const {payload} = notification;
-    (launchProps.extra as NotificationWithData) = notification;
+    launchProps.extra = notification;
 
     if (payload?.server_url) {
         launchProps.serverUrl = payload.server_url;

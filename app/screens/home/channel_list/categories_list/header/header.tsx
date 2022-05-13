@@ -11,11 +11,13 @@ import {logout} from '@actions/remote/session';
 import CompassIcon from '@components/compass_icon';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import {useServerDisplayName, useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
+import {alertPushProxyError, alertPushProxyUnknown} from '@utils/push_proxy';
 import {alertServerLogout} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -28,6 +30,7 @@ type Props = {
     displayName: string;
     iconPad?: boolean;
     onHeaderPress?: () => void;
+    pushProxyStatus: string;
 }
 
 const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -37,7 +40,6 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     subHeadingStyles: {
         color: changeOpacity(theme.sidebarText, 0.64),
-        paddingRight: 30,
         ...typography('Heading', 50),
     },
     headerRow: {
@@ -64,6 +66,14 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.sidebarText, 0.8),
         fontSize: 18,
     },
+    pushAlert: {
+        marginLeft: 5,
+    },
+    subHeadingView: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingRight: 60,
+    },
     noTeamHeadingStyles: {
         color: changeOpacity(theme.sidebarText, 0.64),
         ...typography('Body', 100, 'SemiBold'),
@@ -78,7 +88,14 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const hitSlop: Insets = {top: 10, bottom: 30, left: 20, right: 20};
 
-const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, iconPad, onHeaderPress}: Props) => {
+const ChannelListHeader = ({
+    canCreateChannels,
+    canJoinChannels,
+    displayName,
+    iconPad,
+    onHeaderPress,
+    pushProxyStatus,
+}: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
     const intl = useIntl();
@@ -90,7 +107,6 @@ const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, ico
         marginLeft: withTiming(marginLeft.value, {duration: 350}),
     }), []);
     const serverUrl = useServerUrl();
-
     useEffect(() => {
         marginLeft.value = iconPad ? 44 : 0;
     }, [iconPad]);
@@ -123,6 +139,14 @@ const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, ico
             title: intl.formatMessage({id: 'home.header.plus_menu', defaultMessage: 'Options'}),
         });
     }, [intl, insets, isTablet, theme]);
+
+    const onPushAlertPress = useCallback(() => {
+        if (pushProxyStatus === PUSH_PROXY_STATUS_NOT_AVAILABLE) {
+            alertPushProxyError(intl);
+        } else {
+            alertPushProxyUnknown(intl);
+        }
+    }, [pushProxyStatus, intl]);
 
     const onLogoutPress = useCallback(() => {
         alertServerLogout(serverDisplayName, () => logout(serverUrl), intl);
@@ -168,20 +192,36 @@ const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, ico
                         />
                     </TouchableWithFeedback>
                 </View>
-                <Text
-                    numberOfLines={1}
-                    ellipsizeMode='tail'
-                    style={styles.subHeadingStyles}
-                    testID='channel_list_header.server_display_name'
-                >
-                    {serverDisplayName}
-                </Text>
+                <View style={styles.subHeadingView}>
+                    <Text
+                        numberOfLines={1}
+                        ellipsizeMode='tail'
+                        style={styles.subHeadingStyles}
+                        testID='channel_list_header.server_display_name'
+                    >
+                        {serverDisplayName}
+                    </Text>
+                    {(pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED) && (
+                        <TouchableWithFeedback
+                            onPress={onPushAlertPress}
+                            testID='channel_list_header.push_alert'
+                            type='opacity'
+                        >
+                            <CompassIcon
+                                name='alert-outline'
+                                color={theme.errorTextColor}
+                                size={14}
+                                style={styles.pushAlert}
+                            />
+                        </TouchableWithFeedback>
+                    )}
+                </View>
             </>
         );
     } else {
         header = (
             <View style={styles.noTeamHeaderRow}>
-                <View style={styles.noTeamHeaderRow}>
+                <View style={[styles.noTeamHeaderRow, {flex: 1}]}>
                     <Text
                         numberOfLines={1}
                         ellipsizeMode='tail'

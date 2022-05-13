@@ -3,8 +3,10 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import {of as of$} from 'rxjs';
+import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {observeCurrentChannelId} from '@queries/servers/system';
+import {observeCurrentChannelId, observeCurrentTeamId} from '@queries/servers/system';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
 
 import AdditionalTabletView from './additional_tablet_view';
@@ -12,6 +14,10 @@ import AdditionalTabletView from './additional_tablet_view';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
+    onTeam: observeCurrentTeamId(database).pipe(
+        switchMap((id) => of$(Boolean(id))),
+        distinctUntilChanged(),
+    ),
     currentChannelId: observeCurrentChannelId(database),
     isCRTEnabled: observeIsCRTEnabled(database),
 }));

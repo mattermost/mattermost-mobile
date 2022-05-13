@@ -17,15 +17,38 @@ import AddTeamSlideUp from './add_team_slide_up';
 
 import type TeamModel from '@typings/database/models/servers/team';
 
+type Props = {
+    canCreateTeams: boolean;
+    otherTeams: TeamModel[];
+}
+
 const ITEM_HEIGHT = 72;
 const CREATE_HEIGHT = 97;
 const HEADER_HEIGHT = 66;
 const CONTAINER_HEIGHT = 392;
 
-type Props = {
-    canCreateTeams: boolean;
-    otherTeams: TeamModel[];
-}
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            flex: 0,
+            backgroundColor: changeOpacity(theme.sidebarText, 0.08),
+            borderRadius: 10,
+            height: 48,
+            width: 48,
+            marginTop: 6,
+            marginBottom: 12,
+            marginHorizontal: 12,
+            overflow: 'hidden',
+        },
+        touchable: {
+            width: '100%',
+            height: '100%',
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+    };
+});
+
 export default function AddTeam({canCreateTeams, otherTeams}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -70,31 +93,9 @@ export default function AddTeam({canCreateTeams, otherTeams}: Props) {
                 <CompassIcon
                     size={28}
                     name='plus'
-                    color={changeOpacity(theme.buttonColor, 0.64)}
+                    color={changeOpacity(theme.sidebarText, 0.64)}
                 />
             </TouchableWithFeedback>
         </View>
     );
 }
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            flex: 0,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.64),
-            borderRadius: 10,
-            height: 48,
-            width: 48,
-            marginTop: 6,
-            marginBottom: 12,
-            marginHorizontal: 12,
-            overflow: 'hidden',
-        },
-        touchable: {
-            width: '100%',
-            height: '100%',
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-    };
-});

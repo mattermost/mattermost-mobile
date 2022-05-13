@@ -12,6 +12,8 @@ import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRe
 import {fetchNewThreads} from '@actions/remote/thread';
 import {fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
 import {Preferences} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
@@ -21,7 +23,7 @@ import {getDeviceToken} from '@queries/app/global';
 import {queryAllServers} from '@queries/app/servers';
 import {queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
-import {getConfig, getWebSocketLastDisconnected} from '@queries/servers/system';
+import {getConfig, getPushVerificationStatus, getWebSocketLastDisconnected} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, getNthLastChannelFromTeam, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
 import {isCRTEnabled} from '@utils/thread';
@@ -342,3 +344,50 @@ const syncAllChannelMembers = async (serverUrl: string) => {
         // Do nothing
     }
 };
+
+export async function verifyPushProxy(serverUrl: string) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return;
+    }
+
+    const {database} = operator;
+
+    const ppVerification = await getPushVerificationStatus(database);
+    if (ppVerification !== PUSH_PROXY_STATUS_UNKNOWN) {
+        return;
+    }
+
+    const appDatabase = DatabaseManager.appDatabase?.database;
+    if (!appDatabase) {
+        return;
+    }
+
+    const deviceId = await getDeviceToken(appDatabase);
+    if (!deviceId) {
+        return;
+    }
+
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (err) {
+        return;
+    }
+
+    try {
+        const response = await client.ping(deviceId);
+        const canReceiveNotifications = response?.data?.CanReceiveNotifications;
+        switch (canReceiveNotifications) {
+            case PUSH_PROXY_RESPONSE_NOT_AVAILABLE:
+                operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS, value: PUSH_PROXY_STATUS_NOT_AVAILABLE}], prepareRecordsOnly: false});
+                return;
+            case PUSH_PROXY_RESPONSE_UNKNOWN:
+                return;
+            default:
+                operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS, value: PUSH_PROXY_STATUS_VERIFIED}], prepareRecordsOnly: false});
+        }
+    } catch (err) {
+        // Do nothing
+    }
+}

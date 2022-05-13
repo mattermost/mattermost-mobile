@@ -52,7 +52,7 @@ export default async () => {
     // Test: It should return database instance(s) if there are valid server urls in the provided list.
     const testRetrieveAllDatabaseConnections = async () => {
         const database = DatabaseManager.appDatabase?.database;
-        const servers = (await database?.collections.get(MM_TABLES.APP.SERVERS).
+        const servers = (await database?.collections.get<ServersModel>(MM_TABLES.APP.SERVERS).
             query(Q.where(
                 'url',
                 Q.oneOf([
@@ -60,7 +60,7 @@ export default async () => {
                     'https://comm5.mattermost.com',
                     'https://comm4.mattermost.com',
                 ]),
-            )).fetch()) as ServersModel[];
+            )).fetch());
         return servers;
     };
 

@@ -115,7 +115,7 @@ const Pager = ({
         onIndexChangeCb(initialIndex);
     }, [initialIndex]);
 
-    function getSpringConfig(noVelocity?: boolean) {
+    function getSpringConfig(noVelocity?: boolean): WithSpringConfig {
         'worklet';
 
         const ratio = 1.1;
@@ -129,7 +129,7 @@ const Pager = ({
             restDisplacementThreshold: 1,
             restSpeedThreshold: 5,
             velocity: noVelocity ? 0 : velocity.value,
-        } as WithSpringConfig;
+        };
     }
 
     const onChangePageAnimation = (noVelocity?: boolean) => {

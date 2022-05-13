@@ -6,6 +6,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {General, Navigation as NavigationConstants, Preferences, Screens} from '@constants';
 import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@constants/categories';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {extractChannelDisplayName} from '@helpers/database';
@@ -132,7 +133,10 @@ export async function removeCurrentUserFromChannel(serverUrl: string, channelId:
     const models: Model[] = [];
     const myChannel = await getMyChannel(database, channelId);
     if (myChannel) {
-        const channel = await myChannel.channel.fetch() as ChannelModel;
+        const channel = await myChannel.channel.fetch();
+        if (!channel) {
+            return {error: 'myChannel present but no channel on the database'};
+        }
         models.push(...await prepareDeleteChannel(channel));
         let teamId = channel.teamId;
         if (teamId) {
@@ -286,7 +290,7 @@ export async function storeMyChannelsForTeam(serverUrl: string, teamId: string, 
         return {models: []};
     }
 
-    const flattenedModels = models.flat() as Model[];
+    const flattenedModels = models.flat();
 
     if (prepareRecordsOnly) {
         return {models: flattenedModels};
@@ -466,4 +470,19 @@ export async function addChannelToDefaultCategory(serverUrl: string, channel: Ch
     }
 
     return {models};
+}
+
+export async function showUnreadChannelsOnly(serverUrl: string, onlyUnreads: boolean) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    return operator.handleSystem({
+        systems: [{
+            id: SYSTEM_IDENTIFIERS.ONLY_UNREADS,
+            value: JSON.stringify(onlyUnreads),
+        }],
+        prepareRecordsOnly: false,
+    });
 }

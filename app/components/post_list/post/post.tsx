@@ -300,6 +300,7 @@ const Post = ({
                 testID={itemTestID}
                 onPress={handlePress}
                 onLongPress={showPostOptions}
+                delayLongPress={200}
                 underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
                 style={styles.touchableContainer}
             >

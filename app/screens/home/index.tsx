@@ -6,10 +6,13 @@ import {NavigationContainer} from '@react-navigation/native';
 import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform} from 'react-native';
+import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 
 import {Events, Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {findChannels} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {alertChannelRemove, alertTeamRemove} from '@utils/navigation';
 import {notificationError} from '@utils/notification';
 
@@ -29,6 +32,7 @@ if (Platform.OS === 'ios') {
 enableFreeze(true);
 
 type HomeProps = LaunchProps & {
+    componentId: string;
     time?: number;
 };
 
@@ -46,7 +50,7 @@ export default function HomeScreen(props: HomeProps) {
         return () => {
             listener.remove();
         };
-    }, [intl]);
+    }, [intl.locale]);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.LEAVE_TEAM, (displayName: string) => {
@@ -56,7 +60,7 @@ export default function HomeScreen(props: HomeProps) {
         return () => {
             listener.remove();
         };
-    }, [intl]);
+    }, [intl.locale]);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.LEAVE_CHANNEL, (displayName: string) => {
@@ -66,7 +70,22 @@ export default function HomeScreen(props: HomeProps) {
         return () => {
             listener.remove();
         };
-    }, [intl]);
+    }, [intl.locale]);
+
+    useEffect(() => {
+        const listener = HWKeyboardEvent.onHWKeyPressed((keyEvent: {pressedKey: string}) => {
+            const screen = EphemeralStore.getAllNavigationComponents();
+            if (!screen.includes(Screens.FIND_CHANNELS) && keyEvent.pressedKey === 'find-channels') {
+                findChannels(
+                    intl.formatMessage({id: 'find_channels.title', defaultMessage: 'Find Channels'}),
+                    theme,
+                );
+            }
+        });
+        return () => {
+            listener.remove();
+        };
+    }, [intl.locale]);
 
     return (
         <NavigationContainer

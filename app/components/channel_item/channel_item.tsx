@@ -17,7 +17,6 @@ import {getUserIdFromChannelName} from '@utils/user';
 import CustomStatus from './custom_status';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
 type Props = {
     channel: ChannelModel;
@@ -27,8 +26,10 @@ type Props = {
     isInfo?: boolean;
     isMuted: boolean;
     membersCount: number;
-    myChannel?: MyChannelModel;
+    isUnread: boolean;
+    mentionsCount: number;
     onPress: (channelId: string) => void;
+    hasMember: boolean;
     teamDisplayName?: string;
     testID?: string;
 }
@@ -114,15 +115,15 @@ export const textStyle = StyleSheet.create({
 
 const ChannelListItem = ({
     channel, currentUserId, hasDraft,
-    isActive, isInfo, isMuted, membersCount,
-    myChannel, onPress, teamDisplayName, testID}: Props) => {
+    isActive, isInfo, isMuted, membersCount, hasMember,
+    isUnread, mentionsCount, onPress, teamDisplayName, testID}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
 
     // Make it brighter if it's not muted, and highlighted or has unreads
-    const isBright = myChannel && (myChannel.isUnread || myChannel.mentionsCount > 0);
+    const isBright = isUnread || mentionsCount > 0;
 
     const height = useMemo(() => {
         let h = 40;
@@ -133,27 +134,27 @@ const ChannelListItem = ({
     }, [teamDisplayName, isInfo, isTablet]);
 
     const handleOnPress = useCallback(() => {
-        onPress(myChannel?.id || channel.id);
-    }, [channel.id, myChannel?.id]);
+        onPress(channel.id);
+    }, [channel.id]);
 
     const textStyles = useMemo(() => [
         isBright ? textStyle.bright : textStyle.regular,
         styles.text,
         isBright && styles.highlight,
         isMuted && styles.muted,
-        isActive && !isInfo ? styles.textActive : null,
+        isActive && isTablet && !isInfo ? styles.textActive : null,
         isInfo ? styles.textInfo : null,
-    ], [isBright, styles, isMuted, isActive, isInfo]);
+    ], [isBright, styles, isMuted, isActive, isInfo, isTablet]);
 
     const containerStyle = useMemo(() => [
         styles.container,
-        isActive && !isInfo && styles.activeItem,
+        isActive && isTablet && !isInfo && styles.activeItem,
         isInfo && styles.infoItem,
         {minHeight: height},
     ],
-    [height, isActive, isInfo, styles]);
+    [height, isActive, isTablet, isInfo, styles]);
 
-    if (!myChannel) {
+    if (!hasMember) {
         return null;
     }
 
@@ -175,7 +176,7 @@ const ChannelListItem = ({
                     <View style={styles.wrapper}>
                         <ChannelIcon
                             hasDraft={hasDraft}
-                            isActive={isInfo ? false : isActive}
+                            isActive={isInfo ? false : isTablet && isActive}
                             isInfo={isInfo}
                             isUnread={isBright}
                             isArchived={channel.deleteAt > 0}
@@ -196,14 +197,14 @@ const ChannelListItem = ({
                                 {displayName}
                             </Text>
                             {isInfo && Boolean(teamDisplayName) && !isTablet &&
-                                <Text
-                                    ellipsizeMode='tail'
-                                    numberOfLines={1}
-                                    testID={`${testID}.${teamDisplayName}.display_name`}
-                                    style={styles.teamName}
-                                >
-                                    {teamDisplayName}
-                                </Text>
+                            <Text
+                                ellipsizeMode='tail'
+                                numberOfLines={1}
+                                testID={`${testID}.${teamDisplayName}.display_name`}
+                                style={styles.teamName}
+                            >
+                                {teamDisplayName}
+                            </Text>
                             }
                         </View>
                         {Boolean(teammateId) &&
@@ -224,8 +225,8 @@ const ChannelListItem = ({
                         }
                     </View>
                     <Badge
-                        visible={myChannel.mentionsCount > 0}
-                        value={myChannel.mentionsCount}
+                        visible={mentionsCount > 0}
+                        value={mentionsCount}
                         style={[styles.badge, isMuted && styles.mutedBadge, isInfo && styles.infoBadge]}
                     />
                 </View>

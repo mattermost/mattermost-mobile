@@ -131,10 +131,13 @@ Navigation.setDefaultOptions({
             fontSize: 18,
             fontWeight: '600',
         },
+        backButton: {
+            enableMenu: false,
+        },
         subtitle: {
             fontFamily: 'OpenSans',
             fontSize: 12,
-            fontWeight: '500',
+            fontWeight: '400',
         },
     },
 });
@@ -685,3 +688,24 @@ export const showAppForm = async (form: AppForm, call: AppCallRequest) => {
     const passProps = {form, call};
     showModal(Screens.APP_FORM, form.title || '', passProps);
 };
+
+export async function findChannels(title: string, theme: Theme) {
+    const options: Options = {modal: {swipeToDismiss: false}};
+    const closeButtonId = 'close-find-channels';
+    const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
+    options.topBar = {
+        leftButtons: [{
+            id: closeButtonId,
+            icon: closeButton,
+            testID: closeButtonId,
+        }],
+    };
+
+    DeviceEventEmitter.emit(Events.PAUSE_KEYBOARD_TRACKING_VIEW, true);
+    showModal(
+        Screens.FIND_CHANNELS,
+        title,
+        {closeButtonId},
+        options,
+    );
+}
