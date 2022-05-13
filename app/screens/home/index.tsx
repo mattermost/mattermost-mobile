@@ -32,6 +32,7 @@ if (Platform.OS === 'ios') {
 enableFreeze(true);
 
 type HomeProps = LaunchProps & {
+    componentId: string;
     time?: number;
 };
 

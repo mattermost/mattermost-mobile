@@ -17,6 +17,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
+    autoFocus?: boolean;
     buttonDisabled: boolean;
     connecting: boolean;
     displayName?: string;
@@ -71,6 +72,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const ServerForm = ({
+    autoFocus = false,
     buttonDisabled,
     connecting,
     displayName = '',
@@ -163,6 +165,7 @@ const ServerForm = ({
                 <FloatingTextInput
                     autoCorrect={false}
                     autoCapitalize={'none'}
+                    autoFocus={autoFocus}
                     blurOnSubmit={false}
                     containerStyle={styles.enterServer}
                     enablesReturnKeyAutomatically={true}

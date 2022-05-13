@@ -197,9 +197,9 @@ const ServerItem = ({
         viewRef.current?.measureInWindow((x, y, w, h) => {
             const bounds: TutorialItemBounds = {
                 startX: x - 20,
-                startY: y - 5,
+                startY: y,
                 endX: x + w + 20,
-                endY: y + h + 5,
+                endY: y + h,
             };
             setShowTutorial(true);
             setItemBounds(bounds);
@@ -343,7 +343,7 @@ const ServerItem = ({
     useEffect(() => {
         let time: NodeJS.Timeout;
         if (highlight && !tutorialWatched) {
-            time = setTimeout(startTutorial, 300);
+            time = setTimeout(startTutorial, 650);
         }
         return () => clearTimeout(time);
     }, [highlight, tutorialWatched]);

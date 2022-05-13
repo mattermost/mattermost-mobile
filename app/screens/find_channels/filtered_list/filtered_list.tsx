@@ -274,7 +274,7 @@ const FilteredList = ({
     });
 
     useEffect(() => {
-        bounce.current = debounce(search, 250);
+        bounce.current = debounce(search, 500);
         bounce.current();
         return () => {
             if (bounce.current) {
