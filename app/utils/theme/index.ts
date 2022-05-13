@@ -218,8 +218,8 @@ const themeTypeMap: ThemeTypeMap = {
 };
 
 // setThemeDefaults will set defaults on the theme for any unset properties.
-export function setThemeDefaults(theme: Theme): Theme {
-    const themes = Preferences.THEMES as Record<ThemeKey, Theme>;
+export function setThemeDefaults(theme: ExtendedTheme): Theme {
+    const themes = Preferences.THEMES as Record<ThemeKey, ExtendedTheme>;
     const defaultTheme = themes.denim;
 
     const processedTheme = {...theme};

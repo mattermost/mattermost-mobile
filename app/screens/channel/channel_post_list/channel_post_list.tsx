@@ -54,7 +54,12 @@ const ChannelPostList = ({
         }
     }, 500), [channelId, posts]);
 
-    const intro = <Intro channelId={channelId}/>;
+    const intro = (
+        <Intro
+            channelId={channelId}
+            hasPosts={posts.length > 0}
+        />
+    );
 
     const postList = (
         <PostList

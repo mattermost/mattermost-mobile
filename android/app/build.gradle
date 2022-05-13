@@ -288,7 +288,6 @@ dependencies {
     implementation "com.facebook.react:react-native:+"  // From node_modules
 
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'
-    implementation project(':lottie-react-native')
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
 

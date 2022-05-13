@@ -38,7 +38,7 @@ type Props = {
 }
 
 const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeAreaView);
-const edges: Edge[] = ['left', 'right'];
+const edges: Edge[] = ['left', 'right', 'bottom'];
 const styles = StyleSheet.create({
     container: {
         alignItems: 'center',

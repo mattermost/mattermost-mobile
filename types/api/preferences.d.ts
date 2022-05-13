@@ -10,7 +10,6 @@ type ThemeKey = 'denim' | 'sapphire' | 'quartz' | 'indigo' | 'onyx' | 'custom';
 type ThemeType = 'Denim' | 'Sapphire' | 'Quartz' | 'Indigo' | 'Onyx' | 'custom';
 
 type Theme = {
-    [key: string]: string | undefined;
     type?: ThemeType | LegacyThemeType;
     sidebarBg: string;
     sidebarText: string;
@@ -37,5 +36,7 @@ type Theme = {
     mentionHighlightLink: string;
     codeTheme: string;
 };
+
+type ExtendedTheme = Theme & {[key: string]: string | undefined};
 
 type ThemeTypeMap = Record<ThemeType | LegacyThemeType, ThemeKey>;

@@ -32,11 +32,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center' as const,
             alignItems: 'center' as const,
         },
-        loading: {
-            height: 32,
-            width: 32,
-            justifyContent: 'center' as const,
-        },
         listContainer: {
             paddingHorizontal: 20,
             flexGrow: 1,
@@ -87,9 +82,9 @@ export default function ChannelList({
 
         return (
             <Loading
-                containerStyle={style.loadingContainer}
-                style={style.loading}
                 color={theme.buttonBg}
+                containerStyle={style.loadingContainer}
+                size='large'
             />
         );
 

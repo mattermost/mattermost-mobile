@@ -224,8 +224,8 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
         }
 
         return {
-            top: withTiming(toValue, {duration: 250, easing: Easing.linear}),
-            fontSize: withTiming(toSize, {duration: 250, easing: Easing.linear}),
+            top: withTiming(toValue, {duration: 100, easing: Easing.linear}),
+            fontSize: withTiming(toSize, {duration: 100, easing: Easing.linear}),
             backgroundColor: focusedLabel || inputText ? theme.centerChannelBg : 'transparent',
             paddingHorizontal: focusedLabel || inputText ? 4 : 0,
             color,
