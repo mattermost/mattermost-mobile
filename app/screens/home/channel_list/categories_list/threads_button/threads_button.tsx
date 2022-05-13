@@ -37,13 +37,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 type Props = {
     currentChannelId: string;
+    onlyUnreads: boolean;
     unreadsAndMentions: {
         unreads: number;
         mentions: number;
     };
 };
 
-const ThreadsButton = ({currentChannelId, unreadsAndMentions}: Props) => {
+const ThreadsButton = ({currentChannelId, onlyUnreads, unreadsAndMentions}: Props) => {
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
 
@@ -79,6 +80,10 @@ const ThreadsButton = ({currentChannelId, unreadsAndMentions}: Props) => {
 
         return [container, icon, text];
     }, [customStyles, isActive, styles, unreads]);
+
+    if (onlyUnreads && !unreads && !mentions) {
+        return null;
+    }
 
     return (
         <TouchableOpacity

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Threads Component should match snapshot 1`] = `
+exports[`Thread item in the channel list Threads Component should match snapshot 1`] = `
 <View
   accessible={true}
   collapsable={false}
@@ -80,3 +80,5 @@ exports[`Threads Component should match snapshot 1`] = `
   </View>
 </View>
 `;
+
+exports[`Thread item in the channel list Threads Component should match snapshot with only unreads filter 1`] = `null`;
