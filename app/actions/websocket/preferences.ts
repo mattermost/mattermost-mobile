@@ -26,7 +26,7 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
             });
         }
 
-        const shouldUpdate = await hasDisplayNamePrefChanged(serverUrl, [preference]);
+        const shouldUpdate = await differsFromLocalNameFormat(serverUrl, [preference]);
         if (shouldUpdate) {
             updateDmGmDisplayName(serverUrl);
         }
@@ -51,7 +51,7 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
             });
         }
 
-        const shouldUpdate = await hasDisplayNamePrefChanged(serverUrl, preferences);
+        const shouldUpdate = await differsFromLocalNameFormat(serverUrl, preferences);
         if (shouldUpdate) {
             updateDmGmDisplayName(serverUrl);
         }
@@ -90,7 +90,7 @@ async function handleSavePostAdded(serverUrl: string, preferences: PreferenceTyp
     }
 }
 
-const hasDisplayNamePrefChanged = async (serverUrl: string, preferences: PreferenceType[]) => {
+const differsFromLocalNameFormat = async (serverUrl: string, preferences: PreferenceType[]) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return false;
