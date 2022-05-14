@@ -96,9 +96,10 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
                 "paddingHorizontal": 12,
               },
               false,
+              null,
+              null,
               false,
-              null,
-              null,
+              false,
             ]
           }
           testID="channel_list_item.hello.display_name"
@@ -207,9 +208,10 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
                 "paddingHorizontal": 12,
               },
               false,
+              null,
+              null,
               false,
-              null,
-              null,
+              false,
             ]
           }
           testID="channel_list_item.hello.display_name"

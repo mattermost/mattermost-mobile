@@ -72,7 +72,7 @@ const ThreadsButton = ({currentChannelId, onlyUnreads, unreadsAndMentions}: Prop
 
         const text = [
             customStyles.text,
-            unreads ? channelItemTextStyle.bright : channelItemTextStyle.regular,
+            unreads ? channelItemTextStyle.bold : channelItemTextStyle.regular,
             styles.text,
             unreads ? styles.highlight : undefined,
             isActive ? styles.textActive : undefined,
