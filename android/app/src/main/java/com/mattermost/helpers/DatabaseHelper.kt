@@ -3,6 +3,7 @@ package com.mattermost.helpers
 import android.content.Context
 import android.net.Uri
 import android.text.TextUtils
+import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.NoSuchKeyException
 import com.facebook.react.bridge.ReadableArray
@@ -210,6 +211,30 @@ class DatabaseHelper {
         }
     }
 
+    fun handleThreads(db: Database, threads: ReadableArray) {
+        for (i in 0 until threads.size()) {
+            val thread = threads.getMap(i)
+            val threadId = thread.getString("id")
+
+            // Insert/Update the thread
+            val existingRecord = find(db, "Thread", threadId)
+            if (existingRecord == null) {
+                insertThread(db, thread)
+            } else {
+                updateThread(db, thread, existingRecord)
+            }
+
+            // Delete existing and insert thread participants
+            val participants = thread.getArray("participants")
+            if (participants != null) {
+                db.execute("delete from ThreadParticipant where thread_id = ?", arrayOf(threadId))
+                if (participants.size() > 0) {
+                    insertThreadParticipants(db, threadId!!, participants)
+                }
+            }
+        }
+    }
+
     fun handleUsers(db: Database, users: ReadableArray) {
         for (i in 0 until users.size()) {
             val user = users.getMap(i)
@@ -357,6 +382,67 @@ class DatabaseHelper {
 
         if (customEmojis != null && customEmojis.length() > 0) {
             insertCustomEmojis(db, customEmojis)
+        }
+    }
+
+    private fun insertThread(db: Database, thread: ReadableMap) {
+        // These fields are not present when we extract threads from posts
+        val isFollowing = try { thread.getBoolean("is_following") } catch (e: NoSuchKeyException) { false };
+        val lastViewedAt = try { thread.getDouble("last_viewed_at") } catch (e: NoSuchKeyException) { 0 };
+        val unreadReplies = try { thread.getInt("unread_replies") } catch (e: NoSuchKeyException) { 0 };
+        val unreadMentions = try { thread.getInt("unread_mentions") } catch (e: NoSuchKeyException) { 0 };
+
+        Log.d("enya", isFollowing.toString())
+
+        db.execute(
+                "insert into Thread " +
+                        "(id, last_reply_at, last_viewed_at, reply_count, is_following, unread_replies, unread_mentions, _status)" +
+                        " values (?, ?, ?, ?, ?, ?, ?, 'created')",
+                arrayOf(
+                        thread.getString("id"),
+                        thread.getDouble("last_reply_at"),
+                        lastViewedAt,
+                        thread.getInt("reply_count") ?: 0,
+                        isFollowing,
+                        unreadReplies,
+                        unreadMentions
+                )
+        )
+    }
+
+    private fun updateThread(db: Database, thread: ReadableMap, existingRecord: ReadableMap) {
+        // These fields are not present when we extract threads from posts
+        val isFollowing = try { thread.getBoolean("is_following") } catch (e: NoSuchKeyException) { existingRecord.getInt("is_following") == 1 };
+        val lastViewedAt = try { thread.getDouble("last_viewed_at") } catch (e: NoSuchKeyException) { existingRecord.getDouble("last_viewed_at") };
+        val unreadReplies = try { thread.getInt("unread_replies") } catch (e: NoSuchKeyException) { existingRecord.getInt("unread_replies") };
+        val unreadMentions = try { thread.getInt("unread_mentions") } catch (e: NoSuchKeyException) { existingRecord.getInt("unread_mentions") };
+
+        db.execute(
+                "update Thread SET last_reply_at = ?, last_viewed_at = ?, reply_count = ?, is_following = ?, unread_replies = ?, unread_mentions = ?, _status = 'updated' where id = ?",
+                arrayOf(
+                        thread.getDouble("last_reply_at"),
+                        lastViewedAt,
+                        thread.getInt("reply_count"),
+                        isFollowing,
+                        unreadReplies,
+                        unreadMentions,
+                        thread.getString("id")
+                )
+        )
+    }
+
+    private fun insertThreadParticipants(db: Database, threadId: String, participants: ReadableArray) {
+        for (i in 0 until participants.size()) {
+            val participant = participants.getMap(i)
+            db.execute(
+                    "insert into ThreadParticipant " +
+                            "(thread_id, user_id, _status)" +
+                            " values (?, ?, 'created')",
+                    arrayOf(
+                            threadId,
+                            participant.getString("id")
+                    )
+            )
         }
     }
 
