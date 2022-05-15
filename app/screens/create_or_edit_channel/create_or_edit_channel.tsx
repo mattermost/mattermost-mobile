@@ -75,7 +75,7 @@ const CreateOrEditChannel = ({
 
     const editing = Boolean(channel);
 
-    const [type, setType] = useState<ChannelType>(channel?.type as ChannelType || General.OPEN_CHANNEL);
+    const [type, setType] = useState<ChannelType>(channel?.type || General.OPEN_CHANNEL);
     const [canSave, setCanSave] = useState(false);
 
     const [displayName, setDisplayName] = useState<string>(channel?.displayName || '');

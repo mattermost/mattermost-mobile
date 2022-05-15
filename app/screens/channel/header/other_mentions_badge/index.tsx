@@ -17,6 +17,9 @@ type Props = {
 }
 
 const styles = StyleSheet.create({
+    container: {
+        minWidth: 24,
+    },
     badge: {
         left: 2,
         position: 'relative',
@@ -91,7 +94,7 @@ const OtherMentionsBadge = ({channelId}: Props) => {
     }, []);
 
     return (
-        <View>
+        <View style={styles.container}>
             <Badge
                 type='Small'
                 visible={count > 0}

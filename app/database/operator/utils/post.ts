@@ -43,7 +43,7 @@ export const createPostsChain = ({order = [], posts, previousPostId = ''}: Chain
         result[p.id] = p;
         return result;
     }, {});
-    return order.reduce((result, id, index) => {
+    return order.reduce<Post[]>((result, id, index) => {
         const post = postsByIds[id];
 
         if (post) {
@@ -55,7 +55,7 @@ export const createPostsChain = ({order = [], posts, previousPostId = ''}: Chain
         }
 
         return result;
-    }, [] as Post[]).reverse();
+    }, []).reverse();
 };
 
 export const getPostListEdges = (posts: Post[]) => {

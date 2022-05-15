@@ -24,9 +24,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 20,
         marginHorizontal: 24,
     },
-    text: {
+    logoutText: {
         color: changeOpacity(theme.sidebarText, 0.64),
         ...typography('Body', 100, 'SemiBold'),
+    },
+    displayNameText: {
+        color: changeOpacity(theme.sidebarText, 0.64),
+        ...typography('Body', 100, 'SemiBold'),
+        flex: 1,
+    },
+    logoutContainer: {
+        marginLeft: 10,
+    },
+    displayNameContainer: {
+        flex: 1,
     },
 }));
 
@@ -53,8 +64,9 @@ function Header() {
 
     let serverLabel = (
         <Text
-            style={styles.text}
+            style={styles.displayNameText}
             testID='select_team.server_display_name'
+            numberOfLines={1}
         >
             {serverDisplayName}
         </Text>
@@ -65,6 +77,7 @@ function Header() {
                 onPress={onLabelPress}
                 type='opacity'
                 testID='select_team.server_display_name.touchable'
+                style={styles.displayNameContainer}
             >
                 {serverLabel}
             </TouchableWithFeedback>
@@ -80,9 +93,10 @@ function Header() {
                     onPress={onLogoutPress}
                     testID='select_team.logout.button'
                     type='opacity'
+                    style={styles.logoutContainer}
                 >
                     <Text
-                        style={styles.text}
+                        style={styles.logoutText}
                         testID='select_team.logout.text'
                     >
                         {intl.formatMessage({id: 'account.logout', defaultMessage: 'Log out'})}

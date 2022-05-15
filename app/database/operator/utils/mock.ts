@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export const mockedPosts = {
+export const mockedPosts: {order: string[]; posts: {[id: string]: Post}} = {
     order: [
         '8swgtrrdiff89jnsiwiip3y1eoe',
         '8fcnk3p1jt8mmkaprgajoxz115a',
@@ -19,7 +19,6 @@ export const mockedPosts = {
             user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
             channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
             root_id: 'ps81iqbesfby8jayz7owg4yypoo',
-            parent_id: 'ps81iqbddesfby8jayz7owg4yypoo',
             original_id: '',
             message: "I'll second these kudos!  Thanks m!",
             type: '',
@@ -40,7 +39,6 @@ export const mockedPosts = {
             user_id: 'hy5sq51sebfh58ktrce5ijtcwyy',
             channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
             root_id: '',
-            parent_id: '',
             original_id: '',
             message: 'a added to the channel by j.',
             type: 'system_add_to_channel',
@@ -66,7 +64,6 @@ export const mockedPosts = {
             user_id: '44ud4m9tqwby3mphzzdwm7h31sr',
             channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
             root_id: 'ps81iqbewesfby8jayz7owg4yypo',
-            parent_id: 'ps81iqbwesfby8jayz7owg4yypo',
             original_id: '',
             message: 'Great work M!',
             type: '',
@@ -87,7 +84,6 @@ export const mockedPosts = {
             user_id: 'opihgdf9nby385mnxj7a5jpfsy3e',
             channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
             root_id: '',
-            parent_id: '',
             original_id: '',
             message: 'eannel.',
             type: 'system_join_channel',
@@ -110,14 +106,12 @@ export const mockedPosts = {
             user_id: '1zkzkhh357b4bdfejephjz5u8daw',
             channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
             root_id: 'a7ebyw883sdftrm884p1qcgt8yw4a',
-            parent_id: 'a7ebyw8q83trm884p1qcgt8yw4a',
             original_id: '',
             message: 'Oh off fixed',
             type: '',
             props: {},
             hashtags: '',
             pending_post_id: '',
-            has_reactions: true,
             reply_count: 7,
             last_reply_at: 0,
             metadata: {
@@ -127,16 +121,12 @@ export const mockedPosts = {
                         post_id: '4r9jmr7eqt8dxq3f9woypzurry',
                         emoji_name: 'thumbsup',
                         create_at: 1608253011321,
-                        update_at: 1608253011321,
-                        delete_at: 0,
                     },
                     {
                         user_id: 'dbjk4taox3fn5mxnua7fc5zo6c',
                         post_id: '4r9jmr7eqt8dxq3f9woypzurry',
                         emoji_name: 'thumbsup',
                         create_at: 1608253070704,
-                        update_at: 1608253070704,
-                        delete_at: 0,
                     },
                 ],
             },
@@ -151,7 +141,6 @@ export const mockedPosts = {
             user_id: '1zkzkhhk357b4bejephjz5u8daw',
             channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
             root_id: 'a7ebyw8f83trm884p1qcgt8yw4a',
-            parent_id: 'a7ebyw883trm884p1qcgt8yw4a',
             original_id: '',
             message: 'There are many  ',
             type: '',

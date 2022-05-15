@@ -6,7 +6,7 @@ import DatabaseManager from '@database/manager';
 
 export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     try {
-        const thread = JSON.parse(msg.data.thread) as Thread;
+        const thread: Thread = JSON.parse(msg.data.thread);
         const teamId = msg.broadcast.team_id;
 
         // Mark it as following
@@ -17,7 +17,7 @@ export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocket
     }
 }
 
-export async function handleThreadReadChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
+export async function handleThreadReadChangedEvent(serverUrl: string, msg: WebSocketMessage<ThreadReadChangedData>): Promise<void> {
     const operator = DatabaseManager.serverDatabases[serverUrl].operator;
     if (!operator) {
         return;
@@ -25,7 +25,7 @@ export async function handleThreadReadChangedEvent(serverUrl: string, msg: WebSo
 
     try {
         if (operator) {
-            const {thread_id, timestamp, unread_mentions, unread_replies} = msg.data as ThreadReadChangedData;
+            const {thread_id, timestamp, unread_mentions, unread_replies} = msg.data;
             if (thread_id) {
                 await updateThread(serverUrl, thread_id, {
                     last_viewed_at: timestamp,

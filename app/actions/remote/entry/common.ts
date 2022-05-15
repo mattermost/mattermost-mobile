@@ -36,7 +36,7 @@ export type AppEntryData = {
 }
 
 export type AppEntryError = {
-    error?: Error | ClientError | string;
+    error: Error | ClientError | string;
 }
 
 export const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[]) => {

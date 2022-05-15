@@ -4,7 +4,7 @@
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Text, FlatList, View, Platform} from 'react-native';
+import {Text, FlatList, View, Platform, ListRenderItemInfo} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -89,6 +89,15 @@ const SearchScreen = () => {
         'Search Screen 5',
     ];
 
+    const renderItem = ({item, index}: ListRenderItemInfo<string>) => {
+        const height = index === data.length - 1 ? undefined : 400;
+        return (
+            <View style={{flex: 1, alignItems: 'center'}}>
+                <Text style={{fontSize: 20, color: theme.centerChannelColor, height}}>{item}</Text>
+            </View>
+        );
+    };
+
     return (
         <FreezeScreen freeze={!isFocused}>
             <NavigationHeader
@@ -131,14 +140,7 @@ const SearchScreen = () => {
                         onScroll={onScroll}
                         scrollEventThrottle={16}
                         ref={scrollRef}
-                        renderItem={({item, index}) => {
-                            const height = index === data.length - 1 ? undefined : 400;
-                            return (
-                                <View style={{flex: 1, alignItems: 'center'}}>
-                                    <Text style={{fontSize: 20, color: theme.centerChannelColor, height}}>{item as string}</Text>
-                                </View>
-                            );
-                        }}
+                        renderItem={renderItem}
                     />
                 </Animated.View>
             </SafeAreaView>

@@ -7,10 +7,10 @@ import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import PostModel from '@typings/database/models/servers/post';
 
 import {queryPreferencesByCategoryAndName} from './preference';
 
-import type PostModel from '@typings/database/models/servers/post';
 import type PostInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 
@@ -35,6 +35,24 @@ export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
         const models = await children?.fetch();
         models?.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
     }));
+
+    // If thread exists, delete thread, participants and threadsInTeam
+    try {
+        const thread = await post.thread.fetch();
+        if (thread) {
+            const participants = await thread.participants.fetch();
+            if (participants.length) {
+                preparedModels.push(...participants.map((p) => p.prepareDestroyPermanently()));
+            }
+            const threadsInTeam = await thread.threadsInTeam.fetch();
+            if (threadsInTeam.length) {
+                preparedModels.push(...threadsInTeam.map((t) => t.prepareDestroyPermanently()));
+            }
+            preparedModels.push(thread.prepareDestroyPermanently());
+        }
+    } catch {
+        // Thread not found, do nothing
+    }
 
     return preparedModels;
 };
@@ -83,12 +101,12 @@ export const queryPostsInThread = (database: Database, rootId: string, sorted = 
     return database.get<PostsInThreadModel>(POSTS_IN_THREAD).query(...clauses);
 };
 
-export const queryPostRepliesCount = (database: Database, rootId: string, excludeDeleted = true) => {
+export const queryPostReplies = (database: Database, rootId: string, excludeDeleted = true) => {
     const clauses: Q.Clause[] = [Q.where('root_id', rootId)];
     if (excludeDeleted) {
         clauses.push(Q.where('delete_at', Q.eq(0)));
     }
-    return database.get(POST).query(...clauses);
+    return database.get<PostModel>(POST).query(...clauses);
 };
 
 export const getRecentPostsInThread = async (database: Database, rootId: string) => {

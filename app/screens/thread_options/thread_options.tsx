@@ -41,6 +41,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         listHeaderText: {
             color: changeOpacity(theme.centerChannelColor, 0.56),
+            textTransform: 'uppercase',
             ...typography('Body', 75, 'SemiBold'),
         },
     };
@@ -118,7 +119,7 @@ const ThreadOptions = ({
                 <View style={style.listHeader}>
                     <FormattedText
                         id='global_threads.options.title'
-                        defaultMessage={'THREAD ACTIONS'}
+                        defaultMessage={'Thread actions'}
                         style={style.listHeaderText}
                     />
                 </View>

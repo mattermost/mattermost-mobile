@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
 });
 
 const MessageAttachments = ({attachments, layoutWidth, location, metadata, postId, theme}: Props) => {
-    const content = [] as React.ReactNode[];
+    const content: React.ReactNode[] = [];
 
     attachments.forEach((attachment, i) => {
         content.push(

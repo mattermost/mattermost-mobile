@@ -158,7 +158,7 @@ const ProgressiveImage = ({
                 source={{uri: thumbnailUri}}
                 style={[
                     thumbnailUri ? StyleSheet.absoluteFill : {tintColor: theme.centerChannelColor},
-                    (imageStyle as StyleProp<ImageStyle>),
+                    imageStyle,
                 ]}
             />
             {image}
