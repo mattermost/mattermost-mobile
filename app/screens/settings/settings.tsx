@@ -7,11 +7,11 @@ import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
-import MenuItem from '@components/menu_item';
 import {useTheme} from '@context/theme';
-import {t} from '@i18n';
 import {dismissModal, setButtons} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import SettingOption from './setting_option';
 
 const edges: Edge[] = ['left', 'right'];
 const CLOSE_BUTTON_ID = 'close-settings';
@@ -41,8 +41,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderColor: changeOpacity(theme.centerChannelColor, 0.1),
             height: 35,
         },
-        form: {
+        group: {
             backgroundColor: theme.centerChannelBg,
+        },
+        innerContainerStyle: {
+            paddingLeft: 16,
+        },
+        menuLabel: {
+            color: theme.centerChannelColor,
+            fontSize: 16,
+            lineHeight: 24,
+            fontFamily: 'OpenSans',
         },
     };
 });
@@ -102,11 +111,8 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
 
     const goToNotifications = () => null;
 
-    let showArrow = false;
-
     let middleDividerStyle = styles.divider;
     if (Platform.OS === 'ios') {
-        showArrow = true;
         middleDividerStyle = styles.middleDivider;
     }
 
@@ -122,66 +128,35 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
             >
                 <View style={styles.divider}/>
                 <View
-                    style={styles.form}
+                    style={styles.group}
                 >
-                    <MenuItem
-                        defaultMessage='Notifications'
-                        i18nId={t('user.settings.modal.notifications')}
-                        iconName='bell-outline'
+                    <SettingOption
+                        type='notification'
                         onPress={goToNotifications}
-                        separator={true}
-                        showArrow={showArrow}
-                        testID='general_settings.notifications.action'
-                        theme={theme}
                     />
-                    <MenuItem
-                        defaultMessage='Display'
-                        i18nId={t('user.settings.modal.display')}
-                        iconName='layers-outline'
+                    <SettingOption
+                        type='display'
                         onPress={goToNotifications}
-                        separator={true}
-                        showArrow={showArrow}
-                        testID='general_settings.display.action'
-                        theme={theme}
                     />
-                    <MenuItem
-                        defaultMessage='Advanced Settings'
-                        i18nId={t('mobile.advanced_settings.title')}
-                        iconName='tune'
+                    <SettingOption
+                        type='advanced_settings'
                         onPress={goToNotifications}
-                        separator={true}
-                        showArrow={showArrow}
-                        testID='general_settings.advanced.action'
-                        theme={theme}
                     />
-                    <MenuItem
-                        defaultMessage='About {appTitle}'
-                        i18nId={t('about.title')}
-                        iconName='information-outline'
+                    <SettingOption
+                        type='about'
+                        onPress={goToNotifications}
                         messageValues={{appTitle: siteName}}
-                        onPress={goToNotifications}
-                        separator={false}
-                        showArrow={showArrow}
-                        testID='general_settings.about.action'
-                        theme={theme}
                     />
                 </View>
                 <View style={middleDividerStyle}/>
                 <View
-                    style={[styles.form]}
+                    style={styles.group}
                 >
-                    {true &&
-                    <MenuItem
-                        defaultMessage='Help'
-                        i18nId={t('mobile.help.title')}
+                    {showHelp &&
+                    <SettingOption
+                        type='help'
                         onPress={goToNotifications}
-                        separator={true}
-                        showArrow={false}
-                        testID='general_settings.help.action'
-                        theme={theme}
-                        innerContainerStyle={{paddingLeft: 16}}
-
-                        // isLink={true}
+                        isLink={true}
                     />
                     }
                 </View>

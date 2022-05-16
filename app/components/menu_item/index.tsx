@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {ReactNode} from 'react';
-import {Platform, StyleProp, View, ViewStyle} from 'react-native';
+import {Platform, StyleProp, TextStyle, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -11,7 +11,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export const ITEM_HEIGHT = 50;
 
-type MenuItemProps = {
+export type MenuItemProps = {
     centered?: boolean;
     defaultMessage?: string;
     i18nId?: string;
@@ -27,6 +27,8 @@ type MenuItemProps = {
     showArrow?: boolean;
     testID: string;
     theme: Theme;
+    labelStyle?: StyleProp<TextStyle>;
+    isLink?: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -69,6 +71,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignSelf: 'center',
             color: changeOpacity(theme.centerChannelColor, 0.64),
             fontSize: 24,
+            marginRight: 8,
+        },
+        linkContainer: {
+            marginHorizontal: 15,
+            color: theme.linkColor,
         },
     };
 });
@@ -80,16 +87,18 @@ const MenuItem = (props: MenuItemProps) => {
         i18nId,
         iconContainerStyle,
         iconName,
+        innerContainerStyle,
         isDestructor = false,
+        isLink = false,
         labelComponent,
+        labelStyle,
         leftComponent,
+        messageValues,
         onPress,
         separator = true,
+        showArrow = false,
         testID,
         theme,
-        showArrow = false,
-        innerContainerStyle,
-        messageValues,
     } = props;
 
     const style = getStyleSheet(theme);
@@ -121,8 +130,10 @@ const MenuItem = (props: MenuItemProps) => {
                 defaultMessage={defaultMessage}
                 style={[
                     style.label,
+                    labelStyle,
                     destructor,
                     centered ? style.centerLabel : {},
+                    isLink && style.linkContainer,
                 ]}
                 values={messageValues}
             />
