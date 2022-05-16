@@ -16,34 +16,41 @@ import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         row: {
+            height: 40,
             paddingVertical: 8,
+            paddingTop: 4,
+            paddingHorizontal: 16,
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: theme.centerChannelBg,
         },
         rowPicture: {
-            marginHorizontal: 8,
-            width: 20,
+            marginRight: 10,
+            marginLeft: 2,
+            width: 24,
             alignItems: 'center',
             justifyContent: 'center',
         },
         rowIcon: {
             color: changeOpacity(theme.centerChannelColor, 0.7),
-            fontSize: 14,
+            fontSize: 18,
+        },
+        rowInfo: {
+            flexDirection: 'row',
+            overflow: 'hidden',
+            maxWidth: '80%',
+            paddingLeft: 3,
         },
         rowUsername: {
-            fontSize: 13,
-            color: theme.centerChannelColor,
+            color: changeOpacity(theme.centerChannelColor, 0.56),
+            fontSize: 15,
+            fontFamily: 'OpenSans',
+            flexShrink: 5,
         },
         rowFullname: {
-            color: theme.centerChannelColor,
-            flex: 1,
-            opacity: 0.6,
-        },
-        textWrapper: {
-            flex: 1,
-            flexWrap: 'wrap',
-            paddingRight: 8,
+            fontSize: 15,
+            color: changeOpacity(theme.centerChannelColor, 0.7),
+            fontFamily: 'OpenSans',
+            flexShrink: 1,
         },
     };
 });
@@ -81,8 +88,12 @@ const GroupMentionItem = ({
                     style={style.rowIcon}
                 />
             </View>
-            <Text style={style.rowUsername}>{`@${completeHandle} - `}</Text>
-            <Text style={style.rowFullname}>{`${completeHandle}`}</Text>
+            <View
+                style={style.rowInfo}
+            >
+                <Text style={style.rowUsername}>{`@${completeHandle} - `}</Text>
+                <Text style={style.rowFullname}>{`${completeHandle}`}</Text>
+            </View>
         </TouchableWithFeedback>
     );
 };
