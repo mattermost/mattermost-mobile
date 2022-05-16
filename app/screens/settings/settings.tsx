@@ -156,6 +156,7 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
                         type='about'
                         onPress={goToAbout}
                         messageValues={{appTitle: siteName}}
+                        separator={Platform.OS === 'ios'}
                     />
                 </View>
                 <View style={middleDividerStyle}/>
