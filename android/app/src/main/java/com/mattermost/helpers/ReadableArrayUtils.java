@@ -93,7 +93,7 @@ public class ReadableArrayUtils {
         return array;
     }
 
-    public static WritableArray  toWritableArray(Object[] array) {
+    public static WritableArray toWritableArray(Object[] array) {
         WritableArray writableArray = Arguments.createArray();
 
         for (Object value : array) {

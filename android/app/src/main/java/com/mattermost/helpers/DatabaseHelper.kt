@@ -3,7 +3,6 @@ package com.mattermost.helpers
 import android.content.Context
 import android.net.Uri
 import android.text.TextUtils
-import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.NoSuchKeyException
 import com.facebook.react.bridge.ReadableArray
@@ -228,6 +227,7 @@ class DatabaseHelper {
             val participants = thread.getArray("participants")
             if (participants != null) {
                 db.execute("delete from ThreadParticipant where thread_id = ?", arrayOf(threadId))
+
                 if (participants.size() > 0) {
                     insertThreadParticipants(db, threadId!!, participants)
                 }
@@ -245,6 +245,8 @@ class DatabaseHelper {
                 false
             }
 
+            val lastPictureUpdate = try { user.getDouble("last_picture_update") } catch (e: NoSuchKeyException) { 0 }
+
 
             db.execute(
                     "insert into User (id, auth_service, update_at, delete_at, email, first_name, is_bot, is_guest, " +
@@ -260,7 +262,7 @@ class DatabaseHelper {
                             isBot,
                             roles.contains("system_guest"),
                             user.getString("last_name"),
-                            user.getDouble("last_picture_update"),
+                            lastPictureUpdate,
                             user.getString("locale"),
                             user.getString("nickname"),
                             user.getString("position"),
@@ -392,8 +394,6 @@ class DatabaseHelper {
         val unreadReplies = try { thread.getInt("unread_replies") } catch (e: NoSuchKeyException) { 0 };
         val unreadMentions = try { thread.getInt("unread_mentions") } catch (e: NoSuchKeyException) { 0 };
 
-        Log.d("enya", isFollowing.toString())
-
         db.execute(
                 "insert into Thread " +
                         "(id, last_reply_at, last_viewed_at, reply_count, is_following, unread_replies, unread_mentions, _status)" +
@@ -434,11 +434,13 @@ class DatabaseHelper {
     private fun insertThreadParticipants(db: Database, threadId: String, participants: ReadableArray) {
         for (i in 0 until participants.size()) {
             val participant = participants.getMap(i)
+            val id = threadId + participant.getString("id")
             db.execute(
                     "insert into ThreadParticipant " +
-                            "(thread_id, user_id, _status)" +
-                            " values (?, ?, 'created')",
+                            "(id, thread_id, user_id, _status)" +
+                            " values (?, ?, ?, 'created')",
                     arrayOf(
+                            id,
                             threadId,
                             participant.getString("id")
                     )

@@ -2,7 +2,6 @@ package com.mattermost.helpers
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
@@ -150,18 +149,20 @@ class PushNotificationDataRunnable {
                                 }
 
                                 // Add participant userIds and usernames to exclude them from fetching again
-                                val participants = post?.getArray("participants")
+                                val participants = post.getArray("participants")
                                 if (participants != null) {
                                     for (i in 0 until participants.size()) {
                                         val participant = participants.getMap(i)
 
                                         val userId = participant.getString("id")
-                                        if (userId != null && userId != currentUserId && !threadParticipantUserIds.contains(userId)) {
-                                            threadParticipantUserIds.add(userId)
-                                        }
+                                        if (userId != currentUserId) {
+                                            if (userId != null && !threadParticipantUserIds.contains(userId)) {
+                                                threadParticipantUserIds.add(userId)
+                                            }
 
-                                        if (!threadParticipantUsers.containsKey(userId)) {
-                                            threadParticipantUsers?.put(userId!!, participant)
+                                            if (!threadParticipantUsers.containsKey(userId)) {
+                                                threadParticipantUsers[userId!!] = participant
+                                            }
                                         }
 
                                         val username = participant.getString("username")
