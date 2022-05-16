@@ -2,14 +2,18 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo} from 'react';
+import {useIntl} from 'react-intl';
 import {BackHandler, Platform, ScrollView, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {dismissModal, setButtons} from '@screens/navigation';
+import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import SettingOption from './setting_option';
 
@@ -49,9 +53,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         menuLabel: {
             color: theme.centerChannelColor,
-            fontSize: 16,
-            lineHeight: 24,
-            fontFamily: 'OpenSans',
+            ...typography('Body', 200),
         },
     };
 });
@@ -66,6 +68,7 @@ type SettingsProps = {
 
 const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
     const theme = useTheme();
+    const intl = useIntl();
     const styles = getStyleSheet(theme);
 
     const closeButton = useMemo(() => {
@@ -109,7 +112,14 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
         };
     }, []);
 
-    const goToNotifications = () => null;
+    const onPressHandler = () => null;
+
+    const goToAbout = preventDoubleTap(() => {
+        const screen = Screens.ABOUT;
+        const title = intl.formatMessage({id: 'about.title', defaultMessage: 'About {appTitle}'}, {appTitle: siteName});
+
+        goToScreen(screen, title);
+    });
 
     let middleDividerStyle = styles.divider;
     if (Platform.OS === 'ios') {
@@ -132,19 +142,19 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
                 >
                     <SettingOption
                         type='notification'
-                        onPress={goToNotifications}
+                        onPress={onPressHandler}
                     />
                     <SettingOption
                         type='display'
-                        onPress={goToNotifications}
+                        onPress={onPressHandler}
                     />
                     <SettingOption
                         type='advanced_settings'
-                        onPress={goToNotifications}
+                        onPress={onPressHandler}
                     />
                     <SettingOption
                         type='about'
-                        onPress={goToNotifications}
+                        onPress={goToAbout}
                         messageValues={{appTitle: siteName}}
                     />
                 </View>
@@ -155,7 +165,7 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
                     {showHelp &&
                     <SettingOption
                         type='help'
-                        onPress={goToNotifications}
+                        onPress={onPressHandler}
                         isLink={true}
                     />
                     }
