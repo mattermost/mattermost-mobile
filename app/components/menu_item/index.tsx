@@ -17,14 +17,16 @@ type MenuItemProps = {
     i18nId?: string;
     iconContainerStyle?: StyleProp<ViewStyle>;
     iconName?: string;
+    innerContainerStyle?: StyleProp<ViewStyle>;
     isDestructor?: boolean;
     labelComponent?: ReactNode;
     leftComponent?: ReactNode;
+    messageValues?: Record<string, any>;
     onPress: () => void;
     separator?: boolean;
+    showArrow?: boolean;
     testID: string;
     theme: Theme;
-    showArrow?: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -86,6 +88,8 @@ const MenuItem = (props: MenuItemProps) => {
         testID,
         theme,
         showArrow = false,
+        innerContainerStyle,
+        messageValues,
     } = props;
 
     const style = getStyleSheet(theme);
@@ -120,6 +124,7 @@ const MenuItem = (props: MenuItemProps) => {
                     destructor,
                     centered ? style.centerLabel : {},
                 ]}
+                values={messageValues}
             />
         );
     }
@@ -131,7 +136,7 @@ const MenuItem = (props: MenuItemProps) => {
             underlayColor={changeOpacity(theme.centerChannelColor, Platform.select({android: 0.1, ios: 0.3}) || 0.3)}
         >
             <View style={{flexDirection: 'column'}}>
-                <View style={style.container}>
+                <View style={[style.container, innerContainerStyle]}>
                     {icon && (
                         <View style={[style.iconContainer, iconContainerStyle]}>
                             {icon}
