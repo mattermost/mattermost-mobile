@@ -35,6 +35,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             fontFamily: 'OpenSans-SemiBold',
             fontSize: 10,
+            textTransform: 'uppercase',
         },
         title: {
             backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.15),
@@ -45,7 +46,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 
 export function BotTag(props: Omit<TagProps, 'id' | 'defaultMessage'>) {
     const id = t('post_info.bot');
-    const defaultMessage = 'BOT';
+    const defaultMessage = 'Bot';
 
     return (
         <Tag
@@ -58,7 +59,7 @@ export function BotTag(props: Omit<TagProps, 'id' | 'defaultMessage'>) {
 
 export function GuestTag(props: Omit<TagProps, 'id' | 'defaultMessage'>) {
     const id = t('post_info.guest');
-    const defaultMessage = 'GUEST';
+    const defaultMessage = 'Guest';
 
     return (
         <Tag

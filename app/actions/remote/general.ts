@@ -35,7 +35,8 @@ async function getDeviceIdForPing(serverUrl: string, checkDeviceId: boolean) {
     return getDeviceToken(appDatabase);
 }
 
-export const doPing = async (serverUrl: string, verifyPushProxy: boolean) => {
+// Default timeout interval for ping is 5 seconds
+export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeoutInterval = 5000) => {
     let client: Client;
     try {
         client = await NetworkManager.createClient(serverUrl);
@@ -57,7 +58,7 @@ export const doPing = async (serverUrl: string, verifyPushProxy: boolean) => {
 
     let response: ClientResponse;
     try {
-        response = await client.ping(deviceId);
+        response = await client.ping(deviceId, timeoutInterval);
 
         if (response.code === 401) {
             // Don't invalidate the client since we want to eventually
