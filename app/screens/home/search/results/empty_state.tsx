@@ -48,9 +48,9 @@ export const EmptyState = ({emptyFiles, searchValue}: Props) => {
 
     if (emptyFiles) {
         defaultTitle = 'No files yet';
-        idTitle = 'screen.search.empty.messages.title';
+        idTitle = 'screen.search.empty.files.title';
         defaultParagraph = 'You\'ll see files here when someone attaches a file to a post in this channel.';
-        idParagraph = 'screen.search.empty.messages.paragraph';
+        idParagraph = 'screen.search.empty.files.paragraph';
     }
 
     return (
