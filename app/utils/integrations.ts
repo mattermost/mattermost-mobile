@@ -71,16 +71,12 @@ export function checkDialogElementForError(elem: DialogElement, value: any): Dia
 // If we're returned errors that don't match any of the elements we have,
 // ignore them and complete the dialog
 export function checkIfErrorsMatchElements(errors: {
-    [x: string]: DialogError;
+    [x: string]: unknown;
 } = {}, elements: DialogElement[] = []) {
+    const elemNames = new Set(elements.map((elem) => elem.name));
     for (const name in errors) {
-        if (!errors.hasOwnProperty(name)) {
-            continue;
-        }
-        for (const elem of elements) {
-            if (elem.name === name) {
-                return true;
-            }
+        if (elemNames.has(name)) {
+            return true;
         }
     }
 

@@ -63,10 +63,4 @@ export default class ThreadModel extends Model implements ThreadModelInterface {
 
     /** post : The root post of this thread */
     @immutableRelation(POST, 'id') post!: Relation<PostModel>;
-
-    async destroyPermanently() {
-        await this.participants.destroyAllPermanently();
-        await this.threadsInTeam.destroyAllPermanently();
-        super.destroyPermanently();
-    }
 }

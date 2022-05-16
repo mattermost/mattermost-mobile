@@ -8,9 +8,9 @@ import {PER_PAGE_DEFAULT} from './constants';
 export interface ClientThreadsMix {
     getThreads: (userId: string, teamId: string, before?: string, after?: string, pageSize?: number, deleted?: boolean, unread?: boolean, since?: number, totalsOnly?: boolean, serverVersion?: string) => Promise<GetUserThreadsResponse>;
     getThread: (userId: string, teamId: string, threadId: string, extended?: boolean) => Promise<any>;
+    markThreadAsRead: (userId: string, teamId: string, threadId: string, timestamp: number) => Promise<any>;
     markThreadAsUnread: (userId: string, teamId: string, threadId: string, postId: string) => Promise<any>;
     updateTeamThreadsAsRead: (userId: string, teamId: string) => Promise<any>;
-    updateThreadRead: (userId: string, teamId: string, threadId: string, timestamp: number) => Promise<any>;
     updateThreadFollow: (userId: string, teamId: string, threadId: string, state: boolean) => Promise<any>;
 }
 
@@ -43,6 +43,14 @@ const ClientThreads = (superclass: any) => class extends superclass {
         );
     };
 
+    markThreadAsRead = (userId: string, teamId: string, threadId: string, timestamp: number) => {
+        const url = `${this.getThreadRoute(userId, teamId, threadId)}/read/${timestamp}`;
+        return this.doFetch(
+            url,
+            {method: 'put'},
+        );
+    };
+
     markThreadAsUnread = (userId: string, teamId: string, threadId: string, postId: string) => {
         const url = `${this.getThreadRoute(userId, teamId, threadId)}/set_unread/${postId}`;
         return this.doFetch(
@@ -53,14 +61,6 @@ const ClientThreads = (superclass: any) => class extends superclass {
 
     updateTeamThreadsAsRead = (userId: string, teamId: string) => {
         const url = `${this.getThreadsRoute(userId, teamId)}/read`;
-        return this.doFetch(
-            url,
-            {method: 'put'},
-        );
-    };
-
-    updateThreadRead = (userId: string, teamId: string, threadId: string, timestamp: number) => {
-        const url = `${this.getThreadRoute(userId, teamId, threadId)}/read/${timestamp}`;
         return this.doFetch(
             url,
             {method: 'put'},

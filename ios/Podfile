@@ -31,7 +31,6 @@ target 'Mattermost' do
 
   # TODO: Remove this once upstream PR https://github.com/daltoniam/Starscream/pull/871 is merged
   pod 'Starscream', :git => 'https://github.com/mattermost/Starscream.git', :commit => 'cb83dd247339ff6c155f0e749d6fe2cc145f5283'
-  pod 'lottie-react-native', :path => '../node_modules/lottie-react-native'
 
 end
 

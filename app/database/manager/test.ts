@@ -76,8 +76,8 @@ describe('*** Database Manager tests ***', () => {
         await DatabaseManager.destroyServerDatabase('https://appv1.mattermost.com');
 
         const fetchServerRecords = async (serverUrl: string) => {
-            const servers = await DatabaseManager.appDatabase?.database!.collections.get(SERVERS).query(Q.where('url', serverUrl)).fetch() as ServersModel[];
-            return servers.length;
+            const servers = await DatabaseManager.appDatabase?.database!.collections.get<ServersModel>(SERVERS).query(Q.where('url', serverUrl)).fetch();
+            return servers?.length || 0;
         };
 
         const destroyed = await fetchServerRecords(serverUrls[0]);

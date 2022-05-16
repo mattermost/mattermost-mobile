@@ -68,10 +68,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     loginButton: {
         marginTop: 25,
     },
-    loading: {
-        height: 20,
-        width: 20,
-    },
 }));
 
 const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayName, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
@@ -304,7 +300,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
             buttonIcon = (
                 <Loading
                     containerStyle={styles.loadingContainerStyle}
-                    style={styles.loading}
+                    color={theme.buttonColor}
                 />
             );
         }

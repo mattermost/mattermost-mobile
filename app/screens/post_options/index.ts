@@ -27,7 +27,7 @@ import type ReactionModel from '@typings/database/models/servers/reaction';
 import type UserModel from '@typings/database/models/servers/user';
 
 type EnhancedProps = WithDatabaseArgs & {
-    combinedPost?: Post;
+    combinedPost?: Post | PostModel;
     post: PostModel;
     showAddReaction: boolean;
     location: string;
@@ -55,11 +55,11 @@ const observeCanEditPost = (isOwner: boolean, post: PostModel, postEditTimeLimit
 
 const withPost = withObservables([], ({post, database}: {post: Post | PostModel} & WithDatabaseArgs) => {
     let id: string | undefined;
-    let combinedPost: Observable<Post | undefined> = of$(undefined);
+    let combinedPost: Observable<Post | PostModel | undefined> = of$(undefined);
     if (post.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY && post.props?.system_post_ids) {
         const systemPostIds = getPostIdsForCombinedUserActivityPost(post.id);
         id = systemPostIds?.pop();
-        combinedPost = of$(post as Post);
+        combinedPost = of$(post);
     }
     const thePost = id ? observePost(database, id) : post;
     return {

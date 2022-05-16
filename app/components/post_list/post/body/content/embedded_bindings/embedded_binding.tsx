@@ -42,7 +42,7 @@ const EmbeddedBinding = ({embed, post, theme}: Props) => {
     const [cleanedBindings, setCleanedBindings] = useState<AppBinding[]>([]);
 
     useEffect(() => {
-        const copiedBindings = JSON.parse(JSON.stringify(embed)) as AppBinding;
+        const copiedBindings: AppBinding = JSON.parse(JSON.stringify(embed));
         const bindings = cleanBinding(copiedBindings, AppBindingLocations.IN_POST)?.bindings;
         setCleanedBindings(bindings!);
     }, [embed]);

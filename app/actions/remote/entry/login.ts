@@ -22,6 +22,7 @@ import {scheduleExpiredNotification} from '@utils/notification';
 import {deferredAppEntryActions} from './common';
 
 import type {Client} from '@client/rest';
+import type TeamModel from '@typings/database/models/servers/team';
 
 type AfterLoginArgs = {
     serverUrl: string;
@@ -53,7 +54,7 @@ export async function loginEntry({serverUrl, user, deviceToken}: AfterLoginArgs)
 
     try {
         const isTabletDevice = await isTablet();
-        let initialTeam: Team|undefined;
+        let initialTeam: Team|TeamModel|undefined;
         let initialChannel: Channel|undefined;
         let myTeams: Team[]|undefined;
 

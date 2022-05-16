@@ -4,7 +4,7 @@
 import React from 'react';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import RoundedHeaderContext from '@components/rounded_header_context';
 
 type Props = {
     defaultHeight: number;
@@ -12,24 +12,8 @@ type Props = {
     isLargeTitle: boolean;
     largeHeight: number;
     scrollValue?: Animated.SharedValue<number>;
-    theme: Theme;
     top: number;
 }
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    container: {
-        backgroundColor: theme.sidebarBg,
-        height: 16,
-        position: 'absolute',
-        width: '100%',
-    },
-    content: {
-        backgroundColor: theme.centerChannelBg,
-        borderTopLeftRadius: 12,
-        borderTopRightRadius: 12,
-        flex: 1,
-    },
-}));
 
 const NavigationHeaderContext = ({
     defaultHeight,
@@ -37,25 +21,30 @@ const NavigationHeaderContext = ({
     isLargeTitle,
     largeHeight,
     scrollValue,
-    theme,
     top,
 }: Props) => {
-    const styles = getStyleSheet(theme);
-
     const marginTop = useAnimatedStyle(() => {
         const normal = defaultHeight + top;
         const calculated = -(top + (scrollValue?.value || 0));
         const searchHeight = hasSearch ? defaultHeight + 9 : 0;
-        if (!isLargeTitle) {
-            return {marginTop: Math.max((normal + calculated), normal)};
+        let margin: number;
+        if (isLargeTitle) {
+            margin = Math.max((-(scrollValue?.value || 0) + largeHeight + searchHeight), normal);
+        } else {
+            margin = Math.max((normal + calculated), normal);
         }
 
-        return {marginTop: Math.max((-(scrollValue?.value || 0) + largeHeight + searchHeight), normal)};
+        return {
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            marginTop: margin,
+        };
     }, [defaultHeight, largeHeight, isLargeTitle, hasSearch]);
 
     return (
-        <Animated.View style={[styles.container, marginTop]}>
-            <Animated.View style={styles.content}/>
+        <Animated.View style={marginTop}>
+            <RoundedHeaderContext/>
         </Animated.View>
     );
 };

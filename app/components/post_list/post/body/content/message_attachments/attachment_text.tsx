@@ -49,7 +49,7 @@ const AttachmentText = ({baseTextStyle, blockStyles, hasThumbnail, metadata, tex
                 >
                     <View onLayout={onLayout}>
                         <Markdown
-                            baseTextStyle={baseTextStyle as never}
+                            baseTextStyle={baseTextStyle}
                             textStyles={textStyles}
                             blockStyles={blockStyles}
                             disableGallery={true}

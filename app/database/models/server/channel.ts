@@ -122,7 +122,7 @@ export default class ChannelModel extends Model implements ChannelModelInterface
     @immutableRelation(USER, 'creator_id') creator!: Relation<UserModel>;
 
     /** info : Query returning extra information about this channel from CHANNEL_INFO table */
-    // @lazy info = this.collections.get(CHANNEL_INFO).query(Q.on(CHANNEL, 'id', this.id)) as Query<ChannelInfoModel>;
+    // @lazy info = this.collections.get<ChannelInfoModel>(CHANNEL_INFO).query(Q.on(CHANNEL, 'id', this.id));
     @immutableRelation(CHANNEL_INFO, 'id') info!: Relation<ChannelInfoModel>;
 
     /** membership : Query returning the membership data for the current user if it belongs to this channel */
