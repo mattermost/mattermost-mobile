@@ -171,7 +171,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.SNACK_BAR: {
             const snackBarScreen = withServerDatabase(require('@screens/snack_bar').default);
-
             Navigation.registerComponent(Screens.SNACK_BAR, () =>
                 Platform.select({
                     default: snackBarScreen,
@@ -181,9 +180,10 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         }
         case Screens.THREAD_OPTIONS:
-            screen = withServerDatabase(
-                require('@screens/thread_options').default,
-            );
+            screen = withServerDatabase(require('@screens/thread_options').default);
+            break;
+        case Screens.SETTINGS:
+            screen = withServerDatabase(require('@screens/settings').default);
             break;
     }
 

@@ -2,10 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
 import {TextStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import MenuItem from '@components/menu_item';
+import Screens from '@constants/screens';
+import {showModal} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
@@ -15,9 +18,19 @@ type Props = {
 }
 
 const Settings = ({isTablet, style, theme}: Props) => {
+    const intl = useIntl();
+
     const openSettings = useCallback(preventDoubleTap(() => {
-        // TODO: Open Saved messages screen in either a screen or in line for tablets
-    }), [isTablet]);
+        if (isTablet) {
+            // eslint-disable-next-line no-console
+            console.error('Settings on tablets need to be figured out and implemented - @Avinash');
+        } else {
+            showModal(
+                Screens.SETTINGS,
+                intl.formatMessage({id: 'mobile.screen.settings', defaultMessage: 'Settings'}),
+            );
+        }
+    }), [isTablet, theme]);
 
     return (
         <MenuItem
