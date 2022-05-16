@@ -28,6 +28,21 @@ export default class GroupModel extends Model {
     /** description : A short description of the group */
     description: string;
 
+    /** source : The source of the group */
+    source: string;
+
+    /** remote_id : The remote_id of the group */
+    remoteId: string;
+
+    /** created_at : The timestamp for when it was created */
+    createdAt: number;
+
+    /** updated_at : The timestamp for when it was updated */
+    updatedAt: number;
+
+    /** deleted_at : The timestamp for when it was deleted */
+    deletedAt: number;
+
     /** channels : All the channels associated with this group */
     @lazy channels: Query<ChannelModel>;
 

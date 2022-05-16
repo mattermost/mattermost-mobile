@@ -33,13 +33,13 @@ export default class GroupModel extends Model implements GroupInterface {
     static associations: Associations = {
 
         /** Groups are associated with Channels (relationship N:N) through GROUP_CHANNEL */
-        [CHANNEL]: {type: 'has_many', foreignKey: 'group_id'},
+        [GROUP_CHANNEL]: {type: 'has_many', foreignKey: 'group_id'},
 
         /** Groups are associated with Members (Users) (relationship N:N) through GROUP_MEMBERSHIP */
-        [USER]: {type: 'has_many', foreignKey: 'group_id'},
+        [GROUP_MEMBERSHIP]: {type: 'has_many', foreignKey: 'group_id'},
 
         /** Groups are associated with Teams (relationship N:N) through GROUP_TEAM */
-        [TEAM]: {type: 'has_many', foreignKey: 'group_id'},
+        [GROUP_TEAM]: {type: 'has_many', foreignKey: 'group_id'},
     };
 
     /** name : The name for the group */

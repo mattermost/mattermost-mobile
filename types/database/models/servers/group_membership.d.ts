@@ -24,6 +24,15 @@ export default class GroupMembershipModel extends Model {
     /* user_id : The foreign key to the related User record*/
     userId: string;
 
+    /** created_at : The timestamp for when it was created */
+    createdAt: number;
+
+    /** updated_at : The timestamp for when it was updated */
+    updatedAt: number;
+
+    /** deleted_at : The timestamp for when it was deleted */
+    deletedAt: number;
+
     /** group : The related group */
     group: Relation<GroupModel>;
 
