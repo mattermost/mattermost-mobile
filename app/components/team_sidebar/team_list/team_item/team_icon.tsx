@@ -31,6 +31,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         text: {
             color: theme.sidebarText,
+            textTransform: 'capitalize',
             ...typography('Heading', 400, 'SemiBold'),
         },
         image: {
@@ -101,14 +102,12 @@ export default function TeamIcon({
 
     let teamIconContent;
     if (nameOnly) {
-        const first = displayName[0].toUpperCase();
-        const second = displayName[1]?.toLowerCase() || '';
         teamIconContent = (
             <Text
                 style={textColor ? [styles.text, {color: textColor}] : styles.text}
                 testID={`${testID}.display_name_abbreviation`}
             >
-                {`${first}${second}`}
+                {displayName.substring(0, 2)}
             </Text>
         );
     } else {

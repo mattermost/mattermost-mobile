@@ -354,12 +354,12 @@ const ServerItem = ({
     let pushAlertText;
     if (server.lastActiveAt) {
         if (pushProxyStatus === PUSH_PROXY_STATUS_NOT_AVAILABLE) {
-            intl.formatMessage({
+            pushAlertText = intl.formatMessage({
                 id: 'server_list.push_proxy_error',
                 defaultMessage: 'Notifications cannot be received from this server because of its configuration. Contact your system admin.',
             });
         } else {
-            intl.formatMessage({
+            pushAlertText = intl.formatMessage({
                 id: 'server_list.push_proxy_unknown',
                 defaultMessage: 'Notifications could not be received from this server because of its configuration. Log out and Log in again to retry.',
             });

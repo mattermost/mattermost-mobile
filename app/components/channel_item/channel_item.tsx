@@ -56,7 +56,8 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     text: {
         marginTop: -1,
         color: changeOpacity(theme.sidebarText, 0.72),
-        paddingHorizontal: 12,
+        paddingLeft: 12,
+        paddingRight: 20,
     },
     highlight: {
         color: theme.sidebarText,
@@ -67,6 +68,9 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     muted: {
         color: changeOpacity(theme.sidebarText, 0.32),
+    },
+    mutedInfo: {
+        color: changeOpacity(theme.centerChannelColor, 0.32),
     },
     badge: {
         borderColor: theme.sidebarBg,
@@ -99,6 +103,9 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 4,
         ...typography('Body', 75),
     },
+    teamNameMuted: {
+        color: changeOpacity(theme.centerChannelColor, 0.32),
+    },
     teamNameTablet: {
         marginLeft: -12,
         paddingLeft: 0,
@@ -109,7 +116,7 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 export const textStyle = StyleSheet.create({
-    bright: typography('Body', 200, 'SemiBold'),
+    bold: typography('Body', 200, 'SemiBold'),
     regular: typography('Body', 200, 'Regular'),
 });
 
@@ -122,8 +129,8 @@ const ChannelListItem = ({
     const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
 
-    // Make it brighter if it's not muted, and highlighted or has unreads
-    const isBright = isUnread || mentionsCount > 0;
+    // Make it bolded if it has unreads or mentions
+    const isBolded = isUnread || mentionsCount > 0;
 
     const height = useMemo(() => {
         let h = 40;
@@ -138,13 +145,14 @@ const ChannelListItem = ({
     }, [channel.id]);
 
     const textStyles = useMemo(() => [
-        isBright ? textStyle.bright : textStyle.regular,
+        isBolded ? textStyle.bold : textStyle.regular,
         styles.text,
-        isBright && styles.highlight,
-        isMuted && styles.muted,
+        isBolded && styles.highlight,
         isActive && isTablet && !isInfo ? styles.textActive : null,
         isInfo ? styles.textInfo : null,
-    ], [isBright, styles, isMuted, isActive, isInfo, isTablet]);
+        isMuted && styles.muted,
+        isMuted && isInfo && styles.infoMuted,
+    ], [isBolded, styles, isMuted, isActive, isInfo, isTablet]);
 
     const containerStyle = useMemo(() => [
         styles.container,
@@ -178,7 +186,7 @@ const ChannelListItem = ({
                             hasDraft={hasDraft}
                             isActive={isInfo ? false : isTablet && isActive}
                             isInfo={isInfo}
-                            isUnread={isBright}
+                            isUnread={isBolded}
                             isArchived={channel.deleteAt > 0}
                             membersCount={membersCount}
                             name={channel.name}
@@ -201,7 +209,7 @@ const ChannelListItem = ({
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
                                 testID={`${testID}.${teamDisplayName}.display_name`}
-                                style={styles.teamName}
+                                style={[styles.teamName, isMuted && styles.teamNameMuted]}
                             >
                                 {teamDisplayName}
                             </Text>
@@ -218,7 +226,7 @@ const ChannelListItem = ({
                             ellipsizeMode='tail'
                             numberOfLines={1}
                             testID={`${testID}.${teamDisplayName}.display_name`}
-                            style={[styles.teamName, styles.teamNameTablet]}
+                            style={[styles.teamName, styles.teamNameTablet, isMuted && styles.teamNameMuted]}
                         >
                             {teamDisplayName}
                         </Text>

@@ -354,7 +354,10 @@ export async function verifyPushProxy(serverUrl: string) {
     const {database} = operator;
 
     const ppVerification = await getPushVerificationStatus(database);
-    if (ppVerification !== PUSH_PROXY_STATUS_UNKNOWN) {
+    if (
+        ppVerification !== PUSH_PROXY_STATUS_UNKNOWN &&
+        ppVerification !== ''
+    ) {
         return;
     }
 
