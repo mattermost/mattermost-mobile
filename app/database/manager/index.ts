@@ -27,6 +27,7 @@ import {DatabaseType} from '@typings/database/enums';
 import {emptyFunction} from '@utils/general';
 import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
+import {removeProtocol} from '@utils/url';
 
 import type {AppDatabase, CreateServerDatabaseArgs, RegisterServerDatabaseArgs, Models, ServerDatabase, ServerDatabases} from '@typings/database/database';
 
@@ -470,7 +471,8 @@ class DatabaseManager {
      * @returns {string|undefined}
      */
     public searchUrl = (toFind: string): string | undefined => {
-        return Object.keys(this.serverDatabases).find((k) => k.endsWith(toFind));
+        const toFindWithoutProtocol = removeProtocol(toFind);
+        return Object.keys(this.serverDatabases).find((k) => removeProtocol(k) === toFindWithoutProtocol);
     };
 }
 
