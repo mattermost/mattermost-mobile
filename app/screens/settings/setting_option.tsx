@@ -8,6 +8,7 @@ import MenuItem, {MenuItemProps} from '@components/menu_item';
 import {SettingOptionConfig} from '@constants/settings';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type Props = {
     type: 'notification' | 'display' | 'advanced_settings' | 'about' | 'help';
@@ -18,9 +19,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         menuLabel: {
             color: theme.centerChannelColor,
-            fontSize: 16,
-            lineHeight: 24,
-            fontFamily: 'OpenSans',
+            ...typography('Body', 200),
         },
     };
 });
