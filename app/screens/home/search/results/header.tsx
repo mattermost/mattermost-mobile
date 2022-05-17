@@ -23,7 +23,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         container: {
             marginHorizontal: 20,
             flexDirection: 'row',
-            marginTop: 20,
+            marginTop: 16,
             marginBottom: 12,
         },
         divider: {
