@@ -5,13 +5,12 @@ import React from 'react';
 import {Platform} from 'react-native';
 
 import MenuItem, {MenuItemProps} from '@components/menu_item';
-import {SettingOptionConfig} from '@constants/settings';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-type Props = {
-    type: 'notification' | 'display' | 'advanced_settings' | 'about' | 'help';
+type SettingOptionProps = {
+    config: Partial<MenuItemProps>;
     onPress: () => void;
 } & Omit<MenuItemProps, 'testID'| 'theme'>;
 
@@ -24,11 +23,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const SettingOption = ({type, onPress, ...rest}: Props) => {
+const SettingOption = ({onPress, config, ...rest}: SettingOptionProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const optionConfig = SettingOptionConfig[type];
-    const options = {...optionConfig, ...rest};
+    const props = {...rest, ...config} as unknown as Omit<MenuItemProps, 'onPress'| 'theme'>;
 
     return (
         <MenuItem
@@ -37,7 +35,7 @@ const SettingOption = ({type, onPress, ...rest}: Props) => {
             separator={true}
             showArrow={Platform.select({ios: true, default: false})}
             theme={theme}
-            {...options}
+            {...props}
         />
     );
 };

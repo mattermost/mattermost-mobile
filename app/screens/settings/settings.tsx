@@ -9,6 +9,7 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
+import {SettingOptionConfig} from '@constants/settings';
 import {useTheme} from '@context/theme';
 import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
@@ -145,19 +146,19 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
                     style={styles.group}
                 >
                     <SettingOption
-                        type='notification'
+                        config={SettingOptionConfig.notification}
                         onPress={onPressHandler}
                     />
                     <SettingOption
-                        type='display'
+                        config={SettingOptionConfig.display}
                         onPress={onPressHandler}
                     />
                     <SettingOption
-                        type='advanced_settings'
+                        config={SettingOptionConfig.advanced_settings}
                         onPress={onPressHandler}
                     />
                     <SettingOption
-                        type='about'
+                        config={SettingOptionConfig.about}
                         onPress={goToAbout}
                         messageValues={{appTitle: siteName}}
                         separator={Platform.OS === 'ios'}
@@ -169,7 +170,7 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
                 >
                     {showHelp &&
                     <SettingOption
-                        type='help'
+                        config={SettingOptionConfig.help}
                         onPress={onPressHandler}
                         isLink={true}
                         innerContainerStyle={styles.innerContainerStyle}

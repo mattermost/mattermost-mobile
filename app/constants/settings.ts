@@ -35,3 +35,22 @@ export const SettingOptionConfig = {
         showArrow: false,
     },
 };
+
+export const NotificationsOptionConfig = {
+    mentions: {
+        iconName: 'at',
+        testID: 'notification_settings.mentions_replies.action',
+    },
+    push_notification: {
+        defaultMessage: 'Push Notifications',
+        i18nId: t('mobile.notification_settings.mobile'),
+        iconName: 'cellphone',
+        testID: 'notification_settings.mobile.action',
+    },
+    automatic_dm_replies: {
+        defaultMessage: 'About {appTitle}',
+        i18nId: t('about.title'),
+        iconName: 'information-outline',
+        testID: 'general_settings.about.action',
+    },
+};
