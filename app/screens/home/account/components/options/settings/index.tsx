@@ -23,14 +23,13 @@ const Settings = ({isTablet, style, theme}: Props) => {
     const openSettings = useCallback(preventDoubleTap(() => {
         if (isTablet) {
             // eslint-disable-next-line no-console
-            console.error('Settings on tablets need to be figured out and implemented - @Avinash');
-        } else {
-            showModal(
-                Screens.SETTINGS,
-                intl.formatMessage({id: 'mobile.screen.settings', defaultMessage: 'Settings'}),
-            );
+            console.log('Settings on tablets need to be figured out and implemented - @Avinash');
         }
-    }), [isTablet, theme]);
+        showModal(
+            Screens.SETTINGS,
+            intl.formatMessage({id: 'mobile.screen.settings', defaultMessage: 'Settings'}),
+        );
+    }), [isTablet]);
 
     return (
         <MenuItem

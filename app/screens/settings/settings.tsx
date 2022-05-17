@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {BackHandler, Platform, ScrollView, View} from 'react-native';
+import {Alert, BackHandler, Platform, ScrollView, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -49,7 +49,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: theme.centerChannelBg,
         },
         innerContainerStyle: {
-            paddingLeft: 16,
+            paddingLeft: 8,
         },
         menuLabel: {
             color: theme.centerChannelColor,
@@ -112,7 +112,11 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
         };
     }, []);
 
-    const onPressHandler = () => null;
+    const onPressHandler = () => {
+        return Alert.alert(
+            'The functionality you are trying to use has not yet been implemented.',
+        );
+    };
 
     const goToAbout = preventDoubleTap(() => {
         const screen = Screens.ABOUT;
@@ -168,6 +172,7 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
                         type='help'
                         onPress={onPressHandler}
                         isLink={true}
+                        innerContainerStyle={styles.innerContainerStyle}
                     />
                     }
                 </View>
