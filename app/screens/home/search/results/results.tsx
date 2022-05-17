@@ -6,23 +6,22 @@ import EmptyState from './empty_state';
 import Header from './header';
 
 const SearchResults = () => {
-    const [showMessages, setShowMessages] = useState<boolean>(true);
+    const [isMessageTab, setIsMessageTab] = useState<'message-tab' | 'file-tab'>('message-tab');
 
-    const onHeaderSelect = (value: boolean) => {
-        setShowMessages(value);
+    const onHeaderSelect = (value: 'message-tab' | 'file-tab') => {
+        setIsMessageTab(value);
     };
 
     return (
         <>
             <Header
-                onToggle={onHeaderSelect}
-                showMessages={showMessages}
+                onHeaderSelect={onHeaderSelect}
                 numberFiles={0}
                 numberMessages={0}
             />
             <EmptyState
                 searchValue={'blah'}
-                showMessages={showMessages}
+                showMessagesTab={isMessageTab === 'message-tab'}
             />
 
         </>

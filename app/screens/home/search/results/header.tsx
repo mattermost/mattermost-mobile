@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback} from 'react';
+import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 import Button from 'react-native-button';
@@ -9,12 +9,18 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
-    onToggle: (val: boolean) => void;
-    showMessages: boolean;
+    onHeaderSelect: (val: string) => void;
     numberFiles: number;
     numberMessages: number;
 }
-const Header = ({onToggle, showMessages, numberFiles, numberMessages}: Props) => {
+
+type ButtonProps = {
+    onPress: () => void;
+    selected: boolean;
+    text: string;
+}
+
+const Header = ({onHeaderSelect, numberFiles, numberMessages}: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
     const intl = useIntl();
@@ -22,26 +28,25 @@ const Header = ({onToggle, showMessages, numberFiles, numberMessages}: Props) =>
     const messagesText = intl.formatMessage({id: 'screen.search.header.messages', defaultMessage: 'Messages'});
     const filesText = intl.formatMessage({id: 'screen.search.header.files', defaultMessage: 'Files'});
 
+    const [tab, setTab] = useState(0);
+
     const handleMessagesPress = useCallback(() => {
-        onToggle(true);
-    }, [onToggle, showMessages]);
+        onHeaderSelect('message-tab');
+        setTab(0);
+    }, [onHeaderSelect]);
 
     const handleFilesPress = useCallback(() => {
-        onToggle(false);
-    }, [onToggle, showMessages]);
+        onHeaderSelect('file-tab');
+        setTab(1);
+    }, [onHeaderSelect]);
 
-    type ButtonProps = {
-        onPress: () => void;
-        selected: boolean;
-        text: string;
-    }
     const SelectButton = ({selected, onPress, text}: ButtonProps) => {
         return (
             <Button
-                containerStyle={[styles.button, selected ? styles.selectedButton : undefined]}
+                containerStyle={[styles.button, selected && styles.selectedButton]}
                 onPress={onPress}
             >
-                <Text style={[styles.text, showMessages ? styles.selectedText : undefined]}>
+                <Text style={[styles.text, selected && styles.selectedText]}>
                     {text}
                 </Text >
             </Button>
@@ -52,12 +57,12 @@ const Header = ({onToggle, showMessages, numberFiles, numberMessages}: Props) =>
         <>
             <View style={styles.container}>
                 <SelectButton
-                    selected={showMessages}
+                    selected={tab === 0}
                     onPress={handleMessagesPress}
                     text={`${messagesText} (${numberMessages})`}
                 />
                 <SelectButton
-                    selected={!showMessages}
+                    selected={tab === 1}
                     onPress={handleFilesPress}
                     text={`${filesText} (${numberFiles})`}
                 />

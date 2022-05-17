@@ -33,11 +33,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
 }));
 
 type Props = {
-    showMessages: boolean;
+    showMessagesTab: boolean;
     searchValue: string;
 }
 
-export const EmptyState = ({showMessages, searchValue}: Props) => {
+export const EmptyState = ({showMessagesTab, searchValue}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -46,7 +46,7 @@ export const EmptyState = ({showMessages, searchValue}: Props) => {
     let defaultParagraph = 'You\'ll see files here when someone attaches a file to a post in this channel.';
     let idParagraph = 'screen.search.empty.files.paragraph';
 
-    if (showMessages) {
+    if (showMessagesTab) {
         defaultTitle = `No matches found for "${searchValue}"`;
         idTitle = 'screen.search.empty.messages.title';
         defaultParagraph = 'Check the spelling or try another search.';
@@ -55,7 +55,7 @@ export const EmptyState = ({showMessages, searchValue}: Props) => {
 
     return (
         <View style={styles.container}>
-            {showMessages ? <EmptyMessages/> : <EmptyFiles/>}
+            {showMessagesTab ? <EmptyMessages/> : <EmptyFiles/>}
             <FormattedText
                 defaultMessage={defaultTitle}
                 id={idTitle}
