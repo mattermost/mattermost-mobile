@@ -22,6 +22,7 @@ const Settings = ({isTablet, style, theme}: Props) => {
 
     const openSettings = useCallback(preventDoubleTap(() => {
         if (isTablet) {
+            //todo: https://mattermost.atlassian.net/browse/MM-39711
             // eslint-disable-next-line no-console
             console.log('Settings on tablets need to be figured out and implemented - @Avinash');
         }

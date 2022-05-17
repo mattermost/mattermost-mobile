@@ -64,7 +64,7 @@ type SettingsProps = {
     showHelp: boolean;
 }
 
-//todo: handle display on tablet
+//todo: handle display on tablet and Profile the whole feature - https://mattermost.atlassian.net/browse/MM-39711
 
 const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
     const theme = useTheme();

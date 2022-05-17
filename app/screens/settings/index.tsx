@@ -16,7 +16,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const config = observeConfig(database);
     const siteName = config.pipe(switchMap((c) => of$(c?.SiteName) || of$('Mattermost')));
-    const showHelp = observeConfig(database).pipe(switchMap((c) => of$(c?.HelpLink ? isValidUrl(c.HelpLink) : of$(false))));
+    const showHelp = observeConfig(database).pipe(switchMap((c) => of$(c?.HelpLink ? isValidUrl(c.HelpLink) : false)));
 
     return {
         showHelp,
