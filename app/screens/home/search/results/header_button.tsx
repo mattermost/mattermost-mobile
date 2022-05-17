@@ -1,0 +1,59 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import React from 'react';
+import {Text} from 'react-native';
+import Button from 'react-native-button';
+
+import {useTheme} from '@context/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return {
+        flex: {
+            flex: 1,
+        },
+        button: {
+            alignItems: 'center',
+            borderRadius: 4,
+            height: 40,
+        },
+        text: {
+            marginHorizontal: 16,
+            marginVertical: 8,
+            fontSize: 16,
+        },
+        selectedButton: {
+            backgroundColor: changeOpacity(theme.buttonBg, 0.1),
+        },
+        selectedText: {
+            color: theme.buttonBg,
+        },
+    };
+});
+
+type ButtonProps = {
+    onPress: () => void;
+    selected: boolean;
+    text: string;
+}
+
+const SelectButton = ({selected, onPress, text}: ButtonProps) => {
+    const theme = useTheme();
+    const styles = getStyleFromTheme(theme);
+
+    return (
+        <Button
+            containerStyle={[styles.button, selected && styles.selectedButton]}
+            onPress={onPress}
+        >
+            <Text
+                style={[styles.text, selected && styles.selectedText]}
+            >
+                {text}
+            </Text >
+        </Button>
+    );
+};
+
+export default SelectButton;
