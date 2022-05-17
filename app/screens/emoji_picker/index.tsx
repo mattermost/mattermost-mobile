@@ -23,7 +23,7 @@ const EmojiPickerScreen = ({closeButton, componentId, onEmojiPress}: Props) => {
                     id: 'close-add-reaction',
                     testID: 'close.add_reaction.button',
                 },
-            ] as unknown as never[],
+            ],
             rightButtons: [],
         });
 

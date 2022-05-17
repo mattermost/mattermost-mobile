@@ -242,7 +242,7 @@ function combineUserActivitySystemPost(systemPosts: PostModel[]) {
     const userActivities = systemPosts.reduce((acc: any, post: PostModel) => {
         const postType = post.type;
         let userActivityProps = acc;
-        const combinedPostType = userActivityProps[postType as string];
+        const combinedPostType = userActivityProps[postType];
 
         if (
             postType === Post.POST_TYPES.ADD_TO_TEAM ||

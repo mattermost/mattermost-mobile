@@ -205,7 +205,7 @@ class TestHelper {
             // https://jestjs.io/docs/snapshot-testing#2-tests-should-be-deterministic
             // display_name: `Unit Test ${name}`,
             display_name: 'Channel',
-            type: 'O' as ChannelType,
+            type: 'O' as const,
             delete_at: 0,
             total_msg_count: 0,
             scheme_id: this.generateId(),

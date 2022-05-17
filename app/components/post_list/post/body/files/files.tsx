@@ -95,7 +95,7 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
         filesForGallery.value[idx] = file;
     };
 
-    const isSingleImage = () => (filesInfo.length === 1 && isImage(filesInfo[0]));
+    const isSingleImage = () => (filesInfo.length === 1 && (isImage(filesInfo[0]) || isVideo(filesInfo[0])));
 
     const renderItems = (items: FileInfo[], moreImagesCount = 0, includeGutter = false) => {
         const singleImage = isSingleImage();

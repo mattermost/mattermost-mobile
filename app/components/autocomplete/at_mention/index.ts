@@ -26,6 +26,7 @@ const enhanced = withObservables([], ({database, channelId}: WithDatabaseArgs & 
 
     let useChannelMentions: Observable<boolean>;
     let useGroupMentions: Observable<boolean>;
+
     if (channelId) {
         const currentChannel = observeChannel(database, channelId);
         useChannelMentions = combineLatest([currentUser, currentChannel]).pipe(switchMap(([u, c]) => (u && c ? observePermissionForChannel(c, u, Permissions.USE_CHANNEL_MENTIONS, false) : of$(false))));

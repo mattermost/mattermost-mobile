@@ -3,7 +3,7 @@
 
 import {markChannelAsViewed} from '@actions/local/channel';
 import {fetchMissingSidebarInfo, markChannelAsRead, switchToChannelById} from '@actions/remote/channel';
-import {AppEntryData, AppEntryError, fetchAppEntryData, teamsToRemove} from '@actions/remote/entry/common';
+import {fetchAppEntryData, teamsToRemove} from '@actions/remote/entry/common';
 import {fetchPostsForUnreadChannels, fetchPostsSince} from '@actions/remote/post';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
@@ -107,20 +107,19 @@ async function doReconnect(serverUrl: string) {
     }
 
     const fetchedData = await fetchAppEntryData(serverUrl, lastDisconnectedAt, system.currentTeamId);
-    const fetchedError = (fetchedData as AppEntryError).error;
 
-    if (fetchedError) {
+    if ('error' in fetchedData) {
         return;
     }
 
-    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData as AppEntryData;
+    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData;
     const rolesData = await fetchRoles(serverUrl, teamData.memberships, chData?.memberships, meData.user, true);
     const profiles: UserProfile[] = [];
 
     if (chData?.channels?.length) {
         const teammateDisplayNameSetting = getTeammateNameDisplaySetting(prefData.preferences || [], config, license);
         let direct: Channel[];
-        [chData.channels, direct] = chData.channels.reduce(([others, channels], c: Channel) => {
+        [chData.channels, direct] = chData.channels.reduce<Channel[][]>(([others, channels], c: Channel) => {
             if (isDMorGM(c)) {
                 channels.push(c);
             } else {
@@ -128,7 +127,7 @@ async function doReconnect(serverUrl: string) {
             }
 
             return [others, channels];
-        }, [[], []] as Channel[][]);
+        }, [[], []]);
 
         if (direct.length) {
             const {directChannels, users} = await fetchMissingSidebarInfo(serverUrl, direct, meData.user?.locale, teammateDisplayNameSetting, system.currentUserId, true);

@@ -38,7 +38,7 @@ type Props = {
 }
 
 const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeAreaView);
-const edges: Edge[] = ['left', 'right'];
+const edges: Edge[] = ['left', 'right', 'bottom'];
 const styles = StyleSheet.create({
     container: {
         alignItems: 'center',
@@ -78,7 +78,7 @@ const Footer = ({
 
     let userDisplayName;
     if (enablePostUsernameOverride && post?.props?.override_username) {
-        userDisplayName = post?.props.override_username as string;
+        userDisplayName = post.props.override_username as string;
     } else {
         userDisplayName = displayUsername(author, undefined, teammateNameDisplay);
     }

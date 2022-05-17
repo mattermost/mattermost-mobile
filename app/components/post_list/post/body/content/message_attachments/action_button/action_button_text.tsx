@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
 });
 
 const ActionButtonText = ({message, style}: Props) => {
-    const components = [] as React.ReactNode[];
+    const components: React.ReactNode[] = [];
 
     let text = message;
     while (text) {

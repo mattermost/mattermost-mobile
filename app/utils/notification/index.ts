@@ -11,9 +11,9 @@ import PushNotifications from '@init/push_notifications';
 import {popToRoot} from '@screens/navigation';
 import {sortByNewest} from '@utils/general';
 
-export const convertToNotificationData = (notification: Notification, tapped = true) => {
+export const convertToNotificationData = (notification: Notification, tapped = true): NotificationWithData => {
     if (!notification.payload) {
-        return notification as unknown as NotificationWithData;
+        return notification;
     }
 
     const {payload} = notification;

@@ -107,7 +107,7 @@ const Opengraph = ({isReplyPost, layoutWidth, location, metadata, postId, showLi
         );
     }
 
-    const title = openGraphData.title || openGraphData.url || link;
+    const title: string | undefined = openGraphData.title || openGraphData.url || link;
     let siteTitle;
     if (title) {
         siteTitle = (
@@ -121,7 +121,7 @@ const Opengraph = ({isReplyPost, layoutWidth, location, metadata, postId, showLi
                         numberOfLines={3}
                         ellipsizeMode='tail'
                     >
-                        {title as string}
+                        {title}
                     </Text>
                 </TouchableOpacity>
             </View>

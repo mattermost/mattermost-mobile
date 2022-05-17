@@ -19,7 +19,7 @@ describe('components/custom_status/custom_status_emoji', () => {
     const customStatus: UserCustomStatus = {
         emoji: 'calendar',
         text: 'In a meeting',
-        duration: '' as CustomStatusDuration.DONT_CLEAR,
+        duration: CustomStatusDuration.DONT_CLEAR,
     };
     it('should match snapshot', () => {
         const wrapper = renderWithEverything(

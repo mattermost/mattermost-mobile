@@ -11,6 +11,14 @@ exports[`Server Icon Server Icon Component should match snapshot 1`] = `
     accessible={true}
     collapsable={false}
     focusable={false}
+    hitSlop={
+      Object {
+        "bottom": 5,
+        "left": 40,
+        "right": 20,
+        "top": 20,
+      }
+    }
     onClick={[Function]}
     onResponderGrant={[Function]}
     onResponderMove={[Function]}
@@ -44,6 +52,14 @@ exports[`Server Icon Server Icon Component should match snapshot with mentions 1
     accessible={true}
     collapsable={false}
     focusable={false}
+    hitSlop={
+      Object {
+        "bottom": 5,
+        "left": 40,
+        "right": 20,
+        "top": 20,
+      }
+    }
     onClick={[Function]}
     onResponderGrant={[Function]}
     onResponderMove={[Function]}
@@ -112,6 +128,14 @@ exports[`Server Icon Server Icon Component should match snapshot with unreads 1`
     accessible={true}
     collapsable={false}
     focusable={false}
+    hitSlop={
+      Object {
+        "bottom": 5,
+        "left": 40,
+        "right": 20,
+        "top": 20,
+      }
+    }
     onClick={[Function]}
     onResponderGrant={[Function]}
     onResponderMove={[Function]}

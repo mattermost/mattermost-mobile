@@ -46,12 +46,20 @@ const ChannelPostList = ({
             fetchingPosts.current = true;
             const lastPost = posts[posts.length - 1];
             const result = await fetchPostsBefore(serverUrl, channelId, lastPost.id);
-            canLoadPosts.current = ((result as ProcessedPosts).posts?.length ?? 1) > 0;
             fetchingPosts.current = false;
+            canLoadPosts.current = false;
+            if (!('error' in result)) {
+                canLoadPosts.current = (result.posts?.length ?? 1) > 0;
+            }
         }
     }, 500), [channelId, posts]);
 
-    const intro = <Intro channelId={channelId}/>;
+    const intro = (
+        <Intro
+            channelId={channelId}
+            hasPosts={posts.length > 0}
+        />
+    );
 
     const postList = (
         <PostList

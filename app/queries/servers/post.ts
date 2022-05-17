@@ -7,14 +7,14 @@ import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import PostModel from '@typings/database/models/servers/post';
 
 import {queryPreferencesByCategoryAndName} from './preference';
 
-import type PostModel from '@typings/database/models/servers/post';
 import type PostInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 
-const {SERVER: {POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD}} = MM_TABLES;
+const {SERVER: {CHANNEL, POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD}} = MM_TABLES;
 
 export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
     const preparedModels: Model[] = [post.prepareDestroyPermanently()];
@@ -101,12 +101,12 @@ export const queryPostsInThread = (database: Database, rootId: string, sorted = 
     return database.get<PostsInThreadModel>(POSTS_IN_THREAD).query(...clauses);
 };
 
-export const queryPostRepliesCount = (database: Database, rootId: string, excludeDeleted = true) => {
+export const queryPostReplies = (database: Database, rootId: string, excludeDeleted = true) => {
     const clauses: Q.Clause[] = [Q.where('root_id', rootId)];
     if (excludeDeleted) {
         clauses.push(Q.where('delete_at', Q.eq(0)));
     }
-    return database.get(POST).query(...clauses);
+    return database.get<PostModel>(POST).query(...clauses);
 };
 
 export const getRecentPostsInThread = async (database: Database, rootId: string) => {
@@ -177,4 +177,31 @@ export const queryPostsBetween = (database: Database, earliest: number, latest: 
         clauses.push(Q.sortBy('create_at', sort));
     }
     return database.get<PostModel>(POST).query(...clauses);
+};
+
+export const observeLastPostAtPerChannelByTeam = (database: Database, teamId: string) => {
+    return database.get<PostInChannelModel>(POSTS_IN_CHANNEL).query(
+        Q.on(CHANNEL,
+            Q.and(
+                Q.or(
+                    Q.where('team_id', Q.eq(teamId)),
+                    Q.where('team_id', Q.eq('')),
+                ),
+                Q.where('delete_at', Q.eq(0)),
+            ),
+        ),
+        Q.sortBy('latest', Q.desc),
+    ).observeWithColumns(['latest']).pipe(
+        switchMap((pics) => {
+            return of$(pics.reduce<Record<string, number>>((result, pic) => {
+                const id = pic.channelId;
+                if (result[id]) {
+                    result[id] = Math.max(result[id], pic.latest);
+                } else {
+                    result[id] = pic.latest;
+                }
+                return result;
+            }, {}));
+        }),
+    );
 };
