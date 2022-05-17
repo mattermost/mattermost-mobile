@@ -5,7 +5,6 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useEffect} from 'react';
 import {View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import FormattedText from '@components/formatted_text';
@@ -15,7 +14,6 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissModal} from '@screens/navigation';
-import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -56,8 +54,6 @@ const ThreadOptions = ({
 }: ThreadOptionsProps) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
-
-    const insets = useSafeAreaInsets();
 
     const style = getStyleSheet(theme);
 
@@ -134,7 +130,7 @@ const ThreadOptions = ({
             closeButtonId='close-thread-options'
             componentId={Screens.THREAD_OPTIONS}
             initialSnapIndex={0}
-            snapPoints={[bottomSheetSnapPoint(options.length, ITEM_HEIGHT, insets.bottom), 10]}
+            snapPoints={[((options.length + 2) * ITEM_HEIGHT), 10]}
         />
     );
 };
