@@ -11,7 +11,10 @@ import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {extractChannelDisplayName} from '@helpers/database';
 import PushNotifications from '@init/push_notifications';
-import {prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannel, getMyChannel, getChannelById, queryUsersOnChannel, queryUserChannelsByTypes} from '@queries/servers/channel';
+import {
+    prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannel,
+    getMyChannel, getChannelById, queryUsersOnChannel, queryUserChannelsByTypes,
+} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, queryMyTeams, removeChannelFromTeamHistory} from '@queries/servers/team';
