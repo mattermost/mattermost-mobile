@@ -17,7 +17,7 @@ export type MenuItemProps = {
     i18nId?: string;
     iconContainerStyle?: StyleProp<ViewStyle>;
     iconName?: string;
-    innerContainerStyle?: StyleProp<ViewStyle>;
+    containerStyle?: StyleProp<ViewStyle>;
     isDestructor?: boolean;
     labelComponent?: ReactNode;
     leftComponent?: ReactNode;
@@ -77,6 +77,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginHorizontal: 15,
             color: theme.linkColor,
         },
+        mainContainer: {
+            flexDirection: 'column',
+        },
     };
 });
 
@@ -87,7 +90,7 @@ const MenuItem = (props: MenuItemProps) => {
         i18nId,
         iconContainerStyle,
         iconName,
-        innerContainerStyle,
+        containerStyle,
         isDestructor = false,
         isLink = false,
         labelComponent,
@@ -146,8 +149,8 @@ const MenuItem = (props: MenuItemProps) => {
             onPress={onPress}
             underlayColor={changeOpacity(theme.centerChannelColor, Platform.select({android: 0.1, ios: 0.3}) || 0.3)}
         >
-            <View style={{flexDirection: 'column'}}>
-                <View style={[style.container, innerContainerStyle]}>
+            <View style={style.mainContainer}>
+                <View style={[style.container, containerStyle]}>
                     {icon && (
                         <View style={[style.iconContainer, iconContainerStyle]}>
                             {icon}

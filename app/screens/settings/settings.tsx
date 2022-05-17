@@ -172,7 +172,7 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
                         type='help'
                         onPress={onPressHandler}
                         isLink={true}
-                        innerContainerStyle={styles.innerContainerStyle}
+                        containerStyle={styles.innerContainerStyle}
                     />
                     }
                 </View>
