@@ -26,22 +26,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             marginTop: 20,
             marginBottom: 12,
         },
-        button: {
-            alignItems: 'center',
-            borderRadius: 4,
-            height: 40,
-        },
-        text: {
-            marginHorizontal: 16,
-            marginVertical: 8,
-            fontSize: 16,
-        },
-        selectedButton: {
-            backgroundColor: changeOpacity(theme.buttonBg, 0.1),
-        },
-        selectedText: {
-            color: theme.buttonBg,
-        },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             height: 1,

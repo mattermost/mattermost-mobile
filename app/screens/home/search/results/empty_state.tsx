@@ -14,10 +14,8 @@ import EmptyMessages from './empty_messages';
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
         alignItems: 'center',
-        display: 'flex',
-        height: '100%',
         justifyContent: 'center',
-        margin: 40,
+        marginHorizontal: 40,
         textAlign: 'center',
     },
     title: {
