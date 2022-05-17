@@ -15,7 +15,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
 import {emitNotificationError} from '@utils/notification';
 
-import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, syncOtherServers, teamsToRemove} from './common';
+import {deferredAppEntryActions, fetchAppEntryData, syncOtherServers, teamsToRemove} from './common';
 import {graphQLCommon} from './gql_common';
 
 export async function pushNotificationEntry(serverUrl: string, notification: NotificationWithData) {
@@ -73,13 +73,12 @@ const restNotificationEntry = async (serverUrl: string, teamId: string, channelI
     const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
 
     const fetchedData = await fetchAppEntryData(serverUrl, lastDisconnectedAt, teamId);
-    const fetchedError = (fetchedData as AppEntryError).error;
 
-    if (fetchedError) {
-        return {error: fetchedError};
+    if ('error' in fetchedData) {
+        return {error: fetchedData.error};
     }
 
-    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData as AppEntryData;
+    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData;
     const rolesData = await fetchRoles(serverUrl, teamData?.memberships, chData?.memberships, meData?.user, true);
 
     // There is a chance that after the above request returns

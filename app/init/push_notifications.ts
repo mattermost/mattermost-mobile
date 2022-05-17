@@ -80,10 +80,12 @@ class PushNotifications {
                 NativeNotifications.removeDeliveredNotifications(ids);
             }
 
+            let badgeCount = notifications.length - ids.length;
+
             const serversUrl = Object.keys(DatabaseManager.serverDatabases);
             const mentionPromises = serversUrl.map((url) => getTotalMentionsForServer(url));
             Promise.all(mentionPromises).then((result) => {
-                let badgeCount = result.reduce((acc, count) => (acc + count), 0);
+                badgeCount += result.reduce((acc, count) => (acc + count), 0);
                 badgeCount = badgeCount <= 0 ? 0 : badgeCount;
                 Notifications.ios.setBadgeCount(badgeCount);
             });

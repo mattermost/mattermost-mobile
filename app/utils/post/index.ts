@@ -62,19 +62,9 @@ export function shouldIgnorePost(post: Post): boolean {
     return Post.IGNORE_POST_TYPES.includes(post.type);
 }
 
-export const sortPostsByNewest = (posts: PostModel[]) => {
-    return posts.sort((a, b) => {
-        if (a.createAt > b.createAt) {
-            return 1;
-        }
-
-        return -1;
-    });
-};
-
 export const processPostsFetched = (data: PostResponse) => {
     const order = data.order;
-    const posts = Object.values(data.posts) as Post[];
+    const posts = Object.values(data.posts);
     const previousPostId = data.prev_post_id;
 
     return {

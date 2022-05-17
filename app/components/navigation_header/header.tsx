@@ -55,11 +55,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     subtitleContainer: {
         flexDirection: 'row',
         justifyContent: Platform.select({android: 'flex-start', ios: 'center'}),
+        left: Platform.select({ios: undefined, default: 3}),
     },
     subtitle: {
         color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
-        fontFamily: 'OpenSans',
-        fontSize: 12,
+        ...typography('Body', 75),
         lineHeight: 12,
         marginBottom: 8,
         marginTop: 2,
@@ -90,9 +90,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     leftContainer: {
         height: '100%',
         justifyContent: 'center',
-        paddingLeft: 16,
         ...Platform.select({
             ios: {
+                paddingLeft: 16,
                 zIndex: 5,
                 position: 'absolute',
                 bottom: 0,

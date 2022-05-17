@@ -10,6 +10,8 @@ import nock from 'nock';
 
 import Config from '@assets/config.json';
 import {Client} from '@client/rest';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
 import {prepareCommonSystemValues} from '@queries/servers/system';
 import {generateId} from '@utils/general';
@@ -106,6 +108,11 @@ class TestHelper {
             await operator.batchRecords(systems);
         }
 
+        await operator.handleSystem({
+            prepareRecordsOnly: false,
+            systems: [{id: SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS, value: PUSH_PROXY_STATUS_VERIFIED}],
+        });
+
         return {database, operator};
     };
 
@@ -198,7 +205,7 @@ class TestHelper {
             // https://jestjs.io/docs/snapshot-testing#2-tests-should-be-deterministic
             // display_name: `Unit Test ${name}`,
             display_name: 'Channel',
-            type: 'O' as ChannelType,
+            type: 'O' as const,
             delete_at: 0,
             total_msg_count: 0,
             scheme_id: this.generateId(),

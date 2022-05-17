@@ -6,16 +6,20 @@ import {switchToChannelById} from '@actions/remote/channel';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {Screens} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
+import NetworkManager from '@managers/network_manager';
+import {getDeviceToken} from '@queries/app/global';
 import {queryChannelsById, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
-import {prepareCommonSystemValues, getCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId, getConfig} from '@queries/servers/system';
+import {prepareCommonSystemValues, getCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId, getConfig, getPushVerificationStatus} from '@queries/servers/system';
 import {getNthLastChannelFromTeam} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
 
-import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, registerDeviceToken, syncOtherServers, teamsToRemove} from './common';
+import {deferredAppEntryActions, fetchAppEntryData, registerDeviceToken, syncOtherServers, teamsToRemove} from './common';
 import {graphQLCommon} from './gql_common';
 
 export async function appEntry(serverUrl: string, since = 0) {
@@ -64,13 +68,12 @@ const restAppEntry = async (serverUrl: string, since = 0) => {
     const lastDisconnectedAt = (await getWebSocketLastDisconnected(database)) || since;
     let t = Date.now();
     const fetchedData = await fetchAppEntryData(serverUrl, lastDisconnectedAt, currentTeamId);
-    const fetchedError = (fetchedData as AppEntryError).error;
 
-    if (fetchedError) {
-        return {error: fetchedError};
+    if ('error' in fetchedData) {
+        return {error: fetchedData.error};
     }
 
-    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData as AppEntryData;
+    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData;
     const rolesData = await fetchRoles(serverUrl, teamData?.memberships, chData?.memberships, meData?.user, true, true);
     console.log('fetch', Date.now() - t);
     if (initialTeamId === currentTeamId) {
@@ -124,10 +127,59 @@ const restAppEntry = async (serverUrl: string, since = 0) => {
         syncOtherServers(serverUrl);
     }
 
+    verifyPushProxy(serverUrl);
+
     const error = teamData.error || chData?.error || prefData.error || meData.error;
     console.log('Time elapsed', Date.now() - time);
     return {error, userId: meData?.user?.id};
 };
+
+export async function verifyPushProxy(serverUrl: string) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return;
+    }
+
+    const {database} = operator;
+
+    const ppVerification = await getPushVerificationStatus(database);
+    if (ppVerification !== PUSH_PROXY_STATUS_UNKNOWN) {
+        return;
+    }
+
+    const appDatabase = DatabaseManager.appDatabase?.database;
+    if (!appDatabase) {
+        return;
+    }
+
+    const deviceId = await getDeviceToken(appDatabase);
+    if (!deviceId) {
+        return;
+    }
+
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (err) {
+        return;
+    }
+
+    try {
+        const response = await client.ping(deviceId);
+        const canReceiveNotifications = response?.data?.CanReceiveNotifications;
+        switch (canReceiveNotifications) {
+            case PUSH_PROXY_RESPONSE_NOT_AVAILABLE:
+                operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS, value: PUSH_PROXY_STATUS_NOT_AVAILABLE}], prepareRecordsOnly: false});
+                return;
+            case PUSH_PROXY_RESPONSE_UNKNOWN:
+                return;
+            default:
+                operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS, value: PUSH_PROXY_STATUS_VERIFIED}], prepareRecordsOnly: false});
+        }
+    } catch (err) {
+        // Do nothing
+    }
+}
 
 export async function upgradeEntry(serverUrl: string) {
     const dt = Date.now();

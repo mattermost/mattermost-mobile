@@ -17,6 +17,7 @@ import {patchTeamHistory, getConfig, getTeamHistory, observeCurrentTeamId, getCu
 import {observeThreadMentionCount} from './thread';
 import {getCurrentUser} from './user';
 
+import type {MyChannelModel} from '@database/models/server';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
@@ -45,7 +46,7 @@ export const addChannelToTeamHistory = async (operator: ServerDataOperator, team
     try {
         // Exlude GLOBAL_THREADS from channel check
         if (channelId !== Screens.GLOBAL_THREADS) {
-            const myChannel = (await operator.database.get(MY_CHANNEL).find(channelId));
+            const myChannel = (await operator.database.get<MyChannelModel>(MY_CHANNEL).find(channelId));
             if (!myChannel) {
                 return [];
             }
@@ -197,9 +198,8 @@ export const getDefaultTeamId = async (database: Database) => {
     }
 
     const teamModels = await database.get<TeamModel>(TEAM).query(Q.on(MY_TEAM, Q.where('id', Q.notEq('')))).fetch();
-    const teams = teamModels.map((t) => ({id: t.id, display_name: t.displayName, name: t.name} as Team));
 
-    const defaultTeam = selectDefaultTeam(teams, user?.locale || DEFAULT_LOCALE, teamOrderPreference, config?.ExperimentalPrimaryTeam);
+    const defaultTeam = selectDefaultTeam(teamModels, user?.locale || DEFAULT_LOCALE, teamOrderPreference, config?.ExperimentalPrimaryTeam);
     return defaultTeam?.id;
 };
 

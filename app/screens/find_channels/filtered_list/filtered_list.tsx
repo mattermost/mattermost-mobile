@@ -170,7 +170,6 @@ const FilteredList = ({
                 }, {displayName}),
             );
             return;
-            return;
         }
 
         await close();
@@ -187,7 +186,7 @@ const FilteredList = ({
             return (
                 <Loading
                     containerStyle={style.noResultContainer}
-                    style={style.loading}
+                    size='large'
                     color={theme.buttonBg}
                 />
             );
@@ -209,7 +208,6 @@ const FilteredList = ({
             return (
                 <ChannelItem
                     channel={item}
-                    collapsed={false}
                     isInfo={true}
                     onPress={onSwitchToChannel}
                     showTeamName={showTeamName}
@@ -276,7 +274,7 @@ const FilteredList = ({
     });
 
     useEffect(() => {
-        bounce.current = debounce(search, 250);
+        bounce.current = debounce(search, 500);
         bounce.current();
         return () => {
             if (bounce.current) {

@@ -13,7 +13,7 @@ const {SERVERS} = MM_TABLES.APP;
 export const subscribeActiveServers = (observer: (servers: ServersModel[]) => void) => {
     const db = DatabaseManager.appDatabase?.database;
     return db?.
-        get(SERVERS).
+        get<ServersModel>(SERVERS).
         query(Q.where('identifier', Q.notEq(''))).
         observeWithColumns(['display_name', 'last_active_at']).
         subscribe(observer);
@@ -22,7 +22,7 @@ export const subscribeActiveServers = (observer: (servers: ServersModel[]) => vo
 export const subscribeAllServers = (observer: (servers: ServersModel[]) => void) => {
     const db = DatabaseManager.appDatabase?.database;
     return db?.
-        get(SERVERS).
+        get<ServersModel>(SERVERS).
         query().
         observeWithColumns(['last_active_at']).
         subscribe(observer);

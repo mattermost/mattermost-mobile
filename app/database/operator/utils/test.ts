@@ -8,12 +8,11 @@ import {sanitizeReactions} from '@database/operator/utils/reaction';
 import {mockedPosts, mockedReactions} from './mock';
 
 import type {WriterInterface} from '@nozbe/watermelondb/Database';
-import type ReactionModel from '@typings/database/models/servers/reaction';
 
 describe('DataOperator: Utils tests', () => {
     it('=> sanitizePosts: should filter between ordered and unordered posts', () => {
         const {postsOrdered, postsUnordered} = sanitizePosts({
-            posts: Object.values(mockedPosts.posts) as Post[],
+            posts: Object.values(mockedPosts.posts),
             orders: mockedPosts.order,
         });
         expect(postsOrdered.length).toBe(4);
@@ -24,7 +23,7 @@ describe('DataOperator: Utils tests', () => {
         const previousPostId = 'prev_xxyuoxmehne';
         const chainedOfPosts = createPostsChain({
             order: mockedPosts.order,
-            posts: Object.values(mockedPosts.posts) as Post[],
+            posts: Object.values(mockedPosts.posts),
             previousPostId,
         });
 
@@ -75,8 +74,12 @@ describe('DataOperator: Utils tests', () => {
             },
         });
 
+        if (!server) {
+            fail('server database not created');
+        }
+
         // we commit one Reaction to our database
-        const prepareRecords = await server?.operator.handleReactions({
+        const prepareRecords = await server.operator.handleReactions({
             postsReactions: [{
                 post_id: '8ww8kb1dbpf59fu4d5xhu5nf5w',
                 reactions: [
@@ -89,11 +92,11 @@ describe('DataOperator: Utils tests', () => {
                 ],
             }],
             prepareRecordsOnly: true,
-        }) as ReactionModel[];
+        });
 
         // Jest in not using the same database instance amongst the Singletons; hence, we are creating the reaction record here
         // eslint-disable-next-line max-nested-callbacks
-        await server?.database!.write(async (writer: WriterInterface) => {
+        await server.database.write(async (writer: WriterInterface) => {
             await writer.batch(...prepareRecords);
         });
 
@@ -101,7 +104,7 @@ describe('DataOperator: Utils tests', () => {
             createReactions,
             deleteReactions,
         } = await sanitizeReactions({
-            database: server!.database,
+            database: server.database,
             post_id: '8ww8kb1dbpf59fu4d5xhu5nf5w',
             rawReactions: mockedReactions,
         });

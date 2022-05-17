@@ -26,11 +26,11 @@ type Props = {
 const sectionNames = {
     unreads: {
         id: t('mobile.channel_list.unreads'),
-        defaultMessage: 'UNREADS',
+        defaultMessage: 'Unreads',
     },
     recent: {
         id: t('mobile.channel_list.recent'),
-        defaultMessage: 'RECENT',
+        defaultMessage: 'Recent',
     },
 };
 
@@ -76,7 +76,6 @@ const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, un
         return (
             <ChannelItem
                 channel={item}
-                collapsed={false}
                 isInfo={true}
                 onPress={onPress}
                 showTeamName={showTeamName}

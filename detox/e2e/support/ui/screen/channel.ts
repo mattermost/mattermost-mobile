@@ -16,7 +16,7 @@ import {
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class ChannelScreen {
@@ -27,6 +27,7 @@ class ChannelScreen {
         introOptionAddPeopleItem: 'channel_post_list.intro.option_item.add_people',
         introOptionSetHeaderItem: 'channel_post_list.intro.option_item.set_header',
         introOptionChannelDetailsItem: 'channel_post_list.intro.option_item.channel_details',
+        flatPostList: 'channel.post_list.flat_list',
     };
 
     channelScreen = element(by.id(this.testID.channelScreen));
@@ -34,6 +35,7 @@ class ChannelScreen {
     introOptionAddPeopleItem = element(by.id(this.testID.introOptionAddPeopleItem));
     introOptionSetHeaderItem = element(by.id(this.testID.introOptionSetHeaderItem));
     introOptionChannelDetailsItem = element(by.id(this.testID.introOptionChannelDetailsItem));
+    flatPostList = element(by.id(this.testID.flatPostList));
 
     // convenience props
     backButton = NavigationHeader.backButton;
@@ -102,6 +104,7 @@ class ChannelScreen {
         // # Open post options
         await postListPostItem.longPress();
         await PostOptionsScreen.toBeVisible();
+        await wait(timeouts.TWO_SEC);
     };
 
     openReplyThreadFor = async (postId: string, text: string) => {

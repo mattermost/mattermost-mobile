@@ -247,6 +247,10 @@ export default class ClientBase {
                 retryLimit: 0,
             };
         }
+        if (options.timeoutInterval) {
+            requestOptions.timeoutInterval = options.timeoutInterval;
+        }
+
         let response: ClientResponse;
         try {
             response = await request!(url, requestOptions);

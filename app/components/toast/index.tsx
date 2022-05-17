@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {StyleProp, Text, useWindowDimensions, View, ViewStyle} from 'react-native';
+import {StyleProp, Text, TextStyle, useWindowDimensions, View, ViewStyle} from 'react-native';
 import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
@@ -15,8 +15,11 @@ type ToastProps = {
     children?: React.ReactNode;
     iconName?: string;
     message?: string;
-    style: StyleProp<ViewStyle>;
+    style?: StyleProp<ViewStyle>;
+    textStyle?: StyleProp<TextStyle>;
 }
+
+export const TOAST_HEIGHT = 56;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     center: {
@@ -31,7 +34,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         elevation: 6,
         flex: 1,
         flexDirection: 'row',
-        height: 56,
+        height: TOAST_HEIGHT,
         paddingLeft: 20,
         paddingRight: 10,
         shadowColor: changeOpacity('#000', 0.12),
@@ -46,7 +49,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const Toast = ({animatedStyle, children, style, iconName, message}: ToastProps) => {
+const Toast = ({animatedStyle, children, style, iconName, message, textStyle}: ToastProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const dim = useWindowDimensions();
@@ -65,11 +68,12 @@ const Toast = ({animatedStyle, children, style, iconName, message}: ToastProps) 
                     color={theme.buttonColor}
                     name={iconName!}
                     size={18}
+                    style={textStyle}
                 />
                 }
                 {Boolean(message) &&
                 <View style={styles.flex}>
-                    <Text style={styles.text}>{message}</Text>
+                    <Text style={[styles.text, textStyle]}>{message}</Text>
                 </View>
                 }
                 {children}

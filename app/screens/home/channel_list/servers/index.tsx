@@ -9,14 +9,13 @@ import ServerIcon from '@components/server_icon';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {subscribeAllServers} from '@database/subscription/servers';
-import {subscribeUnreadAndMentionsByServer} from '@database/subscription/unreads';
+import {subscribeUnreadAndMentionsByServer, UnreadObserverArgs} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheet} from '@screens/navigation';
 
 import ServerList from './servers_list';
 
 import type ServersModel from '@typings/database/models/app/servers';
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type {UnreadMessages, UnreadSubscription} from '@typings/database/subscriptions';
 
 const subscriptions: Map<string, UnreadSubscription> = new Map();
@@ -70,14 +69,15 @@ const Servers = React.forwardRef<ServersRef>((props, ref) => {
         setTotal({mentions, unread});
     };
 
-    const unreadsSubscription = (serverUrl: string, {myChannels, threadMentionCount}: {myChannels: MyChannelModel[]; threadMentionCount: number}) => {
+    const unreadsSubscription = (serverUrl: string, {myChannels, settings, threadMentionCount}: UnreadObserverArgs) => {
         const unreads = subscriptions.get(serverUrl);
         if (unreads) {
             let mentions = 0;
             let unread = false;
             for (const myChannel of myChannels) {
+                const isMuted = settings?.[myChannel.id]?.mark_unread === 'mention';
                 mentions += myChannel.mentionsCount;
-                unread = unread || myChannel.isUnread;
+                unread = unread || (myChannel.isUnread && !isMuted);
             }
 
             unreads.mentions = mentions + threadMentionCount;

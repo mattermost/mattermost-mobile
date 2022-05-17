@@ -140,7 +140,7 @@ const EditServerForm = ({
         buttonIcon = (
             <Loading
                 containerStyle={styles.loadingContainerStyle}
-                style={styles.loading}
+                color={theme.buttonColor}
             />
         );
     }

@@ -15,7 +15,7 @@ import {dismissBottomSheet} from '@screens/navigation';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
-    combinedPost?: Post;
+    combinedPost?: Post | PostModel;
     post: PostModel;
 }
 const DeletePostOption = ({combinedPost, post}: Props) => {
@@ -35,9 +35,9 @@ const DeletePostOption = ({combinedPost, post}: Props) => {
             }, {
                 text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
                 style: 'destructive',
-                onPress: () => {
+                onPress: async () => {
+                    await dismissBottomSheet(Screens.POST_OPTIONS);
                     deletePost(serverUrl, combinedPost || post);
-                    dismissBottomSheet(Screens.POST_OPTIONS);
                 },
             }],
         );

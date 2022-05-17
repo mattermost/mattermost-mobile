@@ -10,6 +10,8 @@ class EphemeralStore {
     creatingChannel = false;
     creatingDMorGMTeammates: string[] = [];
 
+    private pushProxyVerification: {[x: string]: string | undefined} = {};
+
     // As of today, the server sends a duplicated event to add the user to the team.
     // If we do not handle this, this ends up showing some errors in the database, apart
     // of the extra computation time. We use this to track the events that are being handled
@@ -69,7 +71,15 @@ class EphemeralStore {
 
     hasModalsOpened = () => this.navigationModalStack.length > 0;
 
+    private removeNavigationComponent = (componentId: string) => {
+        const index = this.allNavigationComponentIds.indexOf(componentId);
+        if (index >= 0) {
+            this.allNavigationComponentIds.splice(index, 1);
+        }
+    };
+
     removeNavigationComponentId = (componentId: string) => {
+        this.removeNavigationComponent(componentId);
         const index = this.navigationComponentIdStack.indexOf(componentId);
         if (index >= 0) {
             this.navigationComponentIdStack.splice(index, 1);
@@ -77,6 +87,7 @@ class EphemeralStore {
     };
 
     removeNavigationModal = (componentId: string) => {
+        this.removeNavigationComponent(componentId);
         const index = this.navigationModalStack.indexOf(componentId);
 
         if (index >= 0) {
@@ -145,6 +156,14 @@ class EphemeralStore {
 
     isAddingToTeam = (teamId: string) => {
         return this.addingTeam.has(teamId);
+    };
+
+    setPushProxyVerificationState = (serverUrl: string, state: string) => {
+        this.pushProxyVerification[serverUrl] = state;
+    };
+
+    getPushProxyVerificationState = (serverUrl: string) => {
+        return this.pushProxyVerification[serverUrl];
     };
 }
 

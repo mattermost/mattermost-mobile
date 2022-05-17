@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
-import {Database} from '@constants';
+import {MM_TABLES} from '@constants/database';
 import {
     transformThreadRecord,
     transformThreadParticipantRecord,
@@ -11,6 +12,7 @@ import {
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {sanitizeThreadParticipants} from '@database/operator/utils/thread';
 
+import type Database from '@nozbe/watermelondb/Database';
 import type {HandleThreadsArgs, HandleThreadParticipantsArgs} from '@typings/database/database';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type ThreadInTeamModel from '@typings/database/models/servers/thread_in_team';
@@ -19,7 +21,7 @@ import type ThreadParticipantModel from '@typings/database/models/servers/thread
 const {
     THREAD,
     THREAD_PARTICIPANT,
-} = Database.MM_TABLES.SERVER;
+} = MM_TABLES.SERVER;
 
 export interface ThreadHandlerMix {
     handleThreads: ({threads, teamId, prepareRecordsOnly, loadedInGlobalThreads}: HandleThreadsArgs) => Promise<Model[]>;
@@ -49,17 +51,52 @@ const ThreadHandler = (superclass: any) => class extends superclass {
             key: 'id',
         }) as Thread[];
 
+        // Seperate threads to be deleted & created/updated
+        const deletedThreadIds: string[] = [];
+        const createOrUpdateThreads: Thread[] = [];
+        uniqueThreads.forEach((thread) => {
+            if (thread.delete_at > 0) {
+                deletedThreadIds.push(thread.id);
+            } else {
+                createOrUpdateThreads.push(thread);
+            }
+        });
+
+        if (deletedThreadIds.length) {
+            const database: Database = this.database;
+            const threadsToDelete = await database.get<ThreadModel>(THREAD).query(Q.where('id', Q.oneOf(deletedThreadIds))).fetch();
+            if (threadsToDelete.length) {
+                await database.write(async () => {
+                    const promises: Array<Promise<void>> = [];
+                    threadsToDelete.forEach((thread) => {
+                        promises.push(thread.destroyPermanently());
+                        promises.push(thread.threadsInTeam.destroyAllPermanently());
+                        promises.push(thread.participants.destroyAllPermanently());
+                    });
+                    await Promise.all(promises);
+                });
+            }
+        }
+
+        // As there are no threads to be created or updated
+        if (!createOrUpdateThreads.length) {
+            return [];
+        }
+
         const threadsParticipants: ParticipantsPerThread[] = [];
 
         // Let's process the thread data
-        for (const thread of uniqueThreads) {
-            threadsParticipants.push({
-                thread_id: thread.id,
-                participants: (thread.participants || []).map((participant) => ({
-                    id: participant.id,
+        for (const thread of createOrUpdateThreads) {
+            // Avoid participants field set as "null" from overriding the existing ones
+            if (Array.isArray(thread.participants)) {
+                threadsParticipants.push({
                     thread_id: thread.id,
-                })),
-            });
+                    participants: thread.participants.map((participant) => ({
+                        id: participant.id,
+                        thread_id: thread.id,
+                    })),
+                });
+            }
         }
 
         // Get thread models to be created and updated
@@ -67,7 +104,7 @@ const ThreadHandler = (superclass: any) => class extends superclass {
             fieldName: 'id',
             transformer: transformThreadRecord,
             prepareRecordsOnly: true,
-            createOrUpdateRawValues: uniqueThreads,
+            createOrUpdateRawValues: createOrUpdateThreads,
             tableName: THREAD,
         }) as ThreadModel[];
 
@@ -106,14 +143,7 @@ const ThreadHandler = (superclass: any) => class extends superclass {
     handleThreadParticipants = async ({threadsParticipants, prepareRecordsOnly, skipSync = false}: HandleThreadParticipantsArgs): Promise<ThreadParticipantModel[]> => {
         const batchRecords: ThreadParticipantModel[] = [];
 
-        if (!threadsParticipants?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
-                'An empty or undefined "threadParticipants" array has been passed to the handleThreadParticipants method',
-            );
-            return [];
-        }
-
+        // NOTE: Participants list can also be an empty array
         for await (const threadParticipant of threadsParticipants) {
             const {thread_id, participants} = threadParticipant;
             const rawValues = getUniqueRawsBy({raws: participants, key: 'id'}) as ThreadParticipant[];

@@ -128,31 +128,34 @@ const Post = ({
         return false;
     }, [isConsecutivePost, post, previousPost, isFirstReply]);
 
+    const handlePostPress = () => {
+        if ([Screens.SAVED_POSTS, Screens.MENTIONS, Screens.SEARCH].includes(location)) {
+            showPermalink(serverUrl, '', post.id, intl);
+            return;
+        }
+
+        const isValidSystemMessage = isAutoResponder || !isSystemPost;
+        if (post.deleteAt === 0 && isValidSystemMessage && !isPendingOrFailed) {
+            if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
+                const rootId = post.rootId || post.id;
+                fetchAndSwitchToThread(serverUrl, rootId);
+            }
+        } else if ((isEphemeral || post.deleteAt > 0)) {
+            removePost(serverUrl, post);
+        }
+
+        setTimeout(() => {
+            pressDetected.current = false;
+        }, 300);
+    };
+
     const handlePress = preventDoubleTap(() => {
         pressDetected.current = true;
 
         if (post) {
-            if (location === Screens.THREAD) {
-                Keyboard.dismiss();
-            } else if ([Screens.SAVED_POSTS, Screens.MENTIONS, Screens.SEARCH].includes(location)) {
-                showPermalink(serverUrl, '', post.id, intl);
-                return;
-            }
+            Keyboard.dismiss();
 
-            const isValidSystemMessage = isAutoResponder || !isSystemPost;
-            if (post.deleteAt === 0 && isValidSystemMessage && !isPendingOrFailed) {
-                if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
-                    const rootId = post.rootId || post.id;
-                    fetchAndSwitchToThread(serverUrl, rootId);
-                }
-            } else if ((isEphemeral || post.deleteAt > 0)) {
-                removePost(serverUrl, post);
-            }
-
-            const pressTimeout = setTimeout(() => {
-                pressDetected.current = false;
-                clearTimeout(pressTimeout);
-            }, 300);
+            setTimeout(handlePostPress, 300);
         }
     });
 
@@ -171,7 +174,7 @@ const Post = ({
         }
 
         Keyboard.dismiss();
-        const passProps = {location, post, showAddReaction};
+        const passProps = {sourceScreen: location, post, showAddReaction};
         const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
         if (isTablet) {
@@ -297,6 +300,7 @@ const Post = ({
                 testID={itemTestID}
                 onPress={handlePress}
                 onLongPress={showPostOptions}
+                delayLongPress={200}
                 underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
                 style={styles.touchableContainer}
             >

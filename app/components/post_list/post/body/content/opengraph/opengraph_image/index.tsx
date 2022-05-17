@@ -64,7 +64,7 @@ const OpengraphImage = ({isReplyPost, layoutWidth, location, metadata, openGraph
         height: MAX_IMAGE_HEIGHT,
         width: layoutWidth || getViewPostWidth(isReplyPost, dimensions.height, dimensions.width),
     }), [isReplyPost, dimensions]);
-    const bestImage = getNearestPoint(bestDimensions, openGraphImages, 'width', 'height') as BestImage;
+    const bestImage = getNearestPoint(bestDimensions, openGraphImages, 'width', 'height');
     const imageUrl = (bestImage.secure_url || bestImage.url)!;
     const imagesMetadata = metadata.images;
 

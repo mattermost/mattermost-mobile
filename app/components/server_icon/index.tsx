@@ -25,6 +25,8 @@ type Props = {
     unreadStyle?: StyleProp<ViewStyle>;
 }
 
+const hitSlop = {top: 20, bottom: 5, left: 40, right: 20};
+
 const styles = StyleSheet.create({
     badge: {
         left: 13,
@@ -64,6 +66,7 @@ export default function ServerIcon({
                 onPress={onPress}
                 type='opacity'
                 testID={testID}
+                hitSlop={hitSlop}
             >
                 <CompassIcon
                     size={size}

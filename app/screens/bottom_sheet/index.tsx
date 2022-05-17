@@ -103,6 +103,7 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
                         sheetRef.current?.snapTo(lastSnap);
                     }
                 }}
+                testID={`${testID}.backdrop`}
             >
                 <Animated.View
                     style={[StyleSheet.absoluteFill, backdropStyle]}

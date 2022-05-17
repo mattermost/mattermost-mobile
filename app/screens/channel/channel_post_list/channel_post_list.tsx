@@ -11,7 +11,6 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {debounce} from '@helpers/api/general';
 import {useIsTablet} from '@hooks/device';
-import {sortPostsByNewest} from '@utils/post';
 
 import Intro from './intro';
 
@@ -30,6 +29,7 @@ type Props = {
 const edges: Edge[] = ['bottom'];
 const styles = StyleSheet.create({
     flex: {flex: 1},
+    containerStyle: {paddingTop: 12},
 });
 
 const ChannelPostList = ({
@@ -44,19 +44,27 @@ const ChannelPostList = ({
     const onEndReached = useCallback(debounce(async () => {
         if (!fetchingPosts.current && canLoadPosts.current && posts.length) {
             fetchingPosts.current = true;
-            const lastPost = sortPostsByNewest(posts)[0];
+            const lastPost = posts[posts.length - 1];
             const result = await fetchPostsBefore(serverUrl, channelId, lastPost.id);
-            canLoadPosts.current = ((result as ProcessedPosts).posts?.length ?? 1) > 0;
             fetchingPosts.current = false;
+            canLoadPosts.current = false;
+            if (!('error' in result)) {
+                canLoadPosts.current = (result.posts?.length ?? 1) > 0;
+            }
         }
     }, 500), [channelId, posts]);
 
-    const intro = <Intro channelId={channelId}/>;
+    const intro = (
+        <Intro
+            channelId={channelId}
+            hasPosts={posts.length > 0}
+        />
+    );
 
     const postList = (
         <PostList
             channelId={channelId}
-            contentContainerStyle={contentContainerStyle}
+            contentContainerStyle={[contentContainerStyle, !isCRTEnabled && styles.containerStyle]}
             isCRTEnabled={isCRTEnabled}
             footer={intro}
             lastViewedAt={lastViewedAt}

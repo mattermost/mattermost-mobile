@@ -8,7 +8,8 @@ import FastImage from 'react-native-fast-image';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import NetworkManager from '@managers/network_manager';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -17,7 +18,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             height: '100%',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: theme.centerChannelColor,
+            backgroundColor: theme.sidebarBg,
             borderRadius: 10,
         },
         containerSelected: {
@@ -25,14 +26,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             height: '100%',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: theme.centerChannelColor,
+            backgroundColor: theme.sidebarBg,
             borderRadius: 6,
         },
         text: {
             color: theme.sidebarText,
-            fontFamily: 'OpenSans',
-            fontWeight: 'bold',
-            fontSize: 15,
+            textTransform: 'capitalize',
+            ...typography('Heading', 400, 'SemiBold'),
         },
         image: {
             borderRadius: 6,
@@ -42,6 +42,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             left: 0,
             right: 0,
             backgroundColor: 'white',
+        },
+        nameOnly: {
+            backgroundColor: changeOpacity(theme.sidebarText, 0.16),
         },
     };
 });
@@ -88,29 +91,30 @@ export default function TeamIcon({
         }
     }, []);
 
+    const nameOnly = imageError || !lastIconUpdate || !client;
     const containerStyle = useMemo(() => {
         if (selected) {
-            return backgroundColor ? [styles.containerSelected, {backgroundColor}] : styles.containerSelected;
+            return backgroundColor ? [styles.containerSelected, {backgroundColor}] : [styles.containerSelected, nameOnly && styles.nameOnly];
         }
 
-        return backgroundColor ? [styles.container, {backgroundColor}] : styles.container;
-    }, [styles, backgroundColor, selected]);
+        return backgroundColor ? [styles.container, {backgroundColor}] : [styles.container, nameOnly && styles.nameOnly];
+    }, [styles, backgroundColor, selected, nameOnly]);
 
     let teamIconContent;
-    if (imageError || !lastIconUpdate || !client) {
+    if (nameOnly) {
         teamIconContent = (
             <Text
                 style={textColor ? [styles.text, {color: textColor}] : styles.text}
                 testID={`${testID}.display_name_abbreviation`}
             >
-                {displayName?.substring(0, 2).toUpperCase()}
+                {displayName.substring(0, 2)}
             </Text>
         );
     } else {
         teamIconContent = (
             <FastImage
                 style={styles.image}
-                source={{uri: `${serverUrl}${client.getTeamIconUrl(id, lastIconUpdate)}`}}
+                source={{uri: `${serverUrl}${client!.getTeamIconUrl(id, lastIconUpdate)}`}}
                 onError={handleImageError}
             />
         );

@@ -20,6 +20,8 @@ import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import ChannelDropdown from './channel_dropdown';
 import ChannelList from './channel_list';
 
+import type {NavButtons} from '@typings/screens/navigation';
+
 const CLOSE_BUTTON_ID = 'close-browse-channels';
 const CREATE_BUTTON_ID = 'create-pub-channel';
 
@@ -64,11 +66,6 @@ const style = StyleSheet.create({
         flex: 1,
         justifyContent: 'center' as const,
         alignItems: 'center' as const,
-    },
-    loading: {
-        height: 32,
-        width: 32,
-        justifyContent: 'center' as const,
     },
 });
 
@@ -123,9 +120,9 @@ export default function BrowseChannels(props: Props) {
     const [adding, setAdding] = useState(false);
 
     const setHeaderButtons = useCallback((createEnabled: boolean) => {
-        const buttons = {
+        const buttons: NavButtons = {
             leftButtons: [makeLeftButton(closeButton)],
-            rightButtons: [] as OptionsTopBarButton[],
+            rightButtons: [],
         };
 
         if (canCreateChannels) {
@@ -196,7 +193,7 @@ export default function BrowseChannels(props: Props) {
         content = (
             <Loading
                 containerStyle={style.loadingContainer}
-                style={style.loading}
+                size='large'
                 color={theme.buttonBg}
             />
         );

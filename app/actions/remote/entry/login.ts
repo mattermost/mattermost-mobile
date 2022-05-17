@@ -23,6 +23,7 @@ import {deferredAppEntryActions} from './common';
 import {graphQLCommon} from './gql_common';
 
 import type {Client} from '@client/rest';
+import type TeamModel from '@typings/database/models/servers/team';
 
 type AfterLoginArgs = {
     serverUrl: string;
@@ -107,7 +108,7 @@ const restLoginEntry = async ({serverUrl, user, clData}: SpecificAfterLoginArgs)
 
     try {
         const isTabletDevice = await isTablet();
-        let initialTeam: Team|undefined;
+        let initialTeam: Team|TeamModel|undefined;
         let initialChannel: Channel|undefined;
         let myTeams: Team[]|undefined;
 

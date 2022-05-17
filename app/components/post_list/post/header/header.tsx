@@ -65,7 +65,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         customStatusEmoji: {
             color: theme.centerChannelColor,
             marginRight: 4,
-            marginTop: 1,
+            marginTop: 2,
         },
     };
 });

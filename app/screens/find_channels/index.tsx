@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {debounce, DebouncedFunc} from 'lodash';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {DeviceEventEmitter, Keyboard, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
@@ -44,6 +45,7 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
     const theme = useTheme();
     const [term, setTerm] = useState('');
     const [loading, setLoading] = useState(false);
+    const bounce = useRef<DebouncedFunc<() => void>>();
     const styles = getStyleSheet(theme);
     const color = useMemo(() => changeOpacity(theme.centerChannelColor, 0.72), [theme]);
     const keyboardHeight = useKeyboardHeight();
@@ -66,10 +68,18 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
     }, []);
 
     const onChangeText = useCallback((text) => {
-        setTerm(text);
-        if (!text) {
+        if (text) {
+            bounce.current?.cancel();
+            bounce.current = debounce(() => {
+                setTerm(text);
+            }, 100);
+            bounce.current();
+        } else {
+            setTerm(text);
             setLoading(false);
         }
+
+        return () => bounce.current?.cancel();
     }, []);
 
     useEffect(() => {

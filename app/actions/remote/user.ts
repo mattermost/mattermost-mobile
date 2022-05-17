@@ -121,7 +121,7 @@ export async function fetchProfilesPerChannels(serverUrl: string, channelIds: st
 
         // let's filter those channels that we already have the users
         const membersCount = await getMembersCountByChannelsId(database, channelIds);
-        const channelsToFetch = channelIds.filter((c) => membersCount[c] <= 1);
+        const channelsToFetch = channelIds.filter((c) => membersCount[c] <= 1 || membersCount[c] > 2);
 
         // Batch fetching profiles per channel by chunks of 50
         const channels = chunk(channelsToFetch, 50);

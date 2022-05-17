@@ -11,6 +11,7 @@ import tinyColor from 'tinycolor2';
 import CompassIcon from '@components/compass_icon';
 import {Device, Events, Screens} from '@constants';
 import NavigationConstants from '@constants/navigation';
+import {NOT_READY} from '@constants/screens';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import EphemeralStore from '@store/ephemeral_store';
 import {LaunchProps, LaunchType} from '@typings/launch';
@@ -131,10 +132,13 @@ Navigation.setDefaultOptions({
             fontSize: 18,
             fontWeight: '600',
         },
+        backButton: {
+            enableMenu: false,
+        },
         subtitle: {
             fontFamily: 'OpenSans',
             fontSize: 12,
-            fontWeight: '500',
+            fontWeight: '400',
         },
     },
 });
@@ -165,16 +169,16 @@ function getThemeFromState(): Theme {
 // crashes when trying to load a screen that does
 // NOT exists, this should be removed for GA
 function isScreenRegistered(screen: string) {
-    const exists = Object.values(Screens).includes(screen);
-
-    if (!exists) {
+    const notImplemented = NOT_READY.includes(screen) || !Object.values(Screens).includes(screen);
+    if (notImplemented) {
         Alert.alert(
             'Temporary error ' + screen,
             'The functionality you are trying to use has not been implemented yet',
         );
+        return false;
     }
 
-    return exists;
+    return true;
 }
 
 export function resetToHome(passProps: LaunchProps = {launchType: LaunchType.Normal}) {
@@ -629,7 +633,10 @@ export function showOverlay(name: string, passProps = {}, options = {}) {
         component: {
             id: name,
             name,
-            passProps,
+            passProps: {
+                ...passProps,
+                overlay: true,
+            },
             options: merge(defaultOptions, options),
         },
     });
@@ -680,5 +687,26 @@ export async function dismissBottomSheet(alternativeScreen = Screens.BOTTOM_SHEE
 
 export const showAppForm = async (form: AppForm, call: AppCallRequest) => {
     const passProps = {form, call};
-    showModal(Screens.APP_FORM, form.title || '', passProps);
+    showModal(Screens.APPS_FORM, form.title || '', passProps);
 };
+
+export async function findChannels(title: string, theme: Theme) {
+    const options: Options = {modal: {swipeToDismiss: false}};
+    const closeButtonId = 'close-find-channels';
+    const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
+    options.topBar = {
+        leftButtons: [{
+            id: closeButtonId,
+            icon: closeButton,
+            testID: closeButtonId,
+        }],
+    };
+
+    DeviceEventEmitter.emit(Events.PAUSE_KEYBOARD_TRACKING_VIEW, true);
+    showModal(
+        Screens.FIND_CHANNELS,
+        title,
+        {closeButtonId},
+        options,
+    );
+}

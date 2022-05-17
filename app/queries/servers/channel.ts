@@ -3,7 +3,7 @@
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 import {of as of$, Observable} from 'rxjs';
-import {switchMap, distinctUntilChanged} from 'rxjs/operators';
+import {map as map$, switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
@@ -122,12 +122,12 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
         }, {});
 
     const channelInfos: ChannelInfo[] = [];
-    const {memberships, membershipsMap} = channelMembers.reduce((result, cm) => {
+    const {memberships, membershipsMap} = channelMembers.reduce<MembershipReduce>((result, cm) => {
         const value = {...cm, id: cm.channel_id};
         result.memberships.push(value);
         result.membershipsMap[value.id] = value;
         return result;
-    }, {memberships: [], membershipsMap: {}} as MembershipReduce);
+    }, {memberships: [], membershipsMap: {}});
 
     for (const c of channels) {
         const storedChannel = allChannelsForTeam[c.id];
@@ -224,6 +224,12 @@ export const queryAllChannelsInfoForTeam = (database: Database, teamId: string) 
 
 export const queryAllMyChannel = (database: Database) => {
     return database.get<MyChannelModel>(MY_CHANNEL).query();
+};
+
+export const queryAllMyChannelsForTeam = (database: Database, teamId: string) => {
+    return database.get<ChannelModel>(MY_CHANNEL).query(
+        Q.on(CHANNEL, Q.where('team_id', Q.oneOf([teamId, '']))),
+    );
 };
 
 export const getMyChannel = async (database: Database, channelId: string) => {
@@ -339,7 +345,7 @@ export const observeCurrentChannel = (database: Database) => {
 
 export async function deleteChannelMembership(operator: ServerDataOperator, userId: string, channelId: string, prepareRecordsOnly = false) {
     try {
-        const channelMembership = await operator.database.get(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('channel_id', Q.eq(channelId))).fetch();
+        const channelMembership = await operator.database.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('channel_id', Q.eq(channelId))).fetch();
         const models: Model[] = [];
         for (const membership of channelMembership) {
             models.push(membership.prepareDestroyPermanently());
@@ -419,11 +425,24 @@ export const observeChannelInfo = (database: Database, channelId: string) => {
     );
 };
 
+export const queryAllMyChannelSettings = (database: Database) => {
+    return database.get<MyChannelSettingsModel>(MY_CHANNEL_SETTINGS).query();
+};
+
 export const queryMyChannelSettingsByIds = (database: Database, ids: string[]) => {
     return database.get<MyChannelSettingsModel>(MY_CHANNEL_SETTINGS).
         query(
             Q.where('id', Q.oneOf(ids)),
         );
+};
+
+export const observeAllMyChannelNotifyProps = (database: Database) => {
+    return queryAllMyChannelSettings(database).observeWithColumns(['notify_props']).pipe(
+        map$((settings) => settings.reduce<Record<string, Partial<ChannelNotifyProps>>>((obj, setting) => {
+            obj[setting.id] = setting.notifyProps;
+            return obj;
+        }, {})),
+    );
 };
 
 export const queryChannelsByNames = (database: Database, names: string[]) => {
