@@ -4,7 +4,6 @@
 import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
-import {updateChannelNotifyProps} from '@actions/remote/channel';
 import {General, Navigation as NavigationConstants, Preferences, Screens} from '@constants';
 import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@constants/categories';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -14,7 +13,7 @@ import {extractChannelDisplayName} from '@helpers/database';
 import PushNotifications from '@init/push_notifications';
 import {
     prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannel,
-    getMyChannel, getChannelById, queryUsersOnChannel, queryMyChannelSettingsByIds, queryUserChannelsByTypes,
+    getMyChannel, getChannelById, queryUsersOnChannel, queryUserChannelsByTypes,
 } from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
@@ -25,7 +24,6 @@ import EphemeralStore from '@store/ephemeral_store';
 import {makeCategoryChannelId, makeCategoryId} from '@utils/categories';
 import {isDMorGM} from '@utils/channel';
 import {isTablet} from '@utils/helpers';
-import {showMuteChannelSnackbar} from '@utils/snack_bar';
 import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
 import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from '@utils/user';
 
@@ -481,39 +479,6 @@ export async function addChannelToDefaultCategory(serverUrl: string, channel: Ch
 
     return {models};
 }
-
-export const toggleMuteChannel = async (serverUrl: string, channelId: string, hasAlreadyUndo = false) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    try {
-        const channelSettings = await queryMyChannelSettingsByIds(database, [channelId]).fetch();
-        const myChannelSetting = channelSettings?.[0];
-        const mark_unread = myChannelSetting.notifyProps?.mark_unread === 'mention' ? 'all' : 'mention';
-
-        const notifyProps: Partial<ChannelNotifyProps> = {...myChannelSetting.notifyProps, mark_unread};
-        await updateChannelNotifyProps(serverUrl, channelId, notifyProps);
-
-        await database.write(async () => {
-            await myChannelSetting.update((c) => {
-                c.notifyProps = notifyProps;
-            });
-        });
-
-        if (!hasAlreadyUndo) {
-            const onUndo = () => toggleMuteChannel(serverUrl, channelId, true);
-            showMuteChannelSnackbar(onUndo);
-        }
-
-        return {
-            notifyProps,
-        };
-    } catch (error) {
-        return {error};
-    }
-};
 
 export async function showUnreadChannelsOnly(serverUrl: string, onlyUnreads: boolean) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;

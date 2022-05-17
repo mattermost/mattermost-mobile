@@ -233,7 +233,7 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
                         textStyle={styles.text}
                         style={styles.toast}
                     >
-                        {config.canUndo && (
+                        {config.canUndo && onAction && (
                             <TouchableOpacity onPress={onUndoPressHandler}>
                                 <Text style={styles.undo}>
                                     {intl.formatMessage({

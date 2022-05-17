@@ -13,13 +13,14 @@ import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import NetworkManager from '@managers/network_manager';
-import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo} from '@queries/servers/channel';
+import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo, queryMyChannelSettingsByIds} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {prepareMyTeams, getNthLastChannelFromTeam, getMyTeamById, getTeamById, getTeamByName, queryMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {generateChannelNameFromDisplayName, getDirectChannelName, isDMorGM} from '@utils/channel';
+import {showMuteChannelSnackbar} from '@utils/snack_bar';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
@@ -1084,3 +1085,35 @@ export const updateChannelNotifyProps = async (serverUrl: string, channelId: str
     }
 };
 
+export const toggleMuteChannel = async (serverUrl: string, channelId: string, showSnackBar = false) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const channelSettings = await queryMyChannelSettingsByIds(database, [channelId]).fetch();
+        const myChannelSetting = channelSettings?.[0];
+        const mark_unread = myChannelSetting.notifyProps?.mark_unread === 'mention' ? 'all' : 'mention';
+
+        const notifyProps: Partial<ChannelNotifyProps> = {...myChannelSetting.notifyProps, mark_unread};
+        await updateChannelNotifyProps(serverUrl, channelId, notifyProps);
+
+        await database.write(async () => {
+            await myChannelSetting.update((c) => {
+                c.notifyProps = notifyProps;
+            });
+        });
+
+        if (showSnackBar) {
+            const onUndo = () => toggleMuteChannel(serverUrl, channelId, false);
+            showMuteChannelSnackbar(onUndo);
+        }
+
+        return {
+            notifyProps,
+        };
+    } catch (error) {
+        return {error};
+    }
+};
