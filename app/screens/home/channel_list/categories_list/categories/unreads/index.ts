@@ -43,7 +43,7 @@ type NotifyProps = {
 }
 
 const mostRecentFirst = (lastPostAtPerChannel: Record<string, number> | undefined, a: MyChannelModel, b: MyChannelModel) => {
-    if (lastPostAtPerChannel) {
+    if (lastPostAtPerChannel && lastPostAtPerChannel[a.id] && lastPostAtPerChannel[b.id]) {
         return lastPostAtPerChannel[b.id] - lastPostAtPerChannel[a.id];
     }
     return b.lastPostAt - a.lastPostAt;
@@ -68,9 +68,6 @@ const filterAndSortMyChannels = ([myChannels, notifyProps, lastPostAtPerChannel]
     const mentions: MyChannelModel[] = [];
     const unreads: MyChannelModel[] = [];
     const mutedMentions: MyChannelModel[] = [];
-    const latestPerChannelMentions: Record<string, number> = {};
-    const latestPerChannelUnread: Record<string, number> = {};
-    const latestPerChannelMuted: Record<string, number> = {};
 
     const isMuted = (id: string) => {
         return notifyProps[id]?.mark_unread === 'mention';
@@ -82,35 +79,26 @@ const filterAndSortMyChannels = ([myChannels, notifyProps, lastPostAtPerChannel]
         // is it a mention?
         if (!isMuted(id) && myChannel.mentionsCount > 0) {
             mentions.push(myChannel);
-            if (lastPostAtPerChannel?.[id]) {
-                latestPerChannelMentions[id] = lastPostAtPerChannel[id];
-            }
             continue;
         }
 
         // is it unread?
         if (!isMuted(myChannel.id) && myChannel.isUnread) {
             unreads.push(myChannel);
-            if (lastPostAtPerChannel?.[id]) {
-                latestPerChannelUnread[id] = lastPostAtPerChannel[id];
-            }
             continue;
         }
 
         // is it a muted mention?
         if (isMuted(myChannel.id) && myChannel.mentionsCount > 0) {
             mutedMentions.push(myChannel);
-            if (lastPostAtPerChannel?.[id]) {
-                latestPerChannelMuted[id] = lastPostAtPerChannel[id];
-            }
             continue;
         }
     }
 
     // Sort
-    mentions.sort(mostRecentFirst.bind(null, lastPostAtPerChannel ? latestPerChannelMentions : undefined));
-    unreads.sort(mostRecentFirst.bind(null, lastPostAtPerChannel ? latestPerChannelUnread : undefined));
-    mutedMentions.sort(mostRecentFirst.bind(null, lastPostAtPerChannel ? latestPerChannelMuted : undefined));
+    mentions.sort(mostRecentFirst.bind(null, lastPostAtPerChannel));
+    unreads.sort(mostRecentFirst.bind(null, lastPostAtPerChannel));
+    mutedMentions.sort(mostRecentFirst.bind(null, lastPostAtPerChannel));
 
     return [...mentions, ...unreads, ...mutedMentions];
 };
