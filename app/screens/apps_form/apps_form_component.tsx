@@ -58,7 +58,7 @@ function fieldsAsElements(fields?: AppField[]): DialogElement[] {
         type: f.type,
         subtype: f.subtype,
         optional: !f.is_required,
-    })) as DialogElement[];
+    } as DialogElement)) || [];
 }
 
 const close = () => {
@@ -240,7 +240,7 @@ function AppsFormComponent({
 
         if (fieldErrors && Object.keys(fieldErrors).length > 0) {
             hasErrors = true;
-            if (checkIfErrorsMatchElements(fieldErrors as any, elements)) {
+            if (checkIfErrorsMatchElements(fieldErrors, elements)) {
                 setErrors(fieldErrors);
             } else if (!hasHeaderError) {
                 hasHeaderError = true;

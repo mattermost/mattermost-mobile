@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {DEFAULT_LOCALE} from '@i18n';
+import TeamModel from '@typings/database/models/servers/team';
 
-export const selectDefaultTeam = (teams: Team[], locale = DEFAULT_LOCALE, userTeamOrderPreference = '', primaryTeam = '') => {
+export const selectDefaultTeam = (teams: Array<Team | TeamModel>, locale = DEFAULT_LOCALE, userTeamOrderPreference = '', primaryTeam = '') => {
     let defaultTeam;
 
     if (!teams.length) {
@@ -21,7 +22,7 @@ export const selectDefaultTeam = (teams: Team[], locale = DEFAULT_LOCALE, userTe
     return defaultTeam;
 };
 
-export const sortTeamsByUserPreference = (teams: Team[], locale: string, teamsOrder = '') => {
+export const sortTeamsByUserPreference = (teams: Array<Team | TeamModel>, locale: string, teamsOrder = '') => {
     if (!teams.length) {
         return [];
     }
@@ -52,10 +53,12 @@ export const sortTeamsByUserPreference = (teams: Team[], locale: string, teamsOr
     return [...customSortedTeams, ...otherTeams];
 };
 
-export function sortTeamsWithLocale(locale: string): (a: Team, b: Team) => number {
-    return (a: Team, b: Team): number => {
-        if (a.display_name !== b.display_name) {
-            return a.display_name.toLowerCase().localeCompare(b.display_name.toLowerCase(), locale, {numeric: true});
+export function sortTeamsWithLocale(locale: string): (a: Team | TeamModel, b: Team | TeamModel) => number {
+    return (a, b): number => {
+        const aDisplayName = 'display_name' in a ? a.display_name : a.displayName;
+        const bDisplayName = 'display_name' in b ? b.display_name : b.displayName;
+        if (aDisplayName !== bDisplayName) {
+            return aDisplayName.toLowerCase().localeCompare(bDisplayName.toLowerCase(), locale, {numeric: true});
         }
 
         return a.name.toLowerCase().localeCompare(b.name.toLowerCase(), locale, {numeric: true});

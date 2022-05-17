@@ -11,6 +11,7 @@ import {useIsTablet} from '@hooks/device';
 import {bottomSheet} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import UserAvatar from './user_avatar';
 import UsersList from './users_list';
@@ -86,8 +87,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         listHeaderText: {
             color: changeOpacity(theme.centerChannelColor, 0.56),
-            fontSize: 12,
-            fontWeight: '600',
+            ...typography('Body', 75, 'SemiBold'),
+            textTransform: 'uppercase',
         },
     };
 });
@@ -104,7 +105,7 @@ const UserAvatarsStack = ({breakAt = 3, style: baseContainerStyle, users}: Props
                     <View style={style.listHeader}>
                         <FormattedText
                             id='mobile.participants.header'
-                            defaultMessage={'THREAD PARTICIPANTS'}
+                            defaultMessage={'Thread Participants'}
                             style={style.listHeaderText}
                         />
                     </View>
@@ -117,7 +118,7 @@ const UserAvatarsStack = ({breakAt = 3, style: baseContainerStyle, users}: Props
             closeButtonId: 'close-set-user-status',
             renderContent,
             snapPoints: [(Math.min(14, users.length) + 3) * 40, 10],
-            title: intl.formatMessage({id: 'mobile.participants.header', defaultMessage: 'THREAD PARTICIPANTS'}),
+            title: intl.formatMessage({id: 'mobile.participants.header', defaultMessage: 'Thread Participants'}),
             theme,
         });
     }), [isTablet, theme, users]);

@@ -16,7 +16,7 @@ import type RoleModel from '@typings/database/models/servers/role';
 
 type Props = {
     channel: ChannelModel;
-    loading?: boolean;
+    hasPosts: boolean;
     roles: RoleModel[];
 }
 
@@ -35,8 +35,8 @@ const styles = StyleSheet.create({
     },
 });
 
-const Intro = ({channel, loading = false, roles}: Props) => {
-    const [fetching, setFetching] = useState(false);
+const Intro = ({channel, hasPosts, roles}: Props) => {
+    const [fetching, setFetching] = useState(!hasPosts);
     const theme = useTheme();
     const element = useMemo(() => {
         if (channel.type === General.OPEN_CHANNEL && channel.name === General.DEFAULT_CHANNEL) {
@@ -78,7 +78,23 @@ const Intro = ({channel, loading = false, roles}: Props) => {
         return () => listener.remove();
     }, []);
 
-    if (loading || fetching) {
+    // We add a timeout to remove the loading indicator
+    // Even if the channel does not have any posts
+    useEffect(() => {
+        const time = setTimeout(() => {
+            if (!hasPosts && fetching) {
+                setFetching(false);
+            }
+        }, 1000);
+
+        return () => {
+            if (time) {
+                clearTimeout(time);
+            }
+        };
+    }, [hasPosts, fetching]);
+
+    if (fetching) {
         return (
             <ActivityIndicator
                 size='small'

@@ -35,11 +35,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         flex: 1,
     },
-    loading: {
-        justifyContent: 'center',
-        height: 32,
-        width: 32,
-    },
 });
 
 const extractKey = (item: CategoryModel | 'UNREADS') => (item === 'UNREADS' ? 'UNREADS' : item.id);
@@ -115,7 +110,10 @@ const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
             )}
             {switchingTeam && (
                 <View style={styles.loadingView}>
-                    <Loading style={styles.loading}/>
+                    <Loading
+                        size='large'
+                        themeColor='sidebarText'
+                    />
                 </View>
             )}
         </>

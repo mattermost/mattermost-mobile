@@ -142,17 +142,17 @@ const ChannelListItem = ({
         styles.text,
         isBright && styles.highlight,
         isMuted && styles.muted,
-        isActive && !isInfo ? styles.textActive : null,
+        isActive && isTablet && !isInfo ? styles.textActive : null,
         isInfo ? styles.textInfo : null,
-    ], [isBright, styles, isMuted, isActive, isInfo]);
+    ], [isBright, styles, isMuted, isActive, isInfo, isTablet]);
 
     const containerStyle = useMemo(() => [
         styles.container,
-        isActive && !isInfo && styles.activeItem,
+        isActive && isTablet && !isInfo && styles.activeItem,
         isInfo && styles.infoItem,
         {minHeight: height},
     ],
-    [height, isActive, isInfo, styles]);
+    [height, isActive, isTablet, isInfo, styles]);
 
     if (!hasMember) {
         return null;
@@ -176,7 +176,7 @@ const ChannelListItem = ({
                     <View style={styles.wrapper}>
                         <ChannelIcon
                             hasDraft={hasDraft}
-                            isActive={isInfo ? false : isActive}
+                            isActive={isInfo ? false : isTablet && isActive}
                             isInfo={isInfo}
                             isUnread={isBright}
                             isArchived={channel.deleteAt > 0}

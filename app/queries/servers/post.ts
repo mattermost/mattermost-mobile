@@ -7,10 +7,10 @@ import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import PostModel from '@typings/database/models/servers/post';
 
 import {queryPreferencesByCategoryAndName} from './preference';
 
-import type PostModel from '@typings/database/models/servers/post';
 import type PostInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 
@@ -101,12 +101,12 @@ export const queryPostsInThread = (database: Database, rootId: string, sorted = 
     return database.get<PostsInThreadModel>(POSTS_IN_THREAD).query(...clauses);
 };
 
-export const queryPostRepliesCount = (database: Database, rootId: string, excludeDeleted = true) => {
+export const queryPostReplies = (database: Database, rootId: string, excludeDeleted = true) => {
     const clauses: Q.Clause[] = [Q.where('root_id', rootId)];
     if (excludeDeleted) {
         clauses.push(Q.where('delete_at', Q.eq(0)));
     }
-    return database.get(POST).query(...clauses);
+    return database.get<PostModel>(POST).query(...clauses);
 };
 
 export const getRecentPostsInThread = async (database: Database, rootId: string) => {

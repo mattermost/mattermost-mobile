@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {updateDmGmDisplayName} from '@actions/local/channel';
 import {fetchPostById} from '@actions/remote/post';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPostById} from '@queries/servers/post';
-import {deletePreferences} from '@queries/servers/preference';
+import {deletePreferences, differsFromLocalNameFormat} from '@queries/servers/preference';
 
 export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const operator = DatabaseManager.serverDatabases[serverUrl].operator;
@@ -14,13 +15,20 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
     }
 
     try {
-        const preference = JSON.parse(msg.data.preference) as PreferenceType;
+        const preference: PreferenceType = JSON.parse(msg.data.preference);
         handleSavePostAdded(serverUrl, [preference]);
+
+        const hasDiffNameFormatPref = await differsFromLocalNameFormat(operator.database, [preference]);
+
         if (operator) {
-            operator.handlePreferences({
+            await operator.handlePreferences({
                 prepareRecordsOnly: false,
                 preferences: [preference],
             });
+        }
+
+        if (hasDiffNameFormatPref) {
+            updateDmGmDisplayName(serverUrl);
         }
     } catch (error) {
         // Do nothing
@@ -32,15 +40,21 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
     if (!operator) {
         return;
     }
-
     try {
-        const preferences = JSON.parse(msg.data.preferences) as PreferenceType[];
+        const preferences: PreferenceType[] = JSON.parse(msg.data.preferences);
         handleSavePostAdded(serverUrl, preferences);
+
+        const hasDiffNameFormatPref = await differsFromLocalNameFormat(operator.database, preferences);
+
         if (operator) {
-            operator.handlePreferences({
+            await operator.handlePreferences({
                 prepareRecordsOnly: false,
                 preferences,
             });
+        }
+
+        if (hasDiffNameFormatPref) {
+            updateDmGmDisplayName(serverUrl);
         }
     } catch (error) {
         // Do nothing
@@ -54,7 +68,7 @@ export async function handlePreferencesDeletedEvent(serverUrl: string, msg: WebS
     }
 
     try {
-        const preferences = JSON.parse(msg.data.preferences) as PreferenceType[];
+        const preferences: PreferenceType[] = JSON.parse(msg.data.preferences);
         deletePreferences(database, preferences);
     } catch {
         // Do nothing
@@ -76,3 +90,4 @@ async function handleSavePostAdded(serverUrl: string, preferences: PreferenceTyp
         }
     }
 }
+

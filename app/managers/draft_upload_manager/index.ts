@@ -129,15 +129,15 @@ class DraftUploadManager {
             return;
         }
         if (response.code !== 201) {
-            this.handleError((response.data as any).message, clientId);
+            this.handleError((response.data?.message as string | undefined) || 'Failed to upload the file: unknown error', clientId);
             return;
         }
         if (!response.data) {
             this.handleError('Failed to upload the file: no data received', clientId);
             return;
         }
-        const data = response.data.file_infos as FileInfo[];
-        if (!data || !data.length) {
+        const data = response.data.file_infos as FileInfo[] | undefined;
+        if (!data?.length) {
             this.handleError('Failed to upload the file: no data received', clientId);
             return;
         }

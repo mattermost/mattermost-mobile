@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useRef, useState} from 'react';
-import {DeviceEventEmitter, StyleSheet, View} from 'react-native';
+import {BackHandler, DeviceEventEmitter, NativeEventSubscription, StyleSheet, View} from 'react-native';
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -13,6 +13,7 @@ import {ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useAppState, useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
+import {popTopScreen} from '@screens/navigation';
 
 import ChannelPostList from './channel_post_list';
 import ChannelHeader from './header';
@@ -51,6 +52,18 @@ const Channel = ({channelId, componentId}: ChannelProps) => {
 
         return () => listener.remove();
     }, []);
+
+    useEffect(() => {
+        let back: NativeEventSubscription|undefined;
+        if (!isTablet && componentId) {
+            back = BackHandler.addEventListener('hardwareBackPress', () => {
+                popTopScreen(componentId);
+                return true;
+            });
+        }
+
+        return () => back?.remove();
+    }, [componentId, isTablet]);
 
     const marginTop = defaultHeight + (isTablet ? insets.top : 0);
     useEffect(() => {

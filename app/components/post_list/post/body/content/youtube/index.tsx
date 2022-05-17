@@ -3,13 +3,18 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Image, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {Alert, StyleSheet, TouchableOpacity, View} from 'react-native';
+import FastImage from 'react-native-fast-image';
 
-import ProgressiveImage from '@components/progressive_image';
+import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {emptyFunction} from '@utils/general';
 import {calculateDimensions, getViewPortWidth} from '@utils/images';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getYouTubeVideoId, tryOpenURL} from '@utils/url';
+
+// @ts-expect-error import svg
+import YouTubeLogo from './youtube.svg';
 
 type YouTubeProps = {
     isReplyPost: boolean;
@@ -17,38 +22,52 @@ type YouTubeProps = {
     metadata: PostMetadata;
 }
 
-const MAX_YOUTUBE_IMAGE_HEIGHT = 202;
-const MAX_YOUTUBE_IMAGE_WIDTH = 360;
+const MAX_YOUTUBE_IMAGE_HEIGHT = 280;
+const MAX_YOUTUBE_IMAGE_WIDTH = 500;
 
-const styles = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     imageContainer: {
         alignItems: 'flex-start',
         justifyContent: 'flex-start',
+        borderRadius: 4,
         marginBottom: 6,
         marginTop: 10,
     },
     image: {
         alignItems: 'center',
-        borderRadius: 3,
+        borderRadius: 4,
         justifyContent: 'center',
-        marginVertical: 1,
     },
     playButton: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
     },
-});
+    playContainer: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: changeOpacity('#000', 0.24),
+        borderColor: changeOpacity(theme.centerChannelColor, 0.08),
+        borderRadius: 4,
+        borderWidth: 1,
+        elevation: 3,
+        shadowColor: changeOpacity('#000', 0.08),
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 1,
+        shadowRadius: 3,
+    },
+}));
 
 const YouTube = ({isReplyPost, layoutWidth, metadata}: YouTubeProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
     const link = metadata.embeds![0].url;
     const videoId = getYouTubeVideoId(link);
     const dimensions = calculateDimensions(
         MAX_YOUTUBE_IMAGE_HEIGHT,
         MAX_YOUTUBE_IMAGE_WIDTH,
-        layoutWidth || getViewPortWidth(isReplyPost, isTablet),
+        layoutWidth || (getViewPortWidth(isReplyPost, isTablet) - 15),
     );
 
     const playYouTubeVideo = useCallback(() => {
@@ -80,21 +99,20 @@ const YouTube = ({isReplyPost, layoutWidth, metadata}: YouTubeProps) => {
 
     return (
         <TouchableOpacity
-            style={[styles.imageContainer, {height: dimensions.height}]}
+            style={[styles.imageContainer, {height: dimensions.height, width: dimensions.width}]}
             onPress={playYouTubeVideo}
         >
-            <ProgressiveImage
-                id={imgUrl}
-                isBackgroundImage={true}
-                imageUri={imgUrl}
-                style={[styles.image, dimensions]}
-                resizeMode='cover'
+            <FastImage
                 onError={emptyFunction}
-            >
+                resizeMode='cover'
+                style={[styles.image, dimensions]}
+                source={{uri: imgUrl}}
+            />
+            <View style={styles.playContainer}>
                 <View style={styles.playButton}>
-                    <Image source={require('@assets/images/icons/youtube-play-icon.png')}/>
+                    <YouTubeLogo/>
                 </View>
-            </ProgressiveImage>
+            </View>
         </TouchableOpacity>
     );
 };

@@ -367,12 +367,12 @@ export async function fetchNewThreads(
     const newestThread = await getNewestThreadInTeam(operator.database, teamId, false);
     options.since = newestThread ? newestThread.lastReplyAt : 0;
 
-    let response = {
-        error: undefined,
-        data: [],
-    } as {
+    let response: {
         error: unknown;
         data?: Thread[];
+    } = {
+        error: undefined,
+        data: [],
     };
 
     let loadedInGlobalThreads = true;

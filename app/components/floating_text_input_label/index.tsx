@@ -71,13 +71,13 @@ const onExecution = (
 };
 
 const getLabelPositions = (style: TextStyle, labelStyle: TextStyle, smallLabelStyle: TextStyle) => {
-    const top: number = style?.paddingTop as number || 0;
-    const bottom: number = style?.paddingBottom as number || 0;
+    const top: number = style.paddingTop as number || 0;
+    const bottom: number = style.paddingBottom as number || 0;
 
-    const height: number = (style?.height as number || (top + bottom) || style?.padding as number) || 0;
-    const textInputFontSize = style?.fontSize || 13;
-    const labelFontSize = labelStyle?.fontSize || 16;
-    const smallLabelFontSize = smallLabelStyle?.fontSize || 10;
+    const height: number = (style.height as number || (top + bottom) || style.padding as number) || 0;
+    const textInputFontSize = style.fontSize || 13;
+    const labelFontSize = labelStyle.fontSize || 16;
+    const smallLabelFontSize = smallLabelStyle.fontSize || 10;
     const fontSizeDiff = textInputFontSize - labelFontSize;
     const unfocused = (height * 0.5) + (fontSizeDiff * (Platform.OS === 'android' ? 0.5 : 0.6));
     const focused = -(labelFontSize + smallLabelFontSize) * 0.25;
@@ -224,8 +224,8 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
         }
 
         return {
-            top: withTiming(toValue, {duration: 250, easing: Easing.linear}),
-            fontSize: withTiming(toSize, {duration: 250, easing: Easing.linear}),
+            top: withTiming(toValue, {duration: 100, easing: Easing.linear}),
+            fontSize: withTiming(toSize, {duration: 100, easing: Easing.linear}),
             backgroundColor: focusedLabel || inputText ? theme.centerChannelBg : 'transparent',
             paddingHorizontal: focusedLabel || inputText ? 4 : 0,
             color,

@@ -19,7 +19,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
 
-import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, registerDeviceToken, syncOtherServers, teamsToRemove} from './common';
+import {deferredAppEntryActions, fetchAppEntryData, registerDeviceToken, syncOtherServers, teamsToRemove} from './common';
 
 export async function appEntry(serverUrl: string, since = 0) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -43,13 +43,12 @@ export async function appEntry(serverUrl: string, since = 0) {
     const currentTeamId = await getCurrentTeamId(database);
     const lastDisconnectedAt = (await getWebSocketLastDisconnected(database)) || since;
     const fetchedData = await fetchAppEntryData(serverUrl, lastDisconnectedAt, currentTeamId);
-    const fetchedError = (fetchedData as AppEntryError).error;
 
-    if (fetchedError) {
-        return {error: fetchedError};
+    if ('error' in fetchedData) {
+        return {error: fetchedData.error};
     }
 
-    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData as AppEntryData;
+    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData;
     const rolesData = await fetchRoles(serverUrl, teamData?.memberships, chData?.memberships, meData?.user, true, true);
 
     if (initialTeamId === currentTeamId) {

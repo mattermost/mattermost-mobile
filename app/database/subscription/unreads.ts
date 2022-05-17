@@ -54,7 +54,7 @@ export const subscribeMentionsByServer = (serverUrl: string, observer: ServerUnr
 
     if (server?.database) {
         subscription = server.database.
-            get(MY_CHANNEL).
+            get<MyChannelModel>(MY_CHANNEL).
             query(Q.on(CHANNEL, Q.where('delete_at', Q.eq(0)))).
             observeWithColumns(['mentions_count']).
             pipe(
