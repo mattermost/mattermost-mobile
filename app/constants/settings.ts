@@ -48,7 +48,7 @@ export const NotificationsOptionConfig = {
         testID: 'notification_settings.push_notification',
     },
     automatic_dm_replies: {
-        defaultMessage: 'Automatic Direct Message Replies}',
+        defaultMessage: 'Automatic Direct Message Replies',
         i18nId: t('mobile.notification_settings.ooo_auto_responder'),
         iconName: 'reply-outline',
         testID: 'notification_settings.automatic_dm_replies',

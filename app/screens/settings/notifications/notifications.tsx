@@ -42,8 +42,12 @@ const Notifications = ({isCRTEnabled, enableAutoResponder}: NotificationsProps) 
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const mentionsI18nId = isCRTEnabled ? t('mobile.notification_settings.mentions') : t('mobile.notification_settings.mentions_replies');
-    const mentionsI18nDefault = isCRTEnabled ? 'Mentions' : 'Mentions and Replies';
+    let mentionsI18nId = t('mobile.notification_settings.mentions_replies');
+    let mentionsI18nDefault = 'Mentions and Replies';
+    if (isCRTEnabled) {
+        mentionsI18nId = t('mobile.notification_settings.mentions');
+        mentionsI18nDefault = 'Mentions';
+    }
 
     const onPressHandler = () => {
         return Alert.alert(
