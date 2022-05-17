@@ -531,6 +531,8 @@
   "screen.search.empty.files.paragraph": "You'll see files here when someone attaches a file to post in this channel.",
   "screen.search.empty.messages.title": "No matches for for ",
   "screen.search.empty.messages.paragraph": "Check the spelling or try another search.",
+  "screen.search.header.messages": "Messages",
+  "screen.search.header.files": "Files",
   "screen.search.placeholder": "Search messages & files",
   "screens.channel_details": "Channel Details",
   "screens.channel_edit_header": "Edit Channel Header",
