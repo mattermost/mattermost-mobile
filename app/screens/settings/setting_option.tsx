@@ -6,9 +6,10 @@ import {Platform} from 'react-native';
 
 import MenuItem, {MenuItemProps} from '@components/menu_item';
 import {useTheme} from '@context/theme';
-import {SettingOptionConfig} from '@screens/settings/constant';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import {SettingOptionConfig} from './constant';
 
 type Props = {
     type: 'notification' | 'display' | 'advanced_settings' | 'about' | 'help';
