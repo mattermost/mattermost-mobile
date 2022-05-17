@@ -5,8 +5,8 @@ import React from 'react';
 import {Platform} from 'react-native';
 
 import MenuItem, {MenuItemProps} from '@components/menu_item';
-import {SettingOptionConfig} from '@constants/settings';
 import {useTheme} from '@context/theme';
+import {SettingOptionConfig} from '@screens/settings/constant';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
