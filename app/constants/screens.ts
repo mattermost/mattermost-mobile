@@ -41,6 +41,7 @@ export const SEARCH = 'Search';
 export const SELECT_TEAM = 'SelectTeam';
 export const SERVER = 'Server';
 export const SETTINGS = 'Settings';
+export const NOTIFICATION_SETTINGS = 'NotificationSettings';
 export const SETTINGS_SIDEBAR = 'SettingsSidebar';
 export const SNACK_BAR = 'SnackBar';
 export const SSO = 'SSO';
@@ -81,6 +82,7 @@ export default {
     LOGIN,
     MENTIONS,
     MFA,
+    NOTIFICATION_SETTINGS,
     PERMALINK,
     POST_OPTIONS,
     REACTIONS,
