@@ -35,15 +35,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 type NotificationsProps = {
-    componentId: string;
-    isCollapsedThreadsEnabled: boolean;
+    isCRTEnabled: boolean;
+    enableAutoResponder: boolean;
 }
-const Notifications = ({isCollapsedThreadsEnabled}: NotificationsProps) => {
+const Notifications = ({isCRTEnabled, enableAutoResponder}: NotificationsProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const mentionsI18nId = isCollapsedThreadsEnabled ? t('mobile.notification_settings.mentions') : t('mobile.notification_settings.mentions_replies');
-    const mentionsI18nDefault = isCollapsedThreadsEnabled ? 'Mentions' : 'Mentions and Replies';
+    const mentionsI18nId = isCRTEnabled ? t('mobile.notification_settings.mentions') : t('mobile.notification_settings.mentions_replies');
+    const mentionsI18nDefault = isCRTEnabled ? 'Mentions' : 'Mentions and Replies';
 
     const onPressHandler = () => {
         return Alert.alert(
@@ -72,7 +72,12 @@ const Notifications = ({isCollapsedThreadsEnabled}: NotificationsProps) => {
                     config={NotificationsOptionConfig.push_notification}
                     onPress={onPressHandler}
                 />
-                {/*{autoResponder}*/}
+                {enableAutoResponder && (
+                    <SettingOption
+                        onPress={onPressHandler}
+                        config={NotificationsOptionConfig.automatic_dm_replies}
+                    />
+                )}
                 <View style={styles.divider}/>
             </ScrollView>
         </SafeAreaView>

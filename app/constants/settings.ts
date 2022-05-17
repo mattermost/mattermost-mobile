@@ -45,12 +45,12 @@ export const NotificationsOptionConfig = {
         defaultMessage: 'Push Notifications',
         i18nId: t('mobile.notification_settings.mobile'),
         iconName: 'cellphone',
-        testID: 'notification_settings.mobile.action',
+        testID: 'notification_settings.push_notification',
     },
     automatic_dm_replies: {
-        defaultMessage: 'About {appTitle}',
-        i18nId: t('about.title'),
-        iconName: 'information-outline',
-        testID: 'general_settings.about.action',
+        defaultMessage: 'Automatic Direct Message Replies}',
+        i18nId: t('mobile.notification_settings.ooo_auto_responder'),
+        iconName: 'reply-outline',
+        testID: 'notification_settings.automatic_dm_replies',
     },
 };
