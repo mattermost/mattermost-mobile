@@ -6,10 +6,9 @@ import {useIntl} from 'react-intl';
 import {Platform, Text, View} from 'react-native';
 import MathView from 'react-native-math-view';
 
+import ErrorBoundary from '@components/markdown/error_boundary';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import ErrorBoundry from '../error_boundry';
 
 type Props = {
     content: string;
@@ -50,7 +49,7 @@ const LatexInline = ({content, maxMathWidth, theme}: Props) => {
     };
 
     return (
-        <ErrorBoundry
+        <ErrorBoundary
             error={formatMessage({id: 'markdown.latex.error', defaultMessage: 'Latex render error'})}
             theme={theme}
         >
@@ -65,7 +64,7 @@ const LatexInline = ({content, maxMathWidth, theme}: Props) => {
                     resizeMode='contain'
                 />
             </View>
-        </ErrorBoundry>
+        </ErrorBoundary>
     );
 };
 

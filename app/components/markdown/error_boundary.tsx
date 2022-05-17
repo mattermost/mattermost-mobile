@@ -27,7 +27,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-class ErrorBoundry extends React.PureComponent<Props, State, any> {
+class ErrorBoundary extends React.PureComponent<Props, State, any> {
     constructor(props: Props) {
         super(props);
         this.state = {hasError: false};
@@ -55,4 +55,4 @@ class ErrorBoundry extends React.PureComponent<Props, State, any> {
     }
 }
 
-export default ErrorBoundry;
+export default ErrorBoundary;

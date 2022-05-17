@@ -10,6 +10,7 @@ import MathView from 'react-native-math-view';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
+import ErrorBoundary from '@components/markdown/error_boundary';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
@@ -20,8 +21,6 @@ import {splitLatexCodeInLines} from '@utils/markdown/latex';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import ErrorBoundry from '../error_boundry';
 
 const MAX_LINES = 2;
 
@@ -196,7 +195,7 @@ const LatexCodeBlock = ({content, theme}: Props) => {
             type={'opacity'}
         >
             <View style={styles.container}>
-                <ErrorBoundry
+                <ErrorBoundary
                     error={intl.formatMessage({id: 'markdown.latex.error', defaultMessage: 'Latex render error'})}
                     theme={theme}
                 >
@@ -215,7 +214,7 @@ const LatexCodeBlock = ({content, theme}: Props) => {
                         ))}
                         {plusMoreLines}
                     </View>
-                </ErrorBoundry>
+                </ErrorBoundary>
                 <View style={styles.language}>
                     <Text style={styles.languageText}>
                         {languageDisplayName}
