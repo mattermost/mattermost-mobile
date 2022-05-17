@@ -56,7 +56,8 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     text: {
         marginTop: -1,
         color: changeOpacity(theme.sidebarText, 0.72),
-        paddingHorizontal: 12,
+        paddingLeft: 12,
+        paddingRight: 20,
     },
     highlight: {
         color: theme.sidebarText,
