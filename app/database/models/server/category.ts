@@ -109,4 +109,23 @@ export default class CategoryModel extends Model implements CategoryInterface {
         map((c) => c > 0),
         distinctUntilChanged(),
     );
+
+    toCategoryWithChannels = async (): Promise<CategoryWithChannels> => {
+        const categoryChannels = await this.categoryChannels.fetch();
+        const orderedChannelIds = categoryChannels.sort((a, b) => {
+            return b.sortOrder - a.sortOrder;
+        }).map((cc) => cc.channelId);
+
+        return {
+            channel_ids: orderedChannelIds,
+            id: this.id,
+            team_id: this.teamId,
+            display_name: this.displayName,
+            sort_order: this.sortOrder,
+            sorting: this.sorting,
+            type: this.type,
+            muted: this.muted,
+            collapsed: this.collapsed,
+        };
+    };
 }
