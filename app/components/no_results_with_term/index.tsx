@@ -1,19 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {View} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {Text, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import SearchFilesIllustration from './search_files_illustration';
 import SearchIllustration from './search_illustration';
 
 type Props = {
     term: string;
-    illustration?: React.ReactNode;
+    type?: 'default' | 'messages' | 'files';
 };
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -35,20 +36,34 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const NoResultsWithTerm = ({term, illustration}: Props) => {
+const NoResultsWithTerm = ({term, type}: Props) => {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
+    const [titleId, setTitleId] = useState('mobile.no_results_with_term');
+    const [defaultMessage, setDefaultMessage] = useState('No results for');
+
+    useEffect(() => {
+        if (type === 'files') {
+            setTitleId('mobile.no_results_with_term.files');
+            setDefaultMessage('No files matching');
+        } else if (type === 'messages') {
+            setTitleId('mobile.no_results_with_term.messages');
+            setDefaultMessage('No matches found for');
+        }
+    }, [type]);
+
     return (
         <View style={style.container}>
-            {illustration && (illustration)}
-            {!illustration && <SearchIllustration/>}
-            <FormattedText
-                id='mobile.no_results_with_term'
-                defaultMessage='No results for {term}'
-                values={{term}}
-                style={style.result}
-            />
+            {type === 'files' ? <SearchFilesIllustration/> : <SearchIllustration/>}
+            <View style={{flexDirection: 'row'}}>
+                <FormattedText
+                    id={titleId}
+                    defaultMessage={defaultMessage}
+                    style={style.result}
+                />
+                <Text style={style.result}>{` “${term}”`}</Text>
+            </View>
             <FormattedText
                 id='mobile.no_results.spelling'
                 defaultMessage='Check the spelling or try another search.'

@@ -5,7 +5,6 @@ import React, {useCallback, useState} from 'react';
 import {Text} from 'react-native';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
-import SearchFilesIllustration from '@components/no_results_with_term/search_files_illustration';
 
 import Header from './header';
 
@@ -73,7 +72,7 @@ const SearchResults = ({searchValue}: Props) => {
         content = (
             <NoResultsWithTerm
                 term={searchValue}
-                illustration={selectedTab === 'file-tab' ? <SearchFilesIllustration/> : undefined}
+                type={selectedTab === 'file-tab' ? 'files' : 'messages'}
             />
         );
     } else {
