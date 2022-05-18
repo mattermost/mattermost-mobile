@@ -1,0 +1,157 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
+import {Alert} from 'react-native';
+
+import {makeDirectChannelVisible} from '@actions/remote/preference';
+import SlideUpPanelItem from '@components/slide_up_panel_item';
+import {General} from '@constants';
+import {useServerUrl} from '@context/server';
+import {dismissBottomSheet, popToRoot} from '@screens/navigation';
+
+type Props = {
+    channelId: string;
+    displayName?: string;
+    type?: string;
+    testID?: string;
+}
+
+const LeaveChanelLabel = ({channelId, displayName, type, testID}: Props) => {
+    const intl = useIntl();
+    const serverUrl = useServerUrl();
+
+    const close = async () => {
+        await dismissBottomSheet();
+        popToRoot();
+
+        // HANDLE TABLET
+    };
+
+    const closeDirectMessage = () => {
+        Alert.alert(
+            intl.formatMessage({id: 'channel_info.close_dm', defaultMessage: 'Close direct message'}),
+            intl.formatMessage({
+                id: 'channel_info.close_dm_channel',
+                defaultMessage: 'Are you sure you want to close this direct message? This will remove it from your home screen, but you can always open it again.',
+            }),
+            [{
+                text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+                style: 'cancel',
+            }, {
+                text: intl.formatMessage({id: 'channel_info.close', defaultMessage: 'Close'}),
+                style: 'destructive',
+                onPress: () => {
+                    makeDirectChannelVisible(serverUrl, channelId, false);
+                    close();
+                },
+            }], {cancelable: false},
+        );
+    };
+
+    const closeGroupMessage = () => {
+        Alert.alert(
+            intl.formatMessage({id: 'channel_info.close_gm', defaultMessage: 'Close group message'}),
+            intl.formatMessage({
+                id: 'channel_info.close_gm_channel',
+                defaultMessage: 'Are you sure you want to close this group message? This will remove it from your home screen, but you can always open it again.',
+            }),
+            [{
+                text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+                style: 'cancel',
+            }, {
+                text: intl.formatMessage({id: 'channel_info.close', defaultMessage: 'Close'}),
+                style: 'destructive',
+                onPress: () => {
+                    makeDirectChannelVisible(serverUrl, channelId, false);
+                    close();
+                },
+            }], {cancelable: false},
+        );
+    };
+
+    const leavePublicChannel = () => {
+        Alert.alert(
+            intl.formatMessage({id: 'channel_info.leave_channel', defaultMessage: 'Leave Channel'}),
+            intl.formatMessage({
+                id: 'channel_info.leave_public_channel',
+                defaultMessage: 'Are you sure you want to leave the public channel {displayName}? You can always rejoin.',
+            }, {displayName}),
+            [{
+                text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+                style: 'cancel',
+            }, {
+                text: intl.formatMessage({id: 'channel_info.leave', defaultMessage: 'Leave'}),
+                style: 'destructive',
+                onPress: close,
+            }], {cancelable: false},
+        );
+    };
+
+    const leavePrivateChannel = () => {
+        Alert.alert(
+            intl.formatMessage({id: 'channel_info.leave_channel', defaultMessage: 'Leave Channel'}),
+            intl.formatMessage({
+                id: 'channel_info.leave_private_channel',
+                defaultMessage: "Are you sure you want to leave the private channel {displayName}? You cannot rejoin the channel unless you're invited again.",
+            }, {displayName}),
+            [{
+                text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+                style: 'cancel',
+            }, {
+                text: intl.formatMessage({id: 'channel_info.leave', defaultMessage: 'Leave'}),
+                style: 'destructive',
+                onPress: close,
+            }], {cancelable: false},
+        );
+    };
+
+    const onLeave = useCallback(() => {
+        switch (type) {
+            case General.OPEN_CHANNEL:
+                leavePublicChannel();
+                break;
+            case General.PRIVATE_CHANNEL:
+                leavePrivateChannel();
+                break;
+            case General.DM_CHANNEL:
+                closeDirectMessage();
+                break;
+            case General.GM_CHANNEL:
+                closeGroupMessage();
+                break;
+        }
+
+        // close();
+    }, [channelId, displayName, type, intl, serverUrl]);
+
+    if (!displayName || !type) {
+        return null;
+    }
+
+    let leaveText = '';
+    switch (type) {
+        case General.DM_CHANNEL:
+            leaveText = intl.formatMessage({id: 'channel_info.close_dm', defaultMessage: 'Close direct message'});
+            break;
+        case General.GM_CHANNEL:
+            leaveText = intl.formatMessage({id: 'channel_info.close_gm', defaultMessage: 'Close group message'});
+            break;
+        default:
+            leaveText = intl.formatMessage({id: 'channel_info.leave_channel', defaultMessage: 'Leave channel'});
+            break;
+    }
+
+    return (
+        <SlideUpPanelItem
+            destructive={true}
+            icon='close'
+            onPress={onLeave}
+            text={leaveText}
+            testID={testID}
+        />
+    );
+};
+
+export default LeaveChanelLabel;
