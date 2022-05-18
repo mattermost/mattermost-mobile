@@ -25,6 +25,7 @@ import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
 import {fetchPostsForChannel} from './post';
+import {makeDirectChannelVisible} from './preference';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
 import {addUserToTeam, fetchTeamByName, removeUserFromTeam} from './team';
@@ -805,6 +806,7 @@ export async function makeDirectChannel(serverUrl: string, userId: string, displ
         return {error};
     }
 }
+
 export async function fetchArchivedChannels(serverUrl: string, teamId: string, page = 0, perPage: number = General.CHANNELS_CHUNK_SIZE) {
     let client: Client;
     try {
@@ -896,6 +898,7 @@ export async function createGroupChannel(serverUrl: string, userIds: string[]) {
         return {error};
     }
 }
+
 export async function fetchSharedChannels(serverUrl: string, teamId: string, page = 0, perPage: number = General.CHANNELS_CHUNK_SIZE) {
     let client: Client;
     try {
@@ -933,6 +936,7 @@ export async function makeGroupChannel(serverUrl: string, userIds: string[], sho
         return {error};
     }
 }
+
 export async function getChannelMemberCountsByGroup(serverUrl: string, channelId: string, includeTimezones: boolean) {
     let client: Client;
     try {
@@ -973,6 +977,7 @@ export async function switchToChannelById(serverUrl: string, channelId: string, 
 
     fetchPostsForChannel(serverUrl, channelId);
     await switchToChannel(serverUrl, channelId, teamId, skipLastUnread);
+    makeDirectChannelVisible(serverUrl, channelId);
     markChannelAsRead(serverUrl, channelId);
     fetchChannelStats(serverUrl, channelId);
 
@@ -1107,7 +1112,7 @@ export const toggleMuteChannel = async (serverUrl: string, channelId: string, sh
 
         if (showSnackBar) {
             const onUndo = () => toggleMuteChannel(serverUrl, channelId, false);
-            showMuteChannelSnackbar(onUndo);
+            showMuteChannelSnackbar(mark_unread === 'mention', onUndo);
         }
 
         return {
