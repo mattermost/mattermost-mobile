@@ -274,7 +274,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
         channelId = await getNthLastChannelFromTeam(database, teamId);
         if (channelId) {
             if (channelId === Screens.GLOBAL_THREADS) {
-                await switchToGlobalThreads(serverUrl);
+                await switchToGlobalThreads(serverUrl, teamId);
             } else {
                 await switchToChannelById(serverUrl, channelId, teamId);
             }

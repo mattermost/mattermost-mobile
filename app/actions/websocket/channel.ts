@@ -22,7 +22,7 @@ import {Events, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
 import {deleteChannelMembership, getChannelById, prepareMyChannelsForTeam, getCurrentChannel} from '@queries/servers/channel';
-import {prepareCommonSystemValues, getConfig, setCurrentChannelId, getCurrentChannelId} from '@queries/servers/system';
+import {prepareCommonSystemValues, getConfig, setCurrentChannelId, getCurrentChannelId, getCurrentTeamId} from '@queries/servers/system';
 import {getNthLastChannelFromTeam} from '@queries/servers/team';
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
@@ -354,15 +354,19 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
                 await popToRoot();
 
                 if (await isTablet()) {
-                    const channelToJumpTo = await getNthLastChannelFromTeam(database, channel?.teamId);
+                    let tId = channel.teamId;
+                    if (!tId) {
+                        tId = await getCurrentTeamId(database);
+                    }
+                    const channelToJumpTo = await getNthLastChannelFromTeam(database, tId);
                     if (channelToJumpTo) {
                         if (channelToJumpTo === Screens.GLOBAL_THREADS) {
-                            const {models: switchToGlobalThreadsModels} = await switchToGlobalThreads(serverUrl, true);
+                            const {models: switchToGlobalThreadsModels} = await switchToGlobalThreads(serverUrl, tId, true);
                             if (switchToGlobalThreadsModels) {
                                 models.push(...switchToGlobalThreadsModels);
                             }
                         } else {
-                            const {models: switchChannelModels} = await switchToChannel(serverUrl, channelToJumpTo, '', false, true);
+                            const {models: switchChannelModels} = await switchToChannel(serverUrl, channelToJumpTo, tId, true, true);
                             if (switchChannelModels) {
                                 models.push(...switchChannelModels);
                             }
@@ -383,7 +387,6 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
         }
     }
 
-    await fetchChannelStats(serverUrl, channelId, false);
     operator.batchRecords(models);
 }
 
@@ -423,10 +426,14 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocke
                 await popToRoot();
 
                 if (await isTablet()) {
-                    const channelToJumpTo = await getNthLastChannelFromTeam(database, currentChannel?.teamId);
+                    let tId = currentChannel.teamId;
+                    if (!tId) {
+                        tId = await getCurrentTeamId(database);
+                    }
+                    const channelToJumpTo = await getNthLastChannelFromTeam(database, tId);
                     if (channelToJumpTo) {
                         if (channelToJumpTo === Screens.GLOBAL_THREADS) {
-                            switchToGlobalThreads(serverUrl);
+                            switchToGlobalThreads(serverUrl, tId);
                             return;
                         }
                         switchToChannel(serverUrl, channelToJumpTo);
