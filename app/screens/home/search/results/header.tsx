@@ -21,10 +21,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
         },
         container: {
-            marginHorizontal: 20,
+            marginHorizontal: 12,
             flexDirection: 'row',
-            marginTop: 16,
             marginBottom: 12,
+            marginTop: 7,
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),

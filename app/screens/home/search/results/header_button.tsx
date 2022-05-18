@@ -7,6 +7,7 @@ import Button from 'react-native-button';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -21,7 +22,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         text: {
             marginHorizontal: 16,
             marginVertical: 8,
-            fontSize: 16,
+            ...typography('Body', 200, 'SemiBold'),
         },
         selectedButton: {
             backgroundColor: changeOpacity(theme.buttonBg, 0.1),

@@ -60,7 +60,7 @@ const SearchScreen = () => {
     const hasSearch = true;
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll} = useCollapsibleHeader<ScrollView>(isLargeTitle, false, hasSearch);
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop}), [scrollPaddingTop]);
+    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
 
     return (
         <FreezeScreen freeze={!isFocused}>
@@ -103,7 +103,9 @@ const SearchScreen = () => {
                         {/* <RecentSearches */}
                         {/*     setSearchValue={setSearchValue} */}
                         {/* /> */}
-                        <Results/>
+                        <Results
+                            searchValue={searchValue}
+                        />
                         {/* <Filter/> */}
                     </AnimatedScrollView>
                 </Animated.View>

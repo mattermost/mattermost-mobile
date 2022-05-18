@@ -5,6 +5,7 @@ import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
+import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -17,6 +18,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         justifyContent: 'center',
         marginHorizontal: 40,
         textAlign: 'center',
+        flexGrow: 1,
     },
     title: {
         color: theme.centerChannelColor,
@@ -39,12 +41,12 @@ export const EmptyState = ({showMessagesTab, searchValue}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    let defaultTitle = `No files matching "${searchValue}"`;
-    let idTitle = 'screen.search.empty.files.title';
+    let defaultTitle = 'No files matching "{searchValue}"';
+    let idTitle = t('screen.search.empty.files.title');
 
     if (showMessagesTab) {
-        defaultTitle = `No matches found for "${searchValue}"`;
-        idTitle = 'screen.search.empty.messages.title';
+        defaultTitle = 'No matches found for "{searchValue}"';
+        idTitle = t('screen.search.empty.messages.title');
     }
 
     return (
@@ -55,6 +57,9 @@ export const EmptyState = ({showMessagesTab, searchValue}: Props) => {
                 id={idTitle}
                 style={styles.title}
                 testID='search.empty.title'
+                values={{
+                    searchValue,
+                }}
             />
             <FormattedText
                 defaultMessage={'Check the spelling or try another search.'}
