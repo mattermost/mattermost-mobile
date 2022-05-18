@@ -8,6 +8,7 @@ type ChannelStats = {
     guest_count: number;
     pinnedpost_count: number;
 };
+
 type ChannelNotifyProps = {
     desktop: 'default' | 'all' | 'mention' | 'none';
     email: 'default' | 'all' | 'mention' | 'none';

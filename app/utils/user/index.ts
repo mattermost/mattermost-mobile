@@ -44,7 +44,7 @@ export function displayGroupMessageName(users: Array<UserProfile | UserModel>, l
         }
     });
 
-    return names.sort(sortUsernames).join(', ');
+    return names.sort(sortUsernames).join(', ').trim();
 }
 
 export function getFullName(user: UserProfile | UserModel): string {

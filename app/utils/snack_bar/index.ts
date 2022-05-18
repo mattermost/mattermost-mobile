@@ -6,11 +6,18 @@ import {showOverlay} from '@screens/navigation';
 
 type ShowSnackBarArgs = {
     barType: keyof typeof SNACK_BAR_TYPE;
-    onPress?: () => void;
+    onAction?: () => void;
     sourceScreen?: typeof Screens[keyof typeof Screens];
 };
 
 export const showSnackBar = (passProps: ShowSnackBarArgs) => {
     const screen = Screens.SNACK_BAR;
     showOverlay(screen, passProps);
+};
+
+export const showMuteChannelSnackbar = (onAction: () => void) => {
+    return showSnackBar({
+        onAction,
+        barType: SNACK_BAR_TYPE.MUTE_CHANNEL,
+    });
 };

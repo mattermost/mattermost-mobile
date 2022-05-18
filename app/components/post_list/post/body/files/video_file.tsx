@@ -26,7 +26,7 @@ type Props = {
     inViewPort?: boolean;
     isSingleImage?: boolean;
     resizeMode?: ResizeMode;
-    wrapperWidth?: number;
+    wrapperWidth: number;
     updateFileForGallery: (idx: number, file: FileInfo) => void;
 }
 
@@ -74,7 +74,7 @@ const VideoFile = ({
     const imageDimensions = useMemo(() => {
         if (isSingleImage) {
             const viewPortHeight = Math.max(dimensions.height, dimensions.width) * 0.45;
-            return calculateDimensions(video.height, video.width, wrapperWidth, viewPortHeight);
+            return calculateDimensions(video.height || wrapperWidth, video.width || wrapperWidth, wrapperWidth, viewPortHeight);
         }
 
         return undefined;
@@ -106,6 +106,10 @@ const VideoFile = ({
                 setVideo(data);
             }
         } finally {
+            if (!data.width) {
+                data.height = wrapperWidth;
+                data.width = wrapperWidth;
+            }
             const {width: tw, height: th} = calculateDimensions(
                 data.height,
                 data.width,

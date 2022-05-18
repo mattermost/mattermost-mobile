@@ -93,12 +93,14 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
               Object {
                 "color": "rgba(255,255,255,0.72)",
                 "marginTop": -1,
-                "paddingHorizontal": 12,
+                "paddingLeft": 12,
+                "paddingRight": 20,
               },
               false,
+              null,
+              null,
               false,
-              null,
-              null,
+              false,
             ]
           }
           testID="channel_list_item.hello.display_name"
@@ -204,12 +206,14 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
               Object {
                 "color": "rgba(255,255,255,0.72)",
                 "marginTop": -1,
-                "paddingHorizontal": 12,
+                "paddingLeft": 12,
+                "paddingRight": 20,
               },
               false,
+              null,
+              null,
               false,
-              null,
-              null,
+              false,
             ]
           }
           testID="channel_list_item.hello.display_name"
