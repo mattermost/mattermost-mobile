@@ -4,8 +4,8 @@
 import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
+import {addChannelToDefaultCategory} from '@actions/local/category';
 import {
-    addChannelToDefaultCategory,
     markChannelAsViewed,
     removeCurrentUserFromChannel,
     setChannelDeleteAt,
