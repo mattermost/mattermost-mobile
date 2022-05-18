@@ -92,9 +92,7 @@ const GroupMentionItem = ({
                     style={style.rowIcon}
                 />
             </View>
-            <View
-                style={style.rowInfo}
-            >
+            <View style={style.rowInfo}>
                 <Text style={style.rowDisplayName}>{`${displayName} `}</Text>
                 <Text style={style.rowName}>{`@${name}`}</Text>
             </View>
