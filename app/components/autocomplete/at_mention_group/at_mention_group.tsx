@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
@@ -31,38 +32,41 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
         },
         rowIcon: {
-            color: changeOpacity(theme.centerChannelColor, 0.7),
+            color: theme.centerChannelColor,
             fontSize: 18,
         },
         rowInfo: {
             flexDirection: 'row',
+            alignItems: 'center',
             overflow: 'hidden',
             maxWidth: '80%',
             paddingLeft: 3,
         },
-        rowUsername: {
-            color: changeOpacity(theme.centerChannelColor, 0.56),
-            fontSize: 15,
-            fontFamily: 'OpenSans',
+        rowDisplayName: {
+            color: theme.centerChannelColor,
             flexShrink: 5,
+            ...typography('Body', 200),
         },
-        rowFullname: {
-            fontSize: 15,
-            color: changeOpacity(theme.centerChannelColor, 0.7),
-            fontFamily: 'OpenSans',
+        rowName: {
+            ...typography('Body', 75),
+            color: changeOpacity(theme.centerChannelColor, 0.64),
             flexShrink: 1,
+            marginTop: 2,
+            marginLeft: 2,
         },
     };
 });
 
 type Props = {
-    completeHandle: string;
+    name: string;
+    displayName: string;
     onPress: (handle: string) => void;
 }
 
 const GroupMentionItem = ({
     onPress,
-    completeHandle,
+    name,
+    displayName,
 }: Props) => {
     const insets = useSafeAreaInsets();
     const theme = useTheme();
@@ -73,8 +77,8 @@ const GroupMentionItem = ({
         [insets.left, insets.right, style],
     );
     const completeMention = useCallback(() => {
-        onPress(completeHandle);
-    }, [onPress, completeHandle]);
+        onPress(displayName);
+    }, [onPress, displayName]);
 
     return (
         <TouchableWithFeedback
@@ -91,8 +95,8 @@ const GroupMentionItem = ({
             <View
                 style={style.rowInfo}
             >
-                <Text style={style.rowUsername}>{`@${completeHandle} - `}</Text>
-                <Text style={style.rowFullname}>{`${completeHandle}`}</Text>
+                <Text style={style.rowDisplayName}>{`${displayName} `}</Text>
+                <Text style={style.rowName}>{`@${name}`}</Text>
             </View>
         </TouchableWithFeedback>
     );

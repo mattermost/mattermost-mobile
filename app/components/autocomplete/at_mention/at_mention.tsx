@@ -243,7 +243,8 @@ const AtMention = ({
         return (
             <GroupMentionItem
                 key={`autocomplete-group-${item.name}`}
-                completeHandle={item.name}
+                name={item.name}
+                displayName={item.display_name}
                 onPress={completeMention}
             />
         );
