@@ -32,8 +32,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
         },
         rowIcon: {
-            color: theme.centerChannelColor,
-            fontSize: 18,
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            fontSize: 22,
         },
         rowInfo: {
             flexDirection: 'row',
@@ -48,10 +48,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             ...typography('Body', 200),
         },
         rowName: {
-            ...typography('Body', 75),
+            ...typography('Body', 200),
             color: changeOpacity(theme.centerChannelColor, 0.64),
             flexShrink: 1,
-            marginTop: 2,
             marginLeft: 2,
         },
     };
