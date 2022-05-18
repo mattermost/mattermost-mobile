@@ -1,15 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React from 'react';
 import {useIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
+import {leaveChannel} from '@actions/remote/channel';
 import {makeDirectChannelVisible} from '@actions/remote/preference';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
-import {dismissBottomSheet, popToRoot} from '@screens/navigation';
+import {useIsTablet} from '@hooks/device';
+import {dismissAllModals, dismissBottomSheet, popToRoot} from '@screens/navigation';
 
 type Props = {
     channelId: string;
@@ -21,12 +23,14 @@ type Props = {
 const LeaveChanelLabel = ({channelId, displayName, type, testID}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
+    const isTablet = useIsTablet();
 
     const close = async () => {
         await dismissBottomSheet();
-        popToRoot();
-
-        // HANDLE TABLET
+        if (!isTablet) {
+            await dismissAllModals();
+            popToRoot();
+        }
     };
 
     const closeDirectMessage = () => {
@@ -84,7 +88,10 @@ const LeaveChanelLabel = ({channelId, displayName, type, testID}: Props) => {
             }, {
                 text: intl.formatMessage({id: 'channel_info.leave', defaultMessage: 'Leave'}),
                 style: 'destructive',
-                onPress: close,
+                onPress: () => {
+                    leaveChannel(serverUrl, channelId);
+                    close();
+                },
             }], {cancelable: false},
         );
     };
@@ -107,7 +114,7 @@ const LeaveChanelLabel = ({channelId, displayName, type, testID}: Props) => {
         );
     };
 
-    const onLeave = useCallback(() => {
+    const onLeave = () => {
         switch (type) {
             case General.OPEN_CHANNEL:
                 leavePublicChannel();
@@ -122,9 +129,7 @@ const LeaveChanelLabel = ({channelId, displayName, type, testID}: Props) => {
                 closeGroupMessage();
                 break;
         }
-
-        // close();
-    }, [channelId, displayName, type, intl, serverUrl]);
+    };
 
     if (!displayName || !type) {
         return null;

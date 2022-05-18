@@ -6,15 +6,11 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {addChannelToDefaultCategory} from '@actions/local/category';
 import {
-    markChannelAsViewed,
-    removeCurrentUserFromChannel,
-    setChannelDeleteAt,
-    storeMyChannelsForTeam,
-    switchToChannel,
-    updateChannelInfoFromChannel,
-    updateMyChannelFromWebsocket} from '@actions/local/channel';
+    markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt,
+    storeMyChannelsForTeam, updateChannelInfoFromChannel, updateMyChannelFromWebsocket,
+} from '@actions/local/channel';
 import {switchToGlobalThreads} from '@actions/local/thread';
-import {fetchMissingSidebarInfo, fetchMyChannel, fetchChannelStats, fetchChannelById} from '@actions/remote/channel';
+import {fetchMissingSidebarInfo, fetchMyChannel, fetchChannelStats, fetchChannelById, switchToChannelById} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
@@ -318,17 +314,20 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
     }
 
     try {
-        const {database} = operator;
+        // Depending on who was removed, the ids may come from one place dataset or the other.
+        const userId = msg.data.user_id || msg.broadcast.user_id;
+        const channelId = msg.data.channel_id || msg.broadcast.channel_id;
 
+        if (EphemeralStore.isLeavingChannel(channelId)) {
+            return;
+        }
+
+        const {database} = operator;
         const channel = await getCurrentChannel(database);
         const user = await getCurrentUser(database);
         if (!user) {
             return;
         }
-
-        // Depending on who was removed, the ids may come from one place dataset or the other.
-        const userId = msg.data.user_id || msg.broadcast.user_id;
-        const channelId = msg.data.channel_id || msg.broadcast.channel_id;
 
         const models: Model[] = [];
 
@@ -340,16 +339,12 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
         }
 
         if (user.id === userId) {
-            const {models: removeUserModels} = await removeCurrentUserFromChannel(serverUrl, channelId, true);
-            if (removeUserModels) {
-                models.push(...removeUserModels);
-            }
-
+            await removeCurrentUserFromChannel(serverUrl, channelId);
             if (channel && channel.id === channelId) {
                 const currentServer = await queryActiveServer(DatabaseManager.appDatabase!.database);
 
                 if (currentServer?.url === serverUrl) {
-                    DeviceEventEmitter.emit(Events.LEAVE_CHANNEL);
+                    DeviceEventEmitter.emit(Events.LEAVE_CHANNEL, channel.displayName);
                     await dismissAllModals();
                     await popToRoot();
 
@@ -366,10 +361,7 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
                                     models.push(...switchToGlobalThreadsModels);
                                 }
                             } else {
-                                const {models: switchChannelModels} = await switchToChannel(serverUrl, channelToJumpTo, tId, true, true);
-                                if (switchChannelModels) {
-                                    models.push(...switchChannelModels);
-                                }
+                                switchToChannelById(serverUrl, channelToJumpTo, tId, true);
                             }
                         } // TODO else jump to "join a channel" screen https://mattermost.atlassian.net/browse/MM-41051
                     } else {
@@ -401,14 +393,16 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocke
 
     try {
         const {database} = operator;
+        const {channel_id: channelId, delete_at: deleteAt} = msg.data;
+        if (EphemeralStore.isLeavingChannel(channelId)) {
+            return;
+        }
 
         const currentChannel = await getCurrentChannel(database);
         const user = await getCurrentUser(database);
         if (!user) {
             return;
         }
-
-        const {channel_id: channelId, delete_at: deleteAt} = msg.data;
 
         const config = await getConfig(database);
 
@@ -419,13 +413,13 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocke
         }
 
         if (config?.ExperimentalViewArchivedChannels !== 'true') {
-            removeCurrentUserFromChannel(serverUrl, channelId);
+            await removeCurrentUserFromChannel(serverUrl, channelId);
 
             if (currentChannel && currentChannel.id === channelId) {
                 const currentServer = await queryActiveServer(DatabaseManager.appDatabase!.database);
 
                 if (currentServer?.url === serverUrl) {
-                    DeviceEventEmitter.emit(Events.CHANNEL_DELETED);
+                    DeviceEventEmitter.emit(Events.CHANNEL_ARCHIVED, currentChannel.displayName);
                     await dismissAllModals();
                     await popToRoot();
 
@@ -440,7 +434,7 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocke
                                 switchToGlobalThreads(serverUrl, tId);
                                 return;
                             }
-                            switchToChannel(serverUrl, channelToJumpTo);
+                            switchToChannelById(serverUrl, channelToJumpTo, tId);
                         } // TODO else jump to "join a channel" screen
                     } else {
                         setCurrentChannelId(operator, '');
