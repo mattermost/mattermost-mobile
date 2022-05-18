@@ -10,8 +10,6 @@ import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import SettingOption from '@screens/settings/setting_option';
 
-import {NotificationsOptionConfig} from '../constant';
-
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
@@ -71,16 +69,16 @@ const Notifications = ({isCRTEnabled, enableAutoResponder}: NotificationsProps) 
                     defaultMessage={mentionsI18nDefault}
                     i18nId={mentionsI18nId}
                     onPress={onPressHandler}
-                    config={NotificationsOptionConfig.mentions}
+                    optionName='mentions'
                 />
                 <SettingOption
-                    config={NotificationsOptionConfig.push_notification}
+                    optionName='push_notification'
                     onPress={onPressHandler}
                 />
                 {enableAutoResponder && (
                     <SettingOption
                         onPress={onPressHandler}
-                        config={NotificationsOptionConfig.automatic_dm_replies}
+                        optionName='automatic_dm_replies'
                     />
                 )}
                 <View style={styles.divider}/>

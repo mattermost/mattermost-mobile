@@ -16,7 +16,6 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import {SettingOptionConfig} from './constant';
 import SettingOption from './setting_option';
 
 const edges: Edge[] = ['left', 'right'];
@@ -156,19 +155,19 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
                     style={styles.group}
                 >
                     <SettingOption
-                        config={SettingOptionConfig.notification}
+                        optionName='notification'
                         onPress={goToNotifications}
                     />
                     <SettingOption
-                        config={SettingOptionConfig.display}
+                        optionName='display'
                         onPress={onPressHandler}
                     />
                     <SettingOption
-                        config={SettingOptionConfig.advanced_settings}
+                        optionName='advanced_settings'
                         onPress={onPressHandler}
                     />
                     <SettingOption
-                        config={SettingOptionConfig.about}
+                        optionName='about'
                         onPress={goToAbout}
                         messageValues={{appTitle: serverName}}
                         separator={Platform.OS === 'ios'}
@@ -180,7 +179,7 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
                 >
                     {showHelp &&
                     <SettingOption
-                        config={SettingOptionConfig.help}
+                        optionName='help'
                         onPress={onPressHandler}
                         isLink={true}
                         containerStyle={styles.innerContainerStyle}

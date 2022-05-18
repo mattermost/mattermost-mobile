@@ -54,3 +54,8 @@ export const NotificationsOptionConfig = {
         testID: 'notification_settings.automatic_dm_replies',
     },
 };
+
+export default {
+    ...SettingOptionConfig,
+    ...NotificationsOptionConfig,
+};
