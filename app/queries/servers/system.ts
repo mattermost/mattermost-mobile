@@ -363,7 +363,7 @@ export async function setCurrentTeamAndChannelId(operator: ServerDataOperator, t
             await operator.batchRecords(models);
         }
 
-        return {currentChannelId: channelId};
+        return {currentTeamId: teamId, currentChannelId: channelId};
     } catch (error) {
         return {error};
     }
