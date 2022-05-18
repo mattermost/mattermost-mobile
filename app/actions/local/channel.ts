@@ -94,8 +94,6 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                     await operator.batchRecords(models);
                 }
 
-                PushNotifications.cancelChannelNotifications(channelId);
-
                 if (!EphemeralStore.theme) {
                     // When opening the app from a push notification the theme may not be set in the EphemeralStore
                     // causing the goToScreen to use the Appearance theme instead and that causes the screen background color to potentially
@@ -215,6 +213,7 @@ export async function markChannelAsViewed(serverUrl: string, channelId: string, 
     });
 
     try {
+        PushNotifications.cancelChannelNotifications(channelId);
         if (!prepareRecordsOnly) {
             await operator.batchRecords([member]);
         }
