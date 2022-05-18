@@ -13,7 +13,7 @@ import SearchIllustration from './search_illustration';
 
 type Props = {
     term: string;
-    illustration: React.ReactNode;
+    illustration?: React.ReactNode;
 };
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
