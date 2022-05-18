@@ -11,10 +11,10 @@ export default tableSchema({
     name: GROUP,
     columns: [
         {name: 'display_name', type: 'string'},
-        {name: 'name', type: 'string'},
+        {name: 'name', type: 'string', isIndexed: true},
         {name: 'description', type: 'string'},
         {name: 'source', type: 'string'},
-        {name: 'remote_id', type: 'string'},
+        {name: 'remote_id', type: 'string', isIndexed: true},
         {name: 'created_at', type: 'number'},
         {name: 'updated_at', type: 'number'},
         {name: 'deleted_at', type: 'number'},

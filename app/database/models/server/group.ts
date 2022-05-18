@@ -23,7 +23,7 @@ const {
 } = MM_TABLES.SERVER;
 
 /**
- * A Group holds channels for a given user in a team
+ * A Group is a collection of users that can be associated with a team or a channel
  */
 export default class GroupModel extends Model implements GroupInterface {
     /** table (name) : Group */
