@@ -30,6 +30,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         selectedText: {
             color: theme.buttonBg,
         },
+        unselectedText: {
+            color: changeOpacity(theme.centerChannelColor, 0.56),
+        },
     };
 });
 
@@ -49,7 +52,7 @@ const SelectButton = ({selected, onPress, text}: ButtonProps) => {
             onPress={onPress}
         >
             <Text
-                style={[styles.text, selected && styles.selectedText]}
+                style={[styles.text, selected ? styles.selectedText : styles.unselectedText]}
             >
                 {text}
             </Text >
