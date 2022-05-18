@@ -3,21 +3,30 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import {combineLatest, from as from$, of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
-import {observeConfigBooleanValue} from '@queries/servers/system';
+import {getAllowedThemes, observeConfigBooleanValue} from '@queries/servers/system';
 import {WithDatabaseArgs} from '@typings/database/database';
 
-import NotificationSettings from './display';
+import DisplaySettings from './display';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const isTimezoneEnabled = observeConfigBooleanValue(database, 'ExperimentalTimezone');
-    const isThemeSwitchingEnabled = observeConfigBooleanValue(database, 'EnableThemeSelection');
 
-    //     const enableTheme = isThemeSwitchingEnabled(state) && getAllowedThemes(state).length > 1;
+    const allowsThemeSwitching = observeConfigBooleanValue(database, 'EnableThemeSelection');
+    const allowedThemes = from$(getAllowedThemes(database));
+
+    const isThemeSwitchingEnabled = combineLatest([allowsThemeSwitching, allowedThemes]).pipe(
+        switchMap(([ts, ath]) => {
+            return of$(ts && ath.length > 1);
+        }),
+    );
+
     return {
         isTimezoneEnabled,
         isThemeSwitchingEnabled,
     };
 });
 
-export default withDatabase(enhanced(NotificationSettings));
+export default withDatabase(enhanced(DisplaySettings));

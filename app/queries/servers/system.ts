@@ -5,6 +5,7 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$, Observable} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
 
@@ -394,4 +395,20 @@ export const observeOnlyUnreads = (database: Database) => {
         switchMap((result) => (result.length ? result[0].observe() : of$({value: false}))),
         switchMap((model) => of$(model.value as boolean)),
     );
+};
+
+export const getAllowedThemes = async (database: Database): Promise<string[]> => {
+    const defaultThemeKeys = Object.keys(Preferences.THEMES);
+    const config = await getConfig(database);
+
+    let acceptableThemes = defaultThemeKeys;
+
+    if (config?.AllowedThemes) {
+        const allowedThemeKeys = (config.AllowedThemes || '').split(',').filter(String);
+        if (allowedThemeKeys.length) {
+            acceptableThemes = defaultThemeKeys.filter((k) => allowedThemeKeys.includes(k));
+        }
+    }
+
+    return acceptableThemes;
 };
