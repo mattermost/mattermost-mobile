@@ -9,13 +9,14 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
-import {SettingOptionConfig} from '@constants/settings';
+import {useServerDisplayName} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import {SettingOptionConfig} from './constant';
 import SettingOption from './setting_option';
 
 const edges: Edge[] = ['left', 'right'];
@@ -71,6 +72,8 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
     const theme = useTheme();
     const intl = useIntl();
     const styles = getStyleSheet(theme);
+    const serverDisplayName = useServerDisplayName();
+    const serverName = siteName || serverDisplayName;
 
     const closeButton = useMemo(() => {
         return {
@@ -128,7 +131,7 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
 
     const goToAbout = preventDoubleTap(() => {
         const screen = Screens.ABOUT;
-        const title = intl.formatMessage({id: 'about.title', defaultMessage: 'About {appTitle}'}, {appTitle: siteName});
+        const title = intl.formatMessage({id: 'about.title', defaultMessage: 'About {appTitle}'}, {appTitle: serverName});
 
         goToScreen(screen, title);
     });
@@ -167,7 +170,7 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
                     <SettingOption
                         config={SettingOptionConfig.about}
                         onPress={goToAbout}
-                        messageValues={{appTitle: siteName}}
+                        messageValues={{appTitle: serverName}}
                         separator={Platform.OS === 'ios'}
                     />
                 </View>
@@ -180,7 +183,7 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
                         config={SettingOptionConfig.help}
                         onPress={onPressHandler}
                         isLink={true}
-                        innerContainerStyle={styles.innerContainerStyle}
+                        containerStyle={styles.innerContainerStyle}
                     />
                     }
                 </View>

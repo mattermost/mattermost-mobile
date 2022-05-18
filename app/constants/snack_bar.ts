@@ -7,9 +7,7 @@ import keyMirror from '@utils/key_mirror';
 export const SNACK_BAR_TYPE = keyMirror({
     LINK_COPIED: null,
     MESSAGE_COPIED: null,
-    FOLLOW_THREAD: null,
     MUTE_CHANNEL: null,
-    FAILED_TO_SAVE_MESSAGE: null,
 });
 
 type SnackBarConfig = {
@@ -17,7 +15,7 @@ type SnackBarConfig = {
     defaultMessage: string;
     iconName: string;
     canUndo: boolean;
-}
+};
 export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
     LINK_COPIED: {
         id: t('snack.bar.link.copied'),
@@ -30,12 +28,6 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
         defaultMessage: 'Text copied to clipboard',
         iconName: 'content-copy',
         canUndo: false,
-    },
-    FOLLOW_THREAD: {
-        id: t('snack.bar.follow.thread'),
-        defaultMessage: 'You\'re now following this thread',
-        iconName: 'message-check-outline',
-        canUndo: true,
     },
     MUTE_CHANNEL: {
         id: t('snack.bar.mute.channel'),

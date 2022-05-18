@@ -6,32 +6,32 @@ import {t} from '@i18n';
 export const SettingOptionConfig = {
     notification: {
         defaultMessage: 'Notifications',
-        i18nId: t('user.settings.modal.notifications'),
+        i18nId: t('general_settings.notifications'),
         iconName: 'bell-outline',
-        testID: 'general_settings.notifications.action',
+        testID: 'general_settings.notifications',
     },
     display: {
         defaultMessage: 'Display',
-        i18nId: t('user.settings.modal.display'),
+        i18nId: t('general_settings.display'),
         iconName: 'layers-outline',
-        testID: 'general_settings.display.action',
+        testID: 'general_settings.display',
     },
     advanced_settings: {
         defaultMessage: 'Advanced Settings',
-        i18nId: t('mobile.advanced_settings.title'),
+        i18nId: t('general_settings.advanced_settings'),
         iconName: 'tune',
-        testID: 'general_settings.advanced.action',
+        testID: 'general_settings.advanced',
     },
     about: {
         defaultMessage: 'About {appTitle}',
-        i18nId: t('about.title'),
+        i18nId: t('general_settings.about'),
         iconName: 'information-outline',
-        testID: 'general_settings.about.action',
+        testID: 'general_settings.about',
     },
     help: {
         defaultMessage: 'Help',
-        i18nId: t('mobile.help.title'),
-        testID: 'general_settings.help.action',
+        i18nId: t('general_settings.help'),
+        testID: 'general_settings.help',
         showArrow: false,
     },
 };

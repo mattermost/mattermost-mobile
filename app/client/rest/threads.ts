@@ -47,7 +47,7 @@ const ClientThreads = (superclass: any) => class extends superclass {
         const url = `${this.getThreadRoute(userId, teamId, threadId)}/read/${timestamp}`;
         return this.doFetch(
             url,
-            {method: 'put'},
+            {method: 'put', body: {}},
         );
     };
 
@@ -63,7 +63,7 @@ const ClientThreads = (superclass: any) => class extends superclass {
         const url = `${this.getThreadsRoute(userId, teamId)}/read`;
         return this.doFetch(
             url,
-            {method: 'put'},
+            {method: 'put', body: {}},
         );
     };
 
@@ -71,7 +71,7 @@ const ClientThreads = (superclass: any) => class extends superclass {
         const url = this.getThreadRoute(userId, teamId, threadId) + '/following';
         return this.doFetch(
             url,
-            {method: state ? 'put' : 'delete'},
+            {method: state ? 'put' : 'delete', body: {}},
         );
     };
 };
