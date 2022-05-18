@@ -13,6 +13,7 @@ import SearchIllustration from './search_illustration';
 
 type Props = {
     term: string;
+    illustration: React.ReactNode;
 };
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -34,13 +35,14 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const NoResultsWithTerm = ({term}: Props) => {
+const NoResultsWithTerm = ({term, illustration}: Props) => {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
     return (
         <View style={style.container}>
-            <SearchIllustration/>
+            {illustration && (illustration)}
+            {!illustration && <SearchIllustration/>}
             <FormattedText
                 id='mobile.no_results_with_term'
                 defaultMessage='No results for {term}'

@@ -3,7 +3,7 @@
 import React from 'react';
 import Svg, {Path, Ellipse} from 'react-native-svg';
 
-function EmptyFiles() {
+function SearchFilesIllustration() {
     return (
         <Svg
             width='185'
@@ -57,4 +57,4 @@ function EmptyFiles() {
     );
 }
 
-export default EmptyFiles;
+export default SearchFilesIllustration;

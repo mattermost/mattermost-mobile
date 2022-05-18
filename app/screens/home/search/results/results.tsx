@@ -4,7 +4,9 @@
 import React, {useCallback, useState} from 'react';
 import {Text} from 'react-native';
 
-import EmptyState from './empty_state';
+import NoResultsWithTerm from '@components/no_results_with_term';
+import SearchFilesIllustration from '@components/no_results_with_term/search_files_illustration';
+
 import Header from './header';
 
 type Props = {
@@ -69,9 +71,9 @@ const SearchResults = ({searchValue}: Props) => {
         (selectedTab === 'file-tab' && fileResults.length === 0)
     ) {
         content = (
-            <EmptyState
-                searchValue={searchValue}
-                showMessagesTab={selectedTab === 'message-tab'}
+            <NoResultsWithTerm
+                term={searchValue}
+                illustration={selectedTab === 'file-tab' ? <SearchFilesIllustration/> : undefined}
             />
         );
     } else {
@@ -91,4 +93,3 @@ const SearchResults = ({searchValue}: Props) => {
 };
 
 export default SearchResults;
-
