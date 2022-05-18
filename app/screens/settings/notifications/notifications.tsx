@@ -6,10 +6,11 @@ import {Alert, Platform, ScrollView, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
-import {NotificationsOptionConfig} from '@constants/settings';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import SettingOption from '@screens/settings/setting_option';
+
+import {NotificationsOptionConfig} from '../constant';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
