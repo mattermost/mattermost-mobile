@@ -86,11 +86,11 @@ width number
 
 Group
 -
-id PK string # server-generated FK >- GroupChannel.group_id
-name string
+id PK string INDEX # server-generated 
+name string INDEX
 display_name string
 description string
-remote_id string
+remote_id string INDEX
 source string
 created_at number
 updated_at number
@@ -99,8 +99,8 @@ deleted_at number
 GroupChannel
 -
 id PK string # composition ID Group.id-Channel.id
-group_id string FK >- Group.id
-channel_id string FK >- Channel.id
+group_id string INDEX FK >- Group.id
+channel_id string INDEX FK >- Channel.id
 created_at number
 updated_at number
 deleted_at number
@@ -108,7 +108,7 @@ deleted_at number
 GroupMembership
 -
 id PK string # composition ID Group.id-User.id
-group_id string FK >- Group.id
+group_id string INDEX FK >- Group.id
 user_id string INDEX FK >- User.id
 created_at number
 updated_at number
@@ -117,8 +117,8 @@ deleted_at number
 GroupTeam
 -
 id PK string # composition ID Group.id-Team.id
-group_id string FK >- Group.id
-team_id string FK >- Team.id
+group_id string INDEX FK >- Group.id
+team_id string INDEX FK >- Team.id
 created_at number
 updated_at number
 deleted_at number
