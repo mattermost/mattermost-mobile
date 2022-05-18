@@ -113,8 +113,8 @@ const Filter = () => {
                 />
                 <View style={style.icon}>
                     <CompassIcon
-                        style={[item.selected ? style.unselected : style.selected]}
-                        name={item.selected ? 'circle-outline' : 'check-circle'}
+                        style={[item.selected ? style.selected : style.unselected]}
+                        name={item.selected ? 'check-circle' : 'circle-outline'}
                         size={31.2}
                         color={'blue'}
                     />
