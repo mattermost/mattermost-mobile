@@ -122,8 +122,15 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
     };
 
     const goToNotifications = preventDoubleTap(() => {
-        const screen = 'NotificationSettings';
-        const title = intl.formatMessage({id: 'user.settings.modal.notifications', defaultMessage: 'Notifications'});
+        const screen = Screens.NOTIFICATION_SETTINGS;
+        const title = intl.formatMessage({id: 'user.settings.notifications', defaultMessage: 'Notifications'});
+
+        goToScreen(screen, title);
+    });
+
+    const goToDisplaySettings = preventDoubleTap(() => {
+        const screen = Screens.DISPLAY_SETTINGS;
+        const title = intl.formatMessage({id: 'user.settings.display', defaultMessage: 'Display'});
 
         goToScreen(screen, title);
     });
@@ -160,7 +167,7 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
                     />
                     <SettingOption
                         optionName='display'
-                        onPress={onPressHandler}
+                        onPress={goToDisplaySettings}
                     />
                     <SettingOption
                         optionName='advanced_settings'

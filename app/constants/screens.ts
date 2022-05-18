@@ -16,6 +16,7 @@ export const CREATE_OR_EDIT_CHANNEL = 'CreateOrEditChannel';
 export const CREATE_TEAM = 'CreateTeam';
 export const CUSTOM_STATUS = 'CustomStatus';
 export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
+export const DISPLAY_SETTINGS = 'DisplaySettings';
 export const EDIT_POST = 'EditPost';
 export const EDIT_PROFILE = 'EditProfile';
 export const EDIT_SERVER = 'EditServer';
@@ -32,6 +33,7 @@ export const LATEX = 'Latex';
 export const LOGIN = 'Login';
 export const MENTIONS = 'Mentions';
 export const MFA = 'MFA';
+export const NOTIFICATION_SETTINGS = 'NotificationSettings';
 export const PERMALINK = 'Permalink';
 export const POST_OPTIONS = 'PostOptions';
 export const REACTIONS = 'Reactions';
@@ -40,7 +42,6 @@ export const SEARCH = 'Search';
 export const SELECT_TEAM = 'SelectTeam';
 export const SERVER = 'Server';
 export const SETTINGS = 'Settings';
-export const NOTIFICATION_SETTINGS = 'NotificationSettings';
 export const SNACK_BAR = 'SnackBar';
 export const SSO = 'SSO';
 export const THREAD = 'Thread';
@@ -64,6 +65,7 @@ export default {
     CREATE_TEAM,
     CUSTOM_STATUS,
     CUSTOM_STATUS_CLEAR_AFTER,
+    DISPLAY_SETTINGS,
     EDIT_POST,
     EDIT_PROFILE,
     EDIT_SERVER,

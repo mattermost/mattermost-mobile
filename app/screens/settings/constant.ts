@@ -55,7 +55,29 @@ export const NotificationsOptionConfig = {
     },
 };
 
+export const DisplayOptionConfig = {
+    clock: {
+        defaultMessage: 'Clock Display',
+        i18nId: t('mobile.display_settings.clockDisplay'),
+        iconName: 'clock-outline',
+        testID: 'display_settings.clock',
+    },
+    theme: {
+        defaultMessage: 'Theme',
+        i18nId: t('mobile.display_settings.theme'),
+        iconName: 'palette-outline',
+        testID: 'display_settings.theme',
+    },
+    timezone: {
+        defaultMessage: 'Timezone',
+        i18nId: t('mobile.display_settings.timezone'),
+        iconName: 'globe',
+        testID: 'display_settings.timezone',
+    },
+};
+
 export default {
     ...SettingOptionConfig,
     ...NotificationsOptionConfig,
+    ...DisplayOptionConfig,
 };
