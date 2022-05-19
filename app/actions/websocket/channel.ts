@@ -383,7 +383,6 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
         }
     }
 
-    await fetchChannelStats(serverUrl, channelId, false);
     operator.batchRecords(models);
 }
 

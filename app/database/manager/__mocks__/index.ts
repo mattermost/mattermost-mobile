@@ -25,6 +25,7 @@ import {queryActiveServer, queryServer, queryServerByIdentifier} from '@queries/
 import {DatabaseType} from '@typings/database/enums';
 import {deleteIOSDatabase} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
+import {removeProtocol} from '@utils/url';
 
 import type {AppDatabase, CreateServerDatabaseArgs, Models, RegisterServerDatabaseArgs, ServerDatabase, ServerDatabases} from '@typings/database/database';
 
@@ -356,6 +357,11 @@ class DatabaseManager {
 
     private getDatabaseFilePath = (dbName: string): string => {
         return Platform.OS === 'ios' ? `${this.databaseDirectory}/${dbName}.db` : `${this.databaseDirectory}${dbName}.db`;
+    };
+
+    public searchUrl = (toFind: string): string | undefined => {
+        const toFindWithoutProtocol = removeProtocol(toFind);
+        return Object.keys(this.serverDatabases).find((k) => removeProtocol(k) === toFindWithoutProtocol);
     };
 }
 
