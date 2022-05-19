@@ -412,3 +412,68 @@ export async function fetchNewThreads(
 
     return {error: false, models};
 }
+
+export async function fetchRefreshThreads(
+    serverUrl: string,
+    teamId: string,
+    unread = false,
+    prepareRecordsOnly = false,
+): Promise<{error: unknown; models?: Model[]}> {
+    const options: FetchThreadsOptions = {
+        unread,
+        deleted: true,
+        perPage: 60,
+    };
+
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const newestThread = await getNewestThreadInTeam(operator.database, teamId, unread);
+    options.since = newestThread ? newestThread.lastReplyAt : 0;
+
+    let response: {
+        error: unknown;
+        data?: Thread[];
+    } = {
+        error: undefined,
+        data: [],
+    };
+
+    let pages;
+
+    // in the case of global threads: if we have no threads in the DB fetch just one page
+    if (options.since === 0 && !unread) {
+        pages = 1;
+    }
+
+    response = await fetchBatchThreads(serverUrl, teamId, options, pages);
+
+    const {error: nErr, data} = response;
+
+    if (nErr) {
+        return {error: nErr};
+    }
+
+    if (!data?.length) {
+        return {error: false, models: []};
+    }
+
+    const loadedInGlobalThreads = !unread;
+    const {error, models} = await processReceivedThreads(serverUrl, data, teamId, loadedInGlobalThreads, true);
+
+    if (!error && !prepareRecordsOnly && models?.length) {
+        try {
+            await operator.batchRecords(models);
+        } catch (err) {
+            if (__DEV__) {
+                throw err;
+            }
+            return {error: true};
+        }
+    }
+
+    return {error: false, models};
+}

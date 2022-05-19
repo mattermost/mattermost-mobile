@@ -20,8 +20,8 @@ import {AppCommandParser} from './app_command_parser/app_command_parser';
 import SlashSuggestionItem from './slash_suggestion_item';
 
 // TODO: Remove when all below commands have been implemented
-const COMMANDS_TO_IMPLEMENT_LATER = ['collapse', 'expand', 'join', 'open', 'leave', 'logout', 'msg', 'grpmsg'];
-const NON_MOBILE_COMMANDS = ['rename', 'invite_people', 'shortcuts', 'search', 'help', 'settings', 'remove'];
+const COMMANDS_TO_IMPLEMENT_LATER = ['collapse', 'expand', 'logout'];
+const NON_MOBILE_COMMANDS = ['shortcuts', 'search', 'settings'];
 
 const COMMANDS_TO_HIDE_ON_MOBILE = new Set([...COMMANDS_TO_IMPLEMENT_LATER, ...NON_MOBILE_COMMANDS]);
 

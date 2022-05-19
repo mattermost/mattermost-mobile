@@ -36,7 +36,7 @@ export const getThreadById = async (database: Database, threadId: string) => {
 
 export const observeIsCRTEnabled = (database: Database) => {
     const config = observeConfig(database);
-    const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observe();
+    const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observeWithColumns(['value']);
     return combineLatest([config, preferences]).pipe(
         map(
             ([cfg, prefs]) => isCRTEnabled(prefs, cfg),
