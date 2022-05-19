@@ -37,52 +37,58 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             fontFamily: 'OpenSans',
         },
         heading1: {
-            fontFamily: 'OpenSans-Bold',
-            fontSize: 24,
-            lineHeight: 25,
+            fontFamily: 'Metropolis-Semibold',
+            fontSize: 28,
+            lineHeight: 34,
         },
         heading1Text: {
-            paddingVertical: 8,
+            paddingTop: 12,
+            paddingBottom: 8,
         },
         heading2: {
-            fontFamily: 'OpenSans-Bold',
-            fontSize: 22,
-            lineHeight: 25,
+            fontFamily: 'Metropolis-Semibold',
+            fontSize: 25,
+            lineHeight: 30,
         },
         heading2Text: {
-            paddingVertical: 6,
+            paddingTop: 12,
+            paddingBottom: 8,
         },
         heading3: {
-            fontFamily: 'OpenSans-Bold',
-            fontSize: 21,
-            lineHeight: 25,
+            fontFamily: 'Metropolis-Semibold',
+            fontSize: 22,
+            lineHeight: 28,
         },
         heading3Text: {
-            paddingVertical: 6,
+            paddingTop: 12,
+            paddingBottom: 8,
         },
         heading4: {
-            fontFamily: 'OpenSans-Bold',
+            fontFamily: 'Metropolis-Semibold',
             fontSize: 20,
-            lineHeight: 25,
+            lineHeight: 24,
         },
         heading4Text: {
-            paddingVertical: 5,
+            paddingTop: 12,
+            paddingBottom: 6,
         },
         heading5: {
-            fontFamily: 'OpenSans-Bold',
-            fontSize: 19,
-            lineHeight: 25,
+            fontFamily: 'Metropolis-Semibold',
+            fontSize: 18,
+            lineHeight: 24,
         },
         heading5Text: {
-            paddingVertical: 5,
+            paddingTop: 12,
+            paddingBottom: 6,
         },
         heading6: {
-            fontFamily: 'OpenSans-Bold',
+            fontFamily: 'Metropolis-Semibold',
             fontSize: 18,
-            lineHeight: 25,
+            lineHeight: 24,
         },
         heading6Text: {
-            paddingVertical: 4,
+            paddingTop: 12,
+            paddingBottom: 6,
         },
         code: {
             alignSelf: 'center',
@@ -114,7 +120,7 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
 export const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         adjacentParagraph: {
-            marginTop: 6,
+            marginTop: 8,
         },
         horizontalRule: {
             backgroundColor: theme.centerChannelColor,
