@@ -171,7 +171,6 @@ class PushNotifications {
     handleMessageNotification = async (notification: NotificationWithData) => {
         const {payload, foreground, userInteraction} = notification;
         const serverUrl = await this.getServerUrlFromNotification(notification);
-
         if (serverUrl) {
             if (foreground) {
                 // Move this to a local action

@@ -4,7 +4,7 @@
 import {Platform} from 'react-native';
 
 import {updatePostSinceCache} from '@actions/local/notification';
-import {fetchMissingSidebarInfo, fetchMyChannel, markChannelAsRead, switchToChannelById} from '@actions/remote/channel';
+import {fetchMissingSidebarInfo, fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {fetchMyTeam} from '@actions/remote/team';
 import {Preferences} from '@constants';
@@ -120,8 +120,6 @@ export const openNotification = async (serverUrl: string, notification: Notifica
         if (isCRTEnabled && notification.payload?.root_id) {
             return {error: 'Opening CRT notifications not implemented yet'};
         }
-        await markChannelAsRead(serverUrl, channelId);
-
         const system = await getCommonSystemValues(database);
         const currentServerUrl = await DatabaseManager.getActiveServerUrl();
         let teamId = notification.payload?.team_id;
@@ -140,8 +138,7 @@ export const openNotification = async (serverUrl: string, notification: Notifica
         const myTeam = await getMyTeamById(database, teamId);
 
         if (myChannel && myTeam) {
-            switchToChannelById(serverUrl, channelId, teamId);
-            return {};
+            return switchToChannelById(serverUrl, channelId, teamId);
         }
 
         const result = await fetchNotificationData(serverUrl, notification);
