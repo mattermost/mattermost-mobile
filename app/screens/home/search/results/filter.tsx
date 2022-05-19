@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 import Button from 'react-native-button';
@@ -79,6 +79,7 @@ const Filter = ({initialState, setParentFilterState}: FilterProps) => {
     const style = getStyleSheet(theme);
     const isTablet = useIsTablet();
 
+    const [enableShowResults, setEnableShowResults] = useState(false);
     const [filterState, setFilterState] = useState(initialState);
 
     const handleMyState = useCallback((value: string) => {
@@ -178,16 +179,16 @@ const Filter = ({initialState, setParentFilterState}: FilterProps) => {
         );
     }, []);
 
-    // const enableButton = useCallBack(() => {
-    //     const enabled =
-    // }, [data]);
+    useEffect(() => {
+        setEnableShowResults(JSON.stringify(filterState) === JSON.stringify(initialState));
+    }, [filterState, initialState]);
 
     const buttonText = intl.formatMessage({id: 'screen.search.results.filter.show_results', defaultMessage: 'Show results'});
     const buttonTitle = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
 
     return (
         <BottomSheetContent
-            disableButton={true}
+            disableButton={enableShowResults}
             buttonText={buttonText}
             showButton={true}
             rightTitleComponent={renderTitleComponent()}
