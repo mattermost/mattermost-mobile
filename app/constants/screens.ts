@@ -42,6 +42,7 @@ export const SEARCH = 'Search';
 export const SELECT_TEAM = 'SelectTeam';
 export const SERVER = 'Server';
 export const SETTINGS = 'Settings';
+export const NOTIFICATION_SETTINGS = 'NotificationSettings';
 export const SNACK_BAR = 'SnackBar';
 export const SSO = 'SSO';
 export const THREAD = 'Thread';
