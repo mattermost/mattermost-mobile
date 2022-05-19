@@ -215,6 +215,14 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
             update_at: timestamp,
             delete_at: 0,
         } as Post;
+
+        // Update the local post to reflect the pending state in the UI
+        // timestamps will remain the same as the initial attempt
+        post.prepareUpdate((p) => {
+            p.props = newPost.props;
+        });
+        await operator.batchRecords([post]);
+
         const created = await client.createPost(newPost);
         const models = await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_NEW,
@@ -233,6 +241,14 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
             error.server_error_id === ServerErrors.PLUGIN_DISMISSED_POST_ERROR
         ) {
             await removePost(serverUrl, post);
+        } else {
+            post.prepareUpdate((p) => {
+                p.props = {
+                    ...p.props,
+                    failed: true,
+                };
+            });
+            await operator.batchRecords([post]);
         }
 
         return {error};
