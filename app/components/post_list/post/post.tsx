@@ -84,7 +84,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         postStyle: {
             overflow: 'hidden',
             flex: 1,
-            paddingHorizontal: 20,
+            paddingHorizontal: 16,
         },
         profilePictureContainer: {
             marginBottom: 5,
@@ -96,7 +96,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'column',
         },
         rightColumnPadding: {paddingBottom: 3},
-        touchableContainer: {marginHorizontal: -20, paddingHorizontal: 20},
+        touchableContainer: {marginHorizontal: -16, paddingHorizontal: 16},
     };
 });
 
