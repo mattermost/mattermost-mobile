@@ -47,22 +47,12 @@ type FilterItem = {
     defaultMessage: string;
 }
 
-export type FilterState = {
-    Documents: boolean;
-    Spreadsheets: boolean;
-    Presentations: boolean;
-    Code: boolean;
-    Images: boolean;
-    Audio: boolean;
-    Videos: boolean;
-}
-
 type FilterProps = {
     initialState: FilterState;
     setParentFilterState: (state: FilterState) => void;
 }
 
-export const clearedState: FilterState = {
+export const clearedState = {
     Documents: false,
     Spreadsheets: false,
     Presentations: false,
@@ -71,6 +61,7 @@ export const clearedState: FilterState = {
     Audio: false,
     Videos: false,
 };
+type FilterState = typeof clearedState
 
 const Filter = ({initialState, setParentFilterState}: FilterProps) => {
     const intl = useIntl();
