@@ -4,12 +4,13 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
+import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import Filter from './filter';
+import Filter, {FilterState} from './filter';
 import SelectButton from './header_button';
 
 type Props = {
@@ -46,21 +47,24 @@ const Header = ({onHeaderSelect, numberFiles, numberMessages}: Props) => {
     const styles = getStyleFromTheme(theme);
     const intl = useIntl();
 
-    const [filterDocuments, setFilterDocuments] = useState(false);
-    const [filterSpreadsheets, setFilterSpreadsheets] = useState(false);
-    const [filterPresentations, setFilterPresentations] = useState(false);
-    const [filterCode, setFilterCode] = useState(false);
-    const [filterImages, setFilterImages] = useState(false);
-    const [filterAudio, setFilterAudio] = useState(false);
-    const [filterVideos, setFilterVideos] = useState(false);
-
     const messagesText = intl.formatMessage({id: 'screen.search.header.messages', defaultMessage: 'Messages'});
     const filesText = intl.formatMessage({id: 'screen.search.header.files', defaultMessage: 'Files'});
 
     const [tab, setTab] = useState(0);
     const [showFilterIcon, setShowFilterIcon] = useState(false);
 
-    // console.log('filterVideos', filterVideos);
+    const initialState: FilterState = {
+        Documents: false,
+        Spreadsheets: false,
+        Presentations: false,
+        Code: false,
+        Images: false,
+        Audio: false,
+        Videos: false,
+    };
+    const [filterState, setFilterState] = useState(initialState);
+    const [hasFilters, setHasFilters] = useState(false);
+
     const handleMessagesPress = useCallback(() => {
         onHeaderSelect('message-tab');
         setTab(0);
@@ -79,37 +83,15 @@ const Header = ({onHeaderSelect, numberFiles, numberMessages}: Props) => {
         }
     }, [numberFiles, numberMessages, tab]);
 
-    const renderContent = useCallback(() => {
-        return (
-            <Filter
-                filterDocuments={filterDocuments}
-                filterSpreadsheets={filterSpreadsheets}
-                filterPresentations={filterPresentations}
-                filterCode={filterCode}
-                filterImages={filterImages}
-                filterAudio={filterAudio}
-                filterVideos={filterVideos}
-
-                setFilterDocuments={setFilterDocuments}
-                setFilterSpreadsheets={setFilterSpreadsheets}
-                setFilterPresentations={setFilterPresentations}
-                setFilterCode={setFilterCode}
-                setFilterImages={setFilterImages}
-                setFilterAudio={setFilterAudio}
-                setFilterVideos={setFilterVideos}
-            />
-        );
-    }, [
-        filterDocuments, setFilterDocuments,
-        filterSpreadsheets, setFilterSpreadsheets,
-        filterPresentations, setFilterPresentations,
-        filterCode, setFilterCode,
-        filterImages, setFilterImages,
-        filterAudio, setFilterAudio,
-        filterVideos, setFilterVideos,
-    ]);
-
     const handleFilterPress = useCallback(() => {
+        const renderContent = () => {
+            return (
+                <Filter
+                    initialState={filterState}
+                    setParentFilterState={setFilterState}
+                />
+            );
+        };
         bottomSheet({
             closeButtonId: 'close-search-filters',
             renderContent,
@@ -117,15 +99,11 @@ const Header = ({onHeaderSelect, numberFiles, numberMessages}: Props) => {
             theme,
             title: intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'}),
         });
-    }, [renderContent,
-        filterDocuments, setFilterDocuments,
-        filterSpreadsheets, setFilterSpreadsheets,
-        filterPresentations, setFilterPresentations,
-        filterCode, setFilterCode,
-        filterImages, setFilterImages,
-        filterAudio, setFilterAudio,
-        filterVideos, setFilterVideos,
-    ]);
+    }, [filterState]);
+
+    useEffect(() => {
+        setHasFilters(JSON.stringify(filterState) !== JSON.stringify(initialState));
+    }, [filterState, setHasFilters]);
 
     return (
         <>
@@ -144,12 +122,21 @@ const Header = ({onHeaderSelect, numberFiles, numberMessages}: Props) => {
                     style={styles.filter}
                 >
                     {showFilterIcon &&
-                        <CompassIcon
-                            name={'filter-variant'}
-                            size={24}
-                            color={theme.centerChannelColor}
-                            onPress={handleFilterPress}
-                        />
+                        <>
+                            <CompassIcon
+                                name={'filter-variant'}
+                                size={24}
+                                color={theme.centerChannelColor}
+                                onPress={handleFilterPress}
+                            />
+                            <Badge
+                                borderColor={theme.buttonBg}
+                                backgroundColor={theme.buttonBg}
+                                visible={hasFilters}
+                                testID={'search.filters.badge'}
+                                value={-1}
+                            />
+                        </>
                     }
                 </View>
             </View>

@@ -4,7 +4,6 @@
 import React from 'react';
 import {GestureResponderEvent, Platform, Text, useWindowDimensions, View} from 'react-native';
 
-import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import Button from '@screens/bottom_sheet/button';
@@ -79,20 +78,9 @@ const BottomSheetContent = ({buttonText, buttonIcon, children, disableButton, on
                     </Text>
                 </View>
                 }
-                {/* {Boolean(rightTitleComponent) && ( */}
-                {/*   rightTitleComponent() */}
-                {/*  */}
-                {/* <Button> */}
-                {
-                    <FormattedText
-                        style={styles.titleButton}
-                        id={'screen.search.results.filter.clear_all'}
-                        defaultMessage={'Clear all'}
-                    />}
-                {/*  */}
-                {/* </Button> */}
-                {/*  */}
-                {/* )} */}
+                {rightTitleComponent && (
+                    rightTitleComponent)
+                }
             </View>
             <>
                 {children}

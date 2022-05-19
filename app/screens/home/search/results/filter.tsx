@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 import Button from 'react-native-button';
@@ -45,92 +45,88 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 type FilterItem = {
     id: string;
     defaultMessage: string;
-    handler: (value: boolean) => void;
     selected: boolean;
 }
 
-type FilterProps = {
-    filterDocuments: boolean;
-    filterSpreadsheets: boolean;
-    filterPresentations: boolean;
-    filterCode: boolean;
-    filterImages: boolean;
-    filterAudio: boolean;
-    filterVideos: boolean;
-
-    setFilterDocuments: (selected: boolean) => void;
-    setFilterSpreadsheets: (selected: boolean) => void;
-    setFilterPresentations: (selected: boolean) => void;
-    setFilterCode: (selected: boolean) => void;
-    setFilterImages: (selected: boolean) => void;
-    setFilterAudio: (selected: boolean) => void;
-    setFilterVideos: (selected: boolean) => void;
+export type FilterState = {
+    Documents: boolean;
+    Spreadsheets: boolean;
+    Presentations: boolean;
+    Code: boolean;
+    Images: boolean;
+    Audio: boolean;
+    Videos: boolean;
 }
 
-const Filter = ({
-    filterDocuments, setFilterDocuments,
-    filterSpreadsheets, setFilterSpreadsheets,
-    filterPresentations, setFilterPresentations,
-    filterCode, setFilterCode,
-    filterImages, setFilterImages,
-    filterAudio, setFilterAudio,
-    filterVideos, setFilterVideos,
-}: FilterProps) => {
+type FilterProps = {
+    initialState: FilterState;
+    setParentFilterState: (state: FilterState) => void;
+}
+
+const clearedState: FilterState = {
+    Documents: false,
+    Spreadsheets: false,
+    Presentations: false,
+    Code: false,
+    Images: false,
+    Audio: false,
+    Videos: false,
+};
+
+const Filter = ({initialState, setParentFilterState}: FilterProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const isTablet = useIsTablet();
+
+    const [filterState, setFilterState] = useState(initialState);
+
+    const handleMyState = useCallback((value: string) => {
+        const oldValue = filterState[value];
+        const newState = {
+            ...filterState,
+        };
+        newState[value] = !oldValue;
+
+        setFilterState(newState);
+        setParentFilterState(newState);
+    }, [filterState, setFilterState]);
+
     const data = useMemo(() => {
         return [
             {
                 id: 'screen.search.results.filter.documents',
                 defaultMessage: 'Documents',
-                handler: setFilterDocuments,
-                selected: filterDocuments,
+                selected: filterState.Documents,
             }, {
                 id: 'screen.search.results.filter.spreadsheets',
                 defaultMessage: 'Spreadsheets',
-                handler: setFilterSpreadsheets,
-                selected: filterSpreadsheets,
+                selected: filterState.Spreadsheets,
             }, {
                 id: 'screen.search.results.filter.presentations',
                 defaultMessage: 'Presentations',
-                handler: setFilterPresentations,
-                selected: filterPresentations,
+                selected: filterState.Presentations,
             }, {
                 id: 'screen.search.results.filter.code',
                 defaultMessage: 'Code',
-                handler: setFilterCode,
-                selected: filterCode,
+                selected: filterState.Code,
             }, {
                 id: 'screen.search.results.filter.images',
                 defaultMessage: 'Images',
-                handler: setFilterImages,
-                selected: filterImages,
+                selected: filterState.Images,
             }, {
                 id: 'screen.search.results.filter.audio',
                 defaultMessage: 'Audio',
-                handler: setFilterAudio,
-                selected: filterAudio,
+                selected: filterState.Audio,
             }, {
                 id: 'screen.search.results.filter.videos',
                 defaultMessage: 'Videos',
-                handler: setFilterVideos,
-                selected: filterVideos,
+                selected: filterState.Videos,
             },
         ];
-    }, [
-        filterDocuments, setFilterDocuments,
-        filterSpreadsheets, setFilterSpreadsheets,
-        filterPresentations, setFilterPresentations,
-        filterCode, setFilterCode,
-        filterImages, setFilterImages,
-        filterAudio, setFilterAudio,
-        filterVideos, setFilterVideos,
-    ]);
+    }, [filterState, setFilterState, handleMyState]);
 
     const renderLabelComponent = useCallback((item: FilterItem) => {
-        console.log('item', item);
         return (
             <View style={style.labelContainer}>
                 <FormattedText
@@ -148,33 +144,31 @@ const Filter = ({
                 </View>
             </View>
         );
-    }, []);
+    }, [data, filterState]);
 
     const renderFilterItem = useCallback(({item}) => {
         return (
             <MenuItem
                 labelComponent={renderLabelComponent(item)}
                 onPress={() => {
-                    console.log('item.selected', item.selected);
-                    item.handler(!item.selected);
+                    handleMyState(item.defaultMessage);
                 }}
                 testID={item.id}
                 theme={theme}
             />
         );
-    }, [data,
-        filterDocuments, setFilterDocuments,
-        filterSpreadsheets, setFilterSpreadsheets,
-        filterPresentations, setFilterPresentations,
-        filterCode, setFilterCode,
-        filterImages, setFilterImages,
-        filterAudio, setFilterAudio,
-        filterVideos, setFilterVideos,
-        renderLabelComponent]);
+    }, [filterState, setFilterState]);
+
+    const handleClearAll = useCallback(() => {
+        setFilterState(clearedState);
+        setParentFilterState(clearedState);
+    }, []);
 
     const renderTitleComponent = useCallback(() => {
         return (
-            <Button>
+            <Button
+                onPress={handleClearAll}
+            >
                 <FormattedText
                     style={style.menuText}
                     id={'screen.search.results.filter.clear_all'}
@@ -197,8 +191,6 @@ const Filter = ({
             buttonText={buttonText}
             showButton={true}
             rightTitleComponent={renderTitleComponent()}
-
-            //            buttonIcon={'plus'}
             showTitle={!isTablet}
             testID='search.filters'
             title={buttonTitle}
