@@ -6,7 +6,7 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeConfig} from '@queries/servers/system';
+import {observeConfigValue} from '@queries/servers/system';
 import {isValidUrl} from '@utils/url';
 
 import Settings from './settings';
@@ -14,9 +14,8 @@ import Settings from './settings';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const config = observeConfig(database);
-    const siteName = config.pipe(switchMap((c) => of$(c?.SiteName)));
-    const showHelp = observeConfig(database).pipe(switchMap((c) => of$(c?.HelpLink ? isValidUrl(c.HelpLink) : false)));
+    const siteName = observeConfigValue(database, 'SiteName');
+    const showHelp = observeConfigValue(database, 'HelpLink').pipe(switchMap((link) => of$(link ? isValidUrl(link) : false)));
 
     return {
         showHelp,
