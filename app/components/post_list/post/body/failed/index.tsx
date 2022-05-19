@@ -7,6 +7,7 @@ import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {removePost} from '@actions/local/post';
+import {retryFailedPost} from '@actions/remote/post';
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {useServerUrl} from '@context/server';
@@ -30,9 +31,6 @@ const styles = StyleSheet.create({
     },
 });
 
-// TODO: Add Create post local action
-const retryPost = (serverUrl: string, post: PostModel) => post;
-
 const Failed = ({post, theme}: FailedProps) => {
     const intl = useIntl();
     const insets = useSafeAreaInsets();
@@ -49,7 +47,7 @@ const Failed = ({post, theme}: FailedProps) => {
                         icon='send-outline'
                         onPress={() => {
                             dismissBottomSheet();
-                            retryPost(serverUrl, post);
+                            retryFailedPost(serverUrl, post);
                         }}
                         testID='post.failed.retry'
                         text={intl.formatMessage({id: 'mobile.post.failed_retry', defaultMessage: 'Try Again'})}

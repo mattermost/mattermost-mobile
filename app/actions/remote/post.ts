@@ -101,8 +101,14 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
 
     const initialPostModels: Model[] = [];
 
-    const filesModels = await operator.handleFiles({files, prepareRecordsOnly: true});
-    initialPostModels.push(...filesModels);
+    if (files.length) {
+        for (const f of files) {
+            // Set the pending post Id
+            f.post_id = pendingPostId;
+        }
+        const filesModels = await operator.handleFiles({files, prepareRecordsOnly: true});
+        initialPostModels.push(...filesModels);
+    }
 
     const postModels = await operator.handlePosts({
         actionType: ActionType.POSTS.RECEIVED_NEW,
@@ -181,6 +187,59 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
 
     return {data: true};
 }
+
+export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const timestamp = Date.now();
+        const apiPost = await post.toApi();
+        const newPost = {
+            ...apiPost,
+            props: {
+                ...apiPost.props,
+                failed: false,
+            },
+            id: '',
+            create_at: timestamp,
+            update_at: timestamp,
+            delete_at: 0,
+        } as Post;
+        const created = await client.createPost(newPost);
+        const models = await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_NEW,
+            order: [created.id],
+            posts: [created],
+            prepareRecordsOnly: true,
+        });
+        const {member} = await updateLastPostAt(serverUrl, created.channel_id, created.create_at, true);
+        if (member) {
+            models.push(member);
+        }
+        await operator.batchRecords(models);
+    } catch (error: any) {
+        if (error.server_error_id === ServerErrors.DELETED_ROOT_POST_ERROR ||
+            error.server_error_id === ServerErrors.TOWN_SQUARE_READ_ONLY_ERROR ||
+            error.server_error_id === ServerErrors.PLUGIN_DISMISSED_POST_ERROR
+        ) {
+            await removePost(serverUrl, post);
+        }
+
+        return {error};
+    }
+
+    return {error: undefined};
+};
 
 export const fetchPostsForCurrentChannel = async (serverUrl: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
