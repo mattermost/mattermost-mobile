@@ -29,3 +29,20 @@ export async function alertTeamRemove(displayName: string, intl: IntlShape) {
         }],
     );
 }
+
+export async function alertChannelRemove(displayName: string, intl: IntlShape) {
+    Alert.alert(
+        intl.formatMessage({
+            id: 'alert.removed_from_channel.title',
+            defaultMessage: 'Removed from channel',
+        }),
+        intl.formatMessage({
+            id: 'alert.removed_from_channel.description',
+            defaultMessage: 'You have been removed from channel {displayName}.',
+        }, {displayName}),
+        [{
+            style: 'cancel',
+            text: intl.formatMessage({id: 'mobile.oauth.something_wrong.okButton', defaultMessage: 'OK'}),
+        }],
+    );
+}

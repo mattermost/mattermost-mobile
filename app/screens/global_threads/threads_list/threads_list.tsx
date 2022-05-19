@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useMemo, useState, useRef} from 'react';
 import {FlatList, StyleSheet} from 'react-native';
 
-import {fetchThreads} from '@actions/remote/thread';
+import {fetchRefreshThreads, fetchThreads} from '@actions/remote/thread';
 import Loading from '@components/loading';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -55,6 +55,7 @@ const ThreadsList = ({
     const hasFetchedOnce = useRef(false);
     const [isLoading, setIsLoading] = useState(false);
     const [endReached, setEndReached] = useState(false);
+    const [isRefreshing, setRefreshing] = useState(false);
 
     const noThreads = !threads?.length;
     const lastThread = threads?.length > 0 ? threads[threads.length - 1] : null;
@@ -105,6 +106,14 @@ const ThreadsList = ({
         return null;
     }, [isLoading, tab, theme, endReached]);
 
+    const handleRefresh = useCallback(() => {
+        setRefreshing(true);
+
+        fetchRefreshThreads(serverUrl, teamId, tab === 'unreads').finally(() => {
+            setRefreshing(false);
+        });
+    }, [serverUrl, teamId]);
+
     const handleEndReached = useCallback(() => {
         if (!lastThread || tab === 'unreads' || endReached) {
             return;
@@ -143,12 +152,14 @@ const ThreadsList = ({
                 unreadsCount={unreadsCount}
             />
             <FlatList
-                contentContainerStyle={styles.messagesContainer}
-                data={threads}
                 ListEmptyComponent={listEmptyComponent}
                 ListFooterComponent={listFooterComponent}
+                contentContainerStyle={styles.messagesContainer}
+                data={threads}
                 maxToRenderPerBatch={10}
                 onEndReached={handleEndReached}
+                onRefresh={handleRefresh}
+                refreshing={isRefreshing}
                 removeClippedSubviews={true}
                 renderItem={renderItem}
                 testID={`${testID}.flat_list`}

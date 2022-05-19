@@ -312,10 +312,10 @@ function AppsFormComponent({
         const callResponse = res.data!;
         switch (callResponse.type) {
             case AppCallResponseTypes.OK:
-                await close();
+                close();
                 return;
             case AppCallResponseTypes.NAVIGATE:
-                await close();
+                close();
                 handleGotoLocation(serverUrl, intl, callResponse.navigate_to_url!);
                 return;
             case AppCallResponseTypes.FORM:
