@@ -87,9 +87,7 @@ const Filter = ({initialState, setParentFilterState}: FilterProps) => {
             ...filterState,
         };
         newState[value] = !oldValue;
-
         setFilterState(newState);
-        setParentFilterState(newState);
     }, [filterState, setFilterState]);
 
     const data = useMemo(() => {
@@ -154,7 +152,6 @@ const Filter = ({initialState, setParentFilterState}: FilterProps) => {
 
     const handleClearAll = useCallback(() => {
         setFilterState(clearedState);
-        setParentFilterState(clearedState);
     }, []);
 
     const renderTitleComponent = useCallback(() => {
@@ -174,6 +171,12 @@ const Filter = ({initialState, setParentFilterState}: FilterProps) => {
     useEffect(() => {
         setEnableShowResults(JSON.stringify(filterState) === JSON.stringify(initialState));
     }, [filterState, initialState]);
+
+    useEffect(() => {
+        return function cleanup() {
+            setParentFilterState(filterState);
+        };
+    }, [filterState]);
 
     const buttonText = intl.formatMessage({id: 'screen.search.results.filter.show_results', defaultMessage: 'Show results'});
     const buttonTitle = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});

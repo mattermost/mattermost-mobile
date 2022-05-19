@@ -10,7 +10,7 @@ import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import Filter, {clearedState, FilterState} from './filter';
+import Filter, {clearedState} from './filter';
 import SelectButton from './header_button';
 
 type Props = {
