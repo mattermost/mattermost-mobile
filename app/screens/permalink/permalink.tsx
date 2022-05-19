@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {useIntl} from 'react-intl';
 import {BackHandler, Text, TouchableOpacity, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {switchToChannelById} from '@actions/remote/channel';
-import {fetchPostsAround} from '@actions/remote/post';
+import {fetchChannelById, joinChannel, switchToChannelById} from '@actions/remote/channel';
+import {fetchPostById, fetchPostsAround} from '@actions/remote/post';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
@@ -15,6 +16,10 @@ import PostList from '@components/post_list';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import DatabaseManager from '@database/manager';
+import {privateChannelJoinPrompt, publicChannelJoinPrompt} from '@helpers/api/channel';
+import {getMyChannel} from '@queries/servers/channel';
+import {getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {dismissModal} from '@screens/navigation';
 import ChannelModel from '@typings/database/models/servers/channel';
 import PostModel from '@typings/database/models/servers/post';
@@ -102,6 +107,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         justifyContent: 'center',
         padding: 15,
+        flex: 1,
     },
     errorText: {
         color: changeOpacity(theme.centerChannelColor, 0.4),
@@ -114,13 +120,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-function Permalink({channel, postId}: Props) {
+function Permalink({
+    channel,
+    postId,
+}: Props) {
     const [posts, setPosts] = useState<PostModel[]>([]);
     const [loading, setLoading] = useState(true);
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const insets = useSafeAreaInsets();
     const style = getStyleSheet(theme);
+    const [error, setError] = useState('');
+    const intl = useIntl();
+    const [channelId, setChannelId] = useState(channel?.id);
 
     const containerStyle = useMemo(() =>
         [style.container, {marginBottom: insets.bottom}],
@@ -128,15 +140,51 @@ function Permalink({channel, postId}: Props) {
 
     useEffect(() => {
         (async () => {
-            if (channel?.id) {
-                const data = await fetchPostsAround(serverUrl, channel.id, postId, 5);
+            if (channelId) {
+                const data = await fetchPostsAround(serverUrl, channelId, postId, 5);
                 if (data?.posts) {
                     setLoading(false);
                     setPosts(data.posts);
                 }
+            } else {
+                const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+                if (!database) {
+                    setError('Database not found');
+                    setLoading(false);
+                    return;
+                }
+
+                const errMessage = intl.formatMessage({id: 'permalink.error.access', defaultMessage: 'Permalink belongs to a deleted message or to a channel to which you do not have access.'});
+                const {post} = await fetchPostById(serverUrl, postId, true);
+                if (!post) {
+                    setError(errMessage);
+                    setLoading(false);
+                    return;
+                }
+
+                const myChannel = await getMyChannel(database, post.channel_id);
+                if (!myChannel) {
+                    const {channel: fetchedChannel} = await fetchChannelById(serverUrl, post.channel_id);
+                    if (!fetchedChannel) {
+                        setError(errMessage);
+                        setLoading(false);
+                        return;
+                    }
+
+                    const {join} = fetchedChannel.type === 'P' ? await privateChannelJoinPrompt(fetchedChannel.display_name, intl) : await publicChannelJoinPrompt(fetchedChannel.display_name, intl);
+                    if (!join) {
+                        setError(errMessage);
+                        setLoading(false);
+                        return;
+                    }
+
+                    await joinChannel(serverUrl, await getCurrentUserId(database), fetchedChannel.team_id || await getCurrentTeamId(database), fetchedChannel.id);
+                }
+
+                setChannelId(post.channel_id);
             }
         })();
-    }, [channel?.id]);
+    }, [channelId]);
 
     const handleClose = useCallback(() => {
         dismissModal({componentId: Screens.PERMALINK});
@@ -187,13 +235,14 @@ function Permalink({channel, postId}: Props) {
                 <View style={style.dividerContainer}>
                     <View style={style.divider}/>
                 </View>
-                {loading ? (
+                {loading && (
                     <View style={style.loading}>
                         <Loading
                             color={theme.buttonBg}
                         />
                     </View>
-                ) : (
+                )}
+                {!loading && !error && (
                     <View style={style.postList}>
                         <PostList
                             highlightedId={postId}
@@ -206,6 +255,11 @@ function Permalink({channel, postId}: Props) {
                             nativeID={Screens.PERMALINK}
                             highlightPinnedOrSaved={false}
                         />
+                    </View>
+                )}
+                {!loading && Boolean(error) && (
+                    <View style={style.errorContainer}>
+                        <Text style={style.errorText}>{error}</Text>
                     </View>
                 )}
                 <TouchableOpacity
