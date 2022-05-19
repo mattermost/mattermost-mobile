@@ -5,7 +5,7 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Text, TouchableOpacity, useWindowDimensions, ViewStyle} from 'react-native';
 import {Gesture, GestureDetector, GestureHandlerRootView} from 'react-native-gesture-handler';
-import {Navigation} from 'react-native-navigation';
+import {ComponentEvent, Navigation} from 'react-native-navigation';
 import Animated, {
     AnimatedStyleProp,
     Extrapolation,
@@ -205,7 +205,12 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
 
     // This effect checks if we are navigating away and if so, it dismisses the snack bar
     useEffect(() => {
-        const onHideSnackBar = () => animateHiding(true);
+        const onHideSnackBar = (event?: ComponentEvent) => {
+            if (componentId !== event?.componentId) {
+                animateHiding(true);
+            }
+        };
+
         const screenWillAppear = Navigation.events().registerComponentWillAppearListener(onHideSnackBar);
         const screenDidDisappear = Navigation.events().registerComponentDidDisappearListener(onHideSnackBar);
         const tabPress = DeviceEventEmitter.addListener('tabPress', onHideSnackBar);
