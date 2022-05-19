@@ -2,6 +2,7 @@ package com.mattermost.helpers
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
@@ -29,8 +30,10 @@ class PushNotificationDataRunnable {
         @Synchronized
         suspend fun start(context: Context, initialData: Bundle) {
             try {
+                Log.d("enya", initialData.toString())
                 val serverUrl: String = initialData.getString("server_url") ?: return
                 val channelId = initialData.getString("channel_id")
+                val rootId = initialData.getString("channel_id")
                 val isCRTEnabled = initialData.getString("is_crt_enabled") == "true"
                 val db = DatabaseHelper.instance!!.getDatabaseForServer(context, serverUrl)
 
@@ -42,16 +45,18 @@ class PushNotificationDataRunnable {
 
                     var threads: ReadableArray? = null
                     var usersFromThreads: ReadableArray? = null
+                    var receivingThreads = false
 
                     coroutineScope {
                         if (channelId != null) {
-                            postData = fetchPosts(db, serverUrl, channelId, isCRTEnabled)
+                            postData = fetchPosts(db, serverUrl, channelId, isCRTEnabled, rootId)
+
                             posts = postData?.getMap("posts")
                             userIdsToLoad = postData?.getArray("userIdsToLoad")
                             usernamesToLoad = postData?.getArray("usernamesToLoad")
-
                             threads = postData?.getArray("threads")
                             usersFromThreads = postData?.getArray("usersFromThreads")
+                            receivingThreads = postData?.getBoolean("receivingThreads") ?: false
 
                             if (userIdsToLoad != null && userIdsToLoad!!.size() > 0) {
                                 val users = fetchUsersById(serverUrl, userIdsToLoad!!)
@@ -67,7 +72,7 @@ class PushNotificationDataRunnable {
 
                     db.transaction {
                         if (posts != null && channelId != null) {
-                            DatabaseHelper.instance!!.handlePosts(db, posts!!.getMap("data"), channelId)
+                            DatabaseHelper.instance!!.handlePosts(db, posts!!.getMap("data"), channelId, receivingThreads)
                         }
 
                         if (threads != null) {
@@ -94,7 +99,7 @@ class PushNotificationDataRunnable {
             }
         }
 
-        private suspend fun fetchPosts(db: Database, serverUrl: String, channelId: String, isCRTEnabled: Boolean): ReadableMap? {
+        private suspend fun fetchPosts(db: Database, serverUrl: String, channelId: String, isCRTEnabled: Boolean, rootId: String?): ReadableMap? {
             val regex = Regex("""\B@(([a-z0-9-._]*[a-z0-9_])[.-]*)""", setOf(RegexOption.IGNORE_CASE))
             val since = DatabaseHelper.instance!!.queryPostSinceForChannel(db, channelId)
             val currentUserId = DatabaseHelper.instance!!.queryCurrentUserId(db)?.removeSurrounding("\"")
@@ -104,7 +109,16 @@ class PushNotificationDataRunnable {
             if (isCRTEnabled) {
                 queryParams += "&collapsedThreads=true&collapsedThreadsExtended=true"
             }
-            val endpoint = "/api/v4/channels/$channelId/posts$queryParams"
+
+            var endpoint = "/api/v4/channels/$channelId/posts$queryParams"
+            val serverVersion = DatabaseHelper.instance!!.getServerVersion(db)
+            var receivingThreads = isCRTEnabled && rootId != null
+            if (receivingThreads) {
+                if (serverVersion != null && ServerVersion.isMinimum(serverVersion, 6, 7)) {
+                    endpoint = "/api/v4/posts/$rootId/thread$queryParams"
+                }
+            }
+
             val postsResponse = fetch(serverUrl, endpoint)
             val results = Arguments.createMap()
 
@@ -119,10 +133,12 @@ class PushNotificationDataRunnable {
                         val iterator = posts.keySetIterator()
                         val userIds = mutableListOf<String>()
                         val usernames = mutableListOf<String>()
+
                         val threads = WritableNativeArray()
-                        val threadParticipantUserIds = mutableListOf<String>()
-                        val threadParticipantUsernames = mutableListOf<String>()
-                        val threadParticipantUsers = HashMap<String, ReadableMap>()
+                        val threadParticipantUserIds = mutableListOf<String>() // Used to exclude the userIds
+                        val threadParticipantUsernames = mutableListOf<String>() // Used to exclude the usernames
+                        val threadParticipantUsers = HashMap<String, ReadableMap>() // Users
+
                         while(iterator.hasNextKey()) {
                             val key = iterator.nextKey()
                             val post = posts.getMap(key)
@@ -148,7 +164,7 @@ class PushNotificationDataRunnable {
                                     threads.pushMap(post!!)
                                 }
 
-                                // Add participant userIds and usernames to exclude them from fetching again
+                                // Add participant userIds and usernames to exclude them from getting fetched again
                                 val participants = post.getArray("participants")
                                 if (participants != null) {
                                     for (i in 0 until participants.size()) {
@@ -179,6 +195,7 @@ class PushNotificationDataRunnable {
                         userIds.removeAll { it in existingUserIds }
                         usernames.removeAll { it in existingUsernames }
 
+                        // Get users found in the
                         if (threadParticipantUserIds.size > 0) {
                             // Do not fetch users found in thread participants as we get the user's data in the posts response already
                             userIds.removeAll { it in threadParticipantUserIds }
@@ -210,6 +227,8 @@ class PushNotificationDataRunnable {
                         if (threads.size() > 0) {
                             results.putArray("threads", threads)
                         }
+
+                        results.putBoolean("receivingThreads", receivingThreads)
                     }
                 }
             }

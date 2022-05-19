@@ -3,6 +3,7 @@ package com.mattermost.helpers
 import android.content.Context
 import android.net.Uri
 import android.text.TextUtils
+import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.NoSuchKeyException
 import com.facebook.react.bridge.ReadableArray
@@ -142,7 +143,7 @@ class DatabaseHelper {
         return null
     }
 
-    fun handlePosts(db: Database, postsData: ReadableMap?, channelId: String) {
+    fun handlePosts(db: Database, postsData: ReadableMap?, channelId: String, receivingThreads: Boolean) {
         // Posts, PostInChannel, PostInThread, Reactions, Files, CustomEmojis, Users
         if (postsData != null) {
             val ordered = postsData.getArray("order")?.toArrayList()
@@ -205,7 +206,9 @@ class DatabaseHelper {
                 }
             }
 
-            handlePostsInChannel(db, channelId, earliest, latest)
+            if (!receivingThreads) {
+                handlePostsInChannel(db, channelId, earliest, latest)
+            }
             handlePostsInThread(db, postsInThread)
         }
     }
@@ -275,6 +278,23 @@ class DatabaseHelper {
                     )
             )
         }
+    }
+
+    fun getServerVersion(db: Database): String? {
+        val config = getSystemConfig(db)
+        if (config != null) {
+            return config.getString("Version")
+        }
+        return null
+    }
+
+    private fun getSystemConfig(db: Database): JSONObject? {
+        val configRecord = find(db, "System", "config")
+        if (configRecord != null) {
+            val value = configRecord.getString("value");
+            return JSONObject(value)
+        }
+        return null
     }
 
     private fun setDefaultDatabase(context: Context) {
@@ -434,7 +454,7 @@ class DatabaseHelper {
     private fun insertThreadParticipants(db: Database, threadId: String, participants: ReadableArray) {
         for (i in 0 until participants.size()) {
             val participant = participants.getMap(i)
-            val id = threadId + participant.getString("id")
+            val id = RandomId.generate()
             db.execute(
                     "insert into ThreadParticipant " +
                             "(id, thread_id, user_id, _status)" +
