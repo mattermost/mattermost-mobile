@@ -132,19 +132,20 @@ export const fetchAppEntryData = async (serverUrl: string, since: number, initia
     const includeDeletedChannels = true;
     const fetchOnly = true;
 
-    await fetchConfigAndLicense(serverUrl);
+    const confReq = await fetchConfigAndLicense(serverUrl);
+    const prefData = await fetchMyPreferences(serverUrl, fetchOnly);
+    const isCRT = (prefData.preferences && isCRTEnabled(prefData.preferences, confReq.config));
 
     // Fetch in parallel teams / team membership / channels for current team / user preferences / user
-    const promises: [Promise<MyTeamsRequest>, Promise<MyChannelsRequest | undefined>, Promise<MyPreferencesRequest>, Promise<MyUserRequest>] = [
+    const promises: [Promise<MyTeamsRequest>, Promise<MyChannelsRequest | undefined>, Promise<MyUserRequest>] = [
         fetchMyTeams(serverUrl, fetchOnly),
-        initialTeamId ? fetchMyChannelsForTeam(serverUrl, initialTeamId, includeDeletedChannels, since, fetchOnly) : Promise.resolve(undefined),
-        fetchMyPreferences(serverUrl, fetchOnly),
+        initialTeamId ? fetchMyChannelsForTeam(serverUrl, initialTeamId, includeDeletedChannels, since, fetchOnly, false, isCRT) : Promise.resolve(undefined),
         fetchMe(serverUrl, fetchOnly),
     ];
 
     const removeTeamIds: string[] = [];
     const resolution = await Promise.all(promises);
-    const [teamData, , prefData, meData] = resolution;
+    const [teamData, , meData] = resolution;
     let [, chData] = resolution;
 
     if (!initialTeamId && teamData.teams?.length && teamData.memberships?.length) {
@@ -155,7 +156,7 @@ export const fetchAppEntryData = async (serverUrl: string, since: number, initia
         const myTeams = teamData.teams!.filter((t) => teamMembers.has(t.id));
         const defaultTeam = selectDefaultTeam(myTeams, meData.user?.locale || DEFAULT_LOCALE, teamOrderPreference, config?.ExperimentalPrimaryTeam);
         if (defaultTeam?.id) {
-            chData = await fetchMyChannelsForTeam(serverUrl, defaultTeam.id, includeDeletedChannels, since, fetchOnly);
+            chData = await fetchMyChannelsForTeam(serverUrl, defaultTeam.id, includeDeletedChannels, since, fetchOnly, false, isCRT);
         }
     }
 

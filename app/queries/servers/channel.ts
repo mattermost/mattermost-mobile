@@ -59,7 +59,7 @@ type MembershipReduce = {
     membershipsMap: Record<string, MembershipWithId>;
 }
 
-export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[]) => {
+export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[], isCRTEnabled?: boolean) => {
     const {database} = operator;
     const allChannelsForTeam = (await queryAllChannelsForTeam(database, teamId).fetch()).
         reduce((map: Record<string, ChannelModel>, channel) => {
@@ -115,7 +115,7 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
         const channelRecords = operator.handleChannel({channels, prepareRecordsOnly: true});
         const channelInfoRecords = operator.handleChannelInfo({channelInfos, prepareRecordsOnly: true});
         const membershipRecords = operator.handleChannelMembership({channelMemberships: channelMembers, prepareRecordsOnly: true});
-        const myChannelRecords = operator.handleMyChannel({channels, myChannels: memberships, prepareRecordsOnly: true});
+        const myChannelRecords = operator.handleMyChannel({channels, myChannels: memberships, prepareRecordsOnly: true, isCRTEnabled});
         const myChannelSettingsRecords = operator.handleMyChannelSettings({settings: memberships, prepareRecordsOnly: true});
 
         return [channelRecords, channelInfoRecords, membershipRecords, myChannelRecords, myChannelSettingsRecords];

@@ -272,13 +272,13 @@ export async function resetMessageCount(serverUrl: string, channelId: string) {
     }
 }
 
-export async function storeMyChannelsForTeam(serverUrl: string, teamId: string, channels: Channel[], memberships: ChannelMembership[], prepareRecordsOnly = false) {
+export async function storeMyChannelsForTeam(serverUrl: string, teamId: string, channels: Channel[], memberships: ChannelMembership[], prepareRecordsOnly = false, isCRTEnabled?: boolean) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
     const modelPromises: Array<Promise<Model[]>> = [
-        ...await prepareMyChannelsForTeam(operator, teamId, channels, memberships),
+        ...await prepareMyChannelsForTeam(operator, teamId, channels, memberships, isCRTEnabled),
     ];
 
     const models = await Promise.all(modelPromises);
