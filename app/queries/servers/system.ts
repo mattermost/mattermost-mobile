@@ -397,18 +397,20 @@ export const observeOnlyUnreads = (database: Database) => {
     );
 };
 
-export const getAllowedThemes = async (database: Database): Promise<string[]> => {
+export const observeAllowedThemes = (database: Database) => {
     const defaultThemeKeys = Object.keys(Preferences.THEMES);
-    const config = await getConfig(database);
+    return observeConfigValue(database, 'AllowedThemes').pipe(
+        switchMap((allowedThemes) => {
+            let acceptableThemes = defaultThemeKeys;
 
-    let acceptableThemes = defaultThemeKeys;
+            if (allowedThemes) {
+                const allowedThemeKeys = (allowedThemes || '').split(',').filter(String);
+                if (allowedThemeKeys.length) {
+                    acceptableThemes = defaultThemeKeys.filter((k) => allowedThemeKeys.includes(k));
+                }
+            }
 
-    if (config?.AllowedThemes) {
-        const allowedThemeKeys = (config.AllowedThemes || '').split(',').filter(String);
-        if (allowedThemeKeys.length) {
-            acceptableThemes = defaultThemeKeys.filter((k) => allowedThemeKeys.includes(k));
-        }
-    }
-
-    return acceptableThemes;
+            return acceptableThemes;
+        }),
+    );
 };
