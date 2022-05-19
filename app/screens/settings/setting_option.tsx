@@ -9,10 +9,11 @@ import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import {SettingOptionConfig} from './constant';
+import Options, {NotificationsOptionConfig, SettingOptionConfig} from './constant';
 
-type Props = {
-    type: 'notification' | 'display' | 'advanced_settings' | 'about' | 'help';
+type SettingsConfig = keyof typeof SettingOptionConfig | keyof typeof NotificationsOptionConfig
+type SettingOptionProps = {
+    optionName: SettingsConfig;
     onPress: () => void;
 } & Omit<MenuItemProps, 'testID'| 'theme'>;
 
@@ -25,11 +26,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const SettingOption = ({type, onPress, ...rest}: Props) => {
+const SettingOption = ({onPress, optionName, ...rest}: SettingOptionProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const optionConfig = SettingOptionConfig[type];
-    const options = {...optionConfig, ...rest};
+    const props = {...rest, ...Options[optionName]} as unknown as Omit<MenuItemProps, 'onPress'| 'theme'>;
 
     return (
         <MenuItem
@@ -38,7 +38,7 @@ const SettingOption = ({type, onPress, ...rest}: Props) => {
             separator={true}
             showArrow={Platform.select({ios: true, default: false})}
             theme={theme}
-            {...options}
+            {...props}
         />
     );
 };

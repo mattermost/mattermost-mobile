@@ -121,6 +121,13 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
         );
     };
 
+    const goToNotifications = preventDoubleTap(() => {
+        const screen = 'NotificationSettings';
+        const title = intl.formatMessage({id: 'user.settings.modal.notifications', defaultMessage: 'Notifications'});
+
+        goToScreen(screen, title);
+    });
+
     const goToAbout = preventDoubleTap(() => {
         const screen = Screens.ABOUT;
         const title = intl.formatMessage({id: 'about.title', defaultMessage: 'About {appTitle}'}, {appTitle: serverName});
@@ -148,19 +155,19 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
                     style={styles.group}
                 >
                     <SettingOption
-                        type='notification'
+                        optionName='notification'
+                        onPress={goToNotifications}
+                    />
+                    <SettingOption
+                        optionName='display'
                         onPress={onPressHandler}
                     />
                     <SettingOption
-                        type='display'
+                        optionName='advanced_settings'
                         onPress={onPressHandler}
                     />
                     <SettingOption
-                        type='advanced_settings'
-                        onPress={onPressHandler}
-                    />
-                    <SettingOption
-                        type='about'
+                        optionName='about'
                         onPress={goToAbout}
                         messageValues={{appTitle: serverName}}
                         separator={Platform.OS === 'ios'}
@@ -172,7 +179,7 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
                 >
                     {showHelp &&
                     <SettingOption
-                        type='help'
+                        optionName='help'
                         onPress={onPressHandler}
                         isLink={true}
                         containerStyle={styles.innerContainerStyle}
