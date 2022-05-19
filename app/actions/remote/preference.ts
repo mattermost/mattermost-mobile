@@ -152,7 +152,7 @@ export const deleteSavedPost = async (serverUrl: string, postId: string) => {
     }
 };
 
-export const makeDirectChannelVisible = async (serverUrl: string, channelId: string, visible = true) => {
+export const setDirectChannelVisible = async (serverUrl: string, channelId: string, visible = true) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -164,16 +164,13 @@ export const makeDirectChannelVisible = async (serverUrl: string, channelId: str
             const userId = await getCurrentUserId(database);
             const category = channel.type === General.DM_CHANNEL ? CATEGORY_DIRECT_CHANNEL_SHOW : CATEGORY_GROUP_CHANNEL_SHOW;
             const name = channel.type === General.DM_CHANNEL ? getUserIdFromChannelName(userId, channel.name) : channelId;
-            const records = await queryPreferencesByCategoryAndName(database, category, name, (!visible).toString()).fetch();
-            if (records.length) {
-                const pref: PreferenceType = {
-                    user_id: userId,
-                    category,
-                    name,
-                    value: visible.toString(),
-                };
-                return savePreference(serverUrl, [pref]);
-            }
+            const pref: PreferenceType = {
+                user_id: userId,
+                category,
+                name,
+                value: visible.toString(),
+            };
+            return savePreference(serverUrl, [pref]);
         }
 
         return {error: undefined};

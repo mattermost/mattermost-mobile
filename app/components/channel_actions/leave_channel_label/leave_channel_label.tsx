@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {leaveChannel} from '@actions/remote/channel';
-import {makeDirectChannelVisible} from '@actions/remote/preference';
+import {setDirectChannelVisible} from '@actions/remote/preference';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -47,7 +47,7 @@ const LeaveChanelLabel = ({channelId, displayName, type, testID}: Props) => {
                 text: intl.formatMessage({id: 'channel_info.close', defaultMessage: 'Close'}),
                 style: 'destructive',
                 onPress: () => {
-                    makeDirectChannelVisible(serverUrl, channelId, false);
+                    setDirectChannelVisible(serverUrl, channelId, false);
                     close();
                 },
             }], {cancelable: false},
@@ -68,7 +68,7 @@ const LeaveChanelLabel = ({channelId, displayName, type, testID}: Props) => {
                 text: intl.formatMessage({id: 'channel_info.close', defaultMessage: 'Close'}),
                 style: 'destructive',
                 onPress: () => {
-                    makeDirectChannelVisible(serverUrl, channelId, false);
+                    setDirectChannelVisible(serverUrl, channelId, false);
                     close();
                 },
             }], {cancelable: false},
@@ -109,7 +109,10 @@ const LeaveChanelLabel = ({channelId, displayName, type, testID}: Props) => {
             }, {
                 text: intl.formatMessage({id: 'channel_info.leave', defaultMessage: 'Leave'}),
                 style: 'destructive',
-                onPress: close,
+                onPress: () => {
+                    leaveChannel(serverUrl, channelId);
+                    close();
+                },
             }], {cancelable: false},
         );
     };
