@@ -9,9 +9,9 @@ import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import Options, {NotificationsOptionConfig, SettingOptionConfig} from './constant';
+import Options, {DisplayOptionConfig, NotificationsOptionConfig, SettingOptionConfig} from './constant';
 
-type SettingsConfig = keyof typeof SettingOptionConfig | keyof typeof NotificationsOptionConfig
+type SettingsConfig = keyof typeof SettingOptionConfig | keyof typeof NotificationsOptionConfig| keyof typeof DisplayOptionConfig
 type SettingOptionProps = {
     optionName: SettingsConfig;
     onPress: () => void;
