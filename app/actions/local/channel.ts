@@ -5,7 +5,6 @@ import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {General, Navigation as NavigationConstants, Preferences, Screens} from '@constants';
-import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@constants/categories';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
@@ -17,12 +16,10 @@ import {
 } from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
-import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, queryMyTeams, removeChannelFromTeamHistory} from '@queries/servers/team';
+import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {getCurrentUser, queryUsersById} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import {makeCategoryChannelId, makeCategoryId} from '@utils/categories';
-import {isDMorGM} from '@utils/channel';
 import {isTablet} from '@utils/helpers';
 import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
 import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from '@utils/user';
@@ -423,54 +420,6 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
 
     if (models.length && !prepareRecordsOnly) {
         await operator.batchRecords(models);
-    }
-
-    return {models};
-}
-
-export async function addChannelToDefaultCategory(serverUrl: string, channel: Channel | ChannelModel, prepareRecordsOnly = false) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    const {database} = operator;
-
-    const teamId = 'teamId' in channel ? channel.teamId : channel.team_id;
-    const userId = await getCurrentUserId(database);
-    if (!userId) {
-        return {error: 'no current user id'};
-    }
-
-    if (!isDMorGM(channel)) {
-        const models = await operator.handleCategoryChannels({categoryChannels: [{
-            category_id: makeCategoryId(CHANNELS_CATEGORY, userId, teamId),
-            channel_id: channel.id,
-            sort_order: 0,
-            id: makeCategoryChannelId(teamId, channel.id),
-        }],
-        prepareRecordsOnly});
-
-        return {models};
-    }
-
-    const allTeams = await queryMyTeams(database).fetch();
-    const models = (
-        await Promise.all(
-            allTeams.map(
-                (t) => operator.handleCategoryChannels({categoryChannels: [{
-                    category_id: makeCategoryId(DMS_CATEGORY, userId, t.id),
-                    channel_id: channel.id,
-                    sort_order: 0,
-                    id: makeCategoryChannelId(t.id, channel.id),
-                }],
-                prepareRecordsOnly: true}),
-            ),
-        )
-    ).flat();
-
-    if (models.length && !prepareRecordsOnly) {
-        operator.batchRecords(models);
     }
 
     return {models};

@@ -127,12 +127,18 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
 export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model[]> => {
     const preparedModels: Model[] = [channel.prepareDestroyPermanently()];
 
-    const relations: Array<Relation<Model> | undefined> = [channel.membership, channel.info, channel.categoryChannel];
+    const relations: Array<Relation<Model|MyChannelModel> | undefined> = [channel.membership, channel.info, channel.categoryChannel];
     await Promise.all(relations.map(async (relation) => {
         try {
             const model = await relation?.fetch();
             if (model) {
                 preparedModels.push(model.prepareDestroyPermanently());
+                if ('settings' in model) {
+                    const settings = await model.settings?.fetch();
+                    if (settings) {
+                        preparedModels.push(settings.prepareDestroyPermanently());
+                    }
+                }
             }
         } catch {
             // Record not found, do nothing
@@ -550,4 +556,10 @@ export const observeArchiveChannelsByTerm = (database: Database, term: string, t
         Q.sortBy('last_viewed_at'),
         Q.take(take),
     ).observe();
+};
+
+export const observeChannelSettings = (database: Database, channelId: string) => {
+    return database.get<MyChannelSettingsModel>(MY_CHANNEL_SETTINGS).query(Q.where('id', channelId), Q.take(1)).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+    );
 };

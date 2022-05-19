@@ -13,7 +13,7 @@ export function mergeNavigationOptions(componentId: string, options: Options) {
     Navigation.mergeOptions(componentId, options);
 }
 
-export async function alertTeamRemove(displayName: string, intl: IntlShape) {
+export function alertTeamRemove(displayName: string, intl: IntlShape) {
     Alert.alert(
         intl.formatMessage({
             id: 'alert.removed_from_team.title',
@@ -30,7 +30,7 @@ export async function alertTeamRemove(displayName: string, intl: IntlShape) {
     );
 }
 
-export async function alertChannelRemove(displayName: string, intl: IntlShape) {
+export function alertChannelRemove(displayName: string, intl: IntlShape) {
     Alert.alert(
         intl.formatMessage({
             id: 'alert.removed_from_channel.title',
@@ -39,6 +39,23 @@ export async function alertChannelRemove(displayName: string, intl: IntlShape) {
         intl.formatMessage({
             id: 'alert.removed_from_channel.description',
             defaultMessage: 'You have been removed from channel {displayName}.',
+        }, {displayName}),
+        [{
+            style: 'cancel',
+            text: intl.formatMessage({id: 'mobile.oauth.something_wrong.okButton', defaultMessage: 'OK'}),
+        }],
+    );
+}
+
+export function alertChannelArchived(displayName: string, intl: IntlShape) {
+    Alert.alert(
+        intl.formatMessage({
+            id: 'alert.channel_deleted.title',
+            defaultMessage: 'Archived channel',
+        }),
+        intl.formatMessage({
+            id: 'alert.channel_deleted.description',
+            defaultMessage: 'The channel {displayName} has been archived.',
         }, {displayName}),
         [{
             style: 'cancel',

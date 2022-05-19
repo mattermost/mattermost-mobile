@@ -13,7 +13,7 @@ import {Events, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {findChannels} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import {alertChannelRemove, alertTeamRemove} from '@utils/navigation';
+import {alertChannelArchived, alertChannelRemove, alertTeamRemove} from '@utils/navigation';
 import {notificationError} from '@utils/notification';
 
 import Account from './account';
@@ -53,22 +53,22 @@ export default function HomeScreen(props: HomeProps) {
     }, [intl.locale]);
 
     useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(Events.LEAVE_TEAM, (displayName: string) => {
+        const leaveTeamListener = DeviceEventEmitter.addListener(Events.LEAVE_TEAM, (displayName: string) => {
             alertTeamRemove(displayName, intl);
         });
 
-        return () => {
-            listener.remove();
-        };
-    }, [intl.locale]);
-
-    useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(Events.LEAVE_CHANNEL, (displayName: string) => {
+        const leaveChannelListener = DeviceEventEmitter.addListener(Events.LEAVE_CHANNEL, (displayName: string) => {
             alertChannelRemove(displayName, intl);
         });
 
+        const archivedChannelListener = DeviceEventEmitter.addListener(Events.CHANNEL_ARCHIVED, (displayName: string) => {
+            alertChannelArchived(displayName, intl);
+        });
+
         return () => {
-            listener.remove();
+            leaveTeamListener.remove();
+            leaveChannelListener.remove();
+            archivedChannelListener.remove();
         };
     }, [intl.locale]);
 

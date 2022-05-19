@@ -1,15 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Preferences} from '@constants';
+import {General, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import {getChannelById} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
+import {getUserIdFromChannelName} from '@utils/user';
 
 import {forceLogoutIfNecessary} from './session';
 
-const {CATEGORY_FAVORITE_CHANNEL, CATEGORY_SAVED_POST} = Preferences;
+const {CATEGORY_DIRECT_CHANNEL_SHOW, CATEGORY_GROUP_CHANNEL_SHOW, CATEGORY_FAVORITE_CHANNEL, CATEGORY_SAVED_POST} = Preferences;
 
 export type MyPreferencesRequest = {
     preferences?: PreferenceType[];
@@ -144,6 +146,34 @@ export const deleteSavedPost = async (serverUrl: string, postId: string) => {
         return {
             preference: pref,
         };
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const setDirectChannelVisible = async (serverUrl: string, channelId: string, visible = true) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const channel = await getChannelById(database, channelId);
+        if (channel?.type === General.DM_CHANNEL || channel?.type === General.GM_CHANNEL) {
+            const userId = await getCurrentUserId(database);
+            const category = channel.type === General.DM_CHANNEL ? CATEGORY_DIRECT_CHANNEL_SHOW : CATEGORY_GROUP_CHANNEL_SHOW;
+            const name = channel.type === General.DM_CHANNEL ? getUserIdFromChannelName(userId, channel.name) : channelId;
+            const pref: PreferenceType = {
+                user_id: userId,
+                category,
+                name,
+                value: visible.toString(),
+            };
+            return savePreference(serverUrl, [pref]);
+        }
+
+        return {error: undefined};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};

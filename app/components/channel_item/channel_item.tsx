@@ -151,7 +151,7 @@ const ChannelListItem = ({
         isActive && isTablet && !isInfo ? styles.textActive : null,
         isInfo ? styles.textInfo : null,
         isMuted && styles.muted,
-        isMuted && isInfo && styles.infoMuted,
+        isMuted && isInfo && styles.mutedInfo,
     ], [isBolded, styles, isMuted, isActive, isInfo, isTablet]);
 
     const containerStyle = useMemo(() => [
