@@ -86,7 +86,7 @@ width number
 
 Group
 -
-id PK string INDEX # server-generated 
+id PK string  # server-generated
 name string INDEX
 display_name string
 description string
