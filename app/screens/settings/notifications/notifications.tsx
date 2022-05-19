@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {Alert, Platform, ScrollView, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 import {useTheme} from '@context/theme';
@@ -32,6 +32,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+const edges: Edge[] = ['left', 'right'];
 
 type NotificationsProps = {
     isCRTEnabled: boolean;
@@ -56,7 +57,7 @@ const Notifications = ({isCRTEnabled, enableAutoResponder}: NotificationsProps) 
 
     return (
         <SafeAreaView
-            edges={['left', 'right']}
+            edges={edges}
             testID='notification_settings.screen'
             style={styles.container}
         >
