@@ -10,7 +10,7 @@ import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import Filter, {FilterState} from './filter';
+import Filter, {clearedState, FilterState} from './filter';
 import SelectButton from './header_button';
 
 type Props = {
@@ -53,16 +53,7 @@ const Header = ({onHeaderSelect, numberFiles, numberMessages}: Props) => {
     const [tab, setTab] = useState(0);
     const [showFilterIcon, setShowFilterIcon] = useState(false);
 
-    const initialState: FilterState = {
-        Documents: false,
-        Spreadsheets: false,
-        Presentations: false,
-        Code: false,
-        Images: false,
-        Audio: false,
-        Videos: false,
-    };
-    const [filterState, setFilterState] = useState(initialState);
+    const [filterState, setFilterState] = useState(clearedState);
     const [hasFilters, setHasFilters] = useState(false);
 
     const handleMessagesPress = useCallback(() => {
@@ -102,7 +93,7 @@ const Header = ({onHeaderSelect, numberFiles, numberMessages}: Props) => {
     }, [filterState]);
 
     useEffect(() => {
-        setHasFilters(JSON.stringify(filterState) !== JSON.stringify(initialState));
+        setHasFilters(JSON.stringify(filterState) !== JSON.stringify(clearedState));
     }, [filterState, setHasFilters]);
 
     return (

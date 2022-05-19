@@ -45,7 +45,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 type FilterItem = {
     id: string;
     defaultMessage: string;
-    selected: boolean;
 }
 
 export type FilterState = {
@@ -63,7 +62,7 @@ type FilterProps = {
     setParentFilterState: (state: FilterState) => void;
 }
 
-const clearedState: FilterState = {
+export const clearedState: FilterState = {
     Documents: false,
     Spreadsheets: false,
     Presentations: false,
@@ -82,7 +81,7 @@ const Filter = ({initialState, setParentFilterState}: FilterProps) => {
     const [enableShowResults, setEnableShowResults] = useState(false);
     const [filterState, setFilterState] = useState(initialState);
 
-    const handleMyState = useCallback((value: string) => {
+    const handleMyState = useCallback((value: keyof FilterState) => {
         const oldValue = filterState[value];
         const newState = {
             ...filterState,
@@ -98,31 +97,24 @@ const Filter = ({initialState, setParentFilterState}: FilterProps) => {
             {
                 id: 'screen.search.results.filter.documents',
                 defaultMessage: 'Documents',
-                selected: filterState.Documents,
             }, {
                 id: 'screen.search.results.filter.spreadsheets',
                 defaultMessage: 'Spreadsheets',
-                selected: filterState.Spreadsheets,
             }, {
                 id: 'screen.search.results.filter.presentations',
                 defaultMessage: 'Presentations',
-                selected: filterState.Presentations,
             }, {
                 id: 'screen.search.results.filter.code',
                 defaultMessage: 'Code',
-                selected: filterState.Code,
             }, {
                 id: 'screen.search.results.filter.images',
                 defaultMessage: 'Images',
-                selected: filterState.Images,
             }, {
                 id: 'screen.search.results.filter.audio',
                 defaultMessage: 'Audio',
-                selected: filterState.Audio,
             }, {
                 id: 'screen.search.results.filter.videos',
                 defaultMessage: 'Videos',
-                selected: filterState.Videos,
             },
         ];
     }, [filterState, setFilterState, handleMyState]);
@@ -137,8 +129,8 @@ const Filter = ({initialState, setParentFilterState}: FilterProps) => {
                 />
                 <View style={style.icon}>
                     <CompassIcon
-                        style={[item.selected ? style.selected : style.unselected]}
-                        name={item.selected ? 'check-circle' : 'circle-outline'}
+                        style={filterState[item.defaultMessage as keyof FilterState] ? style.selected : style.unselected}
+                        name={filterState[item.defaultMessage as keyof FilterState] ? 'check-circle' : 'circle-outline'}
                         size={31.2}
                         color={'blue'}
                     />
