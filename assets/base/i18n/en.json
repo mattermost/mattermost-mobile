@@ -536,6 +536,7 @@
   "screen.search.results.filter.images": "Images",
   "screen.search.results.filter.audio": "Audio",
   "screen.search.results.filter.videos": "Videos",
+  "screen.search.results.filter.clear_all": "Clear all",
   "creen.search.results.filter.title": "Filter by file type",
   "screens.channel_details": "Channel Details",
   "screens.channel_edit_header": "Edit Channel Header",

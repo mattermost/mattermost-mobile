@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useMemo, useState, useEffect} from 'react';
 import {useIntl} from 'react-intl';
@@ -13,9 +14,8 @@ import {useCollapsibleHeader} from '@hooks/header';
 
 // import RecentSearches from './recent_searches/recent_searches';
 // import SearchModifiers from './search_modifiers/search_modifiers';
-import Filter from './results/filter';
-
-// import Results from './results/results';
+// import Filter from './results/filter';
+import Results from './results/results';
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
@@ -60,7 +60,7 @@ const SearchScreen = () => {
     const hasSearch = true;
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll} = useCollapsibleHeader<ScrollView>(isLargeTitle, false, hasSearch);
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop}), [scrollPaddingTop]);
+    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
 
     return (
         <FreezeScreen freeze={!isFocused}>
@@ -103,8 +103,10 @@ const SearchScreen = () => {
                         {/* <RecentSearches */}
                         {/*     setSearchValue={setSearchValue} */}
                         {/* /> */}
-                        {/* <Results/> */}
-                        <Filter/>
+                        <Results
+                            searchValue={searchValue}
+                        />
+                        {/* <Filter/> */}
                     </AnimatedScrollView>
                 </Animated.View>
             </SafeAreaView>

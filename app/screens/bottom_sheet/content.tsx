@@ -4,6 +4,7 @@
 import React from 'react';
 import {GestureResponderEvent, Platform, Text, useWindowDimensions, View} from 'react-native';
 
+import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import Button from '@screens/bottom_sheet/button';
@@ -14,9 +15,11 @@ type Props = {
     buttonIcon?: string;
     buttonText?: string;
     children: React.ReactNode;
+    disableButton?: boolean;
     onPress?: (e: GestureResponderEvent) => void;
     showButton: boolean;
     showTitle: boolean;
+    rightTitleComponent: React.ReactNode;
     testID?: string;
     title?: string;
 }
@@ -29,12 +32,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
         },
         titleContainer: {
+            flexDirection: 'row',
             marginTop: 4,
             marginBottom: 12,
         },
         titleText: {
             color: theme.centerChannelColor,
             ...typography('Heading', 600, 'SemiBold'),
+        },
+        titleButton: {
+            color: theme.linkColor,
+            ...typography('Body', 100, 'SemiBold'),
         },
         separator: {
             height: 1,
@@ -45,7 +53,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const BottomSheetContent = ({buttonText, buttonIcon, children, onPress, showButton, showTitle, testID, title}: Props) => {
+const BottomSheetContent = ({buttonText, buttonIcon, children, disableButton, onPress, rightTitleComponent, showButton, showTitle, testID, title}: Props) => {
     const dimensions = useWindowDimensions();
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -58,7 +66,10 @@ const BottomSheetContent = ({buttonText, buttonIcon, children, onPress, showButt
             style={styles.container}
             testID={`${testID}.screen`}
         >
-            {showTitle &&
+            <View
+                style={styles.titleContainer}
+            >
+                {showTitle &&
                 <View style={styles.titleContainer}>
                     <Text
                         style={styles.titleText}
@@ -67,7 +78,22 @@ const BottomSheetContent = ({buttonText, buttonIcon, children, onPress, showButt
                         {title}
                     </Text>
                 </View>
-            }
+                }
+                {/* {Boolean(rightTitleComponent) && ( */}
+                {/*   rightTitleComponent() */}
+                {/*  */}
+                {/* <Button> */}
+                {
+                    <FormattedText
+                        style={styles.titleButton}
+                        id={'screen.search.results.filter.clear_all'}
+                        defaultMessage={'Clear all'}
+                    />}
+                {/*  */}
+                {/* </Button> */}
+                {/*  */}
+                {/* )} */}
+            </View>
             <>
                 {children}
             </>
@@ -75,6 +101,7 @@ const BottomSheetContent = ({buttonText, buttonIcon, children, onPress, showButt
                 <>
                     <View style={[styles.separator, {width: separatorWidth, marginBottom: (isTablet ? 20 : 12)}]}/>
                     <Button
+                        disabled={disableButton}
                         onPress={onPress}
                         icon={buttonIcon}
                         testID={buttonTestId}
