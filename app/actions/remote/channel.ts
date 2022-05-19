@@ -577,7 +577,7 @@ export async function switchToChannelByName(serverUrl: string, channelName: stri
         }
 
         let isArchived = false;
-        const chReq = await fetchChannelByName(serverUrl, team.id, channelName);
+        const chReq = await fetchChannelByName(serverUrl, team.id, channelName, true);
         if (chReq.error) {
             errorHandler(intl);
             return {error: chReq.error};
@@ -595,6 +595,11 @@ export async function switchToChannelByName(serverUrl: string, channelName: stri
         }
 
         myChannel = await getMyChannel(database, channel.id);
+
+        if (!myChannel) {
+            const req = await fetchMyChannel(serverUrl, channel.team_id || team.id, channel.id, true);
+            myChannel = req.memberships?.[0];
+        }
 
         if (!myChannel) {
             if (channel.type === General.PRIVATE_CHANNEL) {
@@ -666,8 +671,8 @@ export async function switchToChannelByName(serverUrl: string, channelName: stri
             fetchMyChannelsForTeam(serverUrl, teamId, true, 0, false, true);
         }
 
-        if (teamId && channelId) {
-            await switchToChannelById(serverUrl, channelId, teamId);
+        if (teamId || channelId) {
+            await switchToChannelById(serverUrl, channel.id, team.id);
         }
 
         if (roles.length) {
@@ -966,6 +971,10 @@ export async function getChannelTimezones(serverUrl: string, channelId: string) 
 }
 
 export async function switchToChannelById(serverUrl: string, channelId: string, teamId?: string, skipLastUnread = false) {
+    if (channelId === Screens.GLOBAL_THREADS) {
+        return switchToGlobalThreads(serverUrl, teamId);
+    }
+
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -988,9 +997,6 @@ export async function switchToPenultimateChannel(serverUrl: string) {
     try {
         const currentTeam = await getCurrentTeamId(database);
         const channelId = await getNthLastChannelFromTeam(database, currentTeam, 1);
-        if (channelId === Screens.GLOBAL_THREADS) {
-            return switchToGlobalThreads(serverUrl);
-        }
         return switchToChannelById(serverUrl, channelId);
     } catch (error) {
         return {error};
