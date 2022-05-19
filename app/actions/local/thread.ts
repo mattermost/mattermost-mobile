@@ -27,16 +27,17 @@ export const switchToGlobalThreads = async (serverUrl: string, teamId?: string, 
 
     const {database} = operator;
     const models: Model[] = [];
+
+    let teamIdToUse = teamId;
+    if (!teamId) {
+        teamIdToUse = await getCurrentTeamId(database);
+    }
+
+    if (!teamIdToUse) {
+        return {error: 'no team to switch to'};
+    }
+
     try {
-        let teamIdToUse = teamId;
-        if (!teamId) {
-            teamIdToUse = await getCurrentTeamId(database);
-        }
-
-        if (!teamIdToUse) {
-            return {error: 'no team to switch to'};
-        }
-
         await setCurrentTeamAndChannelId(operator, teamIdToUse, '');
         const history = await addChannelToTeamHistory(operator, teamIdToUse, Screens.GLOBAL_THREADS, true);
         models.push(...history);
