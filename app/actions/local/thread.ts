@@ -8,7 +8,7 @@ import DatabaseManager from '@database/manager';
 import {getTranslations, t} from '@i18n';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
-import {getCurrentTeamId, getCurrentUserId, setCurrentChannelId} from '@queries/servers/system';
+import {getCurrentTeamId, getCurrentUserId, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory} from '@queries/servers/team';
 import {getIsCRTEnabled, getThreadById, prepareThreadsFromReceivedPosts, queryThreadsInTeam} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
@@ -19,7 +19,7 @@ import {changeOpacity} from '@utils/theme';
 
 import type Model from '@nozbe/watermelondb/Model';
 
-export const switchToGlobalThreads = async (serverUrl: string, prepareRecordsOnly = false) => {
+export const switchToGlobalThreads = async (serverUrl: string, teamId?: string, prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -27,10 +27,19 @@ export const switchToGlobalThreads = async (serverUrl: string, prepareRecordsOnl
 
     const {database} = operator;
     const models: Model[] = [];
+
+    let teamIdToUse = teamId;
+    if (!teamId) {
+        teamIdToUse = await getCurrentTeamId(database);
+    }
+
+    if (!teamIdToUse) {
+        return {error: 'no team to switch to'};
+    }
+
     try {
-        await setCurrentChannelId(operator, '');
-        const currentTeamId = await getCurrentTeamId(database);
-        const history = await addChannelToTeamHistory(operator, currentTeamId, Screens.GLOBAL_THREADS, true);
+        await setCurrentTeamAndChannelId(operator, teamId, '');
+        const history = await addChannelToTeamHistory(operator, teamIdToUse, Screens.GLOBAL_THREADS, true);
         models.push(...history);
         const isTabletDevice = await isTablet();
         if (isTabletDevice) {

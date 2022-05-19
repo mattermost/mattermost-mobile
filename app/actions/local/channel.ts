@@ -37,7 +37,7 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
     }
 
     const {database} = operator;
-    const models: Model[] = [];
+    let models: Model[] = [];
     try {
         const dt = Date.now();
         const isTabletDevice = await isTablet();
@@ -61,9 +61,9 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                     await setCurrentChannelId(operator, '');
                 }
 
+                const modelPromises: Array<Promise<Model[]>> = [];
                 if (system.currentTeamId !== toTeamId) {
-                    const history = await addTeamToTeamHistory(operator, toTeamId, true);
-                    models.push(...history);
+                    modelPromises.push(addTeamToTeamHistory(operator, toTeamId, true));
                 }
 
                 const commonValues: PrepareCommonSystemValuesArgs = {
@@ -75,16 +75,13 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                     commonValues.currentTeamId = system.currentTeamId === toTeamId ? undefined : toTeamId;
                 }
 
-                const common = await prepareCommonSystemValues(operator, commonValues);
-                if (common) {
-                    models.push(...common);
-                }
+                modelPromises.push(prepareCommonSystemValues(operator, commonValues));
 
                 if (system.currentChannelId !== channelId || system.currentTeamId !== toTeamId) {
-                    const history = await addChannelToTeamHistory(operator, toTeamId, channelId, true);
-                    models.push(...history);
+                    modelPromises.push(addChannelToTeamHistory(operator, toTeamId, channelId, true));
                 }
 
+                models = (await Promise.all(modelPromises)).flat();
                 const {member: viewedAt} = await markChannelAsViewed(serverUrl, channelId, true);
                 if (viewedAt) {
                     models.push(viewedAt);
@@ -145,10 +142,10 @@ export async function removeCurrentUserFromChannel(serverUrl: string, channelId:
         if (teamId) {
             teamId = await getCurrentTeamId(database);
         }
-        const system = await removeChannelFromTeamHistory(operator, teamId, channel.id, true);
-        if (system) {
-            models.push(...system);
-        }
+
+        // We update the history ASAP to avoid clashes with channel switch.
+        await removeChannelFromTeamHistory(operator, teamId, channel.id, false);
+
         if (models.length && !prepareRecordsOnly) {
             try {
                 await operator.batchRecords(models);

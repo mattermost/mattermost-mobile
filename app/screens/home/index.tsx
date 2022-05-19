@@ -13,7 +13,7 @@ import {Events, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {findChannels} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import {alertTeamRemove} from '@utils/navigation';
+import {alertChannelRemove, alertTeamRemove} from '@utils/navigation';
 import {notificationError} from '@utils/notification';
 
 import Account from './account';
@@ -55,6 +55,16 @@ export default function HomeScreen(props: HomeProps) {
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.LEAVE_TEAM, (displayName: string) => {
             alertTeamRemove(displayName, intl);
+        });
+
+        return () => {
+            listener.remove();
+        };
+    }, [intl.locale]);
+
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(Events.LEAVE_CHANNEL, (displayName: string) => {
+            alertChannelRemove(displayName, intl);
         });
 
         return () => {
