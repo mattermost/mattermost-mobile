@@ -52,11 +52,13 @@ const FollowThreadOption = ({thread, teamId}: FollowThreadOptionProps) => {
         dismissBottomSheet(Screens.POST_OPTIONS);
     };
 
+    const followThreadOptionTestId = thread.isFollowing ? 'post_options.following_thread.option' : 'post_options.follow_thread.option';
+
     return (
         <BaseOption
             i18nId={id}
             defaultMessage={defaultMessage}
-            testID='post_options.follow.thread.option'
+            testID={followThreadOptionTestId}
             iconName={icon}
             onPress={handleToggleFollow}
         />

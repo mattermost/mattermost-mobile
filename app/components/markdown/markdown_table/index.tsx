@@ -143,7 +143,7 @@ class MarkdownTable extends PureComponent<MarkdownTableProps, MarkdownTableState
     };
 
     handlePress = preventDoubleTap(() => {
-        const {intl} = this.context;
+        const {intl} = this.props;
         const screen = 'Table';
         const title = intl.formatMessage({
             id: 'mobile.routes.table',

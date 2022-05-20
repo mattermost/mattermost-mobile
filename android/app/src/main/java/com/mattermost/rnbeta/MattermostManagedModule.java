@@ -111,6 +111,23 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void getFilePath(String filePath, Promise promise) {
+        Activity currentActivity = getCurrentActivity();
+        WritableMap map = Arguments.createMap();
+
+        if (currentActivity != null) {
+            Uri uri = Uri.parse(filePath);
+            String path = RealPathUtil.getRealPathFromURI(currentActivity, uri);
+            if (path != null) {
+                String text = "file://" + path;
+                map.putString("filePath", text);
+            }
+        }
+
+        promise.resolve(map);
+    }
+
+    @ReactMethod
     public void isRunningInSplitView(final Promise promise) {
         WritableMap result = Arguments.createMap();
         Activity current = getCurrentActivity();

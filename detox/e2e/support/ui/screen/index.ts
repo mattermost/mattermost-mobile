@@ -13,10 +13,12 @@ import EditServerScreen from './edit_server';
 import GlobalThreadsScreen from './global_threads';
 import HomeScreen from './home';
 import LoginScreen from './login';
+import PermalinkScreen from './permalink';
 import PostOptionsScreen from './post_options';
 import ServerScreen from './server';
 import ServerListScreen from './server_list';
 import ThreadScreen from './thread';
+import ThreadOptionsScreen from './thread_options';
 
 export {
     AccountScreen,
@@ -31,8 +33,10 @@ export {
     GlobalThreadsScreen,
     HomeScreen,
     LoginScreen,
+    PermalinkScreen,
     PostOptionsScreen,
     ServerScreen,
     ServerListScreen,
     ThreadScreen,
+    ThreadOptionsScreen,
 };
