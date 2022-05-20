@@ -67,6 +67,11 @@ function combineUserActivityPosts(orderedPosts: Array<PostModel | string>) {
 
                 continue;
             }
+        } else if (post.deleteAt) {
+            out.push(post);
+
+            lastPostIsUserActivity = false;
+            combinedCount = 0;
         } else {
             const postIsUserActivity = Post.USER_ACTIVITY_POST_TYPES.includes(post.type);
             if (postIsUserActivity && lastPostIsUserActivity && combinedCount < MAX_COMBINED_SYSTEM_POSTS) {
