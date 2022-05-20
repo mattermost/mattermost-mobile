@@ -49,9 +49,9 @@ const ReactionBar = ({recentEmojis = [], postId}: QuickReactionProps) => {
     const isSmallDevice = width < SMALL_ICON_BREAKPOINT;
     const styles = getStyleSheet(theme);
 
-    const handleEmojiPress = useCallback((emoji: string) => {
+    const handleEmojiPress = useCallback(async (emoji: string) => {
+        await dismissBottomSheet(Screens.POST_OPTIONS);
         addReaction(serverUrl, postId, emoji);
-        dismissBottomSheet(Screens.POST_OPTIONS);
     }, [postId, serverUrl]);
 
     const openEmojiPicker = useCallback(async () => {
