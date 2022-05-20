@@ -26,7 +26,7 @@ import {prepareModels} from '@queries/servers/entry';
 import {getConfig, getPushVerificationStatus, getWebSocketLastDisconnected} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, getNthLastChannelFromTeam, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
-import {isCRTEnabled} from '@utils/thread';
+import {processIsCRTEnabled} from '@utils/thread';
 
 import type ClientError from '@client/rest/error';
 
@@ -38,6 +38,7 @@ export type AppEntryData = {
     meData: MyUserRequest;
     removeTeamIds?: string[];
     removeChannelIds?: string[];
+    isCRTEnabled: boolean;
 }
 
 export type AppEntryError = {
@@ -90,7 +91,7 @@ export const entry = async (serverUrl: string, teamId?: string, channelId?: stri
         return {error: fetchedData.error};
     }
 
-    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData;
+    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds, isCRTEnabled} = fetchedData;
     const error = teamData.error || chData?.error || prefData.error || meData.error;
     if (error) {
         return {error};
@@ -113,7 +114,7 @@ export const entry = async (serverUrl: string, teamId?: string, channelId?: stri
         removeChannels = await queryChannelsById(database, removeChannelIds).fetch();
     }
 
-    const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData});
+    const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData, isCRTEnabled});
     if (rolesData.roles?.length) {
         modelPromises.push(operator.handleRole({roles: rolesData.roles, prepareRecordsOnly: true}));
     }
@@ -132,19 +133,20 @@ export const fetchAppEntryData = async (serverUrl: string, since: number, initia
     const includeDeletedChannels = true;
     const fetchOnly = true;
 
-    await fetchConfigAndLicense(serverUrl);
+    const confReq = await fetchConfigAndLicense(serverUrl);
+    const prefData = await fetchMyPreferences(serverUrl, fetchOnly);
+    const isCRTEnabled = Boolean(prefData.preferences && processIsCRTEnabled(prefData.preferences, confReq.config));
 
     // Fetch in parallel teams / team membership / channels for current team / user preferences / user
-    const promises: [Promise<MyTeamsRequest>, Promise<MyChannelsRequest | undefined>, Promise<MyPreferencesRequest>, Promise<MyUserRequest>] = [
+    const promises: [Promise<MyTeamsRequest>, Promise<MyChannelsRequest | undefined>, Promise<MyUserRequest>] = [
         fetchMyTeams(serverUrl, fetchOnly),
-        initialTeamId ? fetchMyChannelsForTeam(serverUrl, initialTeamId, includeDeletedChannels, since, fetchOnly) : Promise.resolve(undefined),
-        fetchMyPreferences(serverUrl, fetchOnly),
+        initialTeamId ? fetchMyChannelsForTeam(serverUrl, initialTeamId, includeDeletedChannels, since, fetchOnly, false, isCRTEnabled) : Promise.resolve(undefined),
         fetchMe(serverUrl, fetchOnly),
     ];
 
     const removeTeamIds: string[] = [];
     const resolution = await Promise.all(promises);
-    const [teamData, , prefData, meData] = resolution;
+    const [teamData, , meData] = resolution;
     let [, chData] = resolution;
 
     if (!initialTeamId && teamData.teams?.length && teamData.memberships?.length) {
@@ -155,7 +157,7 @@ export const fetchAppEntryData = async (serverUrl: string, since: number, initia
         const myTeams = teamData.teams!.filter((t) => teamMembers.has(t.id));
         const defaultTeam = selectDefaultTeam(myTeams, meData.user?.locale || DEFAULT_LOCALE, teamOrderPreference, config?.ExperimentalPrimaryTeam);
         if (defaultTeam?.id) {
-            chData = await fetchMyChannelsForTeam(serverUrl, defaultTeam.id, includeDeletedChannels, since, fetchOnly);
+            chData = await fetchMyChannelsForTeam(serverUrl, defaultTeam.id, includeDeletedChannels, since, fetchOnly, false, isCRTEnabled);
         }
     }
 
@@ -171,6 +173,7 @@ export const fetchAppEntryData = async (serverUrl: string, since: number, initia
         prefData,
         meData,
         removeTeamIds,
+        isCRTEnabled,
     };
 
     if (teamData.teams?.length === 0 && !teamData.error) {
@@ -194,7 +197,7 @@ export const fetchAppEntryData = async (serverUrl: string, since: number, initia
         }
 
         const availableTeamIds = await getAvailableTeamIds(database, initialTeamId, teamData.teams, prefData.preferences, meData.user?.locale);
-        const alternateTeamData = await fetchAlternateTeamData(serverUrl, availableTeamIds, removeTeamIds, includeDeletedChannels, since, fetchOnly);
+        const alternateTeamData = await fetchAlternateTeamData(serverUrl, availableTeamIds, removeTeamIds, includeDeletedChannels, since, fetchOnly, isCRTEnabled);
 
         data = {
             ...data,
@@ -224,13 +227,13 @@ export const fetchAppEntryData = async (serverUrl: string, since: number, initia
 
 export const fetchAlternateTeamData = async (
     serverUrl: string, availableTeamIds: string[], removeTeamIds: string[],
-    includeDeleted = true, since = 0, fetchOnly = false) => {
+    includeDeleted = true, since = 0, fetchOnly = false, isCRTEnabled?: boolean) => {
     let initialTeamId = '';
     let chData;
 
     for (const teamId of availableTeamIds) {
         // eslint-disable-next-line no-await-in-loop
-        chData = await fetchMyChannelsForTeam(serverUrl, teamId, includeDeleted, since, fetchOnly);
+        chData = await fetchMyChannelsForTeam(serverUrl, teamId, includeDeleted, since, fetchOnly, false, isCRTEnabled);
         const chError = chData.error as ClientError | undefined;
         if (chError?.status_code === 403) {
             removeTeamIds.push(teamId);
@@ -269,7 +272,7 @@ export async function deferredAppEntryActions(
         await fetchTeamsChannelsAndUnreadPosts(serverUrl, since, teamData.teams, teamData.memberships, initialTeamId);
     }
 
-    if (preferences && isCRTEnabled(preferences, config)) {
+    if (preferences && processIsCRTEnabled(preferences, config)) {
         if (initialTeamId) {
             await fetchNewThreads(serverUrl, initialTeamId, false);
         }

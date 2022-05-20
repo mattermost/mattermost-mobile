@@ -6,7 +6,7 @@ import {getPreferenceValue} from '@helpers/api/preference';
 
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
-export function isCRTEnabled(preferences: PreferenceModel[]|PreferenceType[], config?: ClientConfig): boolean {
+export function processIsCRTEnabled(preferences: PreferenceModel[]|PreferenceType[], config?: ClientConfig): boolean {
     let preferenceDefault = Preferences.COLLAPSED_REPLY_THREADS_OFF;
     const configValue = config?.CollapsedThreads;
     if (configValue === Config.DEFAULT_ON) {
