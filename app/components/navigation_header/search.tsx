@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {FlatList, Platform, ScrollView, SectionList, VirtualizedList} from 'react-native';
+import {FlatList, Platform, ScrollView, SectionList} from 'react-native';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 
 import Search, {SearchProps} from '@components/search';
@@ -66,13 +66,15 @@ const NavigationSearch = ({
         const searchInset = isTablet ? TABLET_HEADER_SEARCH_INSET : IOS_HEADER_SEARCH_INSET;
         const offset = Platform.select({android: largeHeight + ANDROID_HEADER_SEARCH_INSET, default: defaultHeight + searchInset});
         if (forwardedRef?.current && Math.abs((scrollValue?.value || 0)) <= top) {
-            if ((forwardedRef.current as ScrollView).scrollTo) {
-                (forwardedRef.current as ScrollView).scrollTo({y: offset, animated: true});
-            } else {
-                (forwardedRef.current as VirtualizedList<any>).scrollToOffset({
+            if ('scrollTo' in forwardedRef.current) {
+                forwardedRef.current.scrollTo({y: offset, animated: true});
+            } else if ('scrollToOffset' in forwardedRef.current) {
+                forwardedRef.current.scrollToOffset({
                     offset,
                     animated: true,
                 });
+            } else {
+                // No scroll for section lists?
             }
         }
         searchProps.onFocus?.(e);

@@ -5,7 +5,7 @@ import {Notifications} from 'react-native-notifications';
 
 import {emptyFunction} from '@utils/general';
 
-export default {
+const nativeNotification: NativeNotification = {
     getDeliveredNotifications: async () => Notifications.ios.getDeliveredNotifications(),
     getPreferences: async () => null,
     play: (soundUri: string) => emptyFunction(soundUri),
@@ -13,4 +13,6 @@ export default {
     setNotificationSound: () => emptyFunction(),
     setShouldBlink: (shouldBlink: boolean) => emptyFunction(shouldBlink),
     setShouldVibrate: (shouldVibrate: boolean) => emptyFunction(shouldVibrate),
-} as NativeNotification;
+};
+
+export default nativeNotification;

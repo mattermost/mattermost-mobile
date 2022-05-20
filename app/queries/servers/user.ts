@@ -18,7 +18,7 @@ import type UserModel from '@typings/database/models/servers/user';
 const {SERVER: {USER}} = MM_TABLES;
 export const getUserById = async (database: Database, userId: string) => {
     try {
-        const userRecord = (await database.get(USER).find(userId)) as UserModel;
+        const userRecord = (await database.get<UserModel>(USER).find(userId));
         return userRecord;
     } catch {
         return undefined;
@@ -82,7 +82,7 @@ export async function getTeammateNameDisplay(database: Database) {
 }
 
 export const queryUsersLike = (database: Database, likeUsername: string) => {
-    return database.get(USER).query(
+    return database.get<UserModel>(USER).query(
         Q.where('username', Q.like(
             `%${Q.sanitizeLikeString(likeUsername)}%`,
         )),

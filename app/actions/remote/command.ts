@@ -61,7 +61,11 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
     }
 
     const cmd = msg.substring(0, cmdLength).toLowerCase();
-    msg = cmd + msg.substring(cmdLength);
+    if (cmd === '/code') {
+        msg = cmd + ' ' + msg.substring(cmdLength, msg.length).trimEnd();
+    } else {
+        msg = cmd + ' ' + msg.substring(cmdLength, msg.length).trim();
+    }
 
     let data;
     try {
@@ -129,17 +133,21 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
 
     const config = await getConfig(database);
     const match = matchDeepLink(location, serverUrl, config?.SiteURL);
+    let linkServerUrl: string | undefined;
+    if (match?.data?.serverUrl) {
+        linkServerUrl = DatabaseManager.searchUrl(match.data.serverUrl);
+    }
 
-    if (match) {
+    if (match && linkServerUrl) {
         switch (match.type) {
             case DeepLinkTypes.CHANNEL: {
                 const data = match.data as DeepLinkChannel;
-                switchToChannelByName(data.serverUrl, data.channelName, data.teamName, DraftUtils.errorBadChannel, intl);
+                switchToChannelByName(linkServerUrl, data.channelName, data.teamName, DraftUtils.errorBadChannel, intl);
                 break;
             }
             case DeepLinkTypes.PERMALINK: {
                 const data = match.data as DeepLinkPermalink;
-                showPermalink(serverUrl, data.teamName, data.postId, intl);
+                showPermalink(linkServerUrl, data.teamName, data.postId, intl);
                 break;
             }
             case DeepLinkTypes.DMCHANNEL: {
@@ -160,7 +168,7 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
                     return {data: false};
                 }
 
-                makeDirectChannel(data.serverUrl, user.id, displayUsername(user, intl.locale, await getTeammateNameDisplay(database)), true);
+                makeDirectChannel(linkServerUrl, user.id, displayUsername(user, intl.locale, await getTeammateNameDisplay(database)), true);
                 break;
             }
             case DeepLinkTypes.GROUPCHANNEL: {
@@ -170,7 +178,7 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
                     return {data: false};
                 }
 
-                switchToChannelById(data.serverUrl, data.channelId);
+                switchToChannelById(linkServerUrl, data.channelId);
                 break;
             }
             case DeepLinkTypes.PLUGIN: {

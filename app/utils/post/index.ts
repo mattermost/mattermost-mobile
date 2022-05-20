@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Post} from '@constants';
+import {POST_TIME_TO_FAIL} from '@constants/post';
 import {DEFAULT_LOCALE} from '@i18n';
 import {displayUsername} from '@utils/user';
 
@@ -38,8 +39,12 @@ export function isPostEphemeral(post: PostModel): boolean {
     return post.type === Post.POST_TYPES.EPHEMERAL || post.type === Post.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL || post.deleteAt > 0;
 }
 
+export function isPostFailed(post: PostModel): boolean {
+    return post.props?.failed || ((post.pendingPostId === post.id) && (Date.now() > post.updateAt + POST_TIME_TO_FAIL));
+}
+
 export function isPostPendingOrFailed(post: PostModel): boolean {
-    return post.pendingPostId === post.id || post.props?.failed;
+    return post.pendingPostId === post.id || isPostFailed(post);
 }
 
 export function isSystemMessage(post: PostModel | Post): boolean {
@@ -64,7 +69,7 @@ export function shouldIgnorePost(post: Post): boolean {
 
 export const processPostsFetched = (data: PostResponse) => {
     const order = data.order;
-    const posts = Object.values(data.posts) as Post[];
+    const posts = Object.values(data.posts);
     const previousPostId = data.prev_post_id;
 
     return {

@@ -99,6 +99,10 @@ type RawValue =
   | CustomEmoji
   | Draft
   | FileInfo
+  | Group
+  | GroupChannel
+  | GroupTeam
+  | GroupMembership
   | IdValue
   | Metadata
   | MyTeam

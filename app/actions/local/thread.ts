@@ -8,7 +8,7 @@ import DatabaseManager from '@database/manager';
 import {getTranslations, t} from '@i18n';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
-import {getCurrentTeamId, getCurrentUserId, setCurrentChannelId} from '@queries/servers/system';
+import {getCurrentTeamId, getCurrentUserId, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory} from '@queries/servers/team';
 import {getIsCRTEnabled, getThreadById, prepareThreadsFromReceivedPosts, queryThreadsInTeam} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
@@ -19,7 +19,7 @@ import {changeOpacity} from '@utils/theme';
 
 import type Model from '@nozbe/watermelondb/Model';
 
-export const switchToGlobalThreads = async (serverUrl: string, prepareRecordsOnly = false) => {
+export const switchToGlobalThreads = async (serverUrl: string, teamId?: string, prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -27,19 +27,30 @@ export const switchToGlobalThreads = async (serverUrl: string, prepareRecordsOnl
 
     const {database} = operator;
     const models: Model[] = [];
+
+    let teamIdToUse = teamId;
+    if (!teamId) {
+        teamIdToUse = await getCurrentTeamId(database);
+    }
+
+    if (!teamIdToUse) {
+        return {error: 'no team to switch to'};
+    }
+
     try {
-        await setCurrentChannelId(operator, '');
-        const currentTeamId = await getCurrentTeamId(database);
-        const history = await addChannelToTeamHistory(operator, currentTeamId, Screens.GLOBAL_THREADS, true);
+        await setCurrentTeamAndChannelId(operator, teamIdToUse, '');
+        const history = await addChannelToTeamHistory(operator, teamIdToUse, Screens.GLOBAL_THREADS, true);
         models.push(...history);
+
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords(models);
+        }
+
         const isTabletDevice = await isTablet();
         if (isTabletDevice) {
             DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_THREADS);
         } else {
             goToScreen(Screens.GLOBAL_THREADS, '', {}, {topBar: {visible: false}});
-        }
-        if (!prepareRecordsOnly) {
-            await operator.batchRecords(models);
         }
     } catch (error) {
         return {error};
@@ -97,13 +108,12 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
         const translations = getTranslations(user.locale);
 
         // Get title translation or default title message
-        let title = translations[t('thread.header.thread')] || 'Thread';
-        if (channel.type === General.DM_CHANNEL) {
-            title = translations[t('thread.header.thread_dm')] || 'Direct Message Thread';
-        }
+        const title = translations[t('thread.header.thread')] || 'Thread';
 
         let subtitle = '';
-        if (channel?.type !== General.DM_CHANNEL) {
+        if (channel?.type === General.DM_CHANNEL) {
+            subtitle = channel.displayName;
+        } else {
             // Get translation or default message
             subtitle = translations[t('thread.header.thread_in')] || 'in {channelName}';
             subtitle = subtitle.replace('{channelName}', channel.displayName);
@@ -117,6 +127,10 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
                 subtitle: {
                     color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
                     text: subtitle,
+                },
+                noBorder: true,
+                scrollEdgeAppearance: {
+                    noBorder: true,
                 },
                 rightButtons,
             },

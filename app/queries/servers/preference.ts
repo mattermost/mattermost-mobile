@@ -5,6 +5,7 @@ import {Database, Model, Q} from '@nozbe/watermelondb';
 
 import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import {getPreferenceValue} from '@helpers/api/preference';
 import {ServerDatabase} from '@typings/database/database';
 
 import {getCurrentTeamId} from './system';
@@ -33,12 +34,12 @@ export const queryPreferencesByCategoryAndName = (database: Database, category: 
     return database.get<PreferenceModel>(PREFERENCE).query(...clauses);
 };
 
-export const getThemeForCurrentTeam = async (database: Database) => {
+export const getThemeForCurrentTeam = async (database: Database): Promise<Theme | undefined> => {
     const currentTeamId = await getCurrentTeamId(database);
     const teamTheme = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_THEME, currentTeamId).fetch();
     if (teamTheme.length) {
         try {
-            return JSON.parse(teamTheme[0].value) as Theme;
+            return JSON.parse(teamTheme[0].value);
         } catch {
             return undefined;
         }
@@ -64,3 +65,17 @@ export async function deletePreferences(database: ServerDatabase, preferences: P
         return false;
     }
 }
+
+export const differsFromLocalNameFormat = async (database: Database, preferences: PreferenceType[]) => {
+    const displayPref = getPreferenceValue(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT) as string;
+    if (displayPref === '') {
+        return false;
+    }
+
+    const currentPref = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT, displayPref).fetch();
+    if (currentPref.length > 0) {
+        return false;
+    }
+
+    return true;
+};

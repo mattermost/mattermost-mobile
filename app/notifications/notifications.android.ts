@@ -11,7 +11,7 @@ const defaultPreferences: NativeNotificationPreferences = {
     shouldVibrate: true,
 };
 
-export default {
+const nativeNotification: NativeNotification = {
     getDeliveredNotifications: NotificationPreferences.getDeliveredNotifications,
     getPreferences: async () => {
         try {
@@ -37,4 +37,6 @@ export default {
     setNotificationSound: NotificationPreferences.setNotificationSound,
     setShouldBlink: NotificationPreferences.setShouldBlink,
     setShouldVibrate: NotificationPreferences.setShouldVibrate,
-} as NativeNotification;
+};
+
+export default nativeNotification;

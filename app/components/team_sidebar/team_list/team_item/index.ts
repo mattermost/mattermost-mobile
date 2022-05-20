@@ -3,7 +3,8 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {combineLatestWith, map} from 'rxjs/operators';
+import {of as of$} from 'rxjs';
+import {combineLatestWith, map, switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {observeAllMyChannelNotifyProps, queryMyChannelsByTeam} from '@queries/servers/channel';
 import {observeCurrentTeamId} from '@queries/servers/system';
@@ -30,8 +31,13 @@ const enhance = withObservables(['myTeam'], ({myTeam, database}: WithTeamsArgs) 
         }, false)),
     );
 
+    const selected = observeCurrentTeamId(database).pipe(
+        switchMap((ctid) => of$(ctid === myTeam.id)),
+        distinctUntilChanged(),
+    );
+
     return {
-        currentTeamId: observeCurrentTeamId(database),
+        selected,
         team: myTeam.team.observe(),
         mentionCount: observeMentionCount(database, myTeam.id, false),
         hasUnreads,

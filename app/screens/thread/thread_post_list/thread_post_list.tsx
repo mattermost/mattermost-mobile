@@ -5,7 +5,7 @@ import React, {useEffect, useMemo, useRef} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import {updateThreadRead} from '@actions/remote/thread';
+import {markThreadAsRead} from '@actions/remote/thread';
 import PostList from '@components/post_list';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -46,7 +46,7 @@ const ThreadPostList = ({
     useEffect(() => {
         if (isCRTEnabled && oldPostsCount.current < posts.length) {
             oldPostsCount.current = posts.length;
-            updateThreadRead(serverUrl, teamId, rootPost.id, Date.now());
+            markThreadAsRead(serverUrl, teamId, rootPost.id);
         }
     }, [isCRTEnabled, posts, rootPost, serverUrl, teamId]);
 

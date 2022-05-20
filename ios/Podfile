@@ -27,12 +27,10 @@ target 'Mattermost' do
   pod 'React-jsi', :path => '../node_modules/react-native/ReactCommon/jsi', :modular_headers => true
   pod 'simdjson', path: '../node_modules/@nozbe/simdjson'
 
-  pod 'XCDYouTubeKit', '2.8.2'
   pod 'Swime', '3.0.6'
 
   # TODO: Remove this once upstream PR https://github.com/daltoniam/Starscream/pull/871 is merged
   pod 'Starscream', :git => 'https://github.com/mattermost/Starscream.git', :commit => 'cb83dd247339ff6c155f0e749d6fe2cc145f5283'
-  pod 'lottie-react-native', :path => '../node_modules/lottie-react-native'
 
 end
 
@@ -45,9 +43,6 @@ end
   post_install do |installer|
     react_native_post_install(installer)
     __apply_Xcode_12_5_M1_post_install_workaround(installer)
-
-    puts 'Patching XCDYouTube so it can playback videos'
-    %x(patch Pods/XCDYouTubeKit/XCDYouTubeKit/XCDYouTubeVideoOperation.m < patches/XCDYouTubeVideoOperation.patch)
 
     puts 'Patching Alamofire to include X-Uncompressed-Content-Length to measure download progress'
     %x(patch Pods/Alamofire/Source/SessionDelegate.swift < patches/SessionDelegate.patch)

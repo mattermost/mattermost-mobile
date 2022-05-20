@@ -26,9 +26,10 @@ type PrepareModelsArgs = {
     chData?: MyChannelsRequest;
     prefData?: MyPreferencesRequest;
     meData?: MyUserRequest;
+    isCRTEnabled?: boolean;
 }
 
-export async function prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData}: PrepareModelsArgs): Promise<Array<Promise<Model[]>>> {
+export async function prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData, isCRTEnabled}: PrepareModelsArgs): Promise<Array<Promise<Model[]>>> {
     const modelPromises: Array<Promise<Model[]>> = [];
 
     if (removeTeams?.length) {
@@ -53,7 +54,7 @@ export async function prepareModels({operator, initialTeamId, removeTeams, remov
     }
 
     if (initialTeamId && chData?.channels?.length && chData.memberships?.length) {
-        modelPromises.push(...await prepareMyChannelsForTeam(operator, initialTeamId, chData.channels, chData.memberships));
+        modelPromises.push(...await prepareMyChannelsForTeam(operator, initialTeamId, chData.channels, chData.memberships, isCRTEnabled));
     }
 
     if (prefData?.preferences?.length) {

@@ -67,6 +67,11 @@ function combineUserActivityPosts(orderedPosts: Array<PostModel | string>) {
 
                 continue;
             }
+        } else if (post.deleteAt) {
+            out.push(post);
+
+            lastPostIsUserActivity = false;
+            combinedCount = 0;
         } else {
             const postIsUserActivity = Post.USER_ACTIVITY_POST_TYPES.includes(post.type);
             if (postIsUserActivity && lastPostIsUserActivity && combinedCount < MAX_COMBINED_SYSTEM_POSTS) {
@@ -242,7 +247,7 @@ function combineUserActivitySystemPost(systemPosts: PostModel[]) {
     const userActivities = systemPosts.reduce((acc: any, post: PostModel) => {
         const postType = post.type;
         let userActivityProps = acc;
-        const combinedPostType = userActivityProps[postType as string];
+        const combinedPostType = userActivityProps[postType];
 
         if (
             postType === Post.POST_TYPES.ADD_TO_TEAM ||

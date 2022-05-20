@@ -72,11 +72,12 @@ exports[`components/channel_list/categories/header should match snapshot 1`] = `
           "fontSize": 12,
           "fontWeight": "600",
           "lineHeight": 16,
+          "textTransform": "uppercase",
         }
       }
       testID="category_header.custom.display_name"
     >
-      TEST CATEGORY
+      Test Category
     </Text>
   </View>
 </View>

@@ -8,7 +8,6 @@ import {StyleProp, Text, TextStyle} from 'react-native';
 import {joinChannel, switchToChannelById} from '@actions/remote/channel';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
-import {dismissAllModals, popToRoot} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
 
@@ -87,8 +86,6 @@ const ChannelMention = ({
 
         if (c?.id) {
             switchToChannelById(serverUrl, c.id);
-            await dismissAllModals();
-            await popToRoot();
         }
     });
 

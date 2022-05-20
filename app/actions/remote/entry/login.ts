@@ -1,25 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchMyChannelsForTeam, MyChannelsRequest} from '@actions/remote/channel';
-import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
-import {fetchRolesIfNeeded, RolesRequest} from '@actions/remote/role';
+import {switchToChannelById} from '@actions/remote/channel';
 import {getSessions} from '@actions/remote/session';
 import {ConfigAndLicenseRequest, fetchConfigAndLicense} from '@actions/remote/systems';
-import {fetchMyTeams, MyTeamsRequest} from '@actions/remote/team';
-import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
-import {getPreferenceValue} from '@helpers/api/preference';
-import {selectDefaultTeam} from '@helpers/api/team';
 import NetworkManager from '@managers/network_manager';
-import {prepareModels} from '@queries/servers/entry';
-import {prepareCommonSystemValues} from '@queries/servers/system';
-import {addChannelToTeamHistory, addTeamToTeamHistory} from '@queries/servers/team';
-import {selectDefaultChannelForTeam} from '@utils/channel';
+import {prepareCommonSystemValues, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {isTablet} from '@utils/helpers';
 import {scheduleExpiredNotification} from '@utils/notification';
 
-import {deferredAppEntryActions} from './common';
+import {deferredAppEntryActions, entry, EntryResponse} from './common';
 
 import type {Client} from '@client/rest';
 
@@ -53,20 +44,18 @@ export async function loginEntry({serverUrl, user, deviceToken}: AfterLoginArgs)
 
     try {
         const isTabletDevice = await isTablet();
-        let initialTeam: Team|undefined;
-        let initialChannel: Channel|undefined;
-        let myTeams: Team[]|undefined;
 
         // Fetch in parallel server config & license / user preferences / teams / team membership
-        const promises: [Promise<ConfigAndLicenseRequest>, Promise<MyPreferencesRequest>, Promise<MyTeamsRequest>] = [
+        const promises: [Promise<ConfigAndLicenseRequest>, Promise<EntryResponse>] = [
             fetchConfigAndLicense(serverUrl, true),
-            fetchMyPreferences(serverUrl, true),
-            fetchMyTeams(serverUrl, true),
+            entry(serverUrl, '', ''),
         ];
 
-        const [clData, prefData, teamData] = await Promise.all(promises);
-        let chData: MyChannelsRequest|undefined;
-        let rData: RolesRequest|undefined;
+        const [clData, entryData] = await Promise.all(promises);
+
+        if ('error' in entryData) {
+            return {error: entryData.error};
+        }
 
         // schedule local push notification if needed
         if (clData.config) {
@@ -90,89 +79,22 @@ export async function loginEntry({serverUrl, user, deviceToken}: AfterLoginArgs)
             }
         }
 
-        // select initial team
-        if (!clData.error && !prefData.error && !teamData.error) {
-            const teamOrderPreference = getPreferenceValue(prefData.preferences!, Preferences.TEAMS_ORDER, '', '') as string;
-            const teamRoles: string[] = [];
-            const teamMembers = new Set<string>();
-
-            teamData.memberships?.forEach((tm) => {
-                teamRoles.push(...tm.roles.split(' '));
-                teamMembers.add(tm.team_id);
-            });
-
-            myTeams = teamData.teams!.filter((t) => teamMembers.has(t.id));
-            initialTeam = selectDefaultTeam(myTeams, user.locale, teamOrderPreference, clData.config?.ExperimentalPrimaryTeam);
-
-            if (initialTeam) {
-                const rolesToFetch = new Set<string>([...user.roles.split(' '), ...teamRoles]);
-
-                // fetch channels / channel membership for initial team
-                chData = await fetchMyChannelsForTeam(serverUrl, initialTeam.id, false, 0, true);
-                if (chData.channels?.length && chData.memberships?.length) {
-                    const {channels, memberships} = chData;
-                    const channelIds = new Set(channels?.map((c) => c.id));
-                    for (let i = 0; i < memberships!.length; i++) {
-                        const member = memberships[i];
-                        if (channelIds.has(member.channel_id)) {
-                            member.roles.split(' ').forEach(rolesToFetch.add, rolesToFetch);
-                        }
-                    }
-
-                    // fetch user roles
-                    rData = await fetchRolesIfNeeded(serverUrl, Array.from(rolesToFetch), true);
-
-                    // select initial channel only on Tablets
-                    if (isTabletDevice) {
-                        initialChannel = selectDefaultChannelForTeam(channels!, memberships!, initialTeam!.id, rData.roles, user.locale);
-                    }
-                }
-            }
+        let switchToChannel = false;
+        const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
+        if (initialChannelId && isTabletDevice) {
+            switchToChannel = true;
+            switchToChannelById(serverUrl, initialChannelId, initialTeamId);
+        } else {
+            setCurrentTeamAndChannelId(operator, initialTeamId, '');
         }
 
-        const modelPromises = await prepareModels({operator, teamData, chData, prefData, initialTeamId: initialTeam?.id});
-
-        const systemModels = prepareCommonSystemValues(
-            operator,
-            {
-                config: clData.config || ({} as ClientConfig),
-                license: clData.license || ({} as ClientLicense),
-                currentTeamId: initialTeam?.id || '',
-                currentChannelId: initialChannel?.id || '',
-            },
-        );
-        if (systemModels) {
-            modelPromises.push(systemModels);
-        }
-
-        if (initialTeam) {
-            const th = addTeamToTeamHistory(operator, initialTeam.id, true);
-            modelPromises.push(th);
-        }
-
-        if (initialTeam && initialChannel) {
-            try {
-                const tch = addChannelToTeamHistory(operator, initialTeam.id, initialChannel.id, true);
-                modelPromises.push(tch);
-            } catch {
-                // do nothing
-            }
-        }
-
-        if (rData?.roles?.length) {
-            const roles = operator.handleRole({roles: rData.roles, prepareRecordsOnly: true});
-            modelPromises.push(roles);
-        }
-
-        const models = await Promise.all(modelPromises);
-        await operator.batchRecords(models.flat());
+        await operator.batchRecords(models);
 
         const config = clData.config || {} as ClientConfig;
         const license = clData.license || {} as ClientLicense;
-        deferredAppEntryActions(serverUrl, 0, user.id, user.locale, prefData.preferences, config, license, teamData, chData, initialTeam?.id, initialChannel?.id);
+        deferredAppEntryActions(serverUrl, 0, user.id, user.locale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchToChannel ? initialChannelId : undefined);
 
-        const error = clData.error || prefData.error || teamData.error || chData?.error;
-        return {error, time: Date.now() - dt, hasTeams: Boolean((myTeams?.length || 0) > 0 && !teamData.error)};
+        return {time: Date.now() - dt, hasTeams: Boolean(teamData.teams?.length)};
     } catch (error) {
         const systemModels = await prepareCommonSystemValues(operator, {
             config: ({} as ClientConfig),

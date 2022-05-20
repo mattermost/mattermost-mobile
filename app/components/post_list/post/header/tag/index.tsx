@@ -42,7 +42,7 @@ const HeaderTag = ({
         return (
             <Tag
                 id={t('post_info.auto_responder')}
-                defaultMessage={'AUTOMATIC REPLY'}
+                defaultMessage={'Automatic Reply'}
                 style={style.tag}
             />
         );

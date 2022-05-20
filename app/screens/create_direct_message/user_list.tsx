@@ -80,11 +80,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center' as const,
             alignItems: 'center' as const,
         },
-        loading: {
-            height: 32,
-            width: 32,
-            justifyContent: 'center' as const,
-        },
         noResultContainer: {
             flexGrow: 1,
             alignItems: 'center' as const,
@@ -167,9 +162,9 @@ export default function UserList({
 
         return (
             <Loading
-                containerStyle={style.loadingContainer}
-                style={style.loading}
                 color={theme.buttonBg}
+                containerStyle={style.loadingContainer}
+                size='large'
             />
         );
     }, [loading, theme]);

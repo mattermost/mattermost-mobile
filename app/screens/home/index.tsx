@@ -6,11 +6,14 @@ import {NavigationContainer} from '@react-navigation/native';
 import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform} from 'react-native';
+import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 
 import {Events, Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {alertTeamRemove} from '@utils/navigation';
+import {findChannels} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
+import {alertChannelArchived, alertChannelRemove, alertTeamRemove} from '@utils/navigation';
 import {notificationError} from '@utils/notification';
 
 import Account from './account';
@@ -29,6 +32,7 @@ if (Platform.OS === 'ios') {
 enableFreeze(true);
 
 type HomeProps = LaunchProps & {
+    componentId: string;
     time?: number;
 };
 
@@ -46,17 +50,42 @@ export default function HomeScreen(props: HomeProps) {
         return () => {
             listener.remove();
         };
-    }, []);
+    }, [intl.locale]);
 
     useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(Events.LEAVE_TEAM, (displayName: string) => {
+        const leaveTeamListener = DeviceEventEmitter.addListener(Events.LEAVE_TEAM, (displayName: string) => {
             alertTeamRemove(displayName, intl);
         });
 
+        const leaveChannelListener = DeviceEventEmitter.addListener(Events.LEAVE_CHANNEL, (displayName: string) => {
+            alertChannelRemove(displayName, intl);
+        });
+
+        const archivedChannelListener = DeviceEventEmitter.addListener(Events.CHANNEL_ARCHIVED, (displayName: string) => {
+            alertChannelArchived(displayName, intl);
+        });
+
+        return () => {
+            leaveTeamListener.remove();
+            leaveChannelListener.remove();
+            archivedChannelListener.remove();
+        };
+    }, [intl.locale]);
+
+    useEffect(() => {
+        const listener = HWKeyboardEvent.onHWKeyPressed((keyEvent: {pressedKey: string}) => {
+            const screen = EphemeralStore.getAllNavigationComponents();
+            if (!screen.includes(Screens.FIND_CHANNELS) && keyEvent.pressedKey === 'find-channels') {
+                findChannels(
+                    intl.formatMessage({id: 'find_channels.title', defaultMessage: 'Find Channels'}),
+                    theme,
+                );
+            }
+        });
         return () => {
             listener.remove();
         };
-    });
+    }, [intl.locale]);
 
     return (
         <NavigationContainer

@@ -5,9 +5,10 @@ import keyMirror from '@utils/key_mirror';
 
 export default keyMirror({
     ACCOUNT_SELECT_TABLET_VIEW: null,
-    CHANNEL_DELETED: null,
+    CHANNEL_ARCHIVED: null,
     CLOSE_BOTTOM_SHEET: null,
     CONFIG_CHANGED: null,
+    FETCHING_POSTS: null,
     FREEZE_SCREEN: null,
     GALLERY_ACTIONS: null,
     LEAVE_CHANNEL: null,
@@ -19,6 +20,7 @@ export default keyMirror({
     SERVER_VERSION_CHANGED: null,
     TAB_BAR_VISIBLE: null,
     TEAM_LOAD_ERROR: null,
+    TEAM_SWITCH: null,
     USER_TYPING: null,
     USER_STOP_TYPING: null,
     POST_LIST_SCROLL_TO_BOTTOM: null,

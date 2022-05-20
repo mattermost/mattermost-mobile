@@ -7,12 +7,12 @@ import AndroidOpenSettings from 'react-native-android-open-settings';
 import DeviceInfo from 'react-native-device-info';
 import DocumentPicker, {DocumentPickerResponse} from 'react-native-document-picker';
 import {Asset, CameraOptions, ImageLibraryOptions, ImagePickerResponse, launchCamera, launchImageLibrary} from 'react-native-image-picker';
-import Permissions, {AndroidPermission, IOSPermission} from 'react-native-permissions';
+import Permissions from 'react-native-permissions';
 
 import {dismissBottomSheet} from '@screens/navigation';
 import {extractFileInfo, lookupMimeType} from '@utils/file';
 
-const ShareExtension = NativeModules.MattermostShare;
+const MattermostManaged = NativeModules.MattermostManaged;
 
 type PermissionSource = 'camera' | 'storage' | 'denied_android' | 'denied_ios' | 'photo';
 
@@ -126,7 +126,7 @@ export default class FilePickerUtil {
                 files.push(file);
             } else {
                 // For android we need to retrieve the realPath in case the file being imported is from the cloud
-                const uri = (await ShareExtension.getFilePath(file.uri)).filePath;
+                const uri = (await MattermostManaged.getFilePath(file.uri)).filePath;
                 const type = file.type || lookupMimeType(uri);
                 let fileName = file.fileName;
                 if (type.includes('video/')) {
@@ -147,8 +147,8 @@ export default class FilePickerUtil {
 
         const targetSource = Platform.select({
             ios: source === 'camera' ? Permissions.PERMISSIONS.IOS.CAMERA : Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY,
-            android: Permissions.PERMISSIONS.ANDROID.CAMERA,
-        }) as AndroidPermission | IOSPermission;
+            default: Permissions.PERMISSIONS.ANDROID.CAMERA,
+        });
 
         const hasPhotoLibraryPermission = await Permissions.check(targetSource);
 
@@ -224,7 +224,7 @@ export default class FilePickerUtil {
 
         if (Platform.OS === 'android') {
             // For android we need to retrieve the realPath in case the file being imported is from the cloud
-            const newUri = await ShareExtension.getFilePath(doc.uri);
+            const newUri = await MattermostManaged.getFilePath(doc.uri);
             uri = newUri?.filePath;
             if (uri === undefined) {
                 return {doc: undefined};
@@ -274,7 +274,9 @@ export default class FilePickerUtil {
                     return doc;
                 });
 
-                const docs = await Promise.all(proDocs) as unknown as DocumentPickerResponse[];
+                const docs = (await Promise.all(proDocs)).filter(
+                    (item): item is DocumentPickerResponse => item !== undefined,
+                );
 
                 await this.prepareFileUpload(docs);
             } catch (error) {

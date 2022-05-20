@@ -7,7 +7,7 @@ import {StyleSheet, View} from 'react-native';
 import Animated, {FadeInDown, FadeOutUp} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
-import OptionBox from '@components/option_box';
+import OptionBox, {OPTIONS_HEIGHT} from '@components/option_box';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {showModal} from '@screens/navigation';
@@ -17,8 +17,6 @@ type Props = {
     canJoinChannels: boolean;
     close: () => Promise<void>;
 }
-
-const OPTIONS_HEIGHT = 60;
 
 const styles = StyleSheet.create({
     container: {

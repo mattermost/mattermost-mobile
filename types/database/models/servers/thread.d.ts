@@ -41,6 +41,9 @@ export default class ThreadModel extends Model {
     /** participants: All the participants of the thread */
     participants: Query<ThreadParticipantsModel>;
 
+    /** threadsInTeam : All the threadsInTeam associated with this Thread */
+    threadsInTeam: Query<ThreadInTeamModel>;
+
     /** post : Query returning the post data for the current thread */
     post: Relation<PostModel>;
 }
