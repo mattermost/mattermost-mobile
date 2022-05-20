@@ -6,7 +6,7 @@ import React, {useMemo, useState, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {ScrollView} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FreezeScreen from '@components/freeze_screen';
 import NavigationHeader from '@components/navigation_header';
@@ -15,6 +15,7 @@ import {useCollapsibleHeader} from '@hooks/header';
 // import RecentSearches from './recent_searches/recent_searches';
 // import SearchModifiers from './search_modifiers/search_modifiers';
 // import Filter from './results/filter';
+import Header from './results/header';
 import Results from './results/results';
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
@@ -23,6 +24,7 @@ const SearchScreen = () => {
     const nav = useNavigation();
     const isFocused = useIsFocused();
     const intl = useIntl();
+    const insets = useSafeAreaInsets();
     const searchScreenIndex = 1;
     const stateIndex = nav.getState().index;
     const {searchTerm} = nav.getState().routes[stateIndex].params;
@@ -42,11 +44,20 @@ const SearchScreen = () => {
         // console.log('execute the search for : ', searchValue);
     };
 
+    const isLargeTitle = true;
+    const hasSearch = true;
+
+    const {scrollPaddingTop, scrollRef, scrollValue, onScroll} = useCollapsibleHeader<ScrollView>(isLargeTitle, false, hasSearch);
     const animated = useAnimatedStyle(() => {
         if (isFocused) {
             return {
                 opacity: withTiming(1, {duration: 150}),
-                transform: [{translateX: withTiming(0, {duration: 150})}],
+                marginTop: scrollPaddingTop,
+                flex: 1,
+                transform: [
+                    {translateX: withTiming(0, {duration: 150})},
+                    {translateY: -Math.min(scrollValue.value, insets.top)},
+                ],
             };
         }
 
@@ -54,13 +65,8 @@ const SearchScreen = () => {
             opacity: withTiming(0, {duration: 150}),
             transform: [{translateX: withTiming(stateIndex < searchScreenIndex ? 25 : -25, {duration: 150})}],
         };
-    }, [isFocused, stateIndex]);
-
-    const isLargeTitle = true;
-    const hasSearch = true;
-
-    const {scrollPaddingTop, scrollRef, scrollValue, onScroll} = useCollapsibleHeader<ScrollView>(isLargeTitle, false, hasSearch);
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
+    }, [isFocused, stateIndex, insets.top]);
+    const paddingTop = useMemo(() => ({flexGrow: 1}), [scrollPaddingTop]);
 
     return (
         <FreezeScreen freeze={!isFocused}>
@@ -85,7 +91,12 @@ const SearchScreen = () => {
                 style={{flex: 1}}
                 edges={['bottom', 'left', 'right']}
             >
-                <Animated.View style={[{flex: 1}, animated]}>
+                <Animated.View style={animated}>
+                    <Header
+                        onHeaderSelect={() => null}
+                        numberFiles={0}
+                        numberMessages={0}
+                    />
                     <AnimatedScrollView
                         contentContainerStyle={paddingTop}
                         nestedScrollEnabled={true}

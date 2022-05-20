@@ -55,7 +55,7 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, hasSubtitle: bool
     const isTablet = useIsTablet();
     const animatedRef = useAnimatedRef<Animated.ScrollView>();
     const {largeHeight, defaultHeight} = useHeaderHeight(true, hasSubtitle, hasSearch);
-    const scrollValue = useSharedValue(0);
+    const scrollValue = useSharedValue(-insets.top);
 
     function snapIfNeeded(dir: string, offset: number) {
         'worklet';
@@ -114,7 +114,8 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, hasSubtitle: bool
                         return;
                     }
                     snapIfNeeded(dir, offset);
-                } else if (dir === 'down' && offset < (defaultHeight + (hasSearch ? searchInset : 0))) {
+                } else if ((dir === 'down' && offset < (defaultHeight + (hasSearch ? searchInset : 0))) ||
+                    (scrollValue.value === 0 && dir === 'up')) {
                     scrollTo(animatedRef, 0, -insets.top, true);
                 }
             }
