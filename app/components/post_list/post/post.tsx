@@ -294,15 +294,12 @@ const Post = ({
     if (isCRTEnabled && thread) {
         if (thread.replyCount > 0 || thread.isFollowing) {
             footer = (
-                <Footer
-                    testID={`${itemTestID}.footer`}
-                    thread={thread}
-                />
+                <Footer thread={thread}/>
             );
         }
         if (thread.unreadMentions || thread.unreadReplies) {
             unreadDot = (
-                <UnreadDot testID={`${itemTestID}.badge`}/>
+                <UnreadDot/>
             );
         }
     }

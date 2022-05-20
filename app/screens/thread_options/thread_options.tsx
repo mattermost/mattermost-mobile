@@ -131,6 +131,7 @@ const ThreadOptions = ({
             componentId={Screens.THREAD_OPTIONS}
             initialSnapIndex={0}
             snapPoints={[((options.length + 2) * ITEM_HEIGHT), 10]}
+            testID='thread_options'
         />
     );
 };

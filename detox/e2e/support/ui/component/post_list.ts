@@ -11,6 +11,12 @@ class PostList {
             flatList: `${screenPrefix}post_list.flat_list`,
             moreMessagesButton: `${screenPrefix}post_list.more_messages_button`,
             newMessagesDivider: `${screenPrefix}post_list.new_messages_line`,
+            threadOverview: `${screenPrefix}post_list.thread_overview`,
+            threadOverviewRepliesCount: `${screenPrefix}post_list.replies_count`,
+            threadOverviewNoReplies: `${screenPrefix}post_list.no_replies`,
+            threadOverviewSaveButton: `${screenPrefix}post_list.thread_overview.save.button`,
+            threadOverviewUnsaveButton: `${screenPrefix}post_list.thread_overview.unsave.button`,
+            threadOverviewPostOptionsButton: `${screenPrefix}post_list.thread_overview.post_options.button`,
             postListPostItem: `${screenPrefix}post_list.post`,
         };
     }
@@ -27,12 +33,39 @@ class PostList {
         return element(by.id(this.testID.newMessagesDivider));
     };
 
+    getThreadOverview = () => {
+        return element(by.id(this.testID.threadOverview));
+    };
+
+    getThreadOverviewRepliesCount = () => {
+        return element(by.id(this.testID.threadOverviewRepliesCount));
+    };
+
+    getThreadOverviewNoReplies = () => {
+        return element(by.id(this.testID.threadOverviewNoReplies));
+    };
+
+    getThreadOverviewSaveButton = () => {
+        return element(by.id(this.testID.threadOverviewSaveButton));
+    };
+
+    getThreadOverviewUnsaveButton = () => {
+        return element(by.id(this.testID.threadOverviewUnsaveButton));
+    };
+
+    getThreadOverviewPostOptionsButton = () => {
+        return element(by.id(this.testID.threadOverviewPostOptionsButton));
+    };
+
     getPost = (postId: string, postMessage: string, postProfileOptions = {}) => {
         const {
             postItem,
             postItemBlockQuote,
             postItemEditedIndicator,
             postItemEmoji,
+            postItemFooterFollowButton,
+            postItemFooterFollowingButton,
+            postItemFooterReplyCount,
             postItemHeaderCommentedOn,
             postItemHeaderDateTime,
             postItemHeaderDisplayName,
@@ -50,6 +83,7 @@ class PostList {
             postItemTable,
             postItemTableExpandButton,
             postItemThematicBreak,
+            postItemUnreadDotBadge,
         } = Post.getPost(this.testID.postListPostItem, postId, postMessage, postProfileOptions);
 
         return {
@@ -57,6 +91,9 @@ class PostList {
             postListPostItemBlockQuote: postItemBlockQuote,
             postListPostItemEditedIndicator: postItemEditedIndicator,
             postListPostItemEmoji: postItemEmoji,
+            postListPostItemFooterFollowButton: postItemFooterFollowButton,
+            postListPostItemFooterFollowingButton: postItemFooterFollowingButton,
+            postListPostItemFooterReplyCount: postItemFooterReplyCount,
             postListPostItemHeaderCommentedOn: postItemHeaderCommentedOn,
             postListPostItemHeaderDateTime: postItemHeaderDateTime,
             postListPostItemHeaderDisplayName: postItemHeaderDisplayName,
@@ -74,6 +111,7 @@ class PostList {
             postListPostItemTable: postItemTable,
             postListPostItemTableExpandButton: postItemTableExpandButton,
             postListPostItemThematicBreak: postItemThematicBreak,
+            postListPostItemUnreadDotBadge: postItemUnreadDotBadge,
         };
     };
 
