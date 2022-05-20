@@ -217,9 +217,11 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
         } as Post;
 
         // Update the local post to reflect the pending state in the UI
-        // timestamps will remain the same as the initial attempt
+        // timestamps will remain the same as the initial attempt for createAt
+        // but updateAt will be use for the optimistic post UI
         post.prepareUpdate((p) => {
             p.props = newPost.props;
+            p.updateAt = timestamp;
         });
         await operator.batchRecords([post]);
 
