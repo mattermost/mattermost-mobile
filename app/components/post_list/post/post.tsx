@@ -16,7 +16,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
-import {fromAutoResponder, isFromWebhook, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
+import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -115,7 +115,7 @@ const Post = ({
     const styles = getStyleSheet(theme);
     const isAutoResponder = fromAutoResponder(post);
     const isPendingOrFailed = isPostPendingOrFailed(post);
-    const isFailed = post.props?.failed || ((post.pendingPostId === post.id) && (Date.now() > post.updateAt + POST_TIME_TO_FAIL));
+    const isFailed = isPostFailed(post);
     const isSystemPost = isSystemMessage(post);
     const isWebHook = isFromWebhook(post);
     const hasSameRoot = useMemo(() => {

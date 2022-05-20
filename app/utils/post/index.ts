@@ -39,9 +39,12 @@ export function isPostEphemeral(post: PostModel): boolean {
     return post.type === Post.POST_TYPES.EPHEMERAL || post.type === Post.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL || post.deleteAt > 0;
 }
 
+export function isPostFailed(post: PostModel): boolean {
+    return post.props?.failed || ((post.pendingPostId === post.id) && (Date.now() > post.updateAt + POST_TIME_TO_FAIL));
+}
+
 export function isPostPendingOrFailed(post: PostModel): boolean {
-    const isFailed = post.props?.failed || ((post.pendingPostId === post.id) && (Date.now() > post.updateAt + POST_TIME_TO_FAIL));
-    return post.pendingPostId === post.id || isFailed;
+    return post.pendingPostId === post.id || isPostFailed(post);
 }
 
 export function isSystemMessage(post: PostModel | Post): boolean {
