@@ -7,10 +7,8 @@ import {PER_PAGE_DEFAULT} from './constants';
 
 export interface ClientGroupsMix {
     getGroups: (query?: string, filterAllowReference?: boolean, page?: number, perPage?: number, since?: number) => Promise<Group[]>;
-    getGroupsByUserId: (userID: string) => Promise<Group[]>;
     getAllGroupsAssociatedToTeam: (teamID: string, filterAllowReference?: boolean) => Promise<{groups: Group[]; total_group_count: number}>;
-    getAllGroupsAssociatedToChannelsInTeam: (teamID: string, filterAllowReference?: boolean) => Promise<{groups: Record<string, Group[]>}>;
-    getAllGroupsAssociatedToChannel: (channelID: string, filterAllowReference?: boolean) => Promise<Group[]>;
+    getAllGroupsAssociatedToChannel: (channelID: string, filterAllowReference?: boolean) => Promise<{groups: Group[]; total_group_count: number}>;
 }
 
 const ClientGroups = (superclass: any) => class extends superclass {
@@ -21,23 +19,9 @@ const ClientGroups = (superclass: any) => class extends superclass {
         );
     };
 
-    getGroupsByUserId = async (userID: string) => {
-        return this.doFetch(
-            `${this.getUsersRoute()}/${userID}/groups`,
-            {method: 'get'},
-        );
-    };
-
     getAllGroupsAssociatedToTeam = async (teamID: string, filterAllowReference = false) => {
         return this.doFetch(
             `${this.urlVersion}/teams/${teamID}/groups${buildQueryString({paginate: false, filter_allow_reference: filterAllowReference})}`,
-            {method: 'get'},
-        );
-    };
-
-    getAllGroupsAssociatedToChannelsInTeam = async (teamID: string, filterAllowReference = false) => {
-        return this.doFetch(
-            `${this.urlVersion}/teams/${teamID}/groups_by_channels${buildQueryString({paginate: false, filter_allow_reference: filterAllowReference})}`,
             {method: 'get'},
         );
     };

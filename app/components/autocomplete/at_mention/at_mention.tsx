@@ -5,7 +5,7 @@ import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {Platform, SectionList, SectionListData, SectionListRenderItemInfo} from 'react-native';
 
-import {getGroupsForAutocomplete} from '@actions/remote/groups';
+import {getGroupsForAutocomplete, getGroupsForChannel, getGroupsForTeam} from '@actions/remote/groups';
 import {searchUsers} from '@actions/remote/user';
 import GroupMentionItem from '@components/autocomplete/at_mention_group/at_mention_group';
 import AtMentionItem from '@components/autocomplete/at_mention_item';
@@ -130,8 +130,29 @@ const makeSections = (teamMembers: UserProfile[], usersInChannel: UserProfile[],
     return newSections;
 };
 
+const getFilteredTeamGroups = async (serverUrl: string, teamId: string, searchTerm: string) => {
+    const response = await getGroupsForTeam(serverUrl, teamId);
+
+    if (response && response.groups) {
+        return response.groups.filter((g) => g.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    }
+
+    return [];
+};
+
+const getFilteredChannelGroups = async (serverUrl: string, channelId: string, searchTerm: string) => {
+    const response = await getGroupsForChannel(serverUrl, channelId);
+
+    if (response && response.groups) {
+        return response.groups.filter((g) => g.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    }
+
+    return [];
+};
+
 type Props = {
     channelId?: string;
+    currentTeamId: string;
     cursorPosition: number;
     isSearch: boolean;
     maxListHeight: number;
@@ -141,6 +162,8 @@ type Props = {
     nestedScrollEnabled: boolean;
     useChannelMentions: boolean;
     useGroupMentions: boolean;
+    isChannelConstrained: boolean;
+    isTeamConstrained: boolean;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -158,6 +181,7 @@ const emptyGroupList: Group[] = [];
 
 const AtMention = ({
     channelId,
+    currentTeamId,
     cursorPosition,
     isSearch,
     maxListHeight,
@@ -167,6 +191,8 @@ const AtMention = ({
     nestedScrollEnabled,
     useChannelMentions,
     useGroupMentions,
+    isChannelConstrained,
+    isTeamConstrained,
 }: Props) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -289,11 +315,32 @@ const AtMention = ({
 
     useEffect(() => {
         if (useGroupMentions && matchTerm && matchTerm !== '') {
-            getGroupsForAutocomplete(serverUrl, matchTerm || '').then((res) => {
-                setGroups(res.length ? res : emptyGroupList);
-            }).catch(() => {
-                setGroups(emptyGroupList);
-            });
+            // If the channel is constrained, we only show groups for that channel
+            if (isChannelConstrained && channelId) {
+                getFilteredChannelGroups(serverUrl, channelId, matchTerm).then((g) => {
+                    setGroups(g.length ? g : emptyGroupList);
+                }).catch(() => {
+                    setGroups(emptyGroupList);
+                });
+            }
+
+            // If there is no channel constraint, but a team constraint - only show groups for team
+            if (isTeamConstrained && !isChannelConstrained) {
+                getFilteredTeamGroups(serverUrl, currentTeamId, matchTerm).then((g) => {
+                    setGroups(g.length ? g : emptyGroupList);
+                }).catch(() => {
+                    setGroups(emptyGroupList);
+                });
+            }
+
+            // No constraints? Search all groups
+            if (!isTeamConstrained && !isChannelConstrained) {
+                getGroupsForAutocomplete(serverUrl, matchTerm || '').then((g) => {
+                    setGroups(g.length ? g : emptyGroupList);
+                }).catch(() => {
+                    setGroups(emptyGroupList);
+                });
+            }
         } else {
             setGroups(emptyGroupList);
         }
