@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {Text} from 'react-native';
+import {Text, View} from 'react-native';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
 
@@ -14,6 +14,19 @@ type Props = {
 
 const emptyPostResults: Post[] = [];
 const emptyFilesResults: FileInfo[] = [];
+
+const notImplementedComponent = (
+    <View
+        style={{
+            height: 200,
+            flexGrow: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+        }}
+    >
+        <Text>{'Not Implemented'}</Text>
+    </View>
+);
 
 const SearchResults = ({searchValue}: Props) => {
     const [selectedTab, setSelectedTab] = useState<'message-tab' | 'file-tab'>('message-tab');
@@ -62,9 +75,9 @@ const SearchResults = ({searchValue}: Props) => {
 
     let content;
     if (loading) {
-        content = <Text>{'Not Implemented'}</Text>;
+        content = notImplementedComponent;
     } else if (!searchValue) {
-        content = <Text>{'Not Implemented'}</Text>;
+        content = notImplementedComponent;
     } else if (
         (selectedTab === 'message-tab' && postResults.length === 0) ||
         (selectedTab === 'file-tab' && fileResults.length === 0)
@@ -76,7 +89,7 @@ const SearchResults = ({searchValue}: Props) => {
             />
         );
     } else {
-        content = <Text>{'Not Implemented'}</Text>;
+        content = notImplementedComponent;
     }
 
     return (

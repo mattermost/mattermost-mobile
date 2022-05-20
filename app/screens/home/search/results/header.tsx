@@ -24,7 +24,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             marginHorizontal: 12,
             flexDirection: 'row',
             marginBottom: 12,
-            marginTop: 0,
+            marginTop: 7,
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
