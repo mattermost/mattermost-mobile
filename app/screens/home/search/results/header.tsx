@@ -117,7 +117,7 @@ const Header = ({onHeaderSelect, numberFiles, numberMessages}: Props) => {
                             <CompassIcon
                                 name={'filter-variant'}
                                 size={24}
-                                color={theme.centerChannelColor}
+                                color={changeOpacity(theme.centerChannelColor, 0.56)}
                                 onPress={handleFilterPress}
                             />
                             <Badge

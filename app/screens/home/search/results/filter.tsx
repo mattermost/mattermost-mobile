@@ -4,7 +4,6 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
-import Button from 'react-native-button';
 import {FlatList} from 'react-native-gesture-handler';
 
 import CompassIcon from '@app/components/compass_icon';
@@ -19,19 +18,13 @@ import {typography} from '@utils/typography';
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         labelContainer: {
-            aligntItems: 'center',
+            alignItems: 'center',
             flexDirection: 'row',
             justifyContent: 'space-between',
         },
-        contentContainer: {
-            marginVertical: 4,
-            marginHorizontal: 20,
-        },
         menuText: {
+            color: theme.centerChannelColor,
             ...typography('Body', 200, 'Regular'),
-        },
-        icon: {
-            marginRight: 12,
         },
         selected: {
             color: theme.buttonBg,
@@ -45,6 +38,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 type FilterItem = {
     id: string;
     defaultMessage: string;
+    separator?: boolean;
 }
 
 type FilterProps = {
@@ -104,6 +98,7 @@ const Filter = ({initialState, setParentFilterState}: FilterProps) => {
             }, {
                 id: 'screen.search.results.filter.videos',
                 defaultMessage: 'Videos',
+                separator: false,
             },
         ];
     }, [filterState, setFilterState, handleMyState]);
@@ -116,14 +111,12 @@ const Filter = ({initialState, setParentFilterState}: FilterProps) => {
                     id={item.id}
                     defaultMessage={item.defaultMessage}
                 />
-                <View style={style.icon}>
-                    <CompassIcon
-                        style={filterState[item.defaultMessage as keyof FilterState] ? style.selected : style.unselected}
-                        name={filterState[item.defaultMessage as keyof FilterState] ? 'check-circle' : 'circle-outline'}
-                        size={31.2}
-                        color={'blue'}
-                    />
-                </View>
+                <CompassIcon
+                    style={filterState[item.defaultMessage as keyof FilterState] ? style.selected : style.unselected}
+                    name={filterState[item.defaultMessage as keyof FilterState] ? 'check-circle' : 'circle-outline'}
+                    size={31.2}
+                    color={'blue'}
+                />
             </View>
         );
     }, [data, filterState]);
@@ -135,6 +128,7 @@ const Filter = ({initialState, setParentFilterState}: FilterProps) => {
                 onPress={() => {
                     handleMyState(item.defaultMessage);
                 }}
+                separator={item.separator}
                 testID={item.id}
                 theme={theme}
             />
@@ -143,20 +137,6 @@ const Filter = ({initialState, setParentFilterState}: FilterProps) => {
 
     const handleClearAll = useCallback(() => {
         setFilterState(clearedState);
-    }, []);
-
-    const renderTitleComponent = useCallback(() => {
-        return (
-            <Button
-                onPress={handleClearAll}
-            >
-                <FormattedText
-                    style={style.menuText}
-                    id={'screen.search.results.filter.clear_all'}
-                    defaultMessage={'Clear all'}
-                />
-            </Button>
-        );
     }, []);
 
     useEffect(() => {
@@ -171,16 +151,19 @@ const Filter = ({initialState, setParentFilterState}: FilterProps) => {
 
     const buttonText = intl.formatMessage({id: 'screen.search.results.filter.show_results', defaultMessage: 'Show results'});
     const buttonTitle = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
+    const clearText = intl.formatMessage({id: 'screen.search.results.filter.clear_all', defaultMessage: 'Clear all'});
 
     return (
         <BottomSheetContent
-            disableButton={enableShowResults}
             buttonText={buttonText}
+            disableButton={enableShowResults}
             showButton={true}
-            rightTitleComponent={renderTitleComponent()}
             showTitle={!isTablet}
             testID='search.filters'
             title={buttonTitle}
+            titleButtonText={clearText}
+            onTitleButtonPress={handleClearAll}
+            titleSeparator={true}
         >
             <View style={style.container}>
                 <FlatList
