@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Post} from '@constants';
+import {POST_TIME_TO_FAIL} from '@constants/post';
 import {DEFAULT_LOCALE} from '@i18n';
 import {displayUsername} from '@utils/user';
 
@@ -39,7 +40,8 @@ export function isPostEphemeral(post: PostModel): boolean {
 }
 
 export function isPostPendingOrFailed(post: PostModel): boolean {
-    return post.pendingPostId === post.id || post.props?.failed;
+    const isFailed = post.props?.failed || ((post.pendingPostId === post.id) && (Date.now() > post.updateAt + POST_TIME_TO_FAIL));
+    return post.pendingPostId === post.id || isFailed;
 }
 
 export function isSystemMessage(post: PostModel | Post): boolean {
