@@ -47,7 +47,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
             ...typography('Body', 200, 'SemiBold'),
         },
-        rightTitleComponent: {
+        titleButtonContainer: {
             marginLeft: 'auto',
         },
         separator: {
@@ -80,7 +80,7 @@ const BottomSheetContent = ({buttonText, buttonIcon, children, disableButton, on
                     >
                         {title}
                     </Text>
-                    <View style={styles.rightTitleComponent}>
+                    <View style={styles.titleButtonContainer}>
                         <RNButton
                             onPress={onTitleButtonPress}
                         >
