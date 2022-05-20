@@ -5,8 +5,7 @@ import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {removeUserFromTeam as localRemoveUserFromTeam} from '@actions/local/team';
-import {switchToGlobalThreads} from '@actions/local/thread';
-import {Events, Screens} from '@constants';
+import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
@@ -273,11 +272,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     if (await isTablet()) {
         channelId = await getNthLastChannelFromTeam(database, teamId);
         if (channelId) {
-            if (channelId === Screens.GLOBAL_THREADS) {
-                await switchToGlobalThreads(serverUrl);
-            } else {
-                await switchToChannelById(serverUrl, channelId, teamId);
-            }
+            await switchToChannelById(serverUrl, channelId, teamId);
             DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);
             return;
         }

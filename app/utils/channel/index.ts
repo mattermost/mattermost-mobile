@@ -118,3 +118,17 @@ export function generateChannelNameFromDisplayName(displayName: string) {
     }
     return name;
 }
+
+export function compareNotifyProps(propsA: Partial<ChannelNotifyProps>, propsB: Partial<ChannelNotifyProps>): boolean {
+    if (
+        propsA.desktop !== propsB.desktop ||
+        propsA.email !== propsB.email ||
+        propsA.mark_unread !== propsB.mark_unread ||
+        propsA.push !== propsB.push ||
+        propsA.ignore_channel_mentions !== propsB.ignore_channel_mentions
+    ) {
+        return false;
+    }
+
+    return true;
+}

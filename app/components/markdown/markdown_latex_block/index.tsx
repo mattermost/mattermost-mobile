@@ -10,6 +10,7 @@ import MathView from 'react-native-math-view';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
+import ErrorBoundary from '@components/markdown/error_boundary';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
@@ -194,21 +195,26 @@ const LatexCodeBlock = ({content, theme}: Props) => {
             type={'opacity'}
         >
             <View style={styles.container}>
-                <View style={styles.rightColumn}>
-                    {split.lines?.map((latexCode) => (
-                        <View
-                            style={styles.code}
-                            key={latexCode}
-                        >
-                            <MathView
-                                math={latexCode}
-                                renderError={onRenderErrorMessage}
-                                resizeMode={'cover'}
-                            />
-                        </View>
-                    ))}
-                    {plusMoreLines}
-                </View>
+                <ErrorBoundary
+                    error={intl.formatMessage({id: 'markdown.latex.error', defaultMessage: 'Latex render error'})}
+                    theme={theme}
+                >
+                    <View style={styles.rightColumn}>
+                        {split.lines?.map((latexCode) => (
+                            <View
+                                style={styles.code}
+                                key={latexCode}
+                            >
+                                <MathView
+                                    math={latexCode}
+                                    renderError={onRenderErrorMessage}
+                                    resizeMode={'cover'}
+                                />
+                            </View>
+                        ))}
+                        {plusMoreLines}
+                    </View>
+                </ErrorBoundary>
                 <View style={styles.language}>
                     <Text style={styles.languageText}>
                         {languageDisplayName}

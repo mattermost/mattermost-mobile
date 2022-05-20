@@ -41,7 +41,7 @@ class NetworkManager {
         },
         retryPolicyConfiguration: {
             type: RetryTypes.EXPONENTIAL_RETRY,
-            retryLimit: 2,
+            retryLimit: 3,
             exponentialBackoffBase: 2,
             exponentialBackoffScale: 0.5,
         },

@@ -7,7 +7,7 @@ import {map, switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
-import {isCRTEnabled} from '@utils/thread';
+import {processIsCRTEnabled} from '@utils/thread';
 
 import {queryPreferencesByCategoryAndName} from './preference';
 import {getConfig, observeConfig} from './system';
@@ -22,7 +22,7 @@ const {SERVER: {CHANNEL, POST, THREAD, THREADS_IN_TEAM, THREAD_PARTICIPANT, USER
 export const getIsCRTEnabled = async (database: Database): Promise<boolean> => {
     const config = await getConfig(database);
     const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).fetch();
-    return isCRTEnabled(preferences, config);
+    return processIsCRTEnabled(preferences, config);
 };
 
 export const getThreadById = async (database: Database, threadId: string) => {
@@ -36,10 +36,10 @@ export const getThreadById = async (database: Database, threadId: string) => {
 
 export const observeIsCRTEnabled = (database: Database) => {
     const config = observeConfig(database);
-    const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observe();
+    const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observeWithColumns(['value']);
     return combineLatest([config, preferences]).pipe(
         map(
-            ([cfg, prefs]) => isCRTEnabled(prefs, cfg),
+            ([cfg, prefs]) => processIsCRTEnabled(prefs, cfg),
         ),
     );
 };

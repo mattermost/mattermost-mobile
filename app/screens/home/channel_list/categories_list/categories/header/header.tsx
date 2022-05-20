@@ -2,11 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect} from 'react';
+import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, View} from 'react-native';
 import Animated, {Easing, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {toggleCollapseCategory} from '@actions/local/category';
 import CompassIcon from '@components/compass_icon';
+import {CHANNELS_CATEGORY, FAVORITES_CATEGORY, DMS_CATEGORY} from '@constants/categories';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -25,6 +27,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     heading: {
         color: changeOpacity(theme.sidebarText, 0.64),
+        textTransform: 'uppercase',
         ...typography('Heading', 75),
     },
     chevron: {
@@ -47,6 +50,7 @@ type Props = {
 const AnimatedCompassIcon = Animated.createAnimatedComponent(CompassIcon);
 
 const CategoryHeader = ({category, hasChannels}: Props) => {
+    const {formatMessage} = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
@@ -73,8 +77,21 @@ const CategoryHeader = ({category, hasChannels}: Props) => {
     }, [category.collapsed]);
 
     // Hide favs if empty
-    if (!hasChannels && category.type === 'favorites') {
+    if (!hasChannels && category.type === FAVORITES_CATEGORY) {
         return (null);
+    }
+
+    let displayName = category.displayName;
+    switch (category.type) {
+        case FAVORITES_CATEGORY:
+            displayName = formatMessage({id: 'channel_list.favorites_category', defaultMessage: 'Favorites'});
+            break;
+        case CHANNELS_CATEGORY:
+            displayName = formatMessage({id: 'channel_list.channels_category', defaultMessage: 'Channels'});
+            break;
+        case DMS_CATEGORY:
+            displayName = formatMessage({id: 'channel_list.dms_category', defaultMessage: 'Direct messages'});
+            break;
     }
 
     return (
@@ -92,7 +109,7 @@ const CategoryHeader = ({category, hasChannels}: Props) => {
                     style={styles.heading}
                     testID={`category_header.${category.type}.display_name`}
                 >
-                    {category.displayName.toUpperCase()}
+                    {displayName}
                 </Text>
             </View>
         </TouchableOpacity>

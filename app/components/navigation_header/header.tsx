@@ -39,6 +39,7 @@ type Props = {
 }
 
 const hitSlop = {top: 20, bottom: 20, left: 20, right: 20};
+const rightButtonHitSlop = {top: 20, bottom: 5, left: 5, right: 5};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     centered: {
@@ -227,10 +228,11 @@ const Header = ({
                     <TouchableWithFeedback
                         key={r.iconName}
                         borderlessRipple={r.borderless === undefined ? true : r.borderless}
+                        hitSlop={rightButtonHitSlop}
                         onPress={r.onPress}
                         rippleRadius={r.rippleRadius || 20}
                         type={r.buttonType || Platform.select({android: 'native', default: 'opacity'})}
-                        style={i > 0 ? styles.rightIcon : undefined}
+                        style={i > 0 && styles.rightIcon}
                         testID={r.testID}
                     >
                         <CompassIcon
