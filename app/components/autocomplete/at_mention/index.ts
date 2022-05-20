@@ -9,19 +9,18 @@ import {switchMap} from 'rxjs/operators';
 import {Permissions} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
 import {observePermissionForChannel} from '@queries/servers/role';
-import {observeCurrentTeamId, observeLicense} from '@queries/servers/system';
+import {observeLicense} from '@queries/servers/system';
 import {observeCurrentTeam} from '@queries/servers/team';
 import {observeCurrentUser} from '@queries/servers/user';
 
 import AtMention from './at_mention';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type TeamModel from '@typings/database/models/servers/team';
 
 type OwnProps = {channelId?: string}
 const enhanced = withObservables([], ({database, channelId}: WithDatabaseArgs & OwnProps) => {
     const currentUser = observeCurrentUser(database);
-    const currentTeam = observeCurrentTeam(database);
-    const currentTeamId = observeCurrentTeamId(database);
 
     const hasLicense = observeLicense(database).pipe(
         switchMap((lcs) => of$(lcs?.IsLicensed === 'true')),
@@ -31,13 +30,20 @@ const enhanced = withObservables([], ({database, channelId}: WithDatabaseArgs & 
     let useGroupMentions: Observable<boolean>;
     let isChannelConstrained: Observable<boolean>;
     let isTeamConstrained: Observable<boolean>;
+    let team: Observable<TeamModel | undefined>;
+
     if (channelId) {
         const currentChannel = observeChannel(database, channelId);
+        team = currentChannel.pipe(switchMap((c) => {
+            if (c && c.teamId) {
+                return c.team.observe() as Observable<TeamModel>;
+            }
+
+            return observeCurrentTeam(database);
+        }));
+
         isChannelConstrained = currentChannel.pipe(
             switchMap((c) => of$(Boolean(c?.isGroupConstrained))),
-        );
-        isTeamConstrained = currentTeam.pipe(
-            switchMap((t) => of$(Boolean(t?.isGroupConstrained))),
         );
 
         useChannelMentions = combineLatest([currentUser, currentChannel]).pipe(switchMap(([u, c]) => (u && c ? observePermissionForChannel(c, u, Permissions.USE_CHANNEL_MENTIONS, false) : of$(false))));
@@ -49,14 +55,20 @@ const enhanced = withObservables([], ({database, channelId}: WithDatabaseArgs & 
         useGroupMentions = of$(false);
         isChannelConstrained = of$(false);
         isTeamConstrained = of$(false);
+        team = observeCurrentTeam(database);
     }
+
+    isTeamConstrained = team.pipe(
+        switchMap((t) => of$(Boolean(t?.isGroupConstrained))),
+    );
+    const teamId = team.pipe(switchMap((t) => of$(t?.id)));
 
     return {
         isChannelConstrained,
         isTeamConstrained,
         useChannelMentions,
         useGroupMentions,
-        currentTeamId,
+        teamId,
     };
 });
 

@@ -152,7 +152,7 @@ const getFilteredChannelGroups = async (serverUrl: string, channelId: string, se
 
 type Props = {
     channelId?: string;
-    currentTeamId: string;
+    teamId?: string;
     cursorPosition: number;
     isSearch: boolean;
     maxListHeight: number;
@@ -181,7 +181,7 @@ const emptyGroupList: Group[] = [];
 
 const AtMention = ({
     channelId,
-    currentTeamId,
+    teamId,
     cursorPosition,
     isSearch,
     maxListHeight,
@@ -326,7 +326,7 @@ const AtMention = ({
 
             // If there is no channel constraint, but a team constraint - only show groups for team
             if (isTeamConstrained && !isChannelConstrained) {
-                getFilteredTeamGroups(serverUrl, currentTeamId, matchTerm).then((g) => {
+                getFilteredTeamGroups(serverUrl, teamId!, matchTerm).then((g) => {
                     setGroups(g.length ? g : emptyGroupList);
                 }).catch(() => {
                     setGroups(emptyGroupList);
