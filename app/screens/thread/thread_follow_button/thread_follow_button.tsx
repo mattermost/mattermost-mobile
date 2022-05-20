@@ -72,8 +72,13 @@ function ThreadFollow({isFollowing, teamId, threadId}: Props) {
         };
     }
 
+    const followThreadButtonTestId = isFollowing ? 'thread.following_thread.button' : 'thread.follow_thread.button';
+
     return (
-        <TouchableOpacity onPress={onPress}>
+        <TouchableOpacity
+            onPress={onPress}
+            testID={followThreadButtonTestId}
+        >
             <View style={containerStyle}>
                 <FormattedText
                     {...followTextProps}

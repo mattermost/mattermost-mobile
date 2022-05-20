@@ -160,7 +160,7 @@ export default function SendHandler({
         //     showAppForm(data.form, data.call, theme);
         // }
 
-        if (data?.goto_location) {
+        if (data?.goto_location && !value.startsWith('/leave')) {
             handleGotoLocation(serverUrl, intl, data.goto_location);
         }
     }, [userIsOutOfOffice, currentUserId, intl, value, serverUrl, channelId, rootId]);

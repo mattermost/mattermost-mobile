@@ -32,7 +32,7 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChan
         }
 
         if (category.type === DMS_CATEGORY && limit > 0) {
-            return filteredChannels.slice(0, limit - 1);
+            return filteredChannels.slice(0, limit);
         }
         return filteredChannels;
     }, [category.type, limit, hiddenChannelIds, sortedChannels]);

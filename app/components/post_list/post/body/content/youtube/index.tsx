@@ -67,7 +67,7 @@ const YouTube = ({isReplyPost, layoutWidth, metadata}: YouTubeProps) => {
     const dimensions = calculateDimensions(
         MAX_YOUTUBE_IMAGE_HEIGHT,
         MAX_YOUTUBE_IMAGE_WIDTH,
-        layoutWidth || (getViewPortWidth(isReplyPost, isTablet) - 15),
+        layoutWidth || (getViewPortWidth(isReplyPost, isTablet) - 6),
     );
 
     const playYouTubeVideo = useCallback(() => {
