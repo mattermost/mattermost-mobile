@@ -5,6 +5,8 @@ import {Platform, StyleSheet} from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import { typography } from '../typography';
+
 import {getViewPortWidth} from '../images';
 
 type LanguageObject = {
@@ -37,54 +39,42 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             fontFamily: 'OpenSans',
         },
         heading1: {
-            fontFamily: 'Metropolis-Semibold',
-            fontSize: 28,
-            lineHeight: 34,
+            ...typography('Heading', 700),
         },
         heading1Text: {
             paddingTop: 12,
-            paddingBottom: 8,
+            paddingBottom: 6,
         },
         heading2: {
-            fontFamily: 'Metropolis-Semibold',
-            fontSize: 25,
-            lineHeight: 30,
+            ...typography('Heading', 600),
         },
         heading2Text: {
             paddingTop: 12,
-            paddingBottom: 8,
+            paddingBottom: 6,
         },
         heading3: {
-            fontFamily: 'Metropolis-Semibold',
-            fontSize: 22,
-            lineHeight: 28,
+            ...typography('Heading', 500),
         },
         heading3Text: {
             paddingTop: 12,
-            paddingBottom: 8,
+            paddingBottom: 6,
         },
         heading4: {
-            fontFamily: 'Metropolis-Semibold',
-            fontSize: 20,
-            lineHeight: 24,
+            ...typography('Heading', 400),
         },
         heading4Text: {
             paddingTop: 12,
             paddingBottom: 6,
         },
         heading5: {
-            fontFamily: 'Metropolis-Semibold',
-            fontSize: 18,
-            lineHeight: 24,
+            ...typography('Heading', 300),
         },
         heading5Text: {
             paddingTop: 12,
             paddingBottom: 6,
         },
         heading6: {
-            fontFamily: 'Metropolis-Semibold',
-            fontSize: 18,
-            lineHeight: 24,
+            ...typography('Heading', 200),
         },
         heading6Text: {
             paddingTop: 12,
