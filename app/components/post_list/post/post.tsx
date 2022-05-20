@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactNode, useMemo, useRef} from 'react';
+import React, {ReactNode, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, StyleProp, View, ViewStyle, TouchableHighlight} from 'react-native';
 
@@ -10,12 +10,13 @@ import {showPermalink} from '@actions/remote/permalink';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
+import {POST_TIME_TO_FAIL} from '@constants/post';
 import * as Screens from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
-import {fromAutoResponder, isFromWebhook, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
+import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -114,6 +115,7 @@ const Post = ({
     const styles = getStyleSheet(theme);
     const isAutoResponder = fromAutoResponder(post);
     const isPendingOrFailed = isPostPendingOrFailed(post);
+    const isFailed = isPostFailed(post);
     const isSystemPost = isSystemMessage(post);
     const isWebHook = isFromWebhook(post);
     const hasSameRoot = useMemo(() => {
@@ -183,6 +185,20 @@ const Post = ({
             showModalOverCurrentContext(Screens.POST_OPTIONS, passProps, bottomSheetModalOptions(theme));
         }
     };
+
+    const [, rerender] = useState(false);
+    useEffect(() => {
+        let t: NodeJS.Timeout|undefined;
+        if (post.pendingPostId === post.id && !isFailed) {
+            t = setTimeout(() => rerender(true), POST_TIME_TO_FAIL - (Date.now() - post.updateAt));
+        }
+
+        return () => {
+            if (t) {
+                clearTimeout(t);
+            }
+        };
+    }, [post.id]);
 
     const highlightSaved = isSaved && !skipSavedHeader;
     const hightlightPinned = post.isPinned && !skipPinnedHeader;
