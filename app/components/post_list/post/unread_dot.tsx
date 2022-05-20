@@ -7,10 +7,6 @@ import {View} from 'react-native';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-type Props = {
-    testID: string;
-};
-
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         badgeContainer: {
@@ -30,13 +26,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const UnreadDot = ({testID}: Props) => {
+const UnreadDot = () => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     return (
         <View
             style={styles.badgeContainer}
-            testID={testID}
+            testID='post_unread_dot.badge'
         >
             <View style={styles.unreadDot}/>
         </View>

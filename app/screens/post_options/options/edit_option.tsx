@@ -47,7 +47,7 @@ const EditOption = ({post, canDelete}: Props) => {
             defaultMessage='Edit'
             onPress={onPress}
             iconName='pencil-outline'
-            testID='post_options.edit.post.option'
+            testID='post_options.edit_post.option'
         />
     );
 };

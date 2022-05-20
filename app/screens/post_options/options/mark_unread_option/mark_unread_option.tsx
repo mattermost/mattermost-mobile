@@ -38,7 +38,7 @@ const MarkAsUnreadOption = ({sourceScreen, post, teamId}: Props) => {
             defaultMessage='Mark as Unread'
             iconName='mark-as-unread'
             onPress={onPress}
-            testID='post_options.mark.unread.option'
+            testID='post_options.mark_as_unread.option'
         />
     );
 };
