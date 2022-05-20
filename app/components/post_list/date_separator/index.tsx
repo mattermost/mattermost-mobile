@@ -32,7 +32,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         date: {
             color: theme.centerChannelColor,
-            marginHorizontal: 16,
+            marginHorizontal: 12,
             ...typography('Body', 75, 'SemiBold'),
         },
     };

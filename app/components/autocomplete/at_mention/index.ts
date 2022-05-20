@@ -32,6 +32,7 @@ const enhanced = withObservables([], ({database, channelId}: WithDatabaseArgs & 
     let isTeamConstrained: Observable<boolean>;
     let team: Observable<TeamModel | undefined>;
 
+
     if (channelId) {
         const currentChannel = observeChannel(database, channelId);
         team = currentChannel.pipe(switchMap((c) => {

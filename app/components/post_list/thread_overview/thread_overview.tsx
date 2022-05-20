@@ -36,7 +36,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderColor: changeOpacity(theme.centerChannelColor, 0.1),
             flexDirection: 'row',
             marginVertical: 12,
-            paddingHorizontal: 20,
+            paddingHorizontal: 16,
             paddingVertical: 10,
         },
         repliesCountContainer: {

@@ -95,7 +95,7 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
         filesForGallery.value[idx] = file;
     };
 
-    const isSingleImage = () => (filesInfo.length === 1 && isImage(filesInfo[0]));
+    const isSingleImage = () => (filesInfo.length === 1 && (isImage(filesInfo[0]) || isVideo(filesInfo[0])));
 
     const renderItems = (items: FileInfo[], moreImagesCount = 0, includeGutter = false) => {
         const singleImage = isSingleImage();
@@ -128,7 +128,7 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
                         nonVisibleImagesCount={nonVisibleImagesCount}
                         publicLinkEnabled={publicLinkEnabled}
                         updateFileForGallery={updateFileForGallery}
-                        wrapperWidth={layoutWidth || (getViewPortWidth(isReplyPost, isTablet) - 15)}
+                        wrapperWidth={layoutWidth || (getViewPortWidth(isReplyPost, isTablet) - 6)}
                         inViewPort={inViewPort}
                     />
                 </View>
@@ -142,7 +142,7 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
         }
 
         const visibleImages = imageAttachments.slice(0, MAX_VISIBLE_ROW_IMAGES);
-        const portraitPostWidth = layoutWidth || (getViewPortWidth(isReplyPost, isTablet) - 15);
+        const portraitPostWidth = layoutWidth || (getViewPortWidth(isReplyPost, isTablet) - 6);
 
         let nonVisibleImagesCount;
         if (imageAttachments.length > MAX_VISIBLE_ROW_IMAGES) {
