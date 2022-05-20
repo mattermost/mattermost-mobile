@@ -20,7 +20,6 @@ import type UserModel from '@typings/database/models/servers/user';
 type Props = {
     participants: UserModel[];
     teamId?: string;
-    testID: string;
     thread: ThreadModel;
 };
 
@@ -77,7 +76,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Footer = ({participants, teamId, testID, thread}: Props) => {
+const Footer = ({participants, teamId, thread}: Props) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -102,7 +101,7 @@ const Footer = ({participants, teamId, testID, thread}: Props) => {
                 </View>
                 <FormattedText
                     style={styles.replies}
-                    testID={`${testID}.reply_count`}
+                    testID='post_footer.reply_count'
                     id='threads.replies'
                     defaultMessage='{count} {count, plural, one {reply} other {replies}}'
                     values={{
@@ -117,7 +116,7 @@ const Footer = ({participants, teamId, testID, thread}: Props) => {
             <TouchableOpacity
                 onPress={toggleFollow}
                 style={styles.followingButtonContainer}
-                testID={`${testID}.following`}
+                testID='post_footer.following_thread.button'
             >
                 <FormattedText
                     id='threads.following'
@@ -133,7 +132,7 @@ const Footer = ({participants, teamId, testID, thread}: Props) => {
                 <TouchableOpacity
                     onPress={toggleFollow}
                     style={styles.notFollowingButtonContainer}
-                    testID={`${testID}.follow`}
+                    testID='post_footer.follow_thread.button'
                 >
                     <FormattedText
                         id='threads.follow'

@@ -247,7 +247,7 @@ const MFA = ({config, goToHome, license, loginId, password, serverDisplayName, s
                                 {isLoading &&
                                 <Loading
                                     containerStyle={styles.loadingContainerStyle}
-                                    style={styles.loading}
+                                    color={theme.buttonColor}
                                 />
                                 }
                                 <FormattedText

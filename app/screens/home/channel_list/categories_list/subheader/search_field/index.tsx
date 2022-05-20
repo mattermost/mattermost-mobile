@@ -3,14 +3,12 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, TouchableHighlight} from 'react-native';
-import {Options} from 'react-native-navigation';
+import {TouchableHighlight} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
-import {Events, Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {showModal} from '@screens/navigation';
+import {findChannels} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -44,23 +42,9 @@ const SearchField = () => {
     const styles = getStyleSheet(theme);
 
     const onPress = useCallback(() => {
-        const options: Options = {modal: {swipeToDismiss: false}};
-        const closeButtonId = 'close-find-channels';
-        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        options.topBar = {
-            leftButtons: [{
-                id: closeButtonId,
-                icon: closeButton,
-                testID: closeButtonId,
-            }],
-        };
-
-        DeviceEventEmitter.emit(Events.PAUSE_KEYBOARD_TRACKING_VIEW, true);
-        showModal(
-            Screens.FIND_CHANNELS,
+        findChannels(
             intl.formatMessage({id: 'find_channels.title', defaultMessage: 'Find Channels'}),
-            {closeButtonId},
-            options,
+            theme,
         );
     }, [intl.locale, theme]);
 

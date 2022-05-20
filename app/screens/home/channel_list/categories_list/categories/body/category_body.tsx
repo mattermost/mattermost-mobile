@@ -32,7 +32,7 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChan
         }
 
         if (category.type === DMS_CATEGORY && limit > 0) {
-            return filteredChannels.slice(0, limit - 1);
+            return filteredChannels.slice(0, limit);
         }
         return filteredChannels;
     }, [category.type, limit, hiddenChannelIds, sortedChannels]);
@@ -43,7 +43,6 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChan
                 channel={item}
                 testID={`category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_list_item`}
                 onPress={onChannelSwitch}
-                isCategoryMuted={category.muted}
                 key={item.id}
             />
         );

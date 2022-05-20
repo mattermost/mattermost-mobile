@@ -164,7 +164,7 @@ const AtMention = ({
     let isMention = false;
     let mention;
     let onLongPress;
-    let onPress: (e?: GestureResponderEvent) => void;
+    let onPress: ((e?: GestureResponderEvent) => void) | undefined;
     let suffix;
     let suffixElement;
     let styleText;
@@ -196,7 +196,7 @@ const AtMention = ({
 
     if (canPress) {
         onLongPress = handleLongPress;
-        onPress = (isSearchResult ? onPostPress : goToUserProfile) as (e?: GestureResponderEvent) => void;
+        onPress = (isSearchResult ? onPostPress : goToUserProfile);
     }
 
     if (suffix) {
@@ -218,7 +218,7 @@ const AtMention = ({
 
     return (
         <Text
-            onPress={onPress!}
+            onPress={onPress}
             onLongPress={onLongPress}
             style={styleText}
         >

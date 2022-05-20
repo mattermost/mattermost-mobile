@@ -19,7 +19,7 @@ type Props = {
     id: string;
     name: string;
     postId: string;
-    theme: Theme;
+    theme: ExtendedTheme;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {

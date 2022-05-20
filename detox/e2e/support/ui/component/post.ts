@@ -11,14 +11,18 @@ class Post {
         emoji: 'markdown_emoji',
         image: 'markdown_image',
         message: 'markdown_text',
+        postFooterFollowButton: 'post_footer.follow_thread.button',
+        postFooterFollowingButton: 'post_footer.following_thread.button',
+        postFooterReplyCount: 'post_footer.reply_count',
         postHeaderCommentedOn: 'post_header.commented_on',
         postHeaderDateTime: 'post_header.date_time',
         postHeaderDisplayName: 'post_header.display_name',
         postHeaderBotTag: 'post_header.bot_tag',
         postHeaderGuestTag: 'post_header.guest_tag',
         postHeaderReply: 'post_header.reply',
-        postHeaderReplyCount: 'post_header.reply.count',
+        postHeaderReplyCount: 'post_header.reply_count',
         postPreHeaderText: 'post_pre_header.text',
+        postUnreadDotBadge: 'post_unread_dot.badge',
         showLessButton: 'show_more.button.chevron-up',
         showMoreButton: 'show_more.button.chevron-down',
         table: 'markdown_table',
@@ -39,6 +43,7 @@ class Post {
         const postItemTableMatcher = by.id(this.testID.table).withAncestor(postItemMatcher);
         const postItemTableExpandButtonMatcher = by.id(this.testID.tableExpandButton).withAncestor(postItemMatcher);
         const postItemThematicBreakMatcher = by.id(this.testID.thematicBreak).withAncestor(postItemMatcher);
+        const postItemUnreadDotBadgeMatcher = by.id(this.testID.postUnreadDotBadge).withAncestor(postItemMatcher);
 
         return {
             postItem: element(postItemMatcher),
@@ -53,8 +58,22 @@ class Post {
             postItemTable: element(postItemTableMatcher),
             postItemTableExpandButton: element(postItemTableExpandButtonMatcher),
             postItemThematicBreak: element(postItemThematicBreakMatcher),
+            postItemUnreadDotBadge: element(postItemUnreadDotBadgeMatcher),
+            ...this.getPostFooter(postItemMatcher),
             ...this.getPostHeader(postItemMatcher),
             ...this.getPostProfilePicture(postItemMatcher, postProfileOptions),
+        };
+    };
+
+    getPostFooter = (postItemMatcher: Detox.NativeMatcher) => {
+        const postItemFooterFollowButtonMatcher = by.id(this.testID.postFooterFollowButton).withAncestor(postItemMatcher);
+        const postItemFooterFollowingButtonMatcher = by.id(this.testID.postFooterFollowingButton).withAncestor(postItemMatcher);
+        const postItemFooterReplyCountMatcher = by.id(this.testID.postFooterReplyCount).withAncestor(postItemMatcher);
+
+        return {
+            postItemFooterFollowButton: element(postItemFooterFollowButtonMatcher),
+            postItemFooterFollowingButton: element(postItemFooterFollowingButtonMatcher),
+            postItemFooterReplyCount: element(postItemFooterReplyCountMatcher),
         };
     };
 

@@ -3,8 +3,9 @@
 
 import React, {useMemo, useState} from 'react';
 import {Platform, useWindowDimensions, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {LIST_BOTTOM, MAX_LIST_DIFF, MAX_LIST_HEIGHT, MAX_LIST_TABLET_DIFF, OFFSET_TABLET} from '@constants/autocomplete';
+import {LIST_BOTTOM, MAX_LIST_DIFF, MAX_LIST_HEIGHT, MAX_LIST_TABLET_DIFF} from '@constants/autocomplete';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -89,6 +90,7 @@ const Autocomplete = ({
     const isTablet = useIsTablet();
     const dimensions = useWindowDimensions();
     const style = getStyleFromTheme(theme);
+    const insets = useSafeAreaInsets();
 
     const [showingAtMention, setShowingAtMention] = useState(false);
     const [showingChannelMention, setShowingChannelMention] = useState(false);
@@ -107,14 +109,13 @@ const Autocomplete = ({
             return maxHeightOverride;
         }
         const isLandscape = dimensions.width > dimensions.height;
-        const offset = isTablet && isLandscape ? OFFSET_TABLET : 0;
         let postInputDiff = 0;
         if (isTablet && postInputTop && isLandscape) {
             postInputDiff = MAX_LIST_TABLET_DIFF;
         } else if (postInputTop) {
             postInputDiff = MAX_LIST_DIFF;
         }
-        return MAX_LIST_HEIGHT - postInputDiff - offset;
+        return MAX_LIST_HEIGHT - postInputDiff;
     }, [maxHeightOverride, postInputTop, isTablet, dimensions.width]);
 
     const wrapperStyles = useMemo(() => {
@@ -131,8 +132,8 @@ const Autocomplete = ({
     const containerStyles = useMemo(() => {
         const s = [];
         if (!isSearch && !fixedBottomPosition) {
-            const offset = isTablet ? -OFFSET_TABLET : 0;
-            s.push(style.base, {bottom: postInputTop + LIST_BOTTOM + offset});
+            const iOSInsets = Platform.OS === 'ios' && (!isTablet || rootId) ? insets.bottom : 0;
+            s.push(style.base, {bottom: postInputTop + LIST_BOTTOM + iOSInsets});
         } else if (fixedBottomPosition) {
             s.push(style.base, {bottom: 0});
         }

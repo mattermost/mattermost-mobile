@@ -52,7 +52,7 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string) 
             if (thread?.unreadReplies || thread?.unreadMentions) {
                 const channel = await getChannelById(database, post.channelId);
                 if (channel) {
-                    updateThreadRead(serverUrl, channel.teamId, thread.id, Date.now());
+                    markThreadAsRead(serverUrl, channel.teamId, thread.id);
                 }
             }
         }
@@ -156,7 +156,13 @@ export const updateTeamThreadsAsRead = async (serverUrl: string, teamId: string)
     }
 };
 
-export const updateThreadRead = async (serverUrl: string, teamId: string, threadId: string, timestamp: number) => {
+export const markThreadAsRead = async (serverUrl: string, teamId: string, threadId: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
     let client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -165,11 +171,20 @@ export const updateThreadRead = async (serverUrl: string, teamId: string, thread
     }
 
     try {
-        const data = await client.updateThreadRead('me', teamId, threadId, timestamp);
+        const timestamp = Date.now();
+
+        // DM/GM doesn't have a teamId, so we pass the current team id
+        let threadTeamId = teamId;
+        if (!threadTeamId) {
+            threadTeamId = await getCurrentTeamId(database);
+        }
+        const data = await client.markThreadAsRead('me', threadTeamId, threadId, timestamp);
 
         // Update locally
         await updateThread(serverUrl, threadId, {
             last_viewed_at: timestamp,
+            unread_replies: 0,
+            unread_mentions: 0,
         });
 
         return {data};
@@ -194,7 +209,13 @@ export const markThreadAsUnread = async (serverUrl: string, teamId: string, thre
     }
 
     try {
-        const data = await client.markThreadAsUnread('me', teamId, threadId, postId);
+        // DM/GM doesn't have a teamId, so we pass the current team id
+        let threadTeamId = teamId;
+        if (!threadTeamId) {
+            threadTeamId = await getCurrentTeamId(database);
+        }
+
+        const data = await client.markThreadAsUnread('me', threadTeamId, threadId, postId);
 
         // Update locally
         const post = await getPostById(database, threadId);
@@ -346,12 +367,12 @@ export async function fetchNewThreads(
     const newestThread = await getNewestThreadInTeam(operator.database, teamId, false);
     options.since = newestThread ? newestThread.lastReplyAt : 0;
 
-    let response = {
-        error: undefined,
-        data: [],
-    } as {
+    let response: {
         error: unknown;
         data?: Thread[];
+    } = {
+        error: undefined,
+        data: [],
     };
 
     let loadedInGlobalThreads = true;
@@ -376,6 +397,71 @@ export async function fetchNewThreads(
         return {error: false, models: []};
     }
 
+    const {error, models} = await processReceivedThreads(serverUrl, data, teamId, loadedInGlobalThreads, true);
+
+    if (!error && !prepareRecordsOnly && models?.length) {
+        try {
+            await operator.batchRecords(models);
+        } catch (err) {
+            if (__DEV__) {
+                throw err;
+            }
+            return {error: true};
+        }
+    }
+
+    return {error: false, models};
+}
+
+export async function fetchRefreshThreads(
+    serverUrl: string,
+    teamId: string,
+    unread = false,
+    prepareRecordsOnly = false,
+): Promise<{error: unknown; models?: Model[]}> {
+    const options: FetchThreadsOptions = {
+        unread,
+        deleted: true,
+        perPage: 60,
+    };
+
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const newestThread = await getNewestThreadInTeam(operator.database, teamId, unread);
+    options.since = newestThread ? newestThread.lastReplyAt : 0;
+
+    let response: {
+        error: unknown;
+        data?: Thread[];
+    } = {
+        error: undefined,
+        data: [],
+    };
+
+    let pages;
+
+    // in the case of global threads: if we have no threads in the DB fetch just one page
+    if (options.since === 0 && !unread) {
+        pages = 1;
+    }
+
+    response = await fetchBatchThreads(serverUrl, teamId, options, pages);
+
+    const {error: nErr, data} = response;
+
+    if (nErr) {
+        return {error: nErr};
+    }
+
+    if (!data?.length) {
+        return {error: false, models: []};
+    }
+
+    const loadedInGlobalThreads = !unread;
     const {error, models} = await processReceivedThreads(serverUrl, data, teamId, loadedInGlobalThreads, true);
 
     if (!error && !prepareRecordsOnly && models?.length) {

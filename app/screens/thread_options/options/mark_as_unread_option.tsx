@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 
-import {markThreadAsUnread, updateThreadRead} from '@actions/remote/thread';
+import {markThreadAsRead, markThreadAsUnread} from '@actions/remote/thread';
 import {BaseOption} from '@components/common_post_options';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -22,7 +22,7 @@ const MarkAsUnreadOption = ({teamId, thread}: Props) => {
     const onHandlePress = useCallback(async () => {
         await dismissBottomSheet(Screens.THREAD_OPTIONS);
         if (thread.unreadReplies) {
-            updateThreadRead(serverUrl, teamId, thread.id, Date.now());
+            markThreadAsRead(serverUrl, teamId, thread.id);
         } else {
             markThreadAsUnread(serverUrl, teamId, thread.id, thread.id);
         }
@@ -30,6 +30,7 @@ const MarkAsUnreadOption = ({teamId, thread}: Props) => {
 
     const id = thread.unreadReplies ? t('global_threads.options.mark_as_read') : t('mobile.post_info.mark_unread');
     const defaultMessage = thread.unreadReplies ? 'Mark as Read' : 'Mark as Unread';
+    const markAsUnreadTestId = thread.unreadReplies ? 'thread_options.mark_as_read.option' : 'thread_options.mark_as_unread.option';
 
     return (
         <BaseOption
@@ -37,7 +38,7 @@ const MarkAsUnreadOption = ({teamId, thread}: Props) => {
             defaultMessage={defaultMessage}
             iconName='mark-as-unread'
             onPress={onHandlePress}
-            testID='thread.options.mark_as_read'
+            testID={markAsUnreadTestId}
         />
     );
 };

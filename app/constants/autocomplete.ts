@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform} from 'react-native';
-
 export const AT_MENTION_REGEX = /\B(@([^@\r\n]*))$/i;
 
 export const AT_MENTION_REGEX_GLOBAL = /\B(@([^@\r\n]*))/gi;
@@ -19,12 +17,11 @@ export const ALL_SEARCH_FLAGS_REGEX = /\b\w+:/g;
 
 export const CODE_REGEX = /(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)| *(`{3,}|~{3,})[ .]*(\S+)? *\n([\s\S]*?\s*)\3 *(?:\n+|$)/g;
 
-export const LIST_BOTTOM = Platform.select({ios: 30, default: -5});
+export const LIST_BOTTOM = -5;
 
 export const MAX_LIST_HEIGHT = 280;
 export const MAX_LIST_DIFF = 50;
 export const MAX_LIST_TABLET_DIFF = 140;
-export const OFFSET_TABLET = 35;
 
 export default {
     ALL_SEARCH_FLAGS_REGEX,
@@ -38,5 +35,4 @@ export default {
     LIST_BOTTOM,
     MAX_LIST_HEIGHT,
     MAX_LIST_DIFF,
-    OFFSET_TABLET,
 };

@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Text, View} from 'react-native';
+import {DeviceEventEmitter, Platform, Text, View} from 'react-native';
 import {RectButton} from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 
@@ -116,6 +116,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         height: 40,
         width: 40,
         justifyContent: 'center',
+        marginRight: 5,
     },
     tutorial: {
         top: -30,
@@ -196,9 +197,9 @@ const ServerItem = ({
         viewRef.current?.measureInWindow((x, y, w, h) => {
             const bounds: TutorialItemBounds = {
                 startX: x - 20,
-                startY: y - 5,
+                startY: y,
                 endX: x + w + 20,
-                endY: y + h + 5,
+                endY: y + h,
             };
             setShowTutorial(true);
             setItemBounds(bounds);
@@ -342,7 +343,7 @@ const ServerItem = ({
     useEffect(() => {
         let time: NodeJS.Timeout;
         if (highlight && !tutorialWatched) {
-            time = setTimeout(startTutorial, 300);
+            time = setTimeout(startTutorial, 650);
         }
         return () => clearTimeout(time);
     }, [highlight, tutorialWatched]);
@@ -350,15 +351,20 @@ const ServerItem = ({
     const serverItem = `server_list.server_item.${server.displayName.replace(/ /g, '_').toLocaleLowerCase()}`;
     const serverItemTestId = isActive ? `${serverItem}.active` : `${serverItem}.inactive`;
 
-    const pushAlertText = pushProxyStatus === PUSH_PROXY_STATUS_NOT_AVAILABLE ?
-        intl.formatMessage({
-            id: 'server_list.push_proxy_error',
-            defaultMessage: 'Notifications cannot be received from this server because of its configuration. Contact your system admin.',
-        }) :
-        intl.formatMessage({
-            id: 'server_list.push_proxy_unknown',
-            defaultMessage: 'Notifications could not be received from this server because of its configuration. Log out and Log in again to retry.',
-        });
+    let pushAlertText;
+    if (server.lastActiveAt) {
+        if (pushProxyStatus === PUSH_PROXY_STATUS_NOT_AVAILABLE) {
+            pushAlertText = intl.formatMessage({
+                id: 'server_list.push_proxy_error',
+                defaultMessage: 'Notifications cannot be received from this server because of its configuration. Contact your system admin.',
+            });
+        } else {
+            pushAlertText = intl.formatMessage({
+                id: 'server_list.push_proxy_unknown',
+                defaultMessage: 'Notifications could not be received from this server because of its configuration. Log out and Log in again to retry.',
+            });
+        }
+    }
 
     return (
         <>
@@ -399,8 +405,9 @@ const ServerItem = ({
                             }
                             {switching &&
                             <Loading
-                                style={styles.swithing}
+                                containerStyle={styles.switching}
                                 color={theme.buttonBg}
+                                size={Platform.select({ios: 'small', default: 'large'})}
                             />
                             }
                             <View style={styles.details}>
@@ -412,7 +419,7 @@ const ServerItem = ({
                                     >
                                         {displayName}
                                     </Text>
-                                    {pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED && (
+                                    {server.lastActiveAt > 0 && pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED && (
                                         <CompassIcon
                                             name='alert-outline'
                                             color={theme.errorTextColor}
@@ -442,7 +449,7 @@ const ServerItem = ({
                     </RectButton>
                 </View>
             </Swipeable>
-            {pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED && (
+            {Boolean(pushAlertText && pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED) && (
                 <Text style={styles.pushAlertText}>
                     {pushAlertText}
                 </Text>

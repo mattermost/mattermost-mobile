@@ -31,9 +31,9 @@ export const sanitizeThreadParticipants = async ({database, skipSync, thread_id,
         );
     }
     const participants = (await database.collections.
-        get(THREAD_PARTICIPANT).
+        get<ThreadParticipantModel>(THREAD_PARTICIPANT).
         query(...clauses).
-        fetch()) as ThreadParticipantModel[];
+        fetch());
 
     // similarObjects: Contains objects that are in both the RawParticipant array and in the ThreadParticipant table
     const similarObjects = new Set<ThreadParticipantModel>();

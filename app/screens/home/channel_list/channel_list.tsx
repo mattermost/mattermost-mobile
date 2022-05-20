@@ -2,17 +2,20 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import {useIsFocused, useRoute} from '@react-navigation/native';
-import React, {useEffect} from 'react';
-import {StyleSheet} from 'react-native';
+import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
+import React, {useCallback, useEffect} from 'react';
+import {useIntl} from 'react-intl';
+import {BackHandler, StyleSheet, ToastAndroid} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FreezeScreen from '@components/freeze_screen';
 import TeamSidebar from '@components/team_sidebar';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {resetToTeams} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 
 import AdditionalTabletView from './additional_tablet_view';
 import CategoriesList from './categories_list';
@@ -20,7 +23,6 @@ import Servers from './servers';
 
 type ChannelProps = {
     channelsCount: number;
-    currentTeamId?: string;
     isCRTEnabled: boolean;
     teamsCount: number;
     time?: number;
@@ -35,16 +37,42 @@ const styles = StyleSheet.create({
     },
 });
 
+let backPressedCount = 0;
+let backPressTimeout: NodeJS.Timeout|undefined;
+
 const ChannelListScreen = (props: ChannelProps) => {
     const theme = useTheme();
     const managedConfig = useManagedConfig<ManagedConfig>();
+    const intl = useIntl();
 
     const isTablet = useIsTablet();
     const route = useRoute();
     const isFocused = useIsFocused();
+    const navigation = useNavigation();
     const insets = useSafeAreaInsets();
     const params = route.params as {direction: string};
     const canAddOtherServers = managedConfig?.allowOtherServers !== 'false';
+
+    const handleBackPress = useCallback(() => {
+        const focused = navigation.isFocused() && EphemeralStore.getNavigationTopComponentId() === Screens.HOME;
+        if (!backPressedCount && focused) {
+            backPressedCount++;
+            ToastAndroid.show(intl.formatMessage({
+                id: 'mobile.android.back_handler_exit',
+                defaultMessage: 'Press back again to exit',
+            }), ToastAndroid.SHORT);
+
+            if (backPressTimeout) {
+                clearTimeout(backPressTimeout);
+            }
+            backPressTimeout = setTimeout(() => {
+                clearTimeout(backPressTimeout!);
+                backPressedCount = 0;
+            }, 2000);
+            return true;
+        }
+        return false;
+    }, [intl]);
 
     const animated = useAnimatedStyle(() => {
         if (!isFocused) {
@@ -73,6 +101,11 @@ const ChannelListScreen = (props: ChannelProps) => {
         }
     }, [Boolean(props.teamsCount)]);
 
+    useEffect(() => {
+        const back = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+        return () => back.remove();
+    }, [handleBackPress]);
+
     return (
         <FreezeScreen freeze={!isFocused}>
             {<Animated.View style={top}/>}
@@ -95,9 +128,8 @@ const ChannelListScreen = (props: ChannelProps) => {
                         isTablet={isTablet}
                         teamsCount={props.teamsCount}
                         channelsCount={props.channelsCount}
-                        currentTeamId={props.currentTeamId}
                     />
-                    {isTablet && Boolean(props.currentTeamId) &&
+                    {isTablet &&
                         <AdditionalTabletView/>
                     }
                 </Animated.View>

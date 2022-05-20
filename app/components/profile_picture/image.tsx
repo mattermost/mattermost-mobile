@@ -65,7 +65,7 @@ const Image = ({author, iconSize, size, source}: Props) => {
             <FastImage
                 key={pictureUrl}
                 style={fIStyle}
-                source={imgSource as Source}
+                source={imgSource}
             />
         );
     }

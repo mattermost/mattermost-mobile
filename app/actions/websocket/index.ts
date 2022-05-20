@@ -1,26 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {markChannelAsViewed} from '@actions/local/channel';
-import {fetchMissingSidebarInfo, markChannelAsRead, switchToChannelById} from '@actions/remote/channel';
-import {AppEntryData, AppEntryError, fetchAppEntryData, teamsToRemove} from '@actions/remote/entry/common';
-import {fetchPostsForUnreadChannels, fetchPostsSince} from '@actions/remote/post';
-import {fetchRoles} from '@actions/remote/role';
-import {fetchConfigAndLicense} from '@actions/remote/systems';
-import {fetchAllTeams, fetchTeamsChannelsAndUnreadPosts} from '@actions/remote/team';
-import {fetchNewThreads} from '@actions/remote/thread';
-import {fetchStatusByIds, updateAllUsersSince} from '@actions/remote/user';
-import {Screens, WebsocketEvents} from '@constants';
+import {DeviceEventEmitter} from 'react-native';
+
+import {switchToChannelById} from '@actions/remote/channel';
+import {deferredAppEntryActions, entry} from '@actions/remote/entry/common';
+import {fetchStatusByIds} from '@actions/remote/user';
+import {Events, Screens, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
-import {queryChannelsById, getDefaultChannelForTeam} from '@queries/servers/channel';
-import {prepareModels} from '@queries/servers/entry';
-import {getCommonSystemValues, getConfig, getCurrentChannelId, getWebSocketLastDisconnected, resetWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {queryActiveServer} from '@queries/app/servers';
+import {getCurrentChannel} from '@queries/servers/channel';
+import {getCommonSystemValues, getConfig, getWebSocketLastDisconnected, resetWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {getCurrentTeam} from '@queries/servers/team';
+import {getCurrentUser} from '@queries/servers/user';
+import {dismissAllModals, popToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import {isDMorGM} from '@utils/channel';
 import {isTablet} from '@utils/helpers';
-import {isCRTEnabled} from '@utils/thread';
 
 import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
 import {handleChannelConvertedEvent, handleChannelCreatedEvent,
@@ -91,141 +87,57 @@ async function doReconnect(serverUrl: string) {
         return;
     }
 
-    const {database} = operator;
-    const tabletDevice = await isTablet();
-    const system = await getCommonSystemValues(database);
-    const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
-
-    resetWebSocketLastDisconnected(operator);
-    let {config, license} = await fetchConfigAndLicense(serverUrl);
-    if (!config) {
-        config = system.config;
-    }
-
-    if (!license) {
-        license = system.license;
-    }
-
-    const fetchedData = await fetchAppEntryData(serverUrl, lastDisconnectedAt, system.currentTeamId);
-    const fetchedError = (fetchedData as AppEntryError).error;
-
-    if (fetchedError) {
+    const appDatabase = DatabaseManager.appDatabase?.database;
+    if (!appDatabase) {
         return;
     }
 
-    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData as AppEntryData;
-    const rolesData = await fetchRoles(serverUrl, teamData.memberships, chData?.memberships, meData.user, true);
-    const profiles: UserProfile[] = [];
+    const {database} = operator;
+    const tabletDevice = await isTablet();
+    const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
+    resetWebSocketLastDisconnected(operator);
+    const currentTeam = await getCurrentTeam(database);
+    const currentChannel = await getCurrentChannel(database);
 
-    if (chData?.channels?.length) {
-        const teammateDisplayNameSetting = getTeammateNameDisplaySetting(prefData.preferences || [], config, license);
-        let direct: Channel[];
-        [chData.channels, direct] = chData.channels.reduce(([others, channels], c: Channel) => {
-            if (isDMorGM(c)) {
-                channels.push(c);
-            } else {
-                others.push(c);
-            }
-
-            return [others, channels];
-        }, [[], []] as Channel[][]);
-
-        if (direct.length) {
-            const {directChannels, users} = await fetchMissingSidebarInfo(serverUrl, direct, meData.user?.locale, teammateDisplayNameSetting, system.currentUserId, true);
-            if (directChannels?.length) {
-                chData.channels.push(...directChannels);
-            }
-            if (users?.length) {
-                profiles.push(...users);
-            }
-        }
+    const entryData = await entry(serverUrl, currentTeam?.id, currentChannel?.id, lastDisconnectedAt);
+    if ('error' in entryData) {
+        return;
     }
+    const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
 
-    // if no longer a member of the current team
-    if (initialTeamId !== system.currentTeamId) {
-        let cId = '';
-        if (tabletDevice) {
-            if (!cId) {
-                const channel = await getDefaultChannelForTeam(database, initialTeamId);
-                if (channel) {
-                    cId = channel.id;
-                }
-            }
-            switchToChannelById(serverUrl, cId, initialTeamId);
-        } else {
-            setCurrentTeamAndChannelId(operator, initialTeamId, cId);
-        }
-    }
+    let switchedToChannel = false;
 
-    const removeTeams = await teamsToRemove(serverUrl, removeTeamIds);
-
-    let removeChannels;
-    if (removeChannelIds?.length) {
-        removeChannels = await queryChannelsById(database, removeChannelIds).fetch();
-    }
-
-    const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData});
-    if (rolesData.roles?.length) {
-        modelPromises.push(operator.handleRole({roles: rolesData.roles, prepareRecordsOnly: true}));
-    }
-
-    if (profiles.length) {
-        modelPromises.push(operator.handleUsers({users: profiles, prepareRecordsOnly: true}));
-    }
-
-    if (modelPromises.length) {
-        const models = await Promise.all(modelPromises);
-        const flattenedModels = models.flat();
-        if (flattenedModels?.length > 0) {
-            try {
-                await operator.batchRecords(flattenedModels);
-            } catch {
-                // eslint-disable-next-line no-console
-                console.log('FAILED TO BATCH WS reconnection');
-            }
-        }
-    }
-
-    const currentChannelId = await getCurrentChannelId(database);
-    if (currentChannelId) {
-        // https://mattermost.atlassian.net/browse/MM-40098
-        fetchPostsSince(serverUrl, currentChannelId, lastDisconnectedAt);
-
+    // if no longer a member of the current team or the current channel
+    if (initialTeamId !== currentTeam?.id || initialChannelId !== currentChannel?.id) {
+        const currentServer = await queryActiveServer(appDatabase);
         const isChannelScreenMounted = EphemeralStore.getNavigationComponents().includes(Screens.CHANNEL);
-
-        if (isChannelScreenMounted || tabletDevice) {
-            markChannelAsRead(serverUrl, currentChannelId);
-            markChannelAsViewed(serverUrl, currentChannelId);
-        }
-
-        // defer fetching posts for unread channels on initial team
-        if (chData?.channels && chData.memberships) {
-            fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, currentChannelId);
-        }
-    }
-
-    // defer fetch channels and unread posts for other teams
-    if (teamData.teams?.length && teamData.memberships?.length) {
-        await fetchTeamsChannelsAndUnreadPosts(serverUrl, lastDisconnectedAt, teamData.teams, teamData.memberships, initialTeamId);
-    }
-
-    if (prefData.preferences && isCRTEnabled(prefData.preferences, config)) {
-        if (initialTeamId) {
-            await fetchNewThreads(serverUrl, initialTeamId, false);
-        }
-
-        if (teamData.teams?.length) {
-            for await (const team of teamData.teams) {
-                if (team.id !== initialTeamId) {
-                    // need to await here since GM/DM threads in different teams overlap
-                    await fetchNewThreads(serverUrl, team.id, false);
-                }
+        if (serverUrl === currentServer?.url) {
+            if (currentTeam && initialTeamId !== currentTeam.id) {
+                DeviceEventEmitter.emit(Events.LEAVE_TEAM, {displayName: currentTeam.displayName});
+                await dismissAllModals();
+                await popToRoot();
+            } else if (currentChannel && initialChannelId !== currentChannel.id && isChannelScreenMounted) {
+                DeviceEventEmitter.emit(Events.LEAVE_CHANNEL, {displayName: currentChannel?.displayName});
+                await dismissAllModals();
+                await popToRoot();
             }
+
+            if (tabletDevice && initialChannelId) {
+                switchedToChannel = true;
+                switchToChannelById(serverUrl, initialChannelId, initialTeamId);
+            } else {
+                setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
+            }
+        } else {
+            setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
         }
     }
 
-    fetchAllTeams(serverUrl);
-    updateAllUsersSince(serverUrl, lastDisconnectedAt);
+    await operator.batchRecords(models);
+
+    const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
+    const {config, license} = await getCommonSystemValues(database);
+    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchedToChannel ? initialChannelId : undefined);
 
     // https://mattermost.atlassian.net/browse/MM-41520
 }

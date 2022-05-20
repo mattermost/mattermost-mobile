@@ -14,7 +14,7 @@ type Props = {
 }
 
 const EmbeddedBindings = ({post, theme}: Props) => {
-    const content = [] as React.ReactNode[];
+    const content: React.ReactNode[] = [];
     const embeds: AppBinding[] = post.props.app_bindings;
 
     embeds.forEach((embed, i) => {

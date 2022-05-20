@@ -29,7 +29,7 @@ const OpenInChannelOption = ({threadId}: Props) => {
             defaultMessage='Open in Channel'
             iconName='globe'
             onPress={onHandlePress}
-            testID='thread.options.open_in_channel'
+            testID='thread_options.open_in_channel.option'
         />
     );
 };

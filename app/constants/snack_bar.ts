@@ -5,11 +5,12 @@ import {t} from '@i18n';
 import keyMirror from '@utils/key_mirror';
 
 export const SNACK_BAR_TYPE = keyMirror({
+    FAVORITE_CHANNEL: null,
     LINK_COPIED: null,
     MESSAGE_COPIED: null,
-    FOLLOW_THREAD: null,
     MUTE_CHANNEL: null,
-    FAILED_TO_SAVE_MESSAGE: null,
+    UNFAVORITE_CHANNEL: null,
+    UNMUTE_CHANNEL: null,
 });
 
 type SnackBarConfig = {
@@ -17,8 +18,15 @@ type SnackBarConfig = {
     defaultMessage: string;
     iconName: string;
     canUndo: boolean;
-}
+};
+
 export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
+    FAVORITE_CHANNEL: {
+        id: t('snack.bar.favorited.channel'),
+        defaultMessage: 'This channel was favorited',
+        iconName: 'star',
+        canUndo: true,
+    },
     LINK_COPIED: {
         id: t('snack.bar.link.copied'),
         defaultMessage: 'Link copied to clipboard',
@@ -31,16 +39,22 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
         iconName: 'content-copy',
         canUndo: false,
     },
-    FOLLOW_THREAD: {
-        id: t('snack.bar.follow.thread'),
-        defaultMessage: 'You\'re now following this thread',
-        iconName: 'message-check-outline',
-        canUndo: true,
-    },
     MUTE_CHANNEL: {
         id: t('snack.bar.mute.channel'),
         defaultMessage: 'This channel was muted',
         iconName: 'bell-off-outline',
+        canUndo: true,
+    },
+    UNFAVORITE_CHANNEL: {
+        id: t('snack.bar.unfavorite.channel'),
+        defaultMessage: 'This channel was unfavorited',
+        iconName: 'star-outline',
+        canUndo: true,
+    },
+    UNMUTE_CHANNEL: {
+        id: t('snack.bar.unmute.channel'),
+        defaultMessage: 'This channel was unmuted',
+        iconName: 'bell-outline',
         canUndo: true,
     },
 };

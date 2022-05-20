@@ -8,7 +8,7 @@ import {map, switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {getPreferenceAsBool, getTeammateNameDisplaySetting} from '@helpers/api/preference';
-import {queryPostRepliesCount} from '@queries/servers/post';
+import {queryPostReplies} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeConfig, observeLicense} from '@queries/servers/system';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -38,7 +38,7 @@ const withHeaderProps = withObservables(
         const teammateNameDisplay = combineLatest([preferences, config, license]).pipe(
             map(([prefs, cfg, lcs]) => getTeammateNameDisplaySetting(prefs, cfg, lcs)),
         );
-        const commentCount = queryPostRepliesCount(database, post.rootId || post.id).observeCount();
+        const commentCount = queryPostReplies(database, post.rootId || post.id).observeCount();
         const rootPostAuthor = differentThreadSequence ? post.root.observe().pipe(switchMap((root) => {
             if (root.length) {
                 return root[0].author.observe();

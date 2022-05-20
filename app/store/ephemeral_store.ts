@@ -18,6 +18,7 @@ class EphemeralStore {
     // and make sure we only handle one.
     private addingTeam = new Set<string>();
     private joiningChannels = new Set<string>();
+    private leavingChannels = new Set<string>();
 
     addNavigationComponentId = (componentId: string) => {
         this.addToNavigationComponentIdStack(componentId);
@@ -71,7 +72,15 @@ class EphemeralStore {
 
     hasModalsOpened = () => this.navigationModalStack.length > 0;
 
+    private removeNavigationComponent = (componentId: string) => {
+        const index = this.allNavigationComponentIds.indexOf(componentId);
+        if (index >= 0) {
+            this.allNavigationComponentIds.splice(index, 1);
+        }
+    };
+
     removeNavigationComponentId = (componentId: string) => {
+        this.removeNavigationComponent(componentId);
         const index = this.navigationComponentIdStack.indexOf(componentId);
         if (index >= 0) {
             this.navigationComponentIdStack.splice(index, 1);
@@ -79,6 +88,7 @@ class EphemeralStore {
     };
 
     removeNavigationModal = (componentId: string) => {
+        this.removeNavigationComponent(componentId);
         const index = this.navigationModalStack.indexOf(componentId);
 
         if (index >= 0) {
@@ -124,6 +134,19 @@ class EphemeralStore {
         }
     };
 
+    // Ephemeral control when leaving a channel locally
+    addLeavingChannel = (channelId: string) => {
+        this.leavingChannels.add(channelId);
+    };
+
+    isLeavingChannel = (channelId: string) => {
+        return this.leavingChannels.has(channelId);
+    };
+
+    removeLeavingChannel = (channelId: string) => {
+        this.leavingChannels.delete(channelId);
+    };
+
     // Ephemeral control when joining a channel locally
     addJoiningChannel = (channelId: string) => {
         this.joiningChannels.add(channelId);
@@ -133,10 +156,11 @@ class EphemeralStore {
         return this.joiningChannels.has(channelId);
     };
 
-    removeJoiningChanel = (channelId: string) => {
+    removeJoiningChannel = (channelId: string) => {
         this.joiningChannels.delete(channelId);
     };
 
+    // Ephemeral control when adding a team locally
     startAddingToTeam = (teamId: string) => {
         this.addingTeam.add(teamId);
     };
@@ -149,6 +173,7 @@ class EphemeralStore {
         return this.addingTeam.has(teamId);
     };
 
+    // Ephemeral for push proxy state
     setPushProxyVerificationState = (serverUrl: string, state: string) => {
         this.pushProxyVerification[serverUrl] = state;
     };

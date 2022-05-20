@@ -14,9 +14,11 @@ type FormattedDateProps = TextProps & {
 const FormattedDate = ({format = 'MMM DD, YYYY', timezone, value, ...props}: FormattedDateProps) => {
     let formattedDate = moment(value).format(format);
     if (timezone) {
-        let zone = timezone as string;
+        let zone: string;
         if (typeof timezone === 'object') {
             zone = timezone.useAutomaticTimezone ? timezone.automaticTimezone : timezone.manualTimezone;
+        } else {
+            zone = timezone;
         }
         formattedDate = moment.tz(value, zone).format(format);
     }

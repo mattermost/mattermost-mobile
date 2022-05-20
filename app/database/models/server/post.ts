@@ -97,16 +97,16 @@ export default class PostModel extends Model implements PostModelInterface {
     @json('props', safeParseJSON) props!: any;
 
     // A draft can be associated with this post for as long as this post is a parent post
-    @lazy drafts = this.collections.get(DRAFT).query(Q.on(POST, 'id', this.id)) as Query<DraftModel>;
+    @lazy drafts = this.collections.get<DraftModel>(DRAFT).query(Q.on(POST, 'id', this.id));
 
     @lazy root = this.collection.query(Q.where('id', this.rootId)) as Query<PostModel>;
 
     /** postsInThread: The thread to which this post is associated */
-    @lazy postsInThread = this.collections.get(POSTS_IN_THREAD).query(
+    @lazy postsInThread = this.collections.get<PostInThreadModel>(POSTS_IN_THREAD).query(
         Q.where('root_id', this.rootId || this.id),
         Q.sortBy('latest', Q.desc),
         Q.take(1),
-    ) as Query<PostInThreadModel>;
+    );
 
     /** files: All the files associated with this Post */
     @children(FILE) files!: Query<FileModel>;
@@ -131,7 +131,12 @@ export default class PostModel extends Model implements PostModelInterface {
             Q.where('root_id', this.id),
         ).destroyAllPermanently();
         try {
-            (await this.thread.fetch())?.destroyPermanently();
+            const thread = await this.thread.fetch();
+            if (thread) {
+                await thread.destroyPermanently();
+                await thread.participants.destroyAllPermanently();
+                await thread.threadsInTeam.destroyAllPermanently();
+            }
         } catch {
             // there is no thread record for this post
         }
@@ -150,4 +155,25 @@ export default class PostModel extends Model implements PostModelInterface {
 
         return false;
     }
+
+    toApi = async (): Promise<Post> => ({
+        id: this.id,
+        create_at: this.createAt,
+        update_at: this.updateAt,
+        edit_at: this.editAt,
+        delete_at: this.deleteAt,
+        is_pinned: this.isPinned,
+        user_id: this.userId,
+        channel_id: this.channelId,
+        root_id: this.rootId,
+        original_id: this.originalId,
+        message: this.message,
+        type: this.type,
+        props: this.props,
+        pending_post_id: this.pendingPostId,
+        file_ids: (await this.files.fetchIds()),
+        metadata: (this.metadata ? this.metadata : {}) as PostMetadata,
+        hashtags: '',
+        reply_count: 0,
+    });
 }

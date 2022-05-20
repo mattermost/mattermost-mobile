@@ -29,6 +29,7 @@ type Props = {
 const edges: Edge[] = ['bottom'];
 const styles = StyleSheet.create({
     flex: {flex: 1},
+    containerStyle: {paddingTop: 12},
 });
 
 const ChannelPostList = ({
@@ -45,17 +46,25 @@ const ChannelPostList = ({
             fetchingPosts.current = true;
             const lastPost = posts[posts.length - 1];
             const result = await fetchPostsBefore(serverUrl, channelId, lastPost.id);
-            canLoadPosts.current = ((result as ProcessedPosts).posts?.length ?? 1) > 0;
             fetchingPosts.current = false;
+            canLoadPosts.current = false;
+            if (!('error' in result)) {
+                canLoadPosts.current = (result.posts?.length ?? 1) > 0;
+            }
         }
     }, 500), [channelId, posts]);
 
-    const intro = <Intro channelId={channelId}/>;
+    const intro = (
+        <Intro
+            channelId={channelId}
+            hasPosts={posts.length > 0}
+        />
+    );
 
     const postList = (
         <PostList
             channelId={channelId}
-            contentContainerStyle={contentContainerStyle}
+            contentContainerStyle={[contentContainerStyle, !isCRTEnabled && styles.containerStyle]}
             isCRTEnabled={isCRTEnabled}
             footer={intro}
             lastViewedAt={lastViewedAt}

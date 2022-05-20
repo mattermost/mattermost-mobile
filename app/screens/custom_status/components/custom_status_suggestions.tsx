@@ -37,6 +37,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginBottom: 12,
             color: changeOpacity(theme.centerChannelColor, 0.5),
             marginLeft: 16,
+            textTransform: 'uppercase',
         },
         block: {
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
@@ -95,7 +96,7 @@ const CustomStatusSuggestions = ({
             <View testID='custom_status.suggestions'>
                 <FormattedText
                     id={t('custom_status.suggestions.title')}
-                    defaultMessage='SUGGESTIONS'
+                    defaultMessage='Suggestions'
                     style={style.title}
                 />
                 <View style={style.block}>{customStatusSuggestions}</View>

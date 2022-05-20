@@ -6,7 +6,6 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$, combineLatest} from 'rxjs';
 import {combineLatestWith, concatAll, map, switchMap} from 'rxjs/operators';
 
-import {MyChannelModel} from '@app/database/models/server';
 import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {getChannelById, observeAllMyChannelNotifyProps, queryMyChannelUnreads} from '@queries/servers/channel';
@@ -19,6 +18,7 @@ import UnreadCategories from './unreads';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
 type WithDatabaseProps = WithDatabaseArgs & {
@@ -50,10 +50,15 @@ const mostRecentFirst = (a: MyChannelModel, b: MyChannelModel) => {
  * Unreads, Mentions, and Muted Mentions Only
  *
  * Mentions on top, then unreads, then muted channels with mentions.
- * Secondary sorting within each of those is by recent posting.
+ * Secondary sorting within each of those is by recent posting or by recent root post if CRT is enabled.
  */
 
-const filterAndSortMyChannels = ([myChannels, notifyProps]: [MyChannelModel[], NotifyProps]): MyChannelModel[] => {
+type FilterAndSortMyChannelsArgs = [
+    MyChannelModel[],
+    NotifyProps,
+]
+
+const filterAndSortMyChannels = ([myChannels, notifyProps]: FilterAndSortMyChannelsArgs): MyChannelModel[] => {
     const mentions: MyChannelModel[] = [];
     const unreads: MyChannelModel[] = [];
     const mutedMentions: MyChannelModel[] = [];
@@ -63,8 +68,10 @@ const filterAndSortMyChannels = ([myChannels, notifyProps]: [MyChannelModel[], N
     };
 
     for (const myChannel of myChannels) {
+        const id = myChannel.id;
+
         // is it a mention?
-        if (!isMuted(myChannel.id) && myChannel.mentionsCount > 0) {
+        if (!isMuted(id) && myChannel.mentionsCount > 0) {
             mentions.push(myChannel);
             continue;
         }
@@ -106,7 +113,7 @@ const enhanced = withObservables(['currentTeamId', 'isTablet', 'onlyUnreads'], (
             ) : of$('');
             const notifyProps = observeAllMyChannelNotifyProps(database);
 
-            const unreads = queryMyChannelUnreads(database, currentTeamId).observe().pipe(
+            const unreads = queryMyChannelUnreads(database, currentTeamId).observeWithColumns(['last_post_at']).pipe(
                 combineLatestWith(notifyProps),
                 map(filterAndSortMyChannels),
                 map(getChannelsFromRelation),

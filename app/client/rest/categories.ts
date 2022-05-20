@@ -5,6 +5,7 @@ export interface ClientCategoriesMix {
     getCategories: (userId: string, teamId: string) => Promise<CategoriesWithOrder>;
     getCategoriesOrder: (userId: string, teamId: string) => Promise<string[]>;
     getCategory: (userId: string, teamId: string, categoryId: string) => Promise<Category>;
+    updateChannelCategories: (userId: string, teamId: string, categories: CategoryWithChannels[]) => Promise<CategoriesWithOrder>;
 }
 
 const ClientCategories = (superclass: any) => class extends superclass {
@@ -24,6 +25,13 @@ const ClientCategories = (superclass: any) => class extends superclass {
         return this.doFetch(
             `${this.getCategoryRoute(userId, teamId, categoryId)}`,
             {method: 'get'},
+        );
+    };
+
+    updateChannelCategories = async (userId: string, teamId: string, categories: CategoryWithChannels[]) => {
+        return this.doFetch(
+            `${this.getCategoriesRoute(userId, teamId)}`,
+            {method: 'put', body: categories},
         );
     };
 };

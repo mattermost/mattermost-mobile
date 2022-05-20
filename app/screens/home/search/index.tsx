@@ -4,7 +4,7 @@
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useMemo, useState, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {ScrollView} from 'react-native';
+import {Text, FlatList, View, Platform, ScrollView, ListRenderItemInfo} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 

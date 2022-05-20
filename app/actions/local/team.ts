@@ -4,8 +4,6 @@
 import DatabaseManager from '@database/manager';
 import {prepareDeleteTeam, getMyTeamById, removeTeamFromTeamHistory} from '@queries/servers/team';
 
-import type TeamModel from '@typings/database/models/servers/team';
-
 export async function removeUserFromTeam(serverUrl: string, teamId: string) {
     const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
     if (!serverDatabase) {
@@ -16,7 +14,10 @@ export async function removeUserFromTeam(serverUrl: string, teamId: string) {
 
     const myTeam = await getMyTeamById(database, teamId);
     if (myTeam) {
-        const team = await myTeam.team.fetch() as TeamModel;
+        const team = await myTeam.team.fetch();
+        if (!team) {
+            return;
+        }
         const models = await prepareDeleteTeam(team);
         const system = await removeTeamFromTeamHistory(operator, team.id, true);
         if (system) {

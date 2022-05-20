@@ -1,21 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {switchToChannel} from '@actions/local/channel';
-import {markChannelAsRead} from '@actions/remote/channel';
-import {fetchRoles} from '@actions/remote/role';
+import {switchToChannelById} from '@actions/remote/channel';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
-import {queryChannelsById, getDefaultChannelForTeam, getMyChannel} from '@queries/servers/channel';
-import {prepareModels} from '@queries/servers/entry';
+import {getMyChannel} from '@queries/servers/channel';
 import {getCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {getMyTeamById} from '@queries/servers/team';
+import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
 import {emitNotificationError} from '@utils/notification';
 
-import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, syncOtherServers, teamsToRemove} from './common';
+import {deferredAppEntryActions, entry, syncOtherServers} from './common';
 
 export async function pushNotificationEntry(serverUrl: string, notification: NotificationWithData) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -23,9 +21,10 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         return {error: `${serverUrl} database not found`};
     }
 
+    const isTabletDevice = await isTablet();
+
     // We only reach this point if we have a channel Id in the notification payload
     const channelId = notification.payload!.channel_id!;
-    const isTabletDevice = await isTablet();
     const {database} = operator;
     const currentTeamId = await getCurrentTeamId(database);
     const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
@@ -46,23 +45,21 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     // To make the switch faster we determine if we already have the team & channel
     const myChannel = await getMyChannel(database, channelId);
     const myTeam = await getMyTeamById(database, teamId);
-    let switchedToTeamAndChanel = false;
-    if (myChannel && myTeam) {
-        switchedToTeamAndChanel = true;
-        await EphemeralStore.waitUntilScreenHasLoaded(Screens.HOME);
-        markChannelAsRead(serverUrl, channelId);
-        await switchToChannel(serverUrl, channelId, teamId);
+    const isCRTEnabled = await getIsCRTEnabled(database);
+
+    await EphemeralStore.waitUntilScreenHasLoaded(Screens.HOME);
+
+    let switchedToChannel = isCRTEnabled;
+    if (myChannel && myTeam && !switchedToChannel) {
+        await switchToChannelById(serverUrl, channelId, teamId);
+        switchedToChannel = true;
     }
 
-    const fetchedData = await fetchAppEntryData(serverUrl, lastDisconnectedAt, teamId);
-    const fetchedError = (fetchedData as AppEntryError).error;
-
-    if (fetchedError) {
-        return {error: fetchedError};
+    const entryData = await entry(serverUrl, teamId, channelId);
+    if ('error' in entryData) {
+        return {error: entryData.error};
     }
-
-    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData as AppEntryData;
-    const rolesData = await fetchRoles(serverUrl, teamData?.memberships, chData?.memberships, meData?.user, true);
+    const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
 
     // There is a chance that after the above request returns
     // the user is no longer part of the team or channel
@@ -73,68 +70,37 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         // We are no longer a part of the team that the notification belongs to
         // Immediately set the new team as the current team in the database so that the UI
         // renders the correct team.
-
         selectedTeamId = initialTeamId;
         if (!isDirectChannel) {
-            if (isTabletDevice) {
-                const channel = await getDefaultChannelForTeam(operator.database, selectedTeamId);
-                selectedChannelId = channel?.id || '';
-            } else {
-                selectedChannelId = '';
-            }
+            selectedChannelId = initialChannelId;
         }
     }
 
-    if (removeChannelIds?.includes(channelId)) {
-        // We are no longer a part of the channel that the notification belongs to
-        // Immediately set the new channel as the current channel in the database so that the UI
-        // renders the correct channel.
-
-        if (isTabletDevice) {
-            const channel = await getDefaultChannelForTeam(operator.database, selectedTeamId);
-            selectedChannelId = channel?.id || '';
-        } else {
-            selectedChannelId = '';
+    if (!switchedToChannel) {
+        if (isTabletDevice || (selectedChannelId === channelId)) {
+            // Make switch again to get the missing data and make sure the team is the correct one
+            switchedToChannel = true;
+            switchToChannelById(serverUrl, selectedChannelId, selectedTeamId);
+        } else if (selectedTeamId !== teamId || selectedChannelId !== channelId) {
+            // If in the end the selected team or channel is different than the one from the notification
+            // we switch again
+            setCurrentTeamAndChannelId(operator, selectedTeamId, selectedChannelId);
         }
-    }
-
-    // If in the end the selected team or channel is different than the one from the notification
-    // we switch again
-    if (selectedTeamId !== teamId || selectedChannelId !== channelId) {
-        setCurrentTeamAndChannelId(operator, selectedTeamId, selectedChannelId);
     }
 
     if (selectedTeamId !== teamId) {
         emitNotificationError('Team');
-    } else if (selectedChannelId === channelId) {
-        if (!switchedToTeamAndChanel) {
-            markChannelAsRead(serverUrl, channelId);
-            switchToChannel(serverUrl, channelId, teamId);
-        }
-    } else {
+    } else if (selectedChannelId !== channelId) {
         emitNotificationError('Channel');
     }
 
-    const removeTeams = await teamsToRemove(serverUrl, removeTeamIds);
+    await operator.batchRecords(models);
 
-    let removeChannels;
-    if (removeChannelIds?.length) {
-        removeChannels = await queryChannelsById(operator.database, removeChannelIds).fetch();
-    }
-
-    const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData});
-    if (rolesData.roles?.length) {
-        modelPromises.push(operator.handleRole({roles: rolesData.roles, prepareRecordsOnly: true}));
-    }
-
-    const models = await Promise.all(modelPromises);
-    await operator.batchRecords(models.flat());
-
-    const {id: currentUserId, locale: currentUserLocale} = meData.user || (await getCurrentUser(operator.database))!;
+    const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(operator.database))!;
     const {config, license} = await getCommonSystemValues(operator.database);
 
-    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, selectedTeamId, selectedChannelId);
+    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, selectedTeamId, switchedToChannel ? selectedChannelId : undefined);
     syncOtherServers(serverUrl);
-    const error = teamData.error || chData?.error || prefData.error || meData.error;
-    return {error, userId: meData?.user?.id};
+
+    return {userId: currentUserId};
 }

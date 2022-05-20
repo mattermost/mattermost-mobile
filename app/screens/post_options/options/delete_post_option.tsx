@@ -15,7 +15,7 @@ import {dismissBottomSheet} from '@screens/navigation';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
-    combinedPost?: Post;
+    combinedPost?: Post | PostModel;
     post: PostModel;
 }
 const DeletePostOption = ({combinedPost, post}: Props) => {
@@ -49,7 +49,7 @@ const DeletePostOption = ({combinedPost, post}: Props) => {
             defaultMessage='Delete'
             iconName='trash-can-outline'
             onPress={onPress}
-            testID='post_options.delete.post.option'
+            testID='post_options.delete_post.option'
             isDestructive={true}
         />
     );

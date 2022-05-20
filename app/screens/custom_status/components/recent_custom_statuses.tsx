@@ -17,6 +17,27 @@ type Props = {
     theme: Theme;
 }
 
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        separator: {
+            marginTop: 32,
+        },
+        title: {
+            fontSize: 17,
+            marginBottom: 12,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            marginLeft: 16,
+            textTransform: 'uppercase',
+        },
+        block: {
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderBottomWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderTopWidth: 1,
+        },
+    };
+});
+
 const RecentCustomStatuses = ({isExpirySupported, onHandleClear, onHandleSuggestionClick, recentCustomStatuses, theme}: Props) => {
     const style = getStyleSheet(theme);
 
@@ -30,7 +51,7 @@ const RecentCustomStatuses = ({isExpirySupported, onHandleClear, onHandleSuggest
             <View testID='custom_status.recents'>
                 <FormattedText
                     id={t('custom_status.suggestions.recent_title')}
-                    defaultMessage='RECENT'
+                    defaultMessage='Recent'
                     style={style.title}
                 />
                 <View style={style.block}>
@@ -53,25 +74,5 @@ const RecentCustomStatuses = ({isExpirySupported, onHandleClear, onHandleSuggest
         </>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        separator: {
-            marginTop: 32,
-        },
-        title: {
-            fontSize: 17,
-            marginBottom: 12,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            marginLeft: 16,
-        },
-        block: {
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderBottomWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderTopWidth: 1,
-        },
-    };
-});
 
 export default RecentCustomStatuses;
