@@ -206,7 +206,8 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
     // This effect checks if we are navigating away and if so, it dismisses the snack bar
     useEffect(() => {
         const onHideSnackBar = (event?: ComponentEvent) => {
-            if (componentId !== event?.componentId) {
+            const evtComponentId = event?.componentId;
+            if ((componentId !== evtComponentId) && (sourceScreen !== evtComponentId)) {
                 animateHiding(true);
             }
         };
