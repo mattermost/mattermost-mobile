@@ -3,11 +3,9 @@
 
 import {Platform, StyleSheet} from 'react-native';
 
+import {getViewPortWidth} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import { typography } from '../typography';
-
-import {getViewPortWidth} from '../images';
+import {typography} from '@utils/typography';
 
 type LanguageObject = {
     [key: string]: {
