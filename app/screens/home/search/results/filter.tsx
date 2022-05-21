@@ -12,6 +12,7 @@ import MenuItem from '@components/menu_item';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import BottomSheetContent from '@screens/bottom_sheet/content';
+import {dismissBottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -139,6 +140,10 @@ const Filter = ({initialState, setParentFilterState}: FilterProps) => {
         setFilterState(clearedState);
     }, []);
 
+    const handleShowResults = useCallback(() => {
+        dismissBottomSheet();
+    }, []);
+
     useEffect(() => {
         setEnableShowResults(JSON.stringify(filterState) === JSON.stringify(initialState));
     }, [filterState, initialState]);
@@ -156,6 +161,7 @@ const Filter = ({initialState, setParentFilterState}: FilterProps) => {
     return (
         <BottomSheetContent
             buttonText={buttonText}
+            onPress={handleShowResults}
             disableButton={enableShowResults}
             showButton={true}
             showTitle={!isTablet}
