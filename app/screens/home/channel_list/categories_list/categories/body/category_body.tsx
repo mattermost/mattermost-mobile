@@ -5,11 +5,14 @@ import React, {useCallback, useEffect, useMemo} from 'react';
 import {FlatList} from 'react-native';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
+import {fetchDirectChannelsInfo} from '@actions/remote/channel';
+import {useServerUrl} from '@app/context/server';
 import ChannelItem from '@components/channel_item';
 import {DMS_CATEGORY} from '@constants/categories';
-import ChannelModel from '@typings/database/models/servers/channel';
+import {isDMorGM} from '@utils/channel';
 
 import type CategoryModel from '@typings/database/models/servers/category';
+import type ChannelModel from '@typings/database/models/servers/channel';
 
 type Props = {
     sortedChannels: ChannelModel[];
@@ -23,6 +26,7 @@ type Props = {
 const extractKey = (item: ChannelModel) => item.id;
 
 const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChannelSwitch, unreadChannels}: Props) => {
+    const serverUrl = useServerUrl();
     const ids = useMemo(() => {
         let filteredChannels = sortedChannels;
 
@@ -35,7 +39,11 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChan
             return filteredChannels.slice(0, limit);
         }
         return filteredChannels;
-    }, [category.type, limit, hiddenChannelIds, sortedChannels]);
+    }, [category.type, limit, hiddenChannelIds, sortedChannels.length]);
+
+    const directChannels = useMemo(() => {
+        return ids.concat(unreadChannels).filter(isDMorGM);
+    }, [ids.length, unreadChannels.length]);
 
     const renderItem = useCallback(({item}: {item: ChannelModel}) => {
         return (
@@ -53,6 +61,11 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChan
     useEffect(() => {
         sharedValue.value = category.collapsed;
     }, [category.collapsed]);
+
+    useEffect(() => {
+        const direct = directChannels.filter(isDMorGM);
+        fetchDirectChannelsInfo(serverUrl, direct);
+    }, [directChannels.length]);
 
     const height = ids.length ? ids.length * 40 : 0;
     const unreadHeight = unreadChannels.length ? unreadChannels.length * 40 : 0;

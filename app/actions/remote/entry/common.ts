@@ -3,7 +3,7 @@
 
 import {Model} from '@nozbe/watermelondb';
 
-import {fetchMissingSidebarInfo, fetchMyChannelsForTeam, MyChannelsRequest} from '@actions/remote/channel';
+import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, MyChannelsRequest} from '@actions/remote/channel';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
@@ -255,13 +255,10 @@ export async function deferredAppEntryActions(
     config: ClientConfig, license: ClientLicense, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
     initialTeamId?: string, initialChannelId?: string) {
     // defer sidebar DM & GM profiles
+    let channelsToFetchProfiles: Set<Channel>|undefined;
     if (chData?.channels?.length && chData.memberships?.length) {
         const directChannels = chData.channels.filter(isDMorGM);
-        const channelsToFetchProfiles = new Set<Channel>(directChannels);
-        if (channelsToFetchProfiles.size) {
-            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config, license);
-            await fetchMissingSidebarInfo(serverUrl, Array.from(channelsToFetchProfiles), currentUserLocale, teammateDisplayNameSetting, currentUserId);
-        }
+        channelsToFetchProfiles = new Set<Channel>(directChannels);
 
         // defer fetching posts for unread channels on initial team
         fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId);
@@ -269,7 +266,7 @@ export async function deferredAppEntryActions(
 
     // defer fetch channels and unread posts for other teams
     if (teamData.teams?.length && teamData.memberships?.length) {
-        await fetchTeamsChannelsAndUnreadPosts(serverUrl, since, teamData.teams, teamData.memberships, initialTeamId);
+        fetchTeamsChannelsAndUnreadPosts(serverUrl, since, teamData.teams, teamData.memberships, initialTeamId);
     }
 
     if (preferences && processIsCRTEnabled(preferences, config)) {
@@ -289,6 +286,12 @@ export async function deferredAppEntryActions(
 
     fetchAllTeams(serverUrl);
     updateAllUsersSince(serverUrl, since);
+    setTimeout(async () => {
+        if (channelsToFetchProfiles?.size) {
+            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config, license);
+            fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), currentUserLocale, teammateDisplayNameSetting, currentUserId);
+        }
+    }, 1000);
 }
 
 export const registerDeviceToken = async (serverUrl: string) => {
