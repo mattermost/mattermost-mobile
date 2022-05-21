@@ -73,6 +73,7 @@ export type EntryResponse = {
     prefData: MyPreferencesRequest;
     teamData: MyTeamsRequest;
     chData?: MyChannelsRequest;
+    meData?: MyUserRequest;
 } | {
     error: unknown;
 }
@@ -121,7 +122,7 @@ export const entry = async (serverUrl: string, teamId?: string, channelId?: stri
 
     const models = await Promise.all(modelPromises);
 
-    return {models: models.flat(), initialChannelId, initialTeamId, prefData, teamData, chData};
+    return {models: models.flat(), initialChannelId, initialTeamId, prefData, teamData, chData, meData};
 };
 
 export const fetchAppEntryData = async (serverUrl: string, since: number, initialTeamId = ''): Promise<AppEntryData | AppEntryError> => {
