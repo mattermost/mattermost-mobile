@@ -76,7 +76,7 @@ const GroupMentionItem = ({
         [insets.left, insets.right, style],
     );
     const completeMention = useCallback(() => {
-        onPress(displayName);
+        onPress(name);
     }, [onPress, displayName]);
 
     return (
