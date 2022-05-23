@@ -11,7 +11,7 @@ export interface ClientGroupsMix {
     getAllGroupsAssociatedToChannel: (channelId: string, filterAllowReference?: boolean) => Promise<{groups: Group[]; total_group_count: number}>;
     getAllTeamsAssociatedToGroup: (groupId: string, filterAllowReference?: boolean) => Promise<{groupTeams: GroupTeam[]}>;
     getAllChannelsAssociatedToGroup: (groupId: string, filterAllowReference?: boolean) => Promise<{groupChannels: GroupChannel[]}>;
-    getAllMembershipsAssociatedToGroup: (groupId: string, filterAllowReference?: boolean) => Promise<{groupMemberships: GroupMembership; total_member_count: number}>;
+    getAllMembershipsAssociatedToGroup: (groupId: string, filterAllowReference?: boolean) => Promise<{groupMemberships: UserProfile[]; total_member_count: number}>;
 }
 
 const ClientGroups = (superclass: any) => class extends superclass {

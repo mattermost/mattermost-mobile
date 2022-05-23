@@ -16,6 +16,7 @@ type Group = {
 };
 
 type GroupTeam = {
+    id?: string;
     team_id: string;
     team_display_name: string;
     team_type: string;
@@ -27,6 +28,7 @@ type GroupTeam = {
 }
 
 type GroupChannel = {
+    id?: string;
     channel_id: string;
     channel_display_name: string;
     channel_type: string;
@@ -42,4 +44,8 @@ type GroupChannel = {
     update_at: number;
 }
 
-type GroupMembership = UserProfile[]
+type GroupMembership = {
+    id?: string;
+    group_id: string;
+    user_id: string;
+}

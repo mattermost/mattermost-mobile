@@ -259,6 +259,22 @@ export type HandleDraftArgs = PrepareOnly & {
   drafts?: Draft[];
 };
 
+export type HandleGroupArgs = PrepareOnly & {
+  groups?: Group[];
+};
+
+export type HandleGroupChannelArgs = PrepareOnly & {
+  groupChannels?: GroupChannel[];
+};
+
+export type HandleGroupTeamArgs = PrepareOnly & {
+  groupTeams?: GroupTeam[];
+};
+
+export type HandleGroupMembershipArgs = PrepareOnly & {
+  groupMemberships?: GroupMembership[];
+};
+
 export type LoginArgs = {
   config: Partial<ClientConfig>;
   ldapOnly?: boolean;
