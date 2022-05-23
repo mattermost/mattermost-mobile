@@ -33,3 +33,33 @@ export const getGroupsForAutocomplete = async (serverUrl: string, query: string)
         return [];
     }
 };
+
+export const getMembershipsForGroup = async (serverUrl: string, groupId: string) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+        return client.getAllMembershipsAssociatedToGroup(groupId);
+    } catch (error) {
+        return undefined;
+    }
+};
+
+export const getTeamsForGroup = async (serverUrl: string, groupId: string) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+        return client.getAllTeamsAssociatedToGroup(groupId);
+    } catch (error) {
+        return undefined;
+    }
+};
+
+export const getChannelsForGroup = async (serverUrl: string, groupId: string) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+        return client.getAllChannelsAssociatedToGroup(groupId);
+    } catch (error) {
+        return undefined;
+    }
+};
