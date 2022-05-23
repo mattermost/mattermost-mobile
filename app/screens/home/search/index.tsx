@@ -15,7 +15,7 @@ import {useCollapsibleHeader} from '@hooks/header';
 // import RecentSearches from './recent_searches/recent_searches';
 // import SearchModifiers from './search_modifiers/search_modifiers';
 // import Filter from './results/filter';
-import Header from './results/header';
+import Header, {MessageTab, SelectTab} from './results/header';
 import Results from './results/results';
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
@@ -30,6 +30,7 @@ const SearchScreen = () => {
     const {searchTerm} = nav.getState().routes[stateIndex].params;
 
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
+    const [selectedTab, setSelectedTab] = useState<SelectTab>(MessageTab);
 
     useEffect(() => {
         setSearchValue(searchTerm);
@@ -68,6 +69,10 @@ const SearchScreen = () => {
     }, [isFocused, stateIndex, insets.top]);
     const paddingTop = useMemo(() => ({flexGrow: 1}), [scrollPaddingTop]);
 
+    const onHeaderSelect = useCallback((value: SelectTab) => {
+        setSelectedTab(value);
+    }, []);
+
     return (
         <FreezeScreen freeze={!isFocused}>
             <NavigationHeader
@@ -93,7 +98,7 @@ const SearchScreen = () => {
             >
                 <Animated.View style={animated}>
                     <Header
-                        onHeaderSelect={() => null}
+                        onHeaderSelect={onHeaderSelect}
                         numberFiles={0}
                         numberMessages={0}
                     />
@@ -115,6 +120,7 @@ const SearchScreen = () => {
                         {/*     setSearchValue={setSearchValue} */}
                         {/* /> */}
                         <Results
+                            selectedTab={selectedTab}
                             searchValue={searchValue}
                         />
                         {/* <Filter/> */}

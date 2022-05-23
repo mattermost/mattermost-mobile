@@ -6,10 +6,11 @@ import {Text, View} from 'react-native';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
 
-import Header from './header';
+import {MessageTab, FileTab, SelectTab} from './header';
 
 type Props = {
     searchValue: string;
+    selectedTab: SelectTab;
 }
 
 const emptyPostResults: Post[] = [];
@@ -29,16 +30,12 @@ const notImplementedComponent = (
 );
 
 const SearchResults = ({searchValue}: Props) => {
-    const [selectedTab, setSelectedTab] = useState<'message-tab' | 'file-tab'>('message-tab');
     const [postResults] = useState<Post[]>(emptyPostResults);
     const [fileResults] = useState<FileInfo[]>(emptyFilesResults);
     const [loading] = useState(false);
 
     // const serverUrl = useServerUrl();
 
-    const onHeaderSelect = useCallback((value: 'message-tab' | 'file-tab') => {
-        setSelectedTab(value);
-    }, []);
 
     // const runSearch = useCallback(debounce(async (sUrl: string, term: string, searchPosts: boolean) => {
     //     let postResults, fileResults;
@@ -79,13 +76,13 @@ const SearchResults = ({searchValue}: Props) => {
     } else if (!searchValue) {
         content = notImplementedComponent;
     } else if (
-        (selectedTab === 'message-tab' && postResults.length === 0) ||
-        (selectedTab === 'file-tab' && fileResults.length === 0)
+        (selectedTab === MessageTab && postResults.length === 0) ||
+        (selectedTab === FileTab && fileResults.length === 0)
     ) {
         content = (
             <NoResultsWithTerm
                 term={searchValue}
-                type={selectedTab === 'file-tab' ? 'files' : 'messages'}
+                type={selectedTab}
             />
         );
     } else {

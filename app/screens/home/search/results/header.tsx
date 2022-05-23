@@ -7,6 +7,10 @@ import {View} from 'react-native';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+export const MessageTab = 'messages';
+export const FileTab = 'files';
+export type SelectTab = typeof MessageTab | typeof FileTab;
+
 import SelectButton from './header_button';
 
 type Props = {
@@ -43,12 +47,12 @@ const Header = ({onHeaderSelect, numberFiles, numberMessages}: Props) => {
     const [tab, setTab] = useState(0);
 
     const handleMessagesPress = useCallback(() => {
-        onHeaderSelect('message-tab');
+        onHeaderSelect(MessageTab);
         setTab(0);
     }, [onHeaderSelect]);
 
     const handleFilesPress = useCallback(() => {
-        onHeaderSelect('file-tab');
+        onHeaderSelect(FileTab);
         setTab(1);
     }, [onHeaderSelect]);
 
