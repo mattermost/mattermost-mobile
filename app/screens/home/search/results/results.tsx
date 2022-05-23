@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useState} from 'react';
 import {Text, View} from 'react-native';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
@@ -9,12 +9,11 @@ import NoResultsWithTerm from '@components/no_results_with_term';
 import {MessageTab, FileTab, SelectTab} from './header';
 
 type Props = {
+    fileResults: FileInfo[];
+    postResults: Post[];
     searchValue: string;
     selectedTab: SelectTab;
 }
-
-const emptyPostResults: Post[] = [];
-const emptyFilesResults: FileInfo[] = [];
 
 const notImplementedComponent = (
     <View
@@ -29,33 +28,8 @@ const notImplementedComponent = (
     </View>
 );
 
-const SearchResults = ({searchValue}: Props) => {
-    const [postResults] = useState<Post[]>(emptyPostResults);
-    const [fileResults] = useState<FileInfo[]>(emptyFilesResults);
-    const [loading] = useState(false);
-
-    // const serverUrl = useServerUrl();
-
-
-    // const runSearch = useCallback(debounce(async (sUrl: string, term: string, searchPosts: boolean) => {
-    //     let postResults, fileResults;
-    //     try {
-    //         const client = NetworkManager.getClient(sUrl);
-    //         [postResults, fileResults] = await Promise.all([
-    //             client.searchPosts(teamId, term, false),
-    //             client.searchFiles(teamId, term),
-    //         ]);
-    //     } catch {
-    //         // do nothing
-    //     }
-
-    //     if (postResults?.posts && Object.keys(postResults.posts)) {
-    //         setPostResults(Object.values(postResults.posts));
-    //     } else {
-    //         setPostResults(emptyPostResults);
-    //     }
-    //     setLoading(false);
-    // }, 200), [])
+const SearchResults = ({searchValue, selectedTab, postResults, fileResults}: Props) => {
+    const [loading, setLoading] = useState(false);
 
     // useEffect(() => {
     //     if (!searchValue) {
