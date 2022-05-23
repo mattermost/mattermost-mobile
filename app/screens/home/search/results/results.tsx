@@ -94,11 +94,6 @@ const SearchResults = ({searchValue}: Props) => {
 
     return (
         <>
-            <Header
-                onHeaderSelect={onHeaderSelect}
-                numberFiles={fileResults.length}
-                numberMessages={postResults.length}
-            />
             {content}
         </>
     );
