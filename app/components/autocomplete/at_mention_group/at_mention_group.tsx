@@ -77,7 +77,7 @@ const GroupMentionItem = ({
     );
     const completeMention = useCallback(() => {
         onPress(name);
-    }, [onPress, displayName]);
+    }, [onPress, name]);
 
     return (
         <TouchableWithFeedback

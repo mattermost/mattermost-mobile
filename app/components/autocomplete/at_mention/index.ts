@@ -10,7 +10,7 @@ import {Permissions} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
 import {observePermissionForChannel} from '@queries/servers/role';
 import {observeLicense} from '@queries/servers/system';
-import {observeCurrentTeam} from '@queries/servers/team';
+import {observeCurrentTeam, observeTeam} from '@queries/servers/team';
 import {observeCurrentUser} from '@queries/servers/user';
 
 import AtMention from './at_mention';
@@ -35,12 +35,7 @@ const enhanced = withObservables([], ({database, channelId}: WithDatabaseArgs & 
     if (channelId) {
         const currentChannel = observeChannel(database, channelId);
         team = currentChannel.pipe(switchMap((c) => {
-            if (c && c.teamId) {
-                const mapTeam = (t: TeamModel | null) => (t ? t.observe() : of$(undefined));
-                return c.team.observe().pipe(switchMap(mapTeam));
-            }
-
-            return observeCurrentTeam(database);
+            return c?.teamId ? observeTeam(database, c.teamId) : observeCurrentTeam(database);
         }));
 
         isChannelConstrained = currentChannel.pipe(

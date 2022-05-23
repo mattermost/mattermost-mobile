@@ -4,7 +4,7 @@
 import {Client} from '@client/rest';
 import NetworkManager from '@managers/network_manager';
 
-export const getGroupsForChannel = async (serverUrl: string, channelId: string) => {
+export const fetchGroupsForChannel = async (serverUrl: string, channelId: string) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -14,7 +14,7 @@ export const getGroupsForChannel = async (serverUrl: string, channelId: string) 
     }
 };
 
-export const getGroupsForTeam = async (serverUrl: string, teamId: string) => {
+export const fetchGroupsForTeam = async (serverUrl: string, teamId: string) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -24,7 +24,7 @@ export const getGroupsForTeam = async (serverUrl: string, teamId: string) => {
     }
 };
 
-export const getGroupsForAutocomplete = async (serverUrl: string, query: string) => {
+export const fetchGroupsForAutocomplete = async (serverUrl: string, query: string) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);

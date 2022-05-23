@@ -5,7 +5,7 @@ import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {Platform, SectionList, SectionListData, SectionListRenderItemInfo} from 'react-native';
 
-import {getGroupsForAutocomplete, getGroupsForChannel, getGroupsForTeam} from '@actions/remote/groups';
+import {fetchGroupsForAutocomplete, fetchGroupsForChannel, fetchGroupsForTeam} from '@actions/remote/groups';
 import {searchUsers} from '@actions/remote/user';
 import GroupMentionItem from '@components/autocomplete/at_mention_group/at_mention_group';
 import AtMentionItem from '@components/autocomplete/at_mention_item';
@@ -173,7 +173,7 @@ const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersInChanne
 };
 
 const getFilteredTeamGroups = async (serverUrl: string, teamId: string, searchTerm: string) => {
-    const response = await getGroupsForTeam(serverUrl, teamId);
+    const response = await fetchGroupsForTeam(serverUrl, teamId);
 
     if (response && response.groups) {
         return response.groups.filter((g) => g.name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -183,7 +183,7 @@ const getFilteredTeamGroups = async (serverUrl: string, teamId: string, searchTe
 };
 
 const getFilteredChannelGroups = async (serverUrl: string, channelId: string, searchTerm: string) => {
-    const response = await getGroupsForChannel(serverUrl, channelId);
+    const response = await fetchGroupsForChannel(serverUrl, channelId);
 
     if (response && response.groups) {
         return response.groups.filter((g) => g.name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -401,7 +401,7 @@ const AtMention = ({
 
             // No constraints? Search all groups
             if (!isTeamConstrained && !isChannelConstrained) {
-                getGroupsForAutocomplete(serverUrl, matchTerm || '').then((g) => {
+                fetchGroupsForAutocomplete(serverUrl, matchTerm || '').then((g) => {
                     setGroups(g.length ? g : emptyGroupList);
                 }).catch(() => {
                     setGroups(emptyGroupList);
