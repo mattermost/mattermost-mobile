@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {ReactElement, useCallback, useMemo} from 'react';
 import {
     Switch,
     Text,
@@ -68,9 +68,9 @@ type Props = {
     action: (value: string | boolean) => void;
     actionType: string;
     actionValue?: string;
-    label: string;
-    selected: boolean;
-    description: string;
+    label: string | ReactElement;
+    selected?: boolean;
+    description: string | ReactElement;
     icon?: string;
 }
 

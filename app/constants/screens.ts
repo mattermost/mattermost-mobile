@@ -34,6 +34,7 @@ export const LOGIN = 'Login';
 export const MENTIONS = 'Mentions';
 export const MFA = 'MFA';
 export const NOTIFICATION_SETTINGS = 'NotificationSettings';
+export const NOTIFICATION_SETTINGS_MENTION = 'NotificationSettingsMention';
 export const PERMALINK = 'Permalink';
 export const POST_OPTIONS = 'PostOptions';
 export const REACTIONS = 'Reactions';
@@ -83,6 +84,7 @@ export default {
     MENTIONS,
     MFA,
     NOTIFICATION_SETTINGS,
+    NOTIFICATION_SETTINGS_MENTION,
     PERMALINK,
     POST_OPTIONS,
     REACTIONS,

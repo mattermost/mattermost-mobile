@@ -39,15 +39,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 type SectionProps = {
-    children: React.ReactChildren;
-    disableHeader: boolean;
-    disableFooter: boolean;
-    footerDefaultMessage: string;
-    footerId: string;
+    children: React.ReactNode;
+    disableHeader?: boolean;
+    disableFooter?: boolean;
+    footerDefaultMessage?: string;
+    footerId?: string;
     headerDefaultMessage: string;
     headerId: string;
-    headerValues: MessageDescriptor;
-    footerValues: MessageDescriptor;
+    headerValues?: MessageDescriptor;
+    footerValues?: MessageDescriptor;
 }
 
 const Section = ({

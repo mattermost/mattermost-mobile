@@ -191,6 +191,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.DISPLAY_SETTINGS:
             screen = withServerDatabase(require('@screens/settings/display').default);
             break;
+        case Screens.NOTIFICATION_SETTINGS_MENTION:
+            screen = withServerDatabase(require('@screens/settings/notification_mention').default);
+            break;
     }
 
     if (screen) {
