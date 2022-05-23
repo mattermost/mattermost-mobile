@@ -105,18 +105,20 @@ class PushNotificationDataRunnable {
             val currentUserId = DatabaseHelper.instance!!.queryCurrentUserId(db)?.removeSurrounding("\"")
             val currentUser = DatabaseHelper.instance!!.find(db, "User", currentUserId)
             val currentUsername = currentUser?.getString("username")
-            var queryParams = if (since == null) "?page=0&per_page=60" else "?since=${since.toLong()}"
+
+            var additionalParams = ""
             if (isCRTEnabled) {
-                queryParams += "&collapsedThreads=true&collapsedThreadsExtended=true"
+                additionalParams = "&collapsedThreads=true&collapsedThreadsExtended=true"
             }
 
-            var endpoint = "/api/v4/channels/$channelId/posts$queryParams"
-            val serverVersion = DatabaseHelper.instance!!.getServerVersion(db)
+            var endpoint: String
             var receivingThreads = isCRTEnabled && rootId != null
             if (receivingThreads) {
-                if (serverVersion != null && ServerVersion.isMinimum(serverVersion, 6, 7)) {
-                    endpoint = "/api/v4/posts/$rootId/thread$queryParams"
-                }
+                var queryParams = "?skipFetchThreads=false&perPage=60&fromCreatedAt=0&direction=up"
+                endpoint = "/api/v4/posts/$rootId/thread$queryParams$additionalParams"
+            } else {
+                var queryParams = if (since == null) "?page=0&per_page=60" else "?since=${since.toLong()}"
+                endpoint = "/api/v4/channels/$channelId/posts$queryParams$additionalParams"
             }
 
             val postsResponse = fetch(serverUrl, endpoint)
