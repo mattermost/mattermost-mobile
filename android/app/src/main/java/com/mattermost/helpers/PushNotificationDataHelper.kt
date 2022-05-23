@@ -2,7 +2,6 @@ package com.mattermost.helpers
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
@@ -30,7 +29,6 @@ class PushNotificationDataRunnable {
         @Synchronized
         suspend fun start(context: Context, initialData: Bundle) {
             try {
-                Log.d("enya", initialData.toString())
                 val serverUrl: String = initialData.getString("server_url") ?: return
                 val channelId = initialData.getString("channel_id")
                 val rootId = initialData.getString("channel_id")
@@ -137,9 +135,9 @@ class PushNotificationDataRunnable {
                         val usernames = mutableListOf<String>()
 
                         val threads = WritableNativeArray()
-                        val threadParticipantUserIds = mutableListOf<String>() // Used to exclude the userIds
-                        val threadParticipantUsernames = mutableListOf<String>() // Used to exclude the usernames
-                        val threadParticipantUsers = HashMap<String, ReadableMap>() // Users
+                        val threadParticipantUserIds = mutableListOf<String>() // Used to exclude the "userIds" present in the thread participants
+                        val threadParticipantUsernames = mutableListOf<String>() // Used to exclude the "usernames" present in the thread participants
+                        val threadParticipantUsers = HashMap<String, ReadableMap>() // All unique users from thread participants are stored here
 
                         while(iterator.hasNextKey()) {
                             val key = iterator.nextKey()
@@ -173,8 +171,8 @@ class PushNotificationDataRunnable {
                                         val participant = participants.getMap(i)
 
                                         val userId = participant.getString("id")
-                                        if (userId != currentUserId) {
-                                            if (userId != null && !threadParticipantUserIds.contains(userId)) {
+                                        if (userId != currentUserId && userId != null) {
+                                            if (!threadParticipantUserIds.contains(userId)) {
                                                 threadParticipantUserIds.add(userId)
                                             }
 
@@ -203,10 +201,11 @@ class PushNotificationDataRunnable {
                             userIds.removeAll { it in threadParticipantUserIds }
                             usernames.removeAll { it in threadParticipantUsernames }
 
+                            // Get users from thread participants
                             val existingThreadParticipantUserIds = DatabaseHelper.instance!!.queryIds(db, "User", threadParticipantUserIds.toTypedArray())
 
+                            // Exclude the thread participants already present in the DB from getting inserted again
                             val usersFromThreads = WritableNativeArray()
-
                             threadParticipantUsers.forEach{ (userId, user) ->
                                 if (!existingThreadParticipantUserIds.contains(userId)) {
                                     usersFromThreads.pushMap(user)

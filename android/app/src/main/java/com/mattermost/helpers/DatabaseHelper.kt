@@ -3,7 +3,6 @@ package com.mattermost.helpers
 import android.content.Context
 import android.net.Uri
 import android.text.TextUtils
-import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.NoSuchKeyException
 import com.facebook.react.bridge.ReadableArray
