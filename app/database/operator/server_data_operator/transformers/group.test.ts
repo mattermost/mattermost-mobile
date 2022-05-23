@@ -1,9 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
- // See LICENSE.txt for license information.
+// See LICENSE.txt for license information.
 
- import {
+import {
     transformGroupRecord,
     transformGroupChannelRecord,
+    transformGroupTeamRecord,
+    transformGroupMembershipRecord,
 } from '@database/operator/server_data_operator/transformers/group';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
 import {OperationType} from '@typings/database/enums';
@@ -17,7 +19,7 @@ describe('*** GROUP Prepare Records Test ***', () => {
 
         const preparedRecords = await transformGroupRecord({
             action: OperationType.CREATE,
-            database: database || ,
+            database: database!,
             value: {
                 record: undefined,
                 raw: {
@@ -54,5 +56,49 @@ describe('*** GROUP Prepare Records Test ***', () => {
 
         expect(preparedRecords).toBeTruthy();
         expect(preparedRecords.collection.modelClass.name).toBe('GroupChannelModel');
+    });
+
+    it('=> transformGroupTeamRecord: should return an array of type GroupTeamModel', async () => {
+        // expect.assertions(3);
+
+        const database = await createTestConnection({databaseName: 'group_prepare_records', setActive: true});
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await transformGroupTeamRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    group_id: 'kow9j1ttnxwig7tnqgebg7dtipno',
+                    team_id: 'team_id',
+                } as GroupTeam,
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords.collection.modelClass.name).toBe('GroupTeamModel');
+    });
+
+    it('=> transformGroupMembershipRecord: should return an array of type GroupMembershipModel', async () => {
+        // expect.assertions(3);
+
+        const database = await createTestConnection({databaseName: 'group_prepare_records', setActive: true});
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await transformGroupMembershipRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    group_id: 'kow9j1ttnxwig7tnqgebg7dtipno',
+                    user_id: 'user_id',
+                } as GroupMembership,
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords.collection.modelClass.name).toBe('GroupMembershipModel');
     });
 });

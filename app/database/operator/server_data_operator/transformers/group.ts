@@ -31,8 +31,6 @@ export const transformGroupRecord = ({action, database, value}: TransformerArgs)
     const record = value.record as GroupModel;
     const isCreateAction = action === OperationType.CREATE;
 
-    console.log('--- transforming group');
-
     // id of group comes from server response
     const fieldsMapper = (group: GroupModel) => {
         group._raw.id = isCreateAction ? (raw?.id ?? group.id) : record.id;

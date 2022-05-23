@@ -6,6 +6,7 @@ import DatabaseManager from '@database/manager';
 import {
     transformGroupRecord,
     transformGroupChannelRecord,
+    transformGroupTeamRecord,
 } from '@database/operator/server_data_operator/transformers/group';
 
 import ServerDataOperator from '..';
@@ -52,7 +53,39 @@ describe('*** Operator: Group Handlers tests ***', () => {
         });
     });
 
-    it('=> handleGroupChannels: should write to the GROUP_CHANNEL table', async () => {
+    it.skip('=> handleGroupTeams: should write to the GROUP_TEAM table', async () => {
+        expect.assertions(2);
+
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
+        const groupTeams: GroupTeam[] = [
+            {
+                group_id: 'kjlw9j1ttnxwig7tnqgebg7dtipno',
+                team_id: 'team-id',
+                team_display_name: 'Test Team',
+                team_type: 'team',
+                auto_add: false,
+                create_at: 0,
+                update_at: 0,
+                delete_at: 0,
+            },
+        ];
+
+        await operator.handleGroupTeams({
+            groupTeams,
+            prepareRecordsOnly: false,
+        });
+
+        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
+            fieldName: 'id',
+            createOrUpdateRawValues: groupTeams,
+            tableName: MM_TABLES.SERVER.GROUP_TEAM,
+            prepareRecordsOnly: false,
+            transformer: transformGroupTeamRecord,
+        });
+    });
+
+    it.skip('=> handleGroupChannels: should write to the GROUP_CHANNEL table', async () => {
         expect.assertions(2);
 
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
