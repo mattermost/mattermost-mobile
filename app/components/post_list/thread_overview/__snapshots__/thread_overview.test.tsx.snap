@@ -10,7 +10,7 @@ exports[`ThreadOverview should match snapshot when post is not saved and 0 repli
         "borderTopWidth": 1,
         "flexDirection": "row",
         "marginVertical": 12,
-        "paddingHorizontal": 20,
+        "paddingHorizontal": 16,
         "paddingVertical": 10,
       },
       Object {
@@ -39,6 +39,7 @@ exports[`ThreadOverview should match snapshot when post is not saved and 0 repli
           "marginHorizontal": 4,
         }
       }
+      testID="thread-overview.no_replies"
     >
       No replies yet
     </Text>
@@ -60,7 +61,7 @@ exports[`ThreadOverview should match snapshot when post is not saved and 0 repli
       onGestureHandlerStateChange={[Function]}
       onHandlerStateChange={[Function]}
       rippleColor={0}
-      testID="thread-overview.save"
+      testID="thread-overview.unsave.button"
     >
       <View
         accessible={true}
@@ -89,7 +90,7 @@ exports[`ThreadOverview should match snapshot when post is not saved and 0 repli
       onGestureHandlerStateChange={[Function]}
       onHandlerStateChange={[Function]}
       rippleColor={0}
-      testID="thread-overview.options"
+      testID="thread-overview.post_options.button"
     >
       <View
         accessible={true}
@@ -122,7 +123,7 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
         "borderTopWidth": 1,
         "flexDirection": "row",
         "marginVertical": 12,
-        "paddingHorizontal": 20,
+        "paddingHorizontal": 16,
         "paddingVertical": 10,
       },
       undefined,
@@ -148,6 +149,7 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
           "marginHorizontal": 4,
         }
       }
+      testID="thread-overview.replies_count"
     >
       2 replies
     </Text>
@@ -169,7 +171,7 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
       onGestureHandlerStateChange={[Function]}
       onHandlerStateChange={[Function]}
       rippleColor={0}
-      testID="thread-overview.save"
+      testID="thread-overview.save.button"
     >
       <View
         accessible={true}
@@ -198,7 +200,7 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
       onGestureHandlerStateChange={[Function]}
       onHandlerStateChange={[Function]}
       rippleColor={0}
-      testID="thread-overview.options"
+      testID="thread-overview.post_options.button"
     >
       <View
         accessible={true}

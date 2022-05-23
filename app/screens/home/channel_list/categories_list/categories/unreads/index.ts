@@ -9,10 +9,8 @@ import {combineLatestWith, concatAll, map, switchMap} from 'rxjs/operators';
 import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {getChannelById, observeAllMyChannelNotifyProps, queryMyChannelUnreads} from '@queries/servers/channel';
-import {observeLastPostAtPerChannelByTeam} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeLastUnreadChannelId} from '@queries/servers/system';
-import {observeIsCRTEnabled} from '@queries/servers/thread';
 
 import {getChannelsFromRelation} from '../body';
 
@@ -42,10 +40,7 @@ type NotifyProps = {
     [key: string]: Partial<ChannelNotifyProps>;
 }
 
-const mostRecentFirst = (lastPostAtPerChannel: Record<string, number> | undefined, a: MyChannelModel, b: MyChannelModel) => {
-    if (lastPostAtPerChannel && lastPostAtPerChannel[a.id] && lastPostAtPerChannel[b.id]) {
-        return lastPostAtPerChannel[b.id] - lastPostAtPerChannel[a.id];
-    }
+const mostRecentFirst = (a: MyChannelModel, b: MyChannelModel) => {
     return b.lastPostAt - a.lastPostAt;
 };
 
@@ -61,10 +56,9 @@ const mostRecentFirst = (lastPostAtPerChannel: Record<string, number> | undefine
 type FilterAndSortMyChannelsArgs = [
     MyChannelModel[],
     NotifyProps,
-    Record<string, number> | undefined
 ]
 
-const filterAndSortMyChannels = ([myChannels, notifyProps, lastPostAtPerChannel]: FilterAndSortMyChannelsArgs): MyChannelModel[] => {
+const filterAndSortMyChannels = ([myChannels, notifyProps]: FilterAndSortMyChannelsArgs): MyChannelModel[] => {
     const mentions: MyChannelModel[] = [];
     const unreads: MyChannelModel[] = [];
     const mutedMentions: MyChannelModel[] = [];
@@ -96,9 +90,9 @@ const filterAndSortMyChannels = ([myChannels, notifyProps, lastPostAtPerChannel]
     }
 
     // Sort
-    mentions.sort(mostRecentFirst.bind(null, lastPostAtPerChannel));
-    unreads.sort(mostRecentFirst.bind(null, lastPostAtPerChannel));
-    mutedMentions.sort(mostRecentFirst.bind(null, lastPostAtPerChannel));
+    mentions.sort(mostRecentFirst);
+    unreads.sort(mostRecentFirst);
+    mutedMentions.sort(mostRecentFirst);
 
     return [...mentions, ...unreads, ...mutedMentions];
 };
@@ -118,13 +112,9 @@ const enhanced = withObservables(['currentTeamId', 'isTablet', 'onlyUnreads'], (
                 switchMap(getC),
             ) : of$('');
             const notifyProps = observeAllMyChannelNotifyProps(database);
-            const crt = observeIsCRTEnabled(database);
-            const lastPostInChannel = crt.pipe(
-                switchMap((enabled) => (enabled && onlyUnreads ? observeLastPostAtPerChannelByTeam(database, currentTeamId) : of$(undefined))),
-            );
 
             const unreads = queryMyChannelUnreads(database, currentTeamId).observeWithColumns(['last_post_at']).pipe(
-                combineLatestWith(notifyProps, lastPostInChannel),
+                combineLatestWith(notifyProps),
                 map(filterAndSortMyChannels),
                 map(getChannelsFromRelation),
                 concatAll(),

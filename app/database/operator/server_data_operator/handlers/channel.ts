@@ -36,7 +36,7 @@ export interface ChannelHandlerMix {
   handleChannelMembership: ({channelMemberships, prepareRecordsOnly}: HandleChannelMembershipArgs) => Promise<ChannelMembershipModel[]>;
   handleMyChannelSettings: ({settings, prepareRecordsOnly}: HandleMyChannelSettingsArgs) => Promise<MyChannelSettingsModel[]>;
   handleChannelInfo: ({channelInfos, prepareRecordsOnly}: HandleChannelInfoArgs) => Promise<ChannelInfoModel[]>;
-  handleMyChannel: ({channels, myChannels, prepareRecordsOnly}: HandleMyChannelArgs) => Promise<MyChannelModel[]>;
+  handleMyChannel: ({channels, myChannels, isCRTEnabled, prepareRecordsOnly}: HandleMyChannelArgs) => Promise<MyChannelModel[]>;
 }
 
 const ChannelHandler = (superclass: any) => class extends superclass {
@@ -138,7 +138,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
      * @throws DataOperatorException
      * @returns {Promise<MyChannelModel[]>}
      */
-    handleMyChannel = async ({channels, myChannels, prepareRecordsOnly = true}: HandleMyChannelArgs): Promise<MyChannelModel[]> => {
+    handleMyChannel = async ({channels, myChannels, isCRTEnabled, prepareRecordsOnly = true}: HandleMyChannelArgs): Promise<MyChannelModel[]> => {
         if (!myChannels?.length) {
             // eslint-disable-next-line no-console
             console.warn(
@@ -157,7 +157,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             return [];
         }
 
-        const isCRTEnabled = await getIsCRTEnabled(this.database);
+        const isCRT = isCRTEnabled ?? await getIsCRTEnabled(this.database);
 
         const channelMap = channels.reduce((result: Record<string, Channel>, channel) => {
             result[channel.id] = channel;
@@ -167,11 +167,13 @@ const ChannelHandler = (superclass: any) => class extends superclass {
         for (const my of myChannels) {
             const channel = channelMap[my.channel_id];
             if (channel) {
-                const total = isCRTEnabled ? channel.total_msg_count_root! : channel.total_msg_count;
-                const myMsgCount = isCRTEnabled ? my.msg_count_root! : my.msg_count;
-                const msgCount = Math.max(0, total - myMsgCount);
+                const totalMsg = isCRT ? channel.total_msg_count_root! : channel.total_msg_count;
+                const myMsgCount = isCRT ? my.msg_count_root! : my.msg_count;
+                const msgCount = Math.max(0, totalMsg - myMsgCount);
                 my.msg_count = msgCount;
+                my.mention_count = isCRT ? my.mention_count_root! : my.mention_count;
                 my.is_unread = msgCount > 0;
+                my.last_post_at = (isCRT ? (my.last_root_post_at || my.last_post_at) : my.last_post_at) || 0;
             }
         }
 

@@ -15,9 +15,16 @@ export const showSnackBar = (passProps: ShowSnackBarArgs) => {
     showOverlay(screen, passProps);
 };
 
-export const showMuteChannelSnackbar = (onAction: () => void) => {
+export const showMuteChannelSnackbar = (muted: boolean, onAction: () => void) => {
     return showSnackBar({
         onAction,
-        barType: SNACK_BAR_TYPE.MUTE_CHANNEL,
+        barType: muted ? SNACK_BAR_TYPE.MUTE_CHANNEL : SNACK_BAR_TYPE.UNMUTE_CHANNEL,
+    });
+};
+
+export const showFavoriteChannelSnackbar = (favorited: boolean, onAction: () => void) => {
+    return showSnackBar({
+        onAction,
+        barType: favorited ? SNACK_BAR_TYPE.FAVORITE_CHANNEL : SNACK_BAR_TYPE.UNFAVORITE_CHANNEL,
     });
 };

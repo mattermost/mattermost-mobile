@@ -199,6 +199,7 @@ export type HandleSystemArgs = PrepareOnly & {
 export type HandleMyChannelArgs = PrepareOnly & {
   channels?: Channel[];
   myChannels?: ChannelMembership[];
+  isCRTEnabled?: boolean;
 };
 
 export type HandleChannelInfoArgs = PrepareOnly &{
