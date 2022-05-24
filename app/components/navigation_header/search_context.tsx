@@ -4,20 +4,20 @@
 import React from 'react';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 
-import {ANDROID_HEADER_SEARCH_INSET} from '@constants/view';
+import {HEADER_SEARCH_BOTTOM_MARGIN, HEADER_SEARCH_HEIGHT} from '@constants/view';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     defaultHeight: number;
     largeHeight: number;
-    scrollValue?: Animated.SharedValue<number>;
+    headerPosition?: Animated.SharedValue<number>;
     theme: Theme;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         backgroundColor: theme.sidebarBg,
-        height: 20,
+        height: HEADER_SEARCH_BOTTOM_MARGIN * 2,
         position: 'absolute',
         width: '100%',
     },
@@ -26,19 +26,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const NavigationHeaderSearchContext = ({
     defaultHeight,
     largeHeight,
-    scrollValue,
+    headerPosition,
     theme,
 }: Props) => {
     const styles = getStyleSheet(theme);
 
     const marginTop = useAnimatedStyle(() => {
-        return {marginTop: (-(scrollValue?.value || 0) + largeHeight + defaultHeight) - ANDROID_HEADER_SEARCH_INSET};
+        return {marginTop: (largeHeight + HEADER_SEARCH_HEIGHT) - (headerPosition?.value || 0)};
     }, [defaultHeight, largeHeight]);
 
     return (
-        <Animated.View style={[styles.container, marginTop]}>
-            <Animated.View style={styles.content}/>
-        </Animated.View>
+        <Animated.View style={[styles.container, marginTop]}/>
     );
 };
 

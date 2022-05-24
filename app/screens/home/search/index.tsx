@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {useIsFocused, useNavigation} from '@react-navigation/native';
-import React, {useMemo, useState, useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {ScrollView} from 'react-native';
+import {ScrollView, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
-import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FreezeScreen from '@components/freeze_screen';
 import NavigationHeader from '@components/navigation_header';
@@ -19,6 +19,16 @@ import Header from './results/header';
 import Results from './results/results';
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
+
+const EDGES: Edge[] = ['bottom', 'left', 'right'];
+
+const styles = StyleSheet.create({
+    grow: {
+        flexGrow: 1,
+    },
+});
+
+const TOP_MARGIN = 12;
 
 const SearchScreen = () => {
     const nav = useNavigation();
@@ -47,16 +57,15 @@ const SearchScreen = () => {
     const isLargeTitle = true;
     const hasSearch = true;
 
-    const {scrollPaddingTop, scrollRef, scrollValue, onScroll} = useCollapsibleHeader<ScrollView>(isLargeTitle, false, hasSearch);
+    const {scrollPaddingTop, scrollRef, headerPosition, onScroll, setHeaderVisibility} = useCollapsibleHeader<ScrollView>(isLargeTitle, false, hasSearch);
     const animated = useAnimatedStyle(() => {
         if (isFocused) {
             return {
                 opacity: withTiming(1, {duration: 150}),
-                marginTop: scrollPaddingTop,
+                marginTop: (scrollPaddingTop + TOP_MARGIN) - headerPosition.value,
                 flex: 1,
                 transform: [
                     {translateX: withTiming(0, {duration: 150})},
-                    {translateY: -Math.min(scrollValue.value, insets.top)},
                 ],
             };
         }
@@ -66,7 +75,6 @@ const SearchScreen = () => {
             transform: [{translateX: withTiming(stateIndex < searchScreenIndex ? 25 : -25, {duration: 150})}],
         };
     }, [isFocused, stateIndex, insets.top]);
-    const paddingTop = useMemo(() => ({flexGrow: 1}), [scrollPaddingTop]);
 
     return (
         <FreezeScreen freeze={!isFocused}>
@@ -79,8 +87,8 @@ const SearchScreen = () => {
                 showBackButton={false}
                 title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
                 hasSearch={hasSearch}
-                scrollValue={scrollValue}
-                forwardedRef={scrollRef}
+                headerPosition={headerPosition}
+                setHeaderVisibility={setHeaderVisibility}
                 onChangeText={setSearchValue}
                 onSubmitEditing={handleSearch}
                 blurOnSubmit={true}
@@ -89,7 +97,7 @@ const SearchScreen = () => {
             />
             <SafeAreaView
                 style={{flex: 1}}
-                edges={['bottom', 'left', 'right']}
+                edges={EDGES}
             >
                 <Animated.View style={animated}>
                     <Header
@@ -98,7 +106,7 @@ const SearchScreen = () => {
                         numberMessages={0}
                     />
                     <AnimatedScrollView
-                        contentContainerStyle={paddingTop}
+                        contentContainerStyle={styles.grow}
                         nestedScrollEnabled={true}
                         scrollToOverflowEnabled={true}
                         showsVerticalScrollIndicator={false}
@@ -115,6 +123,7 @@ const SearchScreen = () => {
                         {/*     setSearchValue={setSearchValue} */}
                         {/* /> */}
                         <Results
+                            selectedTab='message-tab'
                             searchValue={searchValue}
                         />
                         {/* <Filter/> */}

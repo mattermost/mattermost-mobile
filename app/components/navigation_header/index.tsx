@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {FlatList, ScrollView, SectionList} from 'react-native';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -19,14 +18,14 @@ import NavigationHeaderSearchContext from './search_context';
 import type {SearchProps} from '@components/search';
 
 type Props = SearchProps & {
-    forwardedRef?: React.RefObject<ScrollView | FlatList | SectionList>;
     hasSearch?: boolean;
     isLargeTitle?: boolean;
     leftComponent?: React.ReactElement;
     onBackPress?: () => void;
     onTitlePress?: () => void;
     rightButtons?: HeaderRightButton[];
-    scrollValue?: Animated.SharedValue<number>;
+    headerPosition?: Animated.SharedValue<number>;
+    setHeaderVisibility?: (visible: boolean) => void;
     showBackButton?: boolean;
     showHeaderInContext?: boolean;
     subtitle?: string;
@@ -44,19 +43,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const NavigationHeader = ({
-    forwardedRef,
     hasSearch = false,
     isLargeTitle = false,
     leftComponent,
     onBackPress,
     onTitlePress,
     rightButtons,
-    scrollValue,
+    headerPosition,
     showBackButton,
     showHeaderInContext = true,
     subtitle,
     subtitleCompanion,
     title = '',
+    setHeaderVisibility,
     ...searchProps
 }: Props) => {
     const theme = useTheme();
@@ -66,7 +65,7 @@ const NavigationHeader = ({
     const {largeHeight, defaultHeight} = useHeaderHeight(isLargeTitle, Boolean(subtitle), hasSearch);
     const containerHeight = useAnimatedStyle(() => {
         const normal = defaultHeight + insets.top;
-        const calculated = -(insets.top + (scrollValue?.value || 0));
+        const calculated = -(insets.top + (headerPosition?.value || 0));
         return {height: Math.max((normal + calculated), normal)};
     }, []);
 
@@ -82,7 +81,7 @@ const NavigationHeader = ({
                     onBackPress={onBackPress}
                     onTitlePress={onTitlePress}
                     rightButtons={rightButtons}
-                    scrollValue={scrollValue}
+                    headerPosition={headerPosition}
                     showBackButton={showBackButton}
                     subtitle={subtitle}
                     subtitleCompanion={subtitleCompanion}
@@ -95,7 +94,7 @@ const NavigationHeader = ({
                     defaultHeight={defaultHeight}
                     hasSearch={hasSearch}
                     largeHeight={largeHeight}
-                    scrollValue={scrollValue}
+                    headerPosition={headerPosition}
                     subtitle={subtitle}
                     theme={theme}
                     title={title}
@@ -108,16 +107,16 @@ const NavigationHeader = ({
                 <NavigationSearch
                     {...searchProps}
                     defaultHeight={defaultHeight}
-                    forwardedRef={forwardedRef}
                     largeHeight={largeHeight}
-                    scrollValue={scrollValue}
+                    headerPosition={headerPosition}
+                    setHeaderVisibility={setHeaderVisibility}
                     theme={theme}
                     top={insets.top}
                 />
                 <NavigationHeaderSearchContext
                     defaultHeight={defaultHeight}
                     largeHeight={largeHeight}
-                    scrollValue={scrollValue}
+                    headerPosition={headerPosition}
                     theme={theme}
                 />
             </>
@@ -128,7 +127,7 @@ const NavigationHeader = ({
                 hasSearch={hasSearch}
                 isLargeTitle={isLargeTitle}
                 largeHeight={largeHeight}
-                scrollValue={scrollValue}
+                headerPosition={headerPosition}
                 top={insets.top}
             />
             }

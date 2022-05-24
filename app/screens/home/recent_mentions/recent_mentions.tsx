@@ -71,9 +71,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
         });
     }, [serverUrl]);
 
-    const {scrollPaddingTop, scrollRef, scrollValue, onScroll} = useCollapsibleHeader<FlatList<string>>(isLargeTitle, Boolean(subtitle), false);
-
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop}), [scrollPaddingTop]);
+    const {scrollPaddingTop, scrollRef, headerPosition, onScroll} = useCollapsibleHeader<FlatList<string>>(isLargeTitle, Boolean(subtitle), false);
 
     const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [mentions]);
 
@@ -91,6 +89,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
     const animated = useAnimatedStyle(() => {
         return {
             opacity: withTiming(opacity.value, {duration: 150}),
+            marginTop: scrollPaddingTop - headerPosition.value,
             transform: [{translateX: withTiming(translateX.value, {duration: 150})}],
         };
     }, []);
@@ -111,7 +110,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
     }, []);
 
     const renderEmptyList = useCallback(() => (
-        <View style={[styles.empty, paddingTop]}>
+        <View style={styles.empty}>
             {loading ? (
                 <ActivityIndicator
                     color={theme.centerChannelColor}
@@ -121,7 +120,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
                 <EmptyState/>
             )}
         </View>
-    ), [loading, theme, paddingTop]);
+    ), [loading, theme]);
 
     const renderItem = useCallback(({item}) => {
         if (typeof item === 'string') {
@@ -153,8 +152,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
                 subtitle={subtitle}
                 title={title}
                 hasSearch={false}
-                scrollValue={scrollValue}
-                forwardedRef={scrollRef}
+                headerPosition={headerPosition}
             />
             <SafeAreaView
                 style={styles.flex}
@@ -163,7 +161,6 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
                 <Animated.View style={[styles.flex, animated]}>
                     <AnimatedFlatList
                         ref={scrollRef}
-                        contentContainerStyle={paddingTop}
                         ListEmptyComponent={renderEmptyList()}
                         data={posts}
                         scrollToOverflowEnabled={true}
