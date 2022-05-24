@@ -45,6 +45,20 @@ export type AppEntryError = {
     error: Error | ClientError | string;
 }
 
+export type EntryResponse = {
+    models: Model[];
+    initialTeamId: string;
+    initialChannelId: string;
+    prefData: MyPreferencesRequest;
+    teamData: MyTeamsRequest;
+    chData?: MyChannelsRequest;
+    meData?: MyUserRequest;
+} | {
+    error: unknown;
+}
+
+const FETCH_MISSING_DM_TIMEOUT = 1000;
+
 export const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[]) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -66,17 +80,6 @@ export const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[])
     return undefined;
 };
 
-export type EntryResponse = {
-    models: Model[];
-    initialTeamId: string;
-    initialChannelId: string;
-    prefData: MyPreferencesRequest;
-    teamData: MyTeamsRequest;
-    chData?: MyChannelsRequest;
-    meData?: MyUserRequest;
-} | {
-    error: unknown;
-}
 export const entry = async (serverUrl: string, teamId?: string, channelId?: string, since = 0): Promise<EntryResponse> => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -292,7 +295,7 @@ export async function deferredAppEntryActions(
             const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config, license);
             fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), currentUserLocale, teammateDisplayNameSetting, currentUserId);
         }
-    }, 1000);
+    }, FETCH_MISSING_DM_TIMEOUT);
 }
 
 export const registerDeviceToken = async (serverUrl: string) => {

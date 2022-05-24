@@ -454,33 +454,32 @@ export async function fetchMissingDirectChannelsInfo(serverUrl: string, directCh
             fetchProfilesInGroupChannels(serverUrl, gms.map((c) => c.id), false),
         ]);
 
-        for (const result of results) {
-            if (result.data) {
-                result.data.forEach((data) => {
-                    if (data.users?.length) {
-                        users.push(...data.users);
-                        if (data.users.length > 1) {
-                            displayNameByChannel[data.channelId] = displayGroupMessageName(data.users, locale, teammateDisplayNameSetting, currentUserId);
-                        } else {
-                            displayNameByChannel[data.channelId] = displayUsername(data.users[0], locale, teammateDisplayNameSetting, false);
-                        }
+        const profileRequests = results.flat();
+        for (const result of profileRequests) {
+            result.data?.forEach((data) => {
+                if (data.users?.length) {
+                    users.push(...data.users);
+                    if (data.users.length > 1) {
+                        displayNameByChannel[data.channelId] = displayGroupMessageName(data.users, locale, teammateDisplayNameSetting, currentUserId);
+                    } else {
+                        displayNameByChannel[data.channelId] = displayUsername(data.users[0], locale, teammateDisplayNameSetting, false);
                     }
-                });
+                }
+            });
 
-                directChannels.forEach((c) => {
-                    const displayName = displayNameByChannel[c.id];
-                    if (displayName) {
-                        c.display_name = displayName;
-                        c.fake = true;
-                        updatedChannels.add(c);
-                    }
-                });
+            directChannels.forEach((c) => {
+                const displayName = displayNameByChannel[c.id];
+                if (displayName) {
+                    c.display_name = displayName;
+                    c.fake = true;
+                    updatedChannels.add(c);
+                }
+            });
 
-                if (currentUserId) {
-                    const ownDirectChannel = dms.find((dm) => dm.name === getDirectChannelName(currentUserId, currentUserId));
-                    if (ownDirectChannel) {
-                        ownDirectChannel.display_name = displayUsername(currentUser, locale, teammateDisplayNameSetting, false);
-                    }
+            if (currentUserId) {
+                const ownDirectChannel = dms.find((dm) => dm.name === getDirectChannelName(currentUserId, currentUserId));
+                if (ownDirectChannel) {
+                    ownDirectChannel.display_name = displayUsername(currentUser, locale, teammateDisplayNameSetting, false);
                 }
             }
         }
