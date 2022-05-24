@@ -727,7 +727,8 @@ export async function fetchMissingChannelsFromPosts(serverUrl: string, posts: Po
         const channelMemberships = await Promise.all(userPromises);
 
         if (!fetchOnly && channels.length && channelMemberships.length) {
-            const modelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships);
+            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            const modelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships, isCRTEnabled);
             if (modelPromises.length) {
                 const channelModelsArray = await Promise.all(modelPromises);
                 if (channelModelsArray.length) {
@@ -993,7 +994,8 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
         }
 
         if (channels?.length && channelMemberships?.length) {
-            const channelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships);
+            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            const channelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships, isCRTEnabled);
             if (channelPromises.length) {
                 promises.push(...channelPromises);
             }
