@@ -38,11 +38,11 @@ const reducer = (state: typeof INITIAL_STATE, action: Action) => {
 };
 
 const mentionHeaderText = {
-    id: t('mobile.notification_settings_mentions.wordsTrigger'),
+    id: t('notification_settings.mentions.wordsTrigger'),
     defaultMessage: 'WORDS THAT TRIGGER MENTIONS',
 };
 const replyHeaderText = {
-    id: t('mobile.account_notifications.reply.header'),
+    id: t('notification_settings.mention.reply'),
     defaultMessage: 'SEND REPLY NOTIFICATIONS FOR',
 };
 
@@ -94,7 +94,7 @@ const NotificationMention = ({currentUser, mentionKeys, isCRTEnabled}: Notificat
         } else {
             mentionKeysComponent = (
                 <FormattedText
-                    id='mobile.notification_settings_mentions.keywordsDescription'
+                    id='notification_settings.mentions.keywordsDescription'
                     defaultMessage='Other words that trigger a mention'
                 />
             );
@@ -116,7 +116,7 @@ const NotificationMention = ({currentUser, mentionKeys, isCRTEnabled}: Notificat
                                 )}
                                 description={(
                                     <FormattedText
-                                        id='mobile.notification_settings.mentions.sensitiveName'
+                                        id='notification_settings.mentions.sensitiveName'
                                         defaultMessage='Your case sensitive first name'
                                     />
                                 )}
@@ -137,7 +137,7 @@ const NotificationMention = ({currentUser, mentionKeys, isCRTEnabled}: Notificat
                             )}
                             description={(
                                 <FormattedText
-                                    id='mobile.notification_settings.mentions.sensitiveUsername'
+                                    id='notification_settings.mentions.sensitiveUsername'
                                     defaultMessage='Your non-case sensitive username'
                                 />
                             )}
@@ -155,7 +155,7 @@ const NotificationMention = ({currentUser, mentionKeys, isCRTEnabled}: Notificat
                         )}
                         description={(
                             <FormattedText
-                                id='mobile.notification_settings.mentions.channelWide'
+                                id='notification_settings.mentions.channelWide'
                                 defaultMessage='Channel-wide mentions'
                             />
                         )}
@@ -167,7 +167,7 @@ const NotificationMention = ({currentUser, mentionKeys, isCRTEnabled}: Notificat
                     <SectionItem
                         label={(
                             <FormattedText
-                                id='mobile.notification_settings_mentions.keywords'
+                                id='notification_settings.mentions.keywords'
                                 defaultMessage='Keywords'
                             />
                         )}
@@ -223,7 +223,7 @@ const NotificationMention = ({currentUser, mentionKeys, isCRTEnabled}: Notificat
                 <SectionItem
                     label={(
                         <FormattedText
-                            id='mobile.account_notifications.threads_start_participate'
+                            id='notification_settings.threads_start_participate'
                             defaultMessage='Threads that I start or participate in'
                         />
                     )}
@@ -236,7 +236,7 @@ const NotificationMention = ({currentUser, mentionKeys, isCRTEnabled}: Notificat
                 <SectionItem
                     label={(
                         <FormattedText
-                            id='mobile.account_notifications.threads_start'
+                            id='notification_settings.threads_start'
                             defaultMessage='Threads that I start'
                         />
                     )}
@@ -249,7 +249,7 @@ const NotificationMention = ({currentUser, mentionKeys, isCRTEnabled}: Notificat
                 <SectionItem
                     label={(
                         <FormattedText
-                            id='mobile.account_notifications.threads_mentions'
+                            id='notification_settings.threads_mentions'
                             defaultMessage='Mentions in threads'
                         />
                     )}
