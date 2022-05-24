@@ -62,7 +62,7 @@ type Props = {
     action: (value: string | boolean) => void;
     actionType: string;
     actionValue?: string;
-    description: string | ReactElement;
+    description?: string | ReactElement;
     icon?: string;
     label: string | ReactElement;
     selected?: boolean;
