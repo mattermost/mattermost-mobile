@@ -10,7 +10,7 @@ export const fetchGroupsForChannel = async (serverUrl: string, channelId: string
         client = NetworkManager.getClient(serverUrl);
         return client.getAllGroupsAssociatedToChannel(channelId);
     } catch (error) {
-        return undefined;
+        return {error};
     }
 };
 
@@ -20,7 +20,7 @@ export const fetchGroupsForTeam = async (serverUrl: string, teamId: string) => {
         client = NetworkManager.getClient(serverUrl);
         return client.getAllGroupsAssociatedToTeam(teamId);
     } catch (error) {
-        return undefined;
+        return {error};
     }
 };
 
@@ -30,6 +30,6 @@ export const fetchGroupsForAutocomplete = async (serverUrl: string, query: strin
         client = NetworkManager.getClient(serverUrl);
         return client.getGroups(query);
     } catch (error) {
-        return [];
+        return {error};
     }
 };
