@@ -3,7 +3,7 @@
 
 import {MessageDescriptor} from '@formatjs/intl/src/types';
 import React from 'react';
-import {View} from 'react-native';
+import {StyleProp, View, ViewStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
@@ -46,11 +46,19 @@ type SectionProps = {
     children: React.ReactNode;
     disableFooter?: boolean;
     disableHeader?: boolean;
-    footerText: SectionText;
+    footerText?: SectionText;
     headerText: SectionText;
+    containerStyles?: StyleProp<ViewStyle>;
 }
 
-const Section = ({children, disableFooter, disableHeader, footerText, headerText}: SectionProps) => {
+const Section = ({
+    children,
+    containerStyles,
+    disableFooter,
+    disableHeader,
+    footerText,
+    headerText,
+}: SectionProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
@@ -64,7 +72,7 @@ const Section = ({children, disableFooter, disableHeader, footerText, headerText
                     values={headerText.values}
                 />
             }
-            <View style={style.items}>
+            <View style={[style.items, containerStyles]}>
                 {children}
             </View>
             {(footerText && !disableFooter) &&

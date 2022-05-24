@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useReducer} from 'react';
+import React, {useReducer, useState} from 'react';
 import {Alert, ScrollView, Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -13,6 +13,38 @@ import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
+
+const UPDATE_MENTION_PREF = 'UPDATE_MENTION_PREF';
+const INITIAL_STATE = {
+    firstName: false,
+    usernameMention: false,
+    channel: false,
+};
+type Action = {
+    type: string;
+    data: Partial<typeof INITIAL_STATE>;
+}
+const reducer = (state: typeof INITIAL_STATE, action: Action) => {
+    switch (action.type) {
+        case UPDATE_MENTION_PREF:
+            return {
+                ...state,
+                ...action.data,
+            };
+
+        default:
+            return state;
+    }
+};
+
+const mentionHeaderText = {
+    id: t('mobile.notification_settings_mentions.wordsTrigger'),
+    defaultMessage: 'WORDS THAT TRIGGER MENTIONS',
+};
+const replyHeaderText = {
+    id: t('mobile.account_notifications.reply.header'),
+    defaultMessage: 'SEND REPLY NOTIFICATIONS FOR',
+};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -38,39 +70,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         scrollViewContent: {
             paddingVertical: 35,
         },
+        area: {
+            paddingHorizontal: 16,
+        },
     };
 });
-
-const UPDATE_MENTION_PREF = 'UPDATE_MENTION_PREF';
-const INITIAL_STATE = {
-    firstName: false,
-    usernameMention: false,
-    channel: false,
-};
-type Action = {
-    type: string;
-    data: Partial<typeof INITIAL_STATE>;
-}
-const reducer = (state: typeof INITIAL_STATE, action: Action) => {
-    switch (action.type) {
-        case UPDATE_MENTION_PREF:
-            return {
-                ...state,
-                ...action.data,
-            };
-
-        default:
-            return state;
-    }
-};
 
 type NotificationMentionProps = {
     isCRTEnabled?: boolean;
     currentUser?: UserModel;
     mentionKeys: string;
 }
-const NotificationMention = ({currentUser, mentionKeys}: NotificationMentionProps) => {
+const NotificationMention = ({currentUser, mentionKeys, isCRTEnabled}: NotificationMentionProps) => {
     const [{firstName, usernameMention, channel}, dispatch] = useReducer(reducer, INITIAL_STATE);
+    const [replyNotificationType, setReplyNotificationType] = useState('any'); //todo: initialize with value from db/api
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -89,8 +102,8 @@ const NotificationMention = ({currentUser, mentionKeys}: NotificationMentionProp
 
         return (
             <Section
-                headerId={t('mobile.notification_settings_mentions.wordsTrigger')}
-                headerDefaultMessage='WORDS THAT TRIGGER MENTIONS'
+                headerText={mentionHeaderText}
+                containerStyles={styles.area}
             >
                 <>
                     { Boolean(currentUser?.firstName) && (
@@ -197,6 +210,58 @@ const NotificationMention = ({currentUser, mentionKeys}: NotificationMentionProp
         });
     };
 
+    const setReplyNotifications = (notifType: string) => {
+        setReplyNotificationType(notifType);
+    };
+
+    const renderReplySection = () => {
+        return (
+            <Section
+                headerText={replyHeaderText}
+                containerStyles={styles.area}
+            >
+                <SectionItem
+                    label={(
+                        <FormattedText
+                            id='mobile.account_notifications.threads_start_participate'
+                            defaultMessage='Threads that I start or participate in'
+                        />
+                    )}
+                    action={setReplyNotifications}
+                    actionType='select'
+                    actionValue='any'
+                    selected={replyNotificationType === 'any'}
+                />
+                <View style={styles.separator}/>
+                <SectionItem
+                    label={(
+                        <FormattedText
+                            id='mobile.account_notifications.threads_start'
+                            defaultMessage='Threads that I start'
+                        />
+                    )}
+                    action={setReplyNotifications}
+                    actionType='select'
+                    actionValue='root'
+                    selected={replyNotificationType === 'root'}
+                />
+                <View style={styles.separator}/>
+                <SectionItem
+                    label={(
+                        <FormattedText
+                            id='mobile.account_notifications.threads_mentions'
+                            defaultMessage='Mentions in threads'
+                        />
+                    )}
+                    action={setReplyNotifications}
+                    actionType='select'
+                    actionValue='never'
+                    selected={replyNotificationType === 'never'}
+                />
+            </Section>
+        );
+    };
+
     return (
         <SafeAreaView
             edges={['left', 'right']}
@@ -209,9 +274,9 @@ const NotificationMention = ({currentUser, mentionKeys}: NotificationMentionProp
                 alwaysBounceVertical={false}
             >
                 {renderMentionSection()}
-                {/*{!isCollapsedThreadsEnabled && (*/}
-                {/*    renderReplySection(styles)*/}
-                {/*)}*/}
+                {!isCRTEnabled && (
+                    renderReplySection()
+                )}
             </ScrollView>
         </SafeAreaView>
     );
