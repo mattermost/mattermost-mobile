@@ -137,9 +137,12 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
             posts: [created],
             prepareRecordsOnly: true,
         });
-        const {member} = await updateLastPostAt(serverUrl, created.channel_id, created.create_at, true);
-        if (member) {
-            models.push(member);
+        const isCrtReply = isCRTEnabled && created.root_id !== '';
+        if (!isCrtReply) {
+            const {member} = await updateLastPostAt(serverUrl, created.channel_id, created.create_at, true);
+            if (member) {
+                models.push(member);
+            }
         }
         if (isCRTEnabled) {
             const {models: threadModels} = await createThreadFromNewPost(serverUrl, created, true);
@@ -201,6 +204,9 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
         return {error};
     }
 
+    const {database} = operator;
+    const isCRTEnabled = await getIsCRTEnabled(database);
+
     try {
         const timestamp = Date.now();
         const apiPost = await post.toApi();
@@ -232,9 +238,12 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
             posts: [created],
             prepareRecordsOnly: true,
         });
-        const {member} = await updateLastPostAt(serverUrl, created.channel_id, created.create_at, true);
-        if (member) {
-            models.push(member);
+        const isCrtReply = isCRTEnabled && created.root_id !== '';
+        if (!isCrtReply) {
+            const {member} = await updateLastPostAt(serverUrl, created.channel_id, created.create_at, true);
+            if (member) {
+                models.push(member);
+            }
         }
         await operator.batchRecords(models);
     } catch (error: any) {
