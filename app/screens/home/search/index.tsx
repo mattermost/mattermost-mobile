@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useIsFocused, useNavigation} from '@react-navigation/native';
-import React, {useState, useEffect} from 'react';
+import React, {useCallback, useState, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {ScrollView, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
@@ -15,7 +15,7 @@ import {useCollapsibleHeader} from '@hooks/header';
 // import RecentSearches from './recent_searches/recent_searches';
 // import SearchModifiers from './search_modifiers/search_modifiers';
 // import Filter from './results/filter';
-import Header from './results/header';
+import Header, {SelectTab} from './results/header';
 import Results from './results/results';
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
@@ -40,6 +40,7 @@ const SearchScreen = () => {
     const {searchTerm} = nav.getState().routes[stateIndex].params;
 
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
+    const [selectedTab, setSelectedTab] = useState<string>('messages');
 
     useEffect(() => {
         setSearchValue(searchTerm);
@@ -58,6 +59,11 @@ const SearchScreen = () => {
     const hasSearch = true;
 
     const {scrollPaddingTop, scrollRef, headerPosition, onScroll, setHeaderVisibility} = useCollapsibleHeader<ScrollView>(isLargeTitle, false, hasSearch);
+
+    const onHeaderTabSelect = useCallback((tab: SelectTab) => {
+        setSelectedTab(tab);
+    }, [setSelectedTab]);
+
     const animated = useAnimatedStyle(() => {
         if (isFocused) {
             return {
@@ -101,7 +107,7 @@ const SearchScreen = () => {
             >
                 <Animated.View style={animated}>
                     <Header
-                        onHeaderSelect={() => null}
+                        onTabSelect={onHeaderTabSelect}
                         numberFiles={0}
                         numberMessages={0}
                     />
@@ -123,7 +129,7 @@ const SearchScreen = () => {
                         {/*     setSearchValue={setSearchValue} */}
                         {/* /> */}
                         <Results
-                            selectedTab='message-tab'
+                            selectedTab={selectedTab}
                             searchValue={searchValue}
                         />
                         {/* <Filter/> */}
