@@ -205,7 +205,7 @@ export function highlightSearchPatterns(ast: Node, searchPatterns: SearchPattern
     return ast;
 }
 
-// Given a string and an array of regexess, returns the index and length of the first match.
+// Given a string and an array of regexes, returns the index and length of the first match.
 export function getFirstMatch(str: string, patterns: RegExp[]) {
     let firstMatchIndex = -1;
     let firstMatchLength = -1;
