@@ -6,7 +6,7 @@ import React, {useState, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {ScrollView, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
-import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import FreezeScreen from '@components/freeze_screen';
 import NavigationHeader from '@components/navigation_header';
@@ -34,7 +34,6 @@ const SearchScreen = () => {
     const nav = useNavigation();
     const isFocused = useIsFocused();
     const intl = useIntl();
-    const insets = useSafeAreaInsets();
     const searchScreenIndex = 1;
     const stateIndex = nav.getState().index;
     const {searchTerm} = nav.getState().routes[stateIndex].params;
@@ -74,7 +73,7 @@ const SearchScreen = () => {
             opacity: withTiming(0, {duration: 150}),
             transform: [{translateX: withTiming(stateIndex < searchScreenIndex ? 25 : -25, {duration: 150})}],
         };
-    }, [isFocused, stateIndex, insets.top]);
+    }, [isFocused, stateIndex, scrollPaddingTop]);
 
     return (
         <FreezeScreen freeze={!isFocused}>

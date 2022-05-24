@@ -11,6 +11,7 @@ import {useIsTablet} from '@hooks/device';
 type HeaderScrollContext = {
     dragging?: boolean;
     lastValue?: number;
+    updatingHeader?: boolean;
 };
 
 export const useDefaultHeaderHeight = () => {
@@ -58,8 +59,18 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, hasSubtitle: bool
     const onScroll = useAnimatedScrollHandler({
         onBeginDrag: (e: NativeScrollEvent, ctx: HeaderScrollContext) => {
             ctx.lastValue = e.contentOffset.y;
+            ctx.dragging = true;
+            ctx.updatingHeader = false;
         },
         onScroll: (e, ctx) => {
+            if (!ctx.dragging) {
+                return;
+            }
+            if (ctx.updatingHeader) {
+                ctx.lastValue = e.contentOffset.y;
+                ctx.updatingHeader = false;
+                return;
+            }
             const diff = e.contentOffset.y - ctx.lastValue!;
             if (!diff) {
                 return;
@@ -73,9 +84,11 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, hasSubtitle: bool
             } else {
                 const newHeaderPosition = headerPosition.value + diff;
                 headerPosition.value = diff > 0 ? Math.min(maxHeaderHeight, newHeaderPosition) : Math.max(0, newHeaderPosition);
+                ctx.updatingHeader = true;
             }
         },
-        onEndDrag: () => {
+        onEndDrag: (e, ctx: HeaderScrollContext) => {
+            ctx.dragging = false;
             if (headerPosition.value > maxHeaderHeight / 2) {
                 headerPosition.value = maxHeaderHeight;
             } else {

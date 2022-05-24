@@ -13,7 +13,6 @@ type Props = {
     isLargeTitle: boolean;
     largeHeight: number;
     headerPosition?: Animated.SharedValue<number>;
-    top: number;
 }
 
 const NavigationHeaderContext = ({
@@ -22,17 +21,14 @@ const NavigationHeaderContext = ({
     isLargeTitle,
     largeHeight,
     headerPosition,
-    top,
 }: Props) => {
     const marginTop = useAnimatedStyle(() => {
-        const normal = defaultHeight + top;
-        const calculated = -(top + (headerPosition?.value || 0));
         const searchHeight = hasSearch ? HEADER_SEARCH_HEIGHT + HEADER_SEARCH_BOTTOM_MARGIN : 0;
         let margin: number;
         if (isLargeTitle) {
-            margin = Math.max((-(headerPosition?.value || 0) + largeHeight + searchHeight), normal);
+            margin = Math.max((-(headerPosition?.value || 0) + largeHeight + searchHeight), defaultHeight);
         } else {
-            margin = Math.max((normal + calculated), normal);
+            margin = defaultHeight;
         }
 
         return {

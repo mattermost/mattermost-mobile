@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import Animated, {useAnimatedStyle} from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import React, {useMemo} from 'react';
+import {View} from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import {useTheme} from '@context/theme';
 import useHeaderHeight from '@hooks/header';
@@ -59,19 +59,16 @@ const NavigationHeader = ({
     ...searchProps
 }: Props) => {
     const theme = useTheme();
-    const insets = useSafeAreaInsets();
     const styles = getStyleSheet(theme);
 
     const {largeHeight, defaultHeight} = useHeaderHeight(isLargeTitle, Boolean(subtitle), hasSearch);
-    const containerHeight = useAnimatedStyle(() => {
-        const normal = defaultHeight + insets.top;
-        const calculated = -(insets.top + (headerPosition?.value || 0));
-        return {height: Math.max((normal + calculated), normal)};
+    const containerHeight = useMemo(() => {
+        return {height: defaultHeight};
     }, []);
 
     return (
         <>
-            <Animated.View style={[styles.container, containerHeight]}>
+            <View style={[styles.container, containerHeight]}>
                 <Header
                     defaultHeight={defaultHeight}
                     hasSearch={hasSearch}
@@ -87,7 +84,6 @@ const NavigationHeader = ({
                     subtitleCompanion={subtitleCompanion}
                     theme={theme}
                     title={title}
-                    top={insets.top}
                 />
                 {isLargeTitle &&
                 <NavigationHeaderLargeTitle
@@ -98,20 +94,17 @@ const NavigationHeader = ({
                     subtitle={subtitle}
                     theme={theme}
                     title={title}
-                    top={insets.top}
                 />
                 }
-            </Animated.View>
+            </View>
             {hasSearch &&
             <>
                 <NavigationSearch
                     {...searchProps}
-                    defaultHeight={defaultHeight}
                     largeHeight={largeHeight}
                     headerPosition={headerPosition}
                     setHeaderVisibility={setHeaderVisibility}
                     theme={theme}
-                    top={insets.top}
                 />
                 <NavigationHeaderSearchContext
                     defaultHeight={defaultHeight}
@@ -128,7 +121,6 @@ const NavigationHeader = ({
                 isLargeTitle={isLargeTitle}
                 largeHeight={largeHeight}
                 headerPosition={headerPosition}
-                top={insets.top}
             />
             }
         </>

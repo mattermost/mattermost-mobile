@@ -16,7 +16,6 @@ type Props = {
     subtitle?: string;
     theme: Theme;
     title: string;
-    top: number;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -42,15 +41,15 @@ const NavigationHeaderLargeTitle = ({
     subtitle,
     theme,
     title,
-    top,
 }: Props) => {
     const styles = getStyleSheet(theme);
 
     const transform = useAnimatedStyle(() => {
+        const value = headerPosition?.value || 0;
         return {
-            transform: [{translateY: -(top + (headerPosition?.value || 0))}],
+            top: -value,
         };
-    }, [top]);
+    }, []);
 
     const containerStyle = useMemo(() => {
         return [{height: largeHeight - defaultHeight}, styles.container];
