@@ -29,6 +29,7 @@ const globalScreen: SelectedView = {id: Screens.GLOBAL_THREADS, Component: Globa
 
 const AdditionalTabletView = ({onTeam, currentChannelId, isCRTEnabled}: Props) => {
     const [selected, setSelected] = useState<SelectedView>(isCRTEnabled && !currentChannelId ? globalScreen : channelScreen);
+    const [initiaLoad, setInitialLoad] = useState(true);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, (id: string) => {
@@ -44,7 +45,15 @@ const AdditionalTabletView = ({onTeam, currentChannelId, isCRTEnabled}: Props) =
         return () => listener.remove();
     }, []);
 
-    if (!selected || !onTeam) {
+    useEffect(() => {
+        const t = setTimeout(() => {
+            setInitialLoad(false);
+        }, 0);
+
+        return () => clearTimeout(t);
+    }, []);
+
+    if (!selected || !onTeam || initiaLoad) {
         return null;
     }
 
