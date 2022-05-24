@@ -41,13 +41,13 @@ const SearchResults = ({
     } else if (!searchValue) {
         content = notImplementedComponent;
     } else if (
-        (selectedTab === 'message-tab' && postResults.length === 0) ||
-        (selectedTab === 'file-tab' && fileResults.length === 0)
+        (selectedTab === 'messages' && postResults.length === 0) ||
+        (selectedTab === 'files' && fileResults.length === 0)
     ) {
         content = (
             <NoResultsWithTerm
                 term={searchValue}
-                type={selectedTab === 'file-tab' ? 'files' : 'messages'}
+                type={selectedTab}
             />
         );
     } else {

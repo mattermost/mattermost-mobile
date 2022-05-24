@@ -9,8 +9,10 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import SelectButton from './header_button';
 
+export type SelectTab = 'files' | 'messages'
+
 type Props = {
-    onHeaderSelect: (val: string) => void;
+    onTabSelect: (tab: SelectTab) => void;
     numberFiles: number;
     numberMessages: number;
 }
@@ -32,7 +34,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const Header = ({onHeaderSelect, numberFiles, numberMessages}: Props) => {
+const Header = ({onTabSelect, numberFiles, numberMessages}: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
     const intl = useIntl();
@@ -43,14 +45,14 @@ const Header = ({onHeaderSelect, numberFiles, numberMessages}: Props) => {
     const [tab, setTab] = useState(0);
 
     const handleMessagesPress = useCallback(() => {
-        onHeaderSelect('message-tab');
+        onTabSelect('messages');
         setTab(0);
-    }, [onHeaderSelect]);
+    }, [onTabSelect]);
 
     const handleFilesPress = useCallback(() => {
-        onHeaderSelect('file-tab');
+        onTabSelect('files');
         setTab(1);
-    }, [onHeaderSelect]);
+    }, [onTabSelect]);
 
     return (
         <>
