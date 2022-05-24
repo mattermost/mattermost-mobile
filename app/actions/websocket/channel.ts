@@ -10,7 +10,7 @@ import {
     storeMyChannelsForTeam, updateChannelInfoFromChannel, updateMyChannelFromWebsocket,
 } from '@actions/local/channel';
 import {switchToGlobalThreads} from '@actions/local/thread';
-import {fetchMissingSidebarInfo, fetchMyChannel, fetchChannelStats, fetchChannelById, switchToChannelById} from '@actions/remote/channel';
+import {fetchMissingDirectChannelsInfo, fetchMyChannel, fetchChannelStats, fetchChannelById, switchToChannelById} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
@@ -205,7 +205,7 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: WebSocketMe
 
         const teammateDisplayNameSetting = await getTeammateNameDisplay(database);
 
-        const {directChannels, users} = await fetchMissingSidebarInfo(serverUrl, channels, user.locale, teammateDisplayNameSetting, user.id, true);
+        const {directChannels, users} = await fetchMissingDirectChannelsInfo(serverUrl, channels, user.locale, teammateDisplayNameSetting, user.id, true);
         if (!directChannels?.[0]) {
             return;
         }
