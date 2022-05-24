@@ -3,9 +3,7 @@
 
 import {MessageDescriptor} from '@formatjs/intl/src/types';
 import React from 'react';
-import {
-    View,
-} from 'react-native';
+import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
@@ -38,51 +36,43 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-type SectionProps = {
-    children: React.ReactNode;
-    disableHeader?: boolean;
-    disableFooter?: boolean;
-    footerDefaultMessage?: string;
-    footerId?: string;
-    headerDefaultMessage: string;
-    headerId: string;
-    headerValues?: MessageDescriptor;
-    footerValues?: MessageDescriptor;
+type SectionText = {
+    id: string;
+    defaultMessage: string;
+    values?: MessageDescriptor;
 }
 
-const Section = ({
-    children,
-    disableHeader,
-    disableFooter,
-    footerDefaultMessage,
-    footerId,
-    headerDefaultMessage,
-    headerId,
-    headerValues,
-    footerValues,
-}: SectionProps) => {
+type SectionProps = {
+    children: React.ReactNode;
+    disableFooter?: boolean;
+    disableHeader?: boolean;
+    footerText: SectionText;
+    headerText: SectionText;
+}
+
+const Section = ({children, disableFooter, disableHeader, footerText, headerText}: SectionProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
     return (
         <View style={style.container}>
-            {(headerId && !disableHeader) &&
+            {(headerText && !disableHeader) &&
                 <FormattedText
-                    id={headerId}
-                    defaultMessage={headerDefaultMessage}
-                    values={headerValues}
+                    defaultMessage={headerText.defaultMessage}
+                    id={headerText.id}
                     style={style.header}
+                    values={headerText.values}
                 />
             }
             <View style={style.items}>
                 {children}
             </View>
-            {(footerId && !disableFooter) &&
+            {(footerText && !disableFooter) &&
                 <FormattedText
-                    id={footerId}
-                    defaultMessage={footerDefaultMessage}
-                    values={footerValues}
+                    defaultMessage={footerText.defaultMessage}
+                    id={footerText.id}
                     style={style.footer}
+                    values={footerText.values}
                 />
             }
         </View>

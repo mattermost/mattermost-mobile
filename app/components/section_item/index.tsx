@@ -2,12 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {ReactElement, useCallback, useMemo} from 'react';
-import {
-    Switch,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import {Switch, Text, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
@@ -64,14 +59,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 type Props = {
-    testID?: string;
     action: (value: string | boolean) => void;
     actionType: string;
     actionValue?: string;
-    label: string | ReactElement;
-    selected?: boolean;
     description: string | ReactElement;
     icon?: string;
+    label: string | ReactElement;
+    selected?: boolean;
+    testID?: string;
 }
 
 const SectionItem = ({testID = 'sectionItem', action, actionType, actionValue, label, selected, description, icon}: Props) => {
