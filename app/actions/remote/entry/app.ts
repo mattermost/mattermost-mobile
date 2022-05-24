@@ -11,7 +11,7 @@ import {isTablet} from '@utils/helpers';
 
 import {deferredAppEntryActions, entry, registerDeviceToken, syncOtherServers, verifyPushProxy} from './common';
 
-export async function appEntry(serverUrl: string, since = 0) {
+export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -38,7 +38,13 @@ export async function appEntry(serverUrl: string, since = 0) {
     if ('error' in entryData) {
         return {error: entryData.error};
     }
-    const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
+    const {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData} = entryData;
+    if (isUpgrade && meData?.user) {
+        const me = await prepareCommonSystemValues(operator, {currentUserId: meData.user.id});
+        if (me?.length) {
+            await operator.batchRecords(me);
+        }
+    }
 
     let switchToChannel = false;
 
@@ -53,10 +59,9 @@ export async function appEntry(serverUrl: string, since = 0) {
 
     await operator.batchRecords(models);
 
-    const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
+    const {id: currentUserId, locale: currentUserLocale} = meData?.user || (await getCurrentUser(database))!;
     const {config, license} = await getCommonSystemValues(database);
     await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchToChannel ? initialChannelId : undefined);
-
     if (!since) {
         // Load data from other servers
         syncOtherServers(serverUrl);
@@ -69,22 +74,13 @@ export async function appEntry(serverUrl: string, since = 0) {
 
 export async function upgradeEntry(serverUrl: string) {
     const dt = Date.now();
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
 
     try {
         const configAndLicense = await fetchConfigAndLicense(serverUrl, false);
-        const entryData = await appEntry(serverUrl);
-
+        const entryData = await appEntry(serverUrl, 0, true);
         const error = configAndLicense.error || entryData.error;
 
         if (!error) {
-            const models = await prepareCommonSystemValues(operator, {currentUserId: entryData.userId});
-            if (models?.length) {
-                await operator.batchRecords(models);
-            }
             DatabaseManager.updateServerIdentifier(serverUrl, configAndLicense.config!.DiagnosticId);
             DatabaseManager.setActiveServerDatabase(serverUrl);
             deleteV1Data();
