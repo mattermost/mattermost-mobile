@@ -13,7 +13,6 @@ export const fetchGroupsForChannel = async (serverUrl: string, channelId: string
         return client.getAllGroupsAssociatedToChannel(channelId);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };
