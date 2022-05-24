@@ -1,13 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
-import {
-    Switch,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import React, {ReactElement, useCallback, useMemo} from 'react';
+import {Switch, Text, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
@@ -64,14 +59,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 type Props = {
-    testID?: string;
     action: (value: string | boolean) => void;
     actionType: string;
     actionValue?: string;
-    label: string;
-    selected: boolean;
-    description: string;
+    description?: string | ReactElement;
     icon?: string;
+    label: string | ReactElement;
+    selected?: boolean;
+    testID?: string;
 }
 
 const SectionItem = ({testID = 'sectionItem', action, actionType, actionValue, label, selected, description, icon}: Props) => {
