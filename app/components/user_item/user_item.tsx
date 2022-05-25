@@ -5,6 +5,7 @@ import React from 'react';
 import {IntlShape, useIntl} from 'react-intl';
 import {StyleProp, Text, View, ViewStyle} from 'react-native';
 
+import {typography} from '@app/utils/typography';
 import ChannelIcon from '@components/channel_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedText from '@components/formatted_text';
@@ -69,14 +70,14 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             overflow: 'hidden',
         },
         rowFullname: {
-            fontSize: 15,
+            ...typography('Body', 200),
             color: theme.centerChannelColor,
-            fontFamily: 'OpenSans',
             paddingLeft: 4,
             flexShrink: 1,
         },
         rowUsername: {
-            color: changeOpacity(theme.centerChannelColor, 0.56),
+            ...typography('Body', 200),
+            color: changeOpacity(theme.centerChannelColor, 0.64),
             fontSize: 15,
             fontFamily: 'OpenSans',
             flexShrink: 5,
