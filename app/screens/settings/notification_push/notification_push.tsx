@@ -50,10 +50,10 @@ type NotificationMobileProps = {
     isCRTEnabled: boolean;
     sendPushNotifications: boolean;
 };
-const NotificationMobile = ({isCRTEnabled, sendPushNotifications}: NotificationMobileProps) => {
+const NotificationPush = ({isCRTEnabled, sendPushNotifications}: NotificationMobileProps) => {
     const theme = useTheme();
     const [pushStatus, setPushStatus] = useState<PushStatus>('online');//fixme:
-    const [, setPushPref] = useState<PushStatus>('online');//fixme:
+    const [pushPref, setPushPref] = useState<PushStatus>('online');//fixme:
     const [pushThread, setPushThreadPref] = useState<PushStatus>('online');//fixme:
 
     const styles = getStyleSheet(theme);
@@ -83,10 +83,10 @@ const NotificationMobile = ({isCRTEnabled, sendPushNotifications}: NotificationM
             >
                 <MobileSendPush
                     sendPushNotifications={sendPushNotifications}
-                    pushStatus={pushStatus}
+                    pushStatus={pushPref}
                     setMobilePushPref={setMobilePushPref}
                 />
-                {isCRTEnabled && pushStatus === 'mention' && (
+                {isCRTEnabled && pushPref === 'mention' && (
                     <MobilePushThread
                         pushThread={pushThread}
                         onMobilePushThreadChanged={onMobilePushThreadChanged}
@@ -102,4 +102,4 @@ const NotificationMobile = ({isCRTEnabled, sendPushNotifications}: NotificationM
     );
 };
 
-export default NotificationMobile;
+export default NotificationPush;

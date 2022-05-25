@@ -8,7 +8,7 @@ import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {WithDatabaseArgs} from '@typings/database/database';
 
-import NotificationMobile from './notification_push';
+import NotificationPush from './notification_push';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
@@ -17,4 +17,4 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     };
 });
 
-export default withDatabase(enhanced(NotificationMobile));
+export default withDatabase(enhanced(NotificationPush));
