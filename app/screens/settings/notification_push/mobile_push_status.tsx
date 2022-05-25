@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState} from 'react';
+import React from 'react';
 import {View} from 'react-native';
 
 import Block from '@components/block';
@@ -9,18 +9,19 @@ import BlockItem from '@components/block_item';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
+import {PushStatus} from '@screens/settings/notification_push/notification_push';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-const replyHeaderText = {
-    id: t('notification_settings.mention.reply'),
-    defaultMessage: 'Send reply notifications for',
+const headerText = {
+    id: t('notification_settings.mobile.push_status'),
+    defaultMessage: 'Trigger push notifications when',
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        area: {
-            paddingHorizontal: 16,
+        upperCase: {
+            textTransform: 'uppercase',
         },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
@@ -28,8 +29,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 1,
             marginLeft: 15,
         },
-        upperCase: {
-            textTransform: 'uppercase',
+        area: {
+            paddingHorizontal: 16,
         },
         label: {
             color: theme.centerChannelColor,
@@ -40,64 +41,69 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const ReplySettings = () => {
-    const [replyNotificationType, setReplyNotificationType] = useState('any'); //todo: initialize with value from db/api
+type MobilePushStatusProps = {
+    sendPushNotifications: boolean;
+    pushStatus: PushStatus;
+    setMobilePushStatus: (status: PushStatus) => void;
+}
+const MobilePushStatus = ({sendPushNotifications, pushStatus, setMobilePushStatus}: MobilePushStatusProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const showSection = sendPushNotifications && pushStatus !== 'none';
 
-    const setReplyNotifications = (notifType: string) => {
-        setReplyNotificationType(notifType);
-    };
+    if (!showSection) {
+        return null;
+    }
 
     return (
         <Block
-            headerText={replyHeaderText}
-            containerStyles={styles.area}
+            headerText={headerText}
             headerStyles={styles.upperCase}
+            containerStyles={styles.area}
         >
             <BlockItem
                 label={(
                     <FormattedText
-                        id='notification_settings.threads_start_participate'
-                        defaultMessage='Threads that I start or participate in'
+                        id='notification_settings.mobile.online'
+                        defaultMessage='Online, away or offline'
                         style={styles.label}
                     />
                 )}
-                action={setReplyNotifications}
+                action={setMobilePushStatus}
                 actionType='select'
-                actionValue='any'
-                selected={replyNotificationType === 'any'}
+                actionValue='online'
+                selected={pushStatus === 'online'}
             />
             <View style={styles.separator}/>
             <BlockItem
                 label={(
                     <FormattedText
-                        id='notification_settings.threads_start'
-                        defaultMessage='Threads that I start'
+                        id='notification_settings.mobile.away'
+                        defaultMessage='Away or offline'
                         style={styles.label}
                     />
                 )}
-                action={setReplyNotifications}
+                action={setMobilePushStatus}
                 actionType='select'
-                actionValue='root'
-                selected={replyNotificationType === 'root'}
+                actionValue='away'
+                selected={pushStatus === 'away'}
             />
             <View style={styles.separator}/>
             <BlockItem
                 label={(
                     <FormattedText
-                        id='notification_settings.threads_mentions'
-                        defaultMessage='Mentions in threads'
+                        id='notification_settings.mobile.offline'
+                        defaultMessage='Offline'
                         style={styles.label}
                     />
                 )}
-                action={setReplyNotifications}
+                action={setMobilePushStatus}
                 actionType='select'
-                actionValue='never'
-                selected={replyNotificationType === 'never'}
+                actionValue='offline'
+                selected={pushStatus === 'offline'}
             />
         </Block>
     );
 };
 
-export default ReplySettings;
+export default MobilePushStatus;

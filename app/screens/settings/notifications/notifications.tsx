@@ -70,6 +70,16 @@ const Notifications = ({isCRTEnabled, enableAutoResponder}: NotificationsProps) 
         goToScreen(screen, title, passProps);
     };
 
+    const goToNotificationSettingsPush = () => {
+        const screen = Screens.SETTINGS_NOTIFICATION_PUSH;
+        const title = intl.formatMessage({
+            id: 'mobile.notification_settings.mobile_title',
+            defaultMessage: 'Mobile Notifications',
+        });
+
+        goToScreen(screen, title);
+    };
+
     return (
         <SafeAreaView
             edges={edges}
@@ -89,7 +99,7 @@ const Notifications = ({isCRTEnabled, enableAutoResponder}: NotificationsProps) 
                 />
                 <SettingOption
                     optionName='push_notification'
-                    onPress={onPressHandler}
+                    onPress={goToNotificationSettingsPush}
                 />
                 {enableAutoResponder && (
                     <SettingOption

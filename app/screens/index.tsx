@@ -194,6 +194,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.SETTINGS_NOTIFICATION_MENTION:
             screen = withServerDatabase(require('@screens/settings/notification_mention').default);
             break;
+        case Screens.SETTINGS_NOTIFICATION_PUSH:
+            screen = withServerDatabase(require('@screens/settings/notification_push/notification_push').default);
+            break;
     }
 
     if (screen) {
