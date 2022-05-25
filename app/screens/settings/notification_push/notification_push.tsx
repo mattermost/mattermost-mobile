@@ -52,9 +52,9 @@ type NotificationMobileProps = {
 };
 const NotificationPush = ({isCRTEnabled, sendPushNotifications}: NotificationMobileProps) => {
     const theme = useTheme();
-    const [pushStatus, setPushStatus] = useState<PushStatus>('online');//fixme:
-    const [pushPref, setPushPref] = useState<PushStatus>('online');//fixme:
-    const [pushThread, setPushThreadPref] = useState<PushStatus>('online');//fixme:
+    const [pushStatus, setPushStatus] = useState<PushStatus>('online');
+    const [pushPref, setPushPref] = useState<PushStatus>('online');
+    const [pushThread, setPushThreadPref] = useState<PushStatus>('online');
 
     const styles = getStyleSheet(theme);
 
@@ -73,7 +73,7 @@ const NotificationPush = ({isCRTEnabled, sendPushNotifications}: NotificationMob
     return (
         <SafeAreaView
             edges={['left', 'right']}
-            testID='notification_mobile.screen'
+            testID='notification_push.screen'
             style={styles.container}
         >
             <ScrollView
@@ -92,11 +92,13 @@ const NotificationPush = ({isCRTEnabled, sendPushNotifications}: NotificationMob
                         onMobilePushThreadChanged={onMobilePushThreadChanged}
                     />
                 )}
-                <MobilePushStatus
-                    sendPushNotifications={sendPushNotifications}
-                    pushStatus={pushStatus}
-                    setMobilePushStatus={setMobilePushStatus}
-                />
+                {sendPushNotifications && pushPref !== 'none' && (
+                    <MobilePushStatus
+                        sendPushNotifications={sendPushNotifications}
+                        pushStatus={pushStatus}
+                        setMobilePushStatus={setMobilePushStatus}
+                    />
+                )}
             </ScrollView>
         </SafeAreaView>
     );
