@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {NativeScrollEvent, Platform} from 'react-native';
-import Animated, {useAnimatedRef, useAnimatedScrollHandler, useSharedValue} from 'react-native-reanimated';
+import Animated, {useAnimatedRef, useAnimatedScrollHandler, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import ViewConstants from '@constants/view';
 import {useIsTablet} from '@hooks/device';
@@ -98,7 +98,7 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, hasSubtitle: bool
     }, [maxHeaderHeight]);
 
     const setHeaderVisibility = useCallback((visible: boolean) => {
-        headerPosition.value = visible ? 0 : maxHeaderHeight;
+        headerPosition.value = withTiming(visible ? 0 : maxHeaderHeight, {duration: 200});
     }, [maxHeaderHeight]);
 
     let searchPadding = 0;
