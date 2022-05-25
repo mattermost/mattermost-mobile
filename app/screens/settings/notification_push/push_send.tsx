@@ -15,7 +15,7 @@ import {typography} from '@utils/typography';
 
 const headerText = {
     id: t('mobile.notification_settings_mobile.push_activity'),
-    defaultMessage: 'SEND NOTIFICATIONS',
+    defaultMessage: 'Send notifications',
 };
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {

@@ -6,10 +6,11 @@ import {ScrollView} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
-import MobileSendPush from '@screens/settings/notification_push/mobile_send_push';
+import MobileSendPush from '@screens/settings/notification_push/push_send';
+import MobilePushThread from '@screens/settings/notification_push/push_thread';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import MobilePushStatus from './mobile_push_status';
+import MobilePushStatus from './push_status';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -47,13 +48,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 export type PushStatus = 'away' | 'online' | 'offline' | 'none' | 'mention' | 'all';
 
 type NotificationMobileProps = {
+    isCRTEnabled: boolean;
     sendPushNotifications: boolean;
-    isCRTEnabled?: boolean;
 };
-const NotificationMobile = ({sendPushNotifications}: NotificationMobileProps) => {
+const NotificationMobile = ({isCRTEnabled, sendPushNotifications}: NotificationMobileProps) => {
     const theme = useTheme();
-    const [pushStatus, setPushStatus] = useState<PushStatus>('online');
-    const [, setPushPref] = useState<PushStatus>('online');
+    const [pushStatus, setPushStatus] = useState<PushStatus>('online');//fixme:
+    const [, setPushPref] = useState<PushStatus>('online');//fixme:
+    const [pushThread, setPushThreadPref] = useState<PushStatus>('online');//fixme:
 
     const styles = getStyleSheet(theme);
 
@@ -63,6 +65,10 @@ const NotificationMobile = ({sendPushNotifications}: NotificationMobileProps) =>
 
     const setMobilePushPref = (status: PushStatus) => {
         setPushPref(status);
+    };
+
+    const onMobilePushThreadChanged = (status: PushStatus) => {
+        setPushThreadPref(status);
     };
 
     return (
@@ -81,16 +87,17 @@ const NotificationMobile = ({sendPushNotifications}: NotificationMobileProps) =>
                     pushStatus={pushStatus}
                     setMobilePushPref={setMobilePushPref}
                 />
+                {isCRTEnabled && pushStatus === 'mention' && (
+                    <MobilePushThread
+                        pushThread={pushThread}
+                        onMobilePushThreadChanged={onMobilePushThreadChanged}
+                    />
+                )}
                 <MobilePushStatus
                     sendPushNotifications={sendPushNotifications}
                     pushStatus={pushStatus}
                     setMobilePushStatus={setMobilePushStatus}
                 />
-
-                {/*{isCRTEnabled && pushStatus === 'mention' && (*/}
-                {/*    this.renderMobilePushThreadsSection(styles)*/}
-                {/*)}*/}
-                {/*{this.renderMobilePushStatusSection(styles)}*/}
             </ScrollView>
         </SafeAreaView>
     );
