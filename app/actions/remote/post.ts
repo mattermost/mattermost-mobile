@@ -331,7 +331,8 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
 
             let lastPostAt = 0;
             for (const post of data.posts) {
-                if (!isCRTEnabled || post.root_id) {
+                const isCrtReply = isCRTEnabled && post.root_id !== '';
+                if (!isCrtReply) {
                     lastPostAt = post.create_at > lastPostAt ? post.create_at : lastPostAt;
                 }
             }
