@@ -37,7 +37,7 @@ const reducer = (state: typeof INITIAL_STATE, action: Action) => {
 
 const mentionHeaderText = {
     id: t('notification_settings.mentions.wordsTrigger'),
-    defaultMessage: 'WORDS THAT TRIGGER MENTIONS',
+    defaultMessage: 'Words that trigger mentions',
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -50,6 +50,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         area: {
             paddingHorizontal: 16,
+        },
+        upperCase: {
+            textTransform: 'uppercase',
         },
     };
 });
@@ -108,6 +111,7 @@ const MentionSettings = ({currentUser, mentionKeys}: MentionSectionProps) => {
     return (
         <Section
             headerText={mentionHeaderText}
+            headerStyles={styles.upperCase}
             containerStyles={styles.area}
         >
             <>

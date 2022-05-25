@@ -13,7 +13,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const replyHeaderText = {
     id: t('notification_settings.mention.reply'),
-    defaultMessage: 'SEND REPLY NOTIFICATIONS FOR',
+    defaultMessage: 'Send reply notifications for',
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -26,6 +26,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             height: 1,
             marginLeft: 15,
+        },
+        upperCase: {
+            textTransform: 'uppercase',
         },
     };
 });
@@ -43,6 +46,7 @@ const ReplySettings = () => {
         <Section
             headerText={replyHeaderText}
             containerStyles={styles.area}
+            headerStyles={styles.upperCase}
         >
             <SectionItem
                 label={(
