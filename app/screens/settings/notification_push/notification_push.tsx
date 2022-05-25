@@ -6,6 +6,7 @@ import {ScrollView} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
+import MobileSendPush from '@screens/settings/notification_push/mobile_send_push';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import MobilePushStatus from './mobile_push_status';
@@ -43,7 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
     };
 });
-export type PushStatus = 'away' | 'online' | 'offline' | 'none' | 'mention';
+export type PushStatus = 'away' | 'online' | 'offline' | 'none' | 'mention' | 'all';
 
 type NotificationMobileProps = {
     sendPushNotifications: boolean;
@@ -52,11 +53,16 @@ type NotificationMobileProps = {
 const NotificationMobile = ({sendPushNotifications}: NotificationMobileProps) => {
     const theme = useTheme();
     const [pushStatus, setPushStatus] = useState<PushStatus>('online');
+    const [, setPushPref] = useState<PushStatus>('online');
 
     const styles = getStyleSheet(theme);
 
     const setMobilePushStatus = (status: PushStatus) => {
         setPushStatus(status);
+    };
+
+    const setMobilePushPref = (status: PushStatus) => {
+        setPushPref(status);
     };
 
     return (
@@ -70,11 +76,17 @@ const NotificationMobile = ({sendPushNotifications}: NotificationMobileProps) =>
                 contentContainerStyle={styles.scrollViewContent}
                 alwaysBounceVertical={false}
             >
+                <MobileSendPush
+                    sendPushNotifications={sendPushNotifications}
+                    pushStatus={pushStatus}
+                    setMobilePushPref={setMobilePushPref}
+                />
                 <MobilePushStatus
                     sendPushNotifications={sendPushNotifications}
                     pushStatus={pushStatus}
                     setMobilePushStatus={setMobilePushStatus}
                 />
+
                 {/*{isCRTEnabled && pushStatus === 'mention' && (*/}
                 {/*    this.renderMobilePushThreadsSection(styles)*/}
                 {/*)}*/}
