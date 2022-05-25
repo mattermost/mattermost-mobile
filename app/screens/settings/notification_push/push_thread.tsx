@@ -29,9 +29,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         label: {
             color: theme.centerChannelColor,
-            ...typography('Body', 400, 'Regular'),
-            fontSize: 16,
-            lineHeight: 24,
+            ...typography('Body', 100, 'Regular'),
         },
     };
 });
@@ -58,6 +56,8 @@ const MobilePushThread = ({pushThread, onMobilePushThreadChanged}: MobilePushThr
         <Block
             headerText={headerText}
             footerText={footerText}
+            headerStyles={styles.upperCase}
+            containerStyles={styles.area}
         >
             <BlockItem
                 label={(

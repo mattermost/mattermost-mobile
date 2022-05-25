@@ -42,7 +42,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingHorizontal: 15,
             paddingVertical: 10,
         },
-
     };
 });
 export type PushStatus = 'away' | 'online' | 'offline' | 'none' | 'mention' | 'all';

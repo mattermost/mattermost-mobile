@@ -34,9 +34,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         label: {
             color: theme.centerChannelColor,
-            ...typography('Body', 400, 'Regular'),
-            fontSize: 16,
-            lineHeight: 24,
+            ...typography('Body', 100, 'Regular'),
+
         },
     };
 });
