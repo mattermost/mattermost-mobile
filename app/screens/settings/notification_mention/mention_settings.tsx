@@ -4,9 +4,9 @@
 import React, {useReducer} from 'react';
 import {Alert, Text, View} from 'react-native';
 
+import Block from '@components/block';
+import BlockItem from '@components/block_item';
 import FormattedText from '@components/formatted_text';
-import Section from '@components/section';
-import SectionItem from '@components/section_item';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import UserModel from '@typings/database/models/servers/user';
@@ -109,7 +109,7 @@ const MentionSettings = ({currentUser, mentionKeys}: MentionSectionProps) => {
     };
 
     return (
-        <Section
+        <Block
             headerText={mentionHeaderText}
             headerStyles={styles.upperCase}
             containerStyles={styles.area}
@@ -117,7 +117,7 @@ const MentionSettings = ({currentUser, mentionKeys}: MentionSectionProps) => {
             <>
                 { Boolean(currentUser?.firstName) && (
                     <>
-                        <SectionItem
+                        <BlockItem
                             label={(
                                 <Text>
                                     {currentUser!.firstName}
@@ -138,7 +138,7 @@ const MentionSettings = ({currentUser, mentionKeys}: MentionSectionProps) => {
                 )
                 }
                 {Boolean(currentUser?.username) && (
-                    <SectionItem
+                    <BlockItem
                         label={(
                             <Text>
                                 {currentUser!.username}
@@ -156,7 +156,7 @@ const MentionSettings = ({currentUser, mentionKeys}: MentionSectionProps) => {
                     />
                 )}
                 <View style={styles.separator}/>
-                <SectionItem
+                <BlockItem
                     label={(
                         <Text>
                             {'@channel, @all, @here'}
@@ -173,7 +173,7 @@ const MentionSettings = ({currentUser, mentionKeys}: MentionSectionProps) => {
                     selected={channel}
                 />
                 <View style={styles.separator}/>
-                <SectionItem
+                <BlockItem
                     label={(
                         <FormattedText
                             id='notification_settings.mentions.keywords'
@@ -185,7 +185,7 @@ const MentionSettings = ({currentUser, mentionKeys}: MentionSectionProps) => {
                     actionType='arrow'
                 />
             </>
-        </Section>
+        </Block>
     );
 };
 

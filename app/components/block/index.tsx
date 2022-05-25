@@ -53,7 +53,7 @@ type SectionProps = {
     footerStyles?: StyleProp<TextStyle>;
 }
 
-const Section = ({
+const Block = ({
     children,
     containerStyles,
     disableFooter,
@@ -91,4 +91,4 @@ const Section = ({
     );
 };
 
-export default Section;
+export default Block;

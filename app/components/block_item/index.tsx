@@ -69,7 +69,7 @@ type Props = {
     testID?: string;
 }
 
-const SectionItem = ({testID = 'sectionItem', action, actionType, actionValue, label, selected, description, icon}: Props) => {
+const BlockItem = ({testID = 'sectionItem', action, actionType, actionValue, label, selected, description, icon}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
@@ -154,4 +154,4 @@ const SectionItem = ({testID = 'sectionItem', action, actionType, actionValue, l
     return component;
 };
 
-export default SectionItem;
+export default BlockItem;

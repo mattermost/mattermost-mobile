@@ -4,9 +4,9 @@
 import React, {useState} from 'react';
 import {View} from 'react-native';
 
+import Block from '@components/block';
+import BlockItem from '@components/block_item';
 import FormattedText from '@components/formatted_text';
-import Section from '@components/section';
-import SectionItem from '@components/section_item';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -43,12 +43,12 @@ const ReplySettings = () => {
     };
 
     return (
-        <Section
+        <Block
             headerText={replyHeaderText}
             containerStyles={styles.area}
             headerStyles={styles.upperCase}
         >
-            <SectionItem
+            <BlockItem
                 label={(
                     <FormattedText
                         id='notification_settings.threads_start_participate'
@@ -61,7 +61,7 @@ const ReplySettings = () => {
                 selected={replyNotificationType === 'any'}
             />
             <View style={styles.separator}/>
-            <SectionItem
+            <BlockItem
                 label={(
                     <FormattedText
                         id='notification_settings.threads_start'
@@ -74,7 +74,7 @@ const ReplySettings = () => {
                 selected={replyNotificationType === 'root'}
             />
             <View style={styles.separator}/>
-            <SectionItem
+            <BlockItem
                 label={(
                     <FormattedText
                         id='notification_settings.threads_mentions'
@@ -86,7 +86,7 @@ const ReplySettings = () => {
                 actionValue='never'
                 selected={replyNotificationType === 'never'}
             />
-        </Section>
+        </Block>
     );
 };
 
