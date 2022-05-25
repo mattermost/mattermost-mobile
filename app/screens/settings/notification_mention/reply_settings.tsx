@@ -10,6 +10,7 @@ import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const replyHeaderText = {
     id: t('notification_settings.mention.reply'),
@@ -29,6 +30,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         upperCase: {
             textTransform: 'uppercase',
+        },
+        label: {
+            color: theme.centerChannelColor,
+            ...typography('Body', 400, 'Regular'),
+            fontSize: 16,
+            lineHeight: 24,
         },
     };
 });
@@ -53,6 +60,7 @@ const ReplySettings = () => {
                     <FormattedText
                         id='notification_settings.threads_start_participate'
                         defaultMessage='Threads that I start or participate in'
+                        style={styles.label}
                     />
                 )}
                 action={setReplyNotifications}
@@ -66,6 +74,7 @@ const ReplySettings = () => {
                     <FormattedText
                         id='notification_settings.threads_start'
                         defaultMessage='Threads that I start'
+                        style={styles.label}
                     />
                 )}
                 action={setReplyNotifications}
@@ -79,6 +88,7 @@ const ReplySettings = () => {
                     <FormattedText
                         id='notification_settings.threads_mentions'
                         defaultMessage='Mentions in threads'
+                        style={styles.label}
                     />
                 )}
                 action={setReplyNotifications}

@@ -11,6 +11,7 @@ import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import UserModel from '@typings/database/models/servers/user';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const UPDATE_MENTION_PREF = 'UPDATE_MENTION_PREF';
 const INITIAL_STATE = {
@@ -53,6 +54,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         upperCase: {
             textTransform: 'uppercase',
+        },
+        label: {
+            color: theme.centerChannelColor,
+            ...typography('Body', 400, 'Regular'),
+            fontSize: 16,
+            lineHeight: 24,
         },
     };
 });
@@ -119,7 +126,7 @@ const MentionSettings = ({currentUser, mentionKeys}: MentionSectionProps) => {
                     <>
                         <BlockItem
                             label={(
-                                <Text>
+                                <Text style={styles.label}>
                                     {currentUser!.firstName}
                                 </Text>
                             )}
@@ -140,7 +147,7 @@ const MentionSettings = ({currentUser, mentionKeys}: MentionSectionProps) => {
                 {Boolean(currentUser?.username) && (
                     <BlockItem
                         label={(
-                            <Text>
+                            <Text style={styles.label}>
                                 {currentUser!.username}
                             </Text>
                         )}
@@ -158,7 +165,7 @@ const MentionSettings = ({currentUser, mentionKeys}: MentionSectionProps) => {
                 <View style={styles.separator}/>
                 <BlockItem
                     label={(
-                        <Text>
+                        <Text style={styles.label}>
                             {'@channel, @all, @here'}
                         </Text>
                     )}
@@ -178,6 +185,7 @@ const MentionSettings = ({currentUser, mentionKeys}: MentionSectionProps) => {
                         <FormattedText
                             id='notification_settings.mentions.keywords'
                             defaultMessage='Keywords'
+                            style={styles.label}
                         />
                     )}
                     description={mentionKeysComponent}
