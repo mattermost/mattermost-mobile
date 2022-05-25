@@ -60,7 +60,7 @@ const Notifications = ({isCRTEnabled, enableAutoResponder}: NotificationsProps) 
     };
 
     const goToNotificationSettingsMentions = () => {
-        const screen = Screens.NOTIFICATION_SETTINGS_MENTION;
+        const screen = Screens.SETTINGS_NOTIFICATION_MENTION;
 
         const id = isCRTEnabled ? 'mobile.notification_settings.mentions' : 'mobile.notification.notification_settings.mentions_replies';
         const defaultMessage = isCRTEnabled ? 'Mentions' : 'Mentions and Replies';
