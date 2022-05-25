@@ -123,21 +123,21 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
 
     const goToNotifications = preventDoubleTap(() => {
         const screen = Screens.SETTINGS_NOTIFICATION;
-        const title = intl.formatMessage({id: 'user.settings.notifications', defaultMessage: 'Notifications'});
+        const title = intl.formatMessage({id: 'settings.notifications', defaultMessage: 'Notifications'});
 
         goToScreen(screen, title);
     });
 
     const goToDisplaySettings = preventDoubleTap(() => {
         const screen = Screens.SETTINGS_DISPLAY;
-        const title = intl.formatMessage({id: 'user.settings.display', defaultMessage: 'Display'});
+        const title = intl.formatMessage({id: 'settings.display', defaultMessage: 'Display'});
 
         goToScreen(screen, title);
     });
 
     const goToAbout = preventDoubleTap(() => {
         const screen = Screens.ABOUT;
-        const title = intl.formatMessage({id: 'about.title', defaultMessage: 'About {appTitle}'}, {appTitle: serverName});
+        const title = intl.formatMessage({id: 'settings.about', defaultMessage: 'About {appTitle}'}, {appTitle: serverName});
 
         goToScreen(screen, title);
     });

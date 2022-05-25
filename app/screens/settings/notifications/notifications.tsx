@@ -46,10 +46,10 @@ const Notifications = ({isCRTEnabled, enableAutoResponder}: NotificationsProps) 
     const styles = getStyleSheet(theme);
     const intl = useIntl();
 
-    let mentionsI18nId = t('mobile.notification_settings.mentions_replies');
+    let mentionsI18nId = t('notification_settings.mentions_replies');
     let mentionsI18nDefault = 'Mentions and Replies';
     if (isCRTEnabled) {
-        mentionsI18nId = t('mobile.notification_settings.mentions');
+        mentionsI18nId = t('notification_settings.mentions');
         mentionsI18nDefault = 'Mentions';
     }
 
@@ -62,7 +62,7 @@ const Notifications = ({isCRTEnabled, enableAutoResponder}: NotificationsProps) 
     const goToNotificationSettingsMentions = () => {
         const screen = Screens.SETTINGS_NOTIFICATION_MENTION;
 
-        const id = isCRTEnabled ? 'mobile.notification_settings.mentions' : 'mobile.notification.notification_settings.mentions_replies';
+        const id = isCRTEnabled ? t('notification_settings.mentions') : t('notification_settings.mentions_replies');
         const defaultMessage = isCRTEnabled ? 'Mentions' : 'Mentions and Replies';
         const title = intl.formatMessage({id, defaultMessage});
         const passProps = {isCRTEnabled};
