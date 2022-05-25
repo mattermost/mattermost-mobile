@@ -42,27 +42,11 @@ const mentionHeaderText = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        container: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg,
-        },
-        input: {
-            color: theme.centerChannelColor,
-            fontSize: 12,
-            height: 40,
-        },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             flex: 1,
             height: 1,
             marginLeft: 15,
-        },
-        scrollView: {
-            flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-        },
-        scrollViewContent: {
-            paddingVertical: 35,
         },
         area: {
             paddingHorizontal: 16,
