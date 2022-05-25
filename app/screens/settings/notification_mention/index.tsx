@@ -11,11 +11,9 @@ import {WithDatabaseArgs} from '@typings/database/database';
 import Mentions from './notification_mention';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const isCRTEnabled = observeIsCRTEnabled(database);
-    const currentUser = observeCurrentUser(database);
     return {
-        isCRTEnabled,
-        currentUser,
+        isCRTEnabled: observeIsCRTEnabled(database),
+        currentUser: observeCurrentUser(database),
     };
 });
 

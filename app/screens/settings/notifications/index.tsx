@@ -11,11 +11,9 @@ import {WithDatabaseArgs} from '@typings/database/database';
 import NotificationSettings from './notifications';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const isCRTEnabled = observeIsCRTEnabled(database);
-    const enableAutoResponder = observeConfigBooleanValue(database, 'ExperimentalEnableAutomaticReplies');
     return {
-        isCRTEnabled,
-        enableAutoResponder,
+        isCRTEnabled: observeIsCRTEnabled(database),
+        enableAutoResponder: observeConfigBooleanValue(database, 'ExperimentalEnableAutomaticReplies'),
     };
 });
 
