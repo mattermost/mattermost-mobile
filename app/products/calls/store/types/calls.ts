@@ -60,6 +60,8 @@ export type ServerConfig = {
     ICEServers: string[];
     AllowEnableCalls: boolean;
     DefaultEnabled: boolean;
+    sku_short_name: string;
+    cloud_max_participants: number;
     last_retrieved_at: number;
 }
 
@@ -67,5 +69,7 @@ export const DefaultServerConfig = {
     ICEServers: [],
     AllowEnableCalls: false,
     DefaultEnabled: false,
+    sku_short_name: '',
+    cloud_max_participants: 0,
     last_retrieved_at: 0,
 } as ServerConfig;
