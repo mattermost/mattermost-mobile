@@ -13,8 +13,6 @@ import {resetToHome} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import AddTeamItem from './add_team_item';
-
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
@@ -40,11 +38,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type Props = {
-    canCreateTeam: boolean;
     teams: Team[];
 };
 function TeamList({
-    canCreateTeam,
     teams,
 }: Props) {
     const theme = useTheme();
@@ -68,12 +64,12 @@ function TeamList({
                 <Text style={styles.title}>{intl.formatMessage({id: 'select_team.title', defaultMessage: 'Select a team'})}</Text>
                 <Text style={styles.description}>{intl.formatMessage({id: 'select_team.description', defaultMessage: 'You are not yet a member of any teams. Select one below to get started.'})}</Text>
             </View>
-            {canCreateTeam && (
+            {/* {canCreateTeam && ( // TODO https://mattermost.atlassian.net/browse/MM-43622
                 <>
                     <AddTeamItem/>
                     <View style={styles.separator}/>
                 </>
-            )}
+            )} */}
             <TeamFlatList
                 teams={teams}
                 textColor={theme.sidebarText}

@@ -65,9 +65,8 @@ const Notifications = ({isCRTEnabled, enableAutoResponder}: NotificationsProps) 
         const id = isCRTEnabled ? t('notification_settings.mentions') : t('notification_settings.mentions_replies');
         const defaultMessage = isCRTEnabled ? 'Mentions' : 'Mentions and Replies';
         const title = intl.formatMessage({id, defaultMessage});
-        const passProps = {isCRTEnabled};
 
-        goToScreen(screen, title, passProps);
+        goToScreen(screen, title);
     };
 
     const goToNotificationSettingsPush = () => {
