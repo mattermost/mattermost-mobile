@@ -6,18 +6,14 @@ import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import Block from '@components/block';
 import BlockItem from '@components/block_item';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
-import {
-    changeOpacity,
-    makeStyleSheetFromTheme,
-    getKeyboardAppearanceFromTheme,
-} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -38,13 +34,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
             paddingTop: 35,
         },
-        inputContainer: {
-            borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
-            backgroundColor: theme.centerChannelBg,
-        },
         input: {
             color: theme.centerChannelColor,
             fontSize: 15,
@@ -53,15 +42,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingVertical: 10,
         },
         footer: {
-            marginHorizontal: 15,
+            paddingHorizontal: 15,
             fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.5),
+            textAlign: 'justify',
         },
         area: {
             paddingHorizontal: 16,
         },
-        upperCase: {
-            textTransform: 'uppercase',
+        label: {
+            color: theme.centerChannelColor,
+            ...typography('Body', 200, 'Regular'),
         },
     };
 });
@@ -89,10 +80,6 @@ const NotificationAutoResponder = ({currentUser}: NotificationAutoResponderProps
         });
     };
 
-    const onSubmitEditing = () => {
-        // popTopScreen();
-    };
-
     useEffect(() => {
         const autoResponderDefault = intl.formatMessage({
             id: 'notification_settings.auto_responder.default_message',
@@ -106,29 +93,6 @@ const NotificationAutoResponder = ({currentUser}: NotificationAutoResponderProps
         });
     }, []);
 
-    useEffect(() => {
-        const autoresponderTimeout = setTimeout(() => {
-            // autoresponderRef.current?.focus();
-        }, 500);
-
-        return () => {
-            clearTimeout(autoresponderTimeout);
-
-            //todo: MM-38711 : save the auto responder
-        };
-    }, [notifyProps]);
-
-    const autoResponderActiveLabel = (
-        <FormattedText
-            id='notification_settings.auto_responder.enabled'
-            defaultMessage='Enabled'
-        />
-    );
-    const {
-        auto_responder_active: autoResponderActive,
-        auto_responder_message: autoResponderMessage,
-    } = notifyProps;
-
     return (
         <SafeAreaView
             edges={['left', 'right']}
@@ -136,41 +100,45 @@ const NotificationAutoResponder = ({currentUser}: NotificationAutoResponderProps
         >
 
             <View style={styles.wrapper}>
-                <BlockItem
-                    label={autoResponderActiveLabel}
-                    action={onAutoResponseToggle}
-                    actionType='toggle'
-                    selected={autoResponderActive === 'true'}
-                />
-                {autoResponderActive === 'true' && (
-                    <Block
-                        headerText={headerText}
-                        headerStyles={styles.upperCase}
-                        containerStyles={styles.area}
-                    >
-                        <View style={styles.inputContainer}>
-                            <FloatingTextInput
-                                theme={theme}
-                                label={intl.formatMessage(headerText)}
-                                allowFontScaling={true}
-                                ref={autoresponderRef}
-                                value={autoResponderMessage || ''}
-                                blurOnSubmit={true}
-                                onChangeText={onAutoResponseChangeText}
-                                onSubmitEditing={onSubmitEditing}
-                                multiline={true}
-                                style={styles.input}
-                                autoCapitalize='none'
-                                autoCorrect={false}
-                                placeholder={intl.formatMessage({id: t('notification_settings.auto_responder.message_placeholder'), defaultMessage: 'Message'})}
-                                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
-                                textAlignVertical='top'
-                                underlineColorAndroid='transparent'
-                                returnKeyType='done'
-                                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                            />
-                        </View>
-                    </Block>
+                <View
+                    style={{
+                        paddingHorizontal: 8,
+                        backgroundColor: theme.centerChannelBg,
+                        marginBottom: 16,
+                    }}
+                >
+                    <BlockItem
+                        label={
+                            <FormattedText
+                                id='notification_settings.auto_responder.enabled'
+                                defaultMessage='Enabled'
+                                style={styles.label}
+                            />}
+                        action={onAutoResponseToggle}
+                        actionType='toggle'
+                        selected={notifyProps.auto_responder_active === 'true'}
+                    />
+                </View>
+                {notifyProps.auto_responder_active === 'true' && (
+                    <FloatingTextInput
+                        allowFontScaling={true}
+                        autoCapitalize='none'
+                        autoCorrect={false}
+                        blurOnSubmit={true}
+                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                        label={intl.formatMessage(headerText)}
+                        multiline={true}
+                        onChangeText={onAutoResponseChangeText}
+                        placeholder={intl.formatMessage(headerText)}
+                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
+                        ref={autoresponderRef}
+                        returnKeyType='done'
+                        style={styles.input}
+                        textAlignVertical='top'
+                        theme={theme}
+                        underlineColorAndroid='transparent'
+                        value={notifyProps.auto_responder_message || ''}
+                    />
                 )}
                 <FormattedText
                     id={'notification_settings.auto_responder.footer_message'}
