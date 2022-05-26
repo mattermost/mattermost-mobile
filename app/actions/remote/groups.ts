@@ -82,3 +82,23 @@ export const fetchChannelsForGroup = async (serverUrl: string, groupId: string) 
         return {error};
     }
 };
+
+export const fetchFilteredTeamGroups = async (serverUrl: string, teamId: string, searchTerm: string) => {
+    const response = await fetchGroupsForTeam(serverUrl, teamId);
+
+    if (response && 'groups' in response) {
+        return response.groups.filter((g) => g.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    }
+
+    return [];
+};
+
+export const fetchFilteredChannelGroups = async (serverUrl: string, channelId: string, searchTerm: string) => {
+    const response = await fetchGroupsForChannel(serverUrl, channelId);
+
+    if (response && 'groups' in response) {
+        return response.groups.filter((g) => g.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    }
+
+    return [];
+};
