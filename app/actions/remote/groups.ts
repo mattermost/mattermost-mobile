@@ -17,6 +17,17 @@ export const fetchGroupsForChannel = async (serverUrl: string, channelId: string
     }
 };
 
+export const fetchGroupsForMembership = async (serverUrl: string, userId: string) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+        return client.getAllGroupsAssociatedToMembership(userId);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
 export const fetchGroupsForTeam = async (serverUrl: string, teamId: string) => {
     let client: Client;
     try {
@@ -33,6 +44,39 @@ export const fetchGroupsForAutocomplete = async (serverUrl: string, query: strin
     try {
         client = NetworkManager.getClient(serverUrl);
         return client.getGroups(query);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const fetchMembershipsForGroup = async (serverUrl: string, groupId: string) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+        return client.getAllMembershipsAssociatedToGroup(groupId);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const fetchTeamsForGroup = async (serverUrl: string, groupId: string) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+        return client.getAllTeamsAssociatedToGroup(groupId);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const fetchChannelsForGroup = async (serverUrl: string, groupId: string) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+        return client.getAllChannelsAssociatedToGroup(groupId);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
