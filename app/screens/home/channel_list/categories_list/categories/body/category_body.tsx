@@ -37,7 +37,7 @@ const CategoryBody = ({sortedChannels, category, limit, onChannelSwitch, unreadC
 
     const directChannels = useMemo(() => {
         return ids.concat(unreadChannels).filter(isDMorGM);
-    }, [ids, unreadChannels]);
+    }, [ids.length, unreadChannels.length]);
 
     const renderItem = useCallback(({item}: {item: ChannelModel}) => {
         return (
@@ -58,7 +58,7 @@ const CategoryBody = ({sortedChannels, category, limit, onChannelSwitch, unreadC
 
     useEffect(() => {
         fetchDirectChannelsInfo(serverUrl, directChannels);
-    }, [directChannels]);
+    }, [directChannels.length]);
 
     const height = ids.length ? ids.length * 40 : 0;
     const unreadHeight = unreadChannels.length ? unreadChannels.length * 40 : 0;
