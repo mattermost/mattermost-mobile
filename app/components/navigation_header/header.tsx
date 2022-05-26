@@ -152,7 +152,7 @@ const Header = ({
         }
 
         const barHeight = Platform.OS === 'ios' ? (largeHeight - defaultHeight - (top / 2)) : largeHeight - defaultHeight;
-        const val = (top + (scrollValue?.value ?? 0));
+        const val = top + (scrollValue?.value ?? 0);
         return {
             opacity: val >= barHeight ? withTiming(1, {duration: 250}) : 0,
         };
