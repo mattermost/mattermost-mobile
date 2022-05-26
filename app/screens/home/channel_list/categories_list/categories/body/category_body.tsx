@@ -33,11 +33,11 @@ const CategoryBody = ({sortedChannels, category, limit, onChannelSwitch, unreadC
             return filteredChannels.slice(0, limit);
         }
         return filteredChannels;
-    }, [category.type, limit, sortedChannels.length]);
+    }, [category.type, limit, sortedChannels]);
 
     const directChannels = useMemo(() => {
         return ids.concat(unreadChannels).filter(isDMorGM);
-    }, [ids.length, unreadChannels.length]);
+    }, [ids, unreadChannels]);
 
     const renderItem = useCallback(({item}: {item: ChannelModel}) => {
         return (
@@ -58,7 +58,7 @@ const CategoryBody = ({sortedChannels, category, limit, onChannelSwitch, unreadC
 
     useEffect(() => {
         fetchDirectChannelsInfo(serverUrl, directChannels);
-    }, [directChannels.length]);
+    }, [directChannels]);
 
     const height = ids.length ? ids.length * 40 : 0;
     const unreadHeight = unreadChannels.length ? unreadChannels.length * 40 : 0;
