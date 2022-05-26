@@ -7,6 +7,7 @@ import {Text, View} from 'react-native';
 import NoResultsWithTerm from '@components/no_results_with_term';
 
 import Header from './header';
+import Loader from './loader';
 
 type Props = {
     searchValue: string;
@@ -41,7 +42,7 @@ const SearchResults = ({
 
     let content;
     if (loading) {
-        content = notImplementedComponent;
+        content = (<Loader/>);
     } else if (!searchValue) {
         content = notImplementedComponent;
     } else if (
