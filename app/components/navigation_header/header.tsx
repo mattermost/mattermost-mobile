@@ -29,12 +29,13 @@ type Props = {
     onBackPress?: () => void;
     onTitlePress?: () => void;
     rightButtons?: HeaderRightButton[];
-    headerPosition?: Animated.SharedValue<number>;
+    scrollValue?: Animated.SharedValue<number>;
     showBackButton?: boolean;
     subtitle?: string;
     subtitleCompanion?: React.ReactElement;
     theme: Theme;
     title?: string;
+    top: number;
 }
 
 const hitSlop = {top: 20, bottom: 20, left: 20, right: 20};
@@ -131,12 +132,13 @@ const Header = ({
     onBackPress,
     onTitlePress,
     rightButtons,
-    headerPosition,
+    scrollValue,
     showBackButton = true,
     subtitle,
     subtitleCompanion,
     theme,
     title,
+    top,
 }: Props) => {
     const styles = getStyleSheet(theme);
 
@@ -149,15 +151,15 @@ const Header = ({
             return {opacity: 0};
         }
 
-        const barHeight = largeHeight - defaultHeight;
-        const val = headerPosition?.value ?? 0;
+        const barHeight = Platform.OS === 'ios' ? (largeHeight - defaultHeight - (top / 2)) : largeHeight - defaultHeight;
+        const val = scrollValue?.value ?? 0;
         return {
             opacity: val >= barHeight ? withTiming(1, {duration: 250}) : 0,
         };
     }, [defaultHeight, largeHeight, isLargeTitle, hasSearch]);
 
     const containerStyle = useMemo(() => {
-        return [styles.container, {height: defaultHeight}];
+        return [styles.container, {height: defaultHeight + top, paddingTop: top}];
     }, [defaultHeight, theme]);
 
     const additionalTitleStyle = useMemo(() => ({

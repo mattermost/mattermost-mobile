@@ -3,15 +3,15 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {NativeScrollEvent, Platform} from 'react-native';
-import Animated, {useAnimatedRef, useAnimatedScrollHandler, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {scrollTo, useAnimatedRef, useAnimatedScrollHandler, useSharedValue} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import ViewConstants from '@constants/view';
+import ViewConstants, {HEADER_SEARCH_BOTTOM_MARGIN} from '@constants/view';
 import {useIsTablet} from '@hooks/device';
 
 type HeaderScrollContext = {
-    dragging?: boolean;
-    lastValue?: number;
-    updatingHeader?: boolean;
+    momentum?: number;
+    start?: number;
 };
 
 export const useDefaultHeaderHeight = () => {
@@ -51,67 +51,104 @@ export const useHeaderHeight = (hasLargeTitle: boolean, hasSubtitle: boolean, ha
 };
 
 export const useCollapsibleHeader = <T>(isLargeTitle: boolean, hasSubtitle: boolean, hasSearch: boolean) => {
+    const insets = useSafeAreaInsets();
+    const isTablet = useIsTablet();
     const animatedRef = useAnimatedRef<Animated.ScrollView>();
     const {largeHeight, defaultHeight} = useHeaderHeight(true, hasSubtitle, hasSearch);
-    const headerPosition = useSharedValue(0);
-    const maxHeaderHeight = largeHeight - defaultHeight;
+    const scrollValue = useSharedValue(0);
+
+    function snapIfNeeded(dir: string, offset: number) {
+        'worklet';
+        if (dir === 'up' && offset < defaultHeight) {
+            const diffHeight = largeHeight - defaultHeight;
+            let position = 0;
+            if (Platform.OS === 'ios') {
+                const searchInset = HEADER_SEARCH_BOTTOM_MARGIN;
+                position = (diffHeight - (hasSearch ? -searchInset : insets.top));
+            } else {
+                position = hasSearch ? largeHeight + HEADER_SEARCH_BOTTOM_MARGIN : diffHeight;
+            }
+            scrollTo(animatedRef, 0, position!, true);
+        } else if (dir === 'down') {
+            let inset = 0;
+            if (Platform.OS === 'ios') {
+                const searchInset = HEADER_SEARCH_BOTTOM_MARGIN;
+                inset = defaultHeight + (hasSearch ? searchInset : 0);
+            } else {
+                inset = largeHeight + (hasSearch ? HEADER_SEARCH_BOTTOM_MARGIN : 0);
+            }
+            if (offset < inset) {
+                scrollTo(animatedRef, 0, -insets.top, true);
+            }
+        }
+    }
 
     const onScroll = useAnimatedScrollHandler({
         onBeginDrag: (e: NativeScrollEvent, ctx: HeaderScrollContext) => {
-            ctx.lastValue = e.contentOffset.y;
-            ctx.dragging = true;
-            ctx.updatingHeader = false;
+            ctx.start = e.contentOffset.y;
         },
-        onScroll: (e, ctx) => {
-            if (!ctx.dragging) {
-                return;
+        onScroll: (e) => {
+            scrollValue.value = e.contentOffset.y;
+        },
+        onEndDrag: (e, ctx) => {
+            if (ctx.start !== undefined && Platform.OS === 'ios') {
+                const dir = e.contentOffset.y < ctx.start ? 'down' : 'up';
+                const offset = Math.abs(e.contentOffset.y);
+                ctx.start = undefined;
+                snapIfNeeded(dir, offset);
             }
-            if (ctx.updatingHeader) {
-                ctx.lastValue = e.contentOffset.y;
-                ctx.updatingHeader = false;
-                return;
-            }
-            const diff = e.contentOffset.y - ctx.lastValue!;
-            if (!diff) {
-                return;
-            }
+        },
+        onMomentumBegin: (e, ctx) => {
+            ctx.momentum = Platform.OS === 'ios' ? e.contentOffset.y : ctx.start;
+        },
+        onMomentumEnd: (e, ctx) => {
+            if (ctx.momentum !== undefined) {
+                const offset = Math.abs(e.contentOffset.y);
+                const searchInset = HEADER_SEARCH_BOTTOM_MARGIN;
+                const dir = e.contentOffset.y < ctx.momentum ? 'down' : 'up';
+                ctx.momentum = undefined;
 
-            if (
-                (diff > 0 && headerPosition.value === maxHeaderHeight) ||
-                (diff < 0 && headerPosition.value === 0)
-            ) {
-                ctx.lastValue = e.contentOffset.y;
-            } else {
-                const newHeaderPosition = headerPosition.value + diff;
-                headerPosition.value = diff > 0 ? Math.min(maxHeaderHeight, newHeaderPosition) : Math.max(0, newHeaderPosition);
-                ctx.updatingHeader = true;
+                if (Platform.OS === 'android') {
+                    // This avoids snapping to the defaultHeight when already at the top and scrolling down
+                    if (dir === 'up' && offset === 0) {
+                        return;
+                    }
+                    snapIfNeeded(dir, offset);
+                } else if (dir === 'down' && offset < (defaultHeight + (hasSearch ? searchInset : 0))) {
+                    scrollTo(animatedRef, 0, -insets.top, true);
+                }
             }
         },
-        onEndDrag: (e, ctx: HeaderScrollContext) => {
-            ctx.dragging = false;
-            if (headerPosition.value > maxHeaderHeight / 2) {
-                headerPosition.value = maxHeaderHeight;
-            } else {
-                headerPosition.value = 0;
-            }
-        },
-    }, [maxHeaderHeight]);
+    }, [insets, defaultHeight, largeHeight]);
 
-    const setHeaderVisibility = useCallback((visible: boolean) => {
-        headerPosition.value = withTiming(visible ? 0 : maxHeaderHeight, {duration: 200});
-    }, [maxHeaderHeight]);
+    const hideHeader = useCallback(() => {
+        const searchInset = HEADER_SEARCH_BOTTOM_MARGIN;
+        const offset = Platform.select({android: largeHeight + HEADER_SEARCH_BOTTOM_MARGIN, default: defaultHeight + searchInset});
+        if (animatedRef?.current && Math.abs((scrollValue?.value || 0)) <= insets.top) {
+            if ('scrollTo' in animatedRef.current) {
+                animatedRef.current.scrollTo({y: offset, animated: true});
+            } else if ('scrollToOffset' in animatedRef.current) {
+                (animatedRef.current as any).scrollToOffset({
+                    offset,
+                    animated: true,
+                });
+            } else {
+                // No scroll for section lists?
+            }
+        }
+    }, [isTablet, largeHeight, defaultHeight]);
 
     let searchPadding = 0;
     if (hasSearch) {
-        searchPadding = ViewConstants.HEADER_SEARCH_HEIGHT + 10;
+        searchPadding = ViewConstants.HEADER_SEARCH_HEIGHT + ViewConstants.HEADER_SEARCH_BOTTOM_MARGIN;
     }
 
     return {
         scrollPaddingTop: (isLargeTitle ? largeHeight : defaultHeight) + searchPadding,
         scrollRef: animatedRef as unknown as React.RefObject<T>,
         onScroll,
-        headerPosition,
-        setHeaderVisibility,
+        scrollValue,
+        hideHeader,
     };
 };
 

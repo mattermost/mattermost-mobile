@@ -10,7 +10,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 type Props = {
     defaultHeight: number;
     largeHeight: number;
-    headerPosition?: Animated.SharedValue<number>;
+    scrollValue?: Animated.SharedValue<number>;
     theme: Theme;
 }
 
@@ -26,13 +26,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const NavigationHeaderSearchContext = ({
     defaultHeight,
     largeHeight,
-    headerPosition,
+    scrollValue,
     theme,
 }: Props) => {
     const styles = getStyleSheet(theme);
 
     const marginTop = useAnimatedStyle(() => {
-        return {marginTop: (largeHeight + HEADER_SEARCH_HEIGHT) - (headerPosition?.value || 0)};
+        return {marginTop: (largeHeight + HEADER_SEARCH_HEIGHT) - (scrollValue?.value || 0)};
     }, [defaultHeight, largeHeight]);
 
     return (

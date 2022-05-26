@@ -6,9 +6,12 @@ import {Text, View} from 'react-native';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
 
+import Header from './header';
+
 type Props = {
     searchValue: string;
     selectedTab: string;
+    onHeaderTabSelect: (tab: string) => void;
 }
 
 const emptyPostResults: Post[] = [];
@@ -30,6 +33,7 @@ const notImplementedComponent = (
 const SearchResults = ({
     searchValue,
     selectedTab,
+    onHeaderTabSelect,
 }: Props) => {
     const [postResults] = useState<Post[]>(emptyPostResults);
     const [fileResults] = useState<FileInfo[]>(emptyFilesResults);
@@ -44,17 +48,26 @@ const SearchResults = ({
         (selectedTab === 'messages' && postResults.length === 0) ||
         (selectedTab === 'files' && fileResults.length === 0)
     ) {
-        content = (
+        content = (<>
+            <Header
+                onTabSelect={onHeaderTabSelect}
+                numberFiles={0}
+                numberMessages={0}
+            />
             <NoResultsWithTerm
                 term={searchValue}
                 type={selectedTab}
             />
+        </>
         );
     } else {
         content = notImplementedComponent;
     }
 
-    return (<>{content}</>);
+    return (<>
+
+        {content}
+    </>);
 };
 
 export default SearchResults;

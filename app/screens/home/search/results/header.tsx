@@ -19,13 +19,11 @@ type Props = {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        flex: {
-            flex: 1,
-        },
         container: {
             marginHorizontal: 12,
             flexDirection: 'row',
             marginBottom: 12,
+            flexGrow: 0,
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),

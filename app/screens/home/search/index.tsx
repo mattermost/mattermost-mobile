@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {useIsFocused, useNavigation} from '@react-navigation/native';
-import React, {useCallback, useState, useEffect} from 'react';
+import React, {useCallback, useState, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {ScrollView, StyleSheet} from 'react-native';
+import {ScrollView} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -15,18 +15,12 @@ import {useCollapsibleHeader} from '@hooks/header';
 // import RecentSearches from './recent_searches/recent_searches';
 // import SearchModifiers from './search_modifiers/search_modifiers';
 // import Filter from './results/filter';
-import Header, {SelectTab} from './results/header';
+import {SelectTab} from './results/header';
 import Results from './results/results';
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
-
-const styles = StyleSheet.create({
-    grow: {
-        flexGrow: 1,
-    },
-});
 
 const TOP_MARGIN = 12;
 
@@ -57,7 +51,7 @@ const SearchScreen = () => {
     const isLargeTitle = true;
     const hasSearch = true;
 
-    const {scrollPaddingTop, scrollRef, headerPosition, onScroll, setHeaderVisibility} = useCollapsibleHeader<ScrollView>(isLargeTitle, false, hasSearch);
+    const {scrollPaddingTop, scrollRef, scrollValue, onScroll, hideHeader} = useCollapsibleHeader<ScrollView>(isLargeTitle, false, hasSearch);
 
     const onHeaderTabSelect = useCallback((tab: SelectTab) => {
         setSelectedTab(tab);
@@ -67,7 +61,6 @@ const SearchScreen = () => {
         if (isFocused) {
             return {
                 opacity: withTiming(1, {duration: 150}),
-                marginTop: (scrollPaddingTop + TOP_MARGIN) - headerPosition.value,
                 flex: 1,
                 transform: [
                     {translateX: withTiming(0, {duration: 150})},
@@ -78,8 +71,11 @@ const SearchScreen = () => {
         return {
             opacity: withTiming(0, {duration: 150}),
             transform: [{translateX: withTiming(stateIndex < searchScreenIndex ? 25 : -25, {duration: 150})}],
+
         };
     }, [isFocused, stateIndex, scrollPaddingTop]);
+
+    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop + TOP_MARGIN, flexGrow: 1}), [scrollPaddingTop]);
 
     return (
         <FreezeScreen freeze={!isFocused}>
@@ -92,8 +88,8 @@ const SearchScreen = () => {
                 showBackButton={false}
                 title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
                 hasSearch={hasSearch}
-                headerPosition={headerPosition}
-                setHeaderVisibility={setHeaderVisibility}
+                scrollValue={scrollValue}
+                hideHeader={hideHeader}
                 onChangeText={setSearchValue}
                 onSubmitEditing={handleSearch}
                 blurOnSubmit={true}
@@ -105,13 +101,8 @@ const SearchScreen = () => {
                 edges={EDGES}
             >
                 <Animated.View style={animated}>
-                    <Header
-                        onTabSelect={onHeaderTabSelect}
-                        numberFiles={0}
-                        numberMessages={0}
-                    />
                     <AnimatedScrollView
-                        contentContainerStyle={styles.grow}
+                        contentContainerStyle={paddingTop}
                         nestedScrollEnabled={true}
                         scrollToOverflowEnabled={true}
                         showsVerticalScrollIndicator={false}
@@ -130,6 +121,7 @@ const SearchScreen = () => {
                         <Results
                             selectedTab={selectedTab}
                             searchValue={searchValue}
+                            onHeaderTabSelect={onHeaderTabSelect}
                         />
                         {/* <Filter/> */}
                     </AnimatedScrollView>

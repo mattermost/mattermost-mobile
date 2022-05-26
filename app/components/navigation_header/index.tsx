@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {View} from 'react-native';
 import Animated from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
 import useHeaderHeight from '@hooks/header';
@@ -24,8 +24,8 @@ type Props = SearchProps & {
     onBackPress?: () => void;
     onTitlePress?: () => void;
     rightButtons?: HeaderRightButton[];
-    headerPosition?: Animated.SharedValue<number>;
-    setHeaderVisibility?: (visible: boolean) => void;
+    scrollValue?: Animated.SharedValue<number>;
+    hideHeader?: (visible: boolean) => void;
     showBackButton?: boolean;
     showHeaderInContext?: boolean;
     subtitle?: string;
@@ -49,26 +49,29 @@ const NavigationHeader = ({
     onBackPress,
     onTitlePress,
     rightButtons,
-    headerPosition,
+    scrollValue,
     showBackButton,
     showHeaderInContext = true,
     subtitle,
     subtitleCompanion,
     title = '',
-    setHeaderVisibility,
+    hideHeader,
     ...searchProps
 }: Props) => {
     const theme = useTheme();
+    const insets = useSafeAreaInsets();
     const styles = getStyleSheet(theme);
 
     const {largeHeight, defaultHeight} = useHeaderHeight(isLargeTitle, Boolean(subtitle), hasSearch);
     const containerHeight = useMemo(() => {
-        return {height: defaultHeight};
+        const normal = defaultHeight + insets.top;
+        const calculated = -(insets.top + (scrollValue?.value || 0));
+        return {height: Math.max((normal + calculated), normal)};
     }, []);
 
     return (
         <>
-            <View style={[styles.container, containerHeight]}>
+            <Animated.View style={[styles.container, containerHeight]}>
                 <Header
                     defaultHeight={defaultHeight}
                     hasSearch={hasSearch}
@@ -78,38 +81,41 @@ const NavigationHeader = ({
                     onBackPress={onBackPress}
                     onTitlePress={onTitlePress}
                     rightButtons={rightButtons}
-                    headerPosition={headerPosition}
+                    scrollValue={scrollValue}
                     showBackButton={showBackButton}
                     subtitle={subtitle}
                     subtitleCompanion={subtitleCompanion}
                     theme={theme}
                     title={title}
+                    top={insets.top}
                 />
                 {isLargeTitle &&
                 <NavigationHeaderLargeTitle
                     defaultHeight={defaultHeight}
                     hasSearch={hasSearch}
                     largeHeight={largeHeight}
-                    headerPosition={headerPosition}
+                    scrollValue={scrollValue}
                     subtitle={subtitle}
                     theme={theme}
                     title={title}
+                    top={insets.top}
                 />
                 }
-            </View>
+            </Animated.View>
             {hasSearch &&
             <>
                 <NavigationSearch
                     {...searchProps}
                     largeHeight={largeHeight}
-                    headerPosition={headerPosition}
-                    setHeaderVisibility={setHeaderVisibility}
+                    scrollValue={scrollValue}
+                    hideHeader={hideHeader}
                     theme={theme}
+                    top={insets.top}
                 />
                 <NavigationHeaderSearchContext
                     defaultHeight={defaultHeight}
                     largeHeight={largeHeight}
-                    headerPosition={headerPosition}
+                    scrollValue={scrollValue}
                     theme={theme}
                 />
             </>
@@ -120,7 +126,8 @@ const NavigationHeader = ({
                 hasSearch={hasSearch}
                 isLargeTitle={isLargeTitle}
                 largeHeight={largeHeight}
-                headerPosition={headerPosition}
+                scrollValue={scrollValue}
+                top={insets.top}
             />
             }
         </>

@@ -12,10 +12,11 @@ type Props = {
     defaultHeight: number;
     hasSearch: boolean;
     largeHeight: number;
-    headerPosition?: Animated.SharedValue<number>;
+    scrollValue?: Animated.SharedValue<number>;
     subtitle?: string;
     theme: Theme;
     title: string;
+    top: number;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -37,19 +38,20 @@ const NavigationHeaderLargeTitle = ({
     defaultHeight,
     largeHeight,
     hasSearch,
-    headerPosition,
+    scrollValue,
     subtitle,
     theme,
     title,
+    top,
 }: Props) => {
     const styles = getStyleSheet(theme);
 
     const transform = useAnimatedStyle(() => {
-        const value = headerPosition?.value || 0;
+        const value = scrollValue?.value || 0;
         return {
-            top: -value,
+            transform: [{translateY: -(top + value)}],
         };
-    }, []);
+    }, [top]);
 
     const containerStyle = useMemo(() => {
         return [{height: largeHeight - defaultHeight}, styles.container];

@@ -12,9 +12,10 @@ import {typography} from '@utils/typography';
 
 type Props = SearchProps & {
     largeHeight: number;
-    headerPosition?: Animated.SharedValue<number>;
-    setHeaderVisibility?: (visible: boolean) => void;
+    scrollValue?: Animated.SharedValue<number>;
+    hideHeader?: (visible: boolean) => void;
     theme: Theme;
+    top: number;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -37,9 +38,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const NavigationSearch = ({
     largeHeight,
-    headerPosition,
-    setHeaderVisibility,
+    scrollValue,
+    hideHeader: setHeaderVisibility,
     theme,
+    top,
     ...searchProps
 }: Props) => {
     const styles = getStyleSheet(theme);
@@ -53,12 +55,13 @@ const NavigationSearch = ({
     }), [theme]);
 
     const searchTop = useAnimatedStyle(() => {
-        return {marginTop: largeHeight - (headerPosition?.value || 0)};
-    }, [largeHeight]);
+        return {marginTop: Math.max((-(scrollValue?.value || 0) + largeHeight), top)};
+    }, [largeHeight, top]);
 
-    const onFocus = useCallback(() => {
+    const onFocus = useCallback((e) => {
         setHeaderVisibility?.(false);
-    }, [setHeaderVisibility]);
+        searchProps.onFocus?.(e);
+    }, [setHeaderVisibility, searchProps.onFocus]);
 
     return (
         <Animated.View style={[styles.container, searchTop]}>
