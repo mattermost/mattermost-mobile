@@ -63,8 +63,7 @@ const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChan
     }, [category.collapsed]);
 
     useEffect(() => {
-        const direct = directChannels.filter(isDMorGM);
-        fetchDirectChannelsInfo(serverUrl, direct);
+        fetchDirectChannelsInfo(serverUrl, directChannels);
     }, [directChannels.length]);
 
     const height = ids.length ? ids.length * 40 : 0;

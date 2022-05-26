@@ -12,10 +12,8 @@ import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         section: {
-            justifyContent: 'center',
-            position: 'relative',
-            top: -1,
             flexDirection: 'row',
+            paddingHorizontal: 16,
         },
         sectionText: {
             fontSize: 12,
@@ -24,12 +22,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.56),
             paddingTop: 16,
             paddingBottom: 8,
-            paddingHorizontal: 16,
             flex: 1,
         },
         sectionWrapper: {
             backgroundColor: theme.centerChannelBg,
         },
+        loading: {paddingTop: 16},
     };
 });
 
@@ -62,8 +60,9 @@ const AutocompleteSectionHeader = ({
                 />
                 {loading &&
                 <ActivityIndicator
-                    color={theme.centerChannelColor}
                     size='small'
+                    style={style.loading}
+                    color={changeOpacity(theme.centerChannelColor, 0.56)}
                 />
                 }
             </View>
