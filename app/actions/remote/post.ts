@@ -137,9 +137,12 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
             posts: [created],
             prepareRecordsOnly: true,
         });
-        const {member} = await updateLastPostAt(serverUrl, created.channel_id, created.create_at, true);
-        if (member) {
-            models.push(member);
+        const isCrtReply = isCRTEnabled && created.root_id !== '';
+        if (!isCrtReply) {
+            const {member} = await updateLastPostAt(serverUrl, created.channel_id, created.create_at, true);
+            if (member) {
+                models.push(member);
+            }
         }
         if (isCRTEnabled) {
             const {models: threadModels} = await createThreadFromNewPost(serverUrl, created, true);
@@ -201,6 +204,9 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
         return {error};
     }
 
+    const {database} = operator;
+    const isCRTEnabled = await getIsCRTEnabled(database);
+
     try {
         const timestamp = Date.now();
         const apiPost = await post.toApi();
@@ -232,9 +238,12 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
             posts: [created],
             prepareRecordsOnly: true,
         });
-        const {member} = await updateLastPostAt(serverUrl, created.channel_id, created.create_at, true);
-        if (member) {
-            models.push(member);
+        const isCrtReply = isCRTEnabled && created.root_id !== '';
+        if (!isCrtReply) {
+            const {member} = await updateLastPostAt(serverUrl, created.channel_id, created.create_at, true);
+            if (member) {
+                models.push(member);
+            }
         }
         await operator.batchRecords(models);
     } catch (error: any) {
@@ -322,7 +331,8 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
 
             let lastPostAt = 0;
             for (const post of data.posts) {
-                if (!isCRTEnabled || post.root_id) {
+                const isCrtReply = isCRTEnabled && post.root_id !== '';
+                if (!isCrtReply) {
                     lastPostAt = post.create_at > lastPostAt ? post.create_at : lastPostAt;
                 }
             }
@@ -727,7 +737,8 @@ export async function fetchMissingChannelsFromPosts(serverUrl: string, posts: Po
         const channelMemberships = await Promise.all(userPromises);
 
         if (!fetchOnly && channels.length && channelMemberships.length) {
-            const modelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships);
+            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            const modelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships, isCRTEnabled);
             if (modelPromises.length) {
                 const channelModelsArray = await Promise.all(modelPromises);
                 if (channelModelsArray.length) {
@@ -993,7 +1004,8 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
         }
 
         if (channels?.length && channelMemberships?.length) {
-            const channelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships);
+            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            const channelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships, isCRTEnabled);
             if (channelPromises.length) {
                 promises.push(...channelPromises);
             }

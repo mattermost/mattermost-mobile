@@ -27,6 +27,7 @@ type Channel = {
     header: string;
     purpose: string;
     last_post_at: number;
+    last_root_post_at?: number;
     total_msg_count: number;
     total_msg_count_root?: number;
     extra_update_at: number;
