@@ -3,7 +3,7 @@
 
 import {MessageDescriptor} from '@formatjs/intl/src/types';
 import React from 'react';
-import {StyleProp, View, ViewStyle} from 'react-native';
+import {StyleProp, TextStyle, View, ViewStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
@@ -49,37 +49,41 @@ type SectionProps = {
     footerText?: SectionText;
     headerText: SectionText;
     containerStyles?: StyleProp<ViewStyle>;
+    headerStyles?: StyleProp<TextStyle>;
+    footerStyles?: StyleProp<TextStyle>;
 }
 
-const Section = ({
+const Block = ({
     children,
     containerStyles,
     disableFooter,
     disableHeader,
     footerText,
+    headerStyles,
     headerText,
+    footerStyles,
 }: SectionProps) => {
     const theme = useTheme();
-    const style = getStyleSheet(theme);
+    const styles = getStyleSheet(theme);
 
     return (
-        <View style={style.container}>
+        <View style={styles.container}>
             {(headerText && !disableHeader) &&
                 <FormattedText
                     defaultMessage={headerText.defaultMessage}
                     id={headerText.id}
-                    style={style.header}
                     values={headerText.values}
+                    style={[styles.header, headerStyles]}
                 />
             }
-            <View style={[style.items, containerStyles]}>
+            <View style={[styles.items, containerStyles]}>
                 {children}
             </View>
             {(footerText && !disableFooter) &&
                 <FormattedText
                     defaultMessage={footerText.defaultMessage}
                     id={footerText.id}
-                    style={style.footer}
+                    style={[styles.footer, footerStyles]}
                     values={footerText.values}
                 />
             }
@@ -87,4 +91,4 @@ const Section = ({
     );
 };
 
-export default Section;
+export default Block;
