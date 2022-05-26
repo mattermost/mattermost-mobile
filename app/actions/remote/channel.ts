@@ -480,6 +480,7 @@ export async function fetchMissingDirectChannelsInfo(serverUrl: string, directCh
                 const ownDirectChannel = dms.find((dm) => dm.name === getDirectChannelName(currentUserId, currentUserId));
                 if (ownDirectChannel) {
                     ownDirectChannel.display_name = displayUsername(currentUser, locale, teammateDisplayNameSetting, false);
+                    updatedChannels.add(ownDirectChannel);
                 }
             }
         }
@@ -487,7 +488,7 @@ export async function fetchMissingDirectChannelsInfo(serverUrl: string, directCh
         const updatedChannelsArray = Array.from(updatedChannels);
         if (!fetchOnly) {
             const modelPromises: Array<Promise<Model[]>> = [];
-            if (users.length) {
+            if (updatedChannelsArray.length) {
                 modelPromises.push(operator.handleChannel({channels: updatedChannelsArray, prepareRecordsOnly: true}));
             }
 
