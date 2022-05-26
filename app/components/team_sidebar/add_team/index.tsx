@@ -18,14 +18,14 @@ import AddTeamSlideUp from './add_team_slide_up';
 import type TeamModel from '@typings/database/models/servers/team';
 
 type Props = {
-    canCreateTeams: boolean;
     otherTeams: TeamModel[];
 }
 
 const ITEM_HEIGHT = 72;
-const CREATE_HEIGHT = 97;
 const HEADER_HEIGHT = 66;
 const CONTAINER_HEIGHT = 392;
+
+//const CREATE_HEIGHT = 97;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -49,7 +49,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default function AddTeam({canCreateTeams, otherTeams}: Props) {
+export default function AddTeam({otherTeams}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const dimensions = useWindowDimensions();
@@ -62,7 +62,6 @@ export default function AddTeam({canCreateTeams, otherTeams}: Props) {
             return (
                 <AddTeamSlideUp
                     otherTeams={otherTeams}
-                    canCreateTeams={canCreateTeams}
                     showTitle={!isTablet && Boolean(otherTeams.length)}
                 />
             );
@@ -70,7 +69,7 @@ export default function AddTeam({canCreateTeams, otherTeams}: Props) {
 
         let height = CONTAINER_HEIGHT;
         if (otherTeams.length) {
-            height = Math.min(maxHeight, HEADER_HEIGHT + (otherTeams.length * ITEM_HEIGHT) + (canCreateTeams ? CREATE_HEIGHT : 0));
+            height = Math.min(maxHeight, HEADER_HEIGHT + (otherTeams.length * ITEM_HEIGHT));
         }
 
         bottomSheet({
@@ -80,7 +79,7 @@ export default function AddTeam({canCreateTeams, otherTeams}: Props) {
             theme,
             title: intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'}),
         });
-    }), [canCreateTeams, otherTeams, isTablet, theme]);
+    }), [otherTeams, isTablet, theme]);
 
     return (
         <View style={styles.container}>
