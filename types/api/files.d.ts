@@ -33,3 +33,8 @@ type FileUploadResponse = {
     file_infos: FileInfo[];
     client_ids: string[];
 };
+
+type FileSearchParams = {
+    terms: string;
+    is_or_search: boolean;
+};
