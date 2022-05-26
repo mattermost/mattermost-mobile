@@ -81,5 +81,5 @@ export default class ChannelModel extends Model {
     /** categoryChannel: category of this channel */
     categoryChannel: Relation<CategoryChannelModel>;
 
-    toApi = () => Channel;
+    toApi(): Channel;
 }

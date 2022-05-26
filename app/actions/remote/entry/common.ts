@@ -3,7 +3,7 @@
 
 import {Model} from '@nozbe/watermelondb';
 
-import {fetchMissingSidebarInfo, fetchMyChannelsForTeam, MyChannelsRequest} from '@actions/remote/channel';
+import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, MyChannelsRequest} from '@actions/remote/channel';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
@@ -45,6 +45,20 @@ export type AppEntryError = {
     error: Error | ClientError | string;
 }
 
+export type EntryResponse = {
+    models: Model[];
+    initialTeamId: string;
+    initialChannelId: string;
+    prefData: MyPreferencesRequest;
+    teamData: MyTeamsRequest;
+    chData?: MyChannelsRequest;
+    meData?: MyUserRequest;
+} | {
+    error: unknown;
+}
+
+const FETCH_MISSING_DM_TIMEOUT = 1000;
+
 export const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[]) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -66,16 +80,6 @@ export const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[])
     return undefined;
 };
 
-export type EntryResponse = {
-    models: Model[];
-    initialTeamId: string;
-    initialChannelId: string;
-    prefData: MyPreferencesRequest;
-    teamData: MyTeamsRequest;
-    chData?: MyChannelsRequest;
-} | {
-    error: unknown;
-}
 export const entry = async (serverUrl: string, teamId?: string, channelId?: string, since = 0): Promise<EntryResponse> => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -121,7 +125,7 @@ export const entry = async (serverUrl: string, teamId?: string, channelId?: stri
 
     const models = await Promise.all(modelPromises);
 
-    return {models: models.flat(), initialChannelId, initialTeamId, prefData, teamData, chData};
+    return {models: models.flat(), initialChannelId, initialTeamId, prefData, teamData, chData, meData};
 };
 
 export const fetchAppEntryData = async (serverUrl: string, since: number, initialTeamId = ''): Promise<AppEntryData | AppEntryError> => {
@@ -255,13 +259,10 @@ export async function deferredAppEntryActions(
     config: ClientConfig, license: ClientLicense, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
     initialTeamId?: string, initialChannelId?: string) {
     // defer sidebar DM & GM profiles
+    let channelsToFetchProfiles: Set<Channel>|undefined;
     if (chData?.channels?.length && chData.memberships?.length) {
         const directChannels = chData.channels.filter(isDMorGM);
-        const channelsToFetchProfiles = new Set<Channel>(directChannels);
-        if (channelsToFetchProfiles.size) {
-            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config, license);
-            await fetchMissingSidebarInfo(serverUrl, Array.from(channelsToFetchProfiles), currentUserLocale, teammateDisplayNameSetting, currentUserId);
-        }
+        channelsToFetchProfiles = new Set<Channel>(directChannels);
 
         // defer fetching posts for unread channels on initial team
         fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId);
@@ -269,7 +270,7 @@ export async function deferredAppEntryActions(
 
     // defer fetch channels and unread posts for other teams
     if (teamData.teams?.length && teamData.memberships?.length) {
-        await fetchTeamsChannelsAndUnreadPosts(serverUrl, since, teamData.teams, teamData.memberships, initialTeamId);
+        fetchTeamsChannelsAndUnreadPosts(serverUrl, since, teamData.teams, teamData.memberships, initialTeamId);
     }
 
     if (preferences && processIsCRTEnabled(preferences, config)) {
@@ -289,6 +290,12 @@ export async function deferredAppEntryActions(
 
     fetchAllTeams(serverUrl);
     updateAllUsersSince(serverUrl, since);
+    setTimeout(async () => {
+        if (channelsToFetchProfiles?.size) {
+            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config, license);
+            fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), currentUserLocale, teammateDisplayNameSetting, currentUserId);
+        }
+    }, FETCH_MISSING_DM_TIMEOUT);
 }
 
 export const registerDeviceToken = async (serverUrl: string) => {

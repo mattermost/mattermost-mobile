@@ -15,7 +15,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import TeamModel from '@typings/database/models/servers/team';
 import {isDMorGM, selectDefaultChannelForTeam} from '@utils/channel';
 
-import {fetchMissingSidebarInfo, fetchMyChannelsForTeam, MyChannelsRequest} from './channel';
+import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, MyChannelsRequest} from './channel';
 import {fetchPostsForChannel} from './post';
 import {fetchMyPreferences, MyPreferencesRequest} from './preference';
 import {fetchRolesIfNeeded} from './role';
@@ -122,7 +122,7 @@ export async function retryInitialTeamAndChannel(serverUrl: string) {
         const channelsToFetchProfiles = new Set<Channel>(directChannels);
         if (channelsToFetchProfiles.size) {
             const teammateDisplayNameSetting = getTeammateNameDisplaySetting(prefData.preferences || [], clData.config, clData.license);
-            fetchMissingSidebarInfo(serverUrl, Array.from(channelsToFetchProfiles), user.locale, teammateDisplayNameSetting, user.id);
+            fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), user.locale, teammateDisplayNameSetting, user.id);
         }
 
         fetchPostsForChannel(serverUrl, initialChannel.id);
@@ -201,7 +201,7 @@ export async function retryInitialChannel(serverUrl: string, teamId: string) {
         const channelsToFetchProfiles = new Set<Channel>(directChannels);
         if (channelsToFetchProfiles.size) {
             const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config, license);
-            fetchMissingSidebarInfo(serverUrl, Array.from(channelsToFetchProfiles), user.locale, teammateDisplayNameSetting, user.id);
+            fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), user.locale, teammateDisplayNameSetting, user.id);
         }
 
         fetchPostsForChannel(serverUrl, initialChannel.id);

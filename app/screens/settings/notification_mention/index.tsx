@@ -4,17 +4,17 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
-import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
+import {observeCurrentUser} from '@queries/servers/user';
 import {WithDatabaseArgs} from '@typings/database/database';
 
-import NotificationSettings from './notifications';
+import Mentions from './notification_mention';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         isCRTEnabled: observeIsCRTEnabled(database),
-        enableAutoResponder: observeConfigBooleanValue(database, 'ExperimentalEnableAutomaticReplies'),
+        currentUser: observeCurrentUser(database),
     };
 });
 
-export default withDatabase(enhanced(NotificationSettings));
+export default withDatabase(enhanced(Mentions));

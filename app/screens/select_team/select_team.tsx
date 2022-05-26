@@ -25,7 +25,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type Props = {
-    canCreateTeams: boolean;
     nTeams: number;
 }
 
@@ -33,7 +32,6 @@ const safeAreaEdges = ['left' as const, 'right' as const];
 const safeAreaStyle = {flex: 1};
 
 const SelectTeam = ({
-    canCreateTeams,
     nTeams,
 }: Props) => {
     const theme = useTheme();
@@ -83,11 +81,10 @@ const SelectTeam = ({
         body = (
             <TeamList
                 teams={otherTeams}
-                canCreateTeam={canCreateTeams}
             />
         );
     } else {
-        body = (<NoTeams canCreateTeams={canCreateTeams}/>);
+        body = (<NoTeams/>);
     }
 
     return (
