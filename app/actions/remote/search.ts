@@ -15,6 +15,14 @@ import {forceLogoutIfNecessary} from './session';
 import type {Client} from '@client/rest';
 import type Model from '@nozbe/watermelondb/Model';
 
+type FileSearchRequest = {
+    error?: unknown;
+    file_infos?: FileInfo[];
+    next_file_info_id?: string;
+    order?: string[];
+    prev_file_info_id?: string;
+}
+
 type PostSearchRequest = {
     error?: unknown;
     order?: string[];
@@ -153,7 +161,7 @@ export const searchPosts = async (serverUrl: string, params: PostSearchParams): 
     return result;
 };
 
-export const searchFiles = async (serverUrl: string, params: FileSearchParams): Promise<FileSearchRequest> => {
+export const searchFiles = async (serverUrl: string, teamId: string, params: FileSearchParams): Promise<FileSearchRequest> => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
 
     if (!operator) {
@@ -169,17 +177,16 @@ export const searchFiles = async (serverUrl: string, params: FileSearchParams): 
 
     let data;
     try {
-        data = await client.searchFiles('', params.terms);
+        data = await client.searchFiles(teamId, params.terms);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 
-    // const result = processPostsFetched(data);
-    // await operator.handlePosts({
-    //     ...result,
-    //     actionType: '',
-    // });
+    await operator.handleFiles({
+        files: data.file_infos,
+        prepareRecordsOnly: false,
+    });
 
-    return null;
+    return data;
 };

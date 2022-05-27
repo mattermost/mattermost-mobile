@@ -30,7 +30,11 @@ const TOP_MARGIN = 12;
 
 const emptyFileResults: FileInfo[] = [];
 
-const SearchScreen = () => {
+type Props = {
+    teamId: string;
+}
+
+const SearchScreen = ({teamId}: Props) => {
     const nav = useNavigation();
     const isFocused = useIsFocused();
     const intl = useIntl();
@@ -58,14 +62,14 @@ const SearchScreen = () => {
 
         setLoading(true);
 
-        const searchParams: PostSearchParams = {
+        const searchParams: PostSearchParams | FileSearchParams = {
             terms: searchValue,
             is_or_search: true,
         };
 
         const [postResults, fileResults] = await Promise.all([
             searchPosts(serverUrl, searchParams),
-            searchFiles(serverUrl, searchParams),
+            searchFiles(serverUrl, teamId, searchParams),
         ]);
 
         if (postResults?.order && Object.keys(postResults.order)) {
