@@ -17,7 +17,7 @@ A spec-compliant polyfill for Intl.DateTimeFormat fully tested by the official E
 * HOMEPAGE:
   * https://github.com/formatjs/formatjs#readme
 
-* LICENSE:
+* LICENSE: MIT
 
 --- 
 
@@ -30,7 +30,7 @@ A spec-compliant polyfill/ponyfill for Intl.getCanonicalLocales tested by the of
 * HOMEPAGE:
   * https://github.com/formatjs/formatjs#readme
 
-* LICENSE: 
+* LICENSE: MIT
 
 ---
 
@@ -43,7 +43,7 @@ A spec-compliant polyfill/ponyfill for Intl.Locale tested by the official ECMASc
 * HOMEPAGE:
   * https://github.com/formatjs/formatjs#readme
 
-* LICENSE:
+* LICENSE: MIT
 
 ---
 
@@ -56,7 +56,7 @@ A polyfill for ESNext Intl.NumberFormat and Number.prototype.toLocaleString.
 * HOMEPAGE:
   * https://github.com/formatjs/formatjs#readme
 
-* LICENSE:
+* LICENSE: MIT
 
 ---
 
@@ -69,7 +69,7 @@ A spec-compliant polyfill for Intl.PluralRules fully tested by the official ECMA
 * HOMEPAGE:
   * https://github.com/formatjs/formatjs#readme
 
-* LICENSE:
+* LICENSE: MIT
 
 ---
 
@@ -82,7 +82,7 @@ A spec-compliant polyfill for Intl.RelativeTimeFormat fully tested by the offici
 * HOMEPAGE:
   * https://github.com/formatjs/formatjs#readme
 
-* LICENSE:
+* LICENSE: MIT
 
 --- 
 
@@ -90,10 +90,10 @@ A spec-compliant polyfill for Intl.RelativeTimeFormat fully tested by the offici
 
 This product contains '@mattermost/compass-icons' by Mattermost.
 
-
+Simple steps to adding new icons to the Compass Icons font
 
 * HOMEPAGE:
-  * https://github.com/mattermost/compass-icons/projects
+  * https://github.com/mattermost/compass-icons
 
 * LICENSE: Apache License
 
