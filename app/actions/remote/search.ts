@@ -152,3 +152,34 @@ export const searchPosts = async (serverUrl: string, params: PostSearchParams): 
 
     return result;
 };
+
+export const searchFiles = async (serverUrl: string, params: FileSearchParams): Promise<FileSearchRequest> => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    let data;
+    try {
+        data = await client.searchFiles('', params.terms);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+
+    // const result = processPostsFetched(data);
+    // await operator.handlePosts({
+    //     ...result,
+    //     actionType: '',
+    // });
+
+    return null;
+};

@@ -2,21 +2,25 @@
 // See LICENSE.txt for license information.
 
 import {useIsFocused, useNavigation} from '@react-navigation/native';
+import {debounce} from 'lodash';
 import React, {useCallback, useState, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {ScrollView} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import {searchPosts, searchFiles} from '@actions/remote/search';
 import FreezeScreen from '@components/freeze_screen';
 import NavigationHeader from '@components/navigation_header';
+import {useServerUrl} from '@context/server';
 import {useCollapsibleHeader} from '@hooks/header';
 
 // import RecentSearches from './recent_searches/recent_searches';
 // import SearchModifiers from './search_modifiers/search_modifiers';
 // import Filter from './results/filter';
+import Results from './results';
 import {SelectTab} from './results/header';
-import Results from './results/results';
+import Loader from './results/loader';
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
@@ -24,29 +28,60 @@ const EDGES: Edge[] = ['bottom', 'left', 'right'];
 
 const TOP_MARGIN = 12;
 
+const emptyFileResults: FileInfo[] = [];
+
 const SearchScreen = () => {
     const nav = useNavigation();
     const isFocused = useIsFocused();
     const intl = useIntl();
     const searchScreenIndex = 1;
     const stateIndex = nav.getState().index;
+    const serverUrl = useServerUrl();
     const {searchTerm} = nav.getState().routes[stateIndex].params;
 
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
     const [selectedTab, setSelectedTab] = useState<string>('messages');
+    const [loading, setLoading] = useState<boolean>(false);
+
+    const [postIds, setPostIds] = useState<string[]>([]);
+    const [files, setFileResults] = useState<FileInfo[]>(emptyFileResults);
 
     useEffect(() => {
         setSearchValue(searchTerm);
     }, [searchTerm]);
 
-    const handleSearch = () => {
+    const handleSearch = useCallback((debounce(async () => {
         // execute the search for the text in the navigation text box
         // handle recent searches
         // - add recent if doesn't exist
         // - updated recent createdAt if exists??
 
-        // console.log('execute the search for : ', searchValue);
-    };
+        setLoading(true);
+
+        const searchParams: PostSearchParams = {
+            terms: searchValue,
+            is_or_search: true,
+        };
+
+        const [postResults, fileResults] = await Promise.all([
+            searchPosts(serverUrl, searchParams),
+            searchFiles(serverUrl, searchParams),
+        ]);
+
+        if (postResults?.order && Object.keys(postResults.order)) {
+            setPostIds(postResults.order);
+        } else {
+            setPostIds([]);
+        }
+
+        if (fileResults?.file_infos && Object.keys(fileResults.file_infos)) {
+            setFileResults(Object.values(fileResults.file_infos));
+        } else {
+            setFileResults(emptyFileResults);
+        }
+
+        setLoading(false);
+    })), [searchValue, files, setFileResults, setPostIds]);
 
     const isLargeTitle = true;
     const hasSearch = true;
@@ -111,6 +146,17 @@ const SearchScreen = () => {
                         scrollEventThrottle={16}
                         ref={scrollRef}
                     >
+                        {loading && <Loader/>}
+                        {!loading &&
+                        <Results
+                            scrollRef={scrollRef}
+                            selectedTab={selectedTab}
+                            searchValue={searchValue}
+                            onHeaderTabSelect={onHeaderTabSelect}
+                            fileResults={files}
+                            postIds={postIds}
+                        />
+                        }
                         {/* <SearchModifiers */}
                         {/*     setSearchValue={setSearchValue} */}
                         {/*     searchValue={searchValue} */}
@@ -118,11 +164,6 @@ const SearchScreen = () => {
                         {/* <RecentSearches */}
                         {/*     setSearchValue={setSearchValue} */}
                         {/* /> */}
-                        <Results
-                            selectedTab={selectedTab}
-                            searchValue={searchValue}
-                            onHeaderTabSelect={onHeaderTabSelect}
-                        />
                         {/* <Filter/> */}
                     </AnimatedScrollView>
                 </Animated.View>
