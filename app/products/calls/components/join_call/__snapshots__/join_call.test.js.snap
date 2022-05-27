@@ -11,15 +11,18 @@ exports[`JoinCall should match snapshot 1`] = `
   <Pressable
     onPress={[Function]}
     style={
-      Object {
-        "alignItems": "center",
-        "backgroundColor": "#3DB887",
-        "flexDirection": "row",
-        "height": 38,
-        "justifyContent": "center",
-        "padding": 5,
-        "width": "100%",
-      }
+      Array [
+        Object {
+          "alignItems": "center",
+          "backgroundColor": "#3DB887",
+          "flexDirection": "row",
+          "height": 38,
+          "justifyContent": "center",
+          "padding": 5,
+          "width": "100%",
+        },
+        false,
+      ]
     }
   >
     <CompassIcon
