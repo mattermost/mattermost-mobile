@@ -9,11 +9,9 @@ import {useTheme} from '@context/theme';
 import useHeaderHeight from '@hooks/header';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import NavigationHeaderContext from './context';
 import Header, {HeaderRightButton} from './header';
 import NavigationHeaderLargeTitle from './large';
 import NavigationSearch from './search';
-import NavigationHeaderSearchContext from './search_context';
 
 import type {SearchProps} from '@components/search';
 
@@ -27,7 +25,6 @@ type Props = SearchProps & {
     scrollValue?: Animated.SharedValue<number>;
     hideHeader?: (visible: boolean) => void;
     showBackButton?: boolean;
-    showHeaderInContext?: boolean;
     subtitle?: string;
     subtitleCompanion?: React.ReactElement;
     title?: string;
@@ -51,7 +48,6 @@ const NavigationHeader = ({
     rightButtons,
     scrollValue,
     showBackButton,
-    showHeaderInContext = true,
     subtitle,
     subtitleCompanion,
     title = '',
@@ -62,12 +58,17 @@ const NavigationHeader = ({
     const insets = useSafeAreaInsets();
     const styles = getStyleSheet(theme);
 
-    const {largeHeight, defaultHeight} = useHeaderHeight(isLargeTitle, Boolean(subtitle), hasSearch);
+    const {largeHeight, defaultHeight} = useHeaderHeight();
     const containerHeight = useAnimatedStyle(() => {
-        const normal = defaultHeight + insets.top;
-        const calculated = -(insets.top + (scrollValue?.value || 0));
-        return {height: Math.max((normal + calculated), normal)};
-    }, []);
+        const minHeight = defaultHeight + insets.top;
+        const value = -(scrollValue?.value || 0);
+        const height = ((isLargeTitle ? largeHeight : defaultHeight)) + value + insets.top;
+        return {
+            height: Math.max(height, minHeight),
+            minHeight,
+            maxHeight: largeHeight + insets.top + 80,
+        };
+    });
 
     return (
         <>
@@ -98,38 +99,20 @@ const NavigationHeader = ({
                     subtitle={subtitle}
                     theme={theme}
                     title={title}
-                    top={insets.top}
                 />
                 }
+                {hasSearch &&
+                    <NavigationSearch
+                        {...searchProps}
+                        defaultHeight={defaultHeight}
+                        largeHeight={largeHeight}
+                        scrollValue={scrollValue}
+                        hideHeader={hideHeader}
+                        theme={theme}
+                        top={0}
+                    />
+                }
             </Animated.View>
-            {hasSearch &&
-            <>
-                <NavigationSearch
-                    {...searchProps}
-                    largeHeight={largeHeight}
-                    scrollValue={scrollValue}
-                    hideHeader={hideHeader}
-                    theme={theme}
-                    top={insets.top}
-                />
-                <NavigationHeaderSearchContext
-                    defaultHeight={defaultHeight}
-                    largeHeight={largeHeight}
-                    scrollValue={scrollValue}
-                    theme={theme}
-                />
-            </>
-            }
-            {showHeaderInContext &&
-            <NavigationHeaderContext
-                defaultHeight={defaultHeight}
-                hasSearch={hasSearch}
-                isLargeTitle={isLargeTitle}
-                largeHeight={largeHeight}
-                scrollValue={scrollValue}
-                top={insets.top}
-            />
-            }
         </>
     );
 };

@@ -151,10 +151,12 @@ const Header = ({
             return {opacity: 0};
         }
 
-        const barHeight = Platform.OS === 'ios' ? (largeHeight - defaultHeight - (top / 2)) : largeHeight - defaultHeight;
-        const val = top + (scrollValue?.value ?? 0);
+        const barHeight = (largeHeight - defaultHeight) - 60;
+        const val = (scrollValue?.value ?? 0);
+        const duration = val >= barHeight ? 200 : 50;
+        const opacityValue = val >= barHeight ? 1 : 0;
         return {
-            opacity: val >= barHeight ? withTiming(1, {duration: 250}) : 0,
+            opacity: withTiming(opacityValue, {duration}),
         };
     }, [defaultHeight, largeHeight, isLargeTitle, hasSearch]);
 

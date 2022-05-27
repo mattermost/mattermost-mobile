@@ -7,6 +7,7 @@ import {Keyboard, StyleSheet, View} from 'react-native';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import NavigationHeader from '@components/navigation_header';
+import RoundedHeaderContext from '@components/rounded_header_context';
 import {useAppState, useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
@@ -42,6 +43,10 @@ const GlobalThreads = ({componentId}: Props) => {
         return {flex: 1, marginTop};
     }, [defaultHeight, insets.top]);
 
+    const contextStyle = useMemo(() => ({
+        top: defaultHeight + insets.top,
+    }), [defaultHeight, insets.top]);
+
     const onBackPress = useCallback(() => {
         Keyboard.dismiss();
         popTopScreen(componentId);
@@ -65,6 +70,9 @@ const GlobalThreads = ({componentId}: Props) => {
                     })
                 }
             />
+            <View style={contextStyle}>
+                <RoundedHeaderContext/>
+            </View>
             {!switchingTeam &&
             <View style={containerStyle}>
                 <ThreadsList
