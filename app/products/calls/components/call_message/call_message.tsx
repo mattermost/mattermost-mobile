@@ -35,7 +35,7 @@ type CallMessageProps = {
     isCloudLimitRestricted: boolean;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme(({theme, isCloudLimitRestricted}: CallMessageProps) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         messageStyle: {
             flexDirection: 'row',
@@ -65,11 +65,17 @@ const getStyleSheet = makeStyleSheetFromTheme(({theme, isCloudLimitRestricted}: 
             overflow: 'hidden',
         },
         joinCallButtonText: {
-            color: isCloudLimitRestricted ? changeOpacity(theme.centerChannelColor, 0.32) : 'white',
+            color: 'white',
+        },
+        joinCallButtonTextRestricted: {
+            color: changeOpacity(theme.centerChannelColor, 0.32),
         },
         joinCallButtonIcon: {
-            color: isCloudLimitRestricted ? changeOpacity(theme.centerChannelColor, 0.32) : 'white',
+            color: 'white',
             marginRight: 5,
+        },
+        joinCallButtonIconRestricted: {
+            color: changeOpacity(theme.centerChannelColor, 0.32),
         },
         startedText: {
             color: theme.centerChannelColor,
@@ -78,10 +84,13 @@ const getStyleSheet = makeStyleSheetFromTheme(({theme, isCloudLimitRestricted}: 
         joinCallButton: {
             flexDirection: 'row',
             padding: 12,
-            backgroundColor: isCloudLimitRestricted ? changeOpacity(theme.centerChannelColor, 0.08) : '#339970',
+            backgroundColor: '#339970',
             borderRadius: 8,
             alignItems: 'center',
             alignContent: 'center',
+        },
+        joinCallButtonRestricted: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         },
         timeText: {
             color: theme.centerChannelColor,
@@ -99,8 +108,22 @@ const getStyleSheet = makeStyleSheetFromTheme(({theme, isCloudLimitRestricted}: 
     };
 });
 
-const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, alreadyInTheCall, theme, actions, userTimezone, isMilitaryTime, currentChannelName, callChannelName, intl, isCloudLimitRestricted}: CallMessageProps) => {
-    const style = getStyleSheet({theme, isCloudLimitRestricted});
+const CallMessage = ({
+    post,
+    user,
+    teammateNameDisplay,
+    confirmToJoin,
+    alreadyInTheCall,
+    theme,
+    actions,
+    userTimezone,
+    isMilitaryTime,
+    currentChannelName,
+    callChannelName,
+    intl,
+    isCloudLimitRestricted,
+}: CallMessageProps) => {
+    const style = getStyleSheet(theme);
     const joinHandler = () => {
         if (alreadyInTheCall || isCloudLimitRestricted) {
             return;
@@ -143,6 +166,8 @@ const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, alreadyInT
         );
     }
 
+    const joinCallButtonText = alreadyInTheCall ? 'Current call' : 'Join call';
+
     return (
         <View style={style.messageStyle}>
             <CompassIcon
@@ -162,22 +187,17 @@ const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, alreadyInT
             </View>
 
             <TouchableOpacity
-                style={style.joinCallButton}
+                style={[style.joinCallButton, isCloudLimitRestricted && style.joinCallButtonRestricted]}
                 onPress={joinHandler}
             >
                 <CompassIcon
                     name='phone-outline'
                     size={16}
-                    style={style.joinCallButtonIcon}
+                    style={[style.joinCallButtonIcon, isCloudLimitRestricted && style.joinCallButtonIconRestricted]}
                 />
-                {alreadyInTheCall &&
-                    <Text
-                        style={style.joinCallButtonText}
-                    >{'Current call'}</Text>}
-                {!alreadyInTheCall &&
-                    <Text
-                        style={style.joinCallButtonText}
-                    >{'Join call'}</Text>}
+                <Text style={[style.joinCallButtonText, isCloudLimitRestricted && style.joinCallButtonTextRestricted]}>
+                    {joinCallButtonText}
+                </Text>
             </TouchableOpacity>
         </View>
     );

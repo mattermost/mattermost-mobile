@@ -30,18 +30,21 @@ type Props = {
     intl: typeof IntlShape;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme(({theme, isCloudLimitRestricted}: Props) => ({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     outerContainer: {
         backgroundColor: theme.centerChannelBg,
     },
     innerContainer: {
         flexDirection: 'row',
-        backgroundColor: isCloudLimitRestricted ? changeOpacity(theme.centerChannelColor, 0.48) : '#3DB887',
+        backgroundColor: '#3DB887',
         width: '100%',
         padding: 5,
         justifyContent: 'center',
         alignItems: 'center',
         height: JOIN_CALL_BAR_HEIGHT,
+    },
+    innerContainerRestricted: {
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.48),
     },
     joinCallIcon: {
         color: theme.sidebarText,
@@ -103,7 +106,7 @@ const JoinCall = (props: Props) => {
         return null;
     }
 
-    const style = getStyleSheet(props);
+    const style = getStyleSheet(props.theme);
     const userIds = useMemo(() => {
         return Object.values(props.call.participants || {}).map((x) => x.id);
     }, [props.call.participants]);
@@ -111,7 +114,7 @@ const JoinCall = (props: Props) => {
     return (
         <View style={style.outerContainer}>
             <Pressable
-                style={style.innerContainer}
+                style={[style.innerContainer, props.isCloudLimitRestricted && style.innerContainerRestricted]}
                 onPress={joinHandler}
             >
                 <CompassIcon
@@ -142,7 +145,6 @@ const JoinCall = (props: Props) => {
                 </View>
             </Pressable>
         </View>
-
     );
 };
 export default injectIntl(JoinCall);
