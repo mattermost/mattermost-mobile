@@ -54,6 +54,14 @@ export function handleCallStarted(msg: WebSocketMessage): GenericAction {
     };
 }
 
+export function handleCallEnded(msg: WebSocketMessage): GenericAction {
+    DeviceEventEmitter.emit(WebsocketEvents.CALLS_CALL_END, {channelId: msg.broadcast.channel_id});
+    return {
+        type: CallsTypes.RECEIVED_CALL_ENDED,
+        data: {channelId: msg.broadcast.channel_id},
+    };
+}
+
 export function handleCallChannelEnabled(msg: WebSocketMessage): GenericAction {
     return {
         type: CallsTypes.RECEIVED_CHANNEL_CALL_ENABLED,

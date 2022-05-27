@@ -53,6 +53,11 @@ function calls(state: Dictionary<Call> = {}, action: GenericAction) {
         nextState[newCall.channelId] = newCall;
         return nextState;
     }
+    case CallsTypes.RECEIVED_CALL_ENDED: {
+        const nextState = {...state};
+        delete nextState[action.data.channelId];
+        return nextState;
+    }
     case CallsTypes.RECEIVED_CALL_FINISHED: {
         const newCall = action.data;
         const nextState = {...state};
@@ -161,6 +166,12 @@ function joined(state = '', action: GenericAction) {
     switch (action.type) {
     case CallsTypes.RECEIVED_MYSELF_JOINED_CALL: {
         return action.data;
+    }
+    case CallsTypes.RECEIVED_CALL_ENDED: {
+        if (action.data.channelId === state) {
+            return '';
+        }
+        return state;
     }
     case CallsTypes.RECEIVED_MYSELF_LEFT_CALL: {
         return '';

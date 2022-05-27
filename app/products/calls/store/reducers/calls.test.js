@@ -145,6 +145,16 @@ describe('Reducers.calls.calls', () => {
         assert.deepEqual(state.calls, {'channel-2': call2});
     });
 
+    it('RECEIVED_CALL_ENDED', async () => {
+        const initialState = {calls: {'channel-1': call1, 'channel-2': call2}};
+        const testAction = {
+            type: CallsTypes.RECEIVED_CALL_FINISHED,
+            data: {channelId: 'channel-1'},
+        };
+        const state = callsReducer(initialState, testAction);
+        assert.deepEqual(state.calls, {'channel-2': call2});
+    });
+
     it('RECEIVED_MUTE_USER_CALL', async () => {
         const initialState = {calls: {'channel-1': call1, 'channel-2': call2}};
         const testAction = {

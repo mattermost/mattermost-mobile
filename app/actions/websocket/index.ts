@@ -27,6 +27,7 @@ import {removeUserFromList} from '@mm-redux/utils/user_utils';
 import {batchLoadCalls} from '@mmproducts/calls/store/actions/calls';
 import {
     handleCallStarted,
+    handleCallEnded,
     handleCallUserConnected,
     handleCallUserDisconnected,
     handleCallUserMuted,
@@ -473,6 +474,8 @@ function handleEvent(msg: WebSocketMessage) {
             break;
         case WebsocketEvents.CALLS_CALL_START:
             return dispatch(handleCallStarted(msg));
+        case WebsocketEvents.CALLS_CALL_END:
+            return dispatch(handleCallEnded(msg));
         case WebsocketEvents.CALLS_SCREEN_ON:
             return dispatch(handleCallScreenOn(msg));
         case WebsocketEvents.CALLS_SCREEN_OFF:
