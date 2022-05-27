@@ -31,6 +31,7 @@ import UnreadDot from './unread_dot';
 import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
+import type {SearchPattern} from '@typings/global/markdown';
 
 type PostProps = {
     appsEnabled: boolean;
@@ -54,6 +55,7 @@ type PostProps = {
     post: PostModel;
     previousPost?: PostModel;
     reactionsCount: number;
+    searchPatterns?: SearchPattern[];
     shouldRenderReplyButton?: boolean;
     showAddReaction?: boolean;
     skipSavedHeader?: boolean;
@@ -104,7 +106,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const Post = ({
     appsEnabled, canDelete, currentUser, differentThreadSequence, filesCount, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
     isCRTEnabled, isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
-    location, post, reactionsCount, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
+    location, post, reactionsCount, searchPatterns, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
     testID, thread, previousPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
@@ -283,6 +285,7 @@ const Post = ({
                 isPostAddChannelMember={isPostAddChannelMember}
                 location={location}
                 post={post}
+                searchPatterns={searchPatterns}
                 showAddReaction={showAddReaction}
                 theme={theme}
             />
