@@ -9,6 +9,7 @@ import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import NavigationHeader from '@components/navigation_header';
 import {Navigation, Screens} from '@constants';
+import {QUICK_OPTIONS_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
@@ -95,7 +96,7 @@ const ChannelHeader = ({
         bottomSheet({
             title: '',
             renderContent,
-            snapPoints: ['32%', 10],
+            snapPoints: [QUICK_OPTIONS_HEIGHT, 10],
             theme,
             closeButtonId: 'close-channel-quick-actions',
         });

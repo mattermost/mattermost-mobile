@@ -12,6 +12,7 @@ import LeaveChannelLabel from '@components/channel_actions/leave_channel_label';
 import MutedBox from '@components/channel_actions/mute_box';
 import SetHeaderBox from '@components/channel_actions/set_header_box';
 import {General} from '@constants';
+import {QUICK_OPTIONS_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {dismissBottomSheet} from '@screens/navigation';
 import {changeOpacity} from '@utils/theme';
@@ -26,7 +27,7 @@ const DIRECT_CHANNELS: string[] = [General.DM_CHANNEL, General.GM_CHANNEL];
 
 const styles = StyleSheet.create({
     container: {
-        minHeight: 270,
+        height: QUICK_OPTIONS_HEIGHT,
     },
     wrapper: {
         flexDirection: 'row',
