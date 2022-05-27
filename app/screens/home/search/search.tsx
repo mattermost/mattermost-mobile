@@ -48,6 +48,7 @@ const SearchScreen = ({teamId}: Props) => {
     const [loading, setLoading] = useState<boolean>(false);
 
     const [postIds, setPostIds] = useState<string[]>([]);
+    const [fileIds, setFileIds] = useState<string[]>([]);
     const [files, setFileResults] = useState<FileInfo[]>(emptyFileResults);
 
     useEffect(() => {
@@ -78,10 +79,10 @@ const SearchScreen = ({teamId}: Props) => {
             setPostIds([]);
         }
 
-        if (fileResults?.file_infos && Object.keys(fileResults.file_infos)) {
-            setFileResults(Object.values(fileResults.file_infos));
+        if (fileResults?.order && Object.keys(fileResults.order)) {
+            setFileIds(fileResults.order);
         } else {
-            setFileResults(emptyFileResults);
+            setFileIds([]);
         }
 
         setLoading(false);
@@ -159,6 +160,7 @@ const SearchScreen = ({teamId}: Props) => {
                             onHeaderTabSelect={onHeaderTabSelect}
                             fileResults={files}
                             postIds={postIds}
+                            fileIds={fileIds}
                         />
                         }
                         {/* <SearchModifiers */}
