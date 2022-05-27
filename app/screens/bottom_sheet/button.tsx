@@ -7,10 +7,12 @@ import {GestureResponderEvent, Text, View} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
+    disabled?: boolean;
     onPress?: (e: GestureResponderEvent) => void;
     icon?: string;
     testID?: string;
@@ -20,19 +22,13 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         button: {
-            backgroundColor: theme.buttonBg,
             display: 'flex',
             flexDirection: 'row',
-            paddingVertical: 14,
-            paddingHorizontal: 24,
-            borderRadius: 4,
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: 48,
+        },
+        buttonDisabled: {
+            color: changeOpacity(theme.centerChannelColor, 0.32),
         },
         text: {
-            color: theme.buttonColor,
-            paddingHorizontal: 8,
             ...typography('Body', 200, 'SemiBold'),
         },
         icon_container: {
@@ -43,15 +39,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default function BottomSheetButton({onPress, icon, testID, text}: Props) {
+export default function BottomSheetButton({disabled = false, onPress, icon, testID, text}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+
+    const buttonType = disabled ? 'disabled' : 'default';
+    const styleButtonText = buttonTextStyle(theme, 'lg', 'primary', buttonType);
+    const styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary', buttonType);
+
+    let iconColor = theme.buttonColor;
+    if (disabled) {
+        iconColor = styles.buttonDisabled.color;
+    }
 
     return (
         <TouchableWithFeedback
             onPress={onPress}
             type='opacity'
-            style={styles.button}
+            style={[styles.button, styleButtonText, styleButtonBackground]}
             testID={testID}
         >
             {icon && (
@@ -59,13 +64,13 @@ export default function BottomSheetButton({onPress, icon, testID, text}: Props) 
                     <CompassIcon
                         size={24}
                         name={icon}
-                        color={theme.buttonColor}
+                        color={iconColor}
                     />
                 </View>
             )}
             {text && (
                 <Text
-                    style={styles.text}
+                    style={[styles.text, {color: iconColor}]}
                 >{text}</Text>
             )}
 

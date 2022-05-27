@@ -145,7 +145,7 @@ const Results = ({
             return renderNoResults();
         }
         return (
-            <Text>{files.map((fInfo) => fInfo.id + '\n')}</Text>
+            <Text>{files.map((fInfo) => `${fInfo.id}  ${fInfo.mimeType}\n`)}</Text>
         );
     }, [files]);
 
