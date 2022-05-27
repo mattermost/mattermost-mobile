@@ -1,12 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {createSelector} from 'reselect';
+
 import {Client4} from '@client/rest';
 import Calls from '@constants/calls';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/common';
-import {getServerVersion} from '@mm-redux/selectors/entities/general';
+import {getLicense, getServerVersion} from '@mm-redux/selectors/entities/general';
 import {GlobalState} from '@mm-redux/types/store';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {Call} from '@mmproducts/calls/store/types/calls';
 
 export function getConfig(state: GlobalState) {
     return state.entities.calls.config;
@@ -65,3 +68,28 @@ export function isSupportedServer(state: GlobalState) {
 export function isCallsPluginEnabled(state: GlobalState) {
     return state.entities.calls.pluginEnabled;
 }
+
+const isCloudProfessionalOrEnterprise: (state: GlobalState) => boolean = createSelector(
+    getLicense,
+    getConfig,
+    (license, config) => license?.Cloud === 'true' &&
+        (config.sku_short_name === 'professional' || config.sku_short_name === 'enterprise'),
+);
+
+const getCallInCurrentChannel: (state: GlobalState) => Call | undefined = createSelector(
+    getCurrentChannelId,
+    getCalls,
+    (currentChannelId, calls) => calls[currentChannelId],
+);
+
+export const isCloudLimitRestricted: (state: GlobalState, channelId?: string) => boolean = createSelector(
+    isCloudProfessionalOrEnterprise,
+    (state: GlobalState, channelId: string) => (channelId ? getCalls(state)[channelId] : getCallInCurrentChannel(state)),
+    getConfig,
+    (isCloudPaid, call, config) => {
+        if (!call) {
+            return false;
+        }
+        return isCloudPaid && Object.keys(call.participants || {}).length >= config.cloud_max_participants;
+    },
+);

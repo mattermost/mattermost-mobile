@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import moment from 'moment-timezone';
-import React, {useCallback} from 'react';
+import React from 'react';
 import {injectIntl, intlShape, IntlShape} from 'react-intl';
 import {View, TouchableOpacity, Text} from 'react-native';
 
@@ -32,9 +32,10 @@ type CallMessageProps = {
     currentChannelName: string;
     callChannelName: string;
     intl: typeof IntlShape;
+    isCloudLimitRestricted: boolean;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+const getStyleSheet = makeStyleSheetFromTheme(({theme, isCloudLimitRestricted}: CallMessageProps) => {
     return {
         messageStyle: {
             flexDirection: 'row',
@@ -64,10 +65,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             overflow: 'hidden',
         },
         joinCallButtonText: {
-            color: 'white',
+            color: isCloudLimitRestricted ? changeOpacity(theme.centerChannelColor, 0.32) : 'white',
         },
         joinCallButtonIcon: {
-            color: 'white',
+            color: isCloudLimitRestricted ? changeOpacity(theme.centerChannelColor, 0.32) : 'white',
             marginRight: 5,
         },
         startedText: {
@@ -77,7 +78,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         joinCallButton: {
             flexDirection: 'row',
             padding: 12,
-            backgroundColor: '#339970',
+            backgroundColor: isCloudLimitRestricted ? changeOpacity(theme.centerChannelColor, 0.08) : '#339970',
             borderRadius: 8,
             alignItems: 'center',
             alignContent: 'center',
@@ -98,14 +99,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, alreadyInTheCall, theme, actions, userTimezone, isMilitaryTime, currentChannelName, callChannelName, intl}: CallMessageProps) => {
-    const style = getStyleSheet(theme);
-    const joinHandler = useCallback(() => {
-        if (alreadyInTheCall) {
+const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, alreadyInTheCall, theme, actions, userTimezone, isMilitaryTime, currentChannelName, callChannelName, intl, isCloudLimitRestricted}: CallMessageProps) => {
+    const style = getStyleSheet({theme, isCloudLimitRestricted});
+    const joinHandler = () => {
+        if (alreadyInTheCall || isCloudLimitRestricted) {
             return;
         }
         leaveAndJoinWithAlert(intl, post.channel_id, callChannelName, currentChannelName, confirmToJoin, actions.joinCall);
-    }, [post.channel_id, callChannelName, currentChannelName, confirmToJoin, actions.joinCall]);
+    };
 
     if (post.props.end_at) {
         return (
