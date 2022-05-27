@@ -56,7 +56,7 @@ export const clearedState = {
     Audio: false,
     Videos: false,
 };
-type FilterState = typeof clearedState
+export type FilterState = typeof clearedState
 
 const Filter = ({initialState, setParentFilterState}: FilterProps) => {
     const intl = useIntl();

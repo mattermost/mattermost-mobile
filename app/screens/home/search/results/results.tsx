@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {FlatList, Text, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -63,10 +63,14 @@ const Results = ({
 
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
 
+    const [filteredFiles, setFilterFiles] = useState(files);
+
     const renderHeader = useCallback(() => {
         return (
             <Header
+                files={files}
                 onTabSelect={onHeaderTabSelect}
+                setFilterFiles={setFilterFiles}
                 numberFiles={fileIds.length}
                 numberMessages={postIds.length}
             />
@@ -141,13 +145,13 @@ const Results = ({
     }, [renderPostItem]);
 
     const renderFiles = useCallback(() => {
-        if (files.length === 0) {
+        if (filteredFiles.length === 0) {
             return renderNoResults();
         }
         return (
-            <Text>{files.map((fInfo) => `${fInfo.id}  ${fInfo.mimeType}\n`)}</Text>
+            <Text>{filteredFiles.map((fInfo) => `${fInfo.id}  ${fInfo.mimeType}\n`)}</Text>
         );
-    }, [files]);
+    }, [files, filteredFiles]);
 
     let content;
     if (!searchValue) {

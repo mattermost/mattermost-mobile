@@ -4,21 +4,26 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
+import {FileModel} from '@app/database/models/server';
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
+import {isDocument, isImage, isVideo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Filter, {clearedState} from './filter';
 import SelectButton from './header_button';
 
 export type SelectTab = 'files' | 'messages'
+type FilterFunction = (file: FileModel) => boolean
 
 type Props = {
     onTabSelect: (tab: SelectTab) => void;
     numberFiles: number;
     numberMessages: number;
+    files: FileModel[];
+    setFilterFiles: (files: FileModel[]) => void;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -44,7 +49,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const Header = ({onTabSelect, numberFiles, numberMessages}: Props) => {
+const Header = ({onTabSelect, numberFiles, numberMessages, files, setFilterFiles}: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
     const intl = useIntl();
@@ -94,8 +99,44 @@ const Header = ({onTabSelect, numberFiles, numberMessages}: Props) => {
         });
     }, [filterState]);
 
+    const getFilters = useCallback(() => {
+        const filterArray: FilterFunction[] = [];
+        if (filterState.Documents) {
+            filterArray.push(isDocument);
+        }
+
+        if (filterState.Images) {
+            filterArray.push(isImage);
+        }
+
+        if (filterState.Videos) {
+            filterArray.push(isVideo);
+        }
+        return filterArray;
+    }, [filterState]);
+
+    const handleFilterFiles = useCallback(() => {
+        const filterFunctions = getFilters();
+        if (JSON.stringify(filterState) === JSON.stringify(clearedState)) {
+            console.log('No filters');
+            setFilterFiles(files);
+        } else {
+            console.log('Has filters');
+            const filteredFiles = [];
+            for (const file of files) {
+                for (const filterFunc of filterFunctions) {
+                    if (filterFunc(file)) {
+                        filteredFiles.push(file);
+                    }
+                }
+            }
+            setFilterFiles(filteredFiles);
+        }
+    }, [getFilters, setFilterFiles, hasFilters, files]);
+
     useEffect(() => {
         setHasFilters(JSON.stringify(filterState) !== JSON.stringify(clearedState));
+        handleFilterFiles();
     }, [filterState, setHasFilters]);
 
     return (
