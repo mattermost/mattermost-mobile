@@ -71,7 +71,6 @@ const Results = ({
                 files={files}
                 onTabSelect={onHeaderTabSelect}
                 setFilterFiles={setFilterFiles}
-                numberFiles={fileIds.length}
                 numberMessages={postIds.length}
             />
         );
