@@ -118,7 +118,7 @@ export default function ChannelInfoForm({
     const purposeInput = useRef<TextInput>(null);
     const headerInput = useRef<TextInput>(null);
 
-    const scrollViewRef = useRef<KeyboardAwareScrollView>();
+    const scrollViewRef = useRef<KeyboardAwareScrollView>(null);
 
     const updateScrollTimeout = useRef<NodeJS.Timeout>();
 
@@ -230,8 +230,6 @@ export default function ChannelInfoForm({
         >
             <KeyboardAwareScrollView
                 testID={'create_or_edit_channel.scrollview'}
-
-                // @ts-expect-error legacy ref
                 ref={scrollViewRef}
                 keyboardShouldPersistTaps={'always'}
                 onKeyboardDidShow={onKeyboardDidShow}
