@@ -4,8 +4,8 @@
 import React, {useCallback} from 'react';
 import {StyleSheet, View} from 'react-native';
 
-import AddPeopleBox from '@app/components/channel_actions/add_people_box';
-import CopyChannelLinkBox from '@app/components/channel_actions/copy_channel_link_box';
+import AddPeopleBox from '@components/channel_actions/add_people_box';
+import CopyChannelLinkBox from '@components/channel_actions/copy_channel_link_box';
 import FavoriteBox from '@components/channel_actions/favorite_box';
 import InfoBox from '@components/channel_actions/info_box';
 import LeaveChannelLabel from '@components/channel_actions/leave_channel_label';

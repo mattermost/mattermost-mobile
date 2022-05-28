@@ -5,7 +5,7 @@ import {Node, NodeType} from 'commonmark';
 
 import {escapeRegex} from '@utils/markdown';
 
-import type {UserMentionKey} from '@typings/global/markdown';
+import type {SearchPattern, UserMentionKey} from '@typings/global/markdown';
 
 /* eslint-disable no-underscore-dangle */
 
@@ -114,6 +114,8 @@ function pullOutImage(image: any) {
 export function highlightMentions(ast: Node, mentionKeys: UserMentionKey[]) {
     const walker = ast.walker();
 
+    const patterns = mentionKeysToPatterns(mentionKeys);
+
     let e;
     while ((e = walker.next())) {
         if (!e.entering) {
@@ -123,13 +125,13 @@ export function highlightMentions(ast: Node, mentionKeys: UserMentionKey[]) {
         const node = e.node;
 
         if (node.type === 'text' && node.literal) {
-            const {index, mention} = getFirstMention(node.literal, mentionKeys);
+            const {index, length} = getFirstMatch(node.literal, patterns);
 
-            if (index === -1 || !mention) {
+            if (index === -1) {
                 continue;
             }
 
-            const mentionNode = highlightTextNode(node, index, index + mention.key.length, 'mention_highlight');
+            const mentionNode = highlightTextNode(node, index, index + length, 'mention_highlight');
 
             // Resume processing on the next node after the mention node which may include any remaining text
             // that was part of this one
@@ -158,38 +160,71 @@ export function highlightMentions(ast: Node, mentionKeys: UserMentionKey[]) {
     return ast;
 }
 
-// Given a string and an array of mention keys, returns the first mention that appears and its index.
-export function getFirstMention(str: string, mentionKeys: UserMentionKey[]) {
-    let firstMention = null;
-    let firstMentionIndex = -1;
-
-    for (const mention of mentionKeys) {
-        if (mention.key.trim() === '') {
-            continue;
-        }
-
+export function mentionKeysToPatterns(mentionKeys: UserMentionKey[]) {
+    return mentionKeys.filter((mention) => mention.key.trim() !== '').map((mention) => {
         const flags = mention.caseSensitive ? '' : 'i';
         let pattern;
         if (cjkPattern.test(mention.key)) {
             pattern = new RegExp(`${escapeRegex(mention.key)}`, flags);
         } else {
-            pattern = new RegExp(`\\b${escapeRegex(mention.key)}_*\\b`, flags);
+            pattern = new RegExp(`\\b${escapeRegex(mention.key)}(?=_*\\b)`, flags);
         }
 
+        return pattern;
+    });
+}
+
+export function highlightSearchPatterns(ast: Node, searchPatterns: SearchPattern[]) {
+    const walker = ast.walker();
+
+    let e;
+    while ((e = walker.next())) {
+        if (!e.entering) {
+            continue;
+        }
+
+        const node = e.node;
+
+        if (node.type === 'text' && node.literal) {
+            const {index, length} = getFirstMatch(node.literal, searchPatterns.map((pattern) => pattern.pattern));
+
+            // TODO we might need special handling here for if the search term is part of a hashtag
+
+            if (index === -1) {
+                continue;
+            }
+
+            const matchNode = highlightTextNode(node, index, index + length, 'search_highlight');
+
+            // Resume processing on the next node after the match node which may include any remaining text
+            // that was part of this one
+            walker.resumeAt(matchNode, false);
+        }
+    }
+
+    return ast;
+}
+
+// Given a string and an array of regexes, returns the index and length of the first match.
+export function getFirstMatch(str: string, patterns: RegExp[]) {
+    let firstMatchIndex = -1;
+    let firstMatchLength = -1;
+
+    for (const pattern of patterns) {
         const match = pattern.exec(str);
         if (!match || match[0] === '') {
             continue;
         }
 
-        if (firstMentionIndex === -1 || match.index < firstMentionIndex) {
-            firstMentionIndex = match.index;
-            firstMention = mention;
+        if (firstMatchIndex === -1 || match.index < firstMatchIndex) {
+            firstMatchIndex = match.index;
+            firstMatchLength = match[0].length;
         }
     }
 
     return {
-        index: firstMentionIndex,
-        mention: firstMention,
+        index: firstMatchIndex,
+        length: firstMatchLength,
     };
 }
 
@@ -251,4 +286,40 @@ function wrapNode(wrapper: any, node: any) {
     wrapper._firstChild = node;
     wrapper._lastChild = node;
     node._parent = wrapper;
+}
+
+export function parseTaskLists(ast: Node) {
+    const walker = ast.walker();
+
+    let e;
+    while ((e = walker.next())) {
+        if (!e.entering) {
+            continue;
+        }
+
+        const node = e.node;
+
+        if (node.type !== 'item') {
+            continue;
+        }
+
+        if (node.firstChild?.type === 'paragraph' && node.firstChild?.firstChild?.type === 'text') {
+            const paragraphNode = node.firstChild;
+            const textNode = node.firstChild.firstChild;
+
+            const literal = textNode.literal ?? '';
+
+            const match = (/^ {0,3}\[( |x)\]\s/).exec(literal);
+            if (match) {
+                const checkbox = new Node('checkbox');
+                checkbox.isChecked = match[1] === 'x';
+
+                paragraphNode.prependChild(checkbox);
+
+                textNode.literal = literal.substring(match[0].length);
+            }
+        }
+    }
+
+    return ast;
 }

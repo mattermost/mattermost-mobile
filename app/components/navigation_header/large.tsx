@@ -47,8 +47,9 @@ const NavigationHeaderLargeTitle = ({
     const styles = getStyleSheet(theme);
 
     const transform = useAnimatedStyle(() => {
+        const value = scrollValue?.value || 0;
         return {
-            transform: [{translateY: -(top + (scrollValue?.value || 0))}],
+            transform: [{translateY: -(top + value)}],
         };
     }, [top]);
 

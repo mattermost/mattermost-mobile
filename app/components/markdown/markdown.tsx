@@ -6,10 +6,11 @@ import Renderer from 'commonmark-react-renderer';
 import React, {ReactElement, useRef} from 'react';
 import {Dimensions, GestureResponderEvent, Platform, StyleProp, Text, TextStyle, View} from 'react-native';
 
+import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import Hashtag from '@components/markdown/hashtag';
-import {blendColors, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
+import {blendColors, changeOpacity, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
 import {getScheme} from '@utils/url';
 
 import AtMention from './at_mention';
@@ -26,11 +27,11 @@ import MarkdownTable from './markdown_table';
 import MarkdownTableCell, {MarkdownTableCellProps} from './markdown_table_cell';
 import MarkdownTableImage from './markdown_table_image';
 import MarkdownTableRow, {MarkdownTableRowProps} from './markdown_table_row';
-import {addListItemIndices, combineTextNodes, highlightMentions, pullOutImages} from './transform';
+import {addListItemIndices, combineTextNodes, highlightMentions, highlightSearchPatterns, parseTaskLists, pullOutImages} from './transform';
 
 import type {
     MarkdownAtMentionRenderer, MarkdownBaseRenderer, MarkdownBlockStyles, MarkdownChannelMentionRenderer,
-    MarkdownEmojiRenderer, MarkdownImageRenderer, MarkdownLatexRenderer, MarkdownTextStyles, UserMentionKey,
+    MarkdownEmojiRenderer, MarkdownImageRenderer, MarkdownLatexRenderer, MarkdownTextStyles, SearchPattern, UserMentionKey,
 } from '@typings/global/markdown';
 
 type MarkdownProps = {
@@ -55,6 +56,7 @@ type MarkdownProps = {
     minimumHashtagLength?: number;
     onPostPress?: (event: GestureResponderEvent) => void;
     postId?: string;
+    searchPatterns?: SearchPattern[];
     textStyles?: MarkdownTextStyles;
     theme: Theme;
     value?: string | number;
@@ -100,6 +102,10 @@ const getExtraPropsForNode = (node: any) => {
         extraProps.size = node.size;
     }
 
+    if (node.type === 'checkbox') {
+        extraProps.isChecked = node.isChecked;
+    }
+
     return extraProps;
 };
 
@@ -113,7 +119,7 @@ const Markdown = ({
     disableAtChannelMentionHighlight = false, disableAtMentions = false, disableChannelLink = false,
     disableGallery = false, disableHashtags = false, enableInlineLatex, enableLatex,
     imagesMetadata, isEdited, isReplyPost, isSearchResult, layoutWidth,
-    location, mentionKeys, minimumHashtagLength = 3, onPostPress, postId,
+    location, mentionKeys, minimumHashtagLength = 3, onPostPress, postId, searchPatterns,
     textStyles = {}, theme, value = '',
 }: MarkdownProps) => {
     const style = getStyleSheet(theme);
@@ -168,6 +174,19 @@ const Markdown = ({
                 channelName={channelName}
                 channelMentions={channelMentions}
             />
+        );
+    };
+
+    const renderCheckbox = ({isChecked}: {isChecked: boolean}) => {
+        return (
+            <Text>
+                <CompassIcon
+                    name={isChecked ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                    size={16}
+                    color={changeOpacity(theme.centerChannelColor, 0.56)}
+                />
+                {' '}
+            </Text>
         );
     };
 
@@ -463,6 +482,8 @@ const Markdown = ({
             table_cell: renderTableCell,
 
             mention_highlight: Renderer.forwardChildren,
+            search_highlight: Renderer.forwardChildren,
+            checkbox: renderCheckbox,
 
             editedIndicator: renderEditedIndicator,
         };
@@ -471,6 +492,7 @@ const Markdown = ({
             renderers,
             renderParagraphsInLists: true,
             getExtraPropsForNode,
+            allowedTypes: Object.keys(renderers),
         });
     };
 
@@ -481,8 +503,12 @@ const Markdown = ({
     ast = combineTextNodes(ast);
     ast = addListItemIndices(ast);
     ast = pullOutImages(ast);
+    ast = parseTaskLists(ast);
     if (mentionKeys) {
         ast = highlightMentions(ast, mentionKeys);
+    }
+    if (searchPatterns) {
+        ast = highlightSearchPatterns(ast, searchPatterns);
     }
 
     if (isEdited) {

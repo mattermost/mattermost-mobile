@@ -3,16 +3,14 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {of as of$, combineLatest} from 'rxjs';
-import {combineLatestWith, concatAll, map, switchMap} from 'rxjs/operators';
+import {of as of$} from 'rxjs';
+import {combineLatestWith, map, switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
-import {getChannelById, observeAllMyChannelNotifyProps, queryMyChannelUnreads} from '@queries/servers/channel';
+import {getChannelById, observeChannelsByLastPostAt, observeNotifyPropsByChannels, queryMyChannelUnreads} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeLastUnreadChannelId} from '@queries/servers/system';
-
-import {getChannelsFromRelation} from '../body';
 
 import UnreadCategories from './unreads';
 
@@ -32,36 +30,31 @@ type CA = [
     b: ChannelModel | undefined,
 ]
 
-const concatenateChannelsArray = ([a, b]: CA) => {
-    return of$(b ? a.filter((c) => c && c.id !== b.id).concat(b) : a);
-};
-
 type NotifyProps = {
     [key: string]: Partial<ChannelNotifyProps>;
 }
-
-const mostRecentFirst = (a: MyChannelModel, b: MyChannelModel) => {
-    return b.lastPostAt - a.lastPostAt;
-};
 
 /**
  * Filtering / Sorting:
  *
  * Unreads, Mentions, and Muted Mentions Only
- *
  * Mentions on top, then unreads, then muted channels with mentions.
- * Secondary sorting within each of those is by recent posting or by recent root post if CRT is enabled.
  */
 
-type FilterAndSortMyChannelsArgs = [
+ type FilterAndSortMyChannelsArgs = [
     MyChannelModel[],
+    Record<string, ChannelModel>,
     NotifyProps,
 ]
 
-const filterAndSortMyChannels = ([myChannels, notifyProps]: FilterAndSortMyChannelsArgs): MyChannelModel[] => {
-    const mentions: MyChannelModel[] = [];
-    const unreads: MyChannelModel[] = [];
-    const mutedMentions: MyChannelModel[] = [];
+const concatenateChannelsArray = ([a, b]: CA) => {
+    return of$(b ? a.filter((c) => c && c.id !== b.id).concat(b) : a);
+};
+
+const filterAndSortMyChannels = ([myChannels, channels, notifyProps]: FilterAndSortMyChannelsArgs): ChannelModel[] => {
+    const mentions: ChannelModel[] = [];
+    const unreads: ChannelModel[] = [];
+    const mutedMentions: ChannelModel[] = [];
 
     const isMuted = (id: string) => {
         return notifyProps[id]?.mark_unread === 'mention';
@@ -71,30 +64,32 @@ const filterAndSortMyChannels = ([myChannels, notifyProps]: FilterAndSortMyChann
         const id = myChannel.id;
 
         // is it a mention?
-        if (!isMuted(id) && myChannel.mentionsCount > 0) {
-            mentions.push(myChannel);
+        if (!isMuted(id) && myChannel.mentionsCount > 0 && channels[id]) {
+            mentions.push(channels[id]);
             continue;
         }
 
         // is it unread?
-        if (!isMuted(myChannel.id) && myChannel.isUnread) {
-            unreads.push(myChannel);
+        if (!isMuted(myChannel.id) && myChannel.isUnread && channels[id]) {
+            unreads.push(channels[id]);
             continue;
         }
 
         // is it a muted mention?
-        if (isMuted(myChannel.id) && myChannel.mentionsCount > 0) {
-            mutedMentions.push(myChannel);
+        if (isMuted(myChannel.id) && myChannel.mentionsCount > 0 && channels[id]) {
+            mutedMentions.push(channels[id]);
             continue;
         }
     }
 
-    // Sort
-    mentions.sort(mostRecentFirst);
-    unreads.sort(mostRecentFirst);
-    mutedMentions.sort(mostRecentFirst);
-
     return [...mentions, ...unreads, ...mutedMentions];
+};
+
+const makeChannelsMap = (channels: ChannelModel[]) => {
+    return channels.reduce<Record<string, ChannelModel>>((result, c) => {
+        result[c.id] = c;
+        return result;
+    }, {});
 };
 
 const enhanced = withObservables(['currentTeamId', 'isTablet', 'onlyUnreads'], ({currentTeamId, isTablet, database, onlyUnreads}: WithDatabaseProps) => {
@@ -108,23 +103,18 @@ const enhanced = withObservables(['currentTeamId', 'isTablet', 'onlyUnreads'], (
 
     const unreadChannels = unreadsOnTop.pipe(switchMap((gU) => {
         if (gU || onlyUnreads) {
-            const lastUnread = isTablet ? observeLastUnreadChannelId(database).pipe(
-                switchMap(getC),
-            ) : of$('');
-            const notifyProps = observeAllMyChannelNotifyProps(database);
+            const lastUnread = isTablet ? observeLastUnreadChannelId(database).pipe(switchMap(getC)) : of$(undefined);
+            const myUnreadChannels = queryMyChannelUnreads(database, currentTeamId).observeWithColumns(['last_post_at']);
+            const notifyProps = myUnreadChannels.pipe(switchMap((cs) => observeNotifyPropsByChannels(database, cs)));
+            const channels = myUnreadChannels.pipe(switchMap((myChannels) => observeChannelsByLastPostAt(database, myChannels)));
+            const channelsMap = channels.pipe(switchMap((cs) => of$(makeChannelsMap(cs))));
 
-            const unreads = queryMyChannelUnreads(database, currentTeamId).observeWithColumns(['last_post_at']).pipe(
-                combineLatestWith(notifyProps),
+            return queryMyChannelUnreads(database, currentTeamId).observeWithColumns(['last_post_at']).pipe(
+                combineLatestWith(channelsMap, notifyProps),
                 map(filterAndSortMyChannels),
-                map(getChannelsFromRelation),
-                concatAll(),
-            );
-
-            const combined = combineLatest([unreads, lastUnread]).pipe(
+                combineLatestWith(lastUnread),
                 switchMap(concatenateChannelsArray),
             );
-
-            return combined;
         }
         return of$([]);
     }));
