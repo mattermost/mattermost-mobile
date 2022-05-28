@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -61,24 +61,25 @@ type NotificationAutoResponderProps = {
 }
 const NotificationAutoResponder = ({currentUser}: NotificationAutoResponderProps) => {
     const autoresponderRef = useRef(null);
-    const [notifyProps, setNotifyProps] = useState<Partial<UserNotifyProps>>(getNotificationProps(currentUser));
+    const userNotifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
+    const [notifyProps, setNotifyProps] = useState<Partial<UserNotifyProps>>(userNotifyProps);
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const onAutoResponseToggle = (active: boolean) => {
+    const onAutoResponseToggle = useCallback((active: boolean) => {
         setNotifyProps({
             ...notifyProps,
             auto_responder_active: active ? 'true' : 'false',
         });
-    };
+    }, []);
 
-    const onAutoResponseChangeText = (message: string) => {
+    const onAutoResponseChangeText = useCallback((message: string) => {
         setNotifyProps({
             ...notifyProps,
             auto_responder_message: message,
         });
-    };
+    }, []);
 
     useEffect(() => {
         const autoResponderDefault = intl.formatMessage({

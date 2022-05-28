@@ -301,10 +301,7 @@ export function getNotificationProps(user: UserModel) {
         mention_keys: user ? `${user.username},@${user.username}` : '',
         push: 'mention',
         push_status: 'online',
-
-        //todo: verify if email_threads and push_threads do exist
-        // email_threads: 'all',
-        // push_threads: 'all',
+        auto_responder_active: 'false',
     };
 
     return props;
