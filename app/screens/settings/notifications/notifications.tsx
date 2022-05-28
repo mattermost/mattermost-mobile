@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Platform, ScrollView, View} from 'react-native';
+import {Platform, ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
@@ -53,12 +53,6 @@ const Notifications = ({isCRTEnabled, enableAutoResponder}: NotificationsProps) 
         mentionsI18nDefault = 'Mentions';
     }
 
-    const onPressHandler = () => {
-        return Alert.alert(
-            'The functionality you are trying to use has not yet been implemented.',
-        );
-    };
-
     const goToNotificationSettingsMentions = () => {
         const screen = Screens.SETTINGS_NOTIFICATION_MENTION;
 
@@ -72,10 +66,19 @@ const Notifications = ({isCRTEnabled, enableAutoResponder}: NotificationsProps) 
     const goToNotificationSettingsPush = () => {
         const screen = Screens.SETTINGS_NOTIFICATION_PUSH;
         const title = intl.formatMessage({
-            id: 'mobile.notification_settings.mobile_title',
-            defaultMessage: 'Mobile Notifications',
+            id: 'notification_settings.push_notification',
+            defaultMessage: 'Push Notifications',
         });
 
+        goToScreen(screen, title);
+    };
+
+    const goToNotificationAutoResponder = () => {
+        const screen = Screens.SETTINGS_NOTIFICATION_AUTO_RESPONDER;
+        const title = intl.formatMessage({
+            id: 'notification_settings.auto_responder',
+            defaultMessage: 'Automatic Replies',
+        });
         goToScreen(screen, title);
     };
 
@@ -102,7 +105,7 @@ const Notifications = ({isCRTEnabled, enableAutoResponder}: NotificationsProps) 
                 />
                 {enableAutoResponder && (
                     <SettingOption
-                        onPress={onPressHandler}
+                        onPress={goToNotificationAutoResponder}
                         optionName='automatic_dm_replies'
                     />
                 )}

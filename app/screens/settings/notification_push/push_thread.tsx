@@ -35,11 +35,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 const headerText = {
-    id: t('mobile.notification_settings.push_threads.title'),
+    id: t('notification_settings.push_threads'),
     defaultMessage: 'Thread reply notifications',
 };
 const footerText = {
-    id: t('mobile.notification_settings.push_threads.info'),
+    id: t('notification_settings.push_threads.info'),
     defaultMessage: 'When enabled, any reply to a thread you\'re following will send a mobile push notification',
 };
 
@@ -62,7 +62,7 @@ const MobilePushThread = ({pushThread, onMobilePushThreadChanged}: MobilePushThr
             <BlockItem
                 label={(
                     <FormattedText
-                        id='mobile.notification_settings.push_threads.description'
+                        id='notification_settings.push_threads.description'
                         defaultMessage={'Notify me about all replies to threads I\'m following'}
                         style={styles.label}
                     />
