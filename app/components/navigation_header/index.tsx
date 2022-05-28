@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {FlatList, ScrollView, SectionList} from 'react-native';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -19,7 +18,6 @@ import NavigationHeaderSearchContext from './search_context';
 import type {SearchProps} from '@components/search';
 
 type Props = SearchProps & {
-    forwardedRef?: React.RefObject<ScrollView | FlatList | SectionList>;
     hasSearch?: boolean;
     isLargeTitle?: boolean;
     leftComponent?: React.ReactElement;
@@ -27,6 +25,7 @@ type Props = SearchProps & {
     onTitlePress?: () => void;
     rightButtons?: HeaderRightButton[];
     scrollValue?: Animated.SharedValue<number>;
+    hideHeader?: (visible: boolean) => void;
     showBackButton?: boolean;
     showHeaderInContext?: boolean;
     subtitle?: string;
@@ -44,7 +43,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const NavigationHeader = ({
-    forwardedRef,
     hasSearch = false,
     isLargeTitle = false,
     leftComponent,
@@ -57,6 +55,7 @@ const NavigationHeader = ({
     subtitle,
     subtitleCompanion,
     title = '',
+    hideHeader,
     ...searchProps
 }: Props) => {
     const theme = useTheme();
@@ -107,10 +106,9 @@ const NavigationHeader = ({
             <>
                 <NavigationSearch
                     {...searchProps}
-                    defaultHeight={defaultHeight}
-                    forwardedRef={forwardedRef}
                     largeHeight={largeHeight}
                     scrollValue={scrollValue}
+                    hideHeader={hideHeader}
                     theme={theme}
                     top={insets.top}
                 />

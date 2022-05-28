@@ -13,11 +13,10 @@ import type TeamModel from '@typings/database/models/servers/team';
 
 type Props = {
     otherTeams: TeamModel[];
-    canCreateTeams: boolean;
     showTitle?: boolean;
 }
 
-export default function AddTeamSlideUp({otherTeams, canCreateTeams, showTitle = true}: Props) {
+export default function AddTeamSlideUp({otherTeams, showTitle = true}: Props) {
     const intl = useIntl();
 
     const onPressCreate = useCallback(() => {
@@ -34,7 +33,7 @@ export default function AddTeamSlideUp({otherTeams, canCreateTeams, showTitle = 
             buttonIcon='plus'
             buttonText={intl.formatMessage({id: 'mobile.add_team.create_team', defaultMessage: 'Create a new team'})}
             onPress={onPressCreate}
-            showButton={canCreateTeams}
+            showButton={false}
             showTitle={showTitle}
             testID='team_sidebar.add_team_slide_up'
             title={intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'})}

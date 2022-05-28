@@ -121,78 +121,76 @@ const MentionSettings = ({currentUser, mentionKeys}: MentionSectionProps) => {
             headerStyles={styles.upperCase}
             containerStyles={styles.area}
         >
-            <>
-                { Boolean(currentUser?.firstName) && (
-                    <>
-                        <BlockItem
-                            label={(
-                                <Text style={styles.label}>
-                                    {currentUser!.firstName}
-                                </Text>
-                            )}
-                            description={(
-                                <FormattedText
-                                    id='notification_settings.mentions.sensitiveName'
-                                    defaultMessage='Your case sensitive first name'
-                                />
-                            )}
-                            action={toggleFirstNameMention}
-                            actionType='toggle'
-                            selected={firstName}
-                        />
-                        <View style={styles.separator}/>
-                    </>
-                )
-                }
-                {Boolean(currentUser?.username) && (
+            { Boolean(currentUser?.firstName) && (
+                <>
                     <BlockItem
                         label={(
                             <Text style={styles.label}>
-                                {currentUser!.username}
+                                {currentUser!.firstName}
                             </Text>
                         )}
                         description={(
                             <FormattedText
-                                id='notification_settings.mentions.sensitiveUsername'
-                                defaultMessage='Your non-case sensitive username'
+                                id='notification_settings.mentions.sensitiveName'
+                                defaultMessage='Your case sensitive first name'
                             />
                         )}
-                        selected={usernameMention}
-                        action={toggleUsernameMention}
+                        action={toggleFirstNameMention}
                         actionType='toggle'
+                        selected={firstName}
                     />
-                )}
-                <View style={styles.separator}/>
+                    <View style={styles.separator}/>
+                </>
+            )
+            }
+            {Boolean(currentUser?.username) && (
                 <BlockItem
                     label={(
                         <Text style={styles.label}>
-                            {'@channel, @all, @here'}
+                            {currentUser!.username}
                         </Text>
                     )}
                     description={(
                         <FormattedText
-                            id='notification_settings.mentions.channelWide'
-                            defaultMessage='Channel-wide mentions'
+                            id='notification_settings.mentions.sensitiveUsername'
+                            defaultMessage='Your non-case sensitive username'
                         />
                     )}
-                    action={toggleChannelMentions}
+                    selected={usernameMention}
+                    action={toggleUsernameMention}
                     actionType='toggle'
-                    selected={channel}
                 />
-                <View style={styles.separator}/>
-                <BlockItem
-                    label={(
-                        <FormattedText
-                            id='notification_settings.mentions.keywords'
-                            defaultMessage='Keywords'
-                            style={styles.label}
-                        />
-                    )}
-                    description={mentionKeysComponent}
-                    action={goToNotificationSettingsMentionKeywords}
-                    actionType='arrow'
-                />
-            </>
+            )}
+            <View style={styles.separator}/>
+            <BlockItem
+                label={(
+                    <Text style={styles.label}>
+                        {'@channel, @all, @here'}
+                    </Text>
+                )}
+                description={(
+                    <FormattedText
+                        id='notification_settings.mentions.channelWide'
+                        defaultMessage='Channel-wide mentions'
+                    />
+                )}
+                action={toggleChannelMentions}
+                actionType='toggle'
+                selected={channel}
+            />
+            <View style={styles.separator}/>
+            <BlockItem
+                label={(
+                    <FormattedText
+                        id='notification_settings.mentions.keywords'
+                        defaultMessage='Keywords'
+                        style={styles.label}
+                    />
+                )}
+                description={mentionKeysComponent}
+                action={goToNotificationSettingsMentionKeywords}
+                actionType='arrow'
+            />
         </Block>
     );
 };

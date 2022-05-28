@@ -154,7 +154,6 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
                 title={title}
                 hasSearch={false}
                 scrollValue={scrollValue}
-                forwardedRef={scrollRef}
             />
             <SafeAreaView
                 style={styles.flex}

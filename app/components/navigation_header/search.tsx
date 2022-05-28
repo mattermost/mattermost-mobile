@@ -2,20 +2,18 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {FlatList, Platform, ScrollView, SectionList} from 'react-native';
+import {Platform} from 'react-native';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 
 import Search, {SearchProps} from '@components/search';
-import {ANDROID_HEADER_SEARCH_INSET, IOS_HEADER_SEARCH_INSET, SEARCH_INPUT_HEIGHT, TABLET_HEADER_SEARCH_INSET} from '@constants/view';
-import {useIsTablet} from '@hooks/device';
+import {HEADER_SEARCH_HEIGHT} from '@constants/view';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = SearchProps & {
-    defaultHeight: number;
-    forwardedRef?: React.RefObject<ScrollView | FlatList | SectionList>;
     largeHeight: number;
     scrollValue?: Animated.SharedValue<number>;
+    hideHeader?: (visible: boolean) => void;
     theme: Theme;
     top: number;
 }
@@ -23,7 +21,7 @@ type Props = SearchProps & {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         backgroundColor: theme.sidebarBg,
-        height: SEARCH_INPUT_HEIGHT + 5,
+        height: HEADER_SEARCH_HEIGHT,
         justifyContent: 'flex-start',
         paddingHorizontal: 20,
         position: 'absolute',
@@ -39,15 +37,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const NavigationSearch = ({
-    defaultHeight,
-    forwardedRef,
     largeHeight,
     scrollValue,
+    hideHeader: setHeaderVisibility,
     theme,
     top,
     ...searchProps
 }: Props) => {
-    const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
 
     const cancelButtonProps: SearchProps['cancelButtonProps'] = useMemo(() => ({
@@ -60,25 +56,12 @@ const NavigationSearch = ({
 
     const searchTop = useAnimatedStyle(() => {
         return {marginTop: Math.max((-(scrollValue?.value || 0) + largeHeight), top)};
-    }, [defaultHeight, largeHeight, top]);
+    }, [largeHeight, top]);
 
     const onFocus = useCallback((e) => {
-        const searchInset = isTablet ? TABLET_HEADER_SEARCH_INSET : IOS_HEADER_SEARCH_INSET;
-        const offset = Platform.select({android: largeHeight + ANDROID_HEADER_SEARCH_INSET, default: defaultHeight + searchInset});
-        if (forwardedRef?.current && Math.abs((scrollValue?.value || 0)) <= top) {
-            if ('scrollTo' in forwardedRef.current) {
-                forwardedRef.current.scrollTo({y: offset, animated: true});
-            } else if ('scrollToOffset' in forwardedRef.current) {
-                forwardedRef.current.scrollToOffset({
-                    offset,
-                    animated: true,
-                });
-            } else {
-                // No scroll for section lists?
-            }
-        }
+        setHeaderVisibility?.(false);
         searchProps.onFocus?.(e);
-    }, [largeHeight, top]);
+    }, [setHeaderVisibility, searchProps.onFocus]);
 
     return (
         <Animated.View style={[styles.container, searchTop]}>
