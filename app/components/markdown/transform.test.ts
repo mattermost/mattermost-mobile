@@ -8,11 +8,14 @@ import {Node, Parser} from 'commonmark';
 import {
     addListItemIndices,
     combineTextNodes,
-    getFirstMention,
+    getFirstMatch,
     highlightMentions,
     highlightTextNode,
+    mentionKeysToPatterns,
     pullOutImages,
 } from '@components/markdown/transform';
+
+import type {UserMentionKey} from '@typings/global/markdown';
 
 /* eslint-disable max-lines, no-console, no-underscore-dangle */
 
@@ -2623,63 +2626,68 @@ describe('Components.Markdown.transform', () => {
             name: 'no mention keys',
             input: 'apple banana orange',
             mentionKeys: [],
-            expected: {index: -1, mention: null},
+            expected: {index: -1, length: -1},
         }, {
             name: 'single mention',
             input: 'apple banana orange',
             mentionKeys: [{key: 'banana'}],
-            expected: {index: 6, mention: {key: 'banana'}},
+            expected: {index: 6, length: 6},
         }, {
             name: 'multiple mentions',
             input: 'apple banana orange',
             mentionKeys: [{key: 'apple'}, {key: 'orange'}],
-            expected: {index: 0, mention: {key: 'apple'}},
+            expected: {index: 0, length: 5},
         }, {
             name: 'case sensitive',
             input: 'apple APPLE Apple aPPle',
             mentionKeys: [{key: 'Apple', caseSensitive: true}],
-            expected: {index: 12, mention: {key: 'Apple', caseSensitive: true}},
+            expected: {index: 12, length: 5},
         }, {
             name: 'followed by period',
             input: 'banana.',
             mentionKeys: [{key: 'banana'}],
-            expected: {index: 0, mention: {key: 'banana'}},
+            expected: {index: 0, length: 6},
         }, {
             name: 'followed by underscores',
             input: 'banana__',
             mentionKeys: [{key: 'banana'}],
-            expected: {index: 0, mention: {key: 'banana'}},
+            expected: {index: 0, length: 6},
         }, {
             name: 'in brackets',
             input: '(banana)',
             mentionKeys: [{key: 'banana'}],
-            expected: {index: 1, mention: {key: 'banana'}},
+            expected: {index: 1, length: 6},
         }, {
             name: 'following punctuation',
             input: ':banana',
             mentionKeys: [{key: 'banana'}],
-            expected: {index: 1, mention: {key: 'banana'}},
+            expected: {index: 1, length: 6},
         }, {
             name: 'not part of another word',
             input: 'pineapple',
             mentionKeys: [{key: 'apple'}],
-            expected: {index: -1, mention: null},
+            expected: {index: -1, length: -1},
         }, {
             name: 'no error from weird mention keys',
             input: 'apple banana orange',
             mentionKeys: [{key: '*\\3_.'}],
-            expected: {index: -1, mention: null},
+            expected: {index: -1, length: -1},
         }, {
             name: 'no blank mention keys',
             input: 'apple banana orange',
             mentionKeys: [{key: ''}],
-            expected: {index: -1, mention: null},
+            expected: {index: -1, length: -1},
         }, {
             name: 'multibyte key',
             input: '좋은 하루 되세요.',
             mentionKeys: [{key: '하루'}],
-            expected: {index: 3, mention: {key: '하루'}},
+            expected: {index: 3, length: 2},
         }];
+
+        function getFirstMention(str: string, mentionKeys: UserMentionKey[]) {
+            const patterns = mentionKeysToPatterns(mentionKeys);
+            return getFirstMatch(str, patterns);
+        }
 
         for (const test of tests) {
             it(test.name, () => {

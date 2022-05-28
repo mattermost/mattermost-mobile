@@ -14,7 +14,6 @@ import TeamList from './team_list';
 import type TeamModel from '@typings/database/models/servers/team';
 
 type Props = {
-    canCreateTeams: boolean;
     iconPad?: boolean;
     otherTeams: TeamModel[];
     teamsCount: number;
@@ -39,8 +38,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default function TeamSidebar({canCreateTeams, iconPad, otherTeams, teamsCount}: Props) {
-    const showAddTeam = canCreateTeams || otherTeams.length > 0;
+export default function TeamSidebar({iconPad, otherTeams, teamsCount}: Props) {
+    const showAddTeam = otherTeams.length > 0;
     const initialWidth = teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0;
     const width = useSharedValue(initialWidth);
     const marginTop = useSharedValue(iconPad ? 44 : 0);
@@ -71,7 +70,6 @@ export default function TeamSidebar({canCreateTeams, iconPad, otherTeams, teamsC
                 <TeamList testID='team_sidebar.team_list'/>
                 {showAddTeam && (
                     <AddTeam
-                        canCreateTeams={canCreateTeams}
                         otherTeams={otherTeams}
                     />
                 )}

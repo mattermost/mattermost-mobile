@@ -5,9 +5,9 @@ import React from 'react';
 import {Alert, Platform, ScrollView, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 import {useTheme} from '@context/theme';
 import SettingOption from '@screens/settings/setting_option';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {

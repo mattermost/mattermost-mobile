@@ -24,11 +24,11 @@ import type UserModel from '@typings/database/models/servers/user';
 
 const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP, MY_CHANNEL_SETTINGS, CHANNEL_INFO, USER}} = MM_TABLES;
 
-export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, channels: Channel[], channelMembers: ChannelMembership[]): Array<Promise<Model[]>> {
+export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, channels: Channel[], channelMembers: ChannelMembership[], isCRTEnabled?: boolean): Array<Promise<Model[]>> {
     const channelInfos: ChannelInfo[] = [];
-    const memberships = channelMembers.map((cm) => ({...cm, id: cm.channel_id}));
-
+    const channelMap: Record<string, Channel> = {};
     for (const c of channels) {
+        channelMap[c.id] = c;
         channelInfos.push({
             id: c.id,
             header: c.header,
@@ -39,11 +39,21 @@ export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, 
         });
     }
 
+    const memberships = channelMembers.map((cm) => {
+        const channel = channelMap[cm.channel_id];
+        return {
+            ...cm,
+            id: cm.channel_id,
+            last_post_at: channel.last_post_at,
+            last_root_post_at: channel.last_root_post_at,
+        };
+    });
+
     try {
         const channelRecords = operator.handleChannel({channels, prepareRecordsOnly: true});
         const channelInfoRecords = operator.handleChannelInfo({channelInfos, prepareRecordsOnly: true});
         const membershipRecords = operator.handleChannelMembership({channelMemberships: memberships, prepareRecordsOnly: true});
-        const myChannelRecords = operator.handleMyChannel({channels, myChannels: memberships, prepareRecordsOnly: true});
+        const myChannelRecords = operator.handleMyChannel({channels, myChannels: memberships, prepareRecordsOnly: true, isCRTEnabled});
         const myChannelSettingsRecords = operator.handleMyChannelSettings({settings: memberships, prepareRecordsOnly: true});
 
         return [channelRecords, channelInfoRecords, membershipRecords, myChannelRecords, myChannelSettingsRecords];
@@ -99,6 +109,7 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
         const member = membershipsMap[c.id];
         if (member) {
             member.last_post_at = c.last_post_at;
+            member.last_root_post_at = c.last_root_post_at;
         }
 
         channelInfos.push({
@@ -399,6 +410,16 @@ export const observeAllMyChannelNotifyProps = (database: Database) => {
     );
 };
 
+export const observeNotifyPropsByChannels = (database: Database, channels: ChannelModel[]|MyChannelModel[]) => {
+    const ids = channels.map((c) => c.id);
+    return queryMyChannelSettingsByIds(database, ids).observeWithColumns(['notify_props']).pipe(
+        map$((settings) => settings.reduce<Record<string, Partial<ChannelNotifyProps>>>((obj, setting) => {
+            obj[setting.id] = setting.notifyProps;
+            return obj;
+        }, {})),
+    );
+};
+
 export const queryChannelsByNames = (database: Database, names: string[]) => {
     return database.get<ChannelModel>(CHANNEL).query(Q.where('name', Q.oneOf(names)));
 };
@@ -562,4 +583,15 @@ export const observeChannelSettings = (database: Database, channelId: string) =>
     return database.get<MyChannelSettingsModel>(MY_CHANNEL_SETTINGS).query(Q.where('id', channelId), Q.take(1)).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
     );
+};
+
+export const observeChannelsByLastPostAt = (database: Database, myChannels: MyChannelModel[], excludeIds?: string[]) => {
+    const ids = myChannels.map((c) => c.id);
+    const idsStr = `'${ids.join("','")}'`;
+    const exclude = excludeIds?.length ? `AND c.id NOT IN ('${excludeIds.join("','")}')` : '';
+    return database.get<ChannelModel>(CHANNEL).query(
+        Q.unsafeSqlQuery(`SELECT DISTINCT c.* FROM ${CHANNEL} c INNER JOIN
+        ${MY_CHANNEL} mc ON mc.id=c.id AND c.id IN (${idsStr}) ${exclude}
+        ORDER BY CASE mc.last_post_at WHEN 0 THEN c.create_at ELSE mc.last_post_at END DESC`),
+    ).observe();
 };

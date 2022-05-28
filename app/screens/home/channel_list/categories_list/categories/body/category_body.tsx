@@ -16,7 +16,6 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 
 type Props = {
     sortedChannels: ChannelModel[];
-    hiddenChannelIds: Set<string>;
     category: CategoryModel;
     limit: number;
     onChannelSwitch: (channelId: string) => void;
@@ -25,21 +24,16 @@ type Props = {
 
 const extractKey = (item: ChannelModel) => item.id;
 
-const CategoryBody = ({sortedChannels, category, hiddenChannelIds, limit, onChannelSwitch, unreadChannels}: Props) => {
+const CategoryBody = ({sortedChannels, category, limit, onChannelSwitch, unreadChannels}: Props) => {
     const serverUrl = useServerUrl();
     const ids = useMemo(() => {
-        let filteredChannels = sortedChannels;
-
-        // Remove all closed gm/dms
-        if (hiddenChannelIds.size) {
-            filteredChannels = sortedChannels.filter((item) => item && !hiddenChannelIds.has(item.id));
-        }
+        const filteredChannels = sortedChannels;
 
         if (category.type === DMS_CATEGORY && limit > 0) {
             return filteredChannels.slice(0, limit);
         }
         return filteredChannels;
-    }, [category.type, limit, hiddenChannelIds, sortedChannels.length]);
+    }, [category.type, limit, sortedChannels]);
 
     const directChannels = useMemo(() => {
         return ids.concat(unreadChannels).filter(isDMorGM);
