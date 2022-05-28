@@ -2,11 +2,15 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {useIntl} from 'react-intl';
 import {Alert, Platform, ScrollView, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {goToScreen} from '@screens/navigation';
 import SettingOption from '@screens/settings/setting_option';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -39,12 +43,19 @@ type DisplayProps = {
 const Display = ({isTimezoneEnabled, isThemeSwitchingEnabled}: DisplayProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-
+    const intl = useIntl();
     const onPressHandler = () => {
         return Alert.alert(
             'The functionality you are trying to use has not yet been implemented.',
         );
     };
+
+    const goToThemeSettings = preventDoubleTap(() => {
+        const screen = Screens.SETTINGS_DISPLAY_THEME;
+        const title = intl.formatMessage({id: 'display_settings.theme', defaultMessage: 'Theme'});
+
+        goToScreen(screen, title);
+    });
 
     return (
         <SafeAreaView
@@ -60,7 +71,7 @@ const Display = ({isTimezoneEnabled, isThemeSwitchingEnabled}: DisplayProps) => 
                 {isThemeSwitchingEnabled && (
                     <SettingOption
                         optionName='theme'
-                        onPress={onPressHandler}
+                        onPress={goToThemeSettings}
                     />
                 )}
                 <SettingOption

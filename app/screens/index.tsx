@@ -200,6 +200,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.SETTINGS_NOTIFICATION_AUTO_RESPONDER:
             screen = withServerDatabase(require('@screens/settings/notification_auto_responder').default);
             break;
+        case Screens.SETTINGS_DISPLAY_THEME:
+            screen = withServerDatabase(require('@screens/settings/display_theme').default);
+            break;
     }
 
     if (screen) {
