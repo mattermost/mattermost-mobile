@@ -3,8 +3,8 @@
 
 import React from 'react';
 import {View, ScrollView, Text, useWindowDimensions} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
 
+import {Preferences} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -36,9 +36,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 type DisplayThemeProps = {
-    allowedThemes: string[];
+    allowedThemeKeys: string[];
 }
-const DisplayTheme = ({allowedThemes}: DisplayThemeProps) => {
+const DisplayTheme = ({allowedThemeKeys}: DisplayThemeProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const dimensions = useWindowDimensions();
@@ -49,43 +49,44 @@ const DisplayTheme = ({allowedThemes}: DisplayThemeProps) => {
     };
 
     const renderAllowedThemeTiles = () => {
-        return allowedThemes.map((allowedTheme) => (
+        return allowedThemeKeys.map((themeKey: string) => (
             <ThemeTile
-                key={allowedTheme.key}
+                key={themeKey}
                 label={(
                     <Text>
-                        {allowedTheme.type}
+                        {themeKey}
                     </Text>
                 )}
                 action={setTheme}
-                actionValue={allowedTheme.key}
-                selected={allowedTheme.type.toLowerCase() === theme.type.toLowerCase()}
-                tileTheme={allowedTheme}
+                actionValue={themeKey}
+                selected={theme.type?.toLowerCase() === themeKey.toLowerCase()}
+                tileTheme={Preferences.THEMES[themeKey]}
                 activeTheme={theme}
                 isLandscape={dimensions.width > dimensions.height}
                 isTablet={isTablet}
             />
         ));
     };
+
     return (
         <ScrollView style={styles.container}>
             <View style={styles.wrapper}>
                 <View style={styles.tilesContainer}>
-                    {this.renderAllowedThemeTiles()}
+                    {renderAllowedThemeTiles()}
                 </View>
-                {customTheme &&
-                    <SafeAreaView
-                        edges={['left', 'right']}
-                        style={styles.container}
-                    >
-                        <Section
-                            disableHeader={true}
-                            theme={theme}
-                        >
-                            {this.renderCustomThemeRow({item: customTheme})}
-                        </Section>
-                    </SafeAreaView>
-                }
+                {/*{customTheme &&*/}
+                {/*    <SafeAreaView*/}
+                {/*        edges={['left', 'right']}*/}
+                {/*        style={styles.container}*/}
+                {/*    >*/}
+                {/*        <Section*/}
+                {/*            disableHeader={true}*/}
+                {/*            theme={theme}*/}
+                {/*        >*/}
+                {/*            {this.renderCustomThemeRow({item: customTheme})}*/}
+                {/*        </Section>*/}
+                {/*    </SafeAreaView>*/}
+                {/*}*/}
             </View>
         </ScrollView>
     );
