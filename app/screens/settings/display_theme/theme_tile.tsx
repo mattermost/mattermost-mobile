@@ -2,9 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Dimensions, TouchableOpacity, View} from 'react-native';
+import {Dimensions, Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import {Preferences} from '@constants';
+import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ThemeThumbnail from './theme_thumbnail';
@@ -36,8 +39,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             fontSize: 15,
         },
+        tilesContainer: {
+            marginBottom: 30,
+            paddingLeft: 8,
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            backgroundColor: theme.centerChannelBg,
+            borderTopWidth: 1,
+            borderBottomWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
+        },
     };
 });
+
 type ThemeTileProps = {
     action: (v: string) => void;
     actionValue: string;
@@ -48,8 +63,7 @@ type ThemeTileProps = {
     activeTheme: Theme;
     tileTheme: Theme;
 };
-
-const ThemeTile = ({action, actionValue, isLandscape, isTablet, label, selected, activeTheme, tileTheme}: ThemeTileProps) => {
+export const ThemeTile = ({action, actionValue, isLandscape, isTablet, label, selected, activeTheme, tileTheme}: ThemeTileProps) => {
     const style = getStyleSheet(activeTheme);
 
     const labelComponent = React.cloneElement(
@@ -103,4 +117,37 @@ const ThemeTile = ({action, actionValue, isLandscape, isTablet, label, selected,
     );
 };
 
-export default ThemeTile;
+type ThemeTilesProps = {
+    allowedThemeKeys: string[];
+    onThemeChange: (v: string) => void;
+}
+export const ThemeTiles = ({allowedThemeKeys, onThemeChange}: ThemeTilesProps) => {
+    const theme = useTheme();
+    const isTablet = useIsTablet();
+    const dimensions = useWindowDimensions();
+
+    const styles = getStyleSheet(theme);
+    return (
+        <View style={styles.tilesContainer}>
+            {
+                allowedThemeKeys.map((themeKey: string) => (
+                    <ThemeTile
+                        key={themeKey}
+                        label={(
+                            <Text>
+                                {themeKey}
+                            </Text>
+                        )}
+                        action={onThemeChange}
+                        actionValue={themeKey}
+                        selected={theme.type?.toLowerCase() === themeKey.toLowerCase()}
+                        tileTheme={Preferences.THEMES[themeKey]}
+                        activeTheme={theme}
+                        isLandscape={dimensions.width > dimensions.height}
+                        isTablet={isTablet}
+                    />
+                ))
+            }
+        </View>
+    );
+};
