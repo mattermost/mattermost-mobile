@@ -218,6 +218,22 @@ export type HandleCategoryArgs = PrepareOnly & {
   categories?: Category[];
 };
 
+export type HandleGroupArgs = PrepareOnly & {
+  groups?: Group[];
+};
+
+export type HandleGroupChannelArgs = PrepareOnly & {
+  groupChannels?: Array<Pick<GroupChannel, 'channel_id' | 'group_id'>>;
+};
+
+export type HandleGroupTeamArgs = PrepareOnly & {
+  groupTeams?: Array<Pick<GroupTeam, 'team_id' | 'group_id'>>;
+};
+
+export type HandleGroupMembershipArgs = PrepareOnly & {
+  groupMemberships?: Array<{user_id: string; group_id: string}>;
+};
+
 export type HandleCategoryChannelArgs = PrepareOnly & {
   categoryChannels?: CategoryChannel[];
 };
