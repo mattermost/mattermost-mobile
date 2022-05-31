@@ -42,7 +42,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) => {
     const {formatMessage} = useIntl();
-    const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
+    const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const [saving, setSaving] = useState(false);
     const [displayName, setDisplayName] = useState<string>(server.displayName);
     const [buttonDisabled, setButtonDisabled] = useState(true);
@@ -110,8 +110,6 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
                     extraScrollHeight={20}
                     keyboardDismissMode='on-drag'
                     keyboardShouldPersistTaps='handled'
-
-                    // @ts-expect-error legacy ref
                     ref={keyboardAwareRef}
                     scrollToOverflowEnabled={true}
                     style={styles.flex}

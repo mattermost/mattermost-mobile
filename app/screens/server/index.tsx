@@ -63,7 +63,7 @@ const Server = ({
     const managedConfig = useManagedConfig<ManagedConfig>();
     const dimensions = useWindowDimensions();
     const translateX = useSharedValue(0);
-    const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
+    const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const [connecting, setConnecting] = useState(false);
     const [displayName, setDisplayName] = useState<string>('');
     const [buttonDisabled, setButtonDisabled] = useState(true);
@@ -330,8 +330,6 @@ const Server = ({
                     extraScrollHeight={20}
                     keyboardDismissMode='on-drag'
                     keyboardShouldPersistTaps='handled'
-
-                    // @ts-expect-error legacy ref
                     ref={keyboardAwareRef}
                     scrollToOverflowEnabled={true}
                     style={styles.flex}
