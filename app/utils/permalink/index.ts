@@ -3,6 +3,7 @@
 
 import {Keyboard} from 'react-native';
 
+import {Screens} from '@constants';
 import {dismissAllModals, showModalOverCurrentContext} from '@screens/navigation';
 import {changeOpacity} from '@utils/theme';
 
@@ -14,7 +15,7 @@ export const displayPermalink = async (teamName: string, postId: string, openAsP
         await dismissAllModals();
     }
 
-    const screen = 'Permalink';
+    const screen = Screens.PERMALINK;
     const passProps = {
         isPermalink: openAsPermalink,
         teamName,

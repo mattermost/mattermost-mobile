@@ -37,6 +37,7 @@ import type {
 type MarkdownProps = {
     autolinkedUrlSchemes?: string[];
     baseTextStyle: StyleProp<TextStyle>;
+    baseParagraphStyle?: StyleProp<TextStyle>;
     blockStyles?: MarkdownBlockStyles;
     channelMentions?: ChannelMentions;
     disableAtChannelMentionHighlight?: boolean;
@@ -120,7 +121,7 @@ const Markdown = ({
     disableGallery = false, disableHashtags = false, enableInlineLatex, enableLatex,
     imagesMetadata, isEdited, isReplyPost, isSearchResult, layoutWidth,
     location, mentionKeys, minimumHashtagLength = 3, onPostPress, postId, searchPatterns,
-    textStyles = {}, theme, value = '',
+    textStyles = {}, theme, value = '', baseParagraphStyle,
 }: MarkdownProps) => {
     const style = getStyleSheet(theme);
 
@@ -387,8 +388,8 @@ const Markdown = ({
         }
 
         return (
-            <View style={blockStyle}>
-                <Text>
+            <View style={[blockStyle]}>
+                <Text style={baseParagraphStyle}>
                     {children}
                 </Text>
             </View>

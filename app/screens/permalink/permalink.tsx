@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
-import {BackHandler, Text, TouchableOpacity, View} from 'react-native';
+import {Alert, BackHandler, Text, TouchableOpacity, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchChannelById, joinChannel, switchToChannelById} from '@actions/remote/channel';
 import {fetchPostById, fetchPostsAround} from '@actions/remote/post';
+import {addUserToTeam, fetchTeamByName, removeUserFromTeam} from '@actions/remote/team';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
@@ -17,19 +17,25 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
-import {privateChannelJoinPrompt, publicChannelJoinPrompt} from '@helpers/api/channel';
-import {getMyChannel} from '@queries/servers/channel';
-import {getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
+import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {dismissModal} from '@screens/navigation';
-import ChannelModel from '@typings/database/models/servers/channel';
-import PostModel from '@typings/database/models/servers/post';
 import {closePermalink} from '@utils/permalink';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import {ErrorType} from './common';
+import PermalinkError from './permalink_error';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type PostModel from '@typings/database/models/servers/post';
+
 type Props = {
     postId: PostModel['id'];
     channel?: ChannelModel;
+    teamName?: string;
+    isTeamMember?: boolean;
+    currentUserId: string;
+    currentTeamId: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -84,10 +90,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    bottom: {
-        borderBottomLeftRadius: 6,
-        borderBottomRightRadius: 6,
-    },
     footer: {
         alignItems: 'center',
         justifyContent: 'center',
@@ -96,6 +98,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         height: 43,
         paddingRight: 16,
         width: '100%',
+        borderBottomLeftRadius: 6,
+        borderBottomRightRadius: 6,
     },
     jump: {
         color: theme.buttonColor,
@@ -103,26 +107,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         fontWeight: '600',
         textAlignVertical: 'center',
     },
-    errorContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 15,
-        flex: 1,
-    },
-    errorText: {
-        color: changeOpacity(theme.centerChannelColor, 0.4),
-        fontSize: 15,
-    },
-    archiveIcon: {
-        color: theme.centerChannelColor,
-        fontSize: 16,
-        paddingRight: 20,
-    },
-}));
+}),
+);
 
 function Permalink({
     channel,
     postId,
+    teamName,
+    isTeamMember,
+    currentUserId,
+    currentTeamId,
 }: Props) {
     const [posts, setPosts] = useState<PostModel[]>([]);
     const [loading, setLoading] = useState(true);
@@ -130,8 +124,7 @@ function Permalink({
     const serverUrl = useServerUrl();
     const insets = useSafeAreaInsets();
     const style = getStyleSheet(theme);
-    const [error, setError] = useState('');
-    const intl = useIntl();
+    const [error, setError] = useState<ErrorType>();
     const [channelId, setChannelId] = useState(channel?.id);
 
     const containerStyle = useMemo(() =>
@@ -142,54 +135,111 @@ function Permalink({
         (async () => {
             if (channelId) {
                 const data = await fetchPostsAround(serverUrl, channelId, postId, 5);
+                if (data.error) {
+                    setError({unreachable: true});
+                }
                 if (data?.posts) {
-                    setLoading(false);
                     setPosts(data.posts);
                 }
-            } else {
-                const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-                if (!database) {
-                    setError('Database not found');
-                    setLoading(false);
-                    return;
-                }
-
-                const errMessage = intl.formatMessage({id: 'permalink.error.access', defaultMessage: 'Permalink belongs to a deleted message or to a channel to which you do not have access.'});
-                const {post} = await fetchPostById(serverUrl, postId, true);
-                if (!post) {
-                    setError(errMessage);
-                    setLoading(false);
-                    return;
-                }
-
-                const myChannel = await getMyChannel(database, post.channel_id);
-                if (!myChannel) {
-                    const {channel: fetchedChannel} = await fetchChannelById(serverUrl, post.channel_id);
-                    if (!fetchedChannel) {
-                        setError(errMessage);
-                        setLoading(false);
-                        return;
-                    }
-
-                    const {join} = fetchedChannel.type === 'P' ? await privateChannelJoinPrompt(fetchedChannel.display_name, intl) : await publicChannelJoinPrompt(fetchedChannel.display_name, intl);
-                    if (!join) {
-                        setError(errMessage);
-                        setLoading(false);
-                        return;
-                    }
-
-                    await joinChannel(serverUrl, await getCurrentUserId(database), fetchedChannel.team_id || await getCurrentTeamId(database), fetchedChannel.id);
-                }
-
-                setChannelId(post.channel_id);
+                setLoading(false);
+                return;
             }
+
+            const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+            if (!database) {
+                setError({unreachable: true});
+                setLoading(false);
+                return;
+            }
+
+            // If a team is provided, try to join the team, but do not fail here, to take into account:
+            // - Wrong team name
+            // - DMs/GMs
+            let joinedTeam: Team | undefined;
+            if (teamName && !isTeamMember) {
+                const fetchData = await fetchTeamByName(serverUrl, teamName, true);
+                joinedTeam = fetchData.team;
+
+                if (joinedTeam) {
+                    const addData = await addUserToTeam(serverUrl, joinedTeam.id, currentUserId);
+                    if (addData.error) {
+                        joinedTeam = undefined;
+                    }
+                }
+            }
+
+            const {post} = await fetchPostById(serverUrl, postId, true);
+            if (!post) {
+                if (joinedTeam) {
+                    removeUserFromTeam(serverUrl, joinedTeam.id, currentUserId);
+                }
+                setError({notExist: true});
+                setLoading(false);
+                return;
+            }
+
+            const myChannel = await getMyChannel(database, post.channel_id);
+            if (myChannel) {
+                const localChannel = await getChannelById(database, myChannel.id);
+
+                // Wrong team passed or DM/GM
+                if (joinedTeam && localChannel?.teamId !== '' && localChannel?.teamId !== joinedTeam.id) {
+                    removeUserFromTeam(serverUrl, joinedTeam.id, currentUserId);
+                    joinedTeam = undefined;
+                }
+
+                if (joinedTeam) {
+                    setError({
+                        joinedTeam: true,
+                        channelId: myChannel.id,
+                        channelName: localChannel?.displayName,
+                        privateTeam: !joinedTeam?.allow_open_invite,
+                        teamName: joinedTeam?.display_name,
+                        teamId: joinedTeam?.id,
+                    });
+                    setLoading(false);
+                    return;
+                }
+                setChannelId(post.channel_id);
+                return;
+            }
+
+            const {channel: fetchedChannel} = await fetchChannelById(serverUrl, post.channel_id);
+            if (!fetchedChannel) {
+                if (joinedTeam) {
+                    removeUserFromTeam(serverUrl, joinedTeam.id, currentUserId);
+                }
+                setError({notExist: true});
+                setLoading(false);
+                return;
+            }
+
+            // Wrong team passed or DM/GM
+            if (joinedTeam && fetchedChannel.team_id !== '' && fetchedChannel.team_id !== joinedTeam.id) {
+                removeUserFromTeam(serverUrl, joinedTeam.id, currentUserId);
+                joinedTeam = undefined;
+            }
+
+            setError({
+                privateChannel: fetchedChannel.type === 'P',
+                joinedTeam: Boolean(joinedTeam),
+                channelId: fetchedChannel.id,
+                channelName: fetchedChannel.display_name,
+                teamId: fetchedChannel.team_id || currentTeamId,
+                teamName: joinedTeam?.display_name,
+                privateTeam: !joinedTeam?.allow_open_invite,
+            });
+            setLoading(false);
         })();
-    }, [channelId]);
+    }, [channelId, teamName]);
 
     const handleClose = useCallback(() => {
+        if (error?.joinedTeam && error.teamId) {
+            removeUserFromTeam(serverUrl, error.teamId, currentUserId);
+        }
         dismissModal({componentId: Screens.PERMALINK});
         closePermalink();
-    }, []);
+    }, [error]);
 
     useEffect(() => {
         const listener = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -208,6 +258,69 @@ function Permalink({
         }
     }), []);
 
+    const handleJoin = useCallback(preventDoubleTap(async () => {
+        if (error?.teamId && error.channelId) {
+            const {error: joinError} = await joinChannel(serverUrl, currentUserId, error.teamId, error.channelId);
+            if (joinError) {
+                Alert.alert('Error joining the channel', 'There was an error trying to join the channel');
+                return;
+            }
+            setLoading(true);
+            setError(undefined);
+            setChannelId(error.channelId);
+        }
+    }), [error, serverUrl, currentUserId]);
+
+    let content;
+    if (loading) {
+        content = (
+            <View style={style.loading}>
+                <Loading
+                    color={theme.buttonBg}
+                />
+            </View>
+        );
+    } else if (error) {
+        content = (
+            <PermalinkError
+                error={error}
+                handleClose={handleClose}
+                handleJoin={handleJoin}
+            />
+        );
+    } else {
+        content = (
+            <>
+                <View style={style.postList}>
+                    <PostList
+                        highlightedId={postId}
+                        posts={posts}
+                        location={Screens.PERMALINK}
+                        lastViewedAt={0}
+                        shouldShowJoinLeaveMessages={false}
+                        channelId={channel!.id}
+                        testID='permalink.post_list'
+                        nativeID={Screens.PERMALINK}
+                        highlightPinnedOrSaved={false}
+                    />
+                </View>
+                <TouchableOpacity
+                    style={style.footer}
+                    onPress={handlePress}
+                    testID='permalink.jump_to_recent_messages.button'
+                >
+                    <FormattedText
+                        testID='permalink.search.jump'
+                        id='mobile.search.jump'
+                        defaultMessage='Jump to recent messages'
+                        style={style.jump}
+                    />
+                </TouchableOpacity>
+            </>
+        );
+    }
+
+    const showHeaderDivider = Boolean(channelId) && !error && !loading;
     return (
         <SafeAreaView
             style={containerStyle}
@@ -235,48 +348,12 @@ function Permalink({
                         </Text>
                     </View>
                 </View>
-                <View style={style.dividerContainer}>
-                    <View style={style.divider}/>
-                </View>
-                {loading && (
-                    <View style={style.loading}>
-                        <Loading
-                            color={theme.buttonBg}
-                        />
+                {showHeaderDivider && (
+                    <View style={style.dividerContainer}>
+                        <View style={style.divider}/>
                     </View>
                 )}
-                {!loading && !error && (
-                    <View style={style.postList}>
-                        <PostList
-                            highlightedId={postId}
-                            posts={posts}
-                            location={Screens.PERMALINK}
-                            lastViewedAt={0}
-                            shouldShowJoinLeaveMessages={false}
-                            channelId={channel!.id}
-                            testID='permalink.post_list'
-                            nativeID={Screens.PERMALINK}
-                            highlightPinnedOrSaved={false}
-                        />
-                    </View>
-                )}
-                {!loading && Boolean(error) && (
-                    <View style={style.errorContainer}>
-                        <Text style={style.errorText}>{error}</Text>
-                    </View>
-                )}
-                <TouchableOpacity
-                    style={[style.footer, style.bottom]}
-                    onPress={handlePress}
-                    testID='permalink.jump_to_recent_messages.button'
-                >
-                    <FormattedText
-                        testID='permalink.search.jump'
-                        id='mobile.search.jump'
-                        defaultMessage='Jump to recent messages'
-                        style={style.jump}
-                    />
-                </TouchableOpacity>
+                {content}
             </Animated.View>
         </SafeAreaView>
     );
