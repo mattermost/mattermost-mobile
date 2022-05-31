@@ -23,7 +23,7 @@ type Props = SearchProps & {
     onTitlePress?: () => void;
     rightButtons?: HeaderRightButton[];
     scrollValue?: Animated.SharedValue<number>;
-    hideHeader?: (visible: boolean) => void;
+    hideHeader?: () => void;
     showBackButton?: boolean;
     subtitle?: string;
     subtitleCompanion?: React.ReactElement;

@@ -15,7 +15,7 @@ type Props = SearchProps & {
     defaultHeight: number;
     largeHeight: number;
     scrollValue?: Animated.SharedValue<number>;
-    hideHeader?: (visible: boolean) => void;
+    hideHeader?: () => void;
     theme: Theme;
     top: number;
 }
@@ -44,7 +44,7 @@ const NavigationSearch = ({
     defaultHeight,
     largeHeight,
     scrollValue,
-    hideHeader: setHeaderVisibility,
+    hideHeader,
     theme,
     ...searchProps
 }: Props) => {
@@ -65,9 +65,9 @@ const NavigationSearch = ({
     }, [largeHeight, defaultHeight]);
 
     const onFocus = useCallback((e) => {
-        setHeaderVisibility?.(false);
+        hideHeader?.();
         searchProps.onFocus?.(e);
-    }, [setHeaderVisibility, searchProps.onFocus]);
+    }, [hideHeader, searchProps.onFocus]);
 
     useEffect(() => {
         const show = Keyboard.addListener('keyboardDidShow', () => {

@@ -151,9 +151,12 @@ const Header = ({
             return {opacity: 0};
         }
 
-        const barHeight = (largeHeight - defaultHeight) - 60;
+        const largeTitleLabelHeight = 60;
+        const barHeight = (largeHeight - defaultHeight) - largeTitleLabelHeight;
         const val = (scrollValue?.value ?? 0);
-        const duration = val >= barHeight ? 200 : 50;
+        const showDuration = 200;
+        const hideDuration = 50;
+        const duration = val >= barHeight ? showDuration : hideDuration;
         const opacityValue = val >= barHeight ? 1 : 0;
         return {
             opacity: withTiming(opacityValue, {duration}),
