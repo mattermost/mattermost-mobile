@@ -388,7 +388,7 @@ const Markdown = ({
         }
 
         return (
-            <View style={[blockStyle]}>
+            <View style={blockStyle}>
                 <Text style={baseParagraphStyle}>
                     {children}
                 </Text>
