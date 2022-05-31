@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -91,10 +91,14 @@ export const ThemeTile = ({
         };
     }, [isLandscape, isTablet, deviceWidth]);
 
+    const onPressHandler = useCallback(() => {
+        action(actionValue);
+    }, [action, actionValue]);
+
     return (
         <TouchableOpacity
             style={[style.container, layoutStyle.container]}
-            onPress={() => action(actionValue)}
+            onPress={onPressHandler}
         >
             <View style={[style.imageWrapper, layoutStyle.thumbnail]}>
                 <ThemeThumbnail
