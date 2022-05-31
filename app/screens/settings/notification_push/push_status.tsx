@@ -9,7 +9,6 @@ import BlockItem from '@components/block_item';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
-import {PushStatus} from '@screens/settings/notification_push/notification_push';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 

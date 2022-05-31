@@ -9,6 +9,7 @@ import {useTheme} from '@context/theme';
 import MobileSendPush from '@screens/settings/notification_push/push_send';
 import MobilePushThread from '@screens/settings/notification_push/push_thread';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import MobilePushStatus from './push_status';
 
@@ -20,8 +21,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         input: {
             color: theme.centerChannelColor,
-            fontSize: 12,
             height: 40,
+            ...typography('Body', 75),
         },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
@@ -44,7 +45,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-export type PushStatus = 'away' | 'online' | 'offline' | 'none' | 'mention' | 'all';
 
 type NotificationMobileProps = {
     isCRTEnabled: boolean;
