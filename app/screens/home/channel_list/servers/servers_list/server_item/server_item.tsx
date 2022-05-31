@@ -152,7 +152,7 @@ const ServerItem = ({
     const [switching, setSwitching] = useState(false);
     const [badge, setBadge] = useState<BadgeValues>({isUnread: false, mentions: 0});
     const styles = getStyleSheet(theme);
-    const swipeable = useRef<Swipeable>();
+    const swipeable = useRef<Swipeable>(null);
     const subscription = useRef<Subscription|undefined>();
     const viewRef = useRef<View>(null);
     const [showTutorial, setShowTutorial] = useState(false);
@@ -372,8 +372,6 @@ const ServerItem = ({
                 renderRightActions={renderActions}
                 friction={2}
                 onSwipeableWillOpen={onSwipeableWillOpen}
-
-                // @ts-expect-error legacy ref
                 ref={swipeable}
                 rightThreshold={40}
             >

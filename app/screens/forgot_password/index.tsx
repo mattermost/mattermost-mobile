@@ -95,7 +95,7 @@ const ForgotPassword = ({serverUrl, theme}: Props) => {
     const [error, setError] = useState<string>('');
     const [isPasswordLinkSent, setIsPasswordLinkSent] = useState<boolean>(false);
     const {formatMessage} = useIntl();
-    const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
+    const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const styles = getStyleSheet(theme);
 
     const changeEmail = useCallback((emailAddress: string) => {
@@ -192,8 +192,6 @@ const ForgotPassword = ({serverUrl, theme}: Props) => {
                 extraScrollHeight={0}
                 keyboardDismissMode='on-drag'
                 keyboardShouldPersistTaps='handled'
-
-                // @ts-expect-error legacy ref
                 ref={keyboardAwareRef}
                 scrollToOverflowEnabled={true}
                 style={styles.flex}

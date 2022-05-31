@@ -39,7 +39,7 @@ export const SettingOptionConfig = {
 export const NotificationsOptionConfig = {
     mentions: {
         iconName: 'at',
-        testID: 'notification_settings.mentions_replies.action',
+        testID: 'notification_settings.mentions_replies',
     },
     push_notification: {
         defaultMessage: 'Push Notifications',

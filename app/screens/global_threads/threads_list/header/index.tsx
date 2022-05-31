@@ -172,7 +172,7 @@ const Header = ({setTab, tab, teamId, testID, unreadsCount}: Props) => {
                             {hasUnreads ? (
                                 <View
                                     style={styles.unreadsDot}
-                                    testID={`${testID}.unreads_dot`}
+                                    testID={`${testID}.unreads_dot.badge`}
                                 />
                             ) : null}
                         </View>

@@ -25,7 +25,7 @@ import type {LaunchProps} from '@typings/launch';
 
 interface LoginProps extends LaunchProps {
     config: Partial<ClientConfig>;
-    keyboardAwareRef: MutableRefObject<KeyboardAwareScrollView | undefined>;
+    keyboardAwareRef: MutableRefObject<KeyboardAwareScrollView | null>;
     license: Partial<ClientLicense>;
     numberSSOs: number;
     serverDisplayName: string;

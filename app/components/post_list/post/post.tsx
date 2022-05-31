@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactNode, useMemo, useRef} from 'react';
+import React, {ReactNode, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, StyleProp, View, ViewStyle, TouchableHighlight} from 'react-native';
 
@@ -10,12 +10,13 @@ import {showPermalink} from '@actions/remote/permalink';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
+import {POST_TIME_TO_FAIL} from '@constants/post';
 import * as Screens from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
-import {fromAutoResponder, isFromWebhook, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
+import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -30,6 +31,7 @@ import UnreadDot from './unread_dot';
 import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
+import type {SearchPattern} from '@typings/global/markdown';
 
 type PostProps = {
     appsEnabled: boolean;
@@ -53,6 +55,7 @@ type PostProps = {
     post: PostModel;
     previousPost?: PostModel;
     reactionsCount: number;
+    searchPatterns?: SearchPattern[];
     shouldRenderReplyButton?: boolean;
     showAddReaction?: boolean;
     skipSavedHeader?: boolean;
@@ -84,7 +87,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         postStyle: {
             overflow: 'hidden',
             flex: 1,
-            paddingHorizontal: 20,
+            paddingHorizontal: 16,
         },
         profilePictureContainer: {
             marginBottom: 5,
@@ -96,14 +99,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'column',
         },
         rightColumnPadding: {paddingBottom: 3},
-        touchableContainer: {marginHorizontal: -20, paddingHorizontal: 20},
+        touchableContainer: {marginHorizontal: -16, paddingHorizontal: 16},
     };
 });
 
 const Post = ({
     appsEnabled, canDelete, currentUser, differentThreadSequence, filesCount, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
     isCRTEnabled, isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
-    location, post, reactionsCount, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
+    location, post, reactionsCount, searchPatterns, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
     testID, thread, previousPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
@@ -114,6 +117,7 @@ const Post = ({
     const styles = getStyleSheet(theme);
     const isAutoResponder = fromAutoResponder(post);
     const isPendingOrFailed = isPostPendingOrFailed(post);
+    const isFailed = isPostFailed(post);
     const isSystemPost = isSystemMessage(post);
     const isWebHook = isFromWebhook(post);
     const hasSameRoot = useMemo(() => {
@@ -183,6 +187,20 @@ const Post = ({
             showModalOverCurrentContext(Screens.POST_OPTIONS, passProps, bottomSheetModalOptions(theme));
         }
     };
+
+    const [, rerender] = useState(false);
+    useEffect(() => {
+        let t: NodeJS.Timeout|undefined;
+        if (post.pendingPostId === post.id && !isFailed) {
+            t = setTimeout(() => rerender(true), POST_TIME_TO_FAIL - (Date.now() - post.updateAt));
+        }
+
+        return () => {
+            if (t) {
+                clearTimeout(t);
+            }
+        };
+    }, [post.id]);
 
     const highlightSaved = isSaved && !skipSavedHeader;
     const hightlightPinned = post.isPinned && !skipPinnedHeader;
@@ -267,6 +285,7 @@ const Post = ({
                 isPostAddChannelMember={isPostAddChannelMember}
                 location={location}
                 post={post}
+                searchPatterns={searchPatterns}
                 showAddReaction={showAddReaction}
                 theme={theme}
             />
@@ -278,15 +297,12 @@ const Post = ({
     if (isCRTEnabled && thread) {
         if (thread.replyCount > 0 || thread.isFollowing) {
             footer = (
-                <Footer
-                    testID={`${itemTestID}.footer`}
-                    thread={thread}
-                />
+                <Footer thread={thread}/>
             );
         }
         if (thread.unreadMentions || thread.unreadReplies) {
             unreadDot = (
-                <UnreadDot testID={`${itemTestID}.badge`}/>
+                <UnreadDot/>
             );
         }
     }

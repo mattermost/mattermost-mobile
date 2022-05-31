@@ -143,7 +143,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
     }, [isTablet, theme, thread]);
 
     const threadStarterName = displayUsername(author, intl.locale, teammateNameDisplay);
-    const testIDPrefix = `${testID}.${thread.id}`;
+    const threadItemTestId = `${testID}.thread_item.${thread.id}`;
 
     const needBadge = thread.unreadMentions || thread.unreadReplies;
     let badgeComponent;
@@ -152,7 +152,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
             badgeComponent = (
                 <View
                     style={styles.mentionBadge}
-                    testID={`${testIDPrefix}.unread_mentions`}
+                    testID={`${threadItemTestId}.unread_mentions.badge`}
                 >
                     <Text style={styles.mentionBadgeText}>{thread.unreadMentions > 99 ? '99+' : thread.unreadMentions}</Text>
                 </View>
@@ -161,7 +161,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
             badgeComponent = (
                 <View
                     style={styles.unreadDot}
-                    testID={`${testIDPrefix}.unread_dot`}
+                    testID={`${threadItemTestId}.unread_dot.badge`}
                 />
             );
         }
@@ -176,6 +176,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
                 defaultMessage='Original Message Deleted'
                 style={[styles.threadStarter, styles.threadDeleted]}
                 numberOfLines={1}
+                testID={`${threadItemTestId}.thread_starter.user_display_name`}
             />
         );
     } else {
@@ -183,6 +184,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
             <Text
                 style={styles.threadStarter}
                 numberOfLines={1}
+                testID={`${threadItemTestId}.thread_starter.user_display_name`}
             >
                 {threadStarterName}
             </Text>
@@ -207,7 +209,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
             underlayColor={changeOpacity(theme.buttonBg, 0.08)}
             onLongPress={showThreadOptions}
             onPress={showThread}
-            testID={`${testIDPrefix}.item`}
+            testID={threadItemTestId}
         >
             <View style={styles.container}>
                 <View style={styles.badgeContainer}>
@@ -222,6 +224,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
                                     <Text
                                         style={styles.channelName}
                                         numberOfLines={1}
+                                        testID={`${threadItemTestId}.thread_starter.channel_display_name`}
                                     >
                                         {channel?.displayName}
                                     </Text>
@@ -236,7 +239,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
                     {postBody}
                     <ThreadFooter
                         author={author}
-                        testID={`${testIDPrefix}.footer`}
+                        testID={`${threadItemTestId}.footer`}
                         thread={thread}
                     />
                 </View>

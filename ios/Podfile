@@ -30,7 +30,7 @@ target 'Mattermost' do
   pod 'Swime', '3.0.6'
 
   # TODO: Remove this once upstream PR https://github.com/daltoniam/Starscream/pull/871 is merged
-  pod 'Starscream', :git => 'https://github.com/mattermost/Starscream.git', :commit => 'cb83dd247339ff6c155f0e749d6fe2cc145f5283'
+  pod 'Starscream', :git => 'https://github.com/mattermost/Starscream.git', :commit => '2770c931b2758f26e29b937d547a23122e9c6583'
 
 end
 

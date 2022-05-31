@@ -17,6 +17,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
         flexDirection: 'row',
         marginVertical: 8,
+        paddingHorizontal: 16,
     },
     channel: {
         ...typography('Body', 75, 'SemiBold'),

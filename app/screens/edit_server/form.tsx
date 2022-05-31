@@ -24,7 +24,7 @@ type Props = {
     displayNameError?: string;
     handleUpdate: () => void;
     handleDisplayNameTextChanged: (text: string) => void;
-    keyboardAwareRef: MutableRefObject<KeyboardAwareScrollView | undefined>;
+    keyboardAwareRef: MutableRefObject<KeyboardAwareScrollView | null>;
     serverUrl: string;
     theme: Theme;
 };

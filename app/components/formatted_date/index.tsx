@@ -3,6 +3,7 @@
 
 import moment from 'moment-timezone';
 import React from 'react';
+import {useIntl} from 'react-intl';
 import {Text, TextProps} from 'react-native';
 
 type FormattedDateProps = TextProps & {
@@ -12,6 +13,8 @@ type FormattedDateProps = TextProps & {
 }
 
 const FormattedDate = ({format = 'MMM DD, YYYY', timezone, value, ...props}: FormattedDateProps) => {
+    const {locale} = useIntl();
+    moment.locale(locale);
     let formattedDate = moment(value).format(format);
     if (timezone) {
         let zone: string;

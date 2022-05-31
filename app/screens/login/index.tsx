@@ -77,7 +77,7 @@ const LoginOptions = ({
     serverDisplayName, serverUrl, ssoOptions, theme,
 }: LoginOptionsProps) => {
     const styles = getStyles(theme);
-    const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
+    const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const dimensions = useWindowDimensions();
     const isTablet = useIsTablet();
     const translateX = useSharedValue(dimensions.width);
@@ -199,8 +199,6 @@ const LoginOptions = ({
                     extraScrollHeight={0}
                     keyboardDismissMode='on-drag'
                     keyboardShouldPersistTaps='handled'
-
-                    // @ts-expect-error legacy ref
                     ref={keyboardAwareRef}
                     scrollToOverflowEnabled={true}
                     style={styles.flex}

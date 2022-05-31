@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
@@ -16,46 +17,55 @@ import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         row: {
+            height: 40,
             paddingVertical: 8,
+            paddingTop: 4,
+            paddingHorizontal: 16,
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: theme.centerChannelBg,
         },
         rowPicture: {
-            marginHorizontal: 8,
-            width: 20,
+            marginRight: 10,
+            marginLeft: 2,
+            width: 24,
             alignItems: 'center',
             justifyContent: 'center',
         },
         rowIcon: {
-            color: changeOpacity(theme.centerChannelColor, 0.7),
-            fontSize: 14,
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            fontSize: 22,
         },
-        rowUsername: {
-            fontSize: 13,
+        rowInfo: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            overflow: 'hidden',
+            maxWidth: '80%',
+            paddingLeft: 3,
+        },
+        rowDisplayName: {
             color: theme.centerChannelColor,
+            flexShrink: 5,
+            ...typography('Body', 200),
         },
-        rowFullname: {
-            color: theme.centerChannelColor,
-            flex: 1,
-            opacity: 0.6,
-        },
-        textWrapper: {
-            flex: 1,
-            flexWrap: 'wrap',
-            paddingRight: 8,
+        rowName: {
+            ...typography('Body', 200),
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            flexShrink: 1,
+            marginLeft: 2,
         },
     };
 });
 
 type Props = {
-    completeHandle: string;
+    name: string;
+    displayName: string;
     onPress: (handle: string) => void;
 }
 
 const GroupMentionItem = ({
     onPress,
-    completeHandle,
+    name,
+    displayName,
 }: Props) => {
     const insets = useSafeAreaInsets();
     const theme = useTheme();
@@ -66,8 +76,8 @@ const GroupMentionItem = ({
         [insets.left, insets.right, style],
     );
     const completeMention = useCallback(() => {
-        onPress(completeHandle);
-    }, [onPress, completeHandle]);
+        onPress(name);
+    }, [onPress, name]);
 
     return (
         <TouchableWithFeedback
@@ -81,8 +91,10 @@ const GroupMentionItem = ({
                     style={style.rowIcon}
                 />
             </View>
-            <Text style={style.rowUsername}>{`@${completeHandle} - `}</Text>
-            <Text style={style.rowFullname}>{`${completeHandle}`}</Text>
+            <View style={style.rowInfo}>
+                <Text style={style.rowDisplayName}>{`${displayName} `}</Text>
+                <Text style={style.rowName}>{`@${name}`}</Text>
+            </View>
         </TouchableWithFeedback>
     );
 };

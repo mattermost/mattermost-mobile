@@ -2,15 +2,21 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q, Query} from '@nozbe/watermelondb';
+import {of as of$} from 'rxjs';
+import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
+import {FAVORITES_CATEGORY} from '@constants/categories';
 import {MM_TABLES} from '@constants/database';
 import {makeCategoryChannelId} from '@utils/categories';
+
+import {observeChannelsByLastPostAt} from './channel';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type CategoryModel from '@typings/database/models/servers/category';
 import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
+import type ChannelModel from '@typings/database/models/servers/channel';
 
-const {SERVER: {CATEGORY}} = MM_TABLES;
+const {SERVER: {CATEGORY, CATEGORY_CHANNEL, CHANNEL}} = MM_TABLES;
 
 export const getCategoryById = async (database: Database, categoryId: string) => {
     try {
@@ -69,4 +75,56 @@ export const prepareDeleteCategory = async (category: CategoryModel): Promise<Mo
     }));
 
     return preparedModels;
+};
+
+export const queryChannelCategory = (database: Database, teamId: string, channelId: string) => {
+    return database.get<CategoryModel>(CATEGORY).query(
+        Q.on(CATEGORY_CHANNEL, Q.where('id', makeCategoryChannelId(teamId, channelId))),
+    );
+};
+
+export const getChannelCategory = async (database: Database, teamId: string, channelId: string) => {
+    const result = await queryChannelCategory(database, teamId, channelId).fetch();
+    if (result.length) {
+        return result[0];
+    }
+
+    return undefined;
+};
+
+export const getIsChannelFavorited = async (database: Database, teamId: string, channelId: string) => {
+    const result = await queryChannelCategory(database, teamId, channelId).fetch();
+    if (result.length > 0) {
+        return result[0].type === FAVORITES_CATEGORY;
+    }
+
+    return false;
+};
+
+export const observeIsChannelFavorited = (database: Database, teamId: string, channelId: string) => {
+    return queryChannelCategory(database, teamId, channelId).observe().pipe(
+        switchMap((result) => (result.length ? of$(result[0].type === FAVORITES_CATEGORY) : of$(false))),
+        distinctUntilChanged(),
+    );
+};
+
+export const observeChannelsByCategoryChannelSortOrder = (database: Database, category: CategoryModel, excludeIds?: string[]) => {
+    return category.categoryChannelsBySortOrder.observeWithColumns(['sort_order']).pipe(
+        switchMap((categoryChannels) => {
+            const ids = categoryChannels.map((cc) => cc.channelId);
+            const idsStr = `'${ids.join("','")}'`;
+            const exclude = excludeIds?.length ? `AND c.id NOT IN ('${excludeIds.join("','")}')` : '';
+            return database.get<ChannelModel>(CHANNEL).query(
+                Q.unsafeSqlQuery(`SELECT DISTINCT c.* FROM ${CHANNEL} c INNER JOIN
+                ${CATEGORY_CHANNEL} cc ON cc.channel_id=c.id AND c.id IN (${idsStr}) ${exclude}
+                ORDER BY cc.sort_order`),
+            ).observe();
+        }),
+    );
+};
+
+export const observeChannelsByLastPostAtInCategory = (database: Database, category: CategoryModel, excludeIds?: string[]) => {
+    return category.myChannels.observeWithColumns(['last_post_at']).pipe(
+        switchMap((myChannels) => observeChannelsByLastPostAt(database, myChannels, excludeIds)),
+    );
 };

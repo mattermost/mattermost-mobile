@@ -38,17 +38,19 @@ export const switchToGlobalThreads = async (serverUrl: string, teamId?: string, 
     }
 
     try {
-        await setCurrentTeamAndChannelId(operator, teamId, '');
+        await setCurrentTeamAndChannelId(operator, teamIdToUse, '');
         const history = await addChannelToTeamHistory(operator, teamIdToUse, Screens.GLOBAL_THREADS, true);
         models.push(...history);
+
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords(models);
+        }
+
         const isTabletDevice = await isTablet();
         if (isTabletDevice) {
             DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_THREADS);
         } else {
             goToScreen(Screens.GLOBAL_THREADS, '', {}, {topBar: {visible: false}});
-        }
-        if (!prepareRecordsOnly) {
-            await operator.batchRecords(models);
         }
     } catch (error) {
         return {error};

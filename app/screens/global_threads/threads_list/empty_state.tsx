@@ -66,7 +66,10 @@ function EmptyState({isUnreads}: Props) {
         });
     }
     return (
-        <View style={style.container}>
+        <View
+            style={style.container}
+            testID='global_threads.threads_list.empty_state'
+        >
             <EmptyStateIllustration theme={theme}/>
             <View style={style.textContainer}>
                 <Text style={style.title}>

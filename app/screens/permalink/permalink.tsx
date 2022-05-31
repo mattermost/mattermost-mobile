@@ -209,7 +209,10 @@ function Permalink({
     }), []);
 
     return (
-        <SafeAreaView style={containerStyle}>
+        <SafeAreaView
+            style={containerStyle}
+            testID='permalink.screen'
+        >
             <Animated.View style={style.wrapper}>
                 <View style={style.header}>
                     <TouchableOpacity
@@ -265,6 +268,7 @@ function Permalink({
                 <TouchableOpacity
                     style={[style.footer, style.bottom]}
                     onPress={handlePress}
+                    testID='permalink.jump_to_recent_messages.button'
                 >
                     <FormattedText
                         testID='permalink.search.jump'

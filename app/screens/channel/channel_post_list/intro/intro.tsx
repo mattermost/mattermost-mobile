@@ -15,7 +15,7 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type RoleModel from '@typings/database/models/servers/role';
 
 type Props = {
-    channel: ChannelModel;
+    channel?: ChannelModel;
     hasPosts: boolean;
     roles: RoleModel[];
 }
@@ -39,6 +39,10 @@ const Intro = ({channel, hasPosts, roles}: Props) => {
     const [fetching, setFetching] = useState(!hasPosts);
     const theme = useTheme();
     const element = useMemo(() => {
+        if (!channel) {
+            return null;
+        }
+
         if (channel.type === General.OPEN_CHANNEL && channel.name === General.DEFAULT_CHANNEL) {
             return (
                 <TownSquare

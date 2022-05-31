@@ -128,7 +128,7 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
                         nonVisibleImagesCount={nonVisibleImagesCount}
                         publicLinkEnabled={publicLinkEnabled}
                         updateFileForGallery={updateFileForGallery}
-                        wrapperWidth={layoutWidth || (getViewPortWidth(isReplyPost, isTablet) - 15)}
+                        wrapperWidth={layoutWidth || (getViewPortWidth(isReplyPost, isTablet) - 6)}
                         inViewPort={inViewPort}
                     />
                 </View>
@@ -142,7 +142,7 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
         }
 
         const visibleImages = imageAttachments.slice(0, MAX_VISIBLE_ROW_IMAGES);
-        const portraitPostWidth = layoutWidth || (getViewPortWidth(isReplyPost, isTablet) - 15);
+        const portraitPostWidth = layoutWidth || (getViewPortWidth(isReplyPost, isTablet) - 6);
 
         let nonVisibleImagesCount;
         if (imageAttachments.length > MAX_VISIBLE_ROW_IMAGES) {
