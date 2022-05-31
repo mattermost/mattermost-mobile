@@ -4,10 +4,14 @@
 import React from 'react';
 import {ScrollView, View} from 'react-native';
 
+import Block from '@components/block';
+import BlockItem from '@components/block_item';
+import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
-import {ThemeTiles} from './theme_tile';
+import {ThemeTiles} from './theme_tiles';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -19,13 +23,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             paddingTop: 35,
         },
+        label: {
+            color: theme.centerChannelColor,
+            ...typography('Body', 200),
+        },
+        containerStyles: {
+            paddingHorizontal: 16,
+        },
     };
 });
 
 type DisplayThemeProps = {
     allowedThemeKeys: string[];
+    customTheme?: Theme;
 }
-const DisplayTheme = ({allowedThemeKeys}: DisplayThemeProps) => {
+const DisplayTheme = ({allowedThemeKeys, customTheme}: DisplayThemeProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -40,19 +52,26 @@ const DisplayTheme = ({allowedThemeKeys}: DisplayThemeProps) => {
                     onThemeChange={setTheme}
                     allowedThemeKeys={allowedThemeKeys}
                 />
-                {/*{customTheme &&*/}
-                {/*    <SafeAreaView*/}
-                {/*        edges={['left', 'right']}*/}
-                {/*        style={styles.container}*/}
-                {/*    >*/}
-                {/*        <Section*/}
-                {/*            disableHeader={true}*/}
-                {/*            theme={theme}*/}
-                {/*        >*/}
-                {/*            {this.renderCustomThemeRow({item: customTheme})}*/}
-                {/*        </Section>*/}
-                {/*    </SafeAreaView>*/}
-                {/*}*/}
+                {customTheme &&
+                <Block
+                    disableHeader={true}
+                    containerStyles={styles.containerStyles}
+                >
+                    <BlockItem
+                        label={(
+                            <FormattedText
+                                id='user.settings.display.custom_theme'
+                                defaultMessage={'Custom Theme'}
+                                style={styles.label}
+                            />
+                        )}
+                        action={setTheme}
+                        actionType='select'
+                        actionValue={customTheme.type}
+                        selected={theme.type?.toLowerCase() === customTheme.type?.toLowerCase()}
+                    />
+                </Block>
+                }
             </View>
         </ScrollView>
     );

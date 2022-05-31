@@ -9,6 +9,7 @@ import {Preferences} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import ThemeThumbnail from './theme_thumbnail';
 
@@ -37,7 +38,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         label: {
             color: theme.centerChannelColor,
-            fontSize: 15,
+            ...typography('Body', 200),
         },
         tilesContainer: {
             marginBottom: 30,
@@ -65,11 +66,6 @@ type ThemeTileProps = {
 };
 export const ThemeTile = ({action, actionValue, isLandscape, isTablet, label, selected, activeTheme, tileTheme}: ThemeTileProps) => {
     const style = getStyleSheet(activeTheme);
-
-    const labelComponent = React.cloneElement(
-        label,
-        {style: style.label},
-    );
 
     const tilesPerLine = isLandscape || isTablet ? 4 : 2;
     const {width: deviceWidth} = Dimensions.get('window');
@@ -112,7 +108,7 @@ export const ThemeTile = ({action, actionValue, isLandscape, isTablet, label, se
                     />
                 )}
             </View>
-            {labelComponent}
+            {label}
         </TouchableOpacity>
     );
 };
@@ -134,7 +130,7 @@ export const ThemeTiles = ({allowedThemeKeys, onThemeChange}: ThemeTilesProps) =
                     <ThemeTile
                         key={themeKey}
                         label={(
-                            <Text>
+                            <Text style={styles.label}>
                                 {themeKey}
                             </Text>
                         )}
