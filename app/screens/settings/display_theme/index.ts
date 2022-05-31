@@ -8,7 +8,13 @@ import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {observeAllowedThemesKeys, observeConfigBooleanValue, observeConfigValue, observeCurrentTeamId} from '@queries/servers/system';
+import {
+    observeAllowedThemesKeys,
+    observeConfigBooleanValue,
+    observeConfigValue,
+    observeCurrentTeamId,
+    observeCurrentUserId,
+} from '@queries/servers/system';
 import {WithDatabaseArgs} from '@typings/database/database';
 import {safeParseJSON} from '@utils/helpers';
 
@@ -16,6 +22,7 @@ import DisplayTheme from './display_theme';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentTeamId = observeCurrentTeamId(database);
+    const currentUserId = observeCurrentUserId(database);
     const themePreferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_THEME).observe();
     const configAllowCustomThemes = observeConfigBooleanValue(database, 'AllowCustomThemes');
     const defaultTheme = observeConfigValue(database, 'DefaultTheme');
@@ -40,6 +47,8 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     return {
         allowedThemeKeys: observeAllowedThemesKeys(database),
+        currentTeamId,
+        currentUserId,
         customTheme,
     };
 });

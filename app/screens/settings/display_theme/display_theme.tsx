@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {ScrollView, View} from 'react-native';
 
-import Block from '@components/block';
-import BlockItem from '@components/block_item';
-import FormattedText from '@components/formatted_text';
+import {savePreference} from '@actions/remote/preference';
+import {Preferences} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import CustomTheme from '@screens/settings/display_theme/custom_theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 
 import {ThemeTiles} from './theme_tiles';
 
@@ -23,55 +23,48 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             paddingTop: 35,
         },
-        label: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 200),
-        },
-        containerStyles: {
-            paddingHorizontal: 16,
-        },
     };
 });
 
 type DisplayThemeProps = {
     allowedThemeKeys: string[];
     customTheme?: Theme;
+    currentTeamId: string;
+    currentUserId: string;
 }
-const DisplayTheme = ({allowedThemeKeys, customTheme}: DisplayThemeProps) => {
+const DisplayTheme = ({allowedThemeKeys, customTheme, currentTeamId, currentUserId}: DisplayThemeProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const serverUrl = useServerUrl();
 
-    const setTheme = () => {
-        //todo:
-    };
+    const setTheme = useCallback((selectedThemeKey: string) => {
+        const allThemes = [...allowedThemeKeys, customTheme?.type];
+        const selectedTheme = allThemes.find((tk) => tk === selectedThemeKey);
+        if (!selectedTheme) {
+            return;
+        }
+        const pref: PreferenceType = {
+            category: Preferences.CATEGORY_THEME,
+            name: currentTeamId,
+            user_id: currentUserId,
+            value: JSON.stringify(Preferences.THEMES[selectedTheme]),
+        };
+        savePreference(serverUrl, [pref]);
+    }, [serverUrl]);
 
     return (
         <ScrollView style={styles.container}>
             <View style={styles.wrapper}>
                 <ThemeTiles
-                    onThemeChange={setTheme}
                     allowedThemeKeys={allowedThemeKeys}
+                    onThemeChange={setTheme}
                 />
-                {customTheme &&
-                <Block
-                    disableHeader={true}
-                    containerStyles={styles.containerStyles}
-                >
-                    <BlockItem
-                        label={(
-                            <FormattedText
-                                id='user.settings.display.custom_theme'
-                                defaultMessage={'Custom Theme'}
-                                style={styles.label}
-                            />
-                        )}
-                        action={setTheme}
-                        actionType='select'
-                        actionValue={customTheme.type}
-                        selected={theme.type?.toLowerCase() === customTheme.type?.toLowerCase()}
+                {customTheme && (
+                    <CustomTheme
+                        customTheme={customTheme}
+                        setTheme={setTheme}
                     />
-                </Block>
-                }
+                )}
             </View>
         </ScrollView>
     );

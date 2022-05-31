@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {Dimensions, Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
+import React, {useMemo} from 'react';
+import {Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {Preferences} from '@constants';
@@ -13,13 +13,13 @@ import {typography} from '@utils/typography';
 
 import ThemeThumbnail from './theme_thumbnail';
 
-const tilePadding = 8;
+const TILE_PADDING = 8;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flexDirection: 'column',
-            padding: tilePadding,
+            padding: TILE_PADDING,
             marginTop: 8,
         },
         imageWrapper: {
@@ -57,27 +57,39 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 type ThemeTileProps = {
     action: (v: string) => void;
     actionValue: string;
+    activeTheme: Theme;
     isLandscape: boolean;
     isTablet: boolean;
     label: React.ReactElement;
     selected: boolean;
-    activeTheme: Theme;
     tileTheme: Theme;
 };
-export const ThemeTile = ({action, actionValue, isLandscape, isTablet, label, selected, activeTheme, tileTheme}: ThemeTileProps) => {
+export const ThemeTile = ({
+    action,
+    actionValue,
+    activeTheme,
+    isLandscape,
+    isTablet,
+    label,
+    selected,
+    tileTheme,
+}: ThemeTileProps) => {
     const style = getStyleSheet(activeTheme);
+    const {width: deviceWidth} = useWindowDimensions();
 
-    const tilesPerLine = isLandscape || isTablet ? 4 : 2;
-    const {width: deviceWidth} = Dimensions.get('window');
-    const fullWidth = isLandscape ? deviceWidth - 40 : deviceWidth;
-    const layoutStyle = {
-        container: {
-            width: (fullWidth / tilesPerLine) - tilePadding,
-        },
-        thumbnail: {
-            width: (fullWidth / tilesPerLine) - (tilePadding + 16),
-        },
-    };
+    const layoutStyle = useMemo(() => {
+        const tilesPerLine = isLandscape || isTablet ? 4 : 2;
+        const fullWidth = isLandscape ? deviceWidth - 40 : deviceWidth;
+
+        return {
+            container: {
+                width: (fullWidth / tilesPerLine) - TILE_PADDING,
+            },
+            thumbnail: {
+                width: (fullWidth / tilesPerLine) - (TILE_PADDING + 16),
+            },
+        };
+    }, [isLandscape, isTablet, deviceWidth]);
 
     return (
         <TouchableOpacity

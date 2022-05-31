@@ -5,35 +5,35 @@ import React from 'react';
 import Svg, {Rect, G, Circle} from 'react-native-svg';
 
 type ThemeThumbnailProps = {
-    width: number;
+    awayIndicator: string;
     borderColorBase: string;
     borderColorMix: string;
+    buttonBg: string;
+    centerChannelBg: string;
+    centerChannelColor: string;
+    dndIndicator: string;
+    newMessageSeparator: string;
+    onlineIndicator: string;
     sidebarBg: string;
     sidebarText: string;
     sidebarUnreadText: string;
-    onlineIndicator: string;
-    awayIndicator: string;
-    dndIndicator: string;
-    centerChannelColor: string;
-    centerChannelBg: string;
-    newMessageSeparator: string;
-    buttonBg: string;
+    width: number;
 }
 
 function ThemeThumbnail({
-    width = 180,
+    awayIndicator = '#FFBC1F',
     borderColorBase = '#E0E1E3',
     borderColorMix = '#E0E1E3',
+    buttonBg = '#15B7B7',
+    centerChannelBg = 'white',
+    centerChannelColor = '#E0E1E3',
+    dndIndicator = '#D24B4E',
+    newMessageSeparator = '#1C58D9',
+    onlineIndicator = '#3DB887',
     sidebarBg = '#174AB5',
     sidebarText = '#86A1D9',
     sidebarUnreadText = 'white',
-    onlineIndicator = '#3DB887',
-    awayIndicator = '#FFBC1F',
-    dndIndicator = '#D24B4E',
-    centerChannelColor = '#E0E1E3',
-    centerChannelBg = 'white',
-    newMessageSeparator = '#1C58D9',
-    buttonBg = '#15B7B7',
+    width = 180,
 }: ThemeThumbnailProps): JSX.Element {
     // the original height of the thumbnail
     const baseWidth = 180;
