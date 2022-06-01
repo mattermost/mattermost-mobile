@@ -35,7 +35,7 @@ const CopyPermalinkOption = ({teamName, post, sourceScreen}: Props) => {
             defaultMessage='Copy Link'
             onPress={handleCopyLink}
             iconName='link-variant'
-            testID='post_options.copy.permalink.option'
+            testID='post_options.copy_permalink.option'
         />
     );
 };

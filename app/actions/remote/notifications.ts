@@ -4,17 +4,14 @@
 import {Platform} from 'react-native';
 
 import {updatePostSinceCache} from '@actions/local/notification';
-import {fetchMissingSidebarInfo, fetchMyChannel, markChannelAsRead, switchToChannelById} from '@actions/remote/channel';
+import {fetchDirectChannelsInfo, fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {fetchMyTeam} from '@actions/remote/team';
-import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
-import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {getMyChannel, getChannelById} from '@queries/servers/channel';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCommonSystemValues, getWebSocketLastDisconnected} from '@queries/servers/system';
 import {getMyTeamById} from '@queries/servers/team';
-import {getCurrentUser} from '@queries/servers/user';
+import {getIsCRTEnabled} from '@queries/servers/thread';
 import {emitNotificationError} from '@utils/notification';
 
 const fetchNotificationData = async (serverUrl: string, notification: NotificationWithData, skipEvents = false) => {
@@ -68,12 +65,9 @@ const fetchNotificationData = async (serverUrl: string, notification: Notificati
             }
 
             if (isDirectChannel) {
-                const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT).fetch();
-                const currentUser = await getCurrentUser(database);
-                const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], system.config, system.license);
                 const channel = await getChannelById(database, channelId);
                 if (channel) {
-                    fetchMissingSidebarInfo(serverUrl, [channel.toApi()], currentUser?.locale, teammateDisplayNameSetting, currentUser?.id);
+                    fetchDirectChannelsInfo(serverUrl, [channel]);
                 }
             }
         }
@@ -91,8 +85,12 @@ export const backgroundNotification = async (serverUrl: string, notification: No
         return;
     }
 
-    const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
+    const isCRTEnabled = await getIsCRTEnabled(database);
+    if (isCRTEnabled && notification.payload?.root_id) {
+        return;
+    }
 
+    const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
     if (lastDisconnectedAt) {
         if (Platform.OS === 'ios') {
             updatePostSinceCache(serverUrl, notification);
@@ -109,10 +107,12 @@ export const openNotification = async (serverUrl: string, notification: Notifica
     }
 
     try {
-        const channelId = notification.payload!.channel_id!;
-        await markChannelAsRead(serverUrl, channelId);
-
         const {database} = operator;
+        const channelId = notification.payload!.channel_id!;
+        const isCRTEnabled = await getIsCRTEnabled(database);
+        if (isCRTEnabled && notification.payload?.root_id) {
+            return {error: 'Opening CRT notifications not implemented yet'};
+        }
         const system = await getCommonSystemValues(database);
         const currentServerUrl = await DatabaseManager.getActiveServerUrl();
         let teamId = notification.payload?.team_id;
@@ -131,8 +131,7 @@ export const openNotification = async (serverUrl: string, notification: Notifica
         const myTeam = await getMyTeamById(database, teamId);
 
         if (myChannel && myTeam) {
-            switchToChannelById(serverUrl, channelId, teamId);
-            return {};
+            return switchToChannelById(serverUrl, channelId, teamId);
         }
 
         const result = await fetchNotificationData(serverUrl, notification);

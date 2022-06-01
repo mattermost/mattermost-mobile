@@ -21,6 +21,7 @@ import NetworkManager from '@managers/network_manager';
 import {queryCustomEmojisByName} from '@queries/servers/custom_emoji';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {EmojiIndicesByAlias, Emojis} from '@utils/emoji';
+import {isUnicodeEmoji} from '@utils/emoji/helpers';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
@@ -52,16 +53,17 @@ const Emoji = (props: Props) => {
     let assetImage = '';
     let unicode;
     let imageUrl = '';
+    const name = emojiName.trim();
 
-    if (EmojiIndicesByAlias.has(emojiName)) {
-        const emoji = Emojis[EmojiIndicesByAlias.get(emojiName)!];
+    if (EmojiIndicesByAlias.has(name)) {
+        const emoji = Emojis[EmojiIndicesByAlias.get(name)!];
         if (emoji.category === 'custom') {
             assetImage = emoji.fileName;
         } else {
             unicode = emoji.image;
         }
-    } else {
-        const custom = customEmojis.find((ce) => ce.name === emojiName);
+    } else if (!isUnicodeEmoji(name)) {
+        const custom = customEmojis.find((ce) => ce.name === name);
         if (custom) {
             try {
                 const client = NetworkManager.getClient(serverUrl);
@@ -69,8 +71,8 @@ const Emoji = (props: Props) => {
             } catch {
                 // do nothing
             }
-        } else {
-            fetchCustomEmojiInBatch(serverUrl, emojiName);
+        } else if (name) {
+            fetchCustomEmojiInBatch(serverUrl, name);
         }
     }
 

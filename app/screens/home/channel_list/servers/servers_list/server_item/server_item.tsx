@@ -152,7 +152,7 @@ const ServerItem = ({
     const [switching, setSwitching] = useState(false);
     const [badge, setBadge] = useState<BadgeValues>({isUnread: false, mentions: 0});
     const styles = getStyleSheet(theme);
-    const swipeable = useRef<Swipeable>();
+    const swipeable = useRef<Swipeable>(null);
     const subscription = useRef<Subscription|undefined>();
     const viewRef = useRef<View>(null);
     const [showTutorial, setShowTutorial] = useState(false);
@@ -354,12 +354,12 @@ const ServerItem = ({
     let pushAlertText;
     if (server.lastActiveAt) {
         if (pushProxyStatus === PUSH_PROXY_STATUS_NOT_AVAILABLE) {
-            intl.formatMessage({
+            pushAlertText = intl.formatMessage({
                 id: 'server_list.push_proxy_error',
                 defaultMessage: 'Notifications cannot be received from this server because of its configuration. Contact your system admin.',
             });
         } else {
-            intl.formatMessage({
+            pushAlertText = intl.formatMessage({
                 id: 'server_list.push_proxy_unknown',
                 defaultMessage: 'Notifications could not be received from this server because of its configuration. Log out and Log in again to retry.',
             });
@@ -372,8 +372,6 @@ const ServerItem = ({
                 renderRightActions={renderActions}
                 friction={2}
                 onSwipeableWillOpen={onSwipeableWillOpen}
-
-                // @ts-expect-error legacy ref
                 ref={swipeable}
                 rightThreshold={40}
             >

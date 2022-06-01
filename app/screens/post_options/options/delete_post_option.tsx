@@ -49,7 +49,7 @@ const DeletePostOption = ({combinedPost, post}: Props) => {
             defaultMessage='Delete'
             iconName='trash-can-outline'
             onPress={onPress}
-            testID='post_options.delete.post.option'
+            testID='post_options.delete_post.option'
             isDestructive={true}
         />
     );

@@ -4,18 +4,22 @@
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, Platform, Text, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import NavigationHeader from '@components/navigation_header';
-import {Navigation} from '@constants';
+import RoundedHeaderContext from '@components/rounded_header_context';
+import {Navigation, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {popTopScreen, showModal} from '@screens/navigation';
+import {useDefaultHeaderHeight} from '@hooks/header';
+import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import OtherMentionsBadge from './other_mentions_badge';
+import ChannelQuickAction from './quick_actions';
 
 import type {HeaderRightButton} from '@components/navigation_header/header';
 
@@ -58,10 +62,16 @@ const ChannelHeader = ({
     isCustomStatusExpired, isOwnDirectMessage, memberCount,
     searchTerm, teamId,
 }: ChannelProps) => {
-    const {formatMessage} = useIntl();
+    const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const defaultHeight = useDefaultHeaderHeight();
+    const insets = useSafeAreaInsets();
+
+    const contextStyle = useMemo(() => ({
+        top: defaultHeight + insets.top,
+    }), [defaultHeight, insets.top]);
 
     const leftComponent = useMemo(() => {
         if (isTablet || !channelId || !teamId) {
@@ -70,6 +80,35 @@ const ChannelHeader = ({
 
         return (<OtherMentionsBadge channelId={channelId}/>);
     }, [isTablet, channelId, teamId]);
+
+    const onBackPress = useCallback(() => {
+        Keyboard.dismiss();
+        popTopScreen(componentId);
+    }, []);
+
+    const onTitlePress = useCallback(() => {
+        const title = intl.formatMessage({id: 'screens.channel_info', defaultMessage: 'Channel Info'});
+        showModal(Screens.CHANNEL_INFO, title, {channelId});
+    }, [channelId, intl]);
+
+    const onChannelQuickAction = useCallback(() => {
+        if (isTablet) {
+            onTitlePress();
+            return;
+        }
+
+        const renderContent = () => {
+            return <ChannelQuickAction channelId={channelId}/>;
+        };
+
+        bottomSheet({
+            title: '',
+            renderContent,
+            snapPoints: ['32%', 10],
+            theme,
+            closeButtonId: 'close-channel-quick-actions',
+        });
+    }, [channelId, isTablet, onTitlePress, theme]);
 
     const rightButtons: HeaderRightButton[] = useMemo(() => ([{
         iconName: 'magnify',
@@ -81,31 +120,20 @@ const ChannelHeader = ({
         },
     }, {
         iconName: Platform.select({android: 'dots-vertical', default: 'dots-horizontal'}),
-        onPress: () => true,
+        onPress: onChannelQuickAction,
         buttonType: 'opacity',
-    }]), [isTablet, searchTerm]);
-
-    const onBackPress = useCallback(() => {
-        Keyboard.dismiss();
-        popTopScreen(componentId);
-    }, []);
-
-    const onTitlePress = useCallback(() => {
-        // eslint-disable-next-line no-console
-        console.log('Title Press go to Channel Info');
-        showModal('ChannelInfo', '', {channelId});
-    }, [channelId]);
+    }]), [isTablet, searchTerm, onChannelQuickAction]);
 
     let title = displayName;
     if (isOwnDirectMessage) {
-        title = formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
+        title = intl.formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
     }
 
     let subtitle;
     if (memberCount) {
-        subtitle = formatMessage({id: 'channel', defaultMessage: '{count, plural, one {# member} other {# members}}'}, {count: memberCount});
+        subtitle = intl.formatMessage({id: 'channel_header.member_count', defaultMessage: '{count, plural, one {# member} other {# members}}'}, {count: memberCount});
     } else if (!customStatus || !customStatus.text || isCustomStatusExpired) {
-        subtitle = formatMessage({id: 'channel.details', defaultMessage: 'View details'});
+        subtitle = intl.formatMessage({id: 'channel_header.info', defaultMessage: 'View info'});
     }
 
     const subtitleCompanion = useMemo(() => {
@@ -144,17 +172,22 @@ const ChannelHeader = ({
     }, [memberCount, customStatus, isCustomStatusExpired]);
 
     return (
-        <NavigationHeader
-            isLargeTitle={false}
-            leftComponent={leftComponent}
-            onBackPress={onBackPress}
-            onTitlePress={onTitlePress}
-            rightButtons={rightButtons}
-            showBackButton={!isTablet}
-            subtitle={subtitle}
-            subtitleCompanion={subtitleCompanion}
-            title={title}
-        />
+        <>
+            <NavigationHeader
+                isLargeTitle={false}
+                leftComponent={leftComponent}
+                onBackPress={onBackPress}
+                onTitlePress={onTitlePress}
+                rightButtons={rightButtons}
+                showBackButton={!isTablet}
+                subtitle={subtitle}
+                subtitleCompanion={subtitleCompanion}
+                title={title}
+            />
+            <View style={contextStyle}>
+                <RoundedHeaderContext/>
+            </View>
+        </>
     );
 };
 

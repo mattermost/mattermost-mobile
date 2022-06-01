@@ -122,6 +122,61 @@ CREATE TABLE [File] (
     )
 )
 
+CREATE TABLE [Group] (
+    -- server-generated
+    [id] string  NOT NULL ,
+    [name] string  NOT NULL ,
+    [display_name] string  NOT NULL ,
+    [description] string  NOT NULL ,
+    [remote_id] string  NOT NULL ,
+    [source] string  NOT NULL ,
+    [created_at] number  NOT NULL ,
+    [updated_at] number  NOT NULL ,
+    [deleted_at] number  NOT NULL ,
+    CONSTRAINT [PK_Group] PRIMARY KEY CLUSTERED (
+        [id] ASC
+    )
+)
+
+CREATE TABLE [GroupChannel] (
+    -- composition ID Group.id-Channel.id
+    [id] string  NOT NULL ,
+    [group_id] string  NOT NULL ,
+    [channel_id] string  NOT NULL ,
+    [created_at] number  NOT NULL ,
+    [updated_at] number  NOT NULL ,
+    [deleted_at] number  NOT NULL ,
+    CONSTRAINT [PK_GroupChannel] PRIMARY KEY CLUSTERED (
+        [id] ASC
+    )
+)
+
+CREATE TABLE [GroupMembership] (
+    -- composition ID Group.id-User.id
+    [id] string  NOT NULL ,
+    [group_id] string  NOT NULL ,
+    [user_id] string  NOT NULL ,
+    [created_at] number  NOT NULL ,
+    [updated_at] number  NOT NULL ,
+    [deleted_at] number  NOT NULL ,
+    CONSTRAINT [PK_GroupMembership] PRIMARY KEY CLUSTERED (
+        [id] ASC
+    )
+)
+
+CREATE TABLE [GroupTeam] (
+    -- composition ID Group.id-Team.id
+    [id] string  NOT NULL ,
+    [group_id] string  NOT NULL ,
+    [team_id] string  NOT NULL ,
+    [created_at] number  NOT NULL ,
+    [updated_at] number  NOT NULL ,
+    [deleted_at] number  NOT NULL ,
+    CONSTRAINT [PK_GroupTeam] PRIMARY KEY CLUSTERED (
+        [id] ASC
+    )
+)
+
 CREATE TABLE [MyChannel] (
     -- same as Channel.id
     [id] string  NOT NULL ,
@@ -413,6 +468,36 @@ REFERENCES [Post] ([id])
 
 ALTER TABLE [File] CHECK CONSTRAINT [FK_File_post_id]
 
+ALTER TABLE [GroupChannel] WITH CHECK ADD CONSTRAINT [FK_GroupChannel_group_id] FOREIGN KEY([group_id])
+REFERENCES [Group] ([id])
+
+ALTER TABLE [GroupChannel] CHECK CONSTRAINT [FK_GroupChannel_group_id]
+
+ALTER TABLE [GroupChannel] WITH CHECK ADD CONSTRAINT [FK_GroupChannel_channel_id] FOREIGN KEY([channel_id])
+REFERENCES [Channel] ([id])
+
+ALTER TABLE [GroupChannel] CHECK CONSTRAINT [FK_GroupChannel_channel_id]
+
+ALTER TABLE [GroupMembership] WITH CHECK ADD CONSTRAINT [FK_GroupMembership_group_id] FOREIGN KEY([group_id])
+REFERENCES [Group] ([id])
+
+ALTER TABLE [GroupMembership] CHECK CONSTRAINT [FK_GroupMembership_group_id]
+
+ALTER TABLE [GroupMembership] WITH CHECK ADD CONSTRAINT [FK_GroupMembership_user_id] FOREIGN KEY([user_id])
+REFERENCES [User] ([id])
+
+ALTER TABLE [GroupMembership] CHECK CONSTRAINT [FK_GroupMembership_user_id]
+
+ALTER TABLE [GroupTeam] WITH CHECK ADD CONSTRAINT [FK_GroupTeam_group_id] FOREIGN KEY([group_id])
+REFERENCES [Group] ([id])
+
+ALTER TABLE [GroupTeam] CHECK CONSTRAINT [FK_GroupTeam_group_id]
+
+ALTER TABLE [GroupTeam] WITH CHECK ADD CONSTRAINT [FK_GroupTeam_team_id] FOREIGN KEY([team_id])
+REFERENCES [Team] ([id])
+
+ALTER TABLE [GroupTeam] CHECK CONSTRAINT [FK_GroupTeam_team_id]
+
 ALTER TABLE [MyChannel] WITH CHECK ADD CONSTRAINT [FK_MyChannel_id] FOREIGN KEY([id])
 REFERENCES [Channel] ([id])
 
@@ -493,11 +578,6 @@ REFERENCES [Team] ([id])
 
 ALTER TABLE [ThreadsInTeam] CHECK CONSTRAINT [FK_ThreadsInTeam_team_id]
 
-ALTER TABLE [ThreadsInTeam] WITH CHECK ADD CONSTRAINT [FK_ThreadsInTeam_thread_id] FOREIGN KEY([thread_id])
-REFERENCES [Thread] ([id])
-
-ALTER TABLE [ThreadsInTeam] CHECK CONSTRAINT [FK_ThreadsInTeam_thread_id]
-
 ALTER TABLE [ThreadParticipant] WITH CHECK ADD CONSTRAINT [FK_ThreadParticipant_thread_id] FOREIGN KEY([thread_id])
 REFERENCES [Thread] ([id])
 
@@ -540,6 +620,30 @@ ON [Draft] ([root_id])
 
 CREATE INDEX [idx_File_post_id]
 ON [File] ([post_id])
+
+CREATE INDEX [idx_Group_name]
+ON [Group] ([name])
+
+CREATE INDEX [idx_Group_remote_id]
+ON [Group] ([remote_id])
+
+CREATE INDEX [idx_GroupChannel_group_id]
+ON [GroupChannel] ([group_id])
+
+CREATE INDEX [idx_GroupChannel_channel_id]
+ON [GroupChannel] ([channel_id])
+
+CREATE INDEX [idx_GroupMembership_group_id]
+ON [GroupMembership] ([group_id])
+
+CREATE INDEX [idx_GroupMembership_user_id]
+ON [GroupMembership] ([user_id])
+
+CREATE INDEX [idx_GroupTeam_group_id]
+ON [GroupTeam] ([group_id])
+
+CREATE INDEX [idx_GroupTeam_team_id]
+ON [GroupTeam] ([team_id])
 
 CREATE INDEX [idx_Post_channel_id]
 ON [Post] ([channel_id])

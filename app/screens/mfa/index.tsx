@@ -97,7 +97,7 @@ const MFA = ({config, goToHome, license, loginId, password, serverDisplayName, s
     const dimensions = useWindowDimensions();
     const translateX = useSharedValue(dimensions.width);
     const isTablet = useIsTablet();
-    const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
+    const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const intl = useIntl();
     const [token, setToken] = useState<string>('');
     const [error, setError] = useState<string>('');
@@ -197,8 +197,6 @@ const MFA = ({config, goToHome, license, loginId, password, serverDisplayName, s
                     extraScrollHeight={0}
                     keyboardDismissMode='on-drag'
                     keyboardShouldPersistTaps='handled'
-
-                    // @ts-expect-error legacy ref
                     ref={keyboardAwareRef}
                     scrollToOverflowEnabled={true}
                     style={styles.flex}

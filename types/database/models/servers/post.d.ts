@@ -92,4 +92,6 @@ export default class PostModel extends Model {
 
     /** hasReplies: Async function to determine if the post is part of a thread */
     hasReplies: () => Promise<boolean>;
+
+    toApi: () => Promise<Post>;
 }

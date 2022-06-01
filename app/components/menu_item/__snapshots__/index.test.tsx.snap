@@ -30,8 +30,7 @@ exports[`DrawerItem should match snapshot 1`] = `
     <View
       style={
         Object {
-          "flexDirection": "row",
-          "minHeight": 50,
+          "flexDirection": "column",
         }
       }
     >
@@ -39,45 +38,48 @@ exports[`DrawerItem should match snapshot 1`] = `
         style={
           Array [
             Object {
-              "alignItems": "center",
-              "height": 50,
-              "justifyContent": "center",
-              "marginLeft": 5,
-              "width": 45,
+              "flexDirection": "row",
+              "minHeight": 50,
             },
             undefined,
           ]
         }
       >
-        <Icon
-          name="icon-name"
+        <View
           style={
             Array [
               Object {
-                "color": "rgba(63,67,80,0.64)",
-                "fontSize": 24,
+                "alignItems": "center",
+                "height": 50,
+                "justifyContent": "center",
+                "marginLeft": 5,
+                "width": 45,
               },
-              Object {
-                "color": "#d24b4e",
-              },
+              undefined,
             ]
           }
-        />
-      </View>
-      <View
-        style={
-          Object {
-            "flex": 1,
-          }
-        }
-      >
+        >
+          <Icon
+            name="icon-name"
+            style={
+              Array [
+                Object {
+                  "color": "rgba(63,67,80,0.64)",
+                  "fontSize": 24,
+                },
+                Object {
+                  "color": "#d24b4e",
+                },
+              ]
+            }
+          />
+        </View>
         <View
           style={
             Object {
               "flex": 1,
               "justifyContent": "center",
-              "paddingBottom": 14,
-              "paddingTop": 14,
+              "paddingVertical": 14,
             }
           }
         >
@@ -90,6 +92,7 @@ exports[`DrawerItem should match snapshot 1`] = `
                   "includeFontPadding": false,
                   "textAlignVertical": "center",
                 },
+                undefined,
                 Object {
                   "color": "#d24b4e",
                 },
@@ -97,21 +100,22 @@ exports[`DrawerItem should match snapshot 1`] = `
                   "textAlign": "center",
                   "textAlignVertical": "center",
                 },
+                false,
               ]
             }
           >
             default message
           </Text>
         </View>
-        <View
-          style={
-            Object {
-              "backgroundColor": "rgba(63,67,80,0.2)",
-              "height": 1,
-            }
-          }
-        />
       </View>
+      <View
+        style={
+          Object {
+            "backgroundColor": "rgba(63,67,80,0.2)",
+            "height": 1,
+          }
+        }
+      />
     </View>
   </View>
 </View>
@@ -147,8 +151,7 @@ exports[`DrawerItem should match snapshot without separator and centered false 1
     <View
       style={
         Object {
-          "flexDirection": "row",
-          "minHeight": 50,
+          "flexDirection": "column",
         }
       }
     >
@@ -156,45 +159,48 @@ exports[`DrawerItem should match snapshot without separator and centered false 1
         style={
           Array [
             Object {
-              "alignItems": "center",
-              "height": 50,
-              "justifyContent": "center",
-              "marginLeft": 5,
-              "width": 45,
+              "flexDirection": "row",
+              "minHeight": 50,
             },
             undefined,
           ]
         }
       >
-        <Icon
-          name="icon-name"
+        <View
           style={
             Array [
               Object {
-                "color": "rgba(63,67,80,0.64)",
-                "fontSize": 24,
+                "alignItems": "center",
+                "height": 50,
+                "justifyContent": "center",
+                "marginLeft": 5,
+                "width": 45,
               },
-              Object {
-                "color": "#d24b4e",
-              },
+              undefined,
             ]
           }
-        />
-      </View>
-      <View
-        style={
-          Object {
-            "flex": 1,
-          }
-        }
-      >
+        >
+          <Icon
+            name="icon-name"
+            style={
+              Array [
+                Object {
+                  "color": "rgba(63,67,80,0.64)",
+                  "fontSize": 24,
+                },
+                Object {
+                  "color": "#d24b4e",
+                },
+              ]
+            }
+          />
+        </View>
         <View
           style={
             Object {
               "flex": 1,
               "justifyContent": "center",
-              "paddingBottom": 14,
-              "paddingTop": 14,
+              "paddingVertical": 14,
             }
           }
         >
@@ -207,10 +213,12 @@ exports[`DrawerItem should match snapshot without separator and centered false 1
                   "includeFontPadding": false,
                   "textAlignVertical": "center",
                 },
+                undefined,
                 Object {
                   "color": "#d24b4e",
                 },
                 Object {},
+                false,
               ]
             }
           >

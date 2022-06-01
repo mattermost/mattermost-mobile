@@ -1,16 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database} from '@nozbe/watermelondb';
+import {Database, Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
-import {map, switchMap, concatAll, combineLatestWith} from 'rxjs/operators';
+import {map, switchMap, combineLatestWith} from 'rxjs/operators';
 
 import {General, Preferences} from '@constants';
 import {DMS_CATEGORY} from '@constants/categories';
 import {getPreferenceAsBool} from '@helpers/api/preference';
-import {observeAllMyChannelNotifyProps, queryChannelsByNames, queryMyChannelSettingsByIds} from '@queries/servers/channel';
+import {observeChannelsByCategoryChannelSortOrder, observeChannelsByLastPostAtInCategory} from '@queries/servers/categories';
+import {observeNotifyPropsByChannels, queryChannelsByNames} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCurrentChannelId, observeCurrentUserId, observeLastUnreadChannelId} from '@queries/servers/system';
 import {WithDatabaseArgs} from '@typings/database/database';
@@ -19,15 +20,19 @@ import {getDirectChannelName} from '@utils/channel';
 import CategoryBody from './category_body';
 
 import type CategoryModel from '@typings/database/models/servers/category';
-import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
-import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
 type ChannelData = Pick<ChannelModel, 'id' | 'displayName'> & {
     isMuted: boolean;
 };
+
+type EnhanceProps = {
+    category: CategoryModel;
+    locale: string;
+    currentUserId: string;
+    isTablet: boolean;
+} & WithDatabaseArgs
 
 const sortAlpha = (locale: string, a: ChannelData, b: ChannelData) => {
     if (a.isMuted && !b.isMuted) {
@@ -43,23 +48,18 @@ const filterArchived = (channels: Array<ChannelModel | null>, currentChannelId: 
     return channels.filter((c): c is ChannelModel => c != null && ((c.deleteAt > 0 && c.id === currentChannelId) || !c.deleteAt));
 };
 
-const buildAlphaData = (channels: ChannelModel[], settings: MyChannelSettingsModel[], locale: string) => {
-    const settingsById = settings.reduce((result: Record<string, MyChannelSettingsModel>, s) => {
-        result[s.id] = s;
-        return result;
-    }, {});
-
+const buildAlphaData = (channels: ChannelModel[], notifyProps: Record<string, Partial<ChannelNotifyProps>>, locale: string) => {
     const chanelsById = channels.reduce((result: Record<string, ChannelModel>, c) => {
         result[c.id] = c;
         return result;
     }, {});
 
     const combined = channels.map((c) => {
-        const s = settingsById[c.id];
+        const s = notifyProps[c.id];
         return {
             id: c.id,
             displayName: c.displayName,
-            isMuted: s?.notifyProps?.mark_unread === General.MENTION,
+            isMuted: s?.mark_unread === General.MENTION,
         };
     });
 
@@ -67,37 +67,20 @@ const buildAlphaData = (channels: ChannelModel[], settings: MyChannelSettingsMod
     return of$(combined.map((cdata) => chanelsById[cdata.id]));
 };
 
-const observeSettings = (database: Database, channels: ChannelModel[]) => {
-    const ids = channels.map((c) => c.id);
-    return queryMyChannelSettingsByIds(database, ids).observeWithColumns(['notify_props']);
-};
-
-export const getChannelsFromRelation = async (relations: CategoryChannelModel[] | MyChannelModel[]) => {
-    return Promise.all(relations.map((r) => r.channel?.fetch()));
-};
-
-const getSortedChannels = (database: Database, category: CategoryModel, locale: string) => {
+const observeSortedChannels = (database: Database, category: CategoryModel, excludeIds: string[], locale: string) => {
     switch (category.sorting) {
         case 'alpha': {
-            const channels = category.channels.observeWithColumns(['display_name']);
-            const settings = channels.pipe(
-                switchMap((cs) => observeSettings(database, cs)),
-            );
-            return combineLatest([channels, settings]).pipe(
-                switchMap(([cs, st]) => buildAlphaData(cs, st, locale)),
+            const channels = category.channels.extend(Q.where('id', Q.notIn(excludeIds))).observeWithColumns(['display_name']);
+            const notifyProps = channels.pipe(switchMap((cs) => observeNotifyPropsByChannels(database, cs)));
+            return combineLatest([channels, notifyProps]).pipe(
+                switchMap(([cs, np]) => buildAlphaData(cs, np, locale)),
             );
         }
         case 'manual': {
-            return category.categoryChannelsBySortOrder.observeWithColumns(['sort_order']).pipe(
-                map(getChannelsFromRelation),
-                concatAll(),
-            );
+            return observeChannelsByCategoryChannelSortOrder(database, category, excludeIds);
         }
         default:
-            return category.myChannels.observeWithColumns(['last_post_at']).pipe(
-                map(getChannelsFromRelation),
-                concatAll(),
-            );
+            return observeChannelsByLastPostAtInCategory(database, category, excludeIds);
     }
 };
 
@@ -105,25 +88,13 @@ const mapPrefName = (prefs: PreferenceModel[]) => of$(prefs.map((p) => p.name));
 
 const mapChannelIds = (channels: ChannelModel[]) => of$(channels.map((c) => c.id));
 
-type EnhanceProps = {
-    category: CategoryModel;
-    locale: string;
-    currentUserId: string;
-    isTablet: boolean;
-} & WithDatabaseArgs
-
 const withUserId = withObservables([], ({database}: WithDatabaseArgs) => ({currentUserId: observeCurrentUserId(database)}));
 
 const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, locale, isTablet, database, currentUserId}: EnhanceProps) => {
+    const dmMap = (p: PreferenceModel) => getDirectChannelName(p.name, currentUserId);
+
     const observedCategory = category.observe();
     const currentChannelId = observeCurrentChannelId(database);
-    const sortedChannels = observedCategory.pipe(
-        switchMap((c) => getSortedChannels(database, c, locale)),
-        combineLatestWith(currentChannelId),
-        map(([cs, ccId]) => filterArchived(cs, ccId)),
-    );
-
-    const dmMap = (p: PreferenceModel) => getDirectChannelName(p.name, currentUserId);
 
     const hiddenDmIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, undefined, 'false').
         observeWithColumns(['value']).pipe(
@@ -137,8 +108,19 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
             }),
         );
 
-    const hiddenGmIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_GROUP_CHANNEL_SHOW, undefined, 'false').
-        observeWithColumns(['value']).pipe(switchMap(mapPrefName));
+    const hiddenChannelIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_GROUP_CHANNEL_SHOW, undefined, 'false').
+        observeWithColumns(['value']).pipe(
+            switchMap(mapPrefName),
+            combineLatestWith(hiddenDmIds),
+            switchMap(([a, b]) => of$(new Set(a.concat(b)))),
+        );
+
+    const sortedChannels = observedCategory.pipe(
+        combineLatestWith(hiddenChannelIds),
+        switchMap(([c, excludeIds]) => observeSortedChannels(database, c, Array.from(excludeIds), locale)),
+        combineLatestWith(currentChannelId),
+        map(([channels, ccId]) => filterArchived(channels, ccId)),
+    );
 
     let limit = of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
     if (category.type === DMS_CATEGORY) {
@@ -150,19 +132,15 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
             );
     }
 
-    const hiddenChannelIds = combineLatest([hiddenDmIds, hiddenGmIds]).pipe(switchMap(
-        ([a, b]) => of$(new Set(a.concat(b))),
-    ));
-
     const unreadsOnTop = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
         observeWithColumns(['value']).
         pipe(
             switchMap((prefs: PreferenceModel[]) => of$(getPreferenceAsBool(prefs, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS, false))),
         );
 
-    const notifyProps = observeAllMyChannelNotifyProps(database);
     const lastUnreadId = isTablet ? observeLastUnreadChannelId(database) : of$(undefined);
     const unreadChannels = category.myChannels.observeWithColumns(['mentions_count', 'is_unread']);
+    const notifyProps = unreadChannels.pipe(switchMap((myChannels) => observeNotifyPropsByChannels(database, myChannels)));
     const filterUnreads = unreadChannels.pipe(
         combineLatestWith(notifyProps, lastUnreadId),
         map(([my, settings, lastUnread]) => {
@@ -185,7 +163,6 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
 
     return {
         limit,
-        hiddenChannelIds,
         sortedChannels: filtered,
         category: observedCategory,
         unreadChannels: sortedChannels.pipe(

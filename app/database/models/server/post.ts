@@ -155,4 +155,25 @@ export default class PostModel extends Model implements PostModelInterface {
 
         return false;
     }
+
+    toApi = async (): Promise<Post> => ({
+        id: this.id,
+        create_at: this.createAt,
+        update_at: this.updateAt,
+        edit_at: this.editAt,
+        delete_at: this.deleteAt,
+        is_pinned: this.isPinned,
+        user_id: this.userId,
+        channel_id: this.channelId,
+        root_id: this.rootId,
+        original_id: this.originalId,
+        message: this.message,
+        type: this.type,
+        props: this.props,
+        pending_post_id: this.pendingPostId,
+        file_ids: (await this.files.fetchIds()),
+        metadata: (this.metadata ? this.metadata : {}) as PostMetadata,
+        hashtags: '',
+        reply_count: 0,
+    });
 }

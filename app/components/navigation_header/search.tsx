@@ -1,34 +1,36 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
-import {FlatList, Platform, ScrollView, SectionList} from 'react-native';
+import React, {useCallback, useEffect, useMemo} from 'react';
+import {DeviceEventEmitter, Keyboard, Platform} from 'react-native';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 
 import Search, {SearchProps} from '@components/search';
-import {ANDROID_HEADER_SEARCH_INSET, IOS_HEADER_SEARCH_INSET, SEARCH_INPUT_HEIGHT, TABLET_HEADER_SEARCH_INSET} from '@constants/view';
-import {useIsTablet} from '@hooks/device';
+import {Events} from '@constants';
+import {HEADER_SEARCH_HEIGHT} from '@constants/view';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = SearchProps & {
     defaultHeight: number;
-    forwardedRef?: React.RefObject<ScrollView | FlatList | SectionList>;
     largeHeight: number;
     scrollValue?: Animated.SharedValue<number>;
+    hideHeader?: () => void;
     theme: Theme;
     top: number;
 }
 
+const INITIAL_TOP = -45;
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         backgroundColor: theme.sidebarBg,
-        height: SEARCH_INPUT_HEIGHT + 5,
-        justifyContent: 'flex-start',
+        height: HEADER_SEARCH_HEIGHT,
+        justifyContent: 'center',
         paddingHorizontal: 20,
-        position: 'absolute',
         width: '100%',
         zIndex: 10,
+        top: INITIAL_TOP,
     },
     inputContainerStyle: {
         backgroundColor: changeOpacity(theme.sidebarText, 0.12),
@@ -40,14 +42,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const NavigationSearch = ({
     defaultHeight,
-    forwardedRef,
     largeHeight,
     scrollValue,
+    hideHeader,
     theme,
-    top,
     ...searchProps
 }: Props) => {
-    const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
 
     const cancelButtonProps: SearchProps['cancelButtonProps'] = useMemo(() => ({
@@ -59,26 +59,34 @@ const NavigationSearch = ({
     }), [theme]);
 
     const searchTop = useAnimatedStyle(() => {
-        return {marginTop: Math.max((-(scrollValue?.value || 0) + largeHeight), top)};
-    }, [defaultHeight, largeHeight, top]);
+        const value = scrollValue?.value || 0;
+        const min = (largeHeight - defaultHeight);
+        return {marginTop: Math.min(-Math.min((value), min), min)};
+    }, [largeHeight, defaultHeight]);
 
     const onFocus = useCallback((e) => {
-        const searchInset = isTablet ? TABLET_HEADER_SEARCH_INSET : IOS_HEADER_SEARCH_INSET;
-        const offset = Platform.select({android: largeHeight + ANDROID_HEADER_SEARCH_INSET, default: defaultHeight + searchInset});
-        if (forwardedRef?.current && Math.abs((scrollValue?.value || 0)) <= top) {
-            if ('scrollTo' in forwardedRef.current) {
-                forwardedRef.current.scrollTo({y: offset, animated: true});
-            } else if ('scrollToOffset' in forwardedRef.current) {
-                forwardedRef.current.scrollToOffset({
-                    offset,
-                    animated: true,
-                });
-            } else {
-                // No scroll for section lists?
-            }
-        }
+        hideHeader?.();
         searchProps.onFocus?.(e);
-    }, [largeHeight, top]);
+    }, [hideHeader, searchProps.onFocus]);
+
+    useEffect(() => {
+        const show = Keyboard.addListener('keyboardDidShow', () => {
+            if (Platform.OS === 'android') {
+                DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, false);
+            }
+        });
+
+        const hide = Keyboard.addListener('keyboardDidHide', () => {
+            if (Platform.OS === 'android') {
+                DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
+            }
+        });
+
+        return () => {
+            hide.remove();
+            show.remove();
+        };
+    }, []);
 
     return (
         <Animated.View style={[styles.container, searchTop]}>

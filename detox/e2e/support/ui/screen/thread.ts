@@ -19,11 +19,15 @@ class ThreadScreen {
         threadScreenPrefix: 'thread.',
         threadScreen: 'thread.screen',
         backButton: 'screen.back.button',
+        followButton: 'thread.follow_thread.button',
+        followingButton: 'thread.following_thread.button',
         flatPostList: 'thread.post_list.flat_list',
     };
 
     threadScreen = element(by.id(this.testID.threadScreen));
     backButton = element(by.id(this.testID.backButton));
+    followButton = element(by.id(this.testID.followButton));
+    followingButton = element(by.id(this.testID.followingButton));
     flatPostList = element(by.id(this.testID.flatPostList));
 
     // convenience props
@@ -45,6 +49,30 @@ class ThreadScreen {
     sendButtonDisabled = SendButton.getSendButtonDisabled(this.testID.threadScreenPrefix);
 
     postList = new PostList(this.testID.threadScreenPrefix);
+
+    getThreadOverview = () => {
+        return this.postList.getThreadOverview();
+    };
+
+    getThreadOverviewRepliesCount = () => {
+        return this.postList.getThreadOverviewRepliesCount();
+    };
+
+    getThreadOverviewNoReplies = () => {
+        return this.postList.getThreadOverviewNoReplies();
+    };
+
+    getThreadOverviewSaveButton = () => {
+        return this.postList.getThreadOverviewSaveButton();
+    };
+
+    getThreadOverviewUnsaveButton = () => {
+        return this.postList.getThreadOverviewUnsaveButton();
+    };
+
+    getThreadOverviewPostOptionsButton = () => {
+        return this.postList.getThreadOverviewPostOptionsButton();
+    };
 
     getPostListPostItem = (postId: string, text: string, postProfileOptions: any = {}) => {
         return this.postList.getPost(postId, text, postProfileOptions);

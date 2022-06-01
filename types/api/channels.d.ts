@@ -5,9 +5,9 @@ type ChannelStats = {
     channel_id: string;
     guest_count: number;
     member_count: number;
-    guest_count: number;
     pinnedpost_count: number;
 };
+
 type ChannelNotifyProps = {
     desktop: 'default' | 'all' | 'mention' | 'none';
     email: 'default' | 'all' | 'mention' | 'none';
@@ -27,6 +27,7 @@ type Channel = {
     header: string;
     purpose: string;
     last_post_at: number;
+    last_root_post_at?: number;
     total_msg_count: number;
     total_msg_count_root?: number;
     extra_update_at: number;

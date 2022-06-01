@@ -12,7 +12,7 @@ import Permissions from 'react-native-permissions';
 import {dismissBottomSheet} from '@screens/navigation';
 import {extractFileInfo, lookupMimeType} from '@utils/file';
 
-const ShareExtension = NativeModules.MattermostShare;
+const MattermostManaged = NativeModules.MattermostManaged;
 
 type PermissionSource = 'camera' | 'storage' | 'denied_android' | 'denied_ios' | 'photo';
 
@@ -126,7 +126,7 @@ export default class FilePickerUtil {
                 files.push(file);
             } else {
                 // For android we need to retrieve the realPath in case the file being imported is from the cloud
-                const uri = (await ShareExtension.getFilePath(file.uri)).filePath;
+                const uri = (await MattermostManaged.getFilePath(file.uri)).filePath;
                 const type = file.type || lookupMimeType(uri);
                 let fileName = file.fileName;
                 if (type.includes('video/')) {
@@ -224,7 +224,7 @@ export default class FilePickerUtil {
 
         if (Platform.OS === 'android') {
             // For android we need to retrieve the realPath in case the file being imported is from the cloud
-            const newUri = await ShareExtension.getFilePath(doc.uri);
+            const newUri = await MattermostManaged.getFilePath(doc.uri);
             uri = newUri?.filePath;
             if (uri === undefined) {
                 return {doc: undefined};

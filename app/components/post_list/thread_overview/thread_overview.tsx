@@ -36,7 +36,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderColor: changeOpacity(theme.centerChannelColor, 0.1),
             flexDirection: 'row',
             marginVertical: 12,
-            paddingHorizontal: 20,
+            paddingHorizontal: 16,
             paddingVertical: 10,
         },
         repliesCountContainer: {
@@ -96,6 +96,8 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, style, testID}: Props)
         return container;
     }, [repliesCount, style]);
 
+    const saveButtonTestId = isSaved ? `${testID}.unsave.button` : `${testID}.save.button`;
+
     return (
         <View
             style={containerStyle}
@@ -108,6 +110,7 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, style, testID}: Props)
                             style={styles.repliesCount}
                             id='thread.repliesCount'
                             defaultMessage='{repliesCount, number} {repliesCount, plural, one {reply} other {replies}}'
+                            testID={`${testID}.replies_count`}
                             values={{repliesCount}}
                         />
                     ) : (
@@ -115,6 +118,7 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, style, testID}: Props)
                             style={styles.repliesCount}
                             id='thread.noReplies'
                             defaultMessage='No replies yet'
+                            testID={`${testID}.no_replies`}
                         />
                     )
                 }
@@ -123,7 +127,7 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, style, testID}: Props)
                 <TouchableOpacity
                     onPress={onHandleSavePress}
                     style={styles.optionContainer}
-                    testID={`${testID}.save`}
+                    testID={saveButtonTestId}
                 >
                     <CompassIcon
                         size={24}
@@ -134,7 +138,7 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, style, testID}: Props)
                 <TouchableOpacity
                     onPress={showPostOptions}
                     style={styles.optionContainer}
-                    testID={`${testID}.options`}
+                    testID={`${testID}.post_options.button`}
                 >
                     <CompassIcon
                         size={24}

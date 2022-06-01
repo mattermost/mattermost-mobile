@@ -11,33 +11,35 @@ class PostOptionsScreen {
         postOptionsScreen: 'post_options.screen',
         postOptionsBackdrop: 'post_options.backdrop',
         pickReaction: 'post_options.reaction_bar.pick_reaction',
-        replyPostOption: 'post_options.reply.post.option',
-        copyLinkOption: 'post_options.copy.permalink.option',
-        saveChannelOption: 'post_options.save.channel.option',
-        unsaveChannelOption: 'post_options.unsave.channel.option',
-        copyTextOption: 'post_options.copy.text.option',
-        pinChannelOption: 'post_options.pin.channel.option',
-        unpinChannelOption: 'post_options.unpin.channel.option',
-        editPostOption: 'post_options.edit.post.option',
-        deletePostOption: 'post_options.delete.post.option',
-        followThreadOption: 'post_options.follow.thread.option',
-        markUnreadOption: 'post_options.mark.unread.option',
+        replyPostOption: 'post_options.reply_post.option',
+        followThreadOption: 'post_options.follow_thread.option',
+        followingThreadOption: 'post_options.following_thread.option',
+        markAsUnreadOption: 'post_options.mark_as_unread.option',
+        copyLinkOption: 'post_options.copy_permalink.option',
+        savePostOption: 'post_options.save_post.option',
+        unsavePostOption: 'post_options.unsave_post.option',
+        copyTextOption: 'post_options.copy_text.option',
+        pinPostOption: 'post_options.pin_post.option',
+        unpinPostOption: 'post_options.unpin_post.option',
+        editPostOption: 'post_options.edit_post.option',
+        deletePostOption: 'post_options.delete_post.option',
     };
 
     postOptionsScreen = element(by.id(this.testID.postOptionsScreen));
     postOptionsBackdrop = element(by.id(this.testID.postOptionsBackdrop));
     pickReaction = element(by.id(this.testID.pickReaction));
     replyPostOption = element(by.id(this.testID.replyPostOption));
+    followThreadOption = element(by.id(this.testID.followThreadOption));
+    followingThreadOption = element(by.id(this.testID.followingThreadOption));
+    markAsUnreadOption = element(by.id(this.testID.markAsUnreadOption));
     copyLinkOption = element(by.id(this.testID.copyLinkOption));
-    saveChannelOption = element(by.id(this.testID.saveChannelOption));
-    unsaveChannelOption = element(by.id(this.testID.unsaveChannelOption));
+    savePostOption = element(by.id(this.testID.savePostOption));
+    unsavePostOption = element(by.id(this.testID.unsavePostOption));
     copyTextOption = element(by.id(this.testID.copyTextOption));
-    pinChannelOption = element(by.id(this.testID.pinChannelOption));
-    unpinChannelOption = element(by.id(this.testID.unpinChannelOption));
+    pinPostOption = element(by.id(this.testID.pinPostOption));
+    unpinPostOption = element(by.id(this.testID.unpinPostOption));
     editPostOption = element(by.id(this.testID.editPostOption));
     deletePostOption = element(by.id(this.testID.deletePostOption));
-    followThreadOption = element(by.id(this.testID.followThreadOption));
-    markUnreadOption = element(by.id(this.testID.markUnreadOption));
 
     getReactionEmoji = (emojiName: string) => {
         return element(by.id(`${this.testID.reactionEmojiPrefix}${emojiName}`));

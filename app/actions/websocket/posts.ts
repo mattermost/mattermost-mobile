@@ -74,9 +74,14 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     // Ensure the channel membership
     let myChannel = await getMyChannel(database, post.channel_id);
     if (myChannel) {
-        const {member} = await updateLastPostAt(serverUrl, post.channel_id, post.create_at, false);
-        if (member) {
-            myChannel = member;
+        const isCrtReply = isCRTEnabled && post.root_id !== '';
+
+        // Don't change lastPostAt if the post is thread post
+        if (!isCrtReply) {
+            const {member} = await updateLastPostAt(serverUrl, post.channel_id, post.create_at, false);
+            if (member) {
+                myChannel = member;
+            }
         }
     } else {
         const myChannelRequest = await fetchMyChannel(serverUrl, '', post.channel_id, true);
