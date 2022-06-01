@@ -9,6 +9,7 @@ import {getCurrentChannelId} from '@mm-redux/selectors/entities/common';
 import {getServerVersion} from '@mm-redux/selectors/entities/general';
 import {GlobalState} from '@mm-redux/types/store';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {Call} from '@mmproducts/calls/store/types/calls';
 
 export function getConfig(state: GlobalState) {
     return state.entities.calls.config;
@@ -67,6 +68,12 @@ export function isSupportedServer(state: GlobalState) {
 export function isCallsPluginEnabled(state: GlobalState) {
     return state.entities.calls.pluginEnabled;
 }
+
+export const getCallInCurrentChannel: (state: GlobalState) => Call | undefined = createSelector(
+    getCurrentChannelId,
+    getCalls,
+    (currentChannelId, calls) => calls[currentChannelId],
+);
 
 export const getNumCurrentConnectedParticipants: (state: GlobalState) => number = createSelector(
     getCurrentChannelId,
