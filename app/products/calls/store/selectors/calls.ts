@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {createSelector} from 'reselect';
+
 import {Client4} from '@client/rest';
 import Calls from '@constants/calls';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/common';
@@ -65,3 +67,15 @@ export function isSupportedServer(state: GlobalState) {
 export function isCallsPluginEnabled(state: GlobalState) {
     return state.entities.calls.pluginEnabled;
 }
+
+export const getNumCurrentConnectedParticipants: (state: GlobalState) => number = createSelector(
+    getCurrentChannelId,
+    getCalls,
+    (currentChannelId, calls) => {
+        const participants = calls[currentChannelId]?.participants;
+        if (!participants) {
+            return 0;
+        }
+        return Object.keys(participants).length || 0;
+    },
+);

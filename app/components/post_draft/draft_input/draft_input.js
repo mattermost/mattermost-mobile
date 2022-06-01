@@ -63,6 +63,7 @@ export default class DraftInput extends PureComponent {
         channelMemberCountsByGroup: PropTypes.object,
         groupsWithAllowReference: PropTypes.object,
         addRecentUsedEmojisInMessage: PropTypes.func.isRequired,
+        endCallAlert: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
@@ -295,6 +296,12 @@ export default class DraftInput extends PureComponent {
     sendCommand = async (msg) => {
         const {intl} = this.context;
         const {channelId, executeCommand, rootId, userIsOutOfOffice, theme} = this.props;
+
+        if (msg.trim() === '/call end') {
+            this.props.endCallAlert(channelId);
+
+            // NOTE: fallthrough because the server may want to handle the command as well
+        }
 
         const status = DraftUtils.getStatusFromSlashCommand(msg);
         if (userIsOutOfOffice && DraftUtils.isStatusSlashCommand(status)) {

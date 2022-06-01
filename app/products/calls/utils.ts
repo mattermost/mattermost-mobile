@@ -48,3 +48,14 @@ const sortByState = (presenterID?: string) => {
         return 0;
     };
 };
+
+export function getUserIdFromDM(dmName: string, currentUserId: string) {
+    const ids = dmName.split('__');
+    let otherUserId = '';
+    if (ids[0] === currentUserId) {
+        otherUserId = ids[1];
+    } else {
+        otherUserId = ids[0];
+    }
+    return otherUserId;
+}

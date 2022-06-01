@@ -323,6 +323,16 @@ const CallScreen = (props: Props) => {
         setShowControlsInLandscape(!showControlsInLandscape);
     }, [showControlsInLandscape]);
 
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_CALL_END, ({channelId}) => {
+            if (channelId === props.call?.channelId) {
+                popTopScreen();
+            }
+        });
+
+        return () => listener.remove();
+    }, []);
+
     if (!props.call) {
         return null;
     }
