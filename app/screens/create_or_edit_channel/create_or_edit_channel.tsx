@@ -12,7 +12,7 @@ import {General} from '@constants';
 import {MIN_CHANNEL_NAME_LENGTH} from '@constants/channel';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
+import {buildNavigationButton, dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {validateDisplayName} from '@utils/channel';
 
 import ChannelInfoForm from './channel_info_form';
@@ -48,9 +48,13 @@ interface RequestAction {
     error?: string;
 }
 
-const close = (componentId: string): void => {
+const close = (componentId: string, isModal: boolean): void => {
     Keyboard.dismiss();
-    dismissModal({componentId});
+    if (isModal) {
+        dismissModal({componentId});
+    } else {
+        popTopScreen(componentId);
+    }
 };
 
 const isDirect = (channel?: ChannelModel): boolean => {
@@ -181,9 +185,9 @@ const CreateOrEditChannel = ({
         }
 
         dispatch({type: RequestActions.COMPLETE});
-        close(componentId);
+        close(componentId, isModal);
         switchToChannelById(serverUrl, createdChannel.channel!.id, createdChannel.channel!.team_id);
-    }, [serverUrl, type, displayName, header, purpose, isValidDisplayName]);
+    }, [serverUrl, type, displayName, header, isModal, purpose, isValidDisplayName]);
 
     const onUpdateChannel = useCallback(async () => {
         if (!channel) {
@@ -198,7 +202,7 @@ const CreateOrEditChannel = ({
         const patchChannel = {
             id: channel.id,
             type: channel.type,
-            display_name: isDirect(channel) ? '' : displayName,
+            display_name: isDirect(channel) ? channel.displayName : displayName,
             purpose,
             header,
         } as Channel;
@@ -213,15 +217,15 @@ const CreateOrEditChannel = ({
             return;
         }
         dispatch({type: RequestActions.COMPLETE});
-        close(componentId);
-    }, [channel?.id, channel?.type, displayName, header, purpose, isValidDisplayName]);
+        close(componentId, isModal);
+    }, [channel?.id, channel?.type, displayName, header, isModal, purpose, isValidDisplayName]);
 
     useEffect(() => {
         const update = Navigation.events().registerComponentListener({
             navigationButtonPressed: ({buttonId}: {buttonId: string}) => {
                 switch (buttonId) {
                     case CLOSE_BUTTON_ID:
-                        close(componentId);
+                        close(componentId, isModal);
                         break;
                     case CREATE_BUTTON_ID:
                         onCreateChannel();
@@ -236,7 +240,7 @@ const CreateOrEditChannel = ({
         return () => {
             update.remove();
         };
-    }, [onCreateChannel, onUpdateChannel]);
+    }, [onCreateChannel, onUpdateChannel, isModal]);
 
     return (
         <ChannelInfoForm

@@ -19,6 +19,7 @@ import Integrations from './integrations';
 import List from './list';
 import Navigation from './navigation';
 import Network from './network';
+import NotificationLevel from './notification_level';
 import Permissions from './permissions';
 import Post from './post';
 import PostDraft from './post_draft';
@@ -52,6 +53,7 @@ export {
     List,
     Navigation,
     Network,
+    NotificationLevel,
     Permissions,
     Post,
     PostDraft,

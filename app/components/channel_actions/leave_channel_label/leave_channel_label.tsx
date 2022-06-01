@@ -14,13 +14,14 @@ import {useIsTablet} from '@hooks/device';
 import {dismissAllModals, dismissBottomSheet, popToRoot} from '@screens/navigation';
 
 type Props = {
+    canLeave: boolean;
     channelId: string;
     displayName?: string;
     type?: string;
     testID?: string;
 }
 
-const LeaveChanelLabel = ({channelId, displayName, type, testID}: Props) => {
+const LeaveChanelLabel = ({canLeave, channelId, displayName, type, testID}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
@@ -134,17 +135,20 @@ const LeaveChanelLabel = ({channelId, displayName, type, testID}: Props) => {
         }
     };
 
-    if (!displayName || !type) {
+    if (!displayName || !type || !canLeave) {
         return null;
     }
 
     let leaveText = '';
+    let icon = 'exit-to-app';
     switch (type) {
         case General.DM_CHANNEL:
             leaveText = intl.formatMessage({id: 'channel_info.close_dm', defaultMessage: 'Close direct message'});
+            icon = 'close';
             break;
         case General.GM_CHANNEL:
             leaveText = intl.formatMessage({id: 'channel_info.close_gm', defaultMessage: 'Close group message'});
+            icon = 'close';
             break;
         default:
             leaveText = intl.formatMessage({id: 'channel_info.leave_channel', defaultMessage: 'Leave channel'});
@@ -154,7 +158,7 @@ const LeaveChanelLabel = ({channelId, displayName, type, testID}: Props) => {
     return (
         <SlideUpPanelItem
             destructive={true}
-            icon='close'
+            icon={icon}
             onPress={onLeave}
             text={leaveText}
             testID={testID}
