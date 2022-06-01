@@ -3,7 +3,12 @@
 
 import {TextStyle, ViewStyle} from 'react-native';
 
-export type UserMentionKey= {
+export type SearchPattern = {
+    pattern: RegExp;
+    term: string;
+};
+
+export type UserMentionKey = {
     key: string;
     caseSensitive?: boolean;
 };

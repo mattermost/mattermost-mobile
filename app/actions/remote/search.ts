@@ -93,7 +93,7 @@ export async function fetchRecentMentions(serverUrl: string): Promise<PostSearch
             }
 
             if (channels?.length && channelMemberships?.length) {
-                const channelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships);
+                const channelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships, isCRTEnabled);
                 if (channelPromises.length) {
                     promises.push(...channelPromises);
                 }

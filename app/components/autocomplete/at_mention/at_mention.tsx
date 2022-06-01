@@ -5,7 +5,7 @@ import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {Platform, SectionList, SectionListData, SectionListRenderItemInfo} from 'react-native';
 
-import {fetchGroupsForAutocomplete, fetchGroupsForChannel, fetchGroupsForTeam} from '@actions/remote/groups';
+import {fetchFilteredChannelGroups, fetchFilteredTeamGroups, fetchGroupsForAutocomplete} from '@actions/remote/groups';
 import {searchUsers} from '@actions/remote/user';
 import GroupMentionItem from '@components/autocomplete/at_mention_group/at_mention_group';
 import AtMentionItem from '@components/autocomplete/at_mention_item';
@@ -170,26 +170,6 @@ const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersInChanne
         }
     }
     return newSections;
-};
-
-const getFilteredTeamGroups = async (serverUrl: string, teamId: string, searchTerm: string) => {
-    const response = await fetchGroupsForTeam(serverUrl, teamId);
-
-    if (response && 'groups' in response) {
-        return response.groups.filter((g) => g.name.toLowerCase().includes(searchTerm.toLowerCase()));
-    }
-
-    return [];
-};
-
-const getFilteredChannelGroups = async (serverUrl: string, channelId: string, searchTerm: string) => {
-    const response = await fetchGroupsForChannel(serverUrl, channelId);
-
-    if (response && 'groups' in response) {
-        return response.groups.filter((g) => g.name.toLowerCase().includes(searchTerm.toLowerCase()));
-    }
-
-    return [];
 };
 
 type Props = {
@@ -383,7 +363,7 @@ const AtMention = ({
         if (useGroupMentions && matchTerm && matchTerm !== '') {
             // If the channel is constrained, we only show groups for that channel
             if (isChannelConstrained && channelId) {
-                getFilteredChannelGroups(serverUrl, channelId, matchTerm).then((g) => {
+                fetchFilteredChannelGroups(serverUrl, channelId, matchTerm).then((g) => {
                     setGroups(g.length ? g : emptyGroupList);
                 }).catch(() => {
                     setGroups(emptyGroupList);
@@ -392,7 +372,7 @@ const AtMention = ({
 
             // If there is no channel constraint, but a team constraint - only show groups for team
             if (isTeamConstrained && !isChannelConstrained) {
-                getFilteredTeamGroups(serverUrl, teamId!, matchTerm).then((g) => {
+                fetchFilteredTeamGroups(serverUrl, teamId!, matchTerm).then((g) => {
                     setGroups(g.length ? g : emptyGroupList);
                 }).catch(() => {
                     setGroups(emptyGroupList);

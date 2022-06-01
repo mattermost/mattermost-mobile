@@ -75,7 +75,7 @@ CategoryNames.forEach((name: string) => {
 
 const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis, skinTone, width}: Props) => {
     const serverUrl = useServerUrl();
-    const list = useRef<SectionList<EmojiSection>>();
+    const list = useRef<SectionList<EmojiSection>>(null);
     const [sectionIndex, setSectionIndex] = useState(0);
     const [customEmojiPage, setCustomEmojiPage] = useState(0);
     const [fetchingCustomEmojis, setFetchingCustomEmojis] = useState(false);
@@ -221,8 +221,6 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
                 onEndReached={onLoadMoreCustomEmojis}
                 onEndReachedThreshold={2}
                 onScroll={onScroll}
-
-                // @ts-expect-error ref
                 ref={list}
                 renderItem={renderItem}
                 renderSectionHeader={renderSectionHeader}
