@@ -69,11 +69,19 @@ export function isCallsPluginEnabled(state: GlobalState) {
     return state.entities.calls.pluginEnabled;
 }
 
+const isCloud: (state: GlobalState) => boolean = createSelector(
+    getLicense,
+    (license) => license?.Cloud === 'true',
+);
+
+// NOTE: Calls v0.5.3 will not return sku_short_name in config, so this will fail
 const isCloudProfessionalOrEnterprise: (state: GlobalState) => boolean = createSelector(
+    isCloud,
     getLicense,
     getConfig,
-    (license, config) => license?.Cloud === 'true' &&
-        (config.sku_short_name === 'professional' || config.sku_short_name === 'enterprise'),
+    (cloud, license, config) => {
+        return cloud && (config.sku_short_name === 'professional' || config.sku_short_name === 'enterprise');
+    },
 );
 
 const getCallInCurrentChannel: (state: GlobalState) => Call | undefined = createSelector(
@@ -83,13 +91,26 @@ const getCallInCurrentChannel: (state: GlobalState) => Call | undefined = create
 );
 
 export const isCloudLimitRestricted: (state: GlobalState, channelId?: string) => boolean = createSelector(
+    isCloud,
     isCloudProfessionalOrEnterprise,
     (state: GlobalState, channelId: string) => (channelId ? getCalls(state)[channelId] : getCallInCurrentChannel(state)),
     getConfig,
-    (isCloudPaid, call, config) => {
-        if (!call) {
+    (cloud, isCloudPaid, call, config) => {
+        if (!call || !cloud) {
             return false;
         }
-        return isCloudPaid && Object.keys(call.participants || {}).length >= config.cloud_max_participants;
+
+        // TODO: The next block is used for case when cloud server is using Calls v0.5.3. This can be removed
+        //  when v0.5.4 is prepackaged in cloud. Then replace the max in the return statement with
+        //  config.cloud_max_participants, and replace cloudPaid with isCloudPaid
+        let max = config.cloud_max_participants;
+        let cloudPaid = isCloudPaid;
+        if (cloud && !max) {
+            // We're not sure if we're in cloud paid because this could be v0.5.3, so assume we are for now (the server will prevent calls)
+            cloudPaid = true;
+            max = Calls.DefaultCloudMaxParticipants;
+        }
+
+        return cloudPaid && Object.keys(call.participants || {}).length >= max;
     },
 );

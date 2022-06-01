@@ -12,4 +12,8 @@ const RequiredServer = {
 
 const PluginId = 'com.mattermost.calls';
 
-export default {RequiredServer, RefreshConfigMillis, PluginId};
+// Used for case when cloud server is using Calls v0.5.3.
+// This can be removed when v0.5.4 is prepackaged in cloud.
+const DefaultCloudMaxParticipants = 8;
+
+export default {RequiredServer, RefreshConfigMillis, PluginId, DefaultCloudMaxParticipants};
