@@ -8,7 +8,7 @@
 import Foundation
 import SQLite
 
-public struct Post: Codable {
+public struct Post: Codable, Hashable {
     let id: String
     let create_at: Int64
     let update_at: Int64
@@ -25,6 +25,14 @@ public struct Post: Codable {
     let pending_post_id: String
     let metadata: String
     var prev_post_id: String
+    // CRT
+    let participants: [User]
+    let last_reply_at: Int64
+    let last_viewed_at: Int64
+    let reply_count: Int
+    let is_following: Bool
+    let unread_replies: Int
+    let unread_mentions: Int
     
     public enum PostKeys: String, CodingKey {
         case id = "id"
@@ -42,6 +50,14 @@ public struct Post: Codable {
         case props = "props"
         case pending_post_id = "pending_post_id"
         case metadata = "metadata"
+        // CRT
+        case participants = "participants"
+        case last_reply_at = "last_reply_at"
+        case last_viewed_at = "last_viewed_at"
+        case reply_count = "reply_count"
+        case is_following = "is_following"
+        case unread_replies = "unread_replies"
+        case unread_mentions = "unread_mentions"
     }
     
     public init(from decoder: Decoder) throws {
@@ -64,6 +80,14 @@ public struct Post: Codable {
         pending_post_id = try values.decode(String.self, forKey: .pending_post_id)
         let propsData = try values.decode([String:Any].self, forKey: .props)
         props = Database.default.json(from: propsData) ?? "{}"
+        // CRT
+        participants = try values.decode([User].self, forKey: .participants)
+        last_reply_at = try values.decode(Int64.self, forKey: .last_reply_at)
+        last_viewed_at = try values.decode(Int64.self, forKey: .last_viewed_at)
+        reply_count = try values.decode(Int.self, forKey: .reply_count)
+        is_following = try values.decode(Bool.self, forKey: .is_following)
+        unread_replies = try values.decode(Int.self, forKey: .unread_replies)
+        unread_mentions = try values.decode(Int.self, forKey: .unread_mentions)
     }
 }
 
@@ -80,6 +104,12 @@ struct PostSetters {
     let reactionSetters: [[Setter]]
     let fileSetters: [[Setter]]
     let emojiSetters: [[Setter]]
+}
+
+struct ThreadSetters {
+    let id: String
+    let threadSetters: [Setter]
+    let threadParticipantSetters: [[Setter]]
 }
 
 extension Database {
@@ -150,6 +180,10 @@ extension Database {
         let latest = sortedChainedPosts.last!.create_at
         try handlePostsInChannel(db, channelId, earliest, latest, usedSince)
         try handlePostsInThread(db, postData.posts)
+    }
+    
+    public func handleThreads(_ db: Connection, _ threads: [Post]) throws {
+        try insertOrUpdateThreads(db, threads)
     }
     
     private func handlePostsInChannel(_ db: Connection, _ channelId: String, _ earliest: Int64, _ latest: Int64, _ usedSince: Bool = false) throws {
@@ -281,6 +315,10 @@ extension Database {
                 try db.run(insertReactions)
             }
         }
+    }
+    
+    private func insertOrUpdateThreads(_ db: Connection, _ posts: [Post]) throws {
+        
     }
     
     private func createPostSetters(from posts: [Post]) -> [PostSetters] {
@@ -429,6 +467,61 @@ extension Database {
                                reactionSetters: reactionSetters,
                                fileSetters: fileSetters,
                                emojiSetters: emojiSetters)
+    }
+    
+    private func createThreadSetters(from posts: [Post]) -> [ThreadSetters] {
+        let id = Expression<String>("id")
+        let lastReplyAt = Expression<Int64>("last_reply_at")
+        let lastViewedAt = Expression<Int64>("last_viewed_at")
+        let replyCount = Expression<Int>("reply_count")
+        let isFollowing = Expression<Bool>("is_following")
+        let unreadReplies = Expression<Int>("unread_replies")
+        let unreadMentions = Expression<Int>("unread_mentions")
+        let statusCol = Expression<String>("_status")
+        
+        var threadsSetters: [ThreadSetters] = []
+        
+        for post in posts {
+            var setter = [Setter]()
+            setter.append(id <- post.id)
+            setter.append(lastReplyAt <- post.last_reply_at)
+            setter.append(lastViewedAt <- post.last_viewed_at)
+            setter.append(replyCount <- post.reply_count)
+            setter.append(isFollowing <- post.is_following)
+            setter.append(unreadReplies <- post.unread_replies)
+            setter.append(unreadMentions <- post.unread_mentions)
+            setter.append(statusCol <- "created")
+            
+            let threadSetter = ThreadSetters(
+                id: post.id,
+                threadSetters: setter,
+                threadParticipantSetters: createThreadParticipantSetters(from: post)
+            )
+            threadsSetters.append(threadSetter)
+        }
+        
+        return threadsSetters
+    }
+    
+    private func createThreadParticipantSetters(from post: Post) -> [[Setter]] {
+        
+        var participantSetters = [[Setter]]()
+
+        let id = Expression<String>("id")
+        let userId = Expression<String>("user_id")
+        let threadId = Expression<String>("thread_id")
+        let statusCol = Expression<String>("_status")
+        
+        for p in post.participants {
+            var participantSetter = [Setter]()
+            participantSetter.append(id <- generateId() as String)
+            participantSetter.append(userId <- p.id)
+            participantSetter.append(threadId <- post.id)
+            participantSetter.append(statusCol <- "created")
+            participantSetters.append(participantSetter)
+        }
+        
+        return participantSetters
     }
     
     private func createPostsInThreadSetters(_ db: Connection, from posts: [Post]) throws -> [[Setter]] {

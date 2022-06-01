@@ -848,7 +848,7 @@ SPEC CHECKSUMS:
   Flipper-RSocket: d9d9ade67cbecf6ac10730304bf5607266dd2541
   FlipperKit: cbdee19bdd4e7f05472a66ce290f1b729ba3cb86
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
-  glog: 476ee3e89abb49e07f822b48323c51c57124b572
+  glog: 85ecdd10ee8d8ec362ef519a6a45ff9aa27b2e85
   hermes-engine: 84e3af1ea01dd7351ac5d8689cbbea1f9903ffc3
   HMSegmentedControl: 34c1f54d822d8308e7b24f5d901ec674dfa31352
   iosMath: f7a6cbadf9d836d2149c2a84c435b1effc244cba
@@ -858,7 +858,7 @@ SPEC CHECKSUMS:
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   Permission-Camera: bae27a8503530770c35aadfecbb97ec71823382a
   Permission-PhotoLibrary: ddb5a158725b29cb12e9e477e8a5f5151c66cc3c
-  RCT-Folly: 4d8508a426467c48885f1151029bc15fa5d7b3b8
+  RCT-Folly: 803a9cfd78114b2ec0f140cfa6fa2a6bafb2d685
   RCTRequired: bab4a7c3d7eb9553b13773ee190f279712efd1fc
   RCTTypeSafety: efbeb6e450ff6cef8e19c2cb5314c6d8bfeeef77
   React: 28e4d45839b7d0fd9512af899e0379a17a5172ec
