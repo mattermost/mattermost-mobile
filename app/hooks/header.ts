@@ -15,6 +15,8 @@ type HeaderScrollContext = {
     start?: number;
 };
 
+export const MAX_OVERSCROLL = 80;
+
 export const useDefaultHeaderHeight = () => {
     const isTablet = useIsTablet();
 
@@ -59,7 +61,7 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
         const header = (isLargeTitle ? largeHeight : defaultHeight);
         const height = header + value + insets.top;
         if (height > header + (insets.top * 2)) {
-            return Math.min(height, largeHeight + insets.top + 80);
+            return Math.min(height, largeHeight + insets.top + MAX_OVERSCROLL);
         }
         return Math.max(height, minHeight);
     });

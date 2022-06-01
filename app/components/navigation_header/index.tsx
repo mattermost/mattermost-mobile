@@ -6,7 +6,7 @@ import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
-import useHeaderHeight from '@hooks/header';
+import useHeaderHeight, {MAX_OVERSCROLL} from '@hooks/header';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Header, {HeaderRightButton} from './header';
@@ -66,7 +66,7 @@ const NavigationHeader = ({
         return {
             height: Math.max(height, minHeight),
             minHeight,
-            maxHeight: largeHeight + insets.top + 80,
+            maxHeight: largeHeight + insets.top + MAX_OVERSCROLL,
         };
     });
 
