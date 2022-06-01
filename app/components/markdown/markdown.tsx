@@ -3,7 +3,7 @@
 
 import {Parser, Node} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
-import React, {ReactElement, useRef} from 'react';
+import React, {ReactElement, useMemo, useRef} from 'react';
 import {Dimensions, GestureResponderEvent, Platform, StyleProp, Text, TextStyle, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -497,7 +497,7 @@ const Markdown = ({
     };
 
     const parser = useRef(new Parser({urlFilter, minimumHashtagLength})).current;
-    const renderer = useRef(createRenderer()).current;
+    const renderer = useMemo(() => createRenderer(), [theme]);
     let ast = parser.parse(value.toString());
 
     ast = combineTextNodes(ast);
