@@ -117,11 +117,14 @@ describe('Actions.Calls', () => {
         expect(CallsActions.ws.disconnect).not.toBeCalled();
         const disconnectMock = CallsActions.ws.disconnect;
         await store.dispatch(CallsActions.leaveCall());
+
+        // ws.disconnect calls the callback, which is what sends the CallsTypes.RECEIVED_MYSELF_LEFT_CALL action.
         expect(disconnectMock).toBeCalled();
+        await store.dispatch({type: CallsTypes.RECEIVED_MYSELF_LEFT_CALL});
         expect(CallsActions.ws).toBe(null);
 
         result = store.getState().entities.calls.joined;
-        assert.equal('', result);
+        assert.equal(result, '');
     });
 
     it('muteMyself', async () => {
