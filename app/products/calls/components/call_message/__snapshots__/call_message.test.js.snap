@@ -57,31 +57,40 @@ exports[`CallMessage should match snapshot 1`] = `
   <TouchableOpacity
     onPress={[Function]}
     style={
-      Object {
-        "alignContent": "center",
-        "alignItems": "center",
-        "backgroundColor": "#339970",
-        "borderRadius": 8,
-        "flexDirection": "row",
-        "padding": 12,
-      }
+      Array [
+        Object {
+          "alignContent": "center",
+          "alignItems": "center",
+          "backgroundColor": "#339970",
+          "borderRadius": 8,
+          "flexDirection": "row",
+          "padding": 12,
+        },
+        undefined,
+      ]
     }
   >
     <CompassIcon
       name="phone-outline"
       size={16}
       style={
-        Object {
-          "color": "white",
-          "marginRight": 5,
-        }
+        Array [
+          Object {
+            "color": "white",
+            "marginRight": 5,
+          },
+          undefined,
+        ]
       }
     />
     <Text
       style={
-        Object {
-          "color": "white",
-        }
+        Array [
+          Object {
+            "color": "white",
+          },
+          undefined,
+        ]
       }
     >
       Join call
@@ -239,31 +248,40 @@ exports[`CallMessage should match snapshot for the call already in the current c
   <TouchableOpacity
     onPress={[Function]}
     style={
-      Object {
-        "alignContent": "center",
-        "alignItems": "center",
-        "backgroundColor": "#339970",
-        "borderRadius": 8,
-        "flexDirection": "row",
-        "padding": 12,
-      }
+      Array [
+        Object {
+          "alignContent": "center",
+          "alignItems": "center",
+          "backgroundColor": "#339970",
+          "borderRadius": 8,
+          "flexDirection": "row",
+          "padding": 12,
+        },
+        undefined,
+      ]
     }
   >
     <CompassIcon
       name="phone-outline"
       size={16}
       style={
-        Object {
-          "color": "white",
-          "marginRight": 5,
-        }
+        Array [
+          Object {
+            "color": "white",
+            "marginRight": 5,
+          },
+          undefined,
+        ]
       }
     />
     <Text
       style={
-        Object {
-          "color": "white",
-        }
+        Array [
+          Object {
+            "color": "white",
+          },
+          undefined,
+        ]
       }
     >
       Current call

@@ -20,7 +20,7 @@ export let client: any = null;
 
 const websocketConnectTimeout = 3000;
 
-export async function newClient(channelID: string, closeCb: () => void, setScreenShareURL: (url: string) => void) {
+export async function newClient(channelID: string, iceServers: string[], closeCb: () => void, setScreenShareURL: (url: string) => void) {
     let peer: Peer | null = null;
     let stream: MediaStream;
     let voiceTrackAdded = false;
@@ -119,16 +119,8 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
     });
 
     ws.on('join', async () => {
-        let config;
-        try {
-            config = await Client4.getCallsConfig();
-        } catch (err) {
-            console.log('ERROR FETCHING CALLS CONFIG:', err); // eslint-disable-line no-console
-            return;
-        }
-
         InCallManager.start({media: 'audio'});
-        peer = new Peer(null, config.ICEServers);
+        peer = new Peer(null, iceServers);
         peer.on('signal', (data: any) => {
             if (data.type === 'offer' || data.type === 'answer') {
                 ws.send('sdp', {
