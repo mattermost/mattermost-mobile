@@ -62,7 +62,7 @@ const Emoji = (props: Props) => {
         } else {
             unicode = emoji.image;
         }
-    } else {
+    } else if (!isUnicodeEmoji(name)) {
         const custom = customEmojis.find((ce) => ce.name === name);
         if (custom) {
             try {
@@ -71,7 +71,7 @@ const Emoji = (props: Props) => {
             } catch {
                 // do nothing
             }
-        } else if (name && !isUnicodeEmoji(name)) {
+        } else if (name) {
             fetchCustomEmojiInBatch(serverUrl, name);
         }
     }
