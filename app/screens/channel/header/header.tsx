@@ -4,13 +4,16 @@
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, Platform, Text, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import NavigationHeader from '@components/navigation_header';
+import RoundedHeaderContext from '@components/rounded_header_context';
 import {Navigation, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {useDefaultHeaderHeight} from '@hooks/header';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -63,6 +66,12 @@ const ChannelHeader = ({
     const isTablet = useIsTablet();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const defaultHeight = useDefaultHeaderHeight();
+    const insets = useSafeAreaInsets();
+
+    const contextStyle = useMemo(() => ({
+        top: defaultHeight + insets.top,
+    }), [defaultHeight, insets.top]);
 
     const leftComponent = useMemo(() => {
         if (isTablet || !channelId || !teamId) {
@@ -163,17 +172,22 @@ const ChannelHeader = ({
     }, [memberCount, customStatus, isCustomStatusExpired]);
 
     return (
-        <NavigationHeader
-            isLargeTitle={false}
-            leftComponent={leftComponent}
-            onBackPress={onBackPress}
-            onTitlePress={onTitlePress}
-            rightButtons={rightButtons}
-            showBackButton={!isTablet}
-            subtitle={subtitle}
-            subtitleCompanion={subtitleCompanion}
-            title={title}
-        />
+        <>
+            <NavigationHeader
+                isLargeTitle={false}
+                leftComponent={leftComponent}
+                onBackPress={onBackPress}
+                onTitlePress={onTitlePress}
+                rightButtons={rightButtons}
+                showBackButton={!isTablet}
+                subtitle={subtitle}
+                subtitleCompanion={subtitleCompanion}
+                title={title}
+            />
+            <View style={contextStyle}>
+                <RoundedHeaderContext/>
+            </View>
+        </>
     );
 };
 
