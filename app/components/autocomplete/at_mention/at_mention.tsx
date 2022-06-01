@@ -382,7 +382,6 @@ const AtMention = ({
 
             // No constraints? Search all groups
             if (!isTeamConstrained && !isChannelConstrained) {
-                console.log('--- searching from at_mention');
                 searchGroupsByName(serverUrl, matchTerm || '')?.then((g) => {
                     setGroups(Array.isArray(g) ? g : emptyGroupList);
                 }).catch(() => {

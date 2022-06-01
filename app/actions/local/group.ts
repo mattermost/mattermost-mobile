@@ -1,73 +1,70 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchFilteredChannelGroups, fetchFilteredTeamGroups, fetchGroupsForAutocomplete} from '@actions/remote/groups';
+import {fetchFilteredChannelGroups, fetchFilteredTeamGroups, fetchGroupsForAutocomplete, fetchGroupsForTeam} from '@actions/remote/groups';
 import DatabaseManager from '@database/manager';
 import {prepareGroupChannels, prepareGroups, prepareGroupTeams, queryGroupsByName, queryGroupsByNameInChannel, queryGroupsByNameInTeam} from '@queries/servers/group';
 
 import type GroupModel from '@typings/database/models/servers/group';
 
-export const searchGroupsByName = async (serverUrl: string, name: string, skipFetch = false): Promise<GroupModel[]> => {
-    console.log('search groups by name...');
+export const searchGroupsByName = async (serverUrl: string, name: string): Promise<GroupModel[]> => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         throw new Error(`${serverUrl} operator not found`);
     }
 
-    console.log('queryiong...');
-    const groups = (queryGroupsByName(operator.database, name).fetch());
+    try {
+        const groups = await fetchGroupsForAutocomplete(serverUrl, name);
 
-    // await groups;
-    console.log('groups?', groups);
-
-    // No local result? Fetch from remote and try again
-    if (!groups.length && !skipFetch) {
-        await fetchGroupsForAutocomplete(serverUrl, name);
-        return searchGroupsByName(serverUrl, name, true);
+        if (groups && Array.isArray(groups)) {
+            return groups;
+        }
+        throw groups.error;
+    } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log('searchGroupsByName - ERROR', e);
+        return queryGroupsByName(operator.database, name).fetch();
     }
-
-    return groups;
 };
 
-export const searchGroupsByNameInTeam = async (serverUrl: string, name: string, teamId: string, skipFetch?: boolean): Promise<GroupModel[]> => {
+export const searchGroupsByNameInTeam = async (serverUrl: string, name: string, teamId: string): Promise<GroupModel[]> => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         throw new Error(`${serverUrl} operator not found`);
     }
 
-    const groups = await queryGroupsByNameInTeam(operator.database, name, teamId).fetch();
+    try {
+        const groups = await fetchFilteredTeamGroups(serverUrl, name, teamId);
 
-    // No local result? Fetch from remote and try again
-    if (!groups.length && !skipFetch) {
-        const fetchedGroups = await fetchFilteredTeamGroups(serverUrl, name, teamId);
-
-        if (fetchedGroups && Array.isArray(fetchedGroups) && fetchedGroups.length) {
-            await storeGroupTeams(serverUrl, fetchedGroups, teamId);
-            return searchGroupsByNameInTeam(serverUrl, name, teamId, true);
+        if (groups && Array.isArray(groups)) {
+            return groups;
         }
+        throw groups.error;
+    } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log('searchGroupsByNameInTeam - ERROR', e);
+        return queryGroupsByNameInTeam(operator.database, name, teamId).fetch();
     }
-
-    return groups;
 };
 
-export const searchGroupsByNameInChannel = async (serverUrl: string, name: string, channelId: string, skipFetch?: boolean): Promise<GroupModel[]> => {
+export const searchGroupsByNameInChannel = async (serverUrl: string, name: string, channelId: string): Promise<GroupModel[]> => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         throw new Error(`${serverUrl} operator not found`);
     }
 
-    const groups = await queryGroupsByNameInChannel(operator.database, name, channelId).fetch();
+    try {
+        const groups = await fetchFilteredChannelGroups(serverUrl, name, channelId);
 
-    // No local result? Fetch from remote and try again
-    if (!groups.length && !skipFetch) {
-        const fetchedGroups = await fetchFilteredChannelGroups(serverUrl, name, channelId);
-
-        if (fetchedGroups && Array.isArray(fetchedGroups) && fetchedGroups.length) {
-            return searchGroupsByNameInChannel(serverUrl, name, channelId, true);
+        if (groups && Array.isArray(groups)) {
+            return groups;
         }
+        throw groups.error;
+    } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log('searchGroupsByNameInChannel - ERROR', e);
+        return queryGroupsByNameInChannel(operator.database, name, channelId).fetch();
     }
-
-    return groups;
 };
 
 /**
@@ -94,7 +91,7 @@ export const storeGroups = async (serverUrl: string, groups: Group[], prepareRec
             operator.batchRecords(preparedGroups);
         }
 
-        return {data: true};
+        return preparedGroups;
     } catch (e) {
         return {error: e};
     }
