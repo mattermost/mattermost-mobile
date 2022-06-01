@@ -102,7 +102,7 @@ function InteractiveDialog({
     const serverUrl = useServerUrl();
     const intl = useIntl();
 
-    const scrollView = useRef<ScrollView>();
+    const scrollView = useRef<ScrollView>(null);
 
     const onChange = useCallback((name: string, value: string | number | boolean) => {
         dispatchValues({name, value});
@@ -223,8 +223,6 @@ function InteractiveDialog({
             style={style.container}
         >
             <ScrollView
-
-                // @ts-expect-error legacy ref
                 ref={scrollView}
                 style={style.scrollView}
             >
