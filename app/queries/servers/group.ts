@@ -33,15 +33,3 @@ export const queryGroupsByNameInChannel = (database: Database, name: string, cha
 export const prepareGroups = (operator: ServerDataOperator, groups: Group[]) => {
     return operator.handleGroups({groups, prepareRecordsOnly: true});
 };
-
-export async function prepareGroupChannels(operator: ServerDataOperator, groupChannels: GroupChannel[]) {
-    return operator.handleGroupChannels({groupChannels, prepareRecordsOnly: true});
-}
-
-export async function prepareGroupTeams(operator: ServerDataOperator, groupTeams: GroupTeam[]) {
-    return operator.handleGroupTeams({groupTeams, prepareRecordsOnly: true});
-}
-
-// export async function prepareGroupMemberships(operator: ServerDataOperator, groupMemberships: Array<{group_id: string; user_id: string}>) {
-//     return operator.handleGroupMemberships({groupMemberships, prepareRecordsOnly: true});
-// }

@@ -6,8 +6,6 @@ import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {
     transformGroupRecord,
-    transformGroupChannelRecord,
-    transformGroupTeamRecord,
 } from '@database/operator/server_data_operator/transformers/group';
 
 import ServerDataOperator from '..';
@@ -51,74 +49,6 @@ describe('*** Operator: Group Handlers tests ***', () => {
             tableName: MM_TABLES.SERVER.GROUP,
             prepareRecordsOnly: false,
             transformer: transformGroupRecord,
-        });
-    });
-
-    it.skip('=> handleGroupTeams: should write to the GROUP_TEAM table', async () => {
-        expect.assertions(2);
-
-        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const groupTeams: GroupTeam[] = [
-            {
-                group_id: 'kjlw9j1ttnxwig7tnqgebg7dtipno',
-                team_id: 'team-id',
-                team_display_name: 'Test Team',
-                team_type: 'team',
-                auto_add: false,
-                create_at: 0,
-                update_at: 0,
-                delete_at: 0,
-            },
-        ];
-
-        await operator.handleGroupTeams({
-            groupTeams,
-            prepareRecordsOnly: false,
-        });
-
-        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            fieldName: 'id',
-            createOrUpdateRawValues: groupTeams,
-            tableName: MM_TABLES.SERVER.GROUP_TEAM,
-            prepareRecordsOnly: false,
-            transformer: transformGroupTeamRecord,
-        });
-    });
-
-    it.skip('=> handleGroupChannels: should write to the GROUP_CHANNEL table', async () => {
-        expect.assertions(2);
-
-        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const groupChannels: GroupChannel[] = [
-            {
-                group_id: 'kjlw9j1ttnxwig7tnqgebg7dtipno',
-                channel_id: 'channel-id',
-                channel_display_name: 'Test Channel',
-                channel_type: 'channel',
-                team_id: 'hfpqw3489gsjfknads',
-                team_display_name: 'Test team',
-                team_type: '',
-                timezone_count: 0,
-                auto_add: false,
-                create_at: 0,
-                update_at: 0,
-                delete_at: 0,
-            },
-        ];
-
-        await operator.handleGroupChannels({
-            groupChannels,
-            prepareRecordsOnly: false,
-        });
-
-        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            fieldName: 'id',
-            createOrUpdateRawValues: groupChannels,
-            tableName: MM_TABLES.SERVER.GROUP_CHANNEL,
-            prepareRecordsOnly: false,
-            transformer: transformGroupChannelRecord,
         });
     });
 });

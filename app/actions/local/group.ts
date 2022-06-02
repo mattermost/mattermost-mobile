@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchFilteredChannelGroups, fetchFilteredTeamGroups, fetchGroupsForAutocomplete, fetchGroupsForTeam} from '@actions/remote/groups';
+import {fetchFilteredChannelGroups, fetchFilteredTeamGroups, fetchGroupsForAutocomplete} from '@actions/remote/groups';
 import DatabaseManager from '@database/manager';
-import {prepareGroupChannels, prepareGroups, prepareGroupTeams, queryGroupsByName, queryGroupsByNameInChannel, queryGroupsByNameInTeam} from '@queries/servers/group';
+import {prepareGroups, queryGroupsByName, queryGroupsByNameInChannel, queryGroupsByNameInTeam} from '@queries/servers/group';
 
 import type GroupModel from '@typings/database/models/servers/group';
 
@@ -97,62 +97,3 @@ export const storeGroups = async (serverUrl: string, groups: Group[], prepareRec
     }
 };
 
-/**
- * Store fetched groups locally
- *
- * @param serverUrl string - The Server URL
- * @param groups Group[] - The groups fetched from the API
- * @param prepareRecordsOnly boolean - Wether to only prepare records without saving
- */
-export const storeGroupTeams = async (serverUrl: string, groupTeams: GroupTeam[], prepareRecordsOnly = false) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        throw new Error(`${serverUrl} operator not found`);
-    }
-
-    try {
-        const preparedGroupTeams = await prepareGroupTeams(operator, groupTeams);
-
-        if (prepareRecordsOnly) {
-            return preparedGroupTeams;
-        }
-
-        if (preparedGroupTeams.length) {
-            operator.batchRecords(preparedGroupTeams);
-        }
-
-        return {data: true};
-    } catch (e) {
-        return {error: e};
-    }
-};
-
-/**
- * Store fetched groups locally
- *
- * @param serverUrl string - The Server URL
- * @param groups Group[] - The groups fetched from the API
- * @param prepareRecordsOnly boolean - Wether to only prepare records without saving
- */
-export const storeGroupChannels = async (serverUrl: string, groupChannels: GroupChannel[], prepareRecordsOnly = false) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        throw new Error(`${serverUrl} operator not found`);
-    }
-
-    try {
-        const preparedGroupChannels = await prepareGroupChannels(operator, groupChannels);
-
-        if (prepareRecordsOnly) {
-            return preparedGroupChannels;
-        }
-
-        if (preparedGroupChannels.length) {
-            operator.batchRecords(preparedGroupChannels);
-        }
-
-        return {data: true};
-    } catch (e) {
-        return {error: e};
-    }
-};
