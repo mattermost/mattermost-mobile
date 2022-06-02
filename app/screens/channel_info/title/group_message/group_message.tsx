@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import {Text} from 'react-native';
 
 import {useTheme} from '@context/theme';
@@ -13,6 +13,7 @@ import GroupAvatars from './avatars';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 
 type Props = {
+    currentUserId: string;
     displayName?: string;
     members: ChannelMembershipModel[];
 }
@@ -28,14 +29,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const GroupMessage = ({displayName, members}: Props) => {
+const GroupMessage = ({currentUserId, displayName, members}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const userIds = useMemo(() => members.map((cm) => cm.userId).filter((id) => id !== currentUserId),
+        [members.length, currentUserId]);
 
     return (
         <>
             <GroupAvatars
-                userIds={members.map((cm) => cm.userId)}
+                userIds={userIds}
             />
             <Text style={styles.title}>
                 {displayName}

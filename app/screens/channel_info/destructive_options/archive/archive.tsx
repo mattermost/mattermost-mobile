@@ -76,10 +76,8 @@ const Archive = ({
                         defaultMessage: 'An error occurred trying to archive the channel {displayName}',
                     }, {displayName},
                 );
-            } else if (canViewArchivedChannels) {
-                close(false);
             } else {
-                close(true);
+                close(!canViewArchivedChannels);
             }
         };
         alertAndHandleYesAction(title, message, onPressAction);

@@ -6,7 +6,6 @@ import {useIntl} from 'react-intl';
 
 import {updateChannelNotifyProps} from '@actions/remote/channel';
 import OptionItem from '@components/option_item';
-import {Channel} from '@constants';
 import {useServerUrl} from '@context/server';
 import {preventDoubleTap} from '@utils/tap';
 
@@ -22,7 +21,7 @@ const IgnoreMentions = ({channelId, ignoring}: Props) => {
 
     const toggleIgnore = preventDoubleTap(() => {
         const props: Partial<ChannelNotifyProps> = {
-            ignore_channel_mentions: (ignoring ? Channel.IGNORE_CHANNEL_MENTIONS_OFF : Channel.IGNORE_CHANNEL_MENTIONS_ON) as never,
+            ignore_channel_mentions: ignoring ? 'off' : 'on',
         };
         setIgnored(!ignored);
         updateChannelNotifyProps(serverUrl, channelId, props);

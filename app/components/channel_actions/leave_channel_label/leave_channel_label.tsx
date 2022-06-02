@@ -139,8 +139,8 @@ const LeaveChanelLabel = ({canLeave, channelId, displayName, type, testID}: Prop
         return null;
     }
 
-    let leaveText = '';
-    let icon = 'exit-to-app';
+    let leaveText;
+    let icon;
     switch (type) {
         case General.DM_CHANNEL:
             leaveText = intl.formatMessage({id: 'channel_info.close_dm', defaultMessage: 'Close direct message'});
@@ -152,6 +152,7 @@ const LeaveChanelLabel = ({canLeave, channelId, displayName, type, testID}: Prop
             break;
         default:
             leaveText = intl.formatMessage({id: 'channel_info.leave_channel', defaultMessage: 'Leave channel'});
+            icon = 'exit-to-app';
             break;
     }
 

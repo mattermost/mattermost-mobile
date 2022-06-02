@@ -93,6 +93,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         atMentionOpacity: {
             opacity: 1,
         },
+        bold: {
+            fontWeight: '600',
+        },
     };
 });
 
@@ -281,7 +284,7 @@ const Markdown = ({
     const renderHeading = ({children, level}: {children: ReactElement; level: string}) => {
         if (disableHeading) {
             return (
-                <Text style={{fontWeight: '600'}}>
+                <Text style={style.bold}>
                     {children}
                 </Text>
             );
@@ -530,7 +533,7 @@ const Markdown = ({
     };
 
     const parser = useRef(new Parser({urlFilter, minimumHashtagLength})).current;
-    const renderer = useMemo(createRenderer, [theme]);
+    const renderer = useMemo(createRenderer, [theme, textStyles]);
     let ast = parser.parse(value.toString());
 
     ast = combineTextNodes(ast);
