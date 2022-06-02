@@ -17,13 +17,17 @@ type Props = {
     numberMessages: number;
 }
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+export const HEADER_HEIGHT = 64;
+
+const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
+            backgroundColor: theme.centerChannelBg,
             marginHorizontal: 12,
             flexDirection: 'row',
-            marginBottom: 12,
+            paddingVertical: 12,
             flexGrow: 0,
+            height: HEADER_HEIGHT,
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
