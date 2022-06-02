@@ -23,6 +23,7 @@ import {withTheme} from '@context/theme';
 import {observeConfig, observeRecentCustomStatus} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {dismissModal, goToScreen, showModal} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {getCurrentMomentForTimezone, getRoundedTime, isCustomStatusExpirySupported} from '@utils/helpers';
 import {mergeNavigationOptions} from '@utils/navigation';
 import {preventDoubleTap} from '@utils/tap';
@@ -164,12 +165,16 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     }
 
     onBackPress = () => {
-        if (this.props.isTablet) {
-            DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, '');
-        } else {
-            dismissModal();
+        const {componentId} = this.props;
+        if (EphemeralStore.getNavigationTopComponentId() === componentId) {
+            if (this.props.isTablet) {
+                DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, '');
+            } else {
+                dismissModal({componentId});
+            }
+            return true;
         }
-        return true;
+        return false;
     };
 
     handleSetStatus = async () => {

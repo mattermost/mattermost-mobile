@@ -16,11 +16,13 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissModal} from '@screens/navigation';
-import ChannelModel from '@typings/database/models/servers/channel';
-import PostModel from '@typings/database/models/servers/post';
+import EphemeralStore from '@store/ephemeral_store';
 import {closePermalink} from '@utils/permalink';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
     postId: PostModel['id'];
@@ -145,8 +147,12 @@ function Permalink({channel, postId}: Props) {
 
     useEffect(() => {
         const listener = BackHandler.addEventListener('hardwareBackPress', () => {
-            handleClose();
-            return true;
+            if (EphemeralStore.getNavigationTopComponentId() === Screens.PERMALINK) {
+                handleClose();
+                return true;
+            }
+
+            return false;
         });
 
         return () => {
