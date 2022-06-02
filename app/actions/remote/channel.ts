@@ -1249,9 +1249,16 @@ export const archiveChannel = async (serverUrl: string, channelId: string) => {
     }
 
     try {
+        const {database} = operator;
+        const config = await getConfig(database);
         EphemeralStore.addArchivingChannel(channelId);
         await client.deleteChannel(channelId);
-        await setChannelDeleteAt(serverUrl, channelId, Date.now());
+        if (config?.ExperimentalViewArchivedChannels === 'true') {
+            await setChannelDeleteAt(serverUrl, channelId, Date.now());
+        } else {
+            removeCurrentUserFromChannel(serverUrl, channelId);
+        }
+
         return {error: undefined};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
