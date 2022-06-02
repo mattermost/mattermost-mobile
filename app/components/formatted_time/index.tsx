@@ -3,6 +3,7 @@
 
 import moment from 'moment-timezone';
 import React from 'react';
+import {useIntl} from 'react-intl';
 import {Text, TextProps} from 'react-native';
 
 type FormattedTimeProps = TextProps & {
@@ -12,6 +13,8 @@ type FormattedTimeProps = TextProps & {
 }
 
 const FormattedTime = ({isMilitaryTime, timezone, value, ...props}: FormattedTimeProps) => {
+    const {locale} = useIntl();
+    moment.locale(locale);
     const getFormattedTime = () => {
         let format = 'H:mm';
         if (!isMilitaryTime) {
