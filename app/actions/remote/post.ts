@@ -1045,3 +1045,85 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
         return {error};
     }
 }
+
+export async function fetchPinnedPosts(serverUrl: string, channelId: string) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const data = await client.getPinnedPosts(channelId);
+        const posts = data.posts || {};
+        const order = data.order || [];
+        const postsArray = order.map((id) => posts[id]);
+
+        if (!postsArray.length) {
+            return {
+                order,
+                posts: postsArray,
+            };
+        }
+
+        const promises: Array<Promise<Model[]>> = [];
+
+        const {authors} = await fetchPostAuthors(serverUrl, postsArray, true);
+        const {channels, channelMemberships} = await fetchMissingChannelsFromPosts(serverUrl, postsArray, true);
+
+        if (authors?.length) {
+            promises.push(
+                operator.handleUsers({
+                    users: authors,
+                    prepareRecordsOnly: true,
+                }),
+            );
+        }
+
+        if (channels?.length && channelMemberships?.length) {
+            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            const channelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships, isCRTEnabled);
+            if (channelPromises.length) {
+                promises.push(...channelPromises);
+            }
+        }
+
+        promises.push(
+            operator.handlePosts({
+                actionType: '',
+                order: [],
+                posts: postsArray,
+                previousPostId: '',
+                prepareRecordsOnly: true,
+            }),
+        );
+
+        const isCRTEnabled = await getIsCRTEnabled(operator.database);
+        if (isCRTEnabled) {
+            promises.push(prepareThreadsFromReceivedPosts(operator, postsArray));
+        }
+
+        const modelArrays = await Promise.all(promises);
+        const models = modelArrays.flatMap((mdls) => {
+            if (!mdls || !mdls.length) {
+                return [];
+            }
+            return mdls;
+        });
+
+        await operator.batchRecords(models);
+
+        return {
+            order,
+            posts: postsArray,
+        };
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+}
