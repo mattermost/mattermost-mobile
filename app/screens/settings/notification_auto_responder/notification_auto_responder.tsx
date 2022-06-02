@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import BlockItem from '@components/block_item';
 import FloatingTextInput from '@components/floating_text_input_label';
@@ -21,6 +21,11 @@ import type UserModel from '@typings/database/models/servers/user';
 const headerText = {
     id: t('notification_settings.auto_responder'),
     defaultMessage: 'Custom message',
+};
+
+const OOO = {
+    id: t('notification_settings.auto_responder.default_message'),
+    defaultMessage: 'Hello, I am out of office and unable to respond to messages.',
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -54,59 +59,54 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             ...typography('Body', 200, 'Regular'),
         },
+        enabled: {
+            paddingHorizontal: 8,
+            backgroundColor: theme.centerChannelBg,
+            marginBottom: 16,
+        },
     };
 });
+
+const edges: Edge[] = ['left', 'right'];
 type NotificationAutoResponderProps = {
     currentUser: UserModel;
 }
 const NotificationAutoResponder = ({currentUser}: NotificationAutoResponderProps) => {
-    const autoresponderRef = useRef(null);
-    const userNotifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
-    const [notifyProps, setNotifyProps] = useState<Partial<UserNotifyProps>>(userNotifyProps);
-    const intl = useIntl();
     const theme = useTheme();
+    const autoresponderRef = useRef(null);
+    const intl = useIntl();
+    const userNotifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
+
+    const [notifyProps, setNotifyProps] = useState<Partial<UserNotifyProps>>({
+        ...userNotifyProps,
+        auto_responder_active: (currentUser.status === General.OUT_OF_OFFICE && userNotifyProps.auto_responder_active) ? 'true' : 'false',
+        auto_responder_message: userNotifyProps.auto_responder_message || intl.formatMessage(OOO),
+    });
+
     const styles = getStyleSheet(theme);
 
     const onAutoResponseToggle = useCallback((active: boolean) => {
         setNotifyProps({
             ...notifyProps,
-            auto_responder_active: active ? 'true' : 'false',
+            auto_responder_active: `${active}`,
         });
-    }, []);
+    }, [notifyProps]);
 
     const onAutoResponseChangeText = useCallback((message: string) => {
         setNotifyProps({
             ...notifyProps,
             auto_responder_message: message,
         });
-    }, []);
-
-    useEffect(() => {
-        const autoResponderDefault = intl.formatMessage({
-            id: 'notification_settings.auto_responder.default_message',
-            defaultMessage: 'Hello, I am out of office and unable to respond to messages.',
-        });
-
-        setNotifyProps({
-            ...notifyProps,
-            auto_responder_active: (currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active) ? 'true' : 'false',
-            auto_responder_message: notifyProps.auto_responder_message || autoResponderDefault,
-        });
-    }, []);
+    }, [notifyProps]);
 
     return (
         <SafeAreaView
-            edges={['left', 'right']}
+            edges={edges}
             style={styles.container}
         >
-
             <View style={styles.wrapper}>
                 <View
-                    style={{
-                        paddingHorizontal: 8,
-                        backgroundColor: theme.centerChannelBg,
-                        marginBottom: 16,
-                    }}
+                    style={styles.enabled}
                 >
                     <BlockItem
                         label={
