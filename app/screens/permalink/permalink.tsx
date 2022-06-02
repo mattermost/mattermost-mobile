@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {BackHandler, Text, TouchableOpacity, View} from 'react-native';
 import Animated from 'react-native-reanimated';
-import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchPostsAround} from '@actions/remote/post';
@@ -28,6 +28,8 @@ type Props = {
     postId: PostModel['id'];
     channel?: ChannelModel;
 }
+
+const edges: Edge[] = ['left', 'right', 'top'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -170,6 +172,7 @@ function Permalink({channel, postId}: Props) {
         <SafeAreaView
             style={containerStyle}
             testID='permalink.screen'
+            edges={edges}
         >
             <Animated.View style={style.wrapper}>
                 <View style={style.header}>
