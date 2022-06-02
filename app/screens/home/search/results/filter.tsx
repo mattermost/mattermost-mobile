@@ -136,9 +136,6 @@ const Filter = ({initialState, setParentFilterState}: FilterProps) => {
         );
     }, [filterState, setFilterState]);
 
-    const handleClearAll = useCallback(() => {
-        setFilterState(clearedState);
-    }, []);
 
     const handleShowResults = useCallback(() => {
         dismissBottomSheet();
@@ -156,7 +153,6 @@ const Filter = ({initialState, setParentFilterState}: FilterProps) => {
 
     const buttonText = intl.formatMessage({id: 'screen.search.results.filter.show_results', defaultMessage: 'Show results'});
     const buttonTitle = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
-    const clearText = intl.formatMessage({id: 'screen.search.results.filter.clear_all', defaultMessage: 'Clear all'});
 
     return (
         <BottomSheetContent
@@ -167,8 +163,6 @@ const Filter = ({initialState, setParentFilterState}: FilterProps) => {
             showTitle={!isTablet}
             testID='search.filters'
             title={buttonTitle}
-            titleButtonText={clearText}
-            onTitleButtonPress={handleClearAll}
             titleSeparator={true}
         >
             <View style={style.container}>

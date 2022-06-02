@@ -3,7 +3,6 @@
 
 import React from 'react';
 import {GestureResponderEvent, Platform, Text, useWindowDimensions, View} from 'react-native';
-import RNButton from 'react-native-button';
 
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -17,12 +16,10 @@ type Props = {
     children: React.ReactNode;
     disableButton?: boolean;
     onPress?: (e: GestureResponderEvent) => void;
-    onTitleButtonPress?: (e: GestureResponderEvent) => void;
     showButton: boolean;
     showTitle: boolean;
     testID?: string;
     title?: string;
-    titleButtonText?: string;
     titleSeparator?: boolean;
 }
 
@@ -42,14 +39,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             ...typography('Heading', 600, 'SemiBold'),
         },
-        titleButton: {
-            color: theme.linkColor,
-            alignItems: 'center',
-            ...typography('Body', 200, 'SemiBold'),
-        },
-        titleButtonContainer: {
-            marginLeft: 'auto',
-        },
         separator: {
             height: 1,
             right: 16,
@@ -59,7 +48,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const BottomSheetContent = ({buttonText, buttonIcon, children, disableButton, onPress, onTitleButtonPress, showButton, showTitle, testID, title, titleButtonText, titleSeparator}: Props) => {
+const BottomSheetContent = ({buttonText, buttonIcon, children, disableButton, onPress, showButton, showTitle, testID, title, titleSeparator}: Props) => {
     const dimensions = useWindowDimensions();
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -80,15 +69,6 @@ const BottomSheetContent = ({buttonText, buttonIcon, children, disableButton, on
                     >
                         {title}
                     </Text>
-                    <View style={styles.titleButtonContainer}>
-                        <RNButton
-                            onPress={onTitleButtonPress}
-                        >
-                            <Text style={styles.titleButton}>
-                                {titleButtonText}
-                            </Text>
-                        </RNButton>
-                    </View>
                 </View>
             }
             {titleSeparator &&
