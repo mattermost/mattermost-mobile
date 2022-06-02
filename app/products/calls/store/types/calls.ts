@@ -15,12 +15,13 @@ export type CallsState = {
 }
 
 export type Call = {
-	participants: Dictionary<CallParticipant>;
+    participants: Dictionary<CallParticipant>;
     channelId: string;
     startTime: number;
     speakers: string[];
     screenOn: string;
     threadId: string;
+    creatorId: string;
 }
 
 export type CallParticipant = {
@@ -49,6 +50,7 @@ export type ServerCallState = {
     states: ServerUserState[];
     thread_id: string;
     screen_sharing_id: string;
+    creator_id: string;
 }
 
 export type VoiceEventData = {

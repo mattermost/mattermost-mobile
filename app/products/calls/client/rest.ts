@@ -9,6 +9,7 @@ export interface ClientCallsMix {
     getCallsConfig: () => Promise<ServerConfig>;
     enableChannelCalls: (channelId: string) => Promise<ServerChannelState>;
     disableChannelCalls: (channelId: string) => Promise<ServerChannelState>;
+    endCall: (channelId: string) => Promise<any>;
 }
 
 const ClientCalls = (superclass: any) => class extends superclass {
@@ -49,6 +50,13 @@ const ClientCalls = (superclass: any) => class extends superclass {
         return this.doFetch(
             `${this.getCallsRoute()}/${channelId}`,
             {method: 'post', body: JSON.stringify({enabled: false})},
+        );
+    };
+
+    endCall = async (channelId: string) => {
+        return this.doFetch(
+            `${this.getCallsRoute()}/calls/${channelId}/end`,
+            {method: 'post'},
         );
     };
 };
