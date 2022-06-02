@@ -6,7 +6,7 @@ import {createSelector} from 'reselect';
 import {Client4} from '@client/rest';
 import Calls from '@constants/calls';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/common';
-import {getServerVersion} from '@mm-redux/selectors/entities/general';
+import {getLicense, getServerVersion} from '@mm-redux/selectors/entities/general';
 import {GlobalState} from '@mm-redux/types/store';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {Call} from '@mmproducts/calls/store/types/calls';
@@ -84,5 +84,45 @@ export const getNumCurrentConnectedParticipants: (state: GlobalState) => number 
             return 0;
         }
         return Object.keys(participants).length || 0;
+    },
+);
+
+const isCloud: (state: GlobalState) => boolean = createSelector(
+    getLicense,
+    (license) => license?.Cloud === 'true',
+);
+
+// NOTE: Calls v0.5.3 will not return sku_short_name in config, so this will fail
+const isCloudProfessionalOrEnterprise: (state: GlobalState) => boolean = createSelector(
+    isCloud,
+    getLicense,
+    getConfig,
+    (cloud, license, config) => {
+        return cloud && (config.sku_short_name === 'professional' || config.sku_short_name === 'enterprise');
+    },
+);
+
+export const isCloudLimitRestricted: (state: GlobalState, channelId?: string) => boolean = createSelector(
+    isCloud,
+    isCloudProfessionalOrEnterprise,
+    (state: GlobalState, channelId: string) => (channelId ? getCalls(state)[channelId] : getCallInCurrentChannel(state)),
+    getConfig,
+    (cloud, isCloudPaid, call, config) => {
+        if (!call || !cloud) {
+            return false;
+        }
+
+        // TODO: The next block is used for case when cloud server is using Calls v0.5.3. This can be removed
+        //  when v0.5.4 is prepackaged in cloud. Then replace the max in the return statement with
+        //  config.cloud_max_participants, and replace cloudPaid with isCloudPaid
+        let max = config.cloud_max_participants;
+        let cloudPaid = isCloudPaid;
+        if (cloud && !max) {
+            // We're not sure if we're in cloud paid because this could be v0.5.3, so assume we are for now (the server will prevent calls)
+            cloudPaid = true;
+            max = Calls.DefaultCloudMaxParticipants;
+        }
+
+        return cloudPaid && Object.keys(call.participants || {}).length >= max;
     },
 );

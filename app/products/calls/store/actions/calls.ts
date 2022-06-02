@@ -201,7 +201,10 @@ export function joinCall(channelId: string, intl: typeof intlShape): ActionFunc 
         dispatch(setSpeakerphoneOn(false));
 
         try {
-            ws = await newClient(channelId, () => null, setScreenShareURL);
+            ws = await newClient(channelId, getConfig(getState()).ICEServers, () => {
+                dispatch(setSpeakerphoneOn(false));
+                dispatch({type: CallsTypes.RECEIVED_MYSELF_LEFT_CALL});
+            }, setScreenShareURL);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
             dispatch(logError(error));
@@ -224,13 +227,11 @@ export function joinCall(channelId: string, intl: typeof intlShape): ActionFunc 
 }
 
 export function leaveCall(): ActionFunc {
-    return async (dispatch: DispatchFunc) => {
+    return async () => {
         if (ws) {
             ws.disconnect();
             ws = null;
         }
-        dispatch(setSpeakerphoneOn(false));
-        dispatch({type: CallsTypes.RECEIVED_MYSELF_LEFT_CALL});
         return {};
     };
 }
