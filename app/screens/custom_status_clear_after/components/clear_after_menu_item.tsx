@@ -116,7 +116,6 @@ const ClearAfterMenuItem = ({currentUser, duration, expiryTime = '', handleItemC
                         {showExpiryTime && expiryTime !== '' && (
                             <View style={style.rightPosition}>
                                 <CustomStatusExpiry
-                                    currentUser={currentUser}
                                     theme={theme}
                                     time={moment(expiryTime).toDate()}
                                     textStyles={style.customStatusExpiry}

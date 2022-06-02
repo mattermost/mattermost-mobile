@@ -313,7 +313,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     render() {
         const {duration, emoji, expires_at, text} = this.state;
-        const {customStatusExpirySupported, currentUser, intl, recentCustomStatuses, theme} = this.props;
+        const {customStatusExpirySupported, intl, recentCustomStatuses, theme} = this.props;
         const isStatusSet = Boolean(emoji || text);
         const style = getStyleSheet(theme);
 
@@ -356,7 +356,6 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                                     />
                                     {isStatusSet && customStatusExpirySupported && (
                                         <ClearAfter
-                                            currentUser={currentUser}
                                             duration={duration}
                                             expiresAt={expires_at}
                                             onOpenClearAfterModal={this.openClearAfterModal}

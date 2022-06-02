@@ -19,6 +19,8 @@ class EphemeralStore {
     private addingTeam = new Set<string>();
     private joiningChannels = new Set<string>();
     private leavingChannels = new Set<string>();
+    private archivingChannels = new Set<string>();
+    private convertingChannels = new Set<string>();
 
     addNavigationComponentId = (componentId: string) => {
         this.addToNavigationComponentIdStack(componentId);
@@ -132,6 +134,32 @@ class EphemeralStore {
 
             found = !this.navigationComponentIdStack.includes(componentId);
         }
+    };
+
+    // Ephemeral control when (un)archiving a channel locally
+    addArchivingChannel = (channelId: string) => {
+        this.archivingChannels.add(channelId);
+    };
+
+    isArchivingChannel = (channelId: string) => {
+        return this.archivingChannels.has(channelId);
+    };
+
+    removeArchivingChannel = (channelId: string) => {
+        this.archivingChannels.delete(channelId);
+    };
+
+    // Ephemeral control when converting a channel to private locally
+    addConvertingChannel = (channelId: string) => {
+        this.convertingChannels.add(channelId);
+    };
+
+    isConvertingChannel = (channelId: string) => {
+        return this.convertingChannels.has(channelId);
+    };
+
+    removeConvertingChannel = (channelId: string) => {
+        this.convertingChannels.delete(channelId);
     };
 
     // Ephemeral control when leaving a channel locally
