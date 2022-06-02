@@ -35,7 +35,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     text: {
         color: changeOpacity(theme.centerChannelColor, 0.56),
         paddingHorizontal: 5,
-        textTransform: 'capitalize',
         ...typography('Body', 50, 'SemiBold'),
     },
 }));

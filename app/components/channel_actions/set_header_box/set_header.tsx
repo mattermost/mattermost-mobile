@@ -7,21 +7,27 @@ import {StyleProp, ViewStyle} from 'react-native';
 
 import OptionBox from '@components/option_box';
 import {Screens} from '@constants';
-import {dismissBottomSheet, showModal} from '@screens/navigation';
+import {dismissBottomSheet, goToScreen, showModal} from '@screens/navigation';
 
 type Props = {
     channelId: string;
     containerStyle?: StyleProp<ViewStyle>;
     isHeaderSet: boolean;
+    inModal?: boolean;
     testID?: string;
 }
 
-const SetHeaderBox = ({channelId, containerStyle, isHeaderSet, testID}: Props) => {
+const SetHeaderBox = ({channelId, containerStyle, isHeaderSet, inModal, testID}: Props) => {
     const intl = useIntl();
 
     const onSetHeader = useCallback(async () => {
-        await dismissBottomSheet();
         const title = intl.formatMessage({id: 'screens.channel_edit_header', defaultMessage: 'Edit Channel Header'});
+        if (inModal) {
+            goToScreen(Screens.CREATE_OR_EDIT_CHANNEL, title, {channelId, headerOnly: true});
+            return;
+        }
+
+        await dismissBottomSheet();
         showModal(Screens.CREATE_OR_EDIT_CHANNEL, title, {channelId, headerOnly: true});
     }, [intl, channelId]);
 

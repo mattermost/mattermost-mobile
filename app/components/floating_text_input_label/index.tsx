@@ -132,8 +132,8 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     testID,
     ...props
 }: FloatingTextInputProps, ref) => {
-    const [focused, setIsFocused] = useState(Boolean(value) && editable);
-    const [focusedLabel, setIsFocusLabel] = useState<boolean | undefined>(Boolean(placeholder || value));
+    const [focused, setIsFocused] = useState(false);
+    const [focusedLabel, setIsFocusLabel] = useState<boolean | undefined>();
     const inputRef = useRef<TextInput>(null);
     const debouncedOnFocusTextInput = debounce(setIsFocusLabel, 500, {leading: true, trailing: false});
     const styles = getStyleSheet(theme);
