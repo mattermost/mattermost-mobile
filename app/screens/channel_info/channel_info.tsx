@@ -26,14 +26,17 @@ type Props = {
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    content: {
+        paddingHorizontal: 20,
+        paddingBottom: 16,
+    },
     flex: {
         flex: 1,
-        paddingHorizontal: 20,
     },
     separator: {
         height: 1,
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-        marginVertical: 20,
+        marginVertical: 8,
     },
 }));
 
@@ -60,7 +63,11 @@ const ChannelInfo = ({channelId, closeButtonId, componentId, type}: Props) => {
             edges={edges}
             style={styles.flex}
         >
-            <ScrollView bounces={false}>
+            <ScrollView
+                bounces={true}
+                alwaysBounceVertical={false}
+                contentContainerStyle={styles.content}
+            >
                 <Title
                     channelId={channelId}
                     type={type}

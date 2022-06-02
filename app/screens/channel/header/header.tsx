@@ -15,6 +15,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -87,7 +88,7 @@ const ChannelHeader = ({
         popTopScreen(componentId);
     }, []);
 
-    const onTitlePress = useCallback(() => {
+    const onTitlePress = useCallback(preventDoubleTap(() => {
         let title;
         switch (channelType) {
             case General.DM_CHANNEL:
@@ -114,7 +115,7 @@ const ChannelHeader = ({
             },
         };
         showModal(Screens.CHANNEL_INFO, title, {channelId, closeButtonId}, options);
-    }, [channelId, channelType, intl, theme]);
+    }), [channelId, channelType, intl, theme]);
 
     const onChannelQuickAction = useCallback(() => {
         if (isTablet) {

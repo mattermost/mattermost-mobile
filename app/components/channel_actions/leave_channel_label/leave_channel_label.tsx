@@ -7,6 +7,7 @@ import {Alert} from 'react-native';
 
 import {leaveChannel} from '@actions/remote/channel';
 import {setDirectChannelVisible} from '@actions/remote/preference';
+import OptionItem from '@components/option_item';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -14,6 +15,7 @@ import {useIsTablet} from '@hooks/device';
 import {dismissAllModals, dismissBottomSheet, popToRoot} from '@screens/navigation';
 
 type Props = {
+    isOptionItem?: boolean;
     canLeave: boolean;
     channelId: string;
     displayName?: string;
@@ -21,7 +23,7 @@ type Props = {
     testID?: string;
 }
 
-const LeaveChanelLabel = ({canLeave, channelId, displayName, type, testID}: Props) => {
+const LeaveChanelLabel = ({canLeave, channelId, displayName, isOptionItem, type, testID}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
@@ -154,6 +156,20 @@ const LeaveChanelLabel = ({canLeave, channelId, displayName, type, testID}: Prop
             leaveText = intl.formatMessage({id: 'channel_info.leave_channel', defaultMessage: 'Leave channel'});
             icon = 'exit-to-app';
             break;
+    }
+
+    if (isOptionItem) {
+        return (
+            <OptionItem
+                action={onLeave}
+                destructive={true}
+                icon={icon}
+
+                label={leaveText}
+                testID={testID}
+                type='default'
+            />
+        );
     }
 
     return (

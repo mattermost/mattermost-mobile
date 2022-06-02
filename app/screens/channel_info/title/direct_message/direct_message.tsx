@@ -27,7 +27,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     position: {
         color: changeOpacity(theme.centerChannelColor, 0.72),
-        ...typography('Body', 400),
+        ...typography('Body', 200),
     },
     tagContainer: {
         marginLeft: 12,
