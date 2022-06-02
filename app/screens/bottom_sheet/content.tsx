@@ -31,7 +31,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
         },
         titleContainer: {
-            flexDirection: 'row',
             marginTop: 4,
             marginBottom: 12,
         },

@@ -1,11 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {inspect} from 'util';
+
 import React, {useCallback, useMemo, useState} from 'react';
 import {FlatList, Text, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import {FileModel, PostModel} from '@app/database/models/server';
+import {PostModel} from '@app/database/models/server';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
@@ -13,6 +15,7 @@ import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
 
+import FileCard from './fileCard';
 import Header from './header';
 
 import type {ViewableItemsChanged} from '@typings/components/post_list';
@@ -21,7 +24,6 @@ const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 type Props = {
     postIds: string[];
-    fileIds: string[];
     scrollRef: any;
     searchValue: string;
     selectedTab: string;
@@ -29,7 +31,7 @@ type Props = {
     currentTimezone: string;
     isTimezoneEnabled: boolean;
     posts: PostModel[];
-    files: FileModel[];
+    fileInfos: FileInfo[];
 }
 
 const notImplementedComponent = (type: string) => {
@@ -49,8 +51,7 @@ const notImplementedComponent = (type: string) => {
 
 const Results = ({
     currentTimezone,
-    files,
-    fileIds,
+    fileInfos,
     isTimezoneEnabled,
     onHeaderTabSelect,
     posts,
@@ -63,18 +64,19 @@ const Results = ({
 
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
 
-    const [filteredFiles, setFilterFiles] = useState(files);
+    // const [filteredFiles, setFilterFiles] = useState(fileInfos);
 
     const renderHeader = useCallback(() => {
         return (
             <Header
-                files={files}
+                fileInfos={fileInfos}
                 onTabSelect={onHeaderTabSelect}
-                setFilterFiles={setFilterFiles}
+
+                //setFilterFiles={setFilterFiles}
                 numberMessages={postIds.length}
             />
         );
-    }, [fileIds, onHeaderTabSelect, postIds]);
+    }, [fileInfos, onHeaderTabSelect, postIds]);
 
     const renderPostItem = useCallback(({item}) => {
         if (typeof item === 'string') {
@@ -144,13 +146,16 @@ const Results = ({
     }, [renderPostItem]);
 
     const renderFiles = useCallback(() => {
-        if (filteredFiles.length === 0) {
-            return renderNoResults();
+        const infos = [];
+        for (const infoID of Object.keys(fileInfos)) {
+            infos.push(
+                <FileCard
+                    fileInfo={fileInfos[infoID]}
+                />,
+            );
         }
-        return (
-            <Text>{filteredFiles.map((fInfo) => `${fInfo.id}  ${fInfo.mimeType}\n`)}</Text>
-        );
-    }, [files, filteredFiles]);
+        return infos;
+    }, [fileInfos]);
 
     let content;
     if (!searchValue) {

@@ -4,25 +4,21 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
-import {FileModel} from '@app/database/models/server';
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
-import {isDocument, isImage, isVideo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import Filter, {clearedState} from './filter';
+import Filter, {SelectedFilter} from './filter';
 import SelectButton from './header_button';
 
 export type SelectTab = 'files' | 'messages'
-type FilterFunction = (file: FileModel) => boolean
 
 type Props = {
     onTabSelect: (tab: SelectTab) => void;
     numberMessages: number;
-    files: FileModel[];
-    setFilterFiles: (files: FileModel[]) => void;
+    fileInfos: FileInfo[];
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -48,7 +44,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const Header = ({onTabSelect, numberMessages, files, setFilterFiles}: Props) => {
+const Header = ({onTabSelect, numberMessages, fileInfos}: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
     const intl = useIntl();
@@ -59,8 +55,8 @@ const Header = ({onTabSelect, numberMessages, files, setFilterFiles}: Props) => 
     const [tab, setTab] = useState(0);
     const [showFilterIcon, setShowFilterIcon] = useState(false);
 
-    const [numberFiles, setNumberFiles] = useState(files.length);
-    const [filterState, setFilterState] = useState(clearedState);
+    const [numberFiles, setNumberFiles] = useState(fileInfos.length);
+    const [filter, setFilter] = useState<SelectedFilter>('All file types');
     const [hasFilters, setHasFilters] = useState(false);
 
     const handleMessagesPress = useCallback(() => {
@@ -85,8 +81,8 @@ const Header = ({onTabSelect, numberMessages, files, setFilterFiles}: Props) => 
         const renderContent = () => {
             return (
                 <Filter
-                    initialState={filterState}
-                    setParentFilterState={setFilterState}
+                    initialFilter={filter}
+                    setFilter={setFilter}
                 />
             );
         };
@@ -97,51 +93,16 @@ const Header = ({onTabSelect, numberMessages, files, setFilterFiles}: Props) => 
             theme,
             title: intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'}),
         });
-    }, [filterState]);
-
-    // get only the active filter functions to reduce the total number of
-    // function calls for each file
-    const getActiveFilterFunctions = useCallback(() => {
-        const filterArray: FilterFunction[] = [];
-        if (filterState.Documents) {
-            filterArray.push(isDocument);
-        }
-
-        if (filterState.Images) {
-            filterArray.push(isImage);
-        }
-
-        if (filterState.Videos) {
-            filterArray.push(isVideo);
-        }
-        return filterArray;
-    }, [filterState]);
+    }, [filter]);
 
     const handleFilterFiles = useCallback(() => {
-        if (JSON.stringify(filterState) === JSON.stringify(clearedState)) {
-            console.log('No filters');
-            setFilterFiles(files);
-            setNumberFiles(files.length);
-        } else {
-            console.log('Has filters');
-            const filteredFiles = [];
-            const filterFunctions = getActiveFilterFunctions();
-            for (const file of files) {
-                for (const filterFunc of filterFunctions) {
-                    if (filterFunc(file)) {
-                        filteredFiles.push(file);
-                    }
-                }
-            }
-            setFilterFiles(filteredFiles);
-            setNumberFiles(filteredFiles.length);
-        }
-    }, [getActiveFilterFunctions, setFilterFiles, hasFilters, files]);
+        setNumberFiles(Object.keys(fileInfos).length);
+    }, [hasFilters, fileInfos]);
 
     useEffect(() => {
-        setHasFilters(JSON.stringify(filterState) !== JSON.stringify(clearedState));
+        setHasFilters(filter !== 'All file types');
         handleFilterFiles();
-    }, [filterState, setHasFilters]);
+    }, [filter, setHasFilters]);
 
     return (
         <>
