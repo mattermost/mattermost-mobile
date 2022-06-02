@@ -19,6 +19,7 @@ class EphemeralStore {
     private addingTeam = new Set<string>();
     private joiningChannels = new Set<string>();
     private leavingChannels = new Set<string>();
+    private lastViewedThreadId = '';
 
     addNavigationComponentId = (componentId: string) => {
         this.addToNavigationComponentIdStack(componentId);
@@ -182,6 +183,15 @@ class EphemeralStore {
 
     getPushProxyVerificationState = (serverUrl: string) => {
         return this.pushProxyVerification[serverUrl];
+    };
+
+    // Ephemeral for the last viewed thread
+    getLastViewedThreadId = () => {
+        return this.lastViewedThreadId;
+    };
+
+    setLastViewedThreadId = (id: string) => {
+        this.lastViewedThreadId = id;
     };
 }
 
