@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {intlShape} from 'react-intl';
+import {Alert} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 import {batch} from 'react-redux';
 
@@ -9,6 +10,10 @@ import {Client4} from '@client/rest';
 import Calls from '@constants/calls';
 import {logError} from '@mm-redux/actions/errors';
 import {forceLogoutIfNecessary} from '@mm-redux/actions/helpers';
+import {General} from '@mm-redux/constants';
+import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
+import {getTeammateNameDisplaySetting} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentUserId, getCurrentUserRoles, getUser} from '@mm-redux/selectors/entities/users';
 import {
     GenericAction,
     ActionFunc,
@@ -17,10 +22,16 @@ import {
     ActionResult,
 } from '@mm-redux/types/actions';
 import {Dictionary} from '@mm-redux/types/utilities';
+import {displayUsername, isAdmin as checkIsAdmin} from '@mm-redux/utils/user_utils';
 import {newClient} from '@mmproducts/calls/connection';
 import CallsTypes from '@mmproducts/calls/store/action_types/calls';
-import {getConfig} from '@mmproducts/calls/store/selectors/calls';
+import {
+    getCallInCurrentChannel,
+    getConfig,
+    getNumCurrentConnectedParticipants,
+} from '@mmproducts/calls/store/selectors/calls';
 import {Call, CallParticipant, DefaultServerConfig} from '@mmproducts/calls/store/types/calls';
+import {getUserIdFromDM} from '@mmproducts/calls/utils';
 import {hasMicrophonePermission} from '@utils/permission';
 
 export let ws: any = null;
@@ -82,6 +93,7 @@ export function loadCalls(): ActionFunc {
                     speakers: [],
                     screenOn: channel.call.screen_sharing_id,
                     threadId: channel.call.thread_id,
+                    creatorId: channel.call.creator_id,
                 };
             }
             enabledChannels[channel.channel_id] = channel.enabled;
@@ -259,5 +271,53 @@ export function setSpeakerphoneOn(newState: boolean): GenericAction {
     return {
         type: CallsTypes.SET_SPEAKERPHONE,
         data: newState,
+    };
+}
+
+export function endCallAlert(channelId: string): ActionFunc {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        const userId = getCurrentUserId(getState());
+        const numParticipants = getNumCurrentConnectedParticipants(getState());
+        const channel = getCurrentChannel(getState());
+        const currentCall = getCallInCurrentChannel(getState());
+        const roles = getCurrentUserRoles(getState());
+        const isAdmin = checkIsAdmin(roles);
+
+        if (!isAdmin && userId !== currentCall?.creatorId) {
+            Alert.alert('Error', 'You do not have permission to end the call. Please ask the call creator to end call.');
+            return {};
+        }
+
+        let msg = `Are you sure you want to end a call with ${numParticipants} participants in ${channel.display_name}?`;
+        if (channel.type === General.DM_CHANNEL) {
+            const otherID = getUserIdFromDM(channel.name, getCurrentUserId(getState()));
+            const otherUser = getUser(getState(), otherID);
+            const nameDisplay = getTeammateNameDisplaySetting(getState());
+            msg = `Are you sure you want to end a call with ${displayUsername(otherUser, nameDisplay)}?`;
+        }
+
+        Alert.alert(
+            'End call',
+            msg,
+            [
+                {
+                    text: 'Cancel',
+                },
+                {
+                    text: 'End call',
+                    onPress: async () => {
+                        try {
+                            await Client4.endCall(channelId);
+                        } catch (e) {
+                            const err = e.message || 'unable to complete command, see server logs';
+                            Alert.alert('Error', `Error: ${err}`);
+                        }
+                    },
+                    style: 'cancel',
+                },
+            ],
+        );
+
+        return {};
     };
 }

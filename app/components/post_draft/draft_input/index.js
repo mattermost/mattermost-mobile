@@ -18,6 +18,7 @@ import {getAssociatedGroupsForReferenceMap} from '@mm-redux/selectors/entities/g
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities/users';
+import {endCallAlert} from '@mmproducts/calls/store/actions/calls';
 import {isLandscape} from '@selectors/device';
 import {getCurrentChannelDraft, getThreadDraft} from '@selectors/views';
 
@@ -103,6 +104,7 @@ const mapDispatchToProps = {
     setStatus,
     getChannelMemberCountsByGroup,
     addRecentUsedEmojisInMessage,
+    endCallAlert,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps, null, {forwardRef: true})(PostDraft);

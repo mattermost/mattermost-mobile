@@ -65,6 +65,7 @@ const WebsocketEvents = {
     CALLS_USER_VOICE_ON: `custom_${Calls.PluginId}_user_voice_on`,
     CALLS_USER_VOICE_OFF: `custom_${Calls.PluginId}_user_voice_off`,
     CALLS_CALL_START: `custom_${Calls.PluginId}_call_start`,
+    CALLS_CALL_END: `custom_${Calls.PluginId}_call_end`,
     CALLS_SCREEN_ON: `custom_${Calls.PluginId}_user_screen_on`,
     CALLS_SCREEN_OFF: `custom_${Calls.PluginId}_user_screen_off`,
     CALLS_USER_RAISE_HAND: `custom_${Calls.PluginId}_user_raise_hand`,

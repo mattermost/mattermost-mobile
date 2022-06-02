@@ -69,6 +69,24 @@ export function isCallsPluginEnabled(state: GlobalState) {
     return state.entities.calls.pluginEnabled;
 }
 
+export const getCallInCurrentChannel: (state: GlobalState) => Call | undefined = createSelector(
+    getCurrentChannelId,
+    getCalls,
+    (currentChannelId, calls) => calls[currentChannelId],
+);
+
+export const getNumCurrentConnectedParticipants: (state: GlobalState) => number = createSelector(
+    getCurrentChannelId,
+    getCalls,
+    (currentChannelId, calls) => {
+        const participants = calls[currentChannelId]?.participants;
+        if (!participants) {
+            return 0;
+        }
+        return Object.keys(participants).length || 0;
+    },
+);
+
 const isCloud: (state: GlobalState) => boolean = createSelector(
     getLicense,
     (license) => license?.Cloud === 'true',
@@ -82,12 +100,6 @@ const isCloudProfessionalOrEnterprise: (state: GlobalState) => boolean = createS
     (cloud, license, config) => {
         return cloud && (config.sku_short_name === 'professional' || config.sku_short_name === 'enterprise');
     },
-);
-
-const getCallInCurrentChannel: (state: GlobalState) => Call | undefined = createSelector(
-    getCurrentChannelId,
-    getCalls,
-    (currentChannelId, calls) => calls[currentChannelId],
 );
 
 export const isCloudLimitRestricted: (state: GlobalState, channelId?: string) => boolean = createSelector(
