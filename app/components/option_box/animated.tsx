@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {Pressable, StyleSheet, Text} from 'react-native';
+import {Pressable, StyleSheet, Text, View} from 'react-native';
 import Animated, {Easing, interpolate, interpolateColor, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
@@ -28,11 +28,13 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
         borderRadius: 4,
         flex: 1,
         maxHeight: OPTIONS_HEIGHT,
         minWidth: 80,
+    },
+    background: {
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
     },
     center: {
         alignItems: 'center',
@@ -115,10 +117,11 @@ const AnimatedOptionBox = ({
         <AnimatedPressable
             onPress={handleOnPress}
             disabled={activated}
+            style={styles.container}
             testID={testID}
         >
             {({pressed}) => (
-                <Animated.View style={[styles.container, pressed && {backgroundColor: changeOpacity(theme.buttonBg, 0.16)}]}>
+                <View style={[styles.container, styles.background, pressed && {backgroundColor: changeOpacity(theme.buttonBg, 0.16)}]}>
                     <Animated.View style={[styles.container, backgroundStyle]}>
                         <Animated.View style={[StyleSheet.absoluteFill, styles.center, optionStyle]}>
                             <CompassIcon
@@ -149,7 +152,7 @@ const AnimatedOptionBox = ({
                             </Text>
                         </Animated.View>
                     </Animated.View>
-                </Animated.View>
+                </View>
             )}
         </AnimatedPressable>
     );

@@ -6,13 +6,14 @@ import React, {useCallback, useState, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {ActivityIndicator, DeviceEventEmitter, FlatList, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
-import {SafeAreaView, Edge} from 'react-native-safe-area-context';
+import {SafeAreaView, Edge, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchRecentMentions} from '@actions/remote/search';
 import FreezeScreen from '@components/freeze_screen';
 import NavigationHeader from '@components/navigation_header';
 import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
+import RoundedHeaderContext from '@components/rounded_header_context';
 import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -25,7 +26,6 @@ import type {ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
-
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
 
 type Props = {
@@ -49,6 +49,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
     const theme = useTheme();
     const route = useRoute();
     const isFocused = useIsFocused();
+    const insets = useSafeAreaInsets();
     const {formatMessage} = useIntl();
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -62,7 +63,15 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
 
     const title = formatMessage({id: 'screen.mentions.title', defaultMessage: 'Recent Mentions'});
     const subtitle = formatMessage({id: 'screen.mentions.subtitle', defaultMessage: 'Messages you\'ve been mentioned in'});
-    const isLargeTitle = true;
+
+    const onSnap = (offset: number) => {
+        scrollRef.current?.scrollToOffset({offset, animated: true});
+    };
+
+    useEffect(() => {
+        opacity.value = isFocused ? 1 : 0;
+        translateX.value = isFocused ? 0 : translateSide;
+    }, [isFocused]);
 
     useEffect(() => {
         setLoading(true);
@@ -71,22 +80,10 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
         });
     }, [serverUrl]);
 
-    const {scrollPaddingTop, scrollRef, scrollValue, onScroll} = useCollapsibleHeader<FlatList<string>>(isLargeTitle, Boolean(subtitle), false);
-
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop}), [scrollPaddingTop]);
-
+    const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<FlatList<string>>(true, onSnap);
+    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop - insets.top, flexGrow: 1}), [scrollPaddingTop, insets.top]);
+    const scrollViewStyle = useMemo(() => ({top: insets.top}), [insets.top]);
     const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [mentions]);
-
-    const handleRefresh = useCallback(async () => {
-        setRefreshing(true);
-        await fetchRecentMentions(serverUrl);
-        setRefreshing(false);
-    }, [serverUrl]);
-
-    useEffect(() => {
-        opacity.value = isFocused ? 1 : 0;
-        translateX.value = isFocused ? 0 : translateSide;
-    }, [isFocused]);
 
     const animated = useAnimatedStyle(() => {
         return {
@@ -94,6 +91,18 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
             transform: [{translateX: withTiming(translateX.value, {duration: 150})}],
         };
     }, []);
+
+    const top = useAnimatedStyle(() => {
+        return {
+            top: headerHeight.value,
+        };
+    });
+
+    const handleRefresh = useCallback(async () => {
+        setRefreshing(true);
+        await fetchRecentMentions(serverUrl);
+        setRefreshing(false);
+    }, [serverUrl]);
 
     const onViewableItemsChanged = useCallback(({viewableItems}: ViewableItemsChanged) => {
         if (!viewableItems.length) {
@@ -111,7 +120,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
     }, []);
 
     const renderEmptyList = useCallback(() => (
-        <View style={[styles.empty, paddingTop]}>
+        <View style={styles.empty}>
             {loading ? (
                 <ActivityIndicator
                     color={theme.centerChannelColor}
@@ -148,7 +157,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
     return (
         <FreezeScreen freeze={!isFocused}>
             <NavigationHeader
-                isLargeTitle={isLargeTitle}
+                isLargeTitle={true}
                 showBackButton={false}
                 subtitle={subtitle}
                 title={title}
@@ -160,6 +169,9 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
                 edges={EDGES}
             >
                 <Animated.View style={[styles.flex, animated]}>
+                    <Animated.View style={top}>
+                        <RoundedHeaderContext/>
+                    </Animated.View>
                     <AnimatedFlatList
                         ref={scrollRef}
                         contentContainerStyle={paddingTop}
@@ -174,7 +186,9 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
                         onRefresh={handleRefresh}
                         refreshing={refreshing}
                         renderItem={renderItem}
+                        removeClippedSubviews={true}
                         onViewableItemsChanged={onViewableItemsChanged}
+                        style={scrollViewStyle}
                     />
                 </Animated.View>
             </SafeAreaView>

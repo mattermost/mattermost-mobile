@@ -16,6 +16,7 @@ import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissModal} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {isDateLine, getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import EmptyState from './components/empty';
@@ -72,10 +73,7 @@ function SavedMessages({
     const close = () => {
         if (componentId) {
             dismissModal({componentId});
-            return true;
         }
-
-        return false;
     };
 
     useEffect(() => {
@@ -106,7 +104,14 @@ function SavedMessages({
     useEffect(() => {
         let listener: EventSubscription|undefined;
         if (!isTablet && componentId) {
-            listener = BackHandler.addEventListener('hardwareBackPress', close);
+            listener = BackHandler.addEventListener('hardwareBackPress', () => {
+                if (EphemeralStore.getNavigationTopComponentId() === componentId) {
+                    close();
+                    return true;
+                }
+
+                return false;
+            });
         }
 
         return () => listener?.remove();

@@ -24,6 +24,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         mathStyle: {
             marginBottom: Platform.select({default: -10, ios: 2.5}),
+            color: theme.centerChannelColor,
         },
         viewStyle: {
             flexDirection: 'row',

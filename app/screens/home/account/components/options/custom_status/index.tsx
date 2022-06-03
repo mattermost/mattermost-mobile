@@ -72,7 +72,6 @@ const CustomStatus = ({isCustomStatusExpirySupported, isTablet, currentUser}: Cu
             testID='settings.sidebar.custom_status.action'
             labelComponent={
                 <CustomLabel
-                    currentUser={currentUser}
                     theme={theme}
                     customStatus={customStatus!}
                     isCustomStatusExpirySupported={isCustomStatusExpirySupported}

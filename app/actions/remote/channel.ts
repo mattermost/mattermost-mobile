@@ -6,7 +6,7 @@ import {Model} from '@nozbe/watermelondb';
 import {IntlShape} from 'react-intl';
 
 import {addChannelToDefaultCategory, storeCategories} from '@actions/local/category';
-import {removeCurrentUserFromChannel, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
+import {removeCurrentUserFromChannel, setChannelDeleteAt, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
 import {switchToGlobalThreads} from '@actions/local/thread';
 import {General, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -1232,5 +1232,99 @@ export const toggleMuteChannel = async (serverUrl: string, channelId: string, sh
         };
     } catch (error) {
         return {error};
+    }
+};
+
+export const archiveChannel = async (serverUrl: string, channelId: string) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const {database} = operator;
+        const config = await getConfig(database);
+        EphemeralStore.addArchivingChannel(channelId);
+        await client.deleteChannel(channelId);
+        if (config?.ExperimentalViewArchivedChannels === 'true') {
+            await setChannelDeleteAt(serverUrl, channelId, Date.now());
+        } else {
+            removeCurrentUserFromChannel(serverUrl, channelId);
+        }
+
+        return {error: undefined};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    } finally {
+        EphemeralStore.removeArchivingChannel(channelId);
+    }
+};
+
+export const unarchiveChannel = async (serverUrl: string, channelId: string) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        EphemeralStore.addArchivingChannel(channelId);
+        await client.unarchiveChannel(channelId);
+        await setChannelDeleteAt(serverUrl, channelId, Date.now());
+        return {error: undefined};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    } finally {
+        EphemeralStore.removeArchivingChannel(channelId);
+    }
+};
+
+export const convertChannelToPrivate = async (serverUrl: string, channelId: string) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const {database} = operator;
+        const channel = await getChannelById(database, channelId);
+        if (channel) {
+            EphemeralStore.addConvertingChannel(channelId);
+        }
+        await client.convertChannelToPrivate(channelId);
+        if (channel) {
+            channel.prepareUpdate((c) => {
+                c.type = General.PRIVATE_CHANNEL;
+            });
+            await operator.batchRecords([channel]);
+        }
+        return {error: undefined};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    } finally {
+        EphemeralStore.removeConvertingChannel(channelId);
     }
 };

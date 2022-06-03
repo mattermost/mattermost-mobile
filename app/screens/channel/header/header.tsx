@@ -4,25 +4,30 @@
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, Platform, Text, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import NavigationHeader from '@components/navigation_header';
-import {Navigation, Screens} from '@constants';
+import RoundedHeaderContext from '@components/rounded_header_context';
+import {General, Navigation, Screens} from '@constants';
 import {QUICK_OPTIONS_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {useDefaultHeaderHeight} from '@hooks/header';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import OtherMentionsBadge from './other_mentions_badge';
-import ChannelQuickAction from './quick_actions';
+import QuickActions from './quick_actions';
 
 import type {HeaderRightButton} from '@components/navigation_header/header';
 
 type ChannelProps = {
     channelId: string;
+    channelType: ChannelType;
     customStatus?: UserCustomStatus;
     isCustomStatusExpired: boolean;
     componentId?: string;
@@ -56,7 +61,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const ChannelHeader = ({
-    channelId, componentId, customStatus, displayName,
+    channelId, channelType, componentId, customStatus, displayName,
     isCustomStatusExpired, isOwnDirectMessage, memberCount,
     searchTerm, teamId,
 }: ChannelProps) => {
@@ -64,6 +69,12 @@ const ChannelHeader = ({
     const isTablet = useIsTablet();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const defaultHeight = useDefaultHeaderHeight();
+    const insets = useSafeAreaInsets();
+
+    const contextStyle = useMemo(() => ({
+        top: defaultHeight + insets.top,
+    }), [defaultHeight, insets.top]);
 
     const leftComponent = useMemo(() => {
         if (isTablet || !channelId || !teamId) {
@@ -78,10 +89,34 @@ const ChannelHeader = ({
         popTopScreen(componentId);
     }, []);
 
-    const onTitlePress = useCallback(() => {
-        const title = intl.formatMessage({id: 'screens.channel_info', defaultMessage: 'Channel Info'});
-        showModal(Screens.CHANNEL_INFO, title, {channelId});
-    }, [channelId, intl]);
+    const onTitlePress = useCallback(preventDoubleTap(() => {
+        let title;
+        switch (channelType) {
+            case General.DM_CHANNEL:
+                title = intl.formatMessage({id: 'screens.channel_info.dm', defaultMessage: 'Direct message info'});
+                break;
+            case General.GM_CHANNEL:
+                title = intl.formatMessage({id: 'screens.channel_info.gm', defaultMessage: 'Group message info'});
+                break;
+            default:
+                title = intl.formatMessage({id: 'screens.channel_info', defaultMessage: 'Channel info'});
+                break;
+        }
+
+        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
+        const closeButtonId = 'close-channel-info';
+
+        const options = {
+            topBar: {
+                leftButtons: [{
+                    id: closeButtonId,
+                    icon: closeButton,
+                    testID: closeButtonId,
+                }],
+            },
+        };
+        showModal(Screens.CHANNEL_INFO, title, {channelId, closeButtonId}, options);
+    }), [channelId, channelType, intl, theme]);
 
     const onChannelQuickAction = useCallback(() => {
         if (isTablet) {
@@ -90,7 +125,9 @@ const ChannelHeader = ({
         }
 
         const renderContent = () => {
-            return <ChannelQuickAction channelId={channelId}/>;
+            return (
+                <QuickActions channelId={channelId}/>
+            );
         };
 
         bottomSheet({
@@ -100,7 +137,7 @@ const ChannelHeader = ({
             theme,
             closeButtonId: 'close-channel-quick-actions',
         });
-    }, [channelId, isTablet, onTitlePress, theme]);
+    }, [channelId, channelType, isTablet, onTitlePress, theme]);
 
     const rightButtons: HeaderRightButton[] = useMemo(() => ([{
         iconName: 'magnify',
@@ -164,17 +201,22 @@ const ChannelHeader = ({
     }, [memberCount, customStatus, isCustomStatusExpired]);
 
     return (
-        <NavigationHeader
-            isLargeTitle={false}
-            leftComponent={leftComponent}
-            onBackPress={onBackPress}
-            onTitlePress={onTitlePress}
-            rightButtons={rightButtons}
-            showBackButton={!isTablet}
-            subtitle={subtitle}
-            subtitleCompanion={subtitleCompanion}
-            title={title}
-        />
+        <>
+            <NavigationHeader
+                isLargeTitle={false}
+                leftComponent={leftComponent}
+                onBackPress={onBackPress}
+                onTitlePress={onTitlePress}
+                rightButtons={rightButtons}
+                showBackButton={!isTablet}
+                subtitle={subtitle}
+                subtitleCompanion={subtitleCompanion}
+                title={title}
+            />
+            <View style={contextStyle}>
+                <RoundedHeaderContext/>
+            </View>
+        </>
     );
 };
 
