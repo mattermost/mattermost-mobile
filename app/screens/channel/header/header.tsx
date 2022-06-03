@@ -11,6 +11,7 @@ import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {General, Navigation, Screens} from '@constants';
+import {QUICK_OPTIONS_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
@@ -132,7 +133,7 @@ const ChannelHeader = ({
         bottomSheet({
             title: '',
             renderContent,
-            snapPoints: ['32%', 10],
+            snapPoints: [QUICK_OPTIONS_HEIGHT, 10],
             theme,
             closeButtonId: 'close-channel-quick-actions',
         });

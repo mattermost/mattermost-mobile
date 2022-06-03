@@ -7,6 +7,7 @@ import {View} from 'react-native';
 import ChannelActions from '@components/channel_actions';
 import InfoBox from '@components/channel_actions/info_box';
 import LeaveChannelLabel from '@components/channel_actions/leave_channel_label';
+import {QUICK_OPTIONS_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -16,7 +17,7 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        minHeight: 270,
+        minHeight: QUICK_OPTIONS_HEIGHT,
     },
     line: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
