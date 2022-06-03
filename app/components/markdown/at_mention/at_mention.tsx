@@ -9,15 +9,19 @@ import {useIntl} from 'react-intl';
 import {GestureResponderEvent, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {fetchGroupsForAutocomplete} from '@actions/remote/groups';
+import {useServerUrl} from '@app/context/server';
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {MM_TABLES} from '@constants/database';
 import {useTheme} from '@context/theme';
+import GroupModel from '@database/models/server/group';
 import UserModel from '@database/models/server/user';
 import {bottomSheet, dismissBottomSheet, showModal} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {displayUsername, getUsersByUsername} from '@utils/user';
 
+import type GroupModelType from '@typings/database/models/servers/group';
 import type UserModelType from '@typings/database/models/servers/user';
 
 type AtMentionProps = {
@@ -32,9 +36,10 @@ type AtMentionProps = {
     teammateNameDisplay: string;
     textStyle?: StyleProp<TextStyle>;
     users: UserModelType[];
+    groups: GroupModel[];
 }
 
-const {SERVER: {USER}} = MM_TABLES;
+const {SERVER: {GROUP, USER}} = MM_TABLES;
 
 const style = StyleSheet.create({
     bottomSheet: {flex: 1},
@@ -52,6 +57,7 @@ const AtMention = ({
     teammateNameDisplay,
     textStyle,
     users,
+    groups,
 }: AtMentionProps) => {
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
@@ -77,6 +83,43 @@ const AtMention = ({
         // @ts-expect-error: The model constructor is hidden within WDB type definition
         return new UserModel(database.get(USER), {username: ''});
     }, [users, mentionName]);
+
+    const serverUrl = useServerUrl();
+
+    const group = useMemo(() => {
+        if (user) {
+            return undefined;
+        }
+        const getGroupsByName = (gs: GroupModelType[]) => {
+            const groupsByName: Dictionary<GroupModelType> = {};
+
+            for (const g of gs) {
+                groupsByName[g.name] = g;
+            }
+
+            return groupsByName;
+        };
+
+        const groupsByName = getGroupsByName(groups);
+        let mn = mentionName.toLowerCase();
+
+        while (mn.length > 0) {
+            if (groupsByName[mn]) {
+                return groupsByName[mn];
+            }
+
+            // Repeatedly trim off trailing punctuation in case this is at the end of a sentence
+            if ((/[._-]$/).test(mn)) {
+                mn = mn.substring(0, mn.length - 1);
+            } else {
+                break;
+            }
+        }
+
+        // @ts-expect-error: The model constructor is hidden within WDB type definition
+        return new GroupModel(database.get(GROUP), {name: ''});
+    }, [groups, user, mentionName]);
+
     const userMentionKeys = useMemo(() => {
         if (mentionKeys) {
             return mentionKeys;
@@ -190,6 +233,21 @@ const AtMention = ({
             isMention = true;
             highlighted = true;
         } else {
+            // Search groups end point; otherwise local lookup
+            fetchGroupsForAutocomplete(serverUrl, mentionName).
+                then((fetchedGroups) => {
+                    if (Array.isArray(fetchedGroups) && fetchedGroups.length) {
+                        // See if any of the fetched ones are an exact match
+                        const matchedGroup = fetchedGroups.find((g) => g.name === mentionName);
+
+                        if (matchedGroup || group) {
+                            isMention = true;
+                        }
+                    }
+                }).
+                // eslint-disable-next-line no-console
+                catch(console.log);
+
             mention = mentionName;
         }
     }
