@@ -8,7 +8,6 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-// @ts-expect-error svg import
 import EmptyIllustration from './empty.svg';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
