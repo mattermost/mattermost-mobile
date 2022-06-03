@@ -1072,6 +1072,8 @@ export async function fetchPinnedPosts(serverUrl: string, channelId: string) {
         }
 
         const promises: Array<Promise<Model[]>> = [];
+        const {database} = operator;
+        const isCRTEnabled = await getIsCRTEnabled(database);
 
         const {authors} = await fetchPostAuthors(serverUrl, postsArray, true);
         const {channels, channelMemberships} = await fetchMissingChannelsFromPosts(serverUrl, postsArray, true);
@@ -1086,7 +1088,6 @@ export async function fetchPinnedPosts(serverUrl: string, channelId: string) {
         }
 
         if (channels?.length && channelMemberships?.length) {
-            const isCRTEnabled = await getIsCRTEnabled(operator.database);
             const channelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships, isCRTEnabled);
             if (channelPromises.length) {
                 promises.push(...channelPromises);
@@ -1103,7 +1104,6 @@ export async function fetchPinnedPosts(serverUrl: string, channelId: string) {
             }),
         );
 
-        const isCRTEnabled = await getIsCRTEnabled(operator.database);
         if (isCRTEnabled) {
             promises.push(prepareThreadsFromReceivedPosts(operator, postsArray));
         }
