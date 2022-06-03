@@ -38,8 +38,9 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            paddingTop: 16,
+            paddingTop: 12,
             paddingRight: 16,
+            paddingBottom: 6,
             flex: 1,
             flexDirection: 'row',
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.08),
@@ -47,7 +48,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         badgeContainer: {
             marginTop: 3,
-            width: 32,
+            width: 26,
         },
         postContainer: {
             flex: 1,
@@ -56,7 +57,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
             flex: 1,
             flexDirection: 'row',
-            marginBottom: 9,
+            marginBottom: 6,
         },
         headerInfoContainer: {
             alignItems: 'center',
@@ -71,10 +72,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         threadStarter: {
             color: theme.centerChannelColor,
-            fontSize: 15,
-            fontWeight: '600',
-            lineHeight: 22,
-            paddingRight: 8,
+            ...typography('Body', 200, 'SemiBold'),
+            paddingRight: 6,
         },
         channelNameContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
@@ -86,12 +85,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Body', 25, 'SemiBold'),
             letterSpacing: 0.1,
             textTransform: 'uppercase',
-            marginHorizontal: 12,
+            marginHorizontal: 6,
             marginVertical: 2,
         },
         date: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
-            ...typography('Body', 25, 'Light'),
+            ...typography('Body', 50, 'Regular'),
         },
         message: {
             color: theme.centerChannelColor,
