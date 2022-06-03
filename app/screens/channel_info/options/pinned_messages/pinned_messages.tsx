@@ -8,19 +8,34 @@ import {Platform} from 'react-native';
 import {goToScreen} from '@app/screens/navigation';
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
+import {useTheme} from '@context/theme';
 import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity} from '@utils/theme';
 
 type Props = {
     channelId: string;
     count: number;
+    displayName: string;
 }
 
-const PinnedMessages = ({channelId, count}: Props) => {
+const PinnedMessages = ({channelId, count, displayName}: Props) => {
+    const theme = useTheme();
     const {formatMessage} = useIntl();
     const title = formatMessage({id: 'channel_info.pinned_messages', defaultMessage: 'Pinned Messages'});
 
     const goToPinnedMessages = preventDoubleTap(() => {
-        goToScreen(Screens.PINNED_MESSAGES, title, {channelId});
+        const options = {
+            topBar: {
+                title: {
+                    text: title,
+                },
+                subtitle: {
+                    color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
+                    text: displayName,
+                },
+            },
+        };
+        goToScreen(Screens.PINNED_MESSAGES, title, {channelId}, options);
     });
 
     return (

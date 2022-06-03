@@ -43,7 +43,7 @@ function EmptySavedPosts() {
                 testID='pinned_messages.empty.title'
             />
             <FormattedText
-                defaultMessage={'To pin important messages, long-press on a message and chose Pin To Channel. Pinned messages will be visible to everyone in this channel.'}
+                defaultMessage={'To pin important messages, long-press on a message and choose Pin To Channel. Pinned messages will be visible to everyone in this channel.'}
                 id='pinned_messages.empty.paragraph'
                 style={styles.paragraph}
                 testID='pinned_messages.empty.paragraph'

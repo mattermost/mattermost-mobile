@@ -6,7 +6,7 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeChannelInfo} from '@queries/servers/channel';
+import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
 
 import PinnedMessages from './pinned_messages';
 
@@ -17,13 +17,16 @@ type Props = WithDatabaseArgs & {
 }
 
 const enhanced = withObservables(['channelId'], ({channelId, database}: Props) => {
+    const channel = observeChannel(database, channelId);
     const info = observeChannelInfo(database, channelId);
     const count = info.pipe(
         switchMap((i) => of$(i?.pinnedPostCount || 0)),
     );
+    const displayName = channel.pipe(switchMap((c) => of$(c?.displayName)));
 
     return {
         count,
+        displayName,
     };
 });
 

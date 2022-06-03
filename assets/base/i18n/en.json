@@ -597,7 +597,7 @@
   "permalink.show_dialog_warn.description": "You are about to join {channel} without explicitly being added by the channel admin. Are you sure you wish to join this private channel?",
   "permalink.show_dialog_warn.join": "Join",
   "permalink.show_dialog_warn.title": "Join private channel",
-  "pinned_messages.empty.paragraph": "To pin important messages, long-press on a message and chose Pin To Channel. Pinned messages will be visible to everyone in this channel.",
+  "pinned_messages.empty.paragraph": "To pin important messages, long-press on a message and choose Pin To Channel. Pinned messages will be visible to everyone in this channel.",
   "pinned_messages.empty.title": "No pinned messages yet",
   "plus_menu.browse_channels.title": "Browse Channels",
   "plus_menu.create_new_channel.title": "Create New Channel",
