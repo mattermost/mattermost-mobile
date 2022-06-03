@@ -382,7 +382,7 @@ const AtMention = ({
 
             // No constraints? Search all groups
             if (!isTeamConstrained && !isChannelConstrained) {
-                searchGroupsByName(serverUrl, matchTerm || '')?.then((g) => {
+                searchGroupsByName(serverUrl, matchTerm || '').then((g) => {
                     setGroups(Array.isArray(g) ? g : emptyGroupList);
                 }).catch(() => {
                     setGroups(emptyGroupList);

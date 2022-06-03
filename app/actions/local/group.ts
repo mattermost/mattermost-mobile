@@ -74,7 +74,7 @@ export const searchGroupsByNameInChannel = async (serverUrl: string, name: strin
  * @param groups Group[] - The groups fetched from the API
  * @param prepareRecordsOnly boolean - Wether to only prepare records without saving
  */
-export const storeGroups = async (serverUrl: string, groups: Group[], prepareRecordsOnly = false) => {
+export const storeGroups = async (serverUrl: string, groups: Group[]) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         throw new Error(`${serverUrl} operator not found`);
@@ -82,10 +82,6 @@ export const storeGroups = async (serverUrl: string, groups: Group[], prepareRec
 
     try {
         const preparedGroups = await prepareGroups(operator, groups);
-
-        if (prepareRecordsOnly) {
-            return preparedGroups;
-        }
 
         if (preparedGroups.length) {
             operator.batchRecords(preparedGroups);
