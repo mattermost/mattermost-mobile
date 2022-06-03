@@ -10,19 +10,18 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import FreezeScreen from '@components/freeze_screen';
 import NavigationHeader from '@components/navigation_header';
+import RoundedHeaderContext from '@components/rounded_header_context';
 import {useCollapsibleHeader} from '@hooks/header';
 
 // import RecentSearches from './recent_searches/recent_searches';
 // import SearchModifiers from './search_modifiers/search_modifiers';
 // import Filter from './results/filter';
-import {SelectTab} from './results/header';
+import Header, {SelectTab} from './results/header';
 import Results from './results/results';
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
-
-const TOP_MARGIN = 12;
 
 const SearchScreen = () => {
     const nav = useNavigation();
@@ -35,10 +34,6 @@ const SearchScreen = () => {
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
     const [selectedTab, setSelectedTab] = useState<string>('messages');
 
-    useEffect(() => {
-        setSearchValue(searchTerm);
-    }, [searchTerm]);
-
     const handleSearch = () => {
         // execute the search for the text in the navigation text box
         // handle recent searches
@@ -48,14 +43,16 @@ const SearchScreen = () => {
         // console.log('execute the search for : ', searchValue);
     };
 
-    const isLargeTitle = true;
-    const hasSearch = true;
+    const onSnap = (y: number) => {
+        scrollRef.current?.scrollTo({y, animated: true});
+    };
 
-    const {scrollPaddingTop, scrollRef, scrollValue, onScroll, hideHeader} = useCollapsibleHeader<ScrollView>(isLargeTitle, false, hasSearch);
+    useEffect(() => {
+        setSearchValue(searchTerm);
+    }, [searchTerm]);
 
-    const onHeaderTabSelect = useCallback((tab: SelectTab) => {
-        setSelectedTab(tab);
-    }, [setSelectedTab]);
+    const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight, hideHeader} = useCollapsibleHeader<ScrollView>(true, onSnap);
+    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
 
     const animated = useAnimatedStyle(() => {
         if (isFocused) {
@@ -75,19 +72,28 @@ const SearchScreen = () => {
         };
     }, [isFocused, stateIndex, scrollPaddingTop]);
 
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop + TOP_MARGIN, flexGrow: 1}), [scrollPaddingTop]);
+    const top = useAnimatedStyle(() => {
+        return {
+            top: headerHeight.value,
+            zIndex: searchValue ? 10 : 0,
+        };
+    }, [searchValue]);
+
+    const onHeaderTabSelect = useCallback((tab: SelectTab) => {
+        setSelectedTab(tab);
+    }, [setSelectedTab]);
 
     return (
         <FreezeScreen freeze={!isFocused}>
             <NavigationHeader
-                isLargeTitle={isLargeTitle}
+                isLargeTitle={true}
                 onBackPress={() => {
                     // eslint-disable-next-line no-console
                     console.log('BACK');
                 }}
                 showBackButton={false}
                 title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
-                hasSearch={hasSearch}
+                hasSearch={true}
                 scrollValue={scrollValue}
                 hideHeader={hideHeader}
                 onChangeText={setSearchValue}
@@ -101,6 +107,16 @@ const SearchScreen = () => {
                 edges={EDGES}
             >
                 <Animated.View style={animated}>
+                    <Animated.View style={top}>
+                        <RoundedHeaderContext/>
+                        {Boolean(searchValue) &&
+                        <Header
+                            onTabSelect={onHeaderTabSelect}
+                            numberFiles={0}
+                            numberMessages={0}
+                        />
+                        }
+                    </Animated.View>
                     <AnimatedScrollView
                         contentContainerStyle={paddingTop}
                         nestedScrollEnabled={true}
@@ -109,6 +125,7 @@ const SearchScreen = () => {
                         indicatorStyle='black'
                         onScroll={onScroll}
                         scrollEventThrottle={16}
+                        removeClippedSubviews={true}
                         ref={scrollRef}
                     >
                         {/* <SearchModifiers */}
@@ -121,7 +138,6 @@ const SearchScreen = () => {
                         <Results
                             selectedTab={selectedTab}
                             searchValue={searchValue}
-                            onHeaderTabSelect={onHeaderTabSelect}
                         />
                         {/* <Filter/> */}
                     </AnimatedScrollView>

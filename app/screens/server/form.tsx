@@ -25,7 +25,7 @@ type Props = {
     handleConnect: () => void;
     handleDisplayNameTextChanged: (text: string) => void;
     handleUrlTextChanged: (text: string) => void;
-    keyboardAwareRef: MutableRefObject<KeyboardAwareScrollView | undefined>;
+    keyboardAwareRef: MutableRefObject<KeyboardAwareScrollView | null>;
     theme: Theme;
     url?: string;
     urlError?: string;

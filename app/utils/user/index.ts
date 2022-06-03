@@ -12,7 +12,7 @@ import {toTitleCase} from '@utils/helpers';
 import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
 
-export function displayUsername(user?: UserProfile | UserModel, locale?: string, teammateDisplayNameSetting?: string, useFallbackUsername = true) {
+export function displayUsername(user?: UserProfile | UserModel | null, locale?: string, teammateDisplayNameSetting?: string, useFallbackUsername = true) {
     let name = useFallbackUsername ? getLocalizedMessage(locale || DEFAULT_LOCALE, t('channel_loader.someone'), 'Someone') : '';
 
     if (user) {
@@ -296,15 +296,10 @@ export function getNotificationProps(user: UserModel) {
         comments: 'any',
         desktop: 'all',
         desktop_sound: 'true',
-        email: 'true',
         first_name: (!user || !user.firstName) ? 'false' : 'true',
         mention_keys: user ? `${user.username},@${user.username}` : '',
         push: 'mention',
         push_status: 'online',
-
-        //todo: verify if email_threads and push_threads do exist
-        // email_threads: 'all',
-        // push_threads: 'all',
     };
 
     return props;

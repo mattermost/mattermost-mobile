@@ -43,6 +43,8 @@ type UserProfile = {
     last_picture_update: number;
     remote_id?: string;
     status?: string;
+    bot_description?: string;
+    bot_last_icon_update?: number;
 };
 
 type UsersState = {

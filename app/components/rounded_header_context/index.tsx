@@ -10,7 +10,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         backgroundColor: theme.sidebarBg,
-        height: '100%',
+        height: 40,
         width: '100%',
         position: 'absolute',
     },

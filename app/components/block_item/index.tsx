@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {ReactElement, useCallback, useMemo} from 'react';
-import {Switch, Text, TouchableOpacity, View} from 'react-native';
+import {StyleProp, Switch, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
@@ -36,15 +36,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         label: {
             color: theme.centerChannelColor,
-            ...typography('Body', 600, 'SemiBold'),
-            fontSize: 16,
-            lineHeight: 24,
+            ...typography('Body', 200, 'SemiBold'),
+            marginLeft: 9,
         },
         description: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
-            ...typography('Body', 400, 'Regular'),
-            fontSize: 12,
-            lineHeight: 16,
+            ...typography('Body', 75, 'Regular'),
             marginTop: 3,
         },
         arrow: {
@@ -62,14 +59,29 @@ type Props = {
     action: (value: string | boolean) => void;
     actionType: string;
     actionValue?: string;
+    containerStyle?: StyleProp<ViewStyle>;
     description?: string | ReactElement;
+    descriptionStyle?: StyleProp<TextStyle>;
     icon?: string;
     label: string | ReactElement;
+    labelStyle?: StyleProp<TextStyle>;
     selected?: boolean;
     testID?: string;
 }
 
-const BlockItem = ({testID = 'sectionItem', action, actionType, actionValue, label, selected, description, icon}: Props) => {
+const BlockItem = ({
+    action,
+    actionType,
+    actionValue,
+    containerStyle,
+    description,
+    descriptionStyle,
+    icon,
+    label,
+    labelStyle,
+    selected,
+    testID = 'sectionItem',
+}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
@@ -104,17 +116,17 @@ const BlockItem = ({testID = 'sectionItem', action, actionType, actionValue, lab
         action(actionValue || '');
     }, [actionValue, action]);
 
-    const labelStyle = useMemo(() => {
+    const labelStyles = useMemo(() => {
         if (icon) {
             return [style.label, {marginLeft: 4}];
         }
-        return style.label;
+        return [style.label, labelStyle];
     }, [Boolean(icon), style]);
 
     const component = (
         <View
             testID={testID}
-            style={style.container}
+            style={[style.container, containerStyle]}
         >
             <View style={description ? style.doubleContainer : style.singleContainer}>
                 <View style={style.labelContainer}>
@@ -126,14 +138,14 @@ const BlockItem = ({testID = 'sectionItem', action, actionType, actionValue, lab
                         />
                     )}
                     <Text
-                        style={labelStyle}
+                        style={labelStyles}
                         testID={`${testID}.label`}
                     >
                         {label}
                     </Text>
                 </View>
                 <Text
-                    style={style.description}
+                    style={[style.description, descriptionStyle]}
                     testID={`${testID}.description`}
                 >
                     {description}

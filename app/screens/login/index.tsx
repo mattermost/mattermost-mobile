@@ -77,7 +77,7 @@ const LoginOptions = ({
     serverDisplayName, serverUrl, ssoOptions, theme,
 }: LoginOptionsProps) => {
     const styles = getStyles(theme);
-    const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
+    const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const dimensions = useWindowDimensions();
     const isTablet = useIsTablet();
     const translateX = useSharedValue(dimensions.width);
@@ -191,16 +191,14 @@ const LoginOptions = ({
             <Background theme={theme}/>
             <AnimatedSafeArea style={[styles.container, transform]}>
                 <KeyboardAwareScrollView
-                    bounces={false}
+                    bounces={true}
                     contentContainerStyle={[styles.innerContainer, additionalContainerStyle]}
                     enableAutomaticScroll={Platform.OS === 'android'}
                     enableOnAndroid={false}
                     enableResetScrollToCoords={true}
                     extraScrollHeight={0}
-                    keyboardDismissMode='on-drag'
+                    keyboardDismissMode='interactive'
                     keyboardShouldPersistTaps='handled'
-
-                    // @ts-expect-error legacy ref
                     ref={keyboardAwareRef}
                     scrollToOverflowEnabled={true}
                     style={styles.flex}

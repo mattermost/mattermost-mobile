@@ -9,7 +9,6 @@ import BlockItem from '@components/block_item';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
-import {PushStatus} from '@screens/settings/notification_push/notification_push';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -45,7 +44,7 @@ const footerText = {
 
 type MobilePushThreadProps = {
     onMobilePushThreadChanged: (status: string) => void;
-    pushThread: PushStatus; //fixme;
+    pushThread: PushStatus;
 }
 
 const MobilePushThread = ({pushThread, onMobilePushThreadChanged}: MobilePushThreadProps) => {
@@ -67,7 +66,6 @@ const MobilePushThread = ({pushThread, onMobilePushThreadChanged}: MobilePushThr
                         style={styles.label}
                     />
                 )}
-                description={<View/>}
                 action={onMobilePushThreadChanged}
                 actionType='toggle'
                 selected={pushThread === 'all'}

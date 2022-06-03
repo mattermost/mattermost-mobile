@@ -3,31 +3,20 @@
 
 import React, {useState} from 'react';
 import {ScrollView} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
-import MobileSendPush from '@screens/settings/notification_push/push_send';
-import MobilePushThread from '@screens/settings/notification_push/push_thread';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import MobileSendPush from './push_send';
 import MobilePushStatus from './push_status';
+import MobilePushThread from './push_thread';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
-        },
-        input: {
-            color: theme.centerChannelColor,
-            fontSize: 12,
-            height: 40,
-        },
-        separator: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            flex: 1,
-            height: 1,
-            marginLeft: 15,
         },
         scrollView: {
             flex: 1,
@@ -36,15 +25,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         scrollViewContent: {
             paddingVertical: 30,
         },
-        disabled: {
-            color: theme.centerChannelColor,
-            fontSize: 15,
-            paddingHorizontal: 15,
-            paddingVertical: 10,
-        },
     };
 });
-export type PushStatus = 'away' | 'online' | 'offline' | 'none' | 'mention' | 'all';
+const edges: Edge[] = ['left', 'right'];
 
 type NotificationMobileProps = {
     isCRTEnabled: boolean;
@@ -72,7 +55,7 @@ const NotificationPush = ({isCRTEnabled, sendPushNotifications}: NotificationMob
 
     return (
         <SafeAreaView
-            edges={['left', 'right']}
+            edges={edges}
             testID='notification_push.screen'
             style={styles.container}
         >
@@ -94,7 +77,6 @@ const NotificationPush = ({isCRTEnabled, sendPushNotifications}: NotificationMob
                 )}
                 {sendPushNotifications && pushPref !== 'none' && (
                     <MobilePushStatus
-                        sendPushNotifications={sendPushNotifications}
                         pushStatus={pushStatus}
                         setMobilePushStatus={setMobilePushStatus}
                     />
