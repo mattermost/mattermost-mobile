@@ -10,6 +10,9 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {getUserTimezone} from '@actions/local/timezone';
+import FormattedDate from '@components/formatted_date';
+import FormattedText from '@components/formatted_text';
+import FormattedTime from '@components/formatted_time';
 import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
@@ -17,10 +20,6 @@ import {observeCurrentUser} from '@queries/servers/user';
 import {getCurrentMomentForTimezone} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import FormattedDate from '../formatted_date';
-import FormattedText from '../formatted_text';
-import FormattedTime from '../formatted_time';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type UserModel from '@typings/database/models/servers/user';
