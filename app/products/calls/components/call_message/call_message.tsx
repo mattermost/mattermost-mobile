@@ -32,7 +32,7 @@ type CallMessageProps = {
     currentChannelName: string;
     callChannelName: string;
     intl: typeof IntlShape;
-    isCloudLimitRestricted: boolean;
+    isLimitRestricted: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -121,11 +121,11 @@ const CallMessage = ({
     currentChannelName,
     callChannelName,
     intl,
-    isCloudLimitRestricted,
+    isLimitRestricted,
 }: CallMessageProps) => {
     const style = getStyleSheet(theme);
     const joinHandler = () => {
-        if (alreadyInTheCall || isCloudLimitRestricted) {
+        if (alreadyInTheCall || isLimitRestricted) {
             return;
         }
         leaveAndJoinWithAlert(intl, post.channel_id, callChannelName, currentChannelName, confirmToJoin, actions.joinCall);
@@ -187,15 +187,15 @@ const CallMessage = ({
             </View>
 
             <TouchableOpacity
-                style={[style.joinCallButton, isCloudLimitRestricted && style.joinCallButtonRestricted]}
+                style={[style.joinCallButton, isLimitRestricted && style.joinCallButtonRestricted]}
                 onPress={joinHandler}
             >
                 <CompassIcon
                     name='phone-outline'
                     size={16}
-                    style={[style.joinCallButtonIcon, isCloudLimitRestricted && style.joinCallButtonIconRestricted]}
+                    style={[style.joinCallButtonIcon, isLimitRestricted && style.joinCallButtonIconRestricted]}
                 />
-                <Text style={[style.joinCallButtonText, isCloudLimitRestricted && style.joinCallButtonTextRestricted]}>
+                <Text style={[style.joinCallButtonText, isLimitRestricted && style.joinCallButtonTextRestricted]}>
                     {joinCallButtonText}
                 </Text>
             </TouchableOpacity>

@@ -92,37 +92,25 @@ const isCloud: (state: GlobalState) => boolean = createSelector(
     (license) => license?.Cloud === 'true',
 );
 
-// NOTE: Calls v0.5.3 will not return sku_short_name in config, so this will fail
-const isCloudProfessionalOrEnterprise: (state: GlobalState) => boolean = createSelector(
+export const isLimitRestricted: (state: GlobalState, channelId?: string) => boolean = createSelector(
     isCloud,
-    getLicense,
-    getConfig,
-    (cloud, license, config) => {
-        return cloud && (config.sku_short_name === 'professional' || config.sku_short_name === 'enterprise');
-    },
-);
-
-export const isCloudLimitRestricted: (state: GlobalState, channelId?: string) => boolean = createSelector(
-    isCloud,
-    isCloudProfessionalOrEnterprise,
     (state: GlobalState, channelId: string) => (channelId ? getCalls(state)[channelId] : getCallInCurrentChannel(state)),
     getConfig,
-    (cloud, isCloudPaid, call, config) => {
-        if (!call || !cloud) {
+    (cloud, call, config) => {
+        if (!call) {
             return false;
         }
 
+        const numParticipants = Object.keys(call.participants || {}).length;
+
         // TODO: The next block is used for case when cloud server is using Calls v0.5.3. This can be removed
         //  when v0.5.4 is prepackaged in cloud. Then replace the max in the return statement with
-        //  config.cloud_max_participants, and replace cloudPaid with isCloudPaid
-        let max = config.cloud_max_participants;
-        let cloudPaid = isCloudPaid;
+        //  config.MaxCallParticipants.
+        let max = config.MaxCallParticipants;
         if (cloud && !max) {
-            // We're not sure if we're in cloud paid because this could be v0.5.3, so assume we are for now (the server will prevent calls)
-            cloudPaid = true;
             max = Calls.DefaultCloudMaxParticipants;
         }
 
-        return cloudPaid && Object.keys(call.participants || {}).length >= max;
+        return max !== 0 && numParticipants >= max;
     },
 );

@@ -26,7 +26,7 @@ type Props = {
     alreadyInTheCall: boolean;
     currentChannelName: string;
     callChannelName: string;
-    isCloudLimitRestricted: boolean;
+    isLimitRestricted: boolean;
     intl: typeof IntlShape;
 }
 
@@ -96,7 +96,7 @@ const JoinCall = (props: Props) => {
     }, [props.call, props.alreadyInTheCall]);
 
     const joinHandler = () => {
-        if (props.isCloudLimitRestricted) {
+        if (props.isLimitRestricted) {
             return;
         }
         leaveAndJoinWithAlert(props.intl, props.call.channelId, props.callChannelName, props.currentChannelName, props.confirmToJoin, props.actions.joinCall);
@@ -114,7 +114,7 @@ const JoinCall = (props: Props) => {
     return (
         <View style={style.outerContainer}>
             <Pressable
-                style={[style.innerContainer, props.isCloudLimitRestricted && style.innerContainerRestricted]}
+                style={[style.innerContainer, props.isLimitRestricted && style.innerContainerRestricted]}
                 onPress={joinHandler}
             >
                 <CompassIcon
@@ -123,7 +123,7 @@ const JoinCall = (props: Props) => {
                     style={style.joinCallIcon}
                 />
                 <Text style={style.joinCall}>{'Join Call'}</Text>
-                {props.isCloudLimitRestricted ?
+                {props.isLimitRestricted ?
                     <Text style={style.limitReached}>
                         {'Participant limit reached'}
                     </Text> :

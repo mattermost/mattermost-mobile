@@ -6,7 +6,7 @@ import {bindActionCreators, Dispatch} from 'redux';
 import {getChannel, getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {joinCall} from '@mmproducts/calls/store/actions/calls';
-import {getCalls, getCurrentCall, isCloudLimitRestricted} from '@mmproducts/calls/store/selectors/calls';
+import {getCalls, getCurrentCall, isLimitRestricted} from '@mmproducts/calls/store/selectors/calls';
 
 import JoinCall from './join_call';
 
@@ -23,7 +23,7 @@ function mapStateToProps(state: GlobalState) {
         alreadyInTheCall: Boolean(currentCall && call && currentCall.channelId === call.channelId),
         currentChannelName: getChannel(state, currentChannelId)?.display_name,
         callChannelName: currentCall ? getChannel(state, currentCall.channelId)?.display_name : '',
-        isCloudLimitRestricted: isCloudLimitRestricted(state),
+        isLimitRestricted: isLimitRestricted(state),
     };
 }
 
