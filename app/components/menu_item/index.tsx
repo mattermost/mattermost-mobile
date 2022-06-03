@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {ReactNode} from 'react';
-import {Platform, StyleProp, TextStyle, View, ViewStyle} from 'react-native';
+import {PixelRatio, Platform, StyleProp, TextStyle, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 export const ITEM_HEIGHT = 50;
 
@@ -36,6 +37,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             flexDirection: 'row',
             minHeight: ITEM_HEIGHT,
+            alignItems: 'center',
         },
         iconContainer: {
             width: 45,
@@ -46,7 +48,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         icon: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
-            fontSize: 24,
         },
         labelContainer: {
             flex: 1,
@@ -59,7 +60,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         label: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 17,
+            ...typography('Body', 200, 'Regular'),
             textAlignVertical: 'center',
             includeFontPadding: false,
         },
@@ -70,7 +71,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         chevron: {
             alignSelf: 'center',
             color: changeOpacity(theme.centerChannelColor, 0.64),
-            fontSize: 24,
             marginRight: 8,
         },
         linkContainer: {
@@ -111,6 +111,8 @@ const MenuItem = (props: MenuItemProps) => {
         destructor.color = theme.errorTextColor;
     }
 
+    const iconFontSize = 24 * PixelRatio.getFontScale();
+
     let icon;
     if (leftComponent) {
         icon = leftComponent;
@@ -118,6 +120,7 @@ const MenuItem = (props: MenuItemProps) => {
         icon = (
             <CompassIcon
                 name={iconName}
+                size={iconFontSize}
                 style={[style.icon, destructor]}
             />
         );
@@ -162,7 +165,8 @@ const MenuItem = (props: MenuItemProps) => {
                     {Boolean(showArrow) && (
                         <CompassIcon
                             name='chevron-right'
-                            style={style.chevron}
+                            size={iconFontSize}
+                            style={[style.chevron]}
                         />
                     )}
                 </View>

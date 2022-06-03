@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {TextStyle} from 'react-native';
+import {PixelRatio, TextStyle} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {setStatus} from '@actions/remote/user';
@@ -129,7 +129,7 @@ const UserStatus = ({currentUser, style, theme}: Props) => {
             }
             leftComponent={
                 <UserStatusIndicator
-                    size={24}
+                    size={24 * PixelRatio.getFontScale()}
                     status={currentUser.status}
                 />
             }

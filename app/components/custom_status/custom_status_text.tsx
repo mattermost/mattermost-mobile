@@ -5,6 +5,7 @@ import React from 'react';
 import {Text, TextStyle} from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 interface ComponentProps {
     text: string | React.ReactNode;
@@ -18,9 +19,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         label: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 17,
-            textAlignVertical: 'center',
-            includeFontPadding: false,
+            ...typography('Body', 200, 'Regular'),
         },
     };
 });

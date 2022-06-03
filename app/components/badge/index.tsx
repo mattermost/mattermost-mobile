@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import * as React from 'react';
-import {Animated, Platform, StyleProp, StyleSheet, TextStyle} from 'react-native';
+import {Animated, PixelRatio, Platform, StyleProp, StyleSheet, TextStyle} from 'react-native';
 
 import {useTheme} from '@context/theme';
 
@@ -64,13 +64,14 @@ export default function Badge({
     const {backgroundColor = rest.backgroundColor || theme.mentionBg, ...restStyle} =
     StyleSheet.flatten(style) || {};
     const textColor = color || theme.mentionColor;
+    const fontScale = PixelRatio.getFontScale();
     let lineHeight = Platform.select({android: 21, ios: 16.5});
     let fontSize = 12;
-    let size = value < 0 ? 12 : 22;
-    let minWidth = value < 0 ? size : 26;
+    let size = value < 0 ? 12 * fontScale : 22 * fontScale;
+    let minWidth = value < 0 ? size * fontScale : 26 * fontScale;
     let additionalStyle;
     if (type === 'Small') {
-        size = value < 0 ? 12 : 20;
+        size = value < 0 ? 12 * fontScale : 20 * fontScale;
         lineHeight = Platform.select({android: 19, ios: 15});
         fontSize = 11;
         minWidth = value < 0 ? size : 24;
@@ -83,10 +84,10 @@ export default function Badge({
         additionalStyle = {paddingHorizontal: 0};
     } else if (value < 99) {
         badge = value.toString();
-        additionalStyle = {paddingHorizontal: 5};
+        additionalStyle = {paddingHorizontal: 5 * fontScale};
     } else {
         badge = '99+';
-        additionalStyle = {paddingLeft: 4, paddingRight: 3};
+        additionalStyle = {paddingLeft: 4 * fontScale, paddingRight: 3 * fontScale};
     }
 
     return (

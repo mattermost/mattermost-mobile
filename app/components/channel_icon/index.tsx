@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleProp, Text, View, ViewStyle} from 'react-native';
+import {PixelRatio, StyleProp, Text, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import General from '@constants/general';
@@ -125,12 +125,14 @@ const ChannelIcon = ({
         mutedStyle = styles.muted;
     }
 
+    const fontScale = PixelRatio.getFontScale();
+    const scaledSize = size * fontScale;
     let icon;
     if (isArchived) {
         icon = (
             <CompassIcon
                 name='archive-outline'
-                style={[styles.icon, unreadIcon, activeIcon, {fontSize: size, left: 1}]}
+                style={[styles.icon, unreadIcon, activeIcon, {fontSize: scaledSize, left: 1}]}
                 testID={`${testID}.archive`}
             />
         );
@@ -138,7 +140,7 @@ const ChannelIcon = ({
         icon = (
             <CompassIcon
                 name='pencil-outline'
-                style={[styles.icon, unreadIcon, activeIcon, {fontSize: size, left: 2}]}
+                style={[styles.icon, unreadIcon, activeIcon, {fontSize: scaledSize, left: 2}]}
                 testID={`${testID}.draft`}
             />
         );
@@ -148,7 +150,7 @@ const ChannelIcon = ({
         icon = (
             <CompassIcon
                 name={iconName}
-                style={[styles.icon, unreadIcon, activeIcon, {fontSize: size, left: 0.5}]}
+                style={[styles.icon, unreadIcon, activeIcon, {fontSize: scaledSize, left: 0.5}]}
                 testID={sharedTestID}
             />
         );
@@ -156,7 +158,7 @@ const ChannelIcon = ({
         icon = (
             <CompassIcon
                 name='globe'
-                style={[styles.icon, unreadIcon, activeIcon, {fontSize: size, left: 1}]}
+                style={[styles.icon, unreadIcon, activeIcon, {fontSize: scaledSize, left: 1}]}
                 testID={`${testID}.public`}
             />
         );
@@ -164,7 +166,7 @@ const ChannelIcon = ({
         icon = (
             <CompassIcon
                 name='lock-outline'
-                style={[styles.icon, unreadIcon, activeIcon, {fontSize: size, left: 0.5}]}
+                style={[styles.icon, unreadIcon, activeIcon, {fontSize: scaledSize, left: 0.5}]}
                 testID={`${testID}.private`}
             />
         );
@@ -172,7 +174,7 @@ const ChannelIcon = ({
         const fontSize = size - 12;
         icon = (
             <View
-                style={[styles.groupBox, unreadGroupBox, activeGroupBox, {width: size, height: size}]}
+                style={[styles.groupBox, unreadGroupBox, activeGroupBox, {width: scaledSize, height: scaledSize}]}
             >
                 <Text
                     style={[styles.group, unreadGroup, activeGroup, {fontSize}]}
@@ -187,11 +189,12 @@ const ChannelIcon = ({
             <DmAvatar
                 channelName={name}
                 isInfo={isInfo}
+                scaleWithText={true}
             />);
     }
 
     return (
-        <View style={[styles.container, {width: size, height: size}, style, mutedStyle]}>
+        <View style={[styles.container, {width: scaledSize, height: scaledSize}, style, mutedStyle]}>
             {icon}
         </View>
     );

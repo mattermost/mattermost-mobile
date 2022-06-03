@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
+import {PixelRatio, View} from 'react-native';
 
 import {handleTeamChange} from '@actions/remote/team';
 import Badge from '@components/badge';
@@ -25,8 +25,6 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            height: 54,
-            width: 54,
             flex: 0,
             padding: 3,
             borderRadius: 10,
@@ -57,10 +55,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+const applyFontScale = ({top, left}: {top: number; left: number}, fontScale: number) => {
+    return {
+        top: top * fontScale,
+        left: left * fontScale,
+    };
+};
 export default function TeamItem({team, hasUnreads, mentionCount, selected}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
+    const fontScale = PixelRatio.getFontScale();
 
     const hasBadge = Boolean(mentionCount || hasUnreads);
     let badgeStyle = styles.unread;
@@ -71,22 +76,23 @@ export default function TeamItem({team, hasUnreads, mentionCount, selected}: Pro
 
     switch (true) {
         case value > 99:
-            badgeStyle = styles.mentionsThreeDigits;
+            badgeStyle = applyFontScale(styles.mentionsThreeDigits, fontScale);
             break;
         case value > 9:
-            badgeStyle = styles.mentionsTwoDigits;
+            badgeStyle = applyFontScale(styles.mentionsTwoDigits, fontScale);
             break;
         case value > 0:
-            badgeStyle = styles.mentionsOneDigit;
+            badgeStyle = applyFontScale(styles.mentionsOneDigit, fontScale);
             break;
     }
 
     const teamItem = `team_sidebar.team_list.team_item.${team.id}`;
     const teamItemTestId = selected ? `${teamItem}.selected` : `${teamItem}.not_selected`;
+    const containerSize = 54 * fontScale;
 
     return (
         <>
-            <View style={[styles.container, selected ? styles.containerSelected : undefined]}>
+            <View style={[styles.container, {width: containerSize, height: containerSize}, selected ? styles.containerSelected : undefined]}>
                 <TouchableWithFeedback
                     onPress={() => handleTeamChange(serverUrl, team.id)}
                     type='opacity'

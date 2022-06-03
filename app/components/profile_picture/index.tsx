@@ -2,12 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useMemo} from 'react';
-import {Platform, StyleProp, View, ViewProps} from 'react-native';
+import {PixelRatio, Platform, StyleProp, StyleSheet, View, ViewProps} from 'react-native';
 
 import {fetchStatusInBatch} from '@actions/remote/user';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Image from './image';
 import Status from './status';
@@ -29,33 +28,14 @@ type ProfilePictureProps = {
     statusStyle?: StyleProp<ViewProps>;
     testID?: string;
     source?: Source | string;
+    scaleWithText?: boolean;
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            justifyContent: 'center',
-            alignItems: 'center',
-            borderRadius: 80,
-        },
-        icon: {
-            color: changeOpacity(theme.centerChannelColor, 0.48),
-        },
-        statusWrapper: {
-            position: 'absolute',
-            bottom: 0,
-            right: 0,
-            overflow: 'hidden',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: theme.centerChannelBg,
-            borderWidth: 1,
-            borderColor: theme.centerChannelBg,
-        },
-        status: {
-            color: theme.centerChannelBg,
-        },
-    };
+const style = StyleSheet.create({
+    container: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });
 
 const ProfilePicture = ({
@@ -67,13 +47,18 @@ const ProfilePicture = ({
     statusStyle,
     testID,
     source,
+    scaleWithText,
 }: ProfilePictureProps) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
 
-    const style = getStyleSheet(theme);
     const buffer = showStatus ? STATUS_BUFFER || 0 : 0;
     const isBot = author && (('isBot' in author) ? author.isBot : author.is_bot);
+
+    const fontScale = scaleWithText ? PixelRatio.getFontScale() : 1;
+    const scaledSize = size * fontScale;
+    const scaledIconSize = (iconSize || size) * fontScale;
+    const scaledBuffer = buffer * fontScale;
 
     useEffect(() => {
         if (!isBot && author && !author.status && showStatus) {
@@ -84,19 +69,19 @@ const ProfilePicture = ({
     const containerStyle = useMemo(() => {
         if (author) {
             return {
-                width: size + (buffer - 1),
-                height: size + (buffer - 1),
-                borderRadius: (size + buffer) / 2,
+                width: scaledSize + (buffer - 1),
+                height: scaledSize + (buffer - 1),
+                borderRadius: (scaledSize + buffer) / 2,
             };
         }
 
         return {
             ...style.container,
-            width: size + buffer,
-            height: size + buffer,
-            borderRadius: (size + buffer) / 2,
+            width: scaledSize + scaledBuffer,
+            height: scaledSize + scaledBuffer,
+            borderRadius: (scaledSize + scaledBuffer) / 2,
         };
-    }, [author, size]);
+    }, [author, scaledSize]);
 
     return (
         <View
@@ -105,8 +90,8 @@ const ProfilePicture = ({
         >
             <Image
                 author={author}
-                iconSize={iconSize}
-                size={size}
+                iconSize={scaledIconSize}
+                size={scaledSize}
                 source={source}
             />
             {showStatus && !isBot &&

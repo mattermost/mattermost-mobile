@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {TouchableOpacity} from 'react-native';
+import {PixelRatio, TouchableOpacity} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {preventDoubleTap} from '@utils/tap';
@@ -25,7 +25,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center',
         },
         button: {
-            borderRadius: 1000,
             color: changeOpacity(theme.centerChannelColor, 0.52),
         },
     };
@@ -33,16 +32,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const ClearButton = ({handlePress, iconName = 'close-circle', size = 20, containerSize = 40, theme, testID}: Props) => {
     const style = getStyleSheet(theme);
+    const fontScale = PixelRatio.getFontScale();
+    const touchableSize = containerSize * fontScale;
 
     return (
         <TouchableOpacity
             onPress={preventDoubleTap(handlePress)}
-            style={[style.container, {height: containerSize, width: containerSize}]}
+            style={[style.container, {height: touchableSize, width: touchableSize}]}
             testID={testID}
         >
             <CompassIcon
                 name={iconName}
-                size={size}
+                size={size * fontScale}
                 style={style.button}
             />
         </TouchableOpacity>

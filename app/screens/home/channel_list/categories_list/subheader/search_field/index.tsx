@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {TouchableHighlight} from 'react-native';
+import {PixelRatio, TouchableHighlight} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -21,11 +21,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderRadius: 8,
         padding: 8,
         marginVertical: 20,
-        height: 40,
     },
     icon: {
-        width: 24,
-        fontSize: 24,
         color: changeOpacity(theme.sidebarText, 0.72),
     },
     input: {
@@ -57,6 +54,7 @@ const SearchField = () => {
             <>
                 <CompassIcon
                     name='magnify'
+                    size={24 * PixelRatio.getFontScale()}
                     style={styles.icon}
                 />
                 <FormattedText

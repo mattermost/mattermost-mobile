@@ -5,19 +5,19 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import moment, {Moment} from 'moment-timezone';
 import React from 'react';
+import {useIntl} from 'react-intl';
 import {Text, TextStyle} from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {getUserTimezone} from '@actions/local/timezone';
-import FormattedDate from '@components/formatted_date';
-import FormattedText from '@components/formatted_text';
-import FormattedTime from '@components/formatted_time';
 import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCurrentMomentForTimezone} from '@utils/helpers';
+import formatDate from '@utils/intl';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type UserModel from '@typings/database/models/servers/user';
@@ -38,7 +38,7 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         text: {
-            fontSize: 15,
+            ...typography('Body', 100, 'Regular'),
             color: theme.centerChannelColor,
         },
     };
@@ -54,21 +54,22 @@ const CustomStatusExpiry = ({currentUser, isMilitaryTime, showPrefix, showTimeCo
     const tomorrowEndTime = currentMomentTime.clone().add(1, 'day').endOf('day');
     const todayEndTime = currentMomentTime.clone().endOf('day');
     const isCurrentYear = currentMomentTime.get('y') === expiryMomentTime.get('y');
+    const intl = useIntl();
 
-    let dateComponent;
+    let dateText;
     if ((showToday && expiryMomentTime.isBefore(todayEndTime)) || expiryMomentTime.isSame(todayEndTime)) {
-        dateComponent = (
-            <FormattedText
-                id='custom_status.expiry_time.today'
-                defaultMessage='Today'
-            />
+        dateText = intl.formatMessage(
+            {
+                id: 'custom_status.expiry_time.today',
+                defaultMessage: 'Today',
+            },
         );
     } else if (expiryMomentTime.isAfter(todayEndTime) && expiryMomentTime.isSameOrBefore(tomorrowEndTime)) {
-        dateComponent = (
-            <FormattedText
-                id='custom_status.expiry_time.tomorrow'
-                defaultMessage='Tomorrow'
-            />
+        dateText = intl.formatMessage(
+            {
+                id: 'custom_status.expiry_time.tomorrow',
+                defaultMessage: 'Tomorrow',
+            },
         );
     } else if (expiryMomentTime.isAfter(tomorrowEndTime)) {
         let format = 'dddd';
@@ -78,12 +79,12 @@ const CustomStatusExpiry = ({currentUser, isMilitaryTime, showPrefix, showTimeCo
             format = 'MMM DD, YYYY';
         }
 
-        dateComponent = (
-            <FormattedDate
-                format={format}
-                timezone={timezone}
-                value={expiryMomentTime.toDate()}
-            />
+        dateText = formatDate(
+            expiryMomentTime.toDate(),
+            format,
+            intl.locale,
+
+            timezone,
         );
     }
 
@@ -95,30 +96,35 @@ const CustomStatusExpiry = ({currentUser, isMilitaryTime, showPrefix, showTimeCo
             style={[styles.text, textStyles]}
         >
             {withinBrackets && '('}
-            {showPrefix && (
-                <FormattedText
-                    id='custom_status.expiry.until'
-                    defaultMessage='Until'
-                />
+            {showPrefix && intl.formatMessage(
+                {
+                    id: 'custom_status.expiry.until',
+                    defaultMessage: 'Until',
+                },
             )}
             {showPrefix && ' '}
-            {dateComponent}
-            {useTime && dateComponent && (
+            {dateText}
+            {useTime && dateText && (
                 <>
                     {' '}
-                    <FormattedText
-                        id='custom_status.expiry.at'
-                        defaultMessage='at'
-                    />
+                    {
+                        intl.formatMessage({
+                            id: 'custom_status.expiry.at',
+                            defaultMessage: 'at',
+                        },
+                        )
+                    }
                     {' '}
                 </>
             )}
             {useTime && (
-                <FormattedTime
-                    isMilitaryTime={isMilitaryTime}
-                    timezone={timezone || ''}
-                    value={expiryMomentTime.toDate()}
-                />
+                intl.formatTime(
+                    expiryMomentTime.toDate(),
+                    {
+                        timeZone: timezone,
+                        hour12: !isMilitaryTime,
+                    },
+                )
             )}
             {withinBrackets && ')'}
         </Text>

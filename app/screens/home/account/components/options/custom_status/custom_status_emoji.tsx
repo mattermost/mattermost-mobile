@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
+import {PixelRatio, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
@@ -24,6 +24,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 const CustomStatusEmoji = ({emoji, isStatusSet, theme}: CustomStatusEmojiProps) => {
     const styles = getStyleSheet(theme);
+    const fontScale = PixelRatio.getFontScale();
 
     return (
         <View
@@ -37,7 +38,7 @@ const CustomStatusEmoji = ({emoji, isStatusSet, theme}: CustomStatusEmojiProps) 
             ) : (
                 <CompassIcon
                     name='emoticon-happy-outline'
-                    size={24}
+                    size={24 * fontScale}
                     style={styles.customStatusIcon}
                 />
             )}

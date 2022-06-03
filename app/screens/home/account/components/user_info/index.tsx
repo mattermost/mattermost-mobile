@@ -6,6 +6,7 @@ import {Text, View} from 'react-native';
 
 import ProfilePicture from '@components/profile_picture';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -31,17 +32,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: theme.sidebarBg,
         },
         textFullName: {
-            fontSize: 28,
-            lineHeight: 36,
+            ...typography('Heading', 700, 'SemiBold'),
             color: theme.sidebarText,
-            fontFamily: 'Metropolis-SemiBold',
             marginTop: 16,
         },
         textUserName: {
-            fontSize: 16,
-            lineHeight: 24,
+            ...typography('Body', 200, 'Regular'),
             color: theme.sidebarText,
-            fontFamily: 'OpenSans',
             marginTop: 4,
         },
     };

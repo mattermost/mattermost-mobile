@@ -13,6 +13,7 @@ import type UserModel from '@typings/database/models/servers/user';
 type Props = {
     author?: UserModel;
     isInfo?: boolean;
+    scaleWithText?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -26,7 +27,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const DmAvatar = ({author, isInfo}: Props) => {
+const DmAvatar = ({author, isInfo, scaleWithText = false}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     return (
@@ -37,6 +38,7 @@ const DmAvatar = ({author, isInfo}: Props) => {
                 showStatus={true}
                 statusSize={12}
                 statusStyle={[style.status, isInfo && style.statusInfo]}
+                scaleWithText={scaleWithText}
             />
         </View>
     );

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect} from 'react';
+import {PixelRatio} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {TABLET_SIDEBAR_WIDTH, TEAM_SIDEBAR_WIDTH} from '@constants/view';
@@ -33,7 +34,7 @@ type ChannelListProps = {
 };
 
 const getTabletWidth = (teamsCount: number) => {
-    return TABLET_SIDEBAR_WIDTH - (teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0);
+    return TABLET_SIDEBAR_WIDTH - (teamsCount > 1 ? TEAM_SIDEBAR_WIDTH * PixelRatio.getFontScale() : 0);
 };
 
 const CategoriesList = ({channelsCount, iconPad, isCRTEnabled, isTablet, teamsCount}: ChannelListProps) => {

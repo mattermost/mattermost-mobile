@@ -7,6 +7,7 @@ import {Shadow} from 'react-native-neomorph-shadows';
 
 import {View as ViewConstants} from '@constants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import CustomStatus from './custom_status';
 import Logout from './logout';
@@ -41,9 +42,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         menuLabel: {
             color: theme.centerChannelColor,
-            fontSize: 16,
-            lineHeight: 24,
-            fontFamily: 'OpenSans',
+            ...typography('Body', 200, 'Regular'),
         },
     };
 });

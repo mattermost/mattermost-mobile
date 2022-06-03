@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect} from 'react';
+import {PixelRatio} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {TEAM_SIDEBAR_WIDTH} from '@constants/view';
@@ -22,7 +23,6 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            width: TEAM_SIDEBAR_WIDTH,
             height: '100%',
             backgroundColor: theme.sidebarBg,
             paddingTop: 10,
@@ -39,8 +39,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 export default function TeamSidebar({iconPad, otherTeams, teamsCount}: Props) {
+    const scaledWidth = TEAM_SIDEBAR_WIDTH * PixelRatio.getFontScale();
     const showAddTeam = otherTeams.length > 0;
-    const initialWidth = teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0;
+    const initialWidth = teamsCount > 1 ? scaledWidth : 0;
     const width = useSharedValue(initialWidth);
     const marginTop = useSharedValue(iconPad ? 44 : 0);
     const theme = useTheme();
@@ -61,7 +62,7 @@ export default function TeamSidebar({iconPad, otherTeams, teamsCount}: Props) {
     }, [iconPad]);
 
     useEffect(() => {
-        width.value = teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0;
+        width.value = teamsCount > 1 ? scaledWidth : 0;
     }, [teamsCount]);
 
     return (

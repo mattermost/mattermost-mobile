@@ -12,6 +12,7 @@ import {useServerDisplayName, useServerUrl} from '@context/server';
 import {alertServerLogout} from '@utils/server';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type Props = {
     style: TextStyle;
@@ -20,15 +21,12 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     label: {
+        ...typography('Body', 200, 'Regular'),
         color: theme.dndIndicator,
-        marginTop: 5,
     },
     logOutFrom: {
         color: changeOpacity(theme.centerChannelColor, 0.64),
-        fontSize: 12,
-        height: 30,
-        lineHeight: 16,
-        fontFamily: 'OpenSans',
+        ...typography('Body', 75, 'Regular'),
     },
 }));
 

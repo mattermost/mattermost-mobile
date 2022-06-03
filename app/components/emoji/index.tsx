@@ -5,6 +5,7 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {
+    PixelRatio,
     Platform,
     StyleProp,
     StyleSheet,
@@ -92,9 +93,6 @@ const Emoji = (props: Props) => {
             </Text>);
     }
 
-    const width = size;
-    const height = size;
-
     if (unicode && !imageUrl) {
         const codeArray = unicode.split('-');
         const code = codeArray.reduce((acc: string, c: string) => {
@@ -110,6 +108,10 @@ const Emoji = (props: Props) => {
             </Text>
         );
     }
+
+    const fontScale = PixelRatio.getFontScale();
+    const width = size === undefined ? size : size * fontScale;
+    const height = width;
 
     if (assetImage) {
         const key = Platform.OS === 'android' ? (`${assetImage}-${height}-${width}`) : null;

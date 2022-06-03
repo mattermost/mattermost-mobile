@@ -47,11 +47,7 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     wrapper: {
         flex: 1,
         flexDirection: 'row',
-    },
-    icon: {
-        fontSize: 24,
-        lineHeight: 28,
-        color: changeOpacity(theme.sidebarText, 0.72),
+        alignItems: 'center',
     },
     text: {
         marginTop: -1,
@@ -76,7 +72,7 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderColor: theme.sidebarBg,
         position: 'relative',
         left: 0,
-        top: -2,
+        top: 0,
         alignSelf: undefined,
     },
     infoBadge: {
