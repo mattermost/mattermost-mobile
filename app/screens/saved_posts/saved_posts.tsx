@@ -144,7 +144,7 @@ function SavedMessages({
                 <EmptyState/>
             )}
         </View>
-    ), [loading, theme.centerChannelColor]);
+    ), [loading, theme.buttonBg]);
 
     const renderItem = useCallback(({item}) => {
         if (typeof item === 'string') {
