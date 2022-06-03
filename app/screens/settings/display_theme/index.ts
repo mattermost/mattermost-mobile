@@ -11,7 +11,6 @@ import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {
     observeAllowedThemesKeys,
     observeConfigBooleanValue,
-    observeConfigValue,
     observeCurrentTeamId,
     observeCurrentUserId,
 } from '@queries/servers/system';
@@ -25,10 +24,9 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentUserId = observeCurrentUserId(database);
     const themePreferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_THEME).observe();
     const configAllowCustomThemes = observeConfigBooleanValue(database, 'AllowCustomThemes');
-    const defaultTheme = observeConfigValue(database, 'DefaultTheme');
 
-    const customTheme = combineLatest([currentTeamId, themePreferences, configAllowCustomThemes, defaultTheme]).pipe(
-        switchMap(([teamId, themePrefs, awCustomTheme, dftheme]) => {
+    const customTheme = combineLatest([currentTeamId, themePreferences, configAllowCustomThemes]).pipe(
+        switchMap(([teamId, themePrefs, awCustomTheme]) => {
             if (!awCustomTheme) {
                 return of$(undefined);
             }
@@ -38,10 +36,17 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
             const e = themePrefs.find((pref) => pref.name === '')?.value;
 
             const themePref = t ? of$(t) : of$(e);
-            return themePref ?? dftheme;
+            return themePref;
         }),
         switchMap((cth) => {
-            return cth ? of$(safeParseJSON(cth)) : of$(undefined);
+            if (cth) {
+                const thx = safeParseJSON(cth) as unknown as Record<string, string>;
+                if (thx?.type === 'custom') {
+                    return of$(thx);
+                }
+            }
+
+            return of$(undefined);
         }),
     );
 

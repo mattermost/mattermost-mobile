@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {useIntl} from 'react-intl';
 
 import Block from '@components/block';
 import BlockItem from '@components/block_item';
-import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -30,6 +30,7 @@ type CustomThemeProps = {
 const CustomTheme = ({customTheme, setTheme}: CustomThemeProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const intl = useIntl();
 
     return (
         <Block
@@ -40,13 +41,8 @@ const CustomTheme = ({customTheme, setTheme}: CustomThemeProps) => {
                 action={setTheme}
                 actionType='select'
                 actionValue={customTheme.type}
-                label={(
-                    <FormattedText
-                        id='user.settings.display.custom_theme'
-                        defaultMessage={'Custom Theme'}
-                        style={styles.label}
-                    />
-                )}
+                label={intl.formatMessage({id: 'user.settings.display.custom_theme', defaultMessage: 'Custom Theme'})}
+                labelStyle={styles.label}
                 selected={theme.type?.toLowerCase() === customTheme.type?.toLowerCase()}
             />
         </Block>
