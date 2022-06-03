@@ -9,6 +9,7 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {findChannels} from '@screens/navigation';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -41,12 +42,12 @@ const SearchField = () => {
     const intl = useIntl();
     const styles = getStyleSheet(theme);
 
-    const onPress = useCallback(() => {
+    const onPress = useCallback(preventDoubleTap(() => {
         findChannels(
             intl.formatMessage({id: 'find_channels.title', defaultMessage: 'Find Channels'}),
             theme,
         );
-    }, [intl.locale, theme]);
+    }), [intl.locale, theme]);
 
     return (
         <TouchableHighlight

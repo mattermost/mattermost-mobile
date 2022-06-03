@@ -7,7 +7,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed, updateLastPostAt} from '@actions/local/channel';
 import {markPostAsDeleted} from '@actions/local/post';
 import {createThreadFromNewPost, updateThread} from '@actions/local/thread';
-import {fetchMyChannel, markChannelAsRead} from '@actions/remote/channel';
+import {fetchChannelStats, fetchMyChannel, markChannelAsRead} from '@actions/remote/channel';
 import {fetchPostAuthors, fetchPostById} from '@actions/remote/post';
 import {fetchThread} from '@actions/remote/thread';
 import {ActionType, Events, Screens} from '@constants';
@@ -196,6 +196,12 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     }
 
     const models: Model[] = [];
+    const {database} = operator;
+
+    const oldPost = await getPostById(database, post.id);
+    if (oldPost && oldPost.isPinned !== post.is_pinned) {
+        fetchChannelStats(serverUrl, post.channel_id);
+    }
 
     const {authors} = await fetchPostAuthors(serverUrl, [post], true);
     if (authors?.length) {

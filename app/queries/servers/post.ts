@@ -178,3 +178,16 @@ export const queryPostsBetween = (database: Database, earliest: number, latest: 
     }
     return database.get<PostModel>(POST).query(...clauses);
 };
+
+export const queryPinnedPostsInChannel = (database: Database, channelId: string) => {
+    return database.get<PostModel>(POST).query(
+        Q.and(
+            Q.where('channel_id', channelId),
+            Q.where('is_pinned', Q.eq(true)),
+        ),
+    );
+};
+
+export const observePinnedPostsInChannel = (database: Database, channelId: string) => {
+    return queryPinnedPostsInChannel(database, channelId).observe();
+};

@@ -150,6 +150,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.PERMALINK:
             screen = withServerDatabase(require('@screens/permalink').default);
             break;
+        case Screens.PINNED_MESSAGES:
+            screen = withServerDatabase(require('@screens/pinned_messages').default);
+            break;
         case Screens.POST_OPTIONS:
             screen = withServerDatabase(
                 require('@screens/post_options').default,

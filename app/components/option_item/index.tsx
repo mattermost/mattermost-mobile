@@ -150,7 +150,7 @@ const OptionItem = ({
                     </View>
                 </View>
             </View>
-            {Boolean(actionComponent) &&
+            {Boolean(actionComponent || info) &&
             <View style={styles.actionContainer}>
                 {Boolean(info) &&
                 <View style={styles.infoContainer}>
