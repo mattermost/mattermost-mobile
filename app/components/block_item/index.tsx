@@ -36,15 +36,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         label: {
             color: theme.centerChannelColor,
-            ...typography('Body', 600, 'SemiBold'),
-            fontSize: 16,
-            lineHeight: 24,
+            ...typography('Body', 200, 'SemiBold'),
         },
         description: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
-            ...typography('Body', 400, 'Regular'),
-            fontSize: 12,
-            lineHeight: 16,
+            ...typography('Body', 75, 'Regular'),
             marginTop: 3,
         },
         arrow: {

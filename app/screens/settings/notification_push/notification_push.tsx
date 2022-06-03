@@ -7,7 +7,6 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 
 import MobileSendPush from './push_send';
 import MobilePushStatus from './push_status';
@@ -19,29 +18,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
         },
-        input: {
-            color: theme.centerChannelColor,
-            height: 40,
-            ...typography('Body', 75),
-        },
-        separator: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            flex: 1,
-            height: 1,
-            marginLeft: 15,
-        },
         scrollView: {
             flex: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
         },
         scrollViewContent: {
             paddingVertical: 30,
-        },
-        disabled: {
-            color: theme.centerChannelColor,
-            fontSize: 15,
-            paddingHorizontal: 15,
-            paddingVertical: 10,
         },
     };
 });

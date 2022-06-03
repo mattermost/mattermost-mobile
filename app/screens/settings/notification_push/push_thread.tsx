@@ -44,7 +44,7 @@ const footerText = {
 
 type MobilePushThreadProps = {
     onMobilePushThreadChanged: (status: string) => void;
-    pushThread: PushStatus; //fixme;
+    pushThread: PushStatus;
 }
 
 const MobilePushThread = ({pushThread, onMobilePushThreadChanged}: MobilePushThreadProps) => {
@@ -66,7 +66,6 @@ const MobilePushThread = ({pushThread, onMobilePushThreadChanged}: MobilePushThr
                         style={styles.label}
                     />
                 )}
-                description={<View/>}
                 action={onMobilePushThreadChanged}
                 actionType='toggle'
                 selected={pushThread === 'all'}
