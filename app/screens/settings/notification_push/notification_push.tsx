@@ -3,15 +3,15 @@
 
 import React, {useState} from 'react';
 import {ScrollView} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
-import MobileSendPush from '@screens/settings/notification_push/push_send';
-import MobilePushThread from '@screens/settings/notification_push/push_thread';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import MobileSendPush from './push_send';
 import MobilePushStatus from './push_status';
+import MobilePushThread from './push_thread';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -45,6 +45,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+const edges: Edge[] = ['left', 'right'];
 
 type NotificationMobileProps = {
     isCRTEnabled: boolean;
@@ -72,7 +73,7 @@ const NotificationPush = ({isCRTEnabled, sendPushNotifications}: NotificationMob
 
     return (
         <SafeAreaView
-            edges={['left', 'right']}
+            edges={edges}
             testID='notification_push.screen'
             style={styles.container}
         >
@@ -94,7 +95,6 @@ const NotificationPush = ({isCRTEnabled, sendPushNotifications}: NotificationMob
                 )}
                 {sendPushNotifications && pushPref !== 'none' && (
                     <MobilePushStatus
-                        sendPushNotifications={sendPushNotifications}
                         pushStatus={pushStatus}
                         setMobilePushStatus={setMobilePushStatus}
                     />

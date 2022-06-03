@@ -40,18 +40,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 type MobilePushStatusProps = {
-    sendPushNotifications: boolean;
     pushStatus: PushStatus;
     setMobilePushStatus: (status: PushStatus) => void;
 }
-const MobilePushStatus = ({sendPushNotifications, pushStatus, setMobilePushStatus}: MobilePushStatusProps) => {
+const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const showSection = sendPushNotifications && pushStatus !== 'none';
-
-    if (!showSection) {
-        return null;
-    }
 
     return (
         <Block
