@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import Block from '@components/block';
@@ -38,15 +39,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
 type MobileSendPushProps = {
     sendPushNotifications: boolean;
     pushStatus: PushStatus;
     setMobilePushPref: (status: PushStatus) => void;
 }
-
 const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: MobileSendPushProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const intl = useIntl();
+
     return (
         <Block
             headerText={headerText}
@@ -55,55 +58,40 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
             {sendPushNotifications &&
                 <>
                     <BlockItem
-                        testID='notification_settings.pushNotification.allActivity'
-                        label={(
-                            <FormattedText
-                                id='notification_settings.pushNotification.allActivity'
-                                defaultMessage='For all activity'
-                                style={styles.label}
-                            />
-                        )}
                         action={setMobilePushPref}
                         actionType='select'
                         actionValue='all'
+                        label={intl.formatMessage({id: 'notification_settings.pushNotification.allActivity', defaultMessage: 'For all activity'})}
+                        labelStyle={styles.label}
                         selected={pushStatus === 'all'}
+                        testID='notification_settings.pushNotification.allActivity'
                     />
                     <View style={styles.separator}/>
                     <BlockItem
-                        testID='notification_settings.pushNotification.onlyMentions'
-                        label={(
-                            <FormattedText
-                                id='notification_settings.pushNotification.onlyMentions'
-                                defaultMessage='Only for mentions and direct messages'
-                                style={styles.label}
-                            />
-                        )}
                         action={setMobilePushPref}
                         actionType='select'
                         actionValue='mention'
+                        label={intl.formatMessage({id: 'notification_settings.pushNotification.onlyMentions', defaultMessage: 'Only for mentions and direct messages'})}
+                        labelStyle={styles.label}
                         selected={pushStatus === 'mention'}
+                        testID='notification_settings.pushNotification.onlyMentions'
                     />
                     <View style={styles.separator}/>
                     <BlockItem
-                        testID='notification_settings.pushNotification.never'
-                        label={(
-                            <FormattedText
-                                id='notification_settings.pushNotification.never'
-                                defaultMessage='Never'
-                                style={styles.label}
-                            />
-                        )}
                         action={setMobilePushPref}
                         actionType='select'
                         actionValue='none'
+                        label={intl.formatMessage({id: 'notification_settings.pushNotification.never', defaultMessage: 'Never'})}
+                        labelStyle={styles.label}
                         selected={pushStatus === 'none'}
+                        testID='notification_settings.pushNotification.never'
                     />
                 </>
             }
             {!sendPushNotifications &&
                 <FormattedText
-                    id='notification_settings.pushNotification.disabled_long'
                     defaultMessage='Push notifications for mobile devices have been disabled by your System Administrator.'
+                    id='notification_settings.pushNotification.disabled_long'
                     style={styles.disabled}
                 />
             }

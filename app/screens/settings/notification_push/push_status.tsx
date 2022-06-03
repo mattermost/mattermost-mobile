@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import Block from '@components/block';
 import BlockItem from '@components/block_item';
-import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -26,10 +26,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             flex: 1,
             height: 1,
-            marginLeft: 15,
-        },
-        area: {
-            paddingHorizontal: 16,
         },
         label: {
             color: theme.centerChannelColor,
@@ -46,21 +42,16 @@ type MobilePushStatusProps = {
 const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const intl = useIntl();
 
     return (
         <Block
             headerText={headerText}
             headerStyles={styles.upperCase}
-            containerStyles={styles.area}
         >
             <BlockItem
-                label={(
-                    <FormattedText
-                        id='notification_settings.mobile.online'
-                        defaultMessage='Online, away or offline'
-                        style={styles.label}
-                    />
-                )}
+                label={intl.formatMessage({id: 'notification_settings.mobile.online', defaultMessage: 'Online, away or offline'})}
+                labelStyle={styles.label}
                 action={setMobilePushStatus}
                 actionType='select'
                 actionValue='online'
@@ -68,13 +59,8 @@ const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusPro
             />
             <View style={styles.separator}/>
             <BlockItem
-                label={(
-                    <FormattedText
-                        id='notification_settings.mobile.away'
-                        defaultMessage='Away or offline'
-                        style={styles.label}
-                    />
-                )}
+                label={intl.formatMessage({id: 'notification_settings.mobile.away', defaultMessage: 'Away or offline'})}
+                labelStyle={styles.label}
                 action={setMobilePushStatus}
                 actionType='select'
                 actionValue='away'
@@ -82,13 +68,8 @@ const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusPro
             />
             <View style={styles.separator}/>
             <BlockItem
-                label={(
-                    <FormattedText
-                        id='notification_settings.mobile.offline'
-                        defaultMessage='Offline'
-                        style={styles.label}
-                    />
-                )}
+                label={intl.formatMessage({id: 'notification_settings.mobile.offline', defaultMessage: 'Offline'})}
+                labelStyle={styles.label}
                 action={setMobilePushStatus}
                 actionType='select'
                 actionValue='offline'
