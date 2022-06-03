@@ -488,7 +488,6 @@ exports[`components/categories_list should render team error 1`] = `
           "borderRadius": 8,
           "flex": 1,
           "flexDirection": "row",
-          "height": 40,
           "justifyContent": "flex-start",
           "marginVertical": 20,
           "padding": 8,
@@ -497,11 +496,10 @@ exports[`components/categories_list should render team error 1`] = `
     >
       <Icon
         name="magnify"
+        size={48}
         style={
           Object {
             "color": "rgba(255,255,255,0.72)",
-            "fontSize": 24,
-            "width": 24,
           }
         }
       />

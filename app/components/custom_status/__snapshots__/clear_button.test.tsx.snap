@@ -16,20 +16,19 @@ exports[`components/custom_status/clear_button should match snapshot 1`] = `
     Object {
       "alignItems": "center",
       "flex": 1,
-      "height": 40,
+      "height": 80,
       "justifyContent": "center",
       "opacity": 1,
-      "width": 40,
+      "width": 80,
     }
   }
   testID="clear_custom_status.button"
 >
   <Icon
     name="close-circle"
-    size={20}
+    size={40}
     style={
       Object {
-        "borderRadius": 1000,
         "color": "rgba(63,67,80,0.52)",
       }
     }

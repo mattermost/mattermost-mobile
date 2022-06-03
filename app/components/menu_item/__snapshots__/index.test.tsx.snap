@@ -38,6 +38,7 @@ exports[`DrawerItem should match snapshot 1`] = `
         style={
           Array [
             Object {
+              "alignItems": "center",
               "flexDirection": "row",
               "minHeight": 50,
             },
@@ -61,11 +62,11 @@ exports[`DrawerItem should match snapshot 1`] = `
         >
           <Icon
             name="icon-name"
+            size={48}
             style={
               Array [
                 Object {
                   "color": "rgba(63,67,80,0.64)",
-                  "fontSize": 24,
                 },
                 Object {
                   "color": "#d24b4e",
@@ -88,8 +89,11 @@ exports[`DrawerItem should match snapshot 1`] = `
               Array [
                 Object {
                   "color": "rgba(63,67,80,0.5)",
-                  "fontSize": 17,
+                  "fontFamily": "OpenSans",
+                  "fontSize": 16,
+                  "fontWeight": "400",
                   "includeFontPadding": false,
+                  "lineHeight": 24,
                   "textAlignVertical": "center",
                 },
                 undefined,
@@ -159,6 +163,7 @@ exports[`DrawerItem should match snapshot without separator and centered false 1
         style={
           Array [
             Object {
+              "alignItems": "center",
               "flexDirection": "row",
               "minHeight": 50,
             },
@@ -182,11 +187,11 @@ exports[`DrawerItem should match snapshot without separator and centered false 1
         >
           <Icon
             name="icon-name"
+            size={48}
             style={
               Array [
                 Object {
                   "color": "rgba(63,67,80,0.64)",
-                  "fontSize": 24,
                 },
                 Object {
                   "color": "#d24b4e",
@@ -209,8 +214,11 @@ exports[`DrawerItem should match snapshot without separator and centered false 1
               Array [
                 Object {
                   "color": "rgba(63,67,80,0.5)",
-                  "fontSize": 17,
+                  "fontFamily": "OpenSans",
+                  "fontSize": 16,
+                  "fontWeight": "400",
                   "includeFontPadding": false,
+                  "lineHeight": 24,
                   "textAlignVertical": "center",
                 },
                 undefined,

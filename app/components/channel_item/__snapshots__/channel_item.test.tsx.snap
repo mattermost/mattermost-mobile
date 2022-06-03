@@ -39,6 +39,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
     <View
       style={
         Object {
+          "alignItems": "center",
           "flex": 1,
           "flexDirection": "row",
         }
@@ -52,8 +53,8 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
               "justifyContent": "center",
             },
             Object {
-              "height": 24,
-              "width": 24,
+              "height": 48,
+              "width": 48,
             },
             undefined,
             undefined,
@@ -70,7 +71,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
               undefined,
               undefined,
               Object {
-                "fontSize": 24,
+                "fontSize": 48,
                 "left": 1,
               },
             ]
@@ -152,6 +153,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
     <View
       style={
         Object {
+          "alignItems": "center",
           "flex": 1,
           "flexDirection": "row",
         }
@@ -165,8 +167,8 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
               "justifyContent": "center",
             },
             Object {
-              "height": 24,
-              "width": 24,
+              "height": 48,
+              "width": 48,
             },
             undefined,
             undefined,
@@ -183,7 +185,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
               undefined,
               undefined,
               Object {
-                "fontSize": 24,
+                "fontSize": 48,
                 "left": 2,
               },
             ]
