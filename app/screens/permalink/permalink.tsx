@@ -25,8 +25,9 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
-    postId: PostModel['id'];
     channel?: ChannelModel;
+    isCRTEnabled: boolean;
+    postId: PostModel['id'];
 }
 
 const edges: Edge[] = ['left', 'right', 'top'];
@@ -118,7 +119,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-function Permalink({channel, postId}: Props) {
+function Permalink({channel, isCRTEnabled, postId}: Props) {
     const [posts, setPosts] = useState<PostModel[]>([]);
     const [loading, setLoading] = useState(true);
     const theme = useTheme();
@@ -133,7 +134,7 @@ function Permalink({channel, postId}: Props) {
     useEffect(() => {
         (async () => {
             if (channel?.id) {
-                const data = await fetchPostsAround(serverUrl, channel.id, postId, 5);
+                const data = await fetchPostsAround(serverUrl, channel.id, postId, 5, isCRTEnabled);
                 if (data?.posts) {
                     setLoading(false);
                     setPosts(data.posts);
@@ -209,6 +210,7 @@ function Permalink({channel, postId}: Props) {
                     <View style={style.postList}>
                         <PostList
                             highlightedId={postId}
+                            isCRTEnabled={isCRTEnabled}
                             posts={posts}
                             location={Screens.PERMALINK}
                             lastViewedAt={0}
