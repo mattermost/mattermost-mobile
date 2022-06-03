@@ -191,13 +191,13 @@ const LoginOptions = ({
             <Background theme={theme}/>
             <AnimatedSafeArea style={[styles.container, transform]}>
                 <KeyboardAwareScrollView
-                    bounces={false}
+                    bounces={true}
                     contentContainerStyle={[styles.innerContainer, additionalContainerStyle]}
                     enableAutomaticScroll={Platform.OS === 'android'}
                     enableOnAndroid={false}
                     enableResetScrollToCoords={true}
                     extraScrollHeight={0}
-                    keyboardDismissMode='on-drag'
+                    keyboardDismissMode='interactive'
                     keyboardShouldPersistTaps='handled'
                     ref={keyboardAwareRef}
                     scrollToOverflowEnabled={true}
