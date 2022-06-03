@@ -25,14 +25,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             flex: 1,
             height: 1,
-            marginLeft: 15,
-        },
-        area: {
-            paddingHorizontal: 16,
         },
         label: {
             color: theme.centerChannelColor,
             ...typography('Body', 100, 'Regular'),
+        },
+        disabled: {
+            color: theme.centerChannelColor,
+            fontSize: 15,
+            paddingHorizontal: 15,
+            paddingVertical: 10,
         },
     };
 });
@@ -41,18 +43,17 @@ type MobileSendPushProps = {
     pushStatus: PushStatus;
     setMobilePushPref: (status: PushStatus) => void;
 }
+
 const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: MobileSendPushProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-
     return (
         <Block
             headerText={headerText}
             headerStyles={styles.upperCase}
-            containerStyles={styles.area}
         >
             {sendPushNotifications &&
-                <View>
+                <>
                     <BlockItem
                         testID='notification_settings.pushNotification.allActivity'
                         label={(
@@ -97,7 +98,7 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
                         actionValue='none'
                         selected={pushStatus === 'none'}
                     />
-                </View>
+                </>
             }
             {!sendPushNotifications &&
                 <FormattedText
