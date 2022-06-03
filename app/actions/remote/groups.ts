@@ -2,15 +2,16 @@
 // See LICENSE.txt for license information.
 
 import {storeGroups} from '@actions/local/group';
+import {prepareGroups} from '@app/queries/servers/group';
 import {Client} from '@client/rest';
+import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 
 import {forceLogoutIfNecessary} from './session';
 
 export const fetchGroupsForAutocomplete = async (serverUrl: string, query: string, fetchOnly = false) => {
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
+        const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getGroups(query);
 
         // Save locally
@@ -18,7 +19,12 @@ export const fetchGroupsForAutocomplete = async (serverUrl: string, query: strin
             return await storeGroups(serverUrl, response);
         }
 
-        return await storeGroups(serverUrl, response, true);
+        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+        if (!operator) {
+            throw new Error(`${serverUrl} operator not found`);
+        }
+
+        return await prepareGroups(operator, response);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -26,16 +32,20 @@ export const fetchGroupsForAutocomplete = async (serverUrl: string, query: strin
 };
 
 export const fetchGroupsForChannel = async (serverUrl: string, channelId: string, fetchOnly = false) => {
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToChannel(channelId);
 
         if (!fetchOnly) {
             return await storeGroups(serverUrl, response.groups);
         }
 
-        return await storeGroups(serverUrl, response.groups, true);
+        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+        if (!operator) {
+            throw new Error(`${serverUrl} operator not found`);
+        }
+
+        return await prepareGroups(operator, response.groups);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -43,16 +53,21 @@ export const fetchGroupsForChannel = async (serverUrl: string, channelId: string
 };
 
 export const fetchGroupsForTeam = async (serverUrl: string, teamId: string, fetchOnly = false) => {
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
+        const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToTeam(teamId);
 
         if (!fetchOnly) {
             return await storeGroups(serverUrl, response.groups);
         }
 
-        return await storeGroups(serverUrl, response.groups, true);
+        // return await storeGroups(serverUrl, response.groups, true);
+        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+        if (!operator) {
+            throw new Error(`${serverUrl} operator not found`);
+        }
+
+        return await prepareGroups(operator, response.groups);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
