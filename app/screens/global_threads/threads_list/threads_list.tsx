@@ -31,6 +31,11 @@ const styles = StyleSheet.create({
     messagesContainer: {
         flexGrow: 1,
     },
+    empty: {
+        alignItems: 'center',
+        flexGrow: 1,
+        justifyContent: 'center',
+    },
     loadingStyle: {
         alignItems: 'center',
         flex: 1,
@@ -154,7 +159,7 @@ const ThreadsList = ({
             <FlatList
                 ListEmptyComponent={listEmptyComponent}
                 ListFooterComponent={listFooterComponent}
-                contentContainerStyle={styles.messagesContainer}
+                contentContainerStyle={threads.length ? styles.messagesContainer : styles.empty}
                 data={threads}
                 maxToRenderPerBatch={10}
                 onEndReached={handleEndReached}
