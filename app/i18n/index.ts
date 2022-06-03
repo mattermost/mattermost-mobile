@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {getLocales} from 'react-native-localize';
 
 import en from '@assets/i18n/en.json';
@@ -149,7 +149,8 @@ function loadTranslation(locale?: string) {
         }
 
         if (momentData && locale) {
-            moment.updateLocale(locale.toLowerCase(), momentData);
+            const lang = getLocaleFromLanguage(locale).toLowerCase();
+            moment.updateLocale(lang, momentData);
         } else {
             resetMomentLocale();
         }
@@ -173,10 +174,11 @@ export function getLocaleFromLanguage(lang: string) {
 }
 
 export function resetMomentLocale(locale?: string) {
-    moment.locale(locale || DEFAULT_LOCALE.split('-')[0]);
+    moment.locale(locale?.split('-')[0] || DEFAULT_LOCALE.split('-')[0]);
 }
 
-export function getTranslations(locale?: string) {
+export function getTranslations(lang: string) {
+    const locale = getLocaleFromLanguage(lang);
     return loadTranslation(locale);
 }
 

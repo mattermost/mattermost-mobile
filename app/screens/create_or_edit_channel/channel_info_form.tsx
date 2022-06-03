@@ -109,7 +109,7 @@ export default function ChannelInfoForm({
     const intl = useIntl();
     const {formatMessage} = intl;
     const isTablet = useIsTablet();
-    const headerHeight = useHeaderHeight(false, false, false);
+    const headerHeight = useHeaderHeight();
 
     const theme = useTheme();
     const styles = getStyleSheet(theme);

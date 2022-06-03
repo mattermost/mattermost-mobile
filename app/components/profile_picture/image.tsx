@@ -58,7 +58,14 @@ const Image = ({author, iconSize, size, source}: Props) => {
     }
 
     if (author && client) {
-        const lastPictureUpdate = ('lastPictureUpdate' in author) ? author.lastPictureUpdate : author.last_picture_update;
+        let lastPictureUpdate = 0;
+        const isBot = ('isBot' in author) ? author.isBot : author.is_bot;
+        if (isBot) {
+            lastPictureUpdate = ('isBot' in author) ? author.props?.bot_last_icon_update : author.bot_last_icon_update || 0;
+        } else {
+            lastPictureUpdate = ('lastPictureUpdate' in author) ? author.lastPictureUpdate : author.last_picture_update;
+        }
+
         const pictureUrl = client.getProfilePictureUrl(author.id, lastPictureUpdate);
         const imgSource = source ?? {uri: `${serverUrl}${pictureUrl}`};
         return (

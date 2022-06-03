@@ -13,15 +13,12 @@ import {typography} from '@utils/typography';
 
 import CustomStatusText from './custom_status_text';
 
-import type UserModel from '@typings/database/models/servers/user';
-
 type CustomLabelProps = {
     customStatus: UserCustomStatus;
     isCustomStatusExpirySupported: boolean;
     isStatusSet: boolean;
     showRetryMessage: boolean;
     theme: Theme;
-    currentUser: UserModel;
     onClearCustomStatus: () => void;
 };
 
@@ -44,7 +41,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const CustomLabel = ({currentUser, customStatus, isCustomStatusExpirySupported, isStatusSet, onClearCustomStatus, showRetryMessage, theme}: CustomLabelProps) => {
+const CustomLabel = ({customStatus, isCustomStatusExpirySupported, isStatusSet, onClearCustomStatus, showRetryMessage, theme}: CustomLabelProps) => {
     const style = getStyleSheet(theme);
 
     return (
@@ -58,7 +55,6 @@ const CustomLabel = ({currentUser, customStatus, isCustomStatusExpirySupported, 
                     />
                     {Boolean(isStatusSet && isCustomStatusExpirySupported && customStatus?.duration) && (
                         <CustomStatusExpiry
-                            currentUser={currentUser}
                             time={moment(customStatus?.expires_at)}
                             theme={theme}
                             textStyles={style.customStatusExpiryText}
