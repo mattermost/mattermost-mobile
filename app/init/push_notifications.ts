@@ -147,12 +147,13 @@ class PushNotifications {
             }
 
             const isDifferentChannel = payload?.channel_id !== channelId;
+            const isVisibleThread = payload?.root_id === EphemeralStore.getLastViewedThreadId() && EphemeralStore.getNavigationTopComponentId() === Screens.THREAD;
             let isChannelScreenVisible = EphemeralStore.getNavigationTopComponentId() === Screens.CHANNEL;
             if (isTabletDevice) {
                 isChannelScreenVisible = EphemeralStore.getVisibleTab() === Screens.HOME;
             }
 
-            if (isDifferentChannel || !isChannelScreenVisible) {
+            if (isDifferentChannel || (!isChannelScreenVisible && !isVisibleThread)) {
                 DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
 
                 const screen = Screens.IN_APP_NOTIFICATION;

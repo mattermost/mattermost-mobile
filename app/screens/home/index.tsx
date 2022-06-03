@@ -103,6 +103,7 @@ export default function HomeScreen(props: HomeProps) {
         >
             <Tab.Navigator
                 screenOptions={{headerShown: false, lazy: true, unmountOnBlur: false}}
+                backBehavior='none'
                 tabBar={(tabProps: BottomTabBarProps) => (
                     <TabBar
                         {...tabProps}

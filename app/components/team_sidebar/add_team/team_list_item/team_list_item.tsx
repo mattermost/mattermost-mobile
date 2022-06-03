@@ -9,7 +9,7 @@ import TeamIcon from '@components/team_sidebar/team_list/team_item/team_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type TeamModel from '@typings/database/models/servers/team';
@@ -54,8 +54,10 @@ export default function TeamListItem({team, currentUserId, textColor, iconTextCo
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
     const onPress = useCallback(async () => {
-        await addUserToTeam(serverUrl, team.id, currentUserId);
-        onTeamAdded(team.id);
+        const {error} = await addUserToTeam(serverUrl, team.id, currentUserId);
+        if (!error) {
+            onTeamAdded(team.id);
+        }
     }, [onTeamAdded]);
 
     const displayName = 'displayName' in team ? team.displayName : team.display_name;
@@ -75,13 +77,13 @@ export default function TeamListItem({team, currentUserId, textColor, iconTextCo
                         displayName={displayName}
                         lastIconUpdate={lastTeamIconUpdateAt}
                         selected={false}
-                        textColor={iconTextColor}
-                        backgroundColor={iconBackgroundColor}
+                        textColor={iconTextColor || theme.centerChannelColor}
+                        backgroundColor={iconBackgroundColor || changeOpacity(theme.centerChannelColor, 0.16)}
                         testID={`${teamListItemTestId}.team_icon`}
                     />
                 </View>
                 <Text
-                    style={[styles.text, {color: textColor}]}
+                    style={[styles.text, textColor && {color: textColor}]}
                     numberOfLines={1}
                 >
                     {displayName}

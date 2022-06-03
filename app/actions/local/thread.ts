@@ -119,6 +119,7 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
             subtitle = subtitle.replace('{channelName}', channel.displayName);
         }
 
+        EphemeralStore.setLastViewedThreadId(rootId);
         goToScreen(Screens.THREAD, '', {rootId}, {
             topBar: {
                 title: {

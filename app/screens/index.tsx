@@ -32,7 +32,7 @@ const withIntl = (Screen: React.ComponentType) => {
         return (
             <IntlProvider
                 locale={DEFAULT_LOCALE}
-                messages={getTranslations()}
+                messages={getTranslations(DEFAULT_LOCALE)}
             >
                 <Screen {...props}/>
             </IntlProvider>

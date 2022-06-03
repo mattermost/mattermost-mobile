@@ -4,7 +4,7 @@
 import {DeviceEventEmitter, LogBox} from 'react-native';
 import {RUNNING_E2E} from 'react-native-dotenv';
 import 'react-native-gesture-handler';
-import {ComponentDidAppearEvent, ComponentDidDisappearEvent, Navigation} from 'react-native-navigation';
+import {ComponentDidAppearEvent, ComponentDidDisappearEvent, ModalDismissedEvent, Navigation, ScreenPoppedEvent} from 'react-native-navigation';
 
 import {Events, Screens} from './app/constants';
 import DatabaseManager from './app/database/manager';
@@ -75,12 +75,14 @@ Navigation.events().registerAppLaunchedListener(async () => {
 });
 
 const registerNavigationListeners = () => {
-    Navigation.events().registerComponentDidAppearListener(componentDidAppearListener);
-    Navigation.events().registerComponentDidDisappearListener(componentDidDisappearListener);
-    Navigation.events().registerComponentWillAppearListener(componentWillAppear);
+    Navigation.events().registerComponentDidAppearListener(screenDidAppearListener);
+    Navigation.events().registerComponentDidDisappearListener(screenDidDisappearListener);
+    Navigation.events().registerComponentWillAppearListener(screenWillAppear);
+    Navigation.events().registerScreenPoppedListener(screenPoppedListener);
+    Navigation.events().registerModalDismissedListener(modalDismissedListener);
 };
 
-function componentWillAppear({componentId}: ComponentDidAppearEvent) {
+function screenWillAppear({componentId}: ComponentDidAppearEvent) {
     if (componentId === Screens.HOME) {
         DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
     } else if ([Screens.EDIT_POST, Screens.THREAD].includes(componentId)) {
@@ -88,16 +90,14 @@ function componentWillAppear({componentId}: ComponentDidAppearEvent) {
     }
 }
 
-function componentDidAppearListener({componentId, passProps}: ComponentDidAppearEvent) {
-    if (!(passProps as any)?.overlay) {
+function screenDidAppearListener({componentId, passProps, componentType}: ComponentDidAppearEvent) {
+    if (!(passProps as any)?.overlay && componentType === 'Component') {
         EphemeralStore.addNavigationComponentId(componentId);
     }
 }
 
-function componentDidDisappearListener({componentId}: ComponentDidDisappearEvent) {
+function screenDidDisappearListener({componentId}: ComponentDidDisappearEvent) {
     if (componentId !== Screens.HOME) {
-        EphemeralStore.removeNavigationComponentId(componentId);
-
         if ([Screens.EDIT_POST, Screens.THREAD].includes(componentId)) {
             DeviceEventEmitter.emit(Events.PAUSE_KEYBOARD_TRACKING_VIEW, false);
         }
@@ -105,5 +105,22 @@ function componentDidDisappearListener({componentId}: ComponentDidDisappearEvent
         if (EphemeralStore.getNavigationTopComponentId() === Screens.HOME) {
             DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
         }
+    }
+}
+
+function screenPoppedListener({componentId}: ScreenPoppedEvent) {
+    EphemeralStore.removeNavigationComponentId(componentId);
+    if (EphemeralStore.getNavigationTopComponentId() === Screens.HOME) {
+        DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
+    }
+}
+
+function modalDismissedListener({componentId}: ModalDismissedEvent) {
+    const topScreen = EphemeralStore.getNavigationTopComponentId();
+    const topModal = EphemeralStore.getNavigationTopModalId();
+    const toRemove = topScreen === topModal ? topModal : componentId;
+    EphemeralStore.removeNavigationModal(toRemove);
+    if (EphemeralStore.getNavigationTopComponentId() === Screens.HOME) {
+        DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
     }
 }

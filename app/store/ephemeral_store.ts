@@ -21,6 +21,7 @@ class EphemeralStore {
     private leavingChannels = new Set<string>();
     private archivingChannels = new Set<string>();
     private convertingChannels = new Set<string>();
+    private lastViewedThreadId = '';
 
     addNavigationComponentId = (componentId: string) => {
         this.addToNavigationComponentIdStack(componentId);
@@ -36,7 +37,7 @@ class EphemeralStore {
     addToNavigationComponentIdStack = (componentId: string) => {
         const index = this.navigationComponentIdStack.indexOf(componentId);
         if (index >= 0) {
-            this.navigationComponentIdStack = this.navigationComponentIdStack.slice(index, 1);
+            this.navigationComponentIdStack.splice(index, 1);
         }
 
         this.navigationComponentIdStack.unshift(componentId);
@@ -57,6 +58,8 @@ class EphemeralStore {
     };
 
     getAllNavigationComponents = () => this.allNavigationComponentIds;
+
+    getAllNavigationModals = () => this.navigationModalStack;
 
     getNavigationTopComponentId = () => {
         return this.navigationComponentIdStack[0];
@@ -90,7 +93,7 @@ class EphemeralStore {
     };
 
     removeNavigationModal = (componentId: string) => {
-        this.removeNavigationComponent(componentId);
+        this.removeNavigationComponentId(componentId);
         const index = this.navigationModalStack.indexOf(componentId);
 
         if (index >= 0) {
@@ -208,6 +211,15 @@ class EphemeralStore {
 
     getPushProxyVerificationState = (serverUrl: string) => {
         return this.pushProxyVerification[serverUrl];
+    };
+
+    // Ephemeral for the last viewed thread
+    getLastViewedThreadId = () => {
+        return this.lastViewedThreadId;
+    };
+
+    setLastViewedThreadId = (id: string) => {
+        this.lastViewedThreadId = id;
     };
 }
 

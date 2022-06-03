@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Keyboard} from 'react-native';
+import {OptionsModalPresentationStyle} from 'react-native-navigation';
 
 import {dismissAllModals, showModalOverCurrentContext} from '@screens/navigation';
 import {changeOpacity} from '@utils/theme';
@@ -22,6 +23,7 @@ export const displayPermalink = async (teamName: string, postId: string, openAsP
     };
 
     const options = {
+        modalPresentationStyle: OptionsModalPresentationStyle.fullScreen,
         layout: {
             componentBackgroundColor: changeOpacity('#000', 0.2),
         },
