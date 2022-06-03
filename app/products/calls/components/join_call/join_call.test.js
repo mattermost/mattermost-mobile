@@ -38,7 +38,7 @@ describe('JoinCall', () => {
         alreadyInTheCall: false,
         currentChannelName: 'Current Channel',
         callChannelName: 'Call Channel',
-        isCloudLimitRestricted: false,
+        isLimitRestricted: false,
     };
 
     test('should match snapshot', () => {
