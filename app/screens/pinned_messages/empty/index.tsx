@@ -16,6 +16,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         alignItems: 'center',
         justifyContent: 'center',
         paddingHorizontal: 40,
+        maxWidth: 480,
     },
     title: {
         color: theme.centerChannelColor,

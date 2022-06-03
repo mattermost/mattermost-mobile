@@ -22,6 +22,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center',
             paddingHorizontal: 40,
             top: -40,
+            maxWidth: 480,
         },
         textContainer: {
             marginTop: 24,
