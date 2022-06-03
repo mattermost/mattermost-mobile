@@ -13,7 +13,6 @@ import {calculateDimensions, getViewPortWidth} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getYouTubeVideoId, tryOpenURL} from '@utils/url';
 
-// @ts-expect-error import svg
 import YouTubeLogo from './youtube.svg';
 
 type YouTubeProps = {

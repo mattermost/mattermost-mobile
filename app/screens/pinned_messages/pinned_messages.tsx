@@ -2,34 +2,31 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
 import {BackHandler, DeviceEventEmitter, FlatList, StyleSheet, View} from 'react-native';
-import {EventSubscription, Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import {fetchSavedPosts} from '@actions/remote/post';
+import {fetchPinnedPosts} from '@actions/remote/post';
 import Loading from '@components/loading';
 import DateSeparator from '@components/post_list/date_separator';
-import PostWithChannelInfo from '@components/post_with_channel_info';
-import TabletTitle from '@components/tablet_title';
+import Post from '@components/post_list/post';
 import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {dismissModal} from '@screens/navigation';
+import {popTopScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isDateLine, getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 
-import EmptyState from './components/empty';
+import EmptyState from './empty';
 
 import type {ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
+    channelId: string;
     componentId?: string;
-    closeButtonId?: string;
     currentTimezone: string | null;
+    isCRTEnabled: boolean;
     isTimezoneEnabled: boolean;
-    isTablet?: boolean;
     posts: PostModel[];
 }
 
@@ -55,14 +52,13 @@ const styles = StyleSheet.create({
 });
 
 function SavedMessages({
+    channelId,
     componentId,
-    closeButtonId,
-    posts,
     currentTimezone,
+    isCRTEnabled,
     isTimezoneEnabled,
-    isTablet,
+    posts,
 }: Props) {
-    const intl = useIntl();
     const [loading, setLoading] = useState(!posts.length);
     const [refreshing, setRefreshing] = useState(false);
     const theme = useTheme();
@@ -72,50 +68,28 @@ function SavedMessages({
 
     const close = () => {
         if (componentId) {
-            dismissModal({componentId});
+            popTopScreen(componentId);
         }
     };
 
     useEffect(() => {
-        fetchSavedPosts(serverUrl).finally(() => {
+        fetchPinnedPosts(serverUrl, channelId).finally(() => {
             setLoading(false);
         });
     }, []);
 
     useEffect(() => {
-        let unsubscribe: EventSubscription | undefined;
-        if (componentId && closeButtonId) {
-            unsubscribe = Navigation.events().registerComponentListener({
-                navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
-                    switch (buttonId) {
-                        case closeButtonId:
-                            close();
-                            break;
-                    }
-                },
-            }, componentId);
-        }
+        const listener = BackHandler.addEventListener('hardwareBackPress', () => {
+            if (EphemeralStore.getNavigationTopComponentId() === componentId) {
+                close();
+                return true;
+            }
 
-        return () => {
-            unsubscribe?.remove();
-        };
-    }, [componentId, closeButtonId]);
+            return false;
+        });
 
-    useEffect(() => {
-        let listener: EventSubscription|undefined;
-        if (!isTablet && componentId) {
-            listener = BackHandler.addEventListener('hardwareBackPress', () => {
-                if (EphemeralStore.getNavigationTopComponentId() === componentId) {
-                    close();
-                    return true;
-                }
-
-                return false;
-            });
-        }
-
-        return () => listener?.remove();
-    }, [componentId, isTablet]);
+        return () => listener.remove();
+    }, [componentId]);
 
     const onViewableItemsChanged = useCallback(({viewableItems}: ViewableItemsChanged) => {
         if (!viewableItems.length) {
@@ -124,7 +98,7 @@ function SavedMessages({
 
         const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
             if (isViewable) {
-                acc[`${Screens.SAVED_POSTS}-${item.id}`] = true;
+                acc[`${Screens.PINNED_MESSAGES}-${item.id}`] = true;
             }
             return acc;
         }, {});
@@ -134,9 +108,9 @@ function SavedMessages({
 
     const handleRefresh = useCallback(async () => {
         setRefreshing(true);
-        await fetchSavedPosts(serverUrl);
+        await fetchPinnedPosts(serverUrl, channelId);
         setRefreshing(false);
-    }, [serverUrl]);
+    }, [serverUrl, channelId]);
 
     const emptyList = useMemo(() => (
         <View style={styles.empty}>
@@ -166,37 +140,37 @@ function SavedMessages({
         }
 
         return (
-            <PostWithChannelInfo
-                location={Screens.SAVED_POSTS}
+            <Post
+                highlightPinnedOrSaved={false}
+                isCRTEnabled={isCRTEnabled}
+                location={Screens.PINNED_MESSAGES}
+                nextPost={undefined}
                 post={item}
+                previousPost={undefined}
+                showAddReaction={false}
+                shouldRenderReplyButton={false}
+                skipSavedHeader={true}
+                skipPinnedHeader={true}
             />
         );
     }, [currentTimezone, isTimezoneEnabled, theme]);
 
     return (
-        <>
-            {isTablet &&
-            <TabletTitle
-                testID='custom_status.done.button'
-                title={intl.formatMessage({id: 'mobile.screen.saved_posts', defaultMessage: 'Saved Messages'})}
+        <SafeAreaView
+            edges={edges}
+            style={styles.flex}
+        >
+            <FlatList
+                contentContainerStyle={data.length ? styles.list : [styles.empty]}
+                ListEmptyComponent={emptyList}
+                data={data}
+                onRefresh={handleRefresh}
+                refreshing={refreshing}
+                renderItem={renderItem}
+                scrollToOverflowEnabled={true}
+                onViewableItemsChanged={onViewableItemsChanged}
             />
-            }
-            <SafeAreaView
-                edges={edges}
-                style={styles.flex}
-            >
-                <FlatList
-                    contentContainerStyle={data.length ? styles.list : [styles.empty]}
-                    ListEmptyComponent={emptyList}
-                    data={data}
-                    onRefresh={handleRefresh}
-                    refreshing={refreshing}
-                    renderItem={renderItem}
-                    scrollToOverflowEnabled={true}
-                    onViewableItemsChanged={onViewableItemsChanged}
-                />
-            </SafeAreaView>
-        </>
+        </SafeAreaView>
     );
 }
 
