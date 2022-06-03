@@ -4,6 +4,8 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
+import {handleTeamChange} from '@actions/remote/team';
+import {useServerUrl} from '@context/server';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import {dismissBottomSheet} from '@screens/navigation';
 
@@ -18,15 +20,17 @@ type Props = {
 
 export default function AddTeamSlideUp({otherTeams, showTitle = true}: Props) {
     const intl = useIntl();
+    const serverUrl = useServerUrl();
 
     const onPressCreate = useCallback(() => {
         //TODO Create team screen https://mattermost.atlassian.net/browse/MM-43622
         dismissBottomSheet();
     }, []);
 
-    const onTeamAdded = useCallback(() => {
-        dismissBottomSheet();
-    }, []);
+    const onTeamAdded = useCallback(async (teamId: string) => {
+        await dismissBottomSheet();
+        handleTeamChange(serverUrl, teamId);
+    }, [serverUrl]);
 
     return (
         <BottomSheetContent

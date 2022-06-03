@@ -81,7 +81,7 @@ const PostOptions = ({
         return (
             <>
                 {canAddReaction && <ReactionBar postId={post.id}/>}
-                {canReply && <ReplyOption post={post}/>}
+                {canReply && sourceScreen !== Screens.THREAD && <ReplyOption post={post}/>}
                 {shouldRenderFollow &&
                     <FollowThreadOption thread={thread}/>
                 }

@@ -5,9 +5,11 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleProp, ViewStyle} from 'react-native';
 
+import CompassIcon from '@components/compass_icon';
 import OptionBox from '@components/option_box';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
+import {useTheme} from '@context/theme';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
 
 type Props = {
@@ -19,12 +21,25 @@ type Props = {
 
 const InfoBox = ({channelId, containerStyle, showAsLabel = false, testID}: Props) => {
     const intl = useIntl();
+    const theme = useTheme();
 
     const onViewInfo = useCallback(async () => {
         await dismissBottomSheet();
         const title = intl.formatMessage({id: 'screens.channel_info', defaultMessage: 'Channel Info'});
-        showModal(Screens.CHANNEL_INFO, title, {channelId});
-    }, [intl, channelId]);
+        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
+        const closeButtonId = 'close-channel-info';
+
+        const options = {
+            topBar: {
+                leftButtons: [{
+                    id: closeButtonId,
+                    icon: closeButton,
+                    testID: closeButtonId,
+                }],
+            },
+        };
+        showModal(Screens.CHANNEL_INFO, title, {channelId, closeButtonId}, options);
+    }, [intl, channelId, theme]);
 
     if (showAsLabel) {
         return (

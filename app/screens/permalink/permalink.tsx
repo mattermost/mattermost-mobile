@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {Alert, BackHandler, Text, TouchableOpacity, View} from 'react-native';
 import Animated from 'react-native-reanimated';
-import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchChannelById, joinChannel, switchToChannelById} from '@actions/remote/channel';
 import {fetchPostById, fetchPostsAround} from '@actions/remote/post';
@@ -19,6 +19,7 @@ import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {dismissModal} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {closePermalink} from '@utils/permalink';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -37,6 +38,8 @@ type Props = {
     currentUserId: string;
     currentTeamId: string;
 }
+
+const edges: Edge[] = ['left', 'right', 'top'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -243,8 +246,12 @@ function Permalink({
 
     useEffect(() => {
         const listener = BackHandler.addEventListener('hardwareBackPress', () => {
-            handleClose();
-            return true;
+            if (EphemeralStore.getNavigationTopComponentId() === Screens.PERMALINK) {
+                handleClose();
+                return true;
+            }
+
+            return false;
         });
 
         return () => {
@@ -325,6 +332,7 @@ function Permalink({
         <SafeAreaView
             style={containerStyle}
             testID='permalink.screen'
+            edges={edges}
         >
             <Animated.View style={style.wrapper}>
                 <View style={style.header}>

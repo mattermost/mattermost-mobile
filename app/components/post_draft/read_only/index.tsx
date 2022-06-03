@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -40,14 +40,14 @@ const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const safeAreaEdges = ['bottom' as const];
+const edges: Edge[] = ['bottom'];
 
 const ReadOnlyChannnel = ({testID}: ReadOnlyProps) => {
     const theme = useTheme();
     const style = getStyle(theme);
     return (
         <SafeAreaView
-            edges={safeAreaEdges}
+            edges={edges}
             style={style.background}
         >
             <View
