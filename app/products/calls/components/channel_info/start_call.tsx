@@ -10,7 +10,7 @@ import {GlobalState} from '@mm-redux/types/store';
 import {Theme} from '@mm-redux/types/theme';
 import leaveAndJoinWithAlert from '@mmproducts/calls/components/leave_and_join_alert';
 import {useTryCallsFunction} from '@mmproducts/calls/hooks';
-import {getCalls, getCurrentCall, isCloudLimitRestricted} from '@mmproducts/calls/store/selectors/calls';
+import {getCalls, getCurrentCall, isLimitRestricted} from '@mmproducts/calls/store/selectors/calls';
 import ChannelInfoRow from '@screens/channel_info/channel_info_row';
 import Separator from '@screens/channel_info/separator';
 import {preventDoubleTap} from '@utils/tap';
@@ -28,7 +28,7 @@ const StartCall = ({testID, theme, intl, joinCall}: Props) => {
     const currentCall = useSelector(getCurrentCall);
     const currentCallChannelId = currentCall?.channelId || '';
     const callChannelName = useSelector((state: GlobalState) => getChannel(state, currentCallChannelId)?.display_name) || '';
-    const cloudLimitRestricted = useSelector(isCloudLimitRestricted);
+    const limitRestricted = useSelector(isLimitRestricted);
 
     const confirmToJoin = Boolean(currentCall && currentCall.channelId !== currentChannel.id);
     const alreadyInTheCall = Boolean(currentCall && call && currentCall.channelId === call.channelId);
@@ -40,7 +40,7 @@ const StartCall = ({testID, theme, intl, joinCall}: Props) => {
     const [tryLeaveAndJoin, msgPostfix] = useTryCallsFunction(leaveAndJoin);
     const handleStartCall = useCallback(preventDoubleTap(tryLeaveAndJoin), [tryLeaveAndJoin]);
 
-    if (alreadyInTheCall || cloudLimitRestricted) {
+    if (alreadyInTheCall || limitRestricted) {
         return null;
     }
 
