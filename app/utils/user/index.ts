@@ -296,12 +296,10 @@ export function getNotificationProps(user: UserModel) {
         comments: 'any',
         desktop: 'all',
         desktop_sound: 'true',
-        email: 'true',
         first_name: (!user || !user.firstName) ? 'false' : 'true',
         mention_keys: user ? `${user.username},@${user.username}` : '',
         push: 'mention',
         push_status: 'online',
-        auto_responder_active: 'false',
     };
 
     return props;
