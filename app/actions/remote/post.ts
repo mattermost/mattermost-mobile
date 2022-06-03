@@ -631,7 +631,7 @@ export async function fetchPostThread(serverUrl: string, postId: string, fetchOn
     }
 }
 
-export async function fetchPostsAround(serverUrl: string, channelId: string, postId: string, perPage = General.POST_AROUND_CHUNK_SIZE) {
+export async function fetchPostsAround(serverUrl: string, channelId: string, postId: string, perPage = General.POST_AROUND_CHUNK_SIZE, isCRTEnabled = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -646,9 +646,9 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
 
     try {
         const [after, post, before] = await Promise.all<PostsObjectsRequest>([
-            client.getPostsAfter(channelId, postId, 0, perPage),
-            client.getPostThread(postId),
-            client.getPostsBefore(channelId, postId, 0, perPage),
+            client.getPostsAfter(channelId, postId, 0, perPage, isCRTEnabled, isCRTEnabled),
+            client.getPostThread(postId, isCRTEnabled, isCRTEnabled),
+            client.getPostsBefore(channelId, postId, 0, perPage, isCRTEnabled, isCRTEnabled),
         ]);
 
         const preData: PostResponse = {
@@ -687,7 +687,6 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
 
             models.push(...posts);
 
-            const isCRTEnabled = await getIsCRTEnabled(operator.database);
             if (isCRTEnabled) {
                 const threadModels = await prepareThreadsFromReceivedPosts(operator, data.posts);
                 if (threadModels?.length) {
