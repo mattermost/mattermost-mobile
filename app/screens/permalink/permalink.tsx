@@ -196,9 +196,9 @@ function Permalink({
                         joinedTeam: true,
                         channelId: myChannel.id,
                         channelName: localChannel?.displayName,
-                        privateTeam: !joinedTeam?.allow_open_invite,
-                        teamName: joinedTeam?.display_name,
-                        teamId: joinedTeam?.id,
+                        privateTeam: !joinedTeam.allow_open_invite,
+                        teamName: joinedTeam.display_name,
+                        teamId: joinedTeam.id,
                     });
                     setLoading(false);
                     return;
@@ -230,7 +230,7 @@ function Permalink({
                 channelName: fetchedChannel.display_name,
                 teamId: fetchedChannel.team_id || currentTeamId,
                 teamName: joinedTeam?.display_name,
-                privateTeam: !joinedTeam?.allow_open_invite,
+                privateTeam: joinedTeam && !joinedTeam.allow_open_invite,
             });
             setLoading(false);
         })();
