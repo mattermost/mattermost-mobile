@@ -285,3 +285,22 @@ export function filterProfilesMatchingTerm(users: UserProfile[], term: string): 
             some((suggestion) => suggestion.startsWith(trimmedTerm));
     });
 }
+
+export function getNotificationProps(user: UserModel) {
+    if (user && user.notifyProps) {
+        return user.notifyProps;
+    }
+
+    const props: Partial<UserNotifyProps> = {
+        channel: 'true',
+        comments: 'any',
+        desktop: 'all',
+        desktop_sound: 'true',
+        first_name: (!user || !user.firstName) ? 'false' : 'true',
+        mention_keys: user ? `${user.username},@${user.username}` : '',
+        push: 'mention',
+        push_status: 'online',
+    };
+
+    return props;
+}

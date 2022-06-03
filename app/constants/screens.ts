@@ -44,7 +44,9 @@ export const SERVER = 'Server';
 export const SETTINGS = 'Settings';
 export const SETTINGS_DISPLAY = 'SettingsDisplay';
 export const SETTINGS_NOTIFICATION = 'SettingsNotification';
+export const SETTINGS_NOTIFICATION_AUTO_RESPONDER = 'SettingsNotificationAutoResponder';
 export const SETTINGS_NOTIFICATION_MENTION = 'SettingsNotificationMention';
+export const SETTINGS_NOTIFICATION_PUSH = 'SettingsNotificationPush';
 export const SNACK_BAR = 'SnackBar';
 export const SSO = 'SSO';
 export const THREAD = 'Thread';
@@ -95,7 +97,9 @@ export default {
     SETTINGS,
     SETTINGS_DISPLAY,
     SETTINGS_NOTIFICATION,
+    SETTINGS_NOTIFICATION_AUTO_RESPONDER,
     SETTINGS_NOTIFICATION_MENTION,
+    SETTINGS_NOTIFICATION_PUSH,
     SNACK_BAR,
     SSO,
     THREAD,

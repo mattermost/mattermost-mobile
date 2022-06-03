@@ -49,7 +49,7 @@ const Display = ({isTimezoneEnabled, isThemeSwitchingEnabled}: DisplayProps) => 
     return (
         <SafeAreaView
             edges={['left', 'right']}
-            testID='notification_settings.screen'
+            testID='notification_display.screen'
             style={styles.container}
         >
             <ScrollView
