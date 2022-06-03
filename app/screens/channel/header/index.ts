@@ -25,6 +25,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         switchMap((id) => observeChannel(database, id)),
     );
 
+    const channelType = channel.pipe(switchMap((c) => of$(c?.type)));
     const channelInfo = channelId.pipe(
         switchMap((id) => observeChannelInfo(database, id)),
     );
@@ -74,6 +75,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     return {
         channelId,
+        channelType,
         customStatus,
         displayName,
         isCustomStatusExpired,

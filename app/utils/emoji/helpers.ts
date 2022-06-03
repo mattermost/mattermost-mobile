@@ -10,6 +10,8 @@ import {Emojis, EmojiIndicesByAlias, EmojiIndicesByUnicode} from '.';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 
+const UNICODE_REGEX = /\p{Emoji}/u;
+
 const RE_NAMED_EMOJI = /(:([a-zA-Z0-9_+-]+):)/g;
 
 const RE_UNICODE_EMOJI = emojiRegex();
@@ -50,6 +52,10 @@ function isEmoticon(text: string) {
     }
 
     return false;
+}
+
+export function isUnicodeEmoji(text: string) {
+    return UNICODE_REGEX.test(text);
 }
 
 export function getEmoticonName(value: string) {

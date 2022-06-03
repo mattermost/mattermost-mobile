@@ -46,6 +46,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row',
             flex: 1,
         },
+        mathStyle: {
+            color: theme.centerChannelColor,
+        },
         rightColumn: {
             flexDirection: 'column',
             flex: 1,
@@ -209,6 +212,7 @@ const LatexCodeBlock = ({content, theme}: Props) => {
                                     math={latexCode}
                                     renderError={onRenderErrorMessage}
                                     resizeMode={'cover'}
+                                    style={styles}
                                 />
                             </View>
                         ))}

@@ -68,6 +68,10 @@ export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
 
 export async function handleChannelUnarchiveEvent(serverUrl: string, msg: any) {
     try {
+        if (EphemeralStore.isArchivingChannel(msg.data.channel_id)) {
+            return;
+        }
+
         await setChannelDeleteAt(serverUrl, msg.data.channel_id, 0);
     } catch {
         // do nothing
@@ -82,6 +86,10 @@ export async function handleChannelConvertedEvent(serverUrl: string, msg: any) {
 
     try {
         const channelId = msg.data.channel_id;
+        if (EphemeralStore.isConvertingChannel(channelId)) {
+            return;
+        }
+
         const {channel} = await fetchChannelById(serverUrl, channelId);
         if (channel) {
             operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
@@ -394,7 +402,7 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocke
     try {
         const {database} = operator;
         const {channel_id: channelId, delete_at: deleteAt} = msg.data;
-        if (EphemeralStore.isLeavingChannel(channelId)) {
+        if (EphemeralStore.isLeavingChannel(channelId) || EphemeralStore.isArchivingChannel(channelId)) {
             return;
         }
 

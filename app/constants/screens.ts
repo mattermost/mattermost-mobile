@@ -10,6 +10,7 @@ export const CHANNEL = 'Channel';
 export const CHANNEL_ADD_PEOPLE = 'ChannelAddPeople';
 export const CHANNEL_EDIT = 'ChannelEdit';
 export const CHANNEL_INFO = 'ChannelInfo';
+export const CHANNEL_MENTION = 'ChannelMention';
 export const CODE = 'Code';
 export const CREATE_DIRECT_MESSAGE = 'CreateDirectMessage';
 export const CREATE_OR_EDIT_CHANNEL = 'CreateOrEditChannel';
@@ -33,6 +34,7 @@ export const LOGIN = 'Login';
 export const MENTIONS = 'Mentions';
 export const MFA = 'MFA';
 export const PERMALINK = 'Permalink';
+export const PINNED_MESSAGES = 'PinnedMessages';
 export const POST_OPTIONS = 'PostOptions';
 export const REACTIONS = 'Reactions';
 export const SAVED_POSTS = 'SavedPosts';
@@ -60,8 +62,8 @@ export default {
     BROWSE_CHANNELS,
     CHANNEL,
     CHANNEL_ADD_PEOPLE,
-    CHANNEL_EDIT,
     CHANNEL_INFO,
+    CHANNEL_MENTION,
     CODE,
     CREATE_DIRECT_MESSAGE,
     CREATE_OR_EDIT_CHANNEL,
@@ -85,6 +87,7 @@ export default {
     MENTIONS,
     MFA,
     PERMALINK,
+    PINNED_MESSAGES,
     POST_OPTIONS,
     REACTIONS,
     SAVED_POSTS,
@@ -124,9 +127,10 @@ export const MODAL_SCREENS_WITHOUT_BACK = [
 
 export const NOT_READY = [
     CHANNEL_ADD_PEOPLE,
-    CHANNEL_INFO,
+    CHANNEL_MENTION,
     CREATE_TEAM,
     INTEGRATION_SELECTOR,
     INTERACTIVE_DIALOG,
+    PINNED_MESSAGES,
     USER_PROFILE,
 ];
