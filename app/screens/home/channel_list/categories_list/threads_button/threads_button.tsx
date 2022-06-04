@@ -81,7 +81,7 @@ const ThreadsButton = ({currentChannelId, onlyUnreads, unreadsAndMentions}: Prop
         return [container, icon, text];
     }, [customStyles, isActive, styles, unreads]);
 
-    if (onlyUnreads && !unreads && !mentions) {
+    if (onlyUnreads && !isActive && !unreads && !mentions) {
         return null;
     }
 
