@@ -85,10 +85,15 @@ describe('*** Operator: Team Handlers tests ***', () => {
             prepareRecordsOnly: false,
         });
 
+        const memberships = teamMemberships.map((m) => ({
+            ...m,
+            id: `${m.team_id}-${m.user_id}`,
+        }));
+
         expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'user_id',
-            createOrUpdateRawValues: teamMemberships,
+            createOrUpdateRawValues: memberships,
             tableName: 'TeamMembership',
             prepareRecordsOnly: false,
             buildKeyRecordBy: buildTeamMembershipKey,
