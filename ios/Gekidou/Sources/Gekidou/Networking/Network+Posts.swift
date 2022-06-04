@@ -38,7 +38,7 @@ extension Network {
         let endpoint: String
         if (isCRTEnabled && rootId != nil && rootId != "") {
             let queryParams = "?skipFetchThreads=false&perPage=60&fromCreatedAt=0&direction=up"
-            endpoint = "/api/v4/posts/\(rootId!)/thread\(queryParams)\(additionalParams)"
+            endpoint = "/posts/\(rootId!)/thread\(queryParams)\(additionalParams)"
         } else {
             let queryParams = since == nil ?
                 "?page=0&per_page=\(POST_CHUNK_SIZE)" :

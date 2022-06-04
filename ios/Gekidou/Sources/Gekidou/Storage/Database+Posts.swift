@@ -26,13 +26,10 @@ public struct Post: Codable, Hashable {
     let metadata: String
     var prev_post_id: String
     // CRT
-    let participants: [User]
+    let participants: [User]?
     let last_reply_at: Int64
-    let last_viewed_at: Int64
     let reply_count: Int
     let is_following: Bool
-    let unread_replies: Int
-    let unread_mentions: Int
     
     public enum PostKeys: String, CodingKey {
         case id = "id"
@@ -53,11 +50,8 @@ public struct Post: Codable, Hashable {
         // CRT
         case participants = "participants"
         case last_reply_at = "last_reply_at"
-        case last_viewed_at = "last_viewed_at"
         case reply_count = "reply_count"
         case is_following = "is_following"
-        case unread_replies = "unread_replies"
-        case unread_mentions = "unread_mentions"
     }
     
     public init(from decoder: Decoder) throws {
@@ -81,13 +75,10 @@ public struct Post: Codable, Hashable {
         let propsData = try values.decode([String:Any].self, forKey: .props)
         props = Database.default.json(from: propsData) ?? "{}"
         // CRT
-        participants = try values.decode([User].self, forKey: .participants)
-        last_reply_at = try values.decode(Int64.self, forKey: .last_reply_at)
-        last_viewed_at = try values.decode(Int64.self, forKey: .last_viewed_at)
-        reply_count = try values.decode(Int.self, forKey: .reply_count)
-        is_following = try values.decode(Bool.self, forKey: .is_following)
-        unread_replies = try values.decode(Int.self, forKey: .unread_replies)
-        unread_mentions = try values.decode(Int.self, forKey: .unread_mentions)
+        participants = try values.decodeIfPresent([User].self, forKey: .participants) ?? []
+        last_reply_at = try values.decodeIfPresent(Int64.self, forKey: .last_reply_at) ?? 0
+        reply_count = try values.decodeIfPresent(Int.self, forKey: .reply_count) ?? 0
+        is_following = try values.decodeIfPresent(Bool.self, forKey: .is_following) ?? false
     }
 }
 
@@ -173,17 +164,19 @@ extension Database {
         return (0, 0)
     }
     
-    public func handlePostData(_ db: Connection, _ postData: PostData, _ channelId: String, _ usedSince: Bool = false) throws {
+    public func handlePostData(_ db: Connection, _ postData: PostData, _ channelId: String, _ usedSince: Bool = false, _ receivingThreads: Bool = false) throws {
         let sortedChainedPosts = chainAndSortPosts(postData)
         try insertOrUpdatePosts(db, sortedChainedPosts, channelId)
         let earliest = sortedChainedPosts.first!.create_at
         let latest = sortedChainedPosts.last!.create_at
-        try handlePostsInChannel(db, channelId, earliest, latest, usedSince)
+        if (!receivingThreads) {
+            try handlePostsInChannel(db, channelId, earliest, latest, usedSince)
+        }
         try handlePostsInThread(db, postData.posts)
     }
     
     public func handleThreads(_ db: Connection, _ threads: [Post]) throws {
-        try insertOrUpdateThreads(db, threads)
+        try insertThreads(db, threads)
     }
     
     private func handlePostsInChannel(_ db: Connection, _ channelId: String, _ earliest: Int64, _ latest: Int64, _ usedSince: Bool = false) throws {
@@ -317,8 +310,21 @@ extension Database {
         }
     }
     
-    private func insertOrUpdateThreads(_ db: Connection, _ posts: [Post]) throws {
-        
+    private func insertThreads(_ db: Connection, _ posts: [Post]) throws {
+        let setters = createThreadSetters(from: posts)
+        for setter in setters {
+            let insertThread = threadTable.insert(or: .ignore, setter.threadSetters)
+            try db.run(insertThread)
+
+            let threadIdCol = Expression<String>("thread_id")
+            let deletePreviousThreadParticipants = threadParticipantTable.where(threadIdCol == setter.id).delete()
+            try db.run(deletePreviousThreadParticipants)
+
+            if !setter.threadParticipantSetters.isEmpty {
+                let insertThreadParticipants = threadParticipantTable.insertMany(setter.threadParticipantSetters)
+                try db.run(insertThreadParticipants)
+            }
+        }
     }
     
     private func createPostSetters(from posts: [Post]) -> [PostSetters] {
@@ -472,11 +478,8 @@ extension Database {
     private func createThreadSetters(from posts: [Post]) -> [ThreadSetters] {
         let id = Expression<String>("id")
         let lastReplyAt = Expression<Int64>("last_reply_at")
-        let lastViewedAt = Expression<Int64>("last_viewed_at")
         let replyCount = Expression<Int>("reply_count")
         let isFollowing = Expression<Bool>("is_following")
-        let unreadReplies = Expression<Int>("unread_replies")
-        let unreadMentions = Expression<Int>("unread_mentions")
         let statusCol = Expression<String>("_status")
         
         var threadsSetters: [ThreadSetters] = []
@@ -485,11 +488,8 @@ extension Database {
             var setter = [Setter]()
             setter.append(id <- post.id)
             setter.append(lastReplyAt <- post.last_reply_at)
-            setter.append(lastViewedAt <- post.last_viewed_at)
             setter.append(replyCount <- post.reply_count)
             setter.append(isFollowing <- post.is_following)
-            setter.append(unreadReplies <- post.unread_replies)
-            setter.append(unreadMentions <- post.unread_mentions)
             setter.append(statusCol <- "created")
             
             let threadSetter = ThreadSetters(
@@ -512,7 +512,7 @@ extension Database {
         let threadId = Expression<String>("thread_id")
         let statusCol = Expression<String>("_status")
         
-        for p in post.participants {
+        for p in post.participants ?? [] {
             var participantSetter = [Setter]()
             participantSetter.append(id <- generateId() as String)
             participantSetter.append(userId <- p.id)

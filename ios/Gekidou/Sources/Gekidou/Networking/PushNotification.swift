@@ -114,15 +114,15 @@ extension Network {
             let group = DispatchGroup()
             
             let channelId = notification.userInfo["channel_id"] as! String
-            let rootId = notification.userInfo["root_id"] as! String
+            let rootId = notification.userInfo.index(forKey: "root_id") != nil ? notification.userInfo["root_id"] as! String : ""
             let serverUrl =  notification.userInfo["server_url"] as! String
-            let isCRTEnabled = notification.userInfo["is_crt_enabled"] as! String == "true"
+            let isCRTEnabled = notification.userInfo["is_crt_enabled"] as! Bool
             let currentUser = try! Database.default.queryCurrentUser(serverUrl)
             let currentUserId = currentUser?[Expression<String>("id")]
             let currentUsername = currentUser?[Expression<String>("username")]
             
             var postData: PostData? = nil
-            var threads: Set<Post> = Set()
+            var threads: [Post] = []
             var userIdsToLoad: Set<String> = Set()
             var usernamesToLoad: Set<String> = Set()
             var users: Set<User> = Set()
@@ -135,11 +135,11 @@ extension Network {
                     if postData?.posts.count ?? 0 > 0 {
                         var authorIds: Set<String> = Set()
                         var usernames: Set<String> = Set()
-                        
+
                         var threadParticipantUserIds: Set<String> = Set() // Used to exclude the "userIds" present in the thread participants
                         var threadParticipantUsernames: Set<String> = Set() // Used to exclude the "usernames" present in the thread participants
                         var threadParticipantUsers = [String: User]() // All unique users from thread participants are stored here
-                        
+
                         postData!.posts.forEach{post in
                             if (currentUserId != nil && post.user_id != currentUserId) {
                                 authorIds.insert(post.user_id)
@@ -149,15 +149,15 @@ extension Network {
                                     usernames.insert($0)
                                 }
                             }
-                            
+
                             if (isCRTEnabled) {
                                 // Add root post as a thread
                                 let rootId = post.root_id
                                 if (rootId == "") {
-                                    threads.insert(post)
+                                    threads.append(post)
                                 }
-                                
-                                let participants = post.participants
+
+                                let participants = post.participants ?? []
                                 if (participants.count > 0) {
                                     participants.forEach { participant in
                                         let userId = participant.id
@@ -167,7 +167,7 @@ extension Network {
                                                 threadParticipantUsers[userId] = participant
                                             }
                                         }
-                                        
+
                                         let username = participant.username
                                         if (username != "" && username != currentUsername) {
                                             threadParticipantUsernames.insert(username)
@@ -176,7 +176,7 @@ extension Network {
                                 }
                             }
                         }
-                    
+
                         if (authorIds.count > 0) {
                             if let existingIds = try? Database.default.queryUsers(byIds: authorIds, withServerUrl: serverUrl) {
                                 userIdsToLoad = authorIds.filter { !existingIds.contains($0) }
@@ -196,7 +196,7 @@ extension Network {
                                 }
                             }
                         }
-                    
+
                         if (usernames.count > 0) {
                             if let existingUsernames = try? Database.default.queryUsers(byUsernames: usernames, withServerUrl: serverUrl) {
                                 usernamesToLoad = usernames.filter{ !existingUsernames.contains($0)}
@@ -217,7 +217,7 @@ extension Network {
                                 }
                             }
                         }
-                        
+
                         if (threadParticipantUserIds.count > 0) {
                             if let existingThreadParticipantUserIds = try? Database.default.queryUsers(byIds: threadParticipantUserIds, withServerUrl: serverUrl) {
                                 threadParticipantUsers.forEach { (userId: String, user: User) in
@@ -228,7 +228,6 @@ extension Network {
                             }
                             
                         }
-                        
                         
                     }
                 }
@@ -241,10 +240,11 @@ extension Network {
             group.enter()
             if (postData != nil && postData?.posts != nil && postData!.posts.count > 0) {
                 if let db = try? Database.default.getDatabaseForServer(serverUrl) {
+                    let receivingThreads = isCRTEnabled && rootId != nil && rootId != ""
                     try? db.transaction {
-                        try? Database.default.handlePostData(db, postData!, channelId, since != nil)
+                        try? Database.default.handlePostData(db, postData!, channelId, since != nil, receivingThreads)
                         if (threads.count > 0) {
-//                            try? Database.default.
+                            try? Database.default.handleThreads(db, threads)
                         }
                         if (users.count > 0) {
                             try? Database.default.insertUsers(db, users)
