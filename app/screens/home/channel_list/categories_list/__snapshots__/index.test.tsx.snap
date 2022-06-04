@@ -442,6 +442,7 @@ exports[`components/categories_list should render team error 1`] = `
     >
       <View
         accessible={true}
+        collapsable={false}
         focusable={true}
         onClick={[Function]}
         onResponderGrant={[Function]}
@@ -451,25 +452,33 @@ exports[`components/categories_list should render team error 1`] = `
         onResponderTerminationRequest={[Function]}
         onStartShouldSetResponder={[Function]}
         style={
-          Array [
-            Object {
-              "alignItems": "center",
-              "backgroundColor": "rgba(255,255,255,0.12)",
-              "borderRadius": 8,
-              "height": 40,
-              "justifyContent": "center",
-              "marginVertical": 20,
-              "width": 40,
-            },
-            false,
-          ]
+          Object {
+            "opacity": 1,
+          }
         }
       >
-        <Icon
-          color="rgba(255,255,255,0.56)"
-          name="filter-variant"
-          size={24}
-        />
+        <View
+          style={
+            Array [
+              Object {
+                "alignItems": "center",
+                "backgroundColor": "rgba(255,255,255,0.12)",
+                "borderRadius": 8,
+                "height": 40,
+                "justifyContent": "center",
+                "marginVertical": 20,
+                "width": 40,
+              },
+              false,
+            ]
+          }
+        >
+          <Icon
+            color="rgba(255,255,255,0.56)"
+            name="filter-variant"
+            size={24}
+          />
+        </View>
       </View>
     </View>
     <View

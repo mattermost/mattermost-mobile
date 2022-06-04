@@ -46,7 +46,7 @@ const NotificationMention = ({currentUser, mentionKeys, isCRTEnabled}: Notificat
     return (
         <SafeAreaView
             edges={['left', 'right']}
-            testID='notification_settings.screen'
+            testID='notification_mention.screen'
             style={styles.container}
         >
             <ScrollView

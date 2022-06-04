@@ -60,7 +60,7 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingRight: 20,
     },
     highlight: {
-        color: theme.sidebarText,
+        color: theme.sidebarUnreadText,
     },
     textInfo: {
         color: theme.centerChannelColor,

@@ -16,6 +16,7 @@ import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {preventDoubleTap} from '@utils/tap';
 
 import ProfileForm from './components/form';
@@ -104,7 +105,14 @@ const EditProfile = ({
     }, [userInfo]);
 
     useEffect(() => {
-        const backHandler = BackHandler.addEventListener('hardwareBackPress', close);
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+            if (EphemeralStore.getNavigationTopComponentId() === componentId) {
+                close();
+                return true;
+            }
+
+            return false;
+        });
         return () => {
             backHandler.remove();
         };
@@ -127,8 +135,6 @@ const EditProfile = ({
         } else {
             popTopScreen(componentId);
         }
-
-        return true;
     }, []);
 
     const enableSaveButton = useCallback((value: boolean) => {
