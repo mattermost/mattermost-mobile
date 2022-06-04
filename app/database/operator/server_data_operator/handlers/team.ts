@@ -59,7 +59,12 @@ const TeamHandler = (superclass: any) => class extends superclass {
             return [];
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: teamMemberships, key: 'team_id'});
+        const memberships: TeamMembership[] = teamMemberships.map((m) => ({
+            ...m,
+            id: `${m.team_id}-${m.user_id}`,
+        }));
+
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: memberships, key: 'id'});
 
         return this.handleRecords({
             fieldName: 'user_id',
