@@ -4,6 +4,7 @@
 import moment from 'moment-timezone';
 import React, {useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
+import {Platform} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchTeamAndChannelMembership} from '@actions/remote/user';
@@ -41,7 +42,7 @@ const TITLE_HEIGHT = 118;
 const OPTIONS_HEIGHT = 82;
 const SINGLE_OPTION_HEIGHT = 62;
 const LABEL_HEIGHT = 86;
-const EXTRA_HEIGHT = 12;
+const EXTRA_HEIGHT = Platform.select({ios: 20, default: 40});
 const EXTRA_HEIGHT_NO_LABLELS = 40;
 
 const UserProfile = ({
