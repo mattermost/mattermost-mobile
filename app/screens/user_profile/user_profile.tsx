@@ -4,7 +4,6 @@
 import moment from 'moment-timezone';
 import React, {useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchTeamAndChannelMembership} from '@actions/remote/user';
@@ -40,10 +39,9 @@ type Props = {
 
 const TITLE_HEIGHT = 118;
 const OPTIONS_HEIGHT = 82;
-const SINGLE_OPTION_HEIGHT = 62;
-const LABEL_HEIGHT = 86;
-const EXTRA_HEIGHT = Platform.select({ios: 20, default: 40});
-const EXTRA_HEIGHT_NO_LABLELS = 40;
+const SINGLE_OPTION_HEIGHT = 68;
+const LABEL_HEIGHT = 66;
+const EXTRA_HEIGHT = 60;
 
 const UserProfile = ({
     channelId, currentUserId, enablePostIconOverride, enablePostUsernameOverride,
@@ -91,7 +89,7 @@ const UserProfile = ({
             initial += (labels * LABEL_HEIGHT);
         }
 
-        return [initial + insets.bottom + (labels > 0 ? EXTRA_HEIGHT : EXTRA_HEIGHT_NO_LABLELS), 10];
+        return [initial + insets.bottom + EXTRA_HEIGHT, 10];
     }, [
         isChannelAdmin, isDirectMessage, isSystemAdmin,
         isTeamAdmin, user, localTime, insets.bottom, override,
