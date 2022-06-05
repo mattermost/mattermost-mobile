@@ -29,3 +29,16 @@ export const storeMultiServerTutorial = async (prepareRecordsOnly = false) => {
         prepareRecordsOnly,
     });
 };
+
+export const storeProfileLongPressTutorial = async (prepareRecordsOnly = false) => {
+    const operator = DatabaseManager.appDatabase?.operator;
+
+    if (!operator) {
+        return {error: 'No App database found'};
+    }
+
+    return operator.handleGlobal({
+        globals: [{id: GLOBAL_IDENTIFIERS.PROFILE_LONG_PRESS_TUTORIAL, value: 'true'}],
+        prepareRecordsOnly,
+    });
+};

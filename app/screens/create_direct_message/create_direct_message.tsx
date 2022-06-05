@@ -38,6 +38,7 @@ type Props = {
     currentUserId: string;
     restrictDirectMessage: boolean;
     teammateNameDisplay: string;
+    tutorialWatched: boolean;
 }
 
 const close = () => {
@@ -90,6 +91,7 @@ export default function CreateDirectMessage({
     currentUserId,
     restrictDirectMessage,
     teammateNameDisplay,
+    tutorialWatched,
 }: Props) {
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -397,6 +399,7 @@ export default function CreateDirectMessage({
                 fetchMore={getProfiles}
                 term={term}
                 testID='create_direct_message.user_list'
+                tutorialWatched={tutorialWatched}
             />
         </SafeAreaView>
     );
