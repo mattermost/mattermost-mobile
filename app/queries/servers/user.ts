@@ -13,9 +13,11 @@ import {queryPreferencesByCategoryAndName} from './preference';
 import {observeConfig, observeCurrentUserId, observeLicense, getCurrentUserId, getConfig, getLicense} from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
+import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {USER}} = MM_TABLES;
+const {SERVER: {CHANNEL_MEMBERSHIP, USER, TEAM_MEMBERSHIP}} = MM_TABLES;
 export const getUserById = async (database: Database, userId: string) => {
     try {
         const userRecord = (await database.get<UserModel>(USER).find(userId));
@@ -95,4 +97,22 @@ export const queryUsersByIdsOrUsernames = (database: Database, ids: string[], us
             Q.where('id', Q.oneOf(ids)),
             Q.where('username', Q.oneOf(usernames)),
         ));
+};
+
+export const observeUserIsTeamAdmin = (database: Database, userId: string, teamId: string) => {
+    const id = `${teamId}-${userId}`;
+    return database.get<TeamMembershipModel>(TEAM_MEMBERSHIP).query(
+        Q.where('id', Q.eq(id)),
+    ).observe().pipe(
+        switchMap((tm) => of$(tm.length ? tm[0].schemeAdmin : false)),
+    );
+};
+
+export const observeUserIsChannelAdmin = (database: Database, userId: string, teamId: string) => {
+    const id = `${teamId}-${userId}`;
+    return database.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(
+        Q.where('id', Q.eq(id)),
+    ).observe().pipe(
+        switchMap((tm) => of$(tm.length ? tm[0].schemeAdmin : false)),
+    );
 };

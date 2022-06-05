@@ -21,6 +21,7 @@ import AttachmentTitle from './attachment_title';
 
 type Props = {
     attachment: MessageAttachment;
+    channelId: string;
     layoutWidth?: number;
     location: string;
     metadata?: PostMetadata;
@@ -52,7 +53,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default function MessageAttachment({attachment, layoutWidth, location, metadata, postId, theme}: Props) {
+export default function MessageAttachment({attachment, channelId, layoutWidth, location, metadata, postId, theme}: Props) {
     const style = getStyleSheet(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
     const textStyles = getMarkdownTextStyles(theme);
@@ -71,6 +72,8 @@ export default function MessageAttachment({attachment, layoutWidth, location, me
             <AttachmentPreText
                 baseTextStyle={style.message}
                 blockStyles={blockStyles}
+                channelId={channelId}
+                location={location}
                 metadata={metadata}
                 textStyles={textStyles}
                 theme={theme}
@@ -87,6 +90,8 @@ export default function MessageAttachment({attachment, layoutWidth, location, me
                 }
                 {Boolean(attachment.title) &&
                 <AttachmentTitle
+                    channelId={channelId}
+                    location={location}
                     link={attachment.title_link}
                     theme={theme}
                     value={attachment.title}
@@ -99,6 +104,8 @@ export default function MessageAttachment({attachment, layoutWidth, location, me
                 <AttachmentText
                     baseTextStyle={style.message}
                     blockStyles={blockStyles}
+                    channelId={channelId}
+                    location={location}
                     hasThumbnail={Boolean(attachment.thumb_url)}
                     metadata={metadata}
                     textStyles={textStyles}
@@ -110,6 +117,8 @@ export default function MessageAttachment({attachment, layoutWidth, location, me
                 <AttachmentFields
                     baseTextStyle={style.message}
                     blockStyles={blockStyles}
+                    channelId={channelId}
+                    location={location}
                     fields={attachment.fields}
                     metadata={metadata}
                     textStyles={textStyles}

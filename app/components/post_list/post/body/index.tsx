@@ -127,6 +127,7 @@ const Body = ({
     } else if (isPostAddChannelMember) {
         message = (
             <AddMembers
+                location={location}
                 post={post}
                 theme={theme}
             />

@@ -230,6 +230,7 @@ const Post = ({
                 ) : (
                     <Avatar
                         isAutoReponse={isAutoResponder}
+                        location={location}
                         post={post}
                     />
                 )}
@@ -266,6 +267,7 @@ const Post = ({
     if (isSystemPost && !isEphemeral && !isAutoResponder) {
         body = (
             <SystemMessage
+                location={location}
                 post={post}
             />
         );

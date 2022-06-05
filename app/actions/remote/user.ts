@@ -822,3 +822,43 @@ export const autoUpdateTimezone = async (serverUrl: string, {deviceTimezone, use
     }
     return null;
 };
+
+export const fetchTeamAndChannelMembership = async (serverUrl: string, userId: string, teamId: string, channelId?: string) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl].operator;
+    if (!operator) {
+        return {error: `No database present for ${serverUrl}`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const requests = await Promise.all([
+            client.getTeamMember(teamId, userId),
+            channelId ? client.getChannelMember(channelId, userId) : undefined,
+        ]);
+
+        const modelPromises: Array<Promise<Model[]>> = [];
+        modelPromises.push(operator.handleTeamMemberships({
+            teamMemberships: [requests[0]],
+            prepareRecordsOnly: true,
+        }));
+        const channelMemberships = requests[1];
+        if (channelMemberships) {
+            modelPromises.push(operator.handleChannelMembership({
+                channelMemberships: [channelMemberships],
+                prepareRecordsOnly: true,
+            }));
+        }
+
+        const models = await Promise.all(modelPromises);
+        await operator.batchRecords(models.flat());
+        return {error: undefined};
+    } catch (error) {
+        return {error};
+    }
+};

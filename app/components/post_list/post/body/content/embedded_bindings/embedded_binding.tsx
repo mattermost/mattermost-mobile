@@ -16,6 +16,7 @@ import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
     embed: AppBinding;
+    location: string;
     post: PostModel;
     theme: Theme;
 }
@@ -37,7 +38,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const EmbeddedBinding = ({embed, post, theme}: Props) => {
+const EmbeddedBinding = ({embed, location, post, theme}: Props) => {
     const style = getStyleSheet(theme);
     const [cleanedBindings, setCleanedBindings] = useState<AppBinding[]>([]);
 
@@ -52,12 +53,16 @@ const EmbeddedBinding = ({embed, post, theme}: Props) => {
             <View style={style.container}>
                 {Boolean(embed.label) &&
                 <EmbedTitle
+                    channelId={post.channelId}
+                    location={location}
                     theme={theme}
                     value={embed.label}
                 />
                 }
                 {Boolean(embed.description) &&
                 <EmbedText
+                    channelId={post.channelId}
+                    location={location}
                     value={embed.description!}
                     theme={theme}
                 />
