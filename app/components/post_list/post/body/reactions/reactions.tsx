@@ -26,6 +26,7 @@ type ReactionsProps = {
     canRemoveReaction: boolean;
     disabled: boolean;
     currentUserId: string;
+    location: string;
     postId: string;
     reactions: ReactionModel[];
     theme: Theme;
@@ -59,7 +60,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, postId, reactions, theme}: ReactionsProps) => {
+const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, location, postId, reactions, theme}: ReactionsProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
@@ -137,6 +138,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
         const screen = Screens.REACTIONS;
         const passProps = {
             initialEmoji,
+            location,
             postId,
         };
 
@@ -150,7 +152,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
                 showModalOverCurrentContext(screen, passProps, bottomSheetModalOptions(theme));
             }
         }
-    }, [intl, isTablet, postId, theme]);
+    }, [intl, isTablet, location, postId, theme]);
 
     let addMoreReactions = null;
     const {reactionsByName, highlightedReactions} = buildReactionsMap();

@@ -90,7 +90,7 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, location, post}:
         );
     }
 
-    const onViewUserProfile = preventDoubleTap(() => {
+    const openUserProfile = preventDoubleTap(() => {
         const screen = Screens.USER_PROFILE;
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const closeButtonId = 'close-user-profile';
@@ -119,7 +119,7 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, location, post}:
 
     if (!fromWebHook) {
         component = (
-            <TouchableOpacity onPress={onViewUserProfile}>
+            <TouchableOpacity onPress={openUserProfile}>
                 {component}
             </TouchableOpacity>
         );

@@ -93,7 +93,7 @@ const AtMention = ({
         return user.mentionKeys;
     }, [currentUserId, mentionKeys, user]);
 
-    const goToUserProfile = () => {
+    const openUserProfile = () => {
         const screen = Screens.USER_PROFILE;
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const closeButtonId = 'close-user-profile';
@@ -188,7 +188,7 @@ const AtMention = ({
 
     if (canPress) {
         onLongPress = handleLongPress;
-        onPress = (isSearchResult ? onPostPress : goToUserProfile);
+        onPress = (isSearchResult ? onPostPress : openUserProfile);
     }
 
     if (suffix) {

@@ -181,6 +181,7 @@ const Body = ({
                 }
                 {hasReactions && showAddReaction &&
                 <Reactions
+                    location={location}
                     post={post}
                     theme={theme}
                 />
