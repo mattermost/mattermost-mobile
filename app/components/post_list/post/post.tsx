@@ -299,7 +299,11 @@ const Post = ({
     if (isCRTEnabled && thread) {
         if (thread.replyCount > 0 || thread.isFollowing) {
             footer = (
-                <Footer thread={thread}/>
+                <Footer
+                    channelId={post.channelId}
+                    location={location}
+                    thread={thread}
+                />
             );
         }
         if (thread.unreadMentions || thread.unreadReplies) {
