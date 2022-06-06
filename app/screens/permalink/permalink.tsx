@@ -185,7 +185,7 @@ function Permalink({channel, isCRTEnabled, postId}: Props) {
                     >
                         <CompassIcon
                             name='close'
-                            size={20}
+                            size={24}
                             color={theme.centerChannelColor}
                         />
                     </TouchableOpacity>
