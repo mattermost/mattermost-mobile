@@ -581,12 +581,11 @@ export async function dismissAllModals() {
     }
 
     try {
-        const modals = EphemeralStore.navigationModalStack;
+        const modals = [...EphemeralStore.getAllNavigationModals()];
         for await (const modal of modals) {
+            EphemeralStore.removeNavigationModal(modal);
             await Navigation.dismissModal(modal, {animations: {dismissModal: {enabled: false}}});
         }
-
-        EphemeralStore.clearNavigationModals();
     } catch (error) {
         // RNN returns a promise rejection if there are no modals to
         // dismiss. We'll do nothing in this case.

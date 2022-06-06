@@ -5,9 +5,10 @@ import {Database} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {combineLatestWith, map, switchMap} from 'rxjs/operators';
 
-import {queryMyChannelsByUnread} from '@queries/servers/channel';
+import {filterAndSortMyChannels, makeChannelsMap} from '@helpers/database';
+import {observeNotifyPropsByChannels, queryMyChannelsByUnread} from '@queries/servers/channel';
 import {queryJoinedTeams} from '@queries/servers/team';
 import {retrieveChannels} from '@screens/find_channels/utils';
 
@@ -30,10 +31,18 @@ const observeRecentChannels = (database: Database, unreads: ChannelModel[]) => {
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const teamsCount = queryJoinedTeams(database).observeCount();
 
-    const unreadChannels = queryMyChannelsByUnread(database, true, 'last_post_at', MAX_UNREAD_CHANNELS).
-        observeWithColumns(['last_post_at']).pipe(
-            switchMap((myChannels) => retrieveChannels(database, myChannels)),
-        );
+    const myUnreadChannels = queryMyChannelsByUnread(database, true, 'last_post_at', 0).
+        observeWithColumns(['last_post_at']);
+    const notifyProps = myUnreadChannels.pipe(switchMap((cs) => observeNotifyPropsByChannels(database, cs)));
+    const channels = myUnreadChannels.pipe(
+        switchMap((myChannels) => retrieveChannels(database, myChannels)),
+    );
+    const channelsMap = channels.pipe(switchMap((cs) => of$(makeChannelsMap(cs))));
+    const unreadChannels = myUnreadChannels.pipe(
+        combineLatestWith(channelsMap, notifyProps),
+        map(filterAndSortMyChannels),
+        switchMap((cs) => of$(cs.slice(0, MAX_UNREAD_CHANNELS))),
+    );
 
     const recentChannels = unreadChannels.pipe(
         switchMap((unreads) => observeRecentChannels(database, unreads)),

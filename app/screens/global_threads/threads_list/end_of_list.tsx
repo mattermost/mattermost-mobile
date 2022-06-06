@@ -9,7 +9,6 @@ import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-// @ts-expect-error svg extension
 import SearchHintSVG from './illustrations/search_hint.svg';
 
 const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({

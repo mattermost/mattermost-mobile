@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {BackHandler, Text, TouchableOpacity, View} from 'react-native';
 import Animated from 'react-native-reanimated';
-import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchPostsAround} from '@actions/remote/post';
@@ -16,16 +16,21 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissModal} from '@screens/navigation';
-import ChannelModel from '@typings/database/models/servers/channel';
-import PostModel from '@typings/database/models/servers/post';
+import EphemeralStore from '@store/ephemeral_store';
 import {closePermalink} from '@utils/permalink';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type PostModel from '@typings/database/models/servers/post';
+
 type Props = {
-    postId: PostModel['id'];
     channel?: ChannelModel;
+    isCRTEnabled: boolean;
+    postId: PostModel['id'];
 }
+
+const edges: Edge[] = ['left', 'right', 'top'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -114,7 +119,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-function Permalink({channel, postId}: Props) {
+function Permalink({channel, isCRTEnabled, postId}: Props) {
     const [posts, setPosts] = useState<PostModel[]>([]);
     const [loading, setLoading] = useState(true);
     const theme = useTheme();
@@ -129,7 +134,7 @@ function Permalink({channel, postId}: Props) {
     useEffect(() => {
         (async () => {
             if (channel?.id) {
-                const data = await fetchPostsAround(serverUrl, channel.id, postId, 5);
+                const data = await fetchPostsAround(serverUrl, channel.id, postId, 5, isCRTEnabled);
                 if (data?.posts) {
                     setLoading(false);
                     setPosts(data.posts);
@@ -145,8 +150,12 @@ function Permalink({channel, postId}: Props) {
 
     useEffect(() => {
         const listener = BackHandler.addEventListener('hardwareBackPress', () => {
-            handleClose();
-            return true;
+            if (EphemeralStore.getNavigationTopComponentId() === Screens.PERMALINK) {
+                handleClose();
+                return true;
+            }
+
+            return false;
         });
 
         return () => {
@@ -164,6 +173,7 @@ function Permalink({channel, postId}: Props) {
         <SafeAreaView
             style={containerStyle}
             testID='permalink.screen'
+            edges={edges}
         >
             <Animated.View style={style.wrapper}>
                 <View style={style.header}>
@@ -200,6 +210,7 @@ function Permalink({channel, postId}: Props) {
                     <View style={style.postList}>
                         <PostList
                             highlightedId={postId}
+                            isCRTEnabled={isCRTEnabled}
                             posts={posts}
                             location={Screens.PERMALINK}
                             lastViewedAt={0}
