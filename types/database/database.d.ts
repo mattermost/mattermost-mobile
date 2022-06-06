@@ -218,6 +218,10 @@ export type HandleCategoryArgs = PrepareOnly & {
   categories?: Category[];
 };
 
+export type HandleGroupArgs = PrepareOnly & {
+  groups?: Group[];
+};
+
 export type HandleCategoryChannelArgs = PrepareOnly & {
   categoryChannels?: CategoryChannel[];
 };
