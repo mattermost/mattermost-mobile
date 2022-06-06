@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 import React, {useMemo} from 'react';
 import {View} from 'react-native';
+import tinycolor from 'tinycolor2';
 
 import {showUnreadChannelsOnly} from '@actions/local/channel';
 import FormattedText from '@components/formatted_text';
@@ -12,13 +13,16 @@ import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import EmptyIllustration from './empty_unreads.svg';
+import EmptyIllustration from './empty_unreads';
 
 type Props = {
     onlyUnreads: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    buttonText: {
+        color: theme.sidebarText,
+    },
     container: {
         flex: 1,
         alignItems: 'center',
@@ -46,7 +50,11 @@ function EmptyUnreads({onlyUnreads}: Props) {
     const styles = getStyleSheet(theme);
 
     const buttonStyle = useMemo(() => {
-        return [{marginTop: 24}, buttonBackgroundStyle(theme, 'lg', 'tertiary', 'inverted')];
+        const bg = tinycolor(theme.sidebarBg).isDark() ? '#FFF' : '#000';
+        return [
+            buttonBackgroundStyle(theme, 'lg', 'tertiary', 'inverted'),
+            {marginTop: 24, backgroundColor: changeOpacity(bg, 0.12)},
+        ];
     }, [theme]);
 
     const onPress = () => {
@@ -76,7 +84,7 @@ function EmptyUnreads({onlyUnreads}: Props) {
                 <FormattedText
                     id='unreads.empty.show_all'
                     defaultMessage='Show all'
-                    style={buttonTextStyle(theme, 'lg', 'tertiary', 'inverted')}
+                    style={[buttonTextStyle(theme, 'lg', 'tertiary', 'inverted'), styles.buttonText]}
                 />
             </TouchableWithFeedback>
         </View>
