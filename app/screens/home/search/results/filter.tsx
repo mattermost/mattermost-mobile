@@ -6,13 +6,14 @@ import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
-import CompassIcon from '@app/components/compass_icon';
+import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import MenuItem from '@components/menu_item';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import {dismissBottomSheet} from '@screens/navigation';
+import {FileFilter} from '@utils/file';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -65,11 +66,9 @@ type FilterItem = {
     separator?: boolean;
 }
 
-export type SelectedFilter = 'All file types' | 'Documents' | 'Spreadsheets'| 'Presentations' | 'Code' | 'Images' | 'Audio' | 'Videos'
-
 type FilterProps = {
-    initialFilter: SelectedFilter;
-    setFilter: (filter: SelectedFilter) => void;
+    initialFilter: FileFilter;
+    setFilter: (filter: FileFilter) => void;
 }
 
 const Filter = ({initialFilter, setFilter}: FilterProps) => {
@@ -79,7 +78,7 @@ const Filter = ({initialFilter, setFilter}: FilterProps) => {
     const isTablet = useIsTablet();
 
     const [disableButton, setDisableButton] = useState(false);
-    const [selectedFilter, setSelectedFilter] = useState<SelectedFilter>(initialFilter);
+    const [selectedFilter, setSelectedFilter] = useState<FileFilter>(initialFilter);
 
     const renderLabelComponent = useCallback((item: FilterItem) => {
         return (

@@ -24,6 +24,8 @@ const EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
 const CONTENT_DISPOSITION_REGEXP = /inline;filename=".*\.([a-z]+)";/i;
 const DEFAULT_SERVER_MAX_FILE_SIZE = 50 * 1024 * 1024;// 50 Mb
 
+export type FileFilter = 'All file types' | 'Documents' | 'Spreadsheets'| 'Presentations' | 'Code' | 'Images' | 'Audio' | 'Videos'
+
 export const GENERAL_SUPPORTED_DOCS_FORMAT = [
     'application/json',
     'application/msword',
@@ -57,6 +59,32 @@ const SUPPORTED_VIDEO_FORMAT = Platform.select({
 
 const types: Record<string, string> = {};
 const extensions: Record<string, readonly string[]> = {};
+
+export function filterFiles<T extends FileModel | FileInfo>(files: {[id: string]: T}, filter: FileFilter) {
+    if (filter === 'All file types') {
+        return files;
+    }
+    const ff = Object.values(files);
+    let filteredFiles: T[] = [];
+    switch (filter) {
+        case 'Videos':
+            filteredFiles = ff.filter((f) => isVideo(f));
+            break;
+        case 'Documents':
+            filteredFiles = ff.filter((f) => isDocument(f));
+            break;
+        case 'Images':
+            filteredFiles = ff.filter((f) => isImage(f));
+            break;
+        default:
+            // TODO create the rest of the filters
+            filteredFiles = ff.filter((f) => !isVideo(f) && !isDocument(f) && !isImage(f));
+    }
+    return filteredFiles.reduce<{[id: string]: T}>((acc, f) => {
+        acc[f.id!] = f;
+        return acc;
+    }, {});
+}
 
 /**
  * Populate the extensions and types maps.

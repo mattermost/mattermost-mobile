@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
@@ -8,17 +8,21 @@ import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
+import {FileFilter} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import Filter, {SelectedFilter} from './filter';
+import Filter from './filter';
 import SelectButton from './header_button';
 
 export type SelectTab = 'files' | 'messages'
 
 type Props = {
     onTabSelect: (tab: SelectTab) => void;
+    onFilterChanged: (filter: FileFilter) => void;
+    selectedTab: SelectTab;
+    selectedFilter: FileFilter;
     numberMessages: number;
-    fileInfos: FileInfo[];
+    numberFiles: number;
 }
 
 export const HEADER_HEIGHT = 64;
@@ -35,6 +39,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             paddingVertical: 12,
             flexGrow: 0,
             height: HEADER_HEIGHT,
+            alignItems: 'center',
         },
         filter: {
             marginRight: 12,
@@ -47,7 +52,14 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Header = ({onTabSelect, numberMessages, fileInfos}: Props) => {
+const Header = ({
+    onTabSelect,
+    onFilterChanged,
+    numberMessages,
+    numberFiles,
+    selectedTab,
+    selectedFilter,
+}: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
     const intl = useIntl();
@@ -55,37 +67,23 @@ const Header = ({onTabSelect, numberMessages, fileInfos}: Props) => {
     const messagesText = intl.formatMessage({id: 'screen.search.header.messages', defaultMessage: 'Messages'});
     const filesText = intl.formatMessage({id: 'screen.search.header.files', defaultMessage: 'Files'});
 
-    const [tab, setTab] = useState(0);
-    const [showFilterIcon, setShowFilterIcon] = useState(false);
-
-    const [numberFiles, setNumberFiles] = useState(fileInfos.length);
-    const [filter, setFilter] = useState<SelectedFilter>('All file types');
-    const [hasFilters, setHasFilters] = useState(false);
+    const showFilterIcon = selectedTab === 'files';
+    const hasFilters = selectedFilter !== 'All file types';
 
     const handleMessagesPress = useCallback(() => {
         onTabSelect('messages');
-        setTab(0);
     }, [onTabSelect]);
 
     const handleFilesPress = useCallback(() => {
         onTabSelect('files');
-        setTab(1);
     }, [onTabSelect]);
-
-    useEffect(() => {
-        if (tab === 1) {
-            setShowFilterIcon(true);
-        } else if (tab === 0) {
-            setShowFilterIcon(false);
-        }
-    }, [numberFiles, numberMessages, tab]);
 
     const handleFilterPress = useCallback(() => {
         const renderContent = () => {
             return (
                 <Filter
-                    initialFilter={filter}
-                    setFilter={setFilter}
+                    initialFilter={selectedFilter}
+                    setFilter={onFilterChanged}
                 />
             );
         };
@@ -96,27 +94,18 @@ const Header = ({onTabSelect, numberMessages, fileInfos}: Props) => {
             theme,
             title: intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'}),
         });
-    }, [filter]);
-
-    const handleFilterFiles = useCallback(() => {
-        setNumberFiles(Object.keys(fileInfos).length);
-    }, [hasFilters, fileInfos]);
-
-    useEffect(() => {
-        setHasFilters(filter !== 'All file types');
-        handleFilterFiles();
-    }, [filter, setHasFilters]);
+    }, [selectedFilter]);
 
     return (
         <>
             <View style={styles.container}>
                 <SelectButton
-                    selected={tab === 0}
+                    selected={selectedTab === 'messages'}
                     onPress={handleMessagesPress}
                     text={`${messagesText} (${numberMessages})`}
                 />
                 <SelectButton
-                    selected={tab === 1}
+                    selected={selectedTab === 'files'}
                     onPress={handleFilesPress}
                     text={`${filesText} (${numberFiles})`}
                 />

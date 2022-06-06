@@ -2,15 +2,15 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {FlatList, Text, View} from 'react-native';
+import {FlatList} from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import {PostModel} from '@app/database/models/server';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {PostModel} from '@database/models/server';
 import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import FileCard from './fileCard';
@@ -18,7 +18,6 @@ import FileCard from './fileCard';
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 type Props = {
-    scrollRef: any;
     searchValue: string;
     selectedTab: 'messages' | 'files';
     currentTimezone: string;
@@ -27,24 +26,11 @@ type Props = {
     fileInfos: {[id: string]: FileInfo};
 }
 
-const notImplementedComponent = (
-    <View
-        style={{
-            height: 800,
-            flexGrow: 1,
-            alignItems: 'center',
-        }}
-    >
-        <Text style={{fontSize: 28, color: '#000'}}>{'Not Implemented'}</Text>
-    </View>
-);
-
 const SearchResults = ({
     currentTimezone,
     fileInfos,
     isTimezoneEnabled,
     posts,
-    scrollRef,
     searchValue,
     selectedTab,
 }: Props) => {
@@ -86,7 +72,6 @@ const SearchResults = ({
     const renderMessages = useCallback(() => {
         return (
             <AnimatedFlatList
-                ref={scrollRef}
                 ListEmptyComponent={renderNoResults()}
                 data={orderedPosts}
                 scrollToOverflowEnabled={true}
@@ -100,8 +85,13 @@ const SearchResults = ({
     }, [renderPostItem]);
 
     const renderFiles = useCallback(() => {
+        const fileIds = Object.keys(fileInfos);
+        if (!fileIds.length) {
+            return renderNoResults();
+        }
+
         const infos = [];
-        for (const infoID of Object.keys(fileInfos)) {
+        for (const infoID of fileIds) {
             infos.push(
                 <FileCard
                     fileInfo={fileInfos[infoID]}
@@ -113,9 +103,7 @@ const SearchResults = ({
     }, [fileInfos]);
 
     let content;
-    if (!searchValue) {
-        content = notImplementedComponent;
-    } else if (selectedTab === 'messages') {
+    if (selectedTab === 'messages') {
         content = renderMessages();
     } else if (selectedTab === 'files') {
         content = renderFiles();

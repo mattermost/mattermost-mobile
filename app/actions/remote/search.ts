@@ -17,7 +17,7 @@ import type Model from '@nozbe/watermelondb/Model';
 
 type FileSearchRequest = {
     error?: unknown;
-    file_infos?: FileInfo[];
+    file_infos?: {[id: string]: FileInfo};
     next_file_info_id?: string;
     order?: string[];
     prev_file_info_id?: string;

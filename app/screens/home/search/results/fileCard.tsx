@@ -47,11 +47,9 @@ export default function FileCard({fileInfo}: Props) {
     let borderStyle;
     return (
         <View style={[style.container, style.border, borderStyle]}>
-            <Text>{fileInfo.name}</Text>
-            <Text>{fileInfo.post_id}</Text>
-            <Text>{fileInfo.create_at}</Text>
-            <Text>{fileInfo.size}</Text>
-            <Text>{'...'}</Text>
+            <Text>{'To be implemented'}</Text>
+            <Text>{`Name: ${fileInfo.name}`}</Text>
+            <Text>{`Size: ${fileInfo.size}`}</Text>
             <FileIcon/>
         </View>
     );
