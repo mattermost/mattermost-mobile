@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import Block from '@components/block';
-import BlockItem from '@components/block_item';
+import OptionItem from '@components/option_item';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -49,31 +49,28 @@ const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusPro
             headerText={headerText}
             headerStyles={styles.upperCase}
         >
-            <BlockItem
+            <OptionItem
+                action={setMobilePushStatus}
                 label={intl.formatMessage({id: 'notification_settings.mobile.online', defaultMessage: 'Online, away or offline'})}
-                labelStyle={styles.label}
-                action={setMobilePushStatus}
-                actionType='select'
-                actionValue='online'
                 selected={pushStatus === 'online'}
+                type='select'
+                value='online'
             />
             <View style={styles.separator}/>
-            <BlockItem
+            <OptionItem
+                action={setMobilePushStatus}
                 label={intl.formatMessage({id: 'notification_settings.mobile.away', defaultMessage: 'Away or offline'})}
-                labelStyle={styles.label}
-                action={setMobilePushStatus}
-                actionType='select'
-                actionValue='away'
                 selected={pushStatus === 'away'}
+                type='select'
+                value='away'
             />
             <View style={styles.separator}/>
-            <BlockItem
-                label={intl.formatMessage({id: 'notification_settings.mobile.offline', defaultMessage: 'Offline'})}
-                labelStyle={styles.label}
+            <OptionItem
                 action={setMobilePushStatus}
-                actionType='select'
-                actionValue='offline'
+                label={intl.formatMessage({id: 'notification_settings.mobile.offline', defaultMessage: 'Offline'})}
                 selected={pushStatus === 'offline'}
+                type='select'
+                value='offline'
             />
         </Block>
     );
