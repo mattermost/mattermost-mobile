@@ -7,6 +7,7 @@ import {Alert} from 'react-native';
 
 import {leaveChannel} from '@actions/remote/channel';
 import {setDirectChannelVisible} from '@actions/remote/preference';
+import OptionItem from '@components/option_item';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -14,13 +15,15 @@ import {useIsTablet} from '@hooks/device';
 import {dismissAllModals, dismissBottomSheet, popToRoot} from '@screens/navigation';
 
 type Props = {
+    isOptionItem?: boolean;
+    canLeave: boolean;
     channelId: string;
     displayName?: string;
     type?: string;
     testID?: string;
 }
 
-const LeaveChanelLabel = ({channelId, displayName, type, testID}: Props) => {
+const LeaveChanelLabel = ({canLeave, channelId, displayName, isOptionItem, type, testID}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
@@ -134,27 +137,45 @@ const LeaveChanelLabel = ({channelId, displayName, type, testID}: Props) => {
         }
     };
 
-    if (!displayName || !type) {
+    if (!displayName || !type || !canLeave) {
         return null;
     }
 
-    let leaveText = '';
+    let leaveText;
+    let icon;
     switch (type) {
         case General.DM_CHANNEL:
             leaveText = intl.formatMessage({id: 'channel_info.close_dm', defaultMessage: 'Close direct message'});
+            icon = 'close';
             break;
         case General.GM_CHANNEL:
             leaveText = intl.formatMessage({id: 'channel_info.close_gm', defaultMessage: 'Close group message'});
+            icon = 'close';
             break;
         default:
             leaveText = intl.formatMessage({id: 'channel_info.leave_channel', defaultMessage: 'Leave channel'});
+            icon = 'exit-to-app';
             break;
+    }
+
+    if (isOptionItem) {
+        return (
+            <OptionItem
+                action={onLeave}
+                destructive={true}
+                icon={icon}
+
+                label={leaveText}
+                testID={testID}
+                type='default'
+            />
+        );
     }
 
     return (
         <SlideUpPanelItem
             destructive={true}
-            icon='close'
+            icon={icon}
             onPress={onLeave}
             text={leaveText}
             testID={testID}

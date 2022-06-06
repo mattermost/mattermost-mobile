@@ -23,7 +23,7 @@ type SlideUpPanelProps = {
     text: string;
 }
 
-export const ITEM_HEIGHT = 51;
+export const ITEM_HEIGHT = 48;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -40,12 +40,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row',
         },
         iconContainer: {
-            height: 50,
+            height: ITEM_HEIGHT,
             justifyContent: 'center',
             marginRight: 10,
         },
         noIconContainer: {
-            height: 50,
+            height: ITEM_HEIGHT,
             width: 18,
         },
         icon: {
@@ -54,7 +54,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         textContainer: {
             justifyContent: 'center',
             flex: 1,
-            height: 50,
+            height: ITEM_HEIGHT,
             marginRight: 5,
         },
         text: {

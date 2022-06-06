@@ -16,6 +16,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     heading: {
         color: changeOpacity(theme.sidebarText, 0.64),
         ...typography('Heading', 75),
+        textTransform: 'uppercase',
         paddingLeft: 18,
         paddingVertical: 8,
         marginTop: 12,

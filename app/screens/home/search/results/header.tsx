@@ -21,17 +21,20 @@ type Props = {
     fileInfos: FileInfo[];
 }
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+export const HEADER_HEIGHT = 64;
+
+const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         flex: {
             flex: 1,
         },
         container: {
-            flexDirection: 'row',
-            alignItems: 'center',
+            backgroundColor: theme.centerChannelBg,
             marginHorizontal: 12,
-            marginBottom: 12,
+            flexDirection: 'row',
+            paddingVertical: 12,
             flexGrow: 0,
+            height: HEADER_HEIGHT,
         },
         filter: {
             marginRight: 12,

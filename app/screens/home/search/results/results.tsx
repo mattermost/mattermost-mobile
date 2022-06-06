@@ -1,9 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {inspect} from 'util';
-
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {FlatList, Text, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -16,46 +14,36 @@ import {useTheme} from '@context/theme';
 import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import FileCard from './fileCard';
-import Header from './header';
-
-import type {ViewableItemsChanged} from '@typings/components/post_list';
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 type Props = {
-    postIds: string[];
     scrollRef: any;
     searchValue: string;
-    selectedTab: string;
-    onHeaderTabSelect: (tab: string) => void;
+    selectedTab: 'messages' | 'files';
     currentTimezone: string;
     isTimezoneEnabled: boolean;
     posts: PostModel[];
-    fileInfos: FileInfo[];
+    fileInfos: {[id: string]: FileInfo};
 }
 
-const notImplementedComponent = (type: string) => {
-    return (
-        <View
-            style={{
-                height: 400,
-                flexGrow: 1,
-                alignItems: 'center',
-                justifyContent: 'center',
-            }}
-        >
-            <Text>{`${type} Not Implemented`}</Text>
-        </View>
-    );
-};
+const notImplementedComponent = (
+    <View
+        style={{
+            height: 800,
+            flexGrow: 1,
+            alignItems: 'center',
+        }}
+    >
+        <Text style={{fontSize: 28, color: '#000'}}>{'Not Implemented'}</Text>
+    </View>
+);
 
-const Results = ({
+const SearchResults = ({
     currentTimezone,
     fileInfos,
     isTimezoneEnabled,
-    onHeaderTabSelect,
     posts,
-    postIds,
     scrollRef,
     searchValue,
     selectedTab,
@@ -63,20 +51,6 @@ const Results = ({
     const theme = useTheme();
 
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
-
-    // const [filteredFiles, setFilterFiles] = useState(fileInfos);
-
-    const renderHeader = useCallback(() => {
-        return (
-            <Header
-                fileInfos={fileInfos}
-                onTabSelect={onHeaderTabSelect}
-
-                //setFilterFiles={setFilterFiles}
-                numberMessages={postIds.length}
-            />
-        );
-    }, [fileInfos, onHeaderTabSelect, postIds]);
 
     const renderPostItem = useCallback(({item}) => {
         if (typeof item === 'string') {
@@ -100,17 +74,6 @@ const Results = ({
         );
     }, [theme]);
 
-    const onViewableItemsChanged = useCallback(({viewableItems}: ViewableItemsChanged) => {
-        console.log('viewableItems', viewableItems);
-    }, []);
-
-    const handleRefresh = () => {
-        console.log('refreshing');
-    };
-    const onScroll = () => {
-        console.log('scrolling');
-    };
-
     const renderNoResults = useCallback(() => {
         return (
             <NoResultsWithTerm
@@ -124,23 +87,14 @@ const Results = ({
         return (
             <AnimatedFlatList
                 ref={scrollRef}
-
-                // contentContainerStyle={paddingTop}
                 ListEmptyComponent={renderNoResults()}
                 data={orderedPosts}
                 scrollToOverflowEnabled={true}
                 showsVerticalScrollIndicator={true}
-
-                // progressViewOffset={scrollPaddingTop}
                 scrollEventThrottle={16}
                 indicatorStyle='black'
-
-                onScroll={onScroll}
-                onRefresh={handleRefresh}
-
                 refreshing={false}
                 renderItem={renderPostItem}
-                onViewableItemsChanged={onViewableItemsChanged}
             />
         );
     }, [renderPostItem]);
@@ -151,6 +105,7 @@ const Results = ({
             infos.push(
                 <FileCard
                     fileInfo={fileInfos[infoID]}
+                    key={infoID}
                 />,
             );
         }
@@ -167,9 +122,8 @@ const Results = ({
     }
 
     return (<>
-        {renderHeader()}
         {content}
     </>);
 };
 
-export default Results;
+export default SearchResults;

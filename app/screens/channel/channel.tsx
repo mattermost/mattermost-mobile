@@ -14,6 +14,7 @@ import {useAppState, useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
 import {popTopScreen} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 
 import ChannelPostList from './channel_post_list';
 import ChannelHeader from './header';
@@ -57,8 +58,12 @@ const Channel = ({channelId, componentId}: ChannelProps) => {
         let back: NativeEventSubscription|undefined;
         if (!isTablet && componentId) {
             back = BackHandler.addEventListener('hardwareBackPress', () => {
-                popTopScreen(componentId);
-                return true;
+                if (EphemeralStore.getNavigationTopComponentId() === componentId) {
+                    popTopScreen(componentId);
+                    return true;
+                }
+
+                return false;
             });
         }
 

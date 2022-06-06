@@ -7,9 +7,11 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {combineLatestWith, switchMap} from 'rxjs/operators';
 
+import {General} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
+import {observeCurrentUser} from '@queries/servers/user';
 
 import LeaveChannelLabel from './leave_channel_label';
 
@@ -20,7 +22,16 @@ type OwnProps = WithDatabaseArgs & {
 }
 
 const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps) => {
+    const currentUser = observeCurrentUser(database);
     const channel = observeChannel(database, channelId);
+    const canLeave = channel.pipe(
+        combineLatestWith(currentUser),
+        switchMap(([ch, u]) => {
+            const isDefaultChannel = ch?.name === General.DEFAULT_CHANNEL;
+            return of$(!isDefaultChannel || (isDefaultChannel && u?.isGuest));
+        }),
+    );
+
     const displayName = channel.pipe(
         switchMap((c) => of$(c?.displayName)),
     );
@@ -29,6 +40,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
     );
 
     return {
+        canLeave,
         displayName,
         type,
     };

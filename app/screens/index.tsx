@@ -32,7 +32,7 @@ const withIntl = (Screen: React.ComponentType) => {
         return (
             <IntlProvider
                 locale={DEFAULT_LOCALE}
-                messages={getTranslations()}
+                messages={getTranslations(DEFAULT_LOCALE)}
             >
                 <Screen {...props}/>
             </IntlProvider>
@@ -72,6 +72,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.CHANNEL:
             screen = withServerDatabase(require('@screens/channel').default);
+            break;
+        case Screens.CHANNEL_INFO:
+            screen = withServerDatabase(require('@screens/channel_info').default);
             break;
         case Screens.CODE:
             screen = withServerDatabase(require('@screens/code').default);
@@ -193,6 +196,12 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.SETTINGS_NOTIFICATION_MENTION:
             screen = withServerDatabase(require('@screens/settings/notification_mention').default);
+            break;
+        case Screens.SETTINGS_NOTIFICATION_PUSH:
+            screen = withServerDatabase(require('@screens/settings/notification_push').default);
+            break;
+        case Screens.SETTINGS_NOTIFICATION_AUTO_RESPONDER:
+            screen = withServerDatabase(require('@screens/settings/notification_auto_responder').default);
             break;
     }
 

@@ -22,4 +22,3 @@ export default compose(
     withDatabase,
     enhance,
 )(SearchScreen);
-

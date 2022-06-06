@@ -7,22 +7,27 @@ import {StyleProp, ViewStyle} from 'react-native';
 
 import OptionBox from '@components/option_box';
 import {Screens} from '@constants';
-import {dismissBottomSheet, showModal} from '@screens/navigation';
+import {dismissBottomSheet, goToScreen, showModal} from '@screens/navigation';
 
 type Props = {
     channelId: string;
     containerStyle?: StyleProp<ViewStyle>;
+    inModal?: boolean;
     testID?: string;
 }
 
-const AddPeopleBox = ({channelId, containerStyle, testID}: Props) => {
+const AddPeopleBox = ({channelId, containerStyle, inModal, testID}: Props) => {
     const intl = useIntl();
 
     const onAddPeople = useCallback(async () => {
-        await dismissBottomSheet();
         const title = intl.formatMessage({id: 'intro.add_people', defaultMessage: 'Add People'});
+        if (inModal) {
+            goToScreen(Screens.CHANNEL_ADD_PEOPLE, title, {channelId});
+            return;
+        }
+        await dismissBottomSheet();
         showModal(Screens.CHANNEL_ADD_PEOPLE, title, {channelId});
-    }, [intl, channelId]);
+    }, [intl, channelId, inModal]);
 
     return (
         <OptionBox
