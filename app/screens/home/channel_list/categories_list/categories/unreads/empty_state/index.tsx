@@ -20,11 +20,7 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     button: {
-        backgroundColor: changeOpacity(theme.sidebarText, 0.12),
         marginTop: 24,
-    },
-    buttonText: {
-        color: theme.sidebarText,
     },
     container: {
         flex: 1,
@@ -82,7 +78,7 @@ function EmptyUnreads({onlyUnreads}: Props) {
                 <FormattedText
                     id='unreads.empty.show_all'
                     defaultMessage='Show all'
-                    style={[buttonTextStyle(theme, 'lg', 'tertiary', 'inverted'), styles.buttonText]}
+                    style={buttonTextStyle(theme, 'lg', 'tertiary', 'inverted')}
                 />
             </TouchableWithFeedback>
         </View>
