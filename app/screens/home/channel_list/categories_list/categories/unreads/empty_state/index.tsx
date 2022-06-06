@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 import React, {useMemo} from 'react';
 import {View} from 'react-native';
-import tinycolor from 'tinycolor2';
 
 import {showUnreadChannelsOnly} from '@actions/local/channel';
 import FormattedText from '@components/formatted_text';
@@ -20,6 +19,10 @@ type Props = {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    button: {
+        backgroundColor: changeOpacity(theme.sidebarText, 0.12),
+        marginTop: 24,
+    },
     buttonText: {
         color: theme.sidebarText,
     },
@@ -49,13 +52,8 @@ function EmptyUnreads({onlyUnreads}: Props) {
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
 
-    const buttonStyle = useMemo(() => {
-        const bg = tinycolor(theme.sidebarBg).isDark() ? '#FFF' : '#000';
-        return [
-            buttonBackgroundStyle(theme, 'lg', 'tertiary', 'inverted'),
-            {marginTop: 24, backgroundColor: changeOpacity(bg, 0.12)},
-        ];
-    }, [theme]);
+    const buttonStyle = useMemo(() => [buttonBackgroundStyle(theme, 'lg', 'tertiary', 'inverted'), styles.button],
+        [theme]);
 
     const onPress = () => {
         showUnreadChannelsOnly(serverUrl, !onlyUnreads);
