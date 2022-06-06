@@ -157,6 +157,8 @@ function AppsFormField({
                     <Markdown
                         value={field.description}
                         mentionKeys={[]}
+                        disableAtMentions={true}
+                        location=''
                         blockStyles={getMarkdownBlockStyles(theme)}
                         textStyles={getMarkdownTextStyles(theme)}
                         baseTextStyle={style.markdownFieldText}

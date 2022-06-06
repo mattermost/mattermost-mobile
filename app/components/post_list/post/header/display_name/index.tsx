@@ -1,27 +1,28 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef} from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
-import {showModal} from '@screens/navigation';
+import {Screens} from '@constants';
+import {openAsBottomSheet} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import type {ImageSource} from 'react-native-vector-icons/Icon';
-
 type HeaderDisplayNameProps = {
+    channelId: string;
     commentCount: number;
     displayName?: string;
-    isAutomation: boolean;
+    location: string;
     rootPostAuthor?: string;
     shouldRenderReplyButton?: boolean;
     theme: Theme;
+    userIconOverride?: string;
     userId: string;
+    usernameOverride?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -49,47 +50,35 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const HeaderDisplayName = ({
-    commentCount, displayName, isAutomation, rootPostAuthor, shouldRenderReplyButton, theme, userId,
+    channelId, commentCount, displayName,
+    location, rootPostAuthor,
+    shouldRenderReplyButton, theme,
+    userIconOverride, userId, usernameOverride,
 }: HeaderDisplayNameProps) => {
-    const closeButton = useRef<ImageSource>();
     const dimensions = useWindowDimensions();
     const intl = useIntl();
     const style = getStyleSheet(theme);
 
     const onPress = useCallback(preventDoubleTap(() => {
-        const screen = 'UserProfile';
+        const screen = Screens.USER_PROFILE;
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
-        const passProps = {userId};
-
-        if (!closeButton.current) {
-            closeButton.current = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        }
-
-        const options = {
-            topBar: {
-                leftButtons: [{
-                    id: 'close-user-profile',
-                    icon: closeButton.current,
-                    testID: 'close.user_profile.button',
-                }],
-            },
-        };
+        const closeButtonId = 'close-user-profile';
+        const props = {closeButtonId, userId, channelId, location, userIconOverride, usernameOverride};
 
         Keyboard.dismiss();
-        showModal(screen, title, passProps, options);
-    }), []);
+        openAsBottomSheet({screen, title, theme, closeButtonId, props});
+    }), [intl.locale, channelId, userIconOverride, userId, usernameOverride, theme]);
 
     const calcNameWidth = () => {
         const isLandscape = dimensions.width > dimensions.height;
 
         const showReply = shouldRenderReplyButton || (!rootPostAuthor && commentCount > 0);
-        const reduceWidth = showReply && isAutomation;
 
-        if (reduceWidth && isLandscape) {
+        if (showReply && isLandscape) {
             return style.displayNameContainerLandscapeBotReplyWidth;
         } else if (isLandscape) {
             return style.displayNameContainerLandscape;
-        } else if (reduceWidth) {
+        } else if (showReply) {
             return style.displayNameContainerBotReplyWidth;
         }
         return undefined;
@@ -98,20 +87,7 @@ const HeaderDisplayName = ({
     const displayNameWidth = calcNameWidth();
     const displayNameStyle = [style.displayNameContainer, displayNameWidth];
 
-    if (isAutomation) {
-        return (
-            <View style={displayNameStyle}>
-                <Text
-                    style={style.displayName}
-                    ellipsizeMode={'tail'}
-                    numberOfLines={1}
-                    testID='post_header.display_name'
-                >
-                    {displayName}
-                </Text>
-            </View>
-        );
-    } else if (displayName) {
+    if (displayName) {
         return (
             <View style={displayNameStyle}>
                 <TouchableOpacity onPress={onPress}>

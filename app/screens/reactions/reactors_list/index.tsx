@@ -13,10 +13,11 @@ import Reactor from './reactor';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 
 type Props = {
+    location: string;
     reactions: ReactionModel[];
 }
 
-const ReactorsList = ({reactions}: Props) => {
+const ReactorsList = ({location, reactions}: Props) => {
     const serverUrl = useServerUrl();
     const [enabled, setEnabled] = useState(false);
     const [direction, setDirection] = useState<'down' | 'up'>('down');
@@ -35,7 +36,10 @@ const ReactorsList = ({reactions}: Props) => {
     })).current;
 
     const renderItem = useCallback(({item}) => (
-        <Reactor reaction={item}/>
+        <Reactor
+            location={location}
+            reaction={item}
+        />
     ), [reactions]);
 
     const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {

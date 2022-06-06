@@ -5,7 +5,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import General from '@constants/general';
 import DatabaseManager from '@database/manager';
 import {getRecentCustomStatuses} from '@queries/servers/system';
-import {getCurrentUser} from '@queries/servers/user';
+import {getCurrentUser, getUserById} from '@queries/servers/user';
 
 import {addRecentReaction} from './reactions';
 
@@ -140,4 +140,28 @@ export const updateLocalUser = async (
     }
 
     return {};
+};
+
+export const storeProfile = async (serverUrl: string, profile: UserProfile) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const {database} = operator;
+        const user = await getUserById(database, profile.id);
+        if (user) {
+            return {user};
+        }
+
+        const records = await operator.handleUsers({
+            users: [profile],
+            prepareRecordsOnly: false,
+        });
+
+        return {user: records[0]};
+    } catch (error) {
+        return {error};
+    }
 };

@@ -28,7 +28,6 @@ type HeaderProps = {
     enablePostUsernameOverride: boolean;
     isAutoResponse: boolean;
     isCRTEnabled?: boolean;
-    isCustomStatusEnabled: boolean;
     isEphemeral: boolean;
     isMilitaryTime: boolean;
     isPendingOrFailed: boolean;
@@ -72,7 +71,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Header = (props: HeaderProps) => {
     const {
-        author, commentCount = 0, currentUser, enablePostUsernameOverride, isAutoResponse, isCRTEnabled, isCustomStatusEnabled,
+        author, commentCount = 0, currentUser, enablePostUsernameOverride, isAutoResponse, isCRTEnabled,
         isEphemeral, isMilitaryTime, isPendingOrFailed, isSystemPost, isTimezoneEnabled, isWebHook,
         location, post, rootPostAuthor, shouldRenderReplyButton, teammateNameDisplay,
     } = props;
@@ -86,9 +85,8 @@ const Header = (props: HeaderProps) => {
     const customStatus = getUserCustomStatus(author);
     const customStatusExpired = isCustomStatusExpired(author);
     const showCustomStatusEmoji = Boolean(
-        isCustomStatusEnabled && displayName &&
-        !(isSystemPost || author.isBot || isAutoResponse || isWebHook) &&
-        customStatus,
+        displayName && customStatus &&
+        !(isSystemPost || author.isBot || isAutoResponse || isWebHook),
     );
 
     return (
@@ -96,13 +94,16 @@ const Header = (props: HeaderProps) => {
             <View style={[style.container, pendingPostStyle]}>
                 <View style={style.wrapper}>
                     <HeaderDisplayName
+                        channelId={post.channelId}
                         commentCount={commentCount}
                         displayName={displayName}
-                        isAutomation={author.isBot || isAutoResponse || isWebHook}
+                        location={location}
                         rootPostAuthor={rootAuthorDisplayName}
                         shouldRenderReplyButton={shouldRenderReplyButton}
                         theme={theme}
+                        userIconOverride={post.props?.override_icon_url}
                         userId={post.userId}
+                        usernameOverride={post.props?.override_username}
                     />
                     {showCustomStatusEmoji && !customStatusExpired && Boolean(customStatus?.emoji) && (
                         <CustomStatusEmoji

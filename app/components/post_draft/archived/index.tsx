@@ -90,6 +90,7 @@ export default function Archived({
                 style={style.archivedText}
                 baseTextStyle={style.baseTextStyle}
                 textStyles={style.textStyles}
+                location=''
             />
             <Button
                 containerStyle={style.closeButton}

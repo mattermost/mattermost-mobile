@@ -164,30 +164,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.SAVED_POSTS:
             screen = withServerDatabase((require('@screens/saved_posts').default));
             break;
-        case Screens.SSO:
-            screen = withIntl(require('@screens/sso').default);
-            break;
-        case Screens.THREAD:
-            screen = withServerDatabase(require('@screens/thread').default);
-            break;
-        case Screens.THREAD_FOLLOW_BUTTON:
-            Navigation.registerComponent(Screens.THREAD_FOLLOW_BUTTON, () => withServerDatabase(
-                require('@screens/thread/thread_follow_button').default,
-            ));
-            break;
-        case Screens.SNACK_BAR: {
-            const snackBarScreen = withServerDatabase(require('@screens/snack_bar').default);
-            Navigation.registerComponent(Screens.SNACK_BAR, () =>
-                Platform.select({
-                    default: snackBarScreen,
-                    ios: withSafeAreaInsets(snackBarScreen) as ComponentType,
-                }),
-            );
-            break;
-        }
-        case Screens.THREAD_OPTIONS:
-            screen = withServerDatabase(require('@screens/thread_options').default);
-            break;
         case Screens.SETTINGS:
             screen = withServerDatabase(require('@screens/settings').default);
             break;
@@ -205,6 +181,33 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.SETTINGS_NOTIFICATION_AUTO_RESPONDER:
             screen = withServerDatabase(require('@screens/settings/notification_auto_responder').default);
+            break;
+        case Screens.SNACK_BAR: {
+            const snackBarScreen = withServerDatabase(require('@screens/snack_bar').default);
+            Navigation.registerComponent(Screens.SNACK_BAR, () =>
+                Platform.select({
+                    default: snackBarScreen,
+                    ios: withSafeAreaInsets(snackBarScreen) as ComponentType,
+                }),
+            );
+            break;
+        }
+        case Screens.SSO:
+            screen = withIntl(require('@screens/sso').default);
+            break;
+        case Screens.THREAD:
+            screen = withServerDatabase(require('@screens/thread').default);
+            break;
+        case Screens.THREAD_FOLLOW_BUTTON:
+            Navigation.registerComponent(Screens.THREAD_FOLLOW_BUTTON, () => withServerDatabase(
+                require('@screens/thread/thread_follow_button').default,
+            ));
+            break;
+        case Screens.THREAD_OPTIONS:
+            screen = withServerDatabase(require('@screens/thread_options').default);
+            break;
+        case Screens.USER_PROFILE:
+            screen = withServerDatabase(require('@screens/user_profile').default);
             break;
     }
 

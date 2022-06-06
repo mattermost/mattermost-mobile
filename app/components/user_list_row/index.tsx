@@ -1,30 +1,38 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
+    Platform,
     Text,
     View,
 } from 'react-native';
 
+import {storeProfileLongPressTutorial} from '@actions/app/global';
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
 import {BotTag, GuestTag} from '@components/tag';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import TutorialHighlight from '@components/tutorial_highlight';
+import TutorialLongPress from '@components/tutorial_highlight/long_press';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {displayUsername, isGuest} from '@utils/user';
 
 type Props = {
     id: string;
     isMyUser: boolean;
+    highlight?: boolean;
     user: UserProfile;
     teammateNameDisplay: string;
     testID: string;
     onPress?: (user: UserProfile) => void;
+    onLongPress: (user: UserProfile) => void;
     selectable: boolean;
     selected: boolean;
+    tutorialWatched?: boolean;
     enabled: boolean;
 }
 
@@ -90,32 +98,72 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.sidebarBg,
             borderWidth: 0,
         },
+        tutorial: {
+            top: Platform.select({ios: -74, default: -94}),
+        },
+        tutorialTablet: {
+            top: -84,
+        },
     };
 });
 
 export default function UserListRow({
     id,
     isMyUser,
+    highlight,
     user,
     teammateNameDisplay,
     testID,
     onPress,
+    onLongPress,
+    tutorialWatched = false,
     selectable,
     selected,
     enabled,
 }: Props) {
     const theme = useTheme();
-    const style = getStyleFromTheme(theme);
     const intl = useIntl();
+    const isTablet = useIsTablet();
+    const [showTutorial, setShowTutorial] = useState(false);
+    const [itemBounds, setItemBounds] = useState<TutorialItemBounds>({startX: 0, startY: 0, endX: 0, endY: 0});
+    const viewRef = useRef<View>(null);
+    const style = getStyleFromTheme(theme);
     const {formatMessage} = intl;
-
     const {username} = user;
 
-    const handlePress = useCallback(() => {
-        if (onPress) {
-            onPress(user);
+    const startTutorial = () => {
+        viewRef.current?.measureInWindow((x, y, w, h) => {
+            const bounds: TutorialItemBounds = {
+                startX: x - 20,
+                startY: y,
+                endX: x + w + 20,
+                endY: y + h,
+            };
+            setShowTutorial(true);
+            setItemBounds(bounds);
+        });
+    };
+
+    const handleDismissTutorial = useCallback(() => {
+        setShowTutorial(false);
+        storeProfileLongPressTutorial();
+    }, []);
+
+    useEffect(() => {
+        let time: NodeJS.Timeout;
+        if (highlight && !tutorialWatched) {
+            time = setTimeout(startTutorial, 650);
         }
+        return () => clearTimeout(time);
+    }, [highlight, tutorialWatched]);
+
+    const handlePress = useCallback(() => {
+        onPress?.(user);
     }, [onPress, user]);
+
+    const handleLongPress = useCallback(() => {
+        onLongPress?.(user);
+    }, [onLongPress, user]);
 
     const iconStyle = useMemo(() => {
         return [style.selector, (selected && style.selectorFilled), (!enabled && style.selectorDisabled)];
@@ -153,65 +201,80 @@ export default function UserListRow({
     const profilePictureTestID = `${itemTestID}.profile_picture`;
 
     return (
-        <TouchableWithFeedback
-            onPress={handlePress}
-            underlayColor={changeOpacity(theme.centerChannelColor, 0.16)}
-        >
-            <View
-                style={style.container}
-                testID={itemTestID}
+        <>
+            <TouchableWithFeedback
+                onLongPress={handleLongPress}
+                onPress={handlePress}
+                underlayColor={changeOpacity(theme.centerChannelColor, 0.16)}
             >
-                <View style={style.profileContainer}>
-                    <ProfilePicture
-                        author={user}
-                        size={32}
-                        iconSize={24}
-                        testID={profilePictureTestID}
-                    />
-                </View>
-                <View style={style.textContainer}>
-                    <View style={style.indicatorContainer}>
-                        <Text
-                            style={style.username}
-                            ellipsizeMode='tail'
-                            numberOfLines={1}
-                            testID={displayNameTestID}
-                        >
-                            {usernameDisplay}
-                        </Text>
-                        <BotTag
-                            show={Boolean(user.is_bot)}
-                        />
-                        <GuestTag
-                            show={isGuest(user.roles)}
+                <View
+                    ref={viewRef}
+                    style={style.container}
+                    testID={itemTestID}
+                >
+                    <View style={style.profileContainer}>
+                        <ProfilePicture
+                            author={user}
+                            size={32}
+                            iconSize={24}
+                            testID={profilePictureTestID}
                         />
                     </View>
-                    {showTeammateDisplay &&
-                    <View>
-                        <Text
-                            style={style.displayName}
-                            ellipsizeMode='tail'
-                            numberOfLines={1}
-                        >
-                            {teammateDisplay}
-                        </Text>
+                    <View style={style.textContainer}>
+                        <View style={style.indicatorContainer}>
+                            <Text
+                                style={style.username}
+                                ellipsizeMode='tail'
+                                numberOfLines={1}
+                                testID={displayNameTestID}
+                            >
+                                {usernameDisplay}
+                            </Text>
+                            <BotTag
+                                show={Boolean(user.is_bot)}
+                            />
+                            <GuestTag
+                                show={isGuest(user.roles)}
+                            />
+                        </View>
+                        {showTeammateDisplay &&
+                        <View>
+                            <Text
+                                style={style.displayName}
+                                ellipsizeMode='tail'
+                                numberOfLines={1}
+                            >
+                                {teammateDisplay}
+                            </Text>
+                        </View>
+                        }
+                        {user.delete_at > 0 &&
+                        <View>
+                            <Text
+                                style={style.deactivated}
+                            >
+                                {formatMessage({id: 'mobile.user_list.deactivated', defaultMessage: 'Deactivated'})}
+                            </Text>
+                        </View>
+                        }
                     </View>
-                    }
-                    {user.delete_at > 0 &&
-                    <View>
-                        <Text
-                            style={style.deactivated}
-                        >
-                            {formatMessage({id: 'mobile.user_list.deactivated', defaultMessage: 'Deactivated'})}
-                        </Text>
-                    </View>
+                    {selectable &&
+                    <Icon/>
                     }
                 </View>
-                {selectable &&
-                <Icon/>
-                }
-            </View>
-        </TouchableWithFeedback>
+            </TouchableWithFeedback>
+            {showTutorial &&
+            <TutorialHighlight
+                itemBounds={itemBounds}
+                onDismiss={handleDismissTutorial}
+            >
+                <TutorialLongPress
+                    message={intl.formatMessage({id: 'user.tutorial.long_press', defaultMessage: "Long-press on an item to view a user's profile"})}
+                    style={isTablet ? style.tutorialTablet : style.tutorial}
+                />
+            </TutorialHighlight>
+            }
+        </>
     );
 }
 

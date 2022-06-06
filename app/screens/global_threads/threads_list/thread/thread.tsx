@@ -29,6 +29,7 @@ import type UserModel from '@typings/database/models/servers/user';
 type Props = {
     author?: UserModel;
     channel?: ChannelModel;
+    location: string;
     post?: PostModel;
     teammateNameDisplay: string;
     testID: string;
@@ -119,7 +120,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Props) => {
+const Thread = ({author, channel, location, post, teammateNameDisplay, testID, thread}: Props) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
@@ -236,11 +237,15 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
                         />
                     </View>
                     {postBody}
+                    {Boolean(post && thread) &&
                     <ThreadFooter
                         author={author}
+                        channelId={post!.channelId}
+                        location={location}
                         testID={`${threadItemTestId}.footer`}
                         thread={thread}
                     />
+                    }
                 </View>
             </View>
         </TouchableHighlight>
