@@ -23,7 +23,7 @@ export const displayPermalink = async (teamName: string, postId: string, openAsP
     };
 
     const options = {
-        modalPresentationStyle: OptionsModalPresentationStyle.fullScreen,
+        modalPresentationStyle: OptionsModalPresentationStyle.overFullScreen,
         layout: {
             componentBackgroundColor: changeOpacity('#000', 0.2),
         },
