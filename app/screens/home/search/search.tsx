@@ -3,9 +3,9 @@
 
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {debounce} from 'lodash';
-import React, {useCallback, useState, useEffect, useMemo} from 'react';
+import React, {useCallback, useState, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {ScrollView, Text, View} from 'react-native';
+import {FlatList} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -19,25 +19,10 @@ import {FileFilter, filterFiles} from '@utils/file';
 
 import Results from './results';
 import Header, {SelectTab} from './results/header';
-import Loader from './results/loader';
-
-const notImplementedComponent = (
-    <View
-        style={{
-            height: 800,
-            flexGrow: 1,
-            alignItems: 'center',
-        }}
-    >
-        <Text style={{fontSize: 28, color: '#000'}}>{'Not Implemented'}</Text>
-    </View>
-);
-
-const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
 
-const emptyFileResults: {[id: string]: FileInfo} = {};
+const emptyFileResults: FileInfo[] = [];
 const emptyPostResults: string[] = [];
 
 type Props = {
@@ -61,8 +46,8 @@ const SearchScreen = ({teamId}: Props) => {
     const [lastSearchedValue, setLastSearchedValue] = useState('');
 
     const [postIds, setPostIds] = useState<string[]>(emptyPostResults);
-    const [fileInfos, setFileInfos] = useState<{[id: string]: FileInfo}>(emptyFileResults);
-    const [filteredFileInfos, setFilteredFileInfos] = useState<{[id: string]: FileInfo}>(emptyFileResults);
+    const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
+    const [filteredFileInfos, setFilteredFileInfos] = useState<FileInfo[]>(emptyFileResults);
 
     const handleSearch = useCallback((debounce(async () => {
         // execute the search for the text in the navigation text box
@@ -90,7 +75,7 @@ const SearchScreen = ({teamId}: Props) => {
         }
 
         if (fileResults?.file_infos && Object.keys(fileResults.file_infos)) {
-            setFileInfos(fileResults.file_infos);
+            setFileInfos(Object.values(fileResults.file_infos));
         } else {
             setFileInfos(emptyFileResults);
         }
@@ -98,8 +83,8 @@ const SearchScreen = ({teamId}: Props) => {
         setLoading(false);
     })), [searchValue, setPostIds]);
 
-    const onSnap = (y: number) => {
-        scrollRef.current?.scrollTo({y, animated: true});
+    const onSnap = (offset: number) => {
+        scrollRef.current?.scrollToOffset({offset, animated: true});
     };
 
     useEffect(() => {
@@ -110,8 +95,7 @@ const SearchScreen = ({teamId}: Props) => {
         setFilteredFileInfos(filterFiles(fileInfos, filter));
     }, [filter, fileInfos]);
 
-    const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight, hideHeader} = useCollapsibleHeader<ScrollView>(true, onSnap);
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
+    const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight, hideHeader} = useCollapsibleHeader<FlatList>(true, onSnap);
 
     const animated = useAnimatedStyle(() => {
         if (isFocused) {
@@ -137,22 +121,6 @@ const SearchScreen = ({teamId}: Props) => {
             zIndex: searchValue ? 10 : 0,
         };
     }, [searchValue]);
-
-    let content = notImplementedComponent;
-    if (lastSearchedValue) {
-        if (loading) {
-            content = (<Loader/>);
-        } else {
-            content = (
-                <Results
-                    selectedTab={selectedTab}
-                    searchValue={lastSearchedValue}
-                    postIds={postIds}
-                    fileInfos={filteredFileInfos}
-                />
-            );
-        }
-    }
 
     let header = null;
     if (lastSearchedValue) {
@@ -196,27 +164,16 @@ const SearchScreen = ({teamId}: Props) => {
                         <RoundedHeaderContext/>
                         {header}
                     </Animated.View>
-                    <AnimatedScrollView
-                        contentContainerStyle={paddingTop}
-                        nestedScrollEnabled={true}
-                        scrollToOverflowEnabled={true}
-                        showsVerticalScrollIndicator={false}
-                        indicatorStyle='black'
+                    <Results
+                        selectedTab={selectedTab}
+                        searchValue={lastSearchedValue}
+                        postIds={postIds}
+                        fileInfos={filteredFileInfos}
+                        scrollRef={scrollRef}
                         onScroll={onScroll}
-                        scrollEventThrottle={16}
-                        removeClippedSubviews={true}
-                        ref={scrollRef}
-                    >
-                        {content}
-                        {/* <SearchModifiers */}
-                        {/*     setSearchValue={setSearchValue} */}
-                        {/*     searchValue={searchValue} */}
-                        {/* /> */}
-                        {/* <RecentSearches */}
-                        {/*     setSearchValue={setSearchValue} */}
-                        {/* /> */}
-                        {/* <Filter/> */}
-                    </AnimatedScrollView>
+                        scrollPaddingTop={scrollPaddingTop}
+                        loading={loading}
+                    />
                 </Animated.View>
             </SafeAreaView>
         </FreezeScreen>

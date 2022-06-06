@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {FlatList} from 'react-native';
+import {FlatList, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Text, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
@@ -14,6 +14,19 @@ import {PostModel} from '@database/models/server';
 import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import FileCard from './fileCard';
+import Loader from './loader';
+
+const notImplementedComponent = (
+    <View
+        style={{
+            height: 800,
+            flexGrow: 1,
+            alignItems: 'center',
+        }}
+    >
+        <Text style={{fontSize: 28, color: '#000'}}>{'Not Implemented'}</Text>
+    </View>
+);
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
@@ -23,8 +36,14 @@ type Props = {
     currentTimezone: string;
     isTimezoneEnabled: boolean;
     posts: PostModel[];
-    fileInfos: {[id: string]: FileInfo};
+    fileInfos: FileInfo[];
+    scrollRef: React.RefObject<FlatList>;
+    onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+    scrollPaddingTop: number;
+    loading: boolean;
 }
+
+const emptyList: FileInfo[] | Array<string | PostModel> = [];
 
 const SearchResults = ({
     currentTimezone,
@@ -33,12 +52,17 @@ const SearchResults = ({
     posts,
     searchValue,
     selectedTab,
+    scrollRef,
+    onScroll,
+    scrollPaddingTop,
+    loading,
 }: Props) => {
     const theme = useTheme();
+    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
 
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
 
-    const renderPostItem = useCallback(({item}) => {
+    const renderItem = useCallback(({item}: ListRenderItemInfo<string|FileInfo | Post>) => {
         if (typeof item === 'string') {
             if (isDateLine(item)) {
                 return (
@@ -52,66 +76,65 @@ const SearchResults = ({
             return null;
         }
 
+        if ('message' in item) {
+            return (
+                <PostWithChannelInfo
+                    location={Screens.SEARCH}
+                    post={item}
+                />
+            );
+        }
+
         return (
-            <PostWithChannelInfo
-                location={Screens.SEARCH}
-                post={item}
+            <FileCard
+                fileInfo={item}
+                key={item.id}
             />
         );
     }, [theme]);
 
-    const renderNoResults = useCallback(() => {
-        return (
-            <NoResultsWithTerm
-                term={searchValue}
-                type={selectedTab}
-            />
-        );
-    }, [selectedTab, searchValue]);
-
-    const renderMessages = useCallback(() => {
-        return (
-            <AnimatedFlatList
-                ListEmptyComponent={renderNoResults()}
-                data={orderedPosts}
-                scrollToOverflowEnabled={true}
-                showsVerticalScrollIndicator={true}
-                scrollEventThrottle={16}
-                indicatorStyle='black'
-                refreshing={false}
-                renderItem={renderPostItem}
-            />
-        );
-    }, [renderPostItem]);
-
-    const renderFiles = useCallback(() => {
-        const fileIds = Object.keys(fileInfos);
-        if (!fileIds.length) {
-            return renderNoResults();
-        }
-
-        const infos = [];
-        for (const infoID of fileIds) {
-            infos.push(
-                <FileCard
-                    fileInfo={fileInfos[infoID]}
-                    key={infoID}
-                />,
+    const noResults = useMemo(() => {
+        if (searchValue) {
+            if (loading) {
+                return (<Loader/>);
+            }
+            return (
+                <NoResultsWithTerm
+                    term={searchValue}
+                    type={selectedTab}
+                />
             );
         }
-        return infos;
-    }, [fileInfos]);
 
-    let content;
-    if (selectedTab === 'messages') {
-        content = renderMessages();
-    } else if (selectedTab === 'files') {
-        content = renderFiles();
+        return notImplementedComponent;
+    }, [searchValue, loading, selectedTab]);
+
+    let data;
+    if (loading || !searchValue) {
+        data = emptyList;
+    } else if (selectedTab === 'messages') {
+        data = orderedPosts;
+    } else {
+        data = fileInfos;
     }
 
-    return (<>
-        {content}
-    </>);
+    return (
+        <AnimatedFlatList
+            ListEmptyComponent={noResults}
+            data={data}
+            scrollToOverflowEnabled={true}
+            showsVerticalScrollIndicator={true}
+            scrollEventThrottle={16}
+            indicatorStyle='black'
+            refreshing={false}
+            renderItem={renderItem}
+            contentContainerStyle={paddingTop}
+            nestedScrollEnabled={true}
+            onScroll={onScroll}
+            removeClippedSubviews={true}
+            ref={scrollRef}
+        />
+    );
 };
 
 export default SearchResults;

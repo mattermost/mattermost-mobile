@@ -60,30 +60,20 @@ const SUPPORTED_VIDEO_FORMAT = Platform.select({
 const types: Record<string, string> = {};
 const extensions: Record<string, readonly string[]> = {};
 
-export function filterFiles<T extends FileModel | FileInfo>(files: {[id: string]: T}, filter: FileFilter) {
-    if (filter === 'All file types') {
-        return files;
-    }
-    const ff = Object.values(files);
-    let filteredFiles: T[] = [];
+export function filterFiles<T extends FileModel | FileInfo>(files: T[], filter: FileFilter) {
     switch (filter) {
+        case 'All file types':
+            return files;
         case 'Videos':
-            filteredFiles = ff.filter((f) => isVideo(f));
-            break;
+            return files.filter((f) => isVideo(f));
         case 'Documents':
-            filteredFiles = ff.filter((f) => isDocument(f));
-            break;
+            return files.filter((f) => isDocument(f));
         case 'Images':
-            filteredFiles = ff.filter((f) => isImage(f));
-            break;
+            return files.filter((f) => isImage(f));
         default:
             // TODO create the rest of the filters
-            filteredFiles = ff.filter((f) => !isVideo(f) && !isDocument(f) && !isImage(f));
+            return files.filter((f) => !isVideo(f) && !isDocument(f) && !isImage(f));
     }
-    return filteredFiles.reduce<{[id: string]: T}>((acc, f) => {
-        acc[f.id!] = f;
-        return acc;
-    }, {});
 }
 
 /**
