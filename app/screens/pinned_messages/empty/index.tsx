@@ -8,7 +8,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import SavedPostsIcon from './saved_posts_icon';
+import EmptyIllustration from './empty.svg';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
@@ -21,17 +21,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     title: {
         color: theme.centerChannelColor,
         textAlign: 'center',
-        ...typography('Heading', 400),
+        ...typography('Heading', 400, 'SemiBold'),
     },
     paragraph: {
         marginTop: 8,
         textAlign: 'center',
         color: changeOpacity(theme.centerChannelColor, 0.72),
         ...typography('Body', 200),
-    },
-    icon: {
-        alignItems: 'center',
-        justifyContent: 'center',
     },
 }));
 
@@ -41,18 +37,18 @@ function EmptySavedPosts() {
 
     return (
         <View style={styles.container}>
-            <SavedPostsIcon style={styles.icon}/>
+            <EmptyIllustration/>
             <FormattedText
-                defaultMessage='No saved messages yet'
-                id='saved_posts.empty.title'
+                defaultMessage='No pinned messages yet'
+                id='pinned_messages.empty.title'
                 style={styles.title}
-                testID='saved_posts.empty.title'
+                testID='pinned_messages.empty.title'
             />
             <FormattedText
-                defaultMessage={'To save something for later, long-press on a message and choose Save from the menu. Saved messages are only visible to you.'}
-                id='saved_posts.empty.paragraph'
+                defaultMessage={'To pin important messages, long-press on a message and choose Pin To Channel. Pinned messages will be visible to everyone in this channel.'}
+                id='pinned_messages.empty.paragraph'
                 style={styles.paragraph}
-                testID='saved_posts.empty.paragraph'
+                testID='pinned_messages.empty.paragraph'
             />
         </View>
     );

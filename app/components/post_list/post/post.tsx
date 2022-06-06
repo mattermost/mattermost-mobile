@@ -133,7 +133,7 @@ const Post = ({
     }, [isConsecutivePost, post, previousPost, isFirstReply]);
 
     const handlePostPress = () => {
-        if ([Screens.SAVED_POSTS, Screens.MENTIONS, Screens.SEARCH].includes(location)) {
+        if ([Screens.SAVED_POSTS, Screens.MENTIONS, Screens.SEARCH, Screens.PINNED_MESSAGES].includes(location)) {
             showPermalink(serverUrl, '', post.id, intl);
             return;
         }
