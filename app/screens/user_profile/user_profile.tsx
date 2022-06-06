@@ -40,7 +40,7 @@ type Props = {
 const TITLE_HEIGHT = 118;
 const OPTIONS_HEIGHT = 82;
 const SINGLE_OPTION_HEIGHT = 68;
-const LABEL_HEIGHT = 66;
+const LABEL_HEIGHT = 58;
 const EXTRA_HEIGHT = 60;
 
 const UserProfile = ({

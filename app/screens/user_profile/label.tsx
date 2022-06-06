@@ -15,7 +15,7 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        marginVertical: 12,
+        marginVertical: 8,
     },
     description: {
         color: theme.centerChannelColor,
