@@ -32,6 +32,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             ...typography('Body', 100, 'Regular'),
 
         },
+        container: {
+            paddingHorizontal: 8,
+        },
     };
 });
 
@@ -51,6 +54,7 @@ const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusPro
         >
             <OptionItem
                 action={setMobilePushStatus}
+                containerStyle={styles.container}
                 label={intl.formatMessage({id: 'notification_settings.mobile.online', defaultMessage: 'Online, away or offline'})}
                 selected={pushStatus === 'online'}
                 type='select'
@@ -59,6 +63,7 @@ const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusPro
             <View style={styles.separator}/>
             <OptionItem
                 action={setMobilePushStatus}
+                containerStyle={styles.container}
                 label={intl.formatMessage({id: 'notification_settings.mobile.away', defaultMessage: 'Away or offline'})}
                 selected={pushStatus === 'away'}
                 type='select'
@@ -67,6 +72,7 @@ const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusPro
             <View style={styles.separator}/>
             <OptionItem
                 action={setMobilePushStatus}
+                containerStyle={styles.container}
                 label={intl.formatMessage({id: 'notification_settings.mobile.offline', defaultMessage: 'Offline'})}
                 selected={pushStatus === 'offline'}
                 type='select'

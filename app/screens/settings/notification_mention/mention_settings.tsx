@@ -115,11 +115,11 @@ const MentionSettings = ({currentUser, mentionKeys}: MentionSectionProps) => {
                 <>
                     <OptionItem
                         action={toggleFirstNameMention}
-                        type='toggle'
                         containerStyle={styles.container}
                         description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveName', defaultMessage: 'Your case sensitive first name'})}
                         label={currentUser!.firstName}
                         selected={firstName}
+                        type='toggle'
                     />
                     <View style={styles.separator}/>
                 </>
@@ -128,29 +128,29 @@ const MentionSettings = ({currentUser, mentionKeys}: MentionSectionProps) => {
             {Boolean(currentUser?.username) && (
                 <OptionItem
                     action={toggleUsernameMention}
-                    type='toggle'
                     containerStyle={styles.container}
                     description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveUsername', defaultMessage: 'Your non-case sensitive username'})}
                     label={currentUser!.username}
                     selected={usernameMention}
+                    type='toggle'
                 />
             )}
             <View style={styles.separator}/>
             <OptionItem
                 action={toggleChannelMentions}
-                type='toggle'
                 containerStyle={styles.container}
                 description={intl.formatMessage({id: 'notification_settings.mentions.channelWide', defaultMessage: 'Channel-wide mentions'})}
                 label='@channel, @all, @here'
                 selected={channel}
+                type='toggle'
             />
             <View style={styles.separator}/>
             <OptionItem
                 action={goToNotificationSettingsMentionKeywords}
-                type='arrow'
                 containerStyle={styles.container}
                 description={mentionKeys || intl.formatMessage({id: 'notification_settings.mentions.keywordsDescription', defaultMessage: 'Other words that trigger a mention'})}
                 label={intl.formatMessage({id: 'notification_settings.mentions.keywords', defaultMessage: 'Keywords'})}
+                type='arrow'
             />
         </Block>
     );
