@@ -8,7 +8,7 @@
 import Foundation
 import SQLite
 
-public struct Post: Codable, Hashable {
+public struct Post: Codable {
     let id: String
     let create_at: Int64
     let update_at: Int64

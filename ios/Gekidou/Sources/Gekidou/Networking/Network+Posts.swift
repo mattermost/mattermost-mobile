@@ -31,14 +31,14 @@ public struct PostData: Codable {
 }
 
 extension Network {
-    public func fetchPostsForChannel(withId channelId: String, withSince since: Int64?, withServerUrl serverUrl: String, withIsCRTEnabled isCRTEnabled: Bool, withRootId rootId: String?, completionHandler: @escaping ResponseHandler) {
+    public func fetchPostsForChannel(withId channelId: String, withSince since: Int64?, withServerUrl serverUrl: String, withIsCRTEnabled isCRTEnabled: Bool, withRootId rootId: String, completionHandler: @escaping ResponseHandler) {
         
         let additionalParams = isCRTEnabled ? "&collapsedThreads=true&collapsedThreadsExtended=true" : ""
         
         let endpoint: String
-        if (isCRTEnabled && rootId != nil && rootId != "") {
+        if (isCRTEnabled && !rootId.isEmpty) {
             let queryParams = "?skipFetchThreads=false&perPage=60&fromCreatedAt=0&direction=up"
-            endpoint = "/posts/\(rootId!)/thread\(queryParams)\(additionalParams)"
+            endpoint = "/posts/\(rootId)/thread\(queryParams)\(additionalParams)"
         } else {
             let queryParams = since == nil ?
                 "?page=0&per_page=\(POST_CHUNK_SIZE)" :

@@ -153,7 +153,7 @@ extension Network {
                             if (isCRTEnabled) {
                                 // Add root post as a thread
                                 let rootId = post.root_id
-                                if (rootId == "") {
+                                if (rootId.isEmpty) {
                                     threads.append(post)
                                 }
 
@@ -240,7 +240,7 @@ extension Network {
             group.enter()
             if (postData != nil && postData?.posts != nil && postData!.posts.count > 0) {
                 if let db = try? Database.default.getDatabaseForServer(serverUrl) {
-                    let receivingThreads = isCRTEnabled && rootId != nil && rootId != ""
+                    let receivingThreads = isCRTEnabled && !rootId.isEmpty
                     try? db.transaction {
                         try? Database.default.handlePostData(db, postData!, channelId, since != nil, receivingThreads)
                         if (threads.count > 0) {
