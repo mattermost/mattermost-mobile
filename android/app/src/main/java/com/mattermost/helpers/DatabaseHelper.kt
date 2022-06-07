@@ -291,7 +291,11 @@ class DatabaseHelper {
         val configRecord = find(db, "System", "config")
         if (configRecord != null) {
             val value = configRecord.getString("value");
-            return JSONObject(value)
+            try {
+                return JSONObject(value)
+            } catch(e: JSONException) {
+                return null
+            }
         }
         return null
     }
@@ -419,7 +423,7 @@ class DatabaseHelper {
                         " values (?, ?, ?, ?, ?, ?, ?, 'created')",
                 arrayOf(
                         thread.getString("id"),
-                        thread.getDouble("last_reply_at"),
+                        thread.getDouble("last_reply_at") ?: 0,
                         lastViewedAt,
                         thread.getInt("reply_count") ?: 0,
                         isFollowing,
@@ -439,9 +443,9 @@ class DatabaseHelper {
         db.execute(
                 "update Thread SET last_reply_at = ?, last_viewed_at = ?, reply_count = ?, is_following = ?, unread_replies = ?, unread_mentions = ?, _status = 'updated' where id = ?",
                 arrayOf(
-                        thread.getDouble("last_reply_at"),
+                        thread.getDouble("last_reply_at") ?: 0,
                         lastViewedAt,
-                        thread.getInt("reply_count"),
+                        thread.getInt("reply_count") ?: 0,
                         isFollowing,
                         unreadReplies,
                         unreadMentions,
