@@ -75,7 +75,7 @@ const SearchScreen = ({teamId}: Props) => {
         ]);
 
         setPostIds(postResults?.order?.length ? postResults.order : emptyPostResults);
-        setFileInfos(fileResults?.file_infos?.length ? Object.values(fileResults.file_infos) : emptyFileResults);
+        setFileInfos(fileResults?.file_infos && Object.keys(fileResults?.file_infos) ? Object.values(fileResults.file_infos) : emptyFileResults);
 
         setLoading(false);
     })), [searchValue]);
