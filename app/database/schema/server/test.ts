@@ -137,10 +137,12 @@ describe('*** Test schema for SERVER database ***', () => {
                     columns: {
                         channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
                         user_id: {name: 'user_id', type: 'string', isIndexed: true},
+                        scheme_admin: {name: 'scheme_admin', type: 'boolean'},
                     },
                     columnArray: [
                         {name: 'channel_id', type: 'string', isIndexed: true},
                         {name: 'user_id', type: 'string', isIndexed: true},
+                        {name: 'scheme_admin', type: 'boolean'},
                     ],
                 },
                 [CUSTOM_EMOJI]: {
@@ -486,10 +488,12 @@ describe('*** Test schema for SERVER database ***', () => {
                     columns: {
                         team_id: {name: 'team_id', type: 'string', isIndexed: true},
                         user_id: {name: 'user_id', type: 'string', isIndexed: true},
+                        scheme_admin: {name: 'scheme_admin', type: 'boolean'},
                     },
                     columnArray: [
                         {name: 'team_id', type: 'string', isIndexed: true},
                         {name: 'user_id', type: 'string', isIndexed: true},
+                        {name: 'scheme_admin', type: 'boolean'},
                     ],
                 },
                 [TEAM_SEARCH_HISTORY]: {

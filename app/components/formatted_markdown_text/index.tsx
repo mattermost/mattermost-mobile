@@ -17,8 +17,10 @@ import type {PrimitiveType} from 'intl-messageformat';
 
 type Props = {
     baseTextStyle: StyleProp<TextStyle>;
+    channelId?: string;
     defaultMessage: string;
     id: string;
+    location: string;
     onPostPress?: (e: GestureResponderEvent) => void;
     style?: StyleProp<TextStyle>;
     textStyles: {
@@ -47,7 +49,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const FormattedMarkdownText = ({baseTextStyle, defaultMessage, id, onPostPress, style, textStyles, values}: Props) => {
+const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, location, onPostPress, style, textStyles, values}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -84,8 +86,10 @@ const FormattedMarkdownText = ({baseTextStyle, defaultMessage, id, onPostPress, 
     const renderAtMention = ({context, mentionName}: {context: string[]; mentionName: string}) => {
         return (
             <AtMention
+                channelId={channelId}
                 mentionStyle={textStyles.mention}
                 mentionName={mentionName}
+                location={location}
                 onPostPress={onPostPress}
                 textStyle={[computeTextStyle(baseTextStyle, context), styles.atMentionOpacity]}
             />

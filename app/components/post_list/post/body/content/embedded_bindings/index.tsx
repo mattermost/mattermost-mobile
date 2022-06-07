@@ -9,11 +9,12 @@ import EmbeddedBinding from './embedded_binding';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
+    location: string;
     post: PostModel;
     theme: Theme;
 }
 
-const EmbeddedBindings = ({post, theme}: Props) => {
+const EmbeddedBindings = ({location, post, theme}: Props) => {
     const content: React.ReactNode[] = [];
     const embeds: AppBinding[] = post.props.app_bindings;
 
@@ -21,6 +22,7 @@ const EmbeddedBindings = ({post, theme}: Props) => {
         content.push(
             <EmbeddedBinding
                 embed={embed}
+                location={location}
                 key={'binding_' + i.toString()}
                 post={post}
                 theme={theme}

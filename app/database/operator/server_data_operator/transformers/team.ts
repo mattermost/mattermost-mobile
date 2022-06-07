@@ -37,6 +37,7 @@ export const transformTeamMembershipRecord = ({action, database, value}: Transfo
         teamMembership._raw.id = isCreateAction ? (raw?.id ?? teamMembership.id) : record.id;
         teamMembership.teamId = raw.team_id;
         teamMembership.userId = raw.user_id;
+        teamMembership.schemeAdmin = raw.scheme_admin;
     };
 
     return prepareBaseRecord({

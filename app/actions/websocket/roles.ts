@@ -111,6 +111,13 @@ export async function handleTeamMemberRoleUpdatedEvent(serverUrl: string, msg: W
 
         models.push(...myTeamRecords);
 
+        // update TeamMembership table
+        const teamMembership = await operator.handleTeamMemberships({
+            teamMemberships: [member],
+            prepareRecordsOnly: true,
+        });
+        models.push(...teamMembership);
+
         await operator.batchRecords(models);
     } catch {
         // do nothing
