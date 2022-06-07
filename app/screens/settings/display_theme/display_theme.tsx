@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {ScrollView, View} from 'react-native';
 
 import {savePreference} from '@actions/remote/preference';
@@ -35,18 +35,18 @@ type DisplayThemeProps = {
 const DisplayTheme = ({allowedThemeKeys, currentTeamId, currentUserId}: DisplayThemeProps) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const customTheme = useRef<Theme|null>();
+    const [customTheme, setCustomTheme] = useState<Theme|null>();
 
     const styles = getStyleSheet(theme);
 
     useEffect(() => {
         if (theme.type === 'custom') {
-            customTheme.current = theme;
+            setCustomTheme(theme);
         }
     }, [theme.type === 'custom']);
 
     const updateTheme = useCallback((selectedThemeKey: string) => {
-        const allThemes = [...allowedThemeKeys, customTheme.current?.type];
+        const allThemes = [...allowedThemeKeys];
         const selectedTheme = allThemes.find((tk) => tk === selectedThemeKey);
         if (!selectedTheme) {
             return;
@@ -67,9 +67,9 @@ const DisplayTheme = ({allowedThemeKeys, currentTeamId, currentUserId}: DisplayT
                     allowedThemeKeys={allowedThemeKeys}
                     onThemeChange={updateTheme}
                 />
-                {customTheme?.current && (
+                {customTheme && (
                     <CustomTheme
-                        customTheme={customTheme.current}
+                        customTheme={customTheme}
                         setTheme={updateTheme}
                     />
                 )}
