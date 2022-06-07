@@ -111,6 +111,10 @@ export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string) =>
                 enabled: false,
             },
         },
+        modalPresentationStyle: Platform.select({
+            ios: OptionsModalPresentationStyle.overFullScreen,
+            default: OptionsModalPresentationStyle.overCurrentContext,
+        }),
         modal: {swipeToDismiss: true},
         statusBar: {
             backgroundColor: null,
@@ -524,7 +528,7 @@ export function showModalOverCurrentContext(name: string, passProps = {}, option
             break;
     }
     const defaultOptions = {
-        modalPresentationStyle: 'overCurrentContext',
+        modalPresentationStyle: OptionsModalPresentationStyle.overCurrentContext,
         layout: {
             backgroundColor: 'transparent',
             componentBackgroundColor: 'transparent',
@@ -682,6 +686,28 @@ export async function bottomSheet({title, renderContent, snapPoints, initialSnap
 export async function dismissBottomSheet(alternativeScreen = Screens.BOTTOM_SHEET) {
     DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
     await EphemeralStore.waitUntilScreensIsRemoved(alternativeScreen);
+}
+
+type AsBottomSheetArgs = {
+    closeButtonId: string;
+    props?: Record<string, any>;
+    screen: typeof Screens[keyof typeof Screens];
+    theme: Theme;
+    title: string;
+}
+
+export async function openAsBottomSheet({closeButtonId, screen, theme, title, props}: AsBottomSheetArgs) {
+    const {isSplitView} = await isRunningInSplitView();
+    const isTablet = Device.IS_TABLET && !isSplitView;
+
+    if (isTablet) {
+        showModal(screen, title, {
+            closeButtonId,
+            ...props,
+        }, bottomSheetModalOptions(theme, closeButtonId));
+    } else {
+        showModalOverCurrentContext(screen, props, bottomSheetModalOptions(theme));
+    }
 }
 
 export const showAppForm = async (form: AppForm, call: AppCallRequest) => {

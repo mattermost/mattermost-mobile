@@ -26,4 +26,5 @@ export default keyMirror({
     POST_LIST_SCROLL_TO_BOTTOM: null,
     SWIPEABLE: null,
     ITEM_IN_VIEWPORT: null,
+    SEND_TO_POST_DRAFT: null,
 });

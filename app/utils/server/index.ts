@@ -170,6 +170,16 @@ export function alertServerError(intl: IntlShape, error: ClientErrorProps) {
     );
 }
 
+export function alertServerAlreadyConnected(intl: IntlShape) {
+    Alert.alert(
+        '',
+        intl.formatMessage({
+            id: 'mobile.server_identifier.exists',
+            defaultMessage: 'You are already connected to this server.',
+        }),
+    );
+}
+
 function unsupportedServerAdminAlert(intl: IntlShape) {
     const title = intl.formatMessage({id: 'mobile.server_upgrade.title', defaultMessage: 'Server upgrade required'});
 

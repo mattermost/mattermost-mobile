@@ -165,6 +165,7 @@ export const transformChannelMembershipRecord = ({action, database, value}: Tran
         channelMember._raw.id = isCreateAction ? (raw?.id ?? channelMember.id) : record.id;
         channelMember.channelId = raw.channel_id;
         channelMember.userId = raw.user_id;
+        channelMember.schemeAdmin = raw.scheme_admin ?? false;
     };
 
     return prepareBaseRecord({

@@ -21,6 +21,7 @@ import type UserModel from '@typings/database/models/servers/user';
 type AddMembersProps = {
     channelType: string | null;
     currentUser: UserModel;
+    location: string;
     post: PostModel;
     theme: Theme;
 }
@@ -35,7 +36,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const AddMembers = ({channelType, currentUser, post, theme}: AddMembersProps) => {
+const AddMembers = ({channelType, currentUser, location, post, theme}: AddMembersProps) => {
     const intl = useIntl();
     const styles = getStyleSheet(theme);
     const textStyles = getMarkdownTextStyles(theme);
@@ -83,6 +84,8 @@ const AddMembers = ({channelType, currentUser, post, theme}: AddMembersProps) =>
         if (names.length === 1) {
             return (
                 <AtMention
+                    channelId={post.channelId}
+                    location={location}
                     mentionName={names[0]}
                     mentionStyle={textStyles.mention}
                 />
@@ -110,6 +113,8 @@ const AddMembers = ({channelType, currentUser, post, theme}: AddMembersProps) =>
                             return (
                                 <AtMention
                                     key={username}
+                                    channelId={post.channelId}
+                                    location={location}
                                     mentionStyle={textStyles.mention}
                                     mentionName={username}
                                 />

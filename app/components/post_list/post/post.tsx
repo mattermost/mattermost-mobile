@@ -230,6 +230,7 @@ const Post = ({
                 ) : (
                     <Avatar
                         isAutoReponse={isAutoResponder}
+                        location={location}
                         post={post}
                     />
                 )}
@@ -266,6 +267,7 @@ const Post = ({
     if (isSystemPost && !isEphemeral && !isAutoResponder) {
         body = (
             <SystemMessage
+                location={location}
                 post={post}
             />
         );
@@ -297,7 +299,11 @@ const Post = ({
     if (isCRTEnabled && thread) {
         if (thread.replyCount > 0 || thread.isFollowing) {
             footer = (
-                <Footer thread={thread}/>
+                <Footer
+                    channelId={post.channelId}
+                    location={location}
+                    thread={thread}
+                />
             );
         }
         if (thread.unreadMentions || thread.unreadReplies) {
