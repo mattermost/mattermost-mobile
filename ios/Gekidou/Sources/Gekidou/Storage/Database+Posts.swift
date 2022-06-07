@@ -163,7 +163,7 @@ extension Database {
         
         return (0, 0)
     }
-    
+
     public func handlePostData(_ db: Connection, _ postData: PostData, _ channelId: String, _ usedSince: Bool = false, _ receivingThreads: Bool = false) throws {
         let sortedChainedPosts = chainAndSortPosts(postData)
         try insertOrUpdatePosts(db, sortedChainedPosts, channelId)
@@ -311,9 +311,9 @@ extension Database {
     }
     
     private func insertThreads(_ db: Connection, _ posts: [Post]) throws {
-        let setters = createThreadSetters(from: posts)
+        let setters = try createThreadSetters(db, from: posts)
         for setter in setters {
-            let insertThread = threadTable.insert(or: .ignore, setter.threadSetters)
+            let insertThread = threadTable.insert(or: .replace, setter.threadSetters)
             try db.run(insertThread)
 
             let threadIdCol = Expression<String>("thread_id")
@@ -475,7 +475,7 @@ extension Database {
                                emojiSetters: emojiSetters)
     }
     
-    private func createThreadSetters(from posts: [Post]) -> [ThreadSetters] {
+    private func createThreadSetters(_ db: Connection, from posts: [Post]) throws -> [ThreadSetters] {
         let id = Expression<String>("id")
         let lastReplyAt = Expression<Int64>("last_reply_at")
         let replyCount = Expression<Int>("reply_count")
@@ -485,19 +485,35 @@ extension Database {
         var threadsSetters: [ThreadSetters] = []
         
         for post in posts {
-            var setter = [Setter]()
-            setter.append(id <- post.id)
-            setter.append(lastReplyAt <- post.last_reply_at)
-            setter.append(replyCount <- post.reply_count)
-            setter.append(isFollowing <- post.is_following)
-            setter.append(statusCol <- "created")
             
-            let threadSetter = ThreadSetters(
-                id: post.id,
-                threadSetters: setter,
-                threadParticipantSetters: createThreadParticipantSetters(from: post)
-            )
-            threadsSetters.append(threadSetter)
+            let query = threadTable
+                .select(id)
+                .where(id == post.id)
+
+            if let _ = try? db.pluck(query) {
+                let updateQuery = threadTable
+                    .where(id == post.id)
+                    .update(lastReplyAt <- post.last_reply_at,
+                            replyCount <- post.reply_count,
+                            isFollowing <- post.is_following,
+                            statusCol <- "updated"
+                    )
+                try db.run(updateQuery)
+            } else {
+                var setter = [Setter]()
+                setter.append(id <- post.id)
+                setter.append(lastReplyAt <- post.last_reply_at)
+                setter.append(replyCount <- post.reply_count)
+                setter.append(isFollowing <- post.is_following)
+                setter.append(statusCol <- "created")
+
+                let threadSetter = ThreadSetters(
+                    id: post.id,
+                    threadSetters: setter,
+                    threadParticipantSetters: createThreadParticipantSetters(from: post)
+                )
+                threadsSetters.append(threadSetter)
+            }
         }
         
         return threadsSetters
