@@ -5,7 +5,7 @@ import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {debounce} from 'lodash';
 import React, {useCallback, useState, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList} from 'react-native';
+import {FlatList, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -29,6 +29,12 @@ type Props = {
     teamId: string;
 }
 
+const styles = StyleSheet.create({
+    flex: {
+        flex: 1,
+    },
+});
+
 const SearchScreen = ({teamId}: Props) => {
     const nav = useNavigation();
     const isFocused = useIsFocused();
@@ -40,7 +46,7 @@ const SearchScreen = ({teamId}: Props) => {
 
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
     const [selectedTab, setSelectedTab] = useState<SelectTab>('messages');
-    const [filter, setFilter] = useState<FileFilter>('All file types');
+    const [filter, setFilter] = useState<FileFilter>('all');
 
     const [loading, setLoading] = useState(false);
     const [lastSearchedValue, setLastSearchedValue] = useState('');
@@ -68,20 +74,11 @@ const SearchScreen = ({teamId}: Props) => {
             searchFiles(serverUrl, teamId, searchParams),
         ]);
 
-        if (postResults?.order && Object.keys(postResults.order)) {
-            setPostIds(postResults.order);
-        } else {
-            setPostIds(emptyPostResults);
-        }
-
-        if (fileResults?.file_infos && Object.keys(fileResults.file_infos)) {
-            setFileInfos(Object.values(fileResults.file_infos));
-        } else {
-            setFileInfos(emptyFileResults);
-        }
+        setPostIds(postResults?.order?.length ? postResults.order : emptyPostResults);
+        setFileInfos(fileResults?.file_infos?.length ? Object.values(fileResults.file_infos) : emptyFileResults);
 
         setLoading(false);
-    })), [searchValue, setPostIds]);
+    })), [searchValue]);
 
     const onSnap = (offset: number) => {
         scrollRef.current?.scrollToOffset({offset, animated: true});
@@ -102,9 +99,7 @@ const SearchScreen = ({teamId}: Props) => {
             return {
                 opacity: withTiming(1, {duration: 150}),
                 flex: 1,
-                transform: [
-                    {translateX: withTiming(0, {duration: 150})},
-                ],
+                transform: [{translateX: withTiming(0, {duration: 150})}],
             };
         }
 
@@ -113,14 +108,14 @@ const SearchScreen = ({teamId}: Props) => {
             transform: [{translateX: withTiming(stateIndex < searchScreenIndex ? 25 : -25, {duration: 150})}],
 
         };
-    }, [isFocused, stateIndex, scrollPaddingTop]);
+    }, [isFocused, stateIndex]);
 
     const top = useAnimatedStyle(() => {
         return {
             top: headerHeight.value,
             zIndex: lastSearchedValue ? 10 : 0,
         };
-    }, [lastSearchedValue]);
+    }, [headerHeight, lastSearchedValue]);
 
     let header = null;
     if (lastSearchedValue) {
@@ -156,7 +151,7 @@ const SearchScreen = ({teamId}: Props) => {
                 defaultValue={searchValue}
             />
             <SafeAreaView
-                style={{flex: 1}}
+                style={styles.flex}
                 edges={EDGES}
             >
                 <Animated.View style={animated}>

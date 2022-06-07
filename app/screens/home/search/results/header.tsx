@@ -68,7 +68,7 @@ const Header = ({
     const filesText = intl.formatMessage({id: 'screen.search.header.files', defaultMessage: 'Files'});
 
     const showFilterIcon = selectedTab === 'files';
-    const hasFilters = selectedFilter !== 'All file types';
+    const hasFilters = selectedFilter !== 'all';
 
     const handleMessagesPress = useCallback(() => {
         onTabSelect('messages');

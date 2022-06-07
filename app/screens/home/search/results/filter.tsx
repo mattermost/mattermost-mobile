@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
@@ -11,6 +11,7 @@ import FormattedText from '@components/formatted_text';
 import MenuItem from '@components/menu_item';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {t} from '@i18n';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import {dismissBottomSheet} from '@screens/navigation';
 import {FileFilter} from '@utils/file';
@@ -31,40 +32,49 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const data = [
-    {
-        id: 'screen.search.results.filter.all_file_types',
-        defaultMessage: 'All file types',
-    }, {
-        id: 'screen.search.results.filter.documents',
-        defaultMessage: 'Documents',
-    }, {
-        id: 'screen.search.results.filter.spreadsheets',
-        defaultMessage: 'Spreadsheets',
-    }, {
-        id: 'screen.search.results.filter.presentations',
-        defaultMessage: 'Presentations',
-    }, {
-        id: 'screen.search.results.filter.code',
-        defaultMessage: 'Code',
-    }, {
-        id: 'screen.search.results.filter.images',
-        defaultMessage: 'Images',
-    }, {
-        id: 'screen.search.results.filter.audio',
-        defaultMessage: 'Audio',
-    }, {
-        id: 'screen.search.results.filter.videos',
-        defaultMessage: 'Videos',
-        separator: false,
-    },
-];
-
 type FilterItem = {
     id: string;
     defaultMessage: string;
+    filterType: FileFilter;
     separator?: boolean;
 }
+
+const data: FilterItem[] = [
+    {
+        id: t('screen.search.results.filter.all_file_types'),
+        defaultMessage: 'All file types',
+        filterType: 'all',
+    }, {
+        id: t('screen.search.results.filter.documents'),
+        defaultMessage: 'Documents',
+        filterType: 'documents',
+    }, {
+        id: t('screen.search.results.filter.spreadsheets'),
+        defaultMessage: 'Spreadsheets',
+        filterType: 'spreadsheets',
+    }, {
+        id: t('screen.search.results.filter.presentations'),
+        defaultMessage: 'Presentations',
+        filterType: 'presentations',
+    }, {
+        id: t('screen.search.results.filter.code'),
+        defaultMessage: 'Code',
+        filterType: 'code',
+    }, {
+        id: t('screen.search.results.filter.images'),
+        defaultMessage: 'Images',
+        filterType: 'images',
+    }, {
+        id: t('screen.search.results.filter.audio'),
+        defaultMessage: 'Audio',
+        filterType: 'audio',
+    }, {
+        id: t('screen.search.results.filter.videos'),
+        defaultMessage: 'Videos',
+        filterType: 'videos',
+        separator: false,
+    },
+];
 
 type FilterProps = {
     initialFilter: FileFilter;
@@ -77,8 +87,8 @@ const Filter = ({initialFilter, setFilter}: FilterProps) => {
     const style = getStyleSheet(theme);
     const isTablet = useIsTablet();
 
-    const [disableButton, setDisableButton] = useState(false);
     const [selectedFilter, setSelectedFilter] = useState<FileFilter>(initialFilter);
+    const disableButton = selectedFilter === initialFilter;
 
     const renderLabelComponent = useCallback((item: FilterItem) => {
         return (
@@ -97,35 +107,26 @@ const Filter = ({initialFilter, setFilter}: FilterProps) => {
                 )}
             </View>
         );
-    }, [selectedFilter, setSelectedFilter]);
+    }, [selectedFilter, style]);
 
-    const renderFilterItem = useCallback(({item}) => {
+    const renderFilterItem = useCallback(({item}: {item: FilterItem}) => {
         return (
             <MenuItem
                 labelComponent={renderLabelComponent(item)}
                 onPress={() => {
-                    setSelectedFilter(item.defaultMessage);
+                    setSelectedFilter(item.filterType);
                 }}
                 separator={item.separator}
                 testID={item.id}
                 theme={theme}
             />
         );
-    }, [renderLabelComponent, setSelectedFilter, theme]);
+    }, [renderLabelComponent, theme]);
 
     const handleShowResults = useCallback(() => {
+        setFilter(selectedFilter);
         dismissBottomSheet();
-    }, []);
-
-    useEffect(() => {
-        setDisableButton(selectedFilter === initialFilter);
-    }, [initialFilter, selectedFilter]);
-
-    useEffect(() => {
-        return function cleanup() {
-            setFilter(selectedFilter);
-        };
-    }, [selectedFilter]);
+    }, [selectedFilter, setFilter]);
 
     const buttonText = intl.formatMessage({id: 'screen.search.results.filter.show_results', defaultMessage: 'Show results'});
     const buttonTitle = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});

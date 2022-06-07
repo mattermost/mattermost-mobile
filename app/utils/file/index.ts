@@ -24,7 +24,7 @@ const EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
 const CONTENT_DISPOSITION_REGEXP = /inline;filename=".*\.([a-z]+)";/i;
 const DEFAULT_SERVER_MAX_FILE_SIZE = 50 * 1024 * 1024;// 50 Mb
 
-export type FileFilter = 'All file types' | 'Documents' | 'Spreadsheets'| 'Presentations' | 'Code' | 'Images' | 'Audio' | 'Videos'
+export type FileFilter = 'all' | 'documents' | 'spreadsheets'| 'presentations' | 'code' | 'images' | 'audio' | 'videos'
 
 export const GENERAL_SUPPORTED_DOCS_FORMAT = [
     'application/json',
@@ -62,13 +62,13 @@ const extensions: Record<string, readonly string[]> = {};
 
 export function filterFiles<T extends FileModel | FileInfo>(files: T[], filter: FileFilter) {
     switch (filter) {
-        case 'All file types':
+        case 'all':
             return files;
-        case 'Videos':
+        case 'videos':
             return files.filter((f) => isVideo(f));
-        case 'Documents':
+        case 'documents':
             return files.filter((f) => isDocument(f));
-        case 'Images':
+        case 'images':
             return files.filter((f) => isImage(f));
         default:
             // TODO create the rest of the filters
