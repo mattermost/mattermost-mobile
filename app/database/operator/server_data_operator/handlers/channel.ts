@@ -59,28 +59,28 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             return [];
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: channels, key: 'id'}) as Channel[];
-        const keys = createOrUpdateRawValues.map((c) => c.id);
+        const uniqueRaws = getUniqueRawsBy({raws: channels, key: 'id'}) as Channel[];
+        const keys = uniqueRaws.map((c) => c.id);
         const db: Database = this.database;
         const existing = await db.get<ChannelModel>(CHANNEL).query(
             Q.where('id', Q.oneOf(keys)),
         ).fetch();
         const channelMap = new Map<string, ChannelModel>(existing.map((c) => [c.id, c]));
-        const cu = createOrUpdateRawValues.reduce((res: Channel[], c) => {
+        const createOrUpdateRawValues = uniqueRaws.reduce((res: Channel[], c) => {
             const e = channelMap.get(c.id);
             if (!e) {
                 res.push(c);
                 return res;
             }
 
-            if (e.updateAt !== c.update_at || e.deleteAt !== c.delete_at) {
+            if (e.updateAt !== c.update_at || e.deleteAt !== c.delete_at || c.fake) {
                 res.push(c);
             }
 
             return res;
         }, []);
 
-        if (!cu.length) {
+        if (!createOrUpdateRawValues.length) {
             return [];
         }
 
@@ -88,7 +88,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             fieldName: 'id',
             transformer: transformChannelRecord,
             prepareRecordsOnly,
-            createOrUpdateRawValues: cu,
+            createOrUpdateRawValues,
             tableName: CHANNEL,
         });
     };
@@ -111,14 +111,14 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             return [];
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: settings, key: 'id'}) as ChannelMembership[];
-        const keys = createOrUpdateRawValues.map((c) => c.channel_id);
+        const uniqueRaws = getUniqueRawsBy({raws: settings, key: 'id'}) as ChannelMembership[];
+        const keys = uniqueRaws.map((c) => c.channel_id);
         const db: Database = this.database;
         const existing = await db.get<MyChannelSettingsModel>(MY_CHANNEL_SETTINGS).query(
             Q.where('id', Q.oneOf(keys)),
         ).fetch();
         const channelMap = new Map<string, MyChannelSettingsModel>(existing.map((c) => [c.id, c]));
-        const cu = createOrUpdateRawValues.reduce((res: ChannelMembership[], c) => {
+        const createOrUpdateRawValues = uniqueRaws.reduce((res: ChannelMembership[], c) => {
             const e = channelMap.get(c.channel_id);
             if (!e) {
                 res.push(c);
@@ -138,7 +138,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             return res;
         }, []);
 
-        if (!cu.length) {
+        if (!createOrUpdateRawValues.length) {
             return [];
         }
 
@@ -147,7 +147,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             buildKeyRecordBy: buildMyChannelKey,
             transformer: transformMyChannelSettingsRecord,
             prepareRecordsOnly,
-            createOrUpdateRawValues: cu,
+            createOrUpdateRawValues,
             tableName: MY_CHANNEL_SETTINGS,
         });
     };
@@ -170,10 +170,39 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             return [];
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({
+        const uniqueRaws = getUniqueRawsBy({
             raws: channelInfos as ChannelInfo[],
             key: 'id',
-        });
+        }) as ChannelInfo[];
+        const keys = uniqueRaws.map((ci) => ci.id);
+        const db: Database = this.database;
+        const existing = await db.get<ChannelInfoModel>(CHANNEL_INFO).query(
+            Q.where('id', Q.oneOf(keys)),
+        ).fetch();
+        const channelMap = new Map<string, ChannelInfoModel>(existing.map((ci) => [ci.id, ci]));
+        const createOrUpdateRawValues = uniqueRaws.reduce((res: ChannelInfo[], ci) => {
+            const e = channelMap.get(ci.id);
+            if (!e) {
+                res.push(ci);
+                return res;
+            }
+
+            if (
+                ci.guest_count !== e.guestCount ||
+                ci.member_count !== e.memberCount ||
+                ci.header !== e.header ||
+                ci.pinned_post_count !== e.pinnedPostCount ||
+                ci.purpose !== e.purpose
+            ) {
+                res.push(ci);
+            }
+
+            return res;
+        }, []);
+
+        if (!createOrUpdateRawValues.length) {
+            return [];
+        }
 
         return this.handleRecords({
             fieldName: 'id',
@@ -231,17 +260,17 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             }
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({
+        const uniqueRaws = getUniqueRawsBy({
             raws: myChannels,
             key: 'id',
         }) as ChannelMembership[];
-        const ids = createOrUpdateRawValues.map((c: ChannelMembership) => c.channel_id);
+        const ids = uniqueRaws.map((cm: ChannelMembership) => cm.channel_id);
         const db: Database = this.database;
         const existing = await db.get<MyChannelModel>(MY_CHANNEL).query(
             Q.where('id', Q.oneOf(ids)),
         ).fetch();
         const membershipMap = new Map<string, MyChannelModel>(existing.map((member) => [member.id, member]));
-        const cu = createOrUpdateRawValues.reduce((res: ChannelMembership[], my) => {
+        const createOrUpdateRawValues = uniqueRaws.reduce((res: ChannelMembership[], my) => {
             const e = membershipMap.get(my.channel_id);
             if (!e) {
                 res.push(my);
@@ -260,7 +289,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             return res;
         }, []);
 
-        if (!cu.length) {
+        if (!createOrUpdateRawValues.length) {
             return [];
         }
 
@@ -269,7 +298,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             buildKeyRecordBy: buildMyChannelKey,
             transformer: transformMyChannelRecord,
             prepareRecordsOnly,
-            createOrUpdateRawValues: cu,
+            createOrUpdateRawValues,
             tableName: MY_CHANNEL,
         });
     };
@@ -297,7 +326,30 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             id: `${m.channel_id}-${m.user_id}`,
         }));
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: memberships, key: 'id'});
+        const uniqueRaws = getUniqueRawsBy({raws: memberships, key: 'id'}) as ChannelMember[];
+        const ids = uniqueRaws.map((cm: ChannelMember) => cm.channel_id);
+        const db: Database = this.database;
+        const existing = await db.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(
+            Q.where('id', Q.oneOf(ids)),
+        ).fetch();
+        const membershipMap = new Map<string, ChannelMembershipModel>(existing.map((member) => [member.id, member]));
+        const createOrUpdateRawValues = uniqueRaws.reduce((res: ChannelMember[], cm) => {
+            const e = membershipMap.get(cm.channel_id);
+            if (!e) {
+                res.push(cm);
+                return res;
+            }
+
+            if (cm.scheme_admin !== e.schemeAdmin) {
+                res.push(cm);
+            }
+
+            return res;
+        }, []);
+
+        if (!createOrUpdateRawValues.length) {
+            return [];
+        }
 
         return this.handleRecords({
             fieldName: 'user_id',

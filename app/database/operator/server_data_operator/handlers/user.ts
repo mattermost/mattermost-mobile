@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Database, Q} from '@nozbe/watermelondb';
+
 import {MM_TABLES} from '@constants/database';
 import {buildPreferenceKey} from '@database/operator/server_data_operator/comparators';
 import {
@@ -95,7 +97,30 @@ const UserHandler = (superclass: any) => class extends superclass {
             return [];
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: users, key: 'id'});
+        const uniqueRaws = getUniqueRawsBy({raws: users, key: 'id'}) as UserProfile[];
+        const ids = uniqueRaws.map((u: UserProfile) => u.id);
+        const db: Database = this.database;
+        const existing = await db.get<UserModel>(USER).query(
+            Q.where('id', Q.oneOf(ids)),
+        ).fetch();
+        const usersMap = new Map<string, UserModel>(existing.map((user) => [user.id, user]));
+        const createOrUpdateRawValues = uniqueRaws.reduce((res: UserProfile[], u) => {
+            const e = usersMap.get(u.id);
+            if (!e) {
+                res.push(u);
+                return res;
+            }
+
+            if (u.update_at !== e.updateAt || u.delete_at !== e.deleteAt) {
+                res.push(u);
+            }
+
+            return res;
+        }, []);
+
+        if (!createOrUpdateRawValues.length) {
+            return [];
+        }
 
         return this.handleRecords({
             fieldName: 'id',
