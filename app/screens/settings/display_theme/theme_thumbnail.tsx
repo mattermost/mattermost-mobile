@@ -4,37 +4,16 @@
 import React from 'react';
 import Svg, {Rect, G, Circle} from 'react-native-svg';
 
+import {changeOpacity} from '@utils/theme';
+
 type ThemeThumbnailProps = {
-    awayIndicator: string;
     borderColorBase: string;
     borderColorMix: string;
-    buttonBg: string;
-    centerChannelBg: string;
-    centerChannelColor: string;
-    dndIndicator: string;
-    newMessageSeparator: string;
-    onlineIndicator: string;
-    sidebarBg: string;
-    sidebarText: string;
-    sidebarUnreadText: string;
+    theme: Theme;
     width: number;
 }
 
-function ThemeThumbnail({
-    awayIndicator = '#FFBC1F',
-    borderColorBase = '#E0E1E3',
-    borderColorMix = '#E0E1E3',
-    buttonBg = '#15B7B7',
-    centerChannelBg = 'white',
-    centerChannelColor = '#E0E1E3',
-    dndIndicator = '#D24B4E',
-    newMessageSeparator = '#1C58D9',
-    onlineIndicator = '#3DB887',
-    sidebarBg = '#174AB5',
-    sidebarText = '#86A1D9',
-    sidebarUnreadText = 'white',
-    width = 180,
-}: ThemeThumbnailProps): JSX.Element {
+const ThemeThumbnail = ({borderColorBase, borderColorMix, theme, width}: ThemeThumbnailProps): JSX.Element => {
     // the original height of the thumbnail
     const baseWidth = 180;
     const baseHeight = 134;
@@ -61,21 +40,21 @@ function ThemeThumbnail({
             fill='none'
         >
             <Rect
-                fill={centerChannelBg}
+                fill={theme.centerChannelBg}
                 x='0'
                 y='0'
                 width={baseWidth}
                 height={baseHeight}
             />
             <Rect
-                fill={newMessageSeparator}
+                fill={theme.newMessageSeparator}
                 x={sidebarWidth}
                 y={(spacing * 4) + (rowHeight * 3)}
                 width={postsContainerWidth}
                 height='1'
             />
             <Rect
-                fill={buttonBg}
+                fill={theme.buttonBg}
                 x={sidebarWidth + (spacing * 4)}
                 y={(spacing * 8) + (rowHeight * 6) + 1}
                 width={buttonWidth}
@@ -83,7 +62,7 @@ function ThemeThumbnail({
                 rx={rowRadius}
             />
             <Rect
-                fill={centerChannelColor}
+                fill={changeOpacity(theme.centerChannelColor, 0.16)}
                 x={sidebarWidth + spacing}
                 y={(spacing * 9) + (rowHeight * 7) + 1}
                 width={postWidth}
@@ -91,14 +70,14 @@ function ThemeThumbnail({
                 rx={postInputHeight / 2}
             />
             <Rect
-                fill={centerChannelBg}
+                fill={theme.centerChannelBg}
                 x={sidebarWidth + spacing + 1}
                 y={(spacing * 9) + (rowHeight * 7) + 2}
                 width={postWidth - 2}
                 height={postInputHeight - 2}
                 rx={(postInputHeight - 2) / 2}
             />
-            <G fill={centerChannelColor}>
+            <G fill={changeOpacity(theme.centerChannelColor, 0.16)}>
                 <Rect
                     x={sidebarWidth + spacing}
                     y={spacing}
@@ -144,13 +123,13 @@ function ThemeThumbnail({
             </G>
             <G>
                 <Rect
-                    fill={sidebarBg}
+                    fill={theme.sidebarBg}
                     x='0'
                     y='0'
                     width={sidebarWidth}
                     height={baseHeight}
                 />
-                <G fill={sidebarText}>
+                <G fill={changeOpacity(theme.sidebarText, 0.48)}>
                     <Circle
                         cx={spacing + rowRadius}
                         cy={spacing + rowRadius}
@@ -239,24 +218,24 @@ function ThemeThumbnail({
                     />
                 </G>
                 <Circle
-                    fill={onlineIndicator}
+                    fill={theme.onlineIndicator}
                     cx={spacing + rowRadius}
                     cy={(spacing * 3) + (rowHeight * 2) + rowRadius}
                     r={rowRadius}
                 />
                 <Circle
-                    fill={awayIndicator}
+                    fill={theme.awayIndicator}
                     cx={spacing + rowRadius}
                     cy={(spacing * 6) + (rowHeight * 5) + rowRadius}
                     r={rowRadius}
                 />
                 <Circle
-                    fill={dndIndicator}
+                    fill={theme.dndIndicator}
                     cx={spacing + rowRadius}
                     cy={(spacing * 9) + (rowHeight * 8) + rowRadius}
                     r={rowRadius}
                 />
-                <G fill={sidebarUnreadText}>
+                <G fill={theme.sidebarUnreadText}>
                     <Circle
                         cx={(spacing * 2.5) + rowHeight + channelNameWidth}
                         cy={(spacing * 3) + (rowHeight * 2) + rowRadius}
@@ -291,6 +270,6 @@ function ThemeThumbnail({
             />
         </Svg>
     );
-}
+};
 
 export default ThemeThumbnail;

@@ -58,28 +58,25 @@ type ThemeTileProps = {
     action: (v: string) => void;
     actionValue: string;
     activeTheme: Theme;
-    isLandscape: boolean;
-    isTablet: boolean;
     label: React.ReactElement;
     selected: boolean;
-    tileTheme: Theme;
+    theme: Theme;
 };
 export const ThemeTile = ({
     action,
     actionValue,
     activeTheme,
-    isLandscape,
-    isTablet,
     label,
     selected,
-    tileTheme,
+    theme,
 }: ThemeTileProps) => {
+    const isTablet = useIsTablet();
     const style = getStyleSheet(activeTheme);
     const {width: deviceWidth} = useWindowDimensions();
 
     const layoutStyle = useMemo(() => {
-        const tilesPerLine = isLandscape || isTablet ? 4 : 2;
-        const fullWidth = isLandscape ? deviceWidth - 40 : deviceWidth;
+        const tilesPerLine = isTablet ? 4 : 2;
+        const fullWidth = isTablet ? deviceWidth - 40 : deviceWidth;
 
         return {
             container: {
@@ -89,7 +86,7 @@ export const ThemeTile = ({
                 width: (fullWidth / tilesPerLine) - (TILE_PADDING + 16),
             },
         };
-    }, [isLandscape, isTablet, deviceWidth]);
+    }, [isTablet, deviceWidth]);
 
     const onPressHandler = useCallback(() => {
         action(actionValue);
@@ -97,24 +94,15 @@ export const ThemeTile = ({
 
     return (
         <TouchableOpacity
-            style={[style.container, layoutStyle.container]}
             onPress={onPressHandler}
+            style={[style.container, layoutStyle.container]}
         >
             <View style={[style.imageWrapper, layoutStyle.thumbnail]}>
                 <ThemeThumbnail
-                    width={layoutStyle.thumbnail.width}
                     borderColorBase={selected ? activeTheme.sidebarTextActiveBorder : activeTheme.centerChannelBg}
                     borderColorMix={selected ? activeTheme.sidebarTextActiveBorder : changeOpacity(activeTheme.centerChannelColor, 0.16)}
-                    sidebarBg={tileTheme.sidebarBg}
-                    sidebarText={changeOpacity(tileTheme.sidebarText, 0.48)}
-                    sidebarUnreadText={tileTheme.sidebarUnreadText}
-                    onlineIndicator={tileTheme.onlineIndicator}
-                    awayIndicator={tileTheme.awayIndicator}
-                    dndIndicator={tileTheme.dndIndicator}
-                    centerChannelColor={changeOpacity(tileTheme.centerChannelColor, 0.16)}
-                    centerChannelBg={tileTheme.centerChannelBg}
-                    newMessageSeparator={tileTheme.newMessageSeparator}
-                    buttonBg={tileTheme.buttonBg}
+                    theme={theme}
+                    width={layoutStyle.thumbnail.width}
                 />
                 {selected && (
                     <CompassIcon
@@ -135,8 +123,6 @@ type ThemeTilesProps = {
 }
 export const ThemeTiles = ({allowedThemeKeys, onThemeChange}: ThemeTilesProps) => {
     const theme = useTheme();
-    const isTablet = useIsTablet();
-    const dimensions = useWindowDimensions();
 
     const styles = getStyleSheet(theme);
     return (
@@ -153,10 +139,8 @@ export const ThemeTiles = ({allowedThemeKeys, onThemeChange}: ThemeTilesProps) =
                         action={onThemeChange}
                         actionValue={themeKey}
                         selected={theme.type?.toLowerCase() === themeKey.toLowerCase()}
-                        tileTheme={Preferences.THEMES[themeKey]}
+                        theme={Preferences.THEMES[themeKey]}
                         activeTheme={theme}
-                        isLandscape={dimensions.width > dimensions.height}
-                        isTablet={isTablet}
                     />
                 ))
             }

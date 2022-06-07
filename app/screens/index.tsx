@@ -210,7 +210,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             screen = withServerDatabase(require('@screens/thread_options').default);
             break;
         case Screens.USER_PROFILE:
-            screen = withServerDatabase(require('@screens/user_profile').default);        
+            screen = withServerDatabase(require('@screens/user_profile').default);
     }
 
     if (screen) {
