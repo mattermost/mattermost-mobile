@@ -5,7 +5,7 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 
 import Block from '@components/block';
-import BlockItem from '@components/block_item';
+import OptionItem from '@components/option_item';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -37,12 +37,11 @@ const CustomTheme = ({customTheme, setTheme}: CustomThemeProps) => {
             containerStyles={styles.containerStyles}
             disableHeader={true}
         >
-            <BlockItem
+            <OptionItem
                 action={setTheme}
-                actionType='select'
-                actionValue={customTheme.type}
+                type='select'
+                value={customTheme.type}
                 label={intl.formatMessage({id: 'user.settings.display.custom_theme', defaultMessage: 'Custom Theme'})}
-                labelStyle={styles.label}
                 selected={theme.type?.toLowerCase() === customTheme.type?.toLowerCase()}
             />
         </Block>
