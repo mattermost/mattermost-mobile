@@ -16,7 +16,7 @@ env.d.ts
 
 # Xcode
 #
-build/
+build/*
 *.pbxuser
 !default.pbxuser
 *.mode1v3
@@ -105,3 +105,7 @@ detox/detox_pixel_4_xl_api_30
 #editor-settings
 .vscode
 .scannerwork
+
+# Notice.txt generation
+!build/notice-file
+
