@@ -159,6 +159,11 @@ export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: an
             settings: [updatedChannelMember],
             prepareRecordsOnly: true,
         }));
+
+        models.push(...await operator.handleChannelMembership({
+            channelMemberships: [updatedChannelMember],
+            prepareRecordsOnly: true,
+        }));
         const rolesRequest = await fetchRolesIfNeeded(serverUrl, updatedChannelMember.roles.split(','), true);
         if (rolesRequest.roles?.length) {
             models.push(...await operator.handleRole({roles: rolesRequest.roles, prepareRecordsOnly: true}));

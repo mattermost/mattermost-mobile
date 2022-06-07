@@ -19,6 +19,7 @@ import type {PrimitiveType} from 'intl-messageformat';
 
 type SystemMessageProps = {
     author?: UserModel;
+    location: string;
     post: PostModel;
 }
 
@@ -64,7 +65,7 @@ const renderUsername = (value = '') => {
     return value;
 };
 
-const renderMessage = ({styles, intl, localeHolder, theme, values, skipMarkdown = false}: RenderMessageProps) => {
+const renderMessage = ({location, post, styles, intl, localeHolder, theme, values, skipMarkdown = false}: RenderMessageProps) => {
     const {containerStyle, messageStyle, textStyles} = styles;
 
     if (skipMarkdown) {
@@ -79,7 +80,9 @@ const renderMessage = ({styles, intl, localeHolder, theme, values, skipMarkdown 
         <View style={containerStyle}>
             <Markdown
                 baseTextStyle={messageStyle}
+                channelId={post.channelId}
                 disableGallery={true}
+                location={location}
                 textStyles={textStyles}
                 value={intl.formatMessage(localeHolder, values)}
                 theme={theme}
@@ -88,7 +91,7 @@ const renderMessage = ({styles, intl, localeHolder, theme, values, skipMarkdown 
     );
 };
 
-const renderHeaderChangeMessage = ({post, author, styles, intl, theme}: RenderersProps) => {
+const renderHeaderChangeMessage = ({post, author, location, styles, intl, theme}: RenderersProps) => {
     let values;
 
     if (!author?.username) {
@@ -108,7 +111,7 @@ const renderHeaderChangeMessage = ({post, author, styles, intl, theme}: Renderer
             };
 
             values = {username, oldHeader, newHeader};
-            return renderMessage({post, styles, intl, localeHolder, values, theme});
+            return renderMessage({post, styles, intl, location, localeHolder, values, theme});
         }
 
         localeHolder = {
@@ -117,7 +120,7 @@ const renderHeaderChangeMessage = ({post, author, styles, intl, theme}: Renderer
         };
 
         values = {username, oldHeader, newHeader};
-        return renderMessage({post, styles, intl, localeHolder, values, theme});
+        return renderMessage({post, styles, intl, location, localeHolder, values, theme});
     } else if (post.props?.old_header) {
         localeHolder = {
             id: t('mobile.system_message.update_channel_header_message_and_forget.removed'),
@@ -125,13 +128,13 @@ const renderHeaderChangeMessage = ({post, author, styles, intl, theme}: Renderer
         };
 
         values = {username, oldHeader, newHeader};
-        return renderMessage({post, styles, intl, localeHolder, values, theme});
+        return renderMessage({post, styles, intl, location, localeHolder, values, theme});
     }
 
     return null;
 };
 
-const renderPurposeChangeMessage = ({post, author, styles, intl, theme}: RenderersProps) => {
+const renderPurposeChangeMessage = ({post, author, location, styles, intl, theme}: RenderersProps) => {
     let values;
 
     if (!author?.username) {
@@ -151,7 +154,7 @@ const renderPurposeChangeMessage = ({post, author, styles, intl, theme}: Rendere
             };
 
             values = {username, oldPurpose, newPurpose};
-            return renderMessage({post, styles, intl, localeHolder, values, skipMarkdown: true, theme});
+            return renderMessage({post, styles, intl, location, localeHolder, values, skipMarkdown: true, theme});
         }
 
         localeHolder = {
@@ -160,7 +163,7 @@ const renderPurposeChangeMessage = ({post, author, styles, intl, theme}: Rendere
         };
 
         values = {username, oldPurpose, newPurpose};
-        return renderMessage({post, styles, intl, localeHolder, values, skipMarkdown: true, theme});
+        return renderMessage({post, styles, intl, location, localeHolder, values, skipMarkdown: true, theme});
     } else if (post.props?.old_purpose) {
         localeHolder = {
             id: t('mobile.system_message.update_channel_purpose_message.removed'),
@@ -168,13 +171,13 @@ const renderPurposeChangeMessage = ({post, author, styles, intl, theme}: Rendere
         };
 
         values = {username, oldPurpose, newPurpose};
-        return renderMessage({post, styles, intl, localeHolder, values, skipMarkdown: true, theme});
+        return renderMessage({post, styles, intl, location, localeHolder, values, skipMarkdown: true, theme});
     }
 
     return null;
 };
 
-const renderDisplayNameChangeMessage = ({post, author, styles, intl, theme}: RenderersProps) => {
+const renderDisplayNameChangeMessage = ({post, author, location, styles, intl, theme}: RenderersProps) => {
     const oldDisplayName = post.props?.old_displayname;
     const newDisplayName = post.props?.new_displayname;
 
@@ -189,10 +192,10 @@ const renderDisplayNameChangeMessage = ({post, author, styles, intl, theme}: Ren
     };
 
     const values = {username, oldDisplayName, newDisplayName};
-    return renderMessage({post, styles, intl, localeHolder, values, theme});
+    return renderMessage({post, styles, intl, location, localeHolder, values, theme});
 };
 
-const renderArchivedMessage = ({post, author, styles, intl, theme}: RenderersProps) => {
+const renderArchivedMessage = ({post, author, location, styles, intl, theme}: RenderersProps) => {
     const username = renderUsername(author?.username);
     const localeHolder = {
         id: t('mobile.system_message.channel_archived_message'),
@@ -200,10 +203,10 @@ const renderArchivedMessage = ({post, author, styles, intl, theme}: RenderersPro
     };
 
     const values = {username};
-    return renderMessage({post, styles, intl, localeHolder, values, theme});
+    return renderMessage({post, styles, intl, location, localeHolder, values, theme});
 };
 
-const renderUnarchivedMessage = ({post, author, styles, intl, theme}: RenderersProps) => {
+const renderUnarchivedMessage = ({post, author, location, styles, intl, theme}: RenderersProps) => {
     if (!author?.username) {
         return null;
     }
@@ -215,10 +218,10 @@ const renderUnarchivedMessage = ({post, author, styles, intl, theme}: RenderersP
     };
 
     const values = {username};
-    return renderMessage({post, styles, intl, localeHolder, values, theme});
+    return renderMessage({post, styles, intl, location, localeHolder, values, theme});
 };
 
-const renderAddGuestToChannelMessage = ({post, styles, intl, theme}: RenderersProps) => {
+const renderAddGuestToChannelMessage = ({post, location, styles, intl, theme}: RenderersProps) => {
     if (!post.props.username || !post.props.addedUsername) {
         return null;
     }
@@ -232,10 +235,10 @@ const renderAddGuestToChannelMessage = ({post, styles, intl, theme}: RenderersPr
     };
 
     const values = {username, addedUsername};
-    return renderMessage({post, styles, intl, localeHolder, values, theme});
+    return renderMessage({post, styles, intl, location, localeHolder, values, theme});
 };
 
-const renderGuestJoinChannelMessage = ({post, styles, intl, theme}: RenderersProps) => {
+const renderGuestJoinChannelMessage = ({post, styles, location, intl, theme}: RenderersProps) => {
     if (!post.props.username) {
         return null;
     }
@@ -247,7 +250,7 @@ const renderGuestJoinChannelMessage = ({post, styles, intl, theme}: RenderersPro
     };
 
     const values = {username};
-    return renderMessage({post, styles, intl, localeHolder, values, theme});
+    return renderMessage({post, styles, intl, location, localeHolder, values, theme});
 };
 
 const systemMessageRenderers = {
@@ -260,7 +263,7 @@ const systemMessageRenderers = {
     [Post.POST_TYPES.ADD_GUEST_TO_CHANNEL]: renderAddGuestToChannelMessage,
 };
 
-export const SystemMessage = ({post, author}: SystemMessageProps) => {
+export const SystemMessage = ({post, location, author}: SystemMessageProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -272,6 +275,8 @@ export const SystemMessage = ({post, author}: SystemMessageProps) => {
         return (
             <Markdown
                 baseTextStyle={styles.messageStyle}
+                channelId={post.channelId}
+                location={location}
                 disableGallery={true}
                 textStyles={styles.textStyles}
                 value={post.message}
@@ -280,7 +285,7 @@ export const SystemMessage = ({post, author}: SystemMessageProps) => {
         );
     }
 
-    return renderer({post, author, styles, intl, theme});
+    return renderer({post, author, location, styles, intl, theme});
 };
 
 export default SystemMessage;

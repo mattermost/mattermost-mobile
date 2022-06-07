@@ -127,6 +127,7 @@ const Body = ({
     } else if (isPostAddChannelMember) {
         message = (
             <AddMembers
+                location={location}
                 post={post}
                 theme={theme}
             />
@@ -180,6 +181,7 @@ const Body = ({
                 }
                 {hasReactions && showAddReaction &&
                 <Reactions
+                    location={location}
                     post={post}
                     theme={theme}
                 />

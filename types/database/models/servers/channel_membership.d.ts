@@ -24,6 +24,9 @@ export default class ChannelMembershipModel extends Model {
     /* user_id: The foreign key to the related User record*/
     userId: string;
 
+    /* scheme_admin: Determines if the user is an admin of the channel*/
+    schemeAdmin: boolean;
+
     /** memberChannel : The related channel this member belongs to */
     memberChannel: Relation<ChannelModel>;
 

@@ -12,5 +12,6 @@ export default tableSchema({
     columns: [
         {name: 'team_id', type: 'string', isIndexed: true},
         {name: 'user_id', type: 'string', isIndexed: true},
+        {name: 'scheme_admin', type: 'boolean'},
     ],
 });

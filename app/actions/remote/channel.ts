@@ -797,6 +797,13 @@ export async function createDirectChannel(serverUrl: string, userId: string, dis
         if (!currentUser) {
             return {error: 'Cannot get the current user'};
         }
+
+        const channelName = getDirectChannelName(currentUser.id, userId);
+        const channel = await getChannelByName(database, channelName);
+        if (channel) {
+            return {data: channel.toApi()};
+        }
+
         EphemeralStore.creatingDMorGMTeammates = [userId];
         const created = await client.createDirectChannel([userId, currentUser.id]);
         const profiles: UserProfile[] = [];

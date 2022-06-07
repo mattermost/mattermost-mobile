@@ -41,6 +41,7 @@ function DialogIntroductionText({value}: Props) {
                 disableHashtags={true}
                 disableAtMentions={true}
                 disableChannelLink={true}
+                location=''
                 theme={theme}
             />
         </View>

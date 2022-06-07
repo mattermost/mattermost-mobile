@@ -6,7 +6,7 @@ import {FlatList, StyleSheet} from 'react-native';
 
 import {fetchRefreshThreads, fetchThreads} from '@actions/remote/thread';
 import Loading from '@components/loading';
-import {General} from '@constants';
+import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 
@@ -30,6 +30,11 @@ type Props = {
 const styles = StyleSheet.create({
     messagesContainer: {
         flexGrow: 1,
+    },
+    empty: {
+        alignItems: 'center',
+        flexGrow: 1,
+        justifyContent: 'center',
     },
     loadingStyle: {
         alignItems: 'center',
@@ -136,6 +141,7 @@ const ThreadsList = ({
 
     const renderItem = useCallback(({item}) => (
         <Thread
+            location={Screens.GLOBAL_THREADS}
             testID={testID}
             teammateNameDisplay={teammateNameDisplay}
             thread={item}
@@ -154,7 +160,7 @@ const ThreadsList = ({
             <FlatList
                 ListEmptyComponent={listEmptyComponent}
                 ListFooterComponent={listFooterComponent}
-                contentContainerStyle={styles.messagesContainer}
+                contentContainerStyle={threads.length ? styles.messagesContainer : styles.empty}
                 data={threads}
                 maxToRenderPerBatch={10}
                 onEndReached={handleEndReached}

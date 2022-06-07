@@ -9,6 +9,7 @@ import {switchMap} from 'rxjs/operators';
 import {observePost} from '@queries/servers/post';
 import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {queryMyTeamsByIds, queryTeamByName} from '@queries/servers/team';
+import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {WithDatabaseArgs} from '@typings/database/database';
 import PostModel from '@typings/database/models/servers/post';
 
@@ -38,6 +39,7 @@ const enhance = withObservables([], ({database, postId, teamName}: OwnProps) => 
         ),
         currentTeamId: observeCurrentTeamId(database),
         currentUserId: observeCurrentUserId(database),
+        isCRTEnabled: observeIsCRTEnabled(database),
     };
 });
 

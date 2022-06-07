@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {TouchableWithoutFeedback, View} from 'react-native';
+import {TouchableOpacity, View} from 'react-native';
 
 import {showUnreadChannelsOnly} from '@actions/local/channel';
 import CompassIcon from '@components/compass_icon';
@@ -39,7 +39,7 @@ const UnreadFilter = ({onlyUnreads}: Props) => {
     };
 
     return (
-        <TouchableWithoutFeedback onPress={onPress}>
+        <TouchableOpacity onPress={onPress}>
             <View style={[styles.container, onlyUnreads && styles.filtered]}>
                 <CompassIcon
                     color={changeOpacity(onlyUnreads ? theme.sidebarBg : theme.sidebarText, 0.56)}
@@ -47,7 +47,7 @@ const UnreadFilter = ({onlyUnreads}: Props) => {
                     size={24}
                 />
             </View>
-        </TouchableWithoutFeedback>
+        </TouchableOpacity>
     );
 };
 

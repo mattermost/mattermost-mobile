@@ -37,6 +37,9 @@ export default class ChannelMembershipModel extends Model implements ChannelMemb
     /* user_id: The foreign key to the related User record*/
     @field('user_id') userId!: string;
 
+    /* scheme_admin: Determines if the user is an admin of the channel*/
+    @field('scheme_admin') schemeAdmin!: boolean;
+
     /** memberChannel : The related channel this member belongs to */
     @immutableRelation(CHANNEL, 'channel_id') memberChannel!: Relation<ChannelModel>;
 

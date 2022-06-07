@@ -17,12 +17,15 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
+import {useIsTablet} from '@hooks/device';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {dismissModal} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {closePermalink} from '@utils/permalink';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import {ErrorType} from './common';
 import PermalinkError from './permalink_error';
@@ -31,12 +34,13 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
-    postId: PostModel['id'];
     channel?: ChannelModel;
     teamName?: string;
     isTeamMember?: boolean;
     currentUserId: string;
     currentTeamId: string;
+    isCRTEnabled: boolean;
+    postId: PostModel['id'];
 }
 
 const edges: Edge[] = ['left', 'right', 'top'];
@@ -44,26 +48,25 @@ const edges: Edge[] = ['left', 'right', 'top'];
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
-        marginTop: 20,
+        maxWidth: 680,
+        alignSelf: 'center',
+        width: '100%',
     },
     wrapper: {
         backgroundColor: theme.centerChannelBg,
-        borderRadius: 6,
+        borderRadius: 12,
         flex: 1,
         margin: 10,
         opacity: 1,
     },
     header: {
         alignItems: 'center',
-        borderTopLeftRadius: 6,
-        borderTopRightRadius: 6,
+        borderTopLeftRadius: 12,
+        borderTopRightRadius: 12,
         flexDirection: 'row',
-        height: 44,
+        height: 56,
         paddingRight: 16,
         width: '100%',
-    },
-    dividerContainer: {
-        backgroundColor: theme.centerChannelBg,
     },
     divider: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
@@ -73,7 +76,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
         height: 44,
         width: 40,
-        paddingLeft: 7,
+        paddingLeft: 16,
     },
     titleContainer: {
         alignItems: 'center',
@@ -82,8 +85,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     title: {
         color: theme.centerChannelColor,
-        fontSize: 17,
-        fontWeight: '600',
+        ...typography('Heading', 300),
     },
     postList: {
         flex: 1,
@@ -96,13 +98,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     footer: {
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: theme.buttonBg,
         flexDirection: 'row',
-        height: 43,
-        paddingRight: 16,
+        padding: 20,
         width: '100%',
-        borderBottomLeftRadius: 6,
-        borderBottomRightRadius: 6,
+        borderBottomLeftRadius: 12,
+        borderBottomRightRadius: 12,
+        borderTopWidth: 1,
+        borderTopColor: changeOpacity(theme.centerChannelColor, 0.16),
     },
     jump: {
         color: theme.buttonColor,
@@ -115,6 +117,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 function Permalink({
     channel,
+    isCRTEnabled,
     postId,
     teamName,
     isTeamMember,
@@ -126,18 +129,21 @@ function Permalink({
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const insets = useSafeAreaInsets();
+    const isTablet = useIsTablet();
     const style = getStyleSheet(theme);
     const [error, setError] = useState<ErrorType>();
     const [channelId, setChannelId] = useState(channel?.id);
 
-    const containerStyle = useMemo(() =>
-        [style.container, {marginBottom: insets.bottom}],
-    [style, insets.bottom]);
+    const containerStyle = useMemo(() => {
+        const marginTop = isTablet ? 60 : 20;
+        const marginBottom = insets.bottom + (isTablet ? 60 : 20);
+        return [style.container, {marginTop, marginBottom}];
+    }, [style, insets.bottom, isTablet]);
 
     useEffect(() => {
         (async () => {
             if (channelId) {
-                const data = await fetchPostsAround(serverUrl, channelId, postId, 5);
+                const data = await fetchPostsAround(serverUrl, channelId, postId, 5, isCRTEnabled);
                 if (data.error) {
                     setError({unreachable: true});
                 }
@@ -311,23 +317,25 @@ function Permalink({
                         highlightPinnedOrSaved={false}
                     />
                 </View>
-                <TouchableOpacity
-                    style={style.footer}
-                    onPress={handlePress}
-                    testID='permalink.jump_to_recent_messages.button'
-                >
-                    <FormattedText
-                        testID='permalink.search.jump'
-                        id='mobile.search.jump'
-                        defaultMessage='Jump to recent messages'
-                        style={style.jump}
-                    />
-                </TouchableOpacity>
+                <View style={style.footer}>
+                    <TouchableOpacity
+                        style={[buttonBackgroundStyle(theme, 'lg', 'primary'), {width: '100%'}]}
+                        onPress={handlePress}
+                        testID='permalink.jump_to_recent_messages.button'
+                    >
+                        <FormattedText
+                            testID='permalink.search.jump'
+                            id='mobile.search.jump'
+                            defaultMessage='Jump to recent messages'
+                            style={buttonTextStyle(theme, 'lg', 'primary')}
+                        />
+                    </TouchableOpacity>
+                </View>
             </>
         );
     }
 
-    const showHeaderDivider = Boolean(channelId) && !error && !loading;
+    const showHeaderDivider = Boolean(channel?.displayName) && !error && !loading;
     return (
         <SafeAreaView
             style={containerStyle}
@@ -342,7 +350,7 @@ function Permalink({
                     >
                         <CompassIcon
                             name='close'
-                            size={20}
+                            size={24}
                             color={theme.centerChannelColor}
                         />
                     </TouchableOpacity>

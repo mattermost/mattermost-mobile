@@ -23,10 +23,11 @@ import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {subscribeServerUnreadAndMentions, UnreadObserverArgs} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
+import {queryServerByIdentifier} from '@queries/app/servers';
 import {dismissBottomSheet} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {alertPushProxyError, alertPushProxyUnknown} from '@utils/push_proxy';
-import {alertServerError, alertServerLogout, alertServerRemove, editServer, loginToServer} from '@utils/server';
+import {alertServerAlreadyConnected, alertServerError, alertServerLogout, alertServerRemove, editServer, loginToServer} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {removeProtocol, stripTrailingSlashes} from '@utils/url';
@@ -234,6 +235,19 @@ const ServerItem = ({
             return;
         }
 
+        const data = await fetchConfigAndLicense(server.url, true);
+        if (data.error) {
+            alertServerError(intl, data.error as ClientErrorProps);
+            setSwitching(false);
+            return;
+        }
+        const existingServer = await queryServerByIdentifier(DatabaseManager.appDatabase!.database, data.config!.DiagnosticId);
+        if (existingServer && existingServer.lastActiveAt > 0) {
+            alertServerAlreadyConnected(intl);
+            setSwitching(false);
+            return;
+        }
+
         switch (result.canReceiveNotifications) {
             case PUSH_PROXY_RESPONSE_NOT_AVAILABLE:
                 EphemeralStore.setPushProxyVerificationState(server.url, PUSH_PROXY_STATUS_NOT_AVAILABLE);
@@ -247,12 +261,6 @@ const ServerItem = ({
                 EphemeralStore.setPushProxyVerificationState(server.url, PUSH_PROXY_STATUS_VERIFIED);
         }
 
-        const data = await fetchConfigAndLicense(server.url, true);
-        if (data.error) {
-            alertServerError(intl, data.error as ClientErrorProps);
-            setSwitching(false);
-            return;
-        }
         loginToServer(theme, server.url, displayName, data.config!, data.license!);
     }, [server, theme, intl]);
 

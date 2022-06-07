@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Keyboard} from 'react-native';
+import {Keyboard, Platform} from 'react-native';
 import {OptionsModalPresentationStyle} from 'react-native-navigation';
 
 import {Screens} from '@constants';
@@ -24,7 +24,10 @@ export const displayPermalink = async (teamName: string, postId: string, openAsP
     };
 
     const options = {
-        modalPresentationStyle: OptionsModalPresentationStyle.fullScreen,
+        modalPresentationStyle: Platform.select({
+            ios: OptionsModalPresentationStyle.overFullScreen,
+            default: OptionsModalPresentationStyle.overCurrentContext,
+        }),
         layout: {
             componentBackgroundColor: changeOpacity('#000', 0.2),
         },

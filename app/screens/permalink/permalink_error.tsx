@@ -9,7 +9,9 @@ import JoinPrivateChannel from '@components/illustrations/join_private_channel';
 import JoinPublicChannel from '@components/illustrations/join_public_channel';
 import MessageNotViewable from '@components/illustrations/message_not_viewable';
 import Markdown from '@components/markdown';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -23,14 +25,6 @@ type Props = {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    const buttonText = typography('Body', 200, 'SemiBold');
-    const button = {
-        borderRadius: 4,
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: 48,
-    };
-
     return {
         errorContainer: {
             alignItems: 'center',
@@ -58,23 +52,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.16),
             padding: 20,
         },
-        errorDarkButton: {
-            ...button,
-            backgroundColor: theme.buttonBg,
-        },
-        errorDarkButtonText: {
-            color: theme.buttonColor,
-            ...buttonText,
-        },
-        errorLightButton: {
-            ...button,
-            marginTop: 8,
-            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
-        },
-        errorLightButtonText: {
-            color: theme.buttonBg,
-            ...buttonText,
-        },
+
     };
 });
 
@@ -86,6 +64,9 @@ function PermalinkError({
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const intl = useIntl();
+
+    const buttonStylePrimary = buttonBackgroundStyle(theme, 'lg', 'primary');
+    const buttonTextStylePrimary = buttonTextStyle(theme, 'lg', 'primary');
 
     if (error.notExist || error.unreachable) {
         const title = intl.formatMessage({id: 'permalink.error.access.title', defaultMessage: 'Message not viewable'});
@@ -99,20 +80,23 @@ function PermalinkError({
                 </View>
                 <View style={style.errorButtonContainer}>
                     <TouchableOpacity
-                        style={style.errorDarkButton}
+                        style={buttonStylePrimary}
                         onPress={handleClose}
                     >
                         <FormattedText
                             testID='permalink.error.okay'
                             id='permalink.error.okay'
                             defaultMessage='Okay'
-                            style={style.errorDarkButtonText}
+                            style={buttonTextStylePrimary}
                         />
                     </TouchableOpacity>
                 </View>
             </>
         );
     }
+
+    const buttonStyleSecondary = buttonBackgroundStyle(theme, 'lg', 'secondary');
+    const buttonTextStyleSecondary = buttonTextStyle(theme, 'lg', 'secondary');
 
     const isPrivate = error.privateChannel || error.privateTeam;
     let image;
@@ -157,24 +141,25 @@ function PermalinkError({
                     disableHashtags={true}
                     textStyles={getMarkdownTextStyles(theme)}
                     blockStyles={getMarkdownBlockStyles(theme)}
+                    location={Screens.PERMALINK}
                 />
             </View>
             <View style={style.errorButtonContainer}>
                 <TouchableOpacity
-                    style={style.errorDarkButton}
+                    style={buttonStylePrimary}
                     onPress={handleJoin}
                 >
-                    <Text style={style.errorDarkButtonText}>{button}</Text>
+                    <Text style={buttonTextStylePrimary}>{button}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    style={style.errorLightButton}
+                    style={[buttonStyleSecondary, {marginTop: 8}]}
                     onPress={handleClose}
                 >
                     <FormattedText
                         testID='permalink.error.cancel'
                         id='permalink.error.cancel'
                         defaultMessage='Cancel'
-                        style={style.errorLightButtonText}
+                        style={buttonTextStyleSecondary}
                     />
                 </TouchableOpacity>
             </View>
