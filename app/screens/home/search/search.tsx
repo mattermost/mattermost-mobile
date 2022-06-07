@@ -118,9 +118,9 @@ const SearchScreen = ({teamId}: Props) => {
     const top = useAnimatedStyle(() => {
         return {
             top: headerHeight.value,
-            zIndex: searchValue ? 10 : 0,
+            zIndex: lastSearchedValue ? 10 : 0,
         };
-    }, [searchValue]);
+    }, [lastSearchedValue]);
 
     let header = null;
     if (lastSearchedValue) {

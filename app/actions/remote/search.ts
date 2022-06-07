@@ -183,10 +183,5 @@ export const searchFiles = async (serverUrl: string, teamId: string, params: Fil
         return {error};
     }
 
-    await operator.handleFiles({
-        files: data.file_infos,
-        prepareRecordsOnly: false,
-    });
-
     return data;
 };

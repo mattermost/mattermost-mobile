@@ -7,6 +7,7 @@ import {Text, View} from 'react-native';
 import FileIcon from '@components/post_list/post/body/files/file_icon';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type Props = {
     fileInfo: FileInfo;
@@ -28,15 +29,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderTopWidth: 1,
             marginTop: 5,
             padding: 12,
-        },
-        border: {
             borderLeftColor: changeOpacity(theme.linkColor, 0.6),
             borderLeftWidth: 3,
         },
         message: {
             color: theme.centerChannelColor,
-            fontSize: 15,
-            lineHeight: 20,
+            ...typography('Body', 100, 'Regular'),
         },
     };
 });
@@ -44,12 +42,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 export default function FileCard({fileInfo}: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    let borderStyle;
     return (
-        <View style={[style.container, style.border, borderStyle]}>
-            <Text>{'To be implemented'}</Text>
-            <Text>{`Name: ${fileInfo.name}`}</Text>
-            <Text>{`Size: ${fileInfo.size}`}</Text>
+        <View style={[style.container, style.border]}>
+            <Text style={style.message}>{'To be implemented'}</Text>
+            <Text style={style.message}>{`Name: ${fileInfo.name}`}</Text>
+            <Text style={style.message}>{`Size: ${fileInfo.size}`}</Text>
             <FileIcon/>
         </View>
     );
