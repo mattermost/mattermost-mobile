@@ -167,9 +167,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.SETTINGS:
             screen = withServerDatabase(require('@screens/settings').default);
             break;
-        case Screens.SETTINGS_DISPLAY:
-            screen = withServerDatabase(require('@screens/settings/display').default);
-            break;
         case Screens.SETTINGS_NOTIFICATION:
             screen = withServerDatabase(require('@screens/settings/notifications').default);
             break;
@@ -194,6 +191,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         }
         case Screens.SSO:
             screen = withIntl(require('@screens/sso').default);
+            break;
+        case Screens.TABLE:
+            screen = withServerDatabase(require('@screens/table').default);
             break;
         case Screens.THREAD:
             screen = withServerDatabase(require('@screens/thread').default);

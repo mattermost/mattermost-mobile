@@ -49,6 +49,7 @@ export const SETTINGS_NOTIFICATION_MENTION = 'SettingsNotificationMention';
 export const SETTINGS_NOTIFICATION_PUSH = 'SettingsNotificationPush';
 export const SNACK_BAR = 'SnackBar';
 export const SSO = 'SSO';
+export const TABLE = 'Table';
 export const THREAD = 'Thread';
 export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
 export const THREAD_OPTIONS = 'ThreadOptions';
@@ -102,6 +103,7 @@ export default {
     SETTINGS_NOTIFICATION_PUSH,
     SNACK_BAR,
     SSO,
+    TABLE,
     THREAD,
     THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
