@@ -153,6 +153,27 @@ exports[`components/channel_list/header Channel List Header Component should mat
     >
       
     </Text>
+    <View
+      animatedStyle={
+        Object {
+          "value": Object {
+            "opacity": 0,
+          },
+        }
+      }
+      collapsable={false}
+      style={
+        Object {
+          "backgroundColor": "#ffbc1f",
+          "borderRadius": 5,
+          "height": 8,
+          "marginLeft": 3,
+          "opacity": 0,
+          "top": 1,
+          "width": 8,
+        }
+      }
+    />
   </View>
 </View>
 `;

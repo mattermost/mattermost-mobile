@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Database, Q} from '@nozbe/watermelondb';
+
 import {MM_TABLES} from '@constants/database';
 import {
     buildMyChannelKey,
@@ -57,13 +59,36 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             return [];
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: channels, key: 'id'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: channels, key: 'id'}) as Channel[];
+        const keys = createOrUpdateRawValues.map((c) => c.id);
+        const db: Database = this.database;
+        const existing = await db.get<ChannelModel>(CHANNEL).query(
+            Q.where('id', Q.oneOf(keys)),
+        ).fetch();
+        const channelMap = new Map<string, ChannelModel>(existing.map((c) => [c.id, c]));
+        const cu = createOrUpdateRawValues.reduce((res: Channel[], c) => {
+            const e = channelMap.get(c.id);
+            if (!e) {
+                res.push(c);
+                return res;
+            }
+
+            if (e.updateAt !== c.update_at || e.deleteAt !== c.delete_at) {
+                res.push(c);
+            }
+
+            return res;
+        }, []);
+
+        if (!cu.length) {
+            return [];
+        }
 
         return this.handleRecords({
             fieldName: 'id',
             transformer: transformChannelRecord,
             prepareRecordsOnly,
-            createOrUpdateRawValues,
+            createOrUpdateRawValues: cu,
             tableName: CHANNEL,
         });
     };
@@ -86,14 +111,43 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             return [];
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: settings, key: 'id'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: settings, key: 'id'}) as ChannelMembership[];
+        const keys = createOrUpdateRawValues.map((c) => c.channel_id);
+        const db: Database = this.database;
+        const existing = await db.get<MyChannelSettingsModel>(MY_CHANNEL_SETTINGS).query(
+            Q.where('id', Q.oneOf(keys)),
+        ).fetch();
+        const channelMap = new Map<string, MyChannelSettingsModel>(existing.map((c) => [c.id, c]));
+        const cu = createOrUpdateRawValues.reduce((res: ChannelMembership[], c) => {
+            const e = channelMap.get(c.channel_id);
+            if (!e) {
+                res.push(c);
+                return res;
+            }
+
+            try {
+                const current = JSON.stringify(e.notifyProps);
+                const newer = JSON.stringify(c.notify_props);
+                if (current !== newer) {
+                    res.push(c);
+                }
+            } catch {
+                //skip;
+            }
+
+            return res;
+        }, []);
+
+        if (!cu.length) {
+            return [];
+        }
 
         return this.handleRecords({
             fieldName: 'id',
             buildKeyRecordBy: buildMyChannelKey,
             transformer: transformMyChannelSettingsRecord,
             prepareRecordsOnly,
-            createOrUpdateRawValues,
+            createOrUpdateRawValues: cu,
             tableName: MY_CHANNEL_SETTINGS,
         });
     };
@@ -173,21 +227,49 @@ const ChannelHandler = (superclass: any) => class extends superclass {
                 my.msg_count = msgCount;
                 my.mention_count = isCRT ? my.mention_count_root! : my.mention_count;
                 my.is_unread = msgCount > 0;
-                my.last_post_at = (isCRT ? (my.last_root_post_at || my.last_post_at) : my.last_post_at) || 0;
+                my.last_post_at = (isCRT ? (channel.last_root_post_at || channel.last_post_at) : channel.last_post_at) || 0;
             }
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({
             raws: myChannels,
             key: 'id',
-        });
+        }) as ChannelMembership[];
+        const ids = createOrUpdateRawValues.map((c: ChannelMembership) => c.channel_id);
+        const db: Database = this.database;
+        const existing = await db.get<MyChannelModel>(MY_CHANNEL).query(
+            Q.where('id', Q.oneOf(ids)),
+        ).fetch();
+        const membershipMap = new Map<string, MyChannelModel>(existing.map((member) => [member.id, member]));
+        const cu = createOrUpdateRawValues.reduce((res: ChannelMembership[], my) => {
+            const e = membershipMap.get(my.channel_id);
+            if (!e) {
+                res.push(my);
+                return res;
+            }
+
+            const chan = channelMap[my.channel_id];
+            const lastPostAt = (isCRT ? chan.last_root_post_at : chan.last_post_at) || 0;
+            if ((chan && e.lastPostAt < lastPostAt) ||
+                e.isUnread !== my.is_unread || e.lastViewedAt < my.last_viewed_at ||
+                e.roles !== my.roles
+            ) {
+                res.push(my);
+            }
+
+            return res;
+        }, []);
+
+        if (!cu.length) {
+            return [];
+        }
 
         return this.handleRecords({
             fieldName: 'id',
             buildKeyRecordBy: buildMyChannelKey,
             transformer: transformMyChannelRecord,
             prepareRecordsOnly,
-            createOrUpdateRawValues,
+            createOrUpdateRawValues: cu,
             tableName: MY_CHANNEL,
         });
     };

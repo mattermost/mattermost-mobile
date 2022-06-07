@@ -295,9 +295,9 @@ const ServerItem = ({
 
         if (server.lastActiveAt) {
             setSwitching(true);
-            await appEntry(server.url, Date.now());
             await dismissBottomSheet();
             DatabaseManager.setActiveServerDatabase(server.url);
+            await appEntry(server.url, Date.now());
             return;
         }
 

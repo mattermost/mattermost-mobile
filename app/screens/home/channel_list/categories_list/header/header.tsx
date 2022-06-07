@@ -22,6 +22,7 @@ import {alertServerLogout} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import LoadingUnreads from './loading_unreads';
 import PlusMenu from './plus_menu';
 
 type Props = {
@@ -201,6 +202,7 @@ const ChannelListHeader = ({
                     >
                         {serverDisplayName}
                     </Text>
+                    <LoadingUnreads/>
                     {(pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED) && (
                         <TouchableWithFeedback
                             onPress={onPushAlertPress}
