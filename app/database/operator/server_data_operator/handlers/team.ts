@@ -75,7 +75,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
         const membershipMap = new Map<String, TeamMembershipModel>(existing.map((e) => [e.id, e]));
         const createOrUpdateRawValues = uniqueRaws.reduce((res: TeamMembership[], t) => {
             const e = membershipMap.get(t.id!);
-            if (!e && t.delete_at === 0) {
+            if (!e && !t.delete_at) {
                 res.push(t);
                 return res;
             }
@@ -127,7 +127,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
         const teamMap = new Map<String, TeamModel>(existing.map((e) => [e.id, e]));
         const createOrUpdateRawValues = uniqueRaws.reduce((res: Team[], t) => {
             const e = teamMap.get(t.id);
-            if (!e && t.delete_at === 0) {
+            if (!e && !t.delete_at) {
                 res.push(t);
                 return res;
             }
