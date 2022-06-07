@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import {ScrollView, View} from 'react-native';
 
 import {savePreference} from '@actions/remote/preference';
@@ -28,17 +28,25 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 type DisplayThemeProps = {
     allowedThemeKeys: string[];
-    customTheme?: Theme;
     currentTeamId: string;
     currentUserId: string;
 }
-const DisplayTheme = ({allowedThemeKeys, customTheme, currentTeamId, currentUserId}: DisplayThemeProps) => {
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
-    const serverUrl = useServerUrl();
 
-    const setTheme = useCallback((selectedThemeKey: string) => {
-        const allThemes = [...allowedThemeKeys, customTheme?.type];
+const DisplayTheme = ({allowedThemeKeys, currentTeamId, currentUserId}: DisplayThemeProps) => {
+    const serverUrl = useServerUrl();
+    const theme = useTheme();
+    const customTheme = useRef<Theme|null>();
+
+    const styles = getStyleSheet(theme);
+
+    useEffect(() => {
+        if (theme.type === 'custom') {
+            customTheme.current = theme;
+        }
+    }, [theme.type === 'custom']);
+
+    const updateTheme = useCallback((selectedThemeKey: string) => {
+        const allThemes = [...allowedThemeKeys, customTheme.current?.type];
         const selectedTheme = allThemes.find((tk) => tk === selectedThemeKey);
         if (!selectedTheme) {
             return;
@@ -57,12 +65,12 @@ const DisplayTheme = ({allowedThemeKeys, customTheme, currentTeamId, currentUser
             <View style={styles.wrapper}>
                 <ThemeTiles
                     allowedThemeKeys={allowedThemeKeys}
-                    onThemeChange={setTheme}
+                    onThemeChange={updateTheme}
                 />
-                {customTheme && (
+                {customTheme?.current && (
                     <CustomTheme
-                        customTheme={customTheme}
-                        setTheme={setTheme}
+                        customTheme={customTheme.current}
+                        setTheme={updateTheme}
                     />
                 )}
             </View>
