@@ -15,7 +15,7 @@ import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {useServerUrl} from '@context/server';
 import {useCollapsibleHeader} from '@hooks/header';
-import {FileFilter, filterFiles} from '@utils/file';
+import {FileFilter, filterFileExtensions} from '@utils/file';
 
 import Results from './results';
 import Header, {SelectTab} from './results/header';
@@ -53,7 +53,6 @@ const SearchScreen = ({teamId}: Props) => {
 
     const [postIds, setPostIds] = useState<string[]>(emptyPostResults);
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
-    const [filteredFileInfos, setFilteredFileInfos] = useState<FileInfo[]>(emptyFileResults);
 
     const handleSearch = useCallback((debounce(async () => {
         // execute the search for the text in the navigation text box
@@ -65,7 +64,7 @@ const SearchScreen = ({teamId}: Props) => {
         setLastSearchedValue(searchValue);
 
         const searchParams: PostSearchParams | FileSearchParams = {
-            terms: searchValue,
+            terms: searchValue + filterFileExtensions(filter),
             is_or_search: true,
         };
 
@@ -85,13 +84,25 @@ const SearchScreen = ({teamId}: Props) => {
         scrollRef.current?.scrollToOffset({offset, animated: true});
     };
 
+    const handleFilterChange = useCallback((filterValue: FileFilter) => {
+        setLoading(true);
+        setFilter(filterValue);
+        const searchParams: FileSearchParams = {
+            terms: lastSearchedValue + filterFileExtensions(filterValue),
+            is_or_search: true,
+        };
+
+        (async () => {
+            const fileResults = await searchFiles(serverUrl, teamId, searchParams);
+            const fileInfosResult = fileResults?.file_infos && Object.values(fileResults?.file_infos);
+            setFileInfos(fileInfosResult?.length ? fileInfosResult : emptyFileResults);
+        })();
+        setLoading(false);
+    }, [lastSearchedValue]);
+
     useEffect(() => {
         setSearchValue(searchTerm);
     }, [searchTerm]);
-
-    useEffect(() => {
-        setFilteredFileInfos(filterFiles(fileInfos, filter));
-    }, [filter, fileInfos]);
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight, hideHeader} = useCollapsibleHeader<FlatList>(true, onSnap);
 
@@ -123,10 +134,10 @@ const SearchScreen = ({teamId}: Props) => {
         header = (
             <Header
                 onTabSelect={setSelectedTab}
-                onFilterChanged={setFilter}
+                onFilterChanged={handleFilterChange}
                 numberMessages={postIds.length}
                 selectedTab={selectedTab}
-                numberFiles={Object.keys(filteredFileInfos).length}
+                numberFiles={Object.keys(fileInfos).length}
                 selectedFilter={filter}
             />
         );
@@ -164,7 +175,7 @@ const SearchScreen = ({teamId}: Props) => {
                         selectedTab={selectedTab}
                         searchValue={lastSearchedValue}
                         postIds={postIds}
-                        fileInfos={filteredFileInfos}
+                        fileInfos={fileInfos}
                         scrollRef={scrollRef}
                         onScroll={onScroll}
                         scrollPaddingTop={scrollPaddingTop}

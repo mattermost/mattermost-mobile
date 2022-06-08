@@ -76,6 +76,38 @@ export function filterFiles<T extends FileModel | FileInfo>(files: T[], filter: 
     }
 }
 
+export function filterFileExtensions(filter: FileFilter): string {
+    let searchTerms: string[] = [];
+    switch (filter) {
+        case 'all':
+            return '';
+        case 'documents':
+            searchTerms = Files.DOCUMENT_TYPES;
+            break;
+        case 'spreadsheets':
+            searchTerms = Files.SPREADSHEET_TYPES;
+            break;
+        case 'presentations':
+            searchTerms = Files.PRESENTATION_TYPES;
+            break;
+        case 'code':
+            searchTerms = Files.CODE_TYPES;
+            break;
+        case 'images':
+            searchTerms = Files.IMAGE_TYPES;
+            break;
+        case 'audio':
+            searchTerms = Files.AUDIO_TYPES;
+            break;
+        case 'videos':
+            searchTerms = Files.VIDEO_TYPES;
+            break;
+        default:
+            return '';
+    }
+    return ' ext:' + searchTerms.join(' ext:');
+}
+
 /**
  * Populate the extensions and types maps.
  * @private
