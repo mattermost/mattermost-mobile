@@ -116,29 +116,28 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
         setButtons(componentId, buttons);
     }, [componentId, saveButton]);
 
-    //fixme: review all imported code
-    const shouldSaveAutoResponder = useCallback((notify: UserNotifyProps) => {
+    const shouldSaveAutoResponder = useCallback((notify: Partial<UserNotifyProps>) => {
         const {auto_responder_active: autoResponderActive} = notify;
         const prevProps = getNotificationProps(currentUser);
-        const enabling = currentUser.status !== General.OUT_OF_OFFICE && autoResponderActive === 'true'; // ?? still valid ??
-        const disabling = currentUser.status === General.OUT_OF_OFFICE && autoResponderActive === 'false'; // ?? still valid ??
-        const updatedMsg = prevProps.auto_responder_message !== notify.auto_responder_message; // ?? still valid ??
+        const updatedMsg = prevProps.auto_responder_message !== notify.auto_responder_message;
+        const enabling = currentUser.status !== General.OUT_OF_OFFICE && autoResponderActive === 'true';
+        const disabling = currentUser.status === General.OUT_OF_OFFICE && autoResponderActive === 'false';
 
         canSave(enabling || disabling || updatedMsg);
     }, [currentUser.status, canSave]);
 
-    //todo: compress onAutoResponseToggle and onAutoResponseChangeText
+    const updateNotifyProps = useCallback((obj: Partial<UserNotifyProps>) => {
+        const notify = {...notifyProps, ...obj};
+        setNotifyProps(notify);
+        shouldSaveAutoResponder(notify);
+    }, [shouldSaveAutoResponder]);
 
     const onAutoResponseToggle = useCallback((active: boolean) => {
-        const notify = {...notifyProps, auto_responder_active: `${active}`} as unknown as UserNotifyProps;
-        setNotifyProps({...notifyProps, auto_responder_active: `${active}`});
-        shouldSaveAutoResponder(notify);
+        updateNotifyProps({auto_responder_active: `${active}`});
     }, [notifyProps]);
 
     const onAutoResponseChangeText = useCallback((message: string) => {
-        const notify = {...notifyProps, auto_responder_message: message} as unknown as UserNotifyProps;
-        setNotifyProps(notify);
-        shouldSaveAutoResponder(notify);
+        updateNotifyProps({auto_responder_message: message});
     }, [notifyProps]);
 
     const saveAutoResponder = useCallback(() => {
