@@ -5,14 +5,16 @@ type ChannelStats = {
     channel_id: string;
     guest_count: number;
     member_count: number;
-    guest_count: number;
     pinnedpost_count: number;
 };
+
+type NotificationLevel = 'default' | 'all' | 'mention' | 'none';
+
 type ChannelNotifyProps = {
-    desktop: 'default' | 'all' | 'mention' | 'none';
-    email: 'default' | 'all' | 'mention' | 'none';
+    desktop: NotificationLevel;
+    email: NotificationLevel;
     mark_unread: 'all' | 'mention';
-    push: 'default' | 'all' | 'mention' | 'none';
+    push: NotificationLevel;
     ignore_channel_mentions: 'default' | 'off' | 'on';
 };
 type Channel = {
@@ -27,6 +29,7 @@ type Channel = {
     header: string;
     purpose: string;
     last_post_at: number;
+    last_root_post_at?: number;
     total_msg_count: number;
     total_msg_count_root?: number;
     extra_update_at: number;
@@ -48,6 +51,7 @@ type ChannelMember = {
     id?: string;
     channel_id: string;
     user_id: string;
+    scheme_admin?: boolean;
 }
 type ChannelMembership = {
     id?: string;

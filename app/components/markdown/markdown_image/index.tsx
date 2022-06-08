@@ -37,6 +37,7 @@ type MarkdownImageProps = {
     imagesMetadata: Record<string, PostImage>;
     isReplyPost?: boolean;
     linkDestination?: string;
+    layoutHeight?: number;
     layoutWidth?: number;
     location?: string;
     postId: string;
@@ -67,7 +68,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const MarkdownImage = ({
     disabled, errorTextStyle, imagesMetadata, isReplyPost = false,
-    layoutWidth, linkDestination, location, postId, source, sourceSize,
+    layoutWidth, layoutHeight, linkDestination, location, postId, source, sourceSize,
 }: MarkdownImageProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -78,7 +79,7 @@ const MarkdownImage = ({
     const genericFileId = useRef(generateId('uid')).current;
     const metadata = imagesMetadata?.[source] || Object.values(imagesMetadata || {})[0];
     const [failed, setFailed] = useState(isGifTooLarge(metadata));
-    const originalSize = getMarkdownImageSize(isReplyPost, isTablet, sourceSize, metadata, layoutWidth);
+    const originalSize = getMarkdownImageSize(isReplyPost, isTablet, sourceSize, metadata, layoutWidth, layoutHeight);
     const serverUrl = useServerUrl();
     const galleryIdentifier = `${postId}-${genericFileId}-${location}`;
     const uri = source.startsWith('/') ? serverUrl + source : source;

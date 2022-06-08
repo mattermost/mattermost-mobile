@@ -15,6 +15,7 @@ import ShowMoreButton from './show_more_button';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
+import type {SearchPattern} from '@typings/global/markdown';
 
 type MessageProps = {
     currentUser: UserModel;
@@ -25,6 +26,7 @@ type MessageProps = {
     layoutWidth?: number;
     location: string;
     post: PostModel;
+    searchPatterns?: SearchPattern[];
     theme: Theme;
 }
 
@@ -50,7 +52,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPost, layoutWidth, location, post, theme}: MessageProps) => {
+const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPost, layoutWidth, location, post, searchPatterns, theme}: MessageProps) => {
     const [open, setOpen] = useState(false);
     const [height, setHeight] = useState<number|undefined>();
     const dimensions = useWindowDimensions();
@@ -83,6 +85,7 @@ const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPo
                         <Markdown
                             baseTextStyle={style.message}
                             blockStyles={blockStyles}
+                            channelId={post.channelId}
                             channelMentions={post.props?.channel_mentions}
                             imagesMetadata={post.metadata?.images}
                             isEdited={isEdited}
@@ -94,6 +97,7 @@ const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPo
                             textStyles={textStyles}
                             value={post.message}
                             mentionKeys={mentionKeys}
+                            searchPatterns={searchPatterns}
                             theme={theme}
                         />
                     </View>

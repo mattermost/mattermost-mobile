@@ -39,6 +39,7 @@ type Props = {
 }
 
 const hitSlop = {top: 20, bottom: 20, left: 20, right: 20};
+const rightButtonHitSlop = {top: 20, bottom: 5, left: 5, right: 5};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     centered: {
@@ -150,10 +151,15 @@ const Header = ({
             return {opacity: 0};
         }
 
-        const barHeight = Platform.OS === 'ios' ? (largeHeight - defaultHeight - (top / 2)) : largeHeight - defaultHeight;
-        const val = (top + (scrollValue?.value ?? 0));
+        const largeTitleLabelHeight = 60;
+        const barHeight = (largeHeight - defaultHeight) - largeTitleLabelHeight;
+        const val = (scrollValue?.value ?? 0);
+        const showDuration = 200;
+        const hideDuration = 50;
+        const duration = val >= barHeight ? showDuration : hideDuration;
+        const opacityValue = val >= barHeight ? 1 : 0;
         return {
-            opacity: val >= barHeight ? withTiming(1, {duration: 250}) : 0,
+            opacity: withTiming(opacityValue, {duration}),
         };
     }, [defaultHeight, largeHeight, isLargeTitle, hasSearch]);
 
@@ -227,10 +233,11 @@ const Header = ({
                     <TouchableWithFeedback
                         key={r.iconName}
                         borderlessRipple={r.borderless === undefined ? true : r.borderless}
+                        hitSlop={rightButtonHitSlop}
                         onPress={r.onPress}
                         rippleRadius={r.rippleRadius || 20}
                         type={r.buttonType || Platform.select({android: 'native', default: 'opacity'})}
-                        style={i > 0 ? styles.rightIcon : undefined}
+                        style={i > 0 && styles.rightIcon}
                         testID={r.testID}
                     >
                         <CompassIcon

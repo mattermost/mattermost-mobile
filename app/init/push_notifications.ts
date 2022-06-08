@@ -24,6 +24,7 @@ import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import NativeNotifications from '@notifications';
 import {queryServerName} from '@queries/app/servers';
 import {getCurrentChannelId} from '@queries/servers/system';
+import {getIsCRTEnabled} from '@queries/servers/thread';
 import {showOverlay} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
@@ -121,8 +122,14 @@ class PushNotifications {
         const serverUrl = await this.getServerUrlFromNotification(notification);
 
         if (serverUrl && payload?.channel_id) {
-            markChannelAsViewed(serverUrl, payload?.channel_id, false);
-            this.cancelChannelNotifications(payload.channel_id);
+            const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+            if (database) {
+                const isCRTEnabled = await getIsCRTEnabled(database);
+                if (isCRTEnabled && payload.root_id) {
+                    return;
+                }
+                markChannelAsViewed(serverUrl, payload.channel_id, false);
+            }
         }
     };
 
@@ -140,12 +147,13 @@ class PushNotifications {
             }
 
             const isDifferentChannel = payload?.channel_id !== channelId;
+            const isVisibleThread = payload?.root_id === EphemeralStore.getLastViewedThreadId() && EphemeralStore.getNavigationTopComponentId() === Screens.THREAD;
             let isChannelScreenVisible = EphemeralStore.getNavigationTopComponentId() === Screens.CHANNEL;
             if (isTabletDevice) {
                 isChannelScreenVisible = EphemeralStore.getVisibleTab() === Screens.HOME;
             }
 
-            if (isDifferentChannel || !isChannelScreenVisible) {
+            if (isDifferentChannel || (!isChannelScreenVisible && !isVisibleThread)) {
                 DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
 
                 const screen = Screens.IN_APP_NOTIFICATION;
@@ -164,7 +172,6 @@ class PushNotifications {
     handleMessageNotification = async (notification: NotificationWithData) => {
         const {payload, foreground, userInteraction} = notification;
         const serverUrl = await this.getServerUrlFromNotification(notification);
-
         if (serverUrl) {
             if (foreground) {
                 // Move this to a local action
@@ -172,7 +179,6 @@ class PushNotifications {
             } else if (userInteraction && !payload?.userInfo?.local) {
                 // Handle notification tapped
                 openNotification(serverUrl, notification);
-                this.cancelChannelNotifications(notification.payload!.channel_id);
             } else {
                 backgroundNotification(serverUrl, notification);
             }

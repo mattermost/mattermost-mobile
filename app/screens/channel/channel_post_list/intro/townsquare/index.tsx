@@ -61,7 +61,6 @@ const TownSquare = ({channelId, displayName, roles, theme}: Props) => {
             <IntroOptions
                 channelId={channelId}
                 header={hasPermission(roles, Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES, false)}
-                theme={theme}
             />
         </View>
     );

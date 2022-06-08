@@ -4,17 +4,13 @@
 import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
+import {addChannelToDefaultCategory} from '@actions/local/category';
 import {
-    addChannelToDefaultCategory,
-    markChannelAsViewed,
-    removeCurrentUserFromChannel,
-    setChannelDeleteAt,
-    storeMyChannelsForTeam,
-    switchToChannel,
-    updateChannelInfoFromChannel,
-    updateMyChannelFromWebsocket} from '@actions/local/channel';
+    markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt,
+    storeMyChannelsForTeam, updateChannelInfoFromChannel, updateMyChannelFromWebsocket,
+} from '@actions/local/channel';
 import {switchToGlobalThreads} from '@actions/local/thread';
-import {fetchMissingSidebarInfo, fetchMyChannel, fetchChannelStats, fetchChannelById} from '@actions/remote/channel';
+import {fetchMissingDirectChannelsInfo, fetchMyChannel, fetchChannelStats, fetchChannelById, switchToChannelById} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
@@ -22,7 +18,7 @@ import {Events, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
 import {deleteChannelMembership, getChannelById, prepareMyChannelsForTeam, getCurrentChannel} from '@queries/servers/channel';
-import {prepareCommonSystemValues, getConfig, setCurrentChannelId, getCurrentChannelId} from '@queries/servers/system';
+import {prepareCommonSystemValues, getConfig, setCurrentChannelId, getCurrentChannelId, getCurrentTeamId} from '@queries/servers/system';
 import {getNthLastChannelFromTeam} from '@queries/servers/team';
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
@@ -72,6 +68,10 @@ export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
 
 export async function handleChannelUnarchiveEvent(serverUrl: string, msg: any) {
     try {
+        if (EphemeralStore.isArchivingChannel(msg.data.channel_id)) {
+            return;
+        }
+
         await setChannelDeleteAt(serverUrl, msg.data.channel_id, 0);
     } catch {
         // do nothing
@@ -86,6 +86,10 @@ export async function handleChannelConvertedEvent(serverUrl: string, msg: any) {
 
     try {
         const channelId = msg.data.channel_id;
+        if (EphemeralStore.isConvertingChannel(channelId)) {
+            return;
+        }
+
         const {channel} = await fetchChannelById(serverUrl, channelId);
         if (channel) {
             operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
@@ -101,8 +105,8 @@ export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
         return;
     }
 
-    const updatedChannel = JSON.parse(msg.data.channel);
     try {
+        const updatedChannel = JSON.parse(msg.data.channel);
         const models: Model[] = await operator.handleChannel({channels: [updatedChannel], prepareRecordsOnly: true});
         const infoModel = await updateChannelInfoFromChannel(serverUrl, updatedChannel, true);
         if (infoModel.model) {
@@ -153,6 +157,11 @@ export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: an
         }
         models.push(...await operator.handleMyChannelSettings({
             settings: [updatedChannelMember],
+            prepareRecordsOnly: true,
+        }));
+
+        models.push(...await operator.handleChannelMembership({
+            channelMemberships: [updatedChannelMember],
             prepareRecordsOnly: true,
         }));
         const rolesRequest = await fetchRolesIfNeeded(serverUrl, updatedChannelMember.roles.split(','), true);
@@ -209,7 +218,7 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: WebSocketMe
 
         const teammateDisplayNameSetting = await getTeammateNameDisplay(database);
 
-        const {directChannels, users} = await fetchMissingSidebarInfo(serverUrl, channels, user.locale, teammateDisplayNameSetting, user.id, true);
+        const {directChannels, users} = await fetchMissingDirectChannelsInfo(serverUrl, channels, user.locale, teammateDisplayNameSetting, user.id, true);
         if (!directChannels?.[0]) {
             return;
         }
@@ -241,15 +250,14 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
         return;
     }
 
-    const {database} = operator;
-
-    const currentUser = await getCurrentUser(database);
-    const userId = msg.data.user_id || msg.broadcast.userId;
-    const channelId = msg.data.channel_id || msg.broadcast.channel_id;
-    const {team_id: teamId} = msg.data;
-    const models: Model[] = [];
-
     try {
+        const {database} = operator;
+        const currentUser = await getCurrentUser(database);
+        const userId = msg.data.user_id || msg.broadcast.userId;
+        const channelId = msg.data.channel_id || msg.broadcast.channel_id;
+        const {team_id: teamId} = msg.data;
+        const models: Model[] = [];
+
         if (userId === currentUser?.id) {
             if (EphemeralStore.isAddingToTeam(teamId) || EphemeralStore.isJoiningChannel(channelId)) {
                 return;
@@ -318,73 +326,76 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
         return;
     }
 
-    const {database} = operator;
+    try {
+        // Depending on who was removed, the ids may come from one place dataset or the other.
+        const userId = msg.data.user_id || msg.broadcast.user_id;
+        const channelId = msg.data.channel_id || msg.broadcast.channel_id;
 
-    const channel = await getCurrentChannel(database);
-    const user = await getCurrentUser(database);
-    if (!user) {
-        return;
-    }
-
-    // Depending on who was removed, the ids may come from one place dataset or the other.
-    const userId = msg.data.user_id || msg.broadcast.user_id;
-    const channelId = msg.data.channel_id || msg.broadcast.channel_id;
-
-    const models: Model[] = [];
-
-    if (user.isGuest) {
-        const {models: updateVisibleModels} = await updateUsersNoLongerVisible(serverUrl, true);
-        if (updateVisibleModels) {
-            models.push(...updateVisibleModels);
-        }
-    }
-
-    if (user.id === userId) {
-        const {models: removeUserModels} = await removeCurrentUserFromChannel(serverUrl, channelId, true);
-        if (removeUserModels) {
-            models.push(...removeUserModels);
+        if (EphemeralStore.isLeavingChannel(channelId)) {
+            return;
         }
 
-        if (channel && channel.id === channelId) {
-            const currentServer = await queryActiveServer(DatabaseManager.appDatabase!.database);
+        const {database} = operator;
+        const channel = await getCurrentChannel(database);
+        const user = await getCurrentUser(database);
+        if (!user) {
+            return;
+        }
 
-            if (currentServer?.url === serverUrl) {
-                DeviceEventEmitter.emit(Events.LEAVE_CHANNEL);
-                await dismissAllModals();
-                await popToRoot();
+        const models: Model[] = [];
 
-                if (await isTablet()) {
-                    const channelToJumpTo = await getNthLastChannelFromTeam(database, channel?.teamId);
-                    if (channelToJumpTo) {
-                        if (channelToJumpTo === Screens.GLOBAL_THREADS) {
-                            const {models: switchToGlobalThreadsModels} = await switchToGlobalThreads(serverUrl, true);
-                            if (switchToGlobalThreadsModels) {
-                                models.push(...switchToGlobalThreadsModels);
-                            }
-                        } else {
-                            const {models: switchChannelModels} = await switchToChannel(serverUrl, channelToJumpTo, '', false, true);
-                            if (switchChannelModels) {
-                                models.push(...switchChannelModels);
-                            }
+        if (user.isGuest) {
+            const {models: updateVisibleModels} = await updateUsersNoLongerVisible(serverUrl, true);
+            if (updateVisibleModels) {
+                models.push(...updateVisibleModels);
+            }
+        }
+
+        if (user.id === userId) {
+            await removeCurrentUserFromChannel(serverUrl, channelId);
+            if (channel && channel.id === channelId) {
+                const currentServer = await queryActiveServer(DatabaseManager.appDatabase!.database);
+
+                if (currentServer?.url === serverUrl) {
+                    DeviceEventEmitter.emit(Events.LEAVE_CHANNEL, channel.displayName);
+                    await dismissAllModals();
+                    await popToRoot();
+
+                    if (await isTablet()) {
+                        let tId = channel.teamId;
+                        if (!tId) {
+                            tId = await getCurrentTeamId(database);
                         }
-                    } // TODO else jump to "join a channel" screen https://mattermost.atlassian.net/browse/MM-41051
-                } else {
-                    const currentChannelModels = await prepareCommonSystemValues(operator, {currentChannelId: ''});
-                    if (currentChannelModels?.length) {
-                        models.push(...currentChannelModels);
+                        const channelToJumpTo = await getNthLastChannelFromTeam(database, tId);
+                        if (channelToJumpTo) {
+                            if (channelToJumpTo === Screens.GLOBAL_THREADS) {
+                                const {models: switchToGlobalThreadsModels} = await switchToGlobalThreads(serverUrl, tId, true);
+                                if (switchToGlobalThreadsModels) {
+                                    models.push(...switchToGlobalThreadsModels);
+                                }
+                            } else {
+                                switchToChannelById(serverUrl, channelToJumpTo, tId, true);
+                            }
+                        } // TODO else jump to "join a channel" screen https://mattermost.atlassian.net/browse/MM-41051
+                    } else {
+                        const currentChannelModels = await prepareCommonSystemValues(operator, {currentChannelId: ''});
+                        if (currentChannelModels?.length) {
+                            models.push(...currentChannelModels);
+                        }
                     }
                 }
             }
+        } else {
+            const {models: deleteMemberModels} = await deleteChannelMembership(operator, userId, channelId, true);
+            if (deleteMemberModels) {
+                models.push(...deleteMemberModels);
+            }
         }
-    } else {
-        const {models: deleteMemberModels} = await deleteChannelMembership(operator, userId, channelId, true);
-        if (deleteMemberModels) {
-            models.push(...deleteMemberModels);
-        }
-    }
 
-    await fetchChannelStats(serverUrl, channelId, false);
-    operator.batchRecords(models);
+        operator.batchRecords(models);
+    } catch {
+        // Do nothing
+    }
 }
 
 export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocketMessage) {
@@ -393,48 +404,58 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocke
         return;
     }
 
-    const {database} = operator;
+    try {
+        const {database} = operator;
+        const {channel_id: channelId, delete_at: deleteAt} = msg.data;
+        if (EphemeralStore.isLeavingChannel(channelId) || EphemeralStore.isArchivingChannel(channelId)) {
+            return;
+        }
 
-    const currentChannel = await getCurrentChannel(database);
-    const user = await getCurrentUser(database);
-    if (!user) {
-        return;
-    }
+        const currentChannel = await getCurrentChannel(database);
+        const user = await getCurrentUser(database);
+        if (!user) {
+            return;
+        }
 
-    const {channel_id: channelId, delete_at: deleteAt} = msg.data;
+        const config = await getConfig(database);
 
-    const config = await getConfig(database);
+        await setChannelDeleteAt(serverUrl, channelId, deleteAt);
 
-    await setChannelDeleteAt(serverUrl, channelId, deleteAt);
+        if (user.isGuest) {
+            updateUsersNoLongerVisible(serverUrl);
+        }
 
-    if (user.isGuest) {
-        updateUsersNoLongerVisible(serverUrl);
-    }
+        if (config?.ExperimentalViewArchivedChannels !== 'true') {
+            await removeCurrentUserFromChannel(serverUrl, channelId);
 
-    if (config?.ExperimentalViewArchivedChannels !== 'true') {
-        removeCurrentUserFromChannel(serverUrl, channelId);
+            if (currentChannel && currentChannel.id === channelId) {
+                const currentServer = await queryActiveServer(DatabaseManager.appDatabase!.database);
 
-        if (currentChannel && currentChannel.id === channelId) {
-            const currentServer = await queryActiveServer(DatabaseManager.appDatabase!.database);
+                if (currentServer?.url === serverUrl) {
+                    DeviceEventEmitter.emit(Events.CHANNEL_ARCHIVED, currentChannel.displayName);
+                    await dismissAllModals();
+                    await popToRoot();
 
-            if (currentServer?.url === serverUrl) {
-                DeviceEventEmitter.emit(Events.CHANNEL_DELETED);
-                await dismissAllModals();
-                await popToRoot();
-
-                if (await isTablet()) {
-                    const channelToJumpTo = await getNthLastChannelFromTeam(database, currentChannel?.teamId);
-                    if (channelToJumpTo) {
-                        if (channelToJumpTo === Screens.GLOBAL_THREADS) {
-                            switchToGlobalThreads(serverUrl);
-                            return;
+                    if (await isTablet()) {
+                        let tId = currentChannel.teamId;
+                        if (!tId) {
+                            tId = await getCurrentTeamId(database);
                         }
-                        switchToChannel(serverUrl, channelToJumpTo);
-                    } // TODO else jump to "join a channel" screen
-                } else {
-                    setCurrentChannelId(operator, '');
+                        const channelToJumpTo = await getNthLastChannelFromTeam(database, tId);
+                        if (channelToJumpTo) {
+                            if (channelToJumpTo === Screens.GLOBAL_THREADS) {
+                                switchToGlobalThreads(serverUrl, tId);
+                                return;
+                            }
+                            switchToChannelById(serverUrl, channelToJumpTo, tId);
+                        } // TODO else jump to "join a channel" screen
+                    } else {
+                        setCurrentChannelId(operator, '');
+                    }
                 }
             }
         }
+    } catch {
+        // Do nothing
     }
 }

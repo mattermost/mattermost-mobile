@@ -12,7 +12,7 @@ import AppDatabaseMigrations from '@database/migration/app';
 import ServerDatabaseMigrations from '@database/migration/server';
 import {InfoModel, GlobalModel, ServersModel} from '@database/models/app';
 import {CategoryModel, CategoryChannelModel, ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
-    MyChannelModel, MyChannelSettingsModel, MyTeamModel,
+    GroupModel, GroupChannelModel, GroupTeamModel, GroupMembershipModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
     PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
     SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
     ThreadModel, ThreadParticipantModel, ThreadInTeamModel, UserModel,
@@ -25,6 +25,7 @@ import {queryActiveServer, queryServer, queryServerByIdentifier} from '@queries/
 import {DatabaseType} from '@typings/database/enums';
 import {deleteIOSDatabase} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
+import {removeProtocol} from '@utils/url';
 
 import type {AppDatabase, CreateServerDatabaseArgs, Models, RegisterServerDatabaseArgs, ServerDatabase, ServerDatabases} from '@typings/database/database';
 
@@ -48,7 +49,7 @@ class DatabaseManager {
         this.appModels = [InfoModel, GlobalModel, ServersModel];
         this.serverModels = [
             CategoryModel, CategoryChannelModel, ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
-            MyChannelModel, MyChannelSettingsModel, MyTeamModel,
+            GroupModel, GroupChannelModel, GroupTeamModel, GroupMembershipModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
             PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
             SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
             ThreadModel, ThreadParticipantModel, ThreadInTeamModel, UserModel,
@@ -356,6 +357,11 @@ class DatabaseManager {
 
     private getDatabaseFilePath = (dbName: string): string => {
         return Platform.OS === 'ios' ? `${this.databaseDirectory}/${dbName}.db` : `${this.databaseDirectory}${dbName}.db`;
+    };
+
+    public searchUrl = (toFind: string): string | undefined => {
+        const toFindWithoutProtocol = removeProtocol(toFind);
+        return Object.keys(this.serverDatabases).find((k) => removeProtocol(k) === toFindWithoutProtocol);
     };
 }
 

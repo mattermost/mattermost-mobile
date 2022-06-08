@@ -5,7 +5,8 @@ import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import EmptyStateIllustration from './illustrations/empty_state';
 
@@ -16,26 +17,26 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
+            flex: 1,
             alignItems: 'center',
-            flexGrow: 1,
             justifyContent: 'center',
+            paddingHorizontal: 40,
+            top: -40,
+            maxWidth: 480,
         },
         textContainer: {
-            padding: 32,
+            marginTop: 24,
         },
         title: {
             color: theme.centerChannelColor,
-            fontSize: 20,
-            fontWeight: '600',
             textAlign: 'center',
+            ...typography('Heading', 400, 'SemiBold'),
         },
-        subTitle: {
-            color: theme.centerChannelColor,
-            fontSize: 16,
-            fontWeight: '400',
-            lineHeight: 24,
-            marginTop: 16,
+        paragraph: {
+            marginTop: 8,
             textAlign: 'center',
+            color: changeOpacity(theme.centerChannelColor, 0.72),
+            ...typography('Body', 200),
         },
     };
 });
@@ -66,13 +67,16 @@ function EmptyState({isUnreads}: Props) {
         });
     }
     return (
-        <View style={style.container}>
+        <View
+            style={style.container}
+            testID='global_threads.threads_list.empty_state'
+        >
             <EmptyStateIllustration theme={theme}/>
             <View style={style.textContainer}>
                 <Text style={style.title}>
                     {title}
                 </Text>
-                <Text style={style.subTitle}>
+                <Text style={style.paragraph}>
                     {subTitle}
                 </Text>
             </View>

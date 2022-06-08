@@ -4,7 +4,6 @@
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
 import {extractChannelDisplayName} from '@helpers/database';
-import {getIsCRTEnabled} from '@queries/servers/thread';
 import {OperationType} from '@typings/database/enums';
 
 import type {TransformerArgs} from '@typings/database/database';
@@ -126,18 +125,16 @@ export const transformMyChannelRecord = async ({action, database, value}: Transf
     const record = value.record as MyChannelModel;
     const isCreateAction = action === OperationType.CREATE;
 
-    const isCRTEnabled = await getIsCRTEnabled(database);
-
     const fieldsMapper = (myChannel: MyChannelModel) => {
         myChannel._raw.id = isCreateAction ? (raw.channel_id || myChannel.id) : record.id;
         myChannel.roles = raw.roles;
 
-        // ignoring msg_count_root because msg_count is already calculated in "handleMyChannel" based on CRT is enabled or not
+        // ignoring msg_count_root because msg_count, mention_count, last_post_at is already calculated in "handleMyChannel" based on CRT is enabled or not
         myChannel.messageCount = raw.msg_count;
+        myChannel.mentionsCount = raw.mention_count;
+        myChannel.lastPostAt = raw.last_post_at || 0;
 
         myChannel.isUnread = Boolean(raw.is_unread);
-        myChannel.mentionsCount = isCRTEnabled ? raw.mention_count_root! : raw.mention_count;
-        myChannel.lastPostAt = (isCRTEnabled ? (raw.last_root_post_at || raw.last_post_at) : raw.last_post_at) || 0;
         myChannel.lastViewedAt = raw.last_viewed_at;
         myChannel.viewedAt = record?.viewedAt || 0;
     };
@@ -168,6 +165,7 @@ export const transformChannelMembershipRecord = ({action, database, value}: Tran
         channelMember._raw.id = isCreateAction ? (raw?.id ?? channelMember.id) : record.id;
         channelMember.channelId = raw.channel_id;
         channelMember.userId = raw.user_id;
+        channelMember.schemeAdmin = raw.scheme_admin ?? false;
     };
 
     return prepareBaseRecord({

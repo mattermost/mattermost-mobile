@@ -55,6 +55,7 @@ ChannelMembership
 id PK string # composition ID Channel.id-User.id
 channel_id string INDEX FK >- Channel.id
 user_id string INDEX FK >- User.id
+scheme_admin bool
 
 CustomEmoji
 -
@@ -84,6 +85,44 @@ post_id string INDEX FK >- Post.id
 size number
 width number
 
+Group
+-
+id PK string  # server-generated
+name string INDEX
+display_name string
+description string
+remote_id string INDEX
+source string
+created_at number
+updated_at number
+deleted_at number
+
+GroupChannel
+-
+id PK string # composition ID Group.id-Channel.id
+group_id string INDEX FK >- Group.id
+channel_id string INDEX FK >- Channel.id
+created_at number
+updated_at number
+deleted_at number
+
+GroupMembership
+-
+id PK string # composition ID Group.id-User.id
+group_id string INDEX FK >- Group.id
+user_id string INDEX FK >- User.id
+created_at number
+updated_at number
+deleted_at number
+
+GroupTeam
+-
+id PK string # composition ID Group.id-Team.id
+group_id string INDEX FK >- Group.id
+team_id string INDEX FK >- Team.id
+created_at number
+updated_at number
+deleted_at number
 
 MyChannel
 -
@@ -203,6 +242,7 @@ TeamMembership
 id PK string # auto-generated
 team_id string INDEX FK >- Team.id
 user_id string INDEX FK >- User.id
+scheme_admin bool
 
 
 TeamSearchHistory

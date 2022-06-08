@@ -13,6 +13,7 @@ import {BotTag, GuestTag} from '@components/tag';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {getUserCustomStatus, isBot, isGuest, isShared} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -69,14 +70,14 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             overflow: 'hidden',
         },
         rowFullname: {
-            fontSize: 15,
+            ...typography('Body', 200),
             color: theme.centerChannelColor,
-            fontFamily: 'OpenSans',
             paddingLeft: 4,
             flexShrink: 1,
         },
         rowUsername: {
-            color: changeOpacity(theme.centerChannelColor, 0.56),
+            ...typography('Body', 200),
+            color: changeOpacity(theme.centerChannelColor, 0.64),
             fontSize: 15,
             fontFamily: 'OpenSans',
             flexShrink: 5,

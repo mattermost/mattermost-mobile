@@ -3,9 +3,9 @@
 
 import {Platform, StyleSheet} from 'react-native';
 
+import {getViewPortWidth} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import {getViewPortWidth} from '../images';
+import {typography} from '@utils/typography';
 
 type LanguageObject = {
     [key: string]: {
@@ -37,52 +37,46 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             fontFamily: 'OpenSans',
         },
         heading1: {
-            fontFamily: 'OpenSans-Bold',
-            fontSize: 24,
-            lineHeight: 25,
+            ...typography('Heading', 700),
         },
         heading1Text: {
-            paddingVertical: 8,
+            paddingTop: 12,
+            paddingBottom: 6,
         },
         heading2: {
-            fontFamily: 'OpenSans-Bold',
-            fontSize: 22,
-            lineHeight: 25,
+            ...typography('Heading', 600),
         },
         heading2Text: {
-            paddingVertical: 6,
+            paddingTop: 12,
+            paddingBottom: 6,
         },
         heading3: {
-            fontFamily: 'OpenSans-Bold',
-            fontSize: 21,
-            lineHeight: 25,
+            ...typography('Heading', 500),
         },
         heading3Text: {
-            paddingVertical: 6,
+            paddingTop: 12,
+            paddingBottom: 6,
         },
         heading4: {
-            fontFamily: 'OpenSans-Bold',
-            fontSize: 20,
-            lineHeight: 25,
+            ...typography('Heading', 400),
         },
         heading4Text: {
-            paddingVertical: 5,
+            paddingTop: 12,
+            paddingBottom: 6,
         },
         heading5: {
-            fontFamily: 'OpenSans-Bold',
-            fontSize: 19,
-            lineHeight: 25,
+            ...typography('Heading', 300),
         },
         heading5Text: {
-            paddingVertical: 5,
+            paddingTop: 12,
+            paddingBottom: 6,
         },
         heading6: {
-            fontFamily: 'OpenSans-Bold',
-            fontSize: 18,
-            lineHeight: 25,
+            ...typography('Heading', 200),
         },
         heading6Text: {
-            paddingVertical: 4,
+            paddingTop: 12,
+            paddingBottom: 6,
         },
         code: {
             alignSelf: 'center',
@@ -104,7 +98,10 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             fontFamily: 'OpenSans-Bold',
         },
         mention_highlight: {
-            fontFamily: 'OpenSans',
+            backgroundColor: theme.mentionHighlightBg,
+            color: theme.mentionHighlightLink,
+        },
+        search_highlight: {
             backgroundColor: theme.mentionHighlightBg,
             color: theme.mentionHighlightLink,
         },
@@ -114,7 +111,7 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
 export const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         adjacentParagraph: {
-            marginTop: 6,
+            marginTop: 8,
         },
         horizontalRule: {
             backgroundColor: theme.centerChannelColor,
@@ -245,6 +242,7 @@ export const getMarkdownImageSize = (
     sourceSize?: SourceSize,
     knownSize?: PostImage,
     layoutWidth?: number,
+    layoutHeight?: number,
 ) => {
     let ratioW;
     let ratioH;
@@ -280,5 +278,5 @@ export const getMarkdownImageSize = (
 
     // When no metadata and source size is not specified (full size svg's)
     const width = layoutWidth || getViewPortWidth(isReplyPost, isTablet);
-    return {width, height: width};
+    return {width, height: layoutHeight || width};
 };

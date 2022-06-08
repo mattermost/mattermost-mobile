@@ -18,7 +18,7 @@ export const useTeamSwitch = () => {
                 setLoading(true);
             } else {
                 // eslint-disable-next-line max-nested-callbacks
-                time = setTimeout(() => setLoading(false), 200);
+                time = setTimeout(() => setLoading(false), 0);
             }
         });
         return () => {

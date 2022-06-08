@@ -21,10 +21,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
             flexDirection: 'row',
             height: 28,
-            paddingHorizontal: 20,
+            paddingHorizontal: 16,
         },
         textContainer: {
-            marginHorizontal: 15,
+            marginHorizontal: 8,
         },
         line: {
             flex: 1,

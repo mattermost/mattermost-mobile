@@ -70,7 +70,7 @@ const HeaderReply = ({commentCount, location, post, theme}: HeaderReplyProps) =>
                 {location !== SEARCH && commentCount > 0 &&
                 <Text
                     style={style.replyText}
-                    testID='post_header.reply.count'
+                    testID='post_header.reply_count'
                 >
                     {commentCount}
                 </Text>

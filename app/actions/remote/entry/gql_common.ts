@@ -17,7 +17,7 @@ import {prepareCommonSystemValues} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, queryMyTeams} from '@queries/servers/team';
 import {selectDefaultChannelForTeam} from '@utils/channel';
 import {isTablet} from '@utils/helpers';
-import {isCRTEnabled} from '@utils/thread';
+import {processIsCRTEnabled} from '@utils/thread';
 
 import {fetchNewThreads} from '../thread';
 
@@ -37,6 +37,7 @@ export async function deferredAppEntryGraphQLActions(
     isTabletDevice: boolean,
     initialTeamId?: string,
     initialChannelId?: string,
+    isCRTEnabled = false,
 ) {
     // defer fetching posts for initial channel
     if (initialChannelId && isTabletDevice) {
@@ -50,7 +51,7 @@ export async function deferredAppEntryGraphQLActions(
         fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId);
     }
 
-    if (preferences && isCRTEnabled(preferences, config)) {
+    if (isCRTEnabled) {
         if (initialTeamId) {
             await fetchNewThreads(serverUrl, initialTeamId, false);
         }
@@ -69,7 +70,7 @@ export async function deferredAppEntryGraphQLActions(
     updateAllUsersSince(serverUrl, since);
 }
 
-export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, currentTeamId: string, currentChannelId: string) => {
+export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, currentTeamId: string, currentChannelId: string, isUpgrade = false) => {
     console.log('using graphQL');
     const dt = Date.now();
 
@@ -130,6 +131,13 @@ export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, cu
         ...fetchedData.channelMembers?.map((m) => m.roles).flat() || [],
         ...fetchedData.teamMembers?.map((m) => m.roles).flat() || [],
     ].filter((v, i, a) => a.slice(0, i).find((v2) => v?.name === v2?.name)).map((r) => gqlToClientRole(r!));
+
+    if (isUpgrade && meData?.user) {
+        const me = await prepareCommonSystemValues(operator, {currentUserId: meData.user.id});
+        if (me?.length) {
+            await operator.batchRecords(me);
+        }
+    }
 
     let removeTeams: TeamModel[] = [];
     const removeChannels: ChannelModel[] = [];
@@ -212,7 +220,8 @@ export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, cu
     }
     console.log('batch', Date.now() - time);
 
-    deferredAppEntryGraphQLActions(serverUrl, 0, prefData.preferences, config, teamData, chData, isTabletDevice, initialTeamId, initialChannelId);
+    const isCRTEnabled = Boolean(prefData.preferences && processIsCRTEnabled(prefData.preferences, config));
+    deferredAppEntryGraphQLActions(serverUrl, 0, prefData.preferences, config, teamData, chData, isTabletDevice, initialTeamId, initialChannelId, isCRTEnabled);
 
     const timeElapsed = Date.now() - dt;
     console.log('Time elapsed', Date.now() - dt);

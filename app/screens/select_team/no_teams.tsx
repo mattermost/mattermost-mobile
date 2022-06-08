@@ -1,13 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, Text, View} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
 import Empty from '@components/illustrations/no_team';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -59,21 +57,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 }));
 
-type Props = {
-    canCreateTeams: boolean;
-}
-
-const NoTeams = ({
-    canCreateTeams,
-}: Props) => {
+const NoTeams = () => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
-
-    const onButtonPress = useCallback(async () => {
-        // TODO https://mattermost.atlassian.net/browse/MM-43622
-        //goToScreen(Screens.CREATE_TEAM, 'Create team');
-    }, []);
 
     return (
         <View style={styles.container}>
@@ -86,7 +73,7 @@ const NoTeams = ({
             <Text style={styles.description}>
                 {intl.formatMessage({id: 'select_team.no_team.description', defaultMessage: 'To join a team, ask a team admin for an invite, or create your own team. You may also want to check your email inbox for an invitation.'})}
             </Text>
-            {canCreateTeams &&
+            {/* {canCreateTeams && // TODO https://mattermost.atlassian.net/browse/MM-43622
                 <TouchableWithFeedback
                     style={styles.buttonStyle}
                     type={'opacity'}
@@ -98,7 +85,7 @@ const NoTeams = ({
                     />
                     <Text style={styles.buttonText}>{intl.formatMessage({id: 'mobile.add_team.create_team', defaultMessage: 'Create a new team'})}</Text>
                 </TouchableWithFeedback>
-            }
+            } */}
         </View>
     );
 };

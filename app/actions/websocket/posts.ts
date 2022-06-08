@@ -7,7 +7,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed, updateLastPostAt} from '@actions/local/channel';
 import {markPostAsDeleted} from '@actions/local/post';
 import {createThreadFromNewPost, updateThread} from '@actions/local/thread';
-import {fetchMyChannel, markChannelAsRead} from '@actions/remote/channel';
+import {fetchChannelStats, fetchMyChannel, markChannelAsRead} from '@actions/remote/channel';
 import {fetchPostAuthors, fetchPostById} from '@actions/remote/post';
 import {fetchThread} from '@actions/remote/thread';
 import {ActionType, Events, Screens} from '@constants';
@@ -74,9 +74,14 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     // Ensure the channel membership
     let myChannel = await getMyChannel(database, post.channel_id);
     if (myChannel) {
-        const {member} = await updateLastPostAt(serverUrl, post.channel_id, post.create_at, false);
-        if (member) {
-            myChannel = member;
+        const isCrtReply = isCRTEnabled && post.root_id !== '';
+
+        // Don't change lastPostAt if the post is thread post
+        if (!isCrtReply) {
+            const {member} = await updateLastPostAt(serverUrl, post.channel_id, post.create_at, false);
+            if (member) {
+                myChannel = member;
+            }
         }
     } else {
         const myChannelRequest = await fetchMyChannel(serverUrl, '', post.channel_id, true);
@@ -191,6 +196,12 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     }
 
     const models: Model[] = [];
+    const {database} = operator;
+
+    const oldPost = await getPostById(database, post.id);
+    if (oldPost && oldPost.isPinned !== post.is_pinned) {
+        fetchChannelStats(serverUrl, post.channel_id);
+    }
 
     const {authors} = await fetchPostAuthors(serverUrl, [post], true);
     if (authors?.length) {

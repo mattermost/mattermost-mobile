@@ -78,6 +78,7 @@ const Content = ({isReplyPost, layoutWidth, location, post, theme}: ContentProps
                 return (
                     <MessageAttachments
                         attachments={post.props.attachments}
+                        channelId={post.channelId}
                         layoutWidth={layoutWidth}
                         location={location}
                         metadata={post.metadata!}
@@ -91,6 +92,7 @@ const Content = ({isReplyPost, layoutWidth, location, post, theme}: ContentProps
             if (post.props.app_bindings?.length) {
                 return (
                     <EmbeddedBindings
+                        location={location}
                         post={post}
                         theme={theme}
                     />

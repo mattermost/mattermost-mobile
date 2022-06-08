@@ -2,11 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {StyleProp, Text, TextStyle, View, ViewStyle} from 'react-native';
+import {StyleProp, Text, TextStyle, TouchableHighlight, View, ViewStyle} from 'react-native';
 import FastImage, {ImageStyle, Source} from 'react-native-fast-image';
 
 import CompassIcon from '@components/compass_icon';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -24,42 +23,42 @@ type SlideUpPanelProps = {
     text: string;
 }
 
-export const ITEM_HEIGHT = 51;
+export const ITEM_HEIGHT = 48;
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             height: ITEM_HEIGHT,
-            width: '100%',
+            marginHorizontal: -20,
+            paddingHorizontal: 20,
         },
         destructive: {
-            color: '#D0021B',
+            color: theme.dndIndicator,
         },
         row: {
             width: '100%',
             flexDirection: 'row',
         },
         iconContainer: {
-            height: 50,
+            height: ITEM_HEIGHT,
             justifyContent: 'center',
             marginRight: 10,
         },
         noIconContainer: {
-            height: 50,
+            height: ITEM_HEIGHT,
             width: 18,
         },
         icon: {
-            color: changeOpacity(theme.centerChannelColor, 0.64),
+            color: changeOpacity(theme.centerChannelColor, 0.56),
         },
         textContainer: {
             justifyContent: 'center',
             flex: 1,
-            height: 50,
+            height: ITEM_HEIGHT,
             marginRight: 5,
         },
         text: {
             color: theme.centerChannelColor,
-            opacity: 0.9,
             ...typography('Body', 200, 'Regular'),
         },
     };
@@ -101,25 +100,24 @@ const SlideUpPanelItem = ({destructive, icon, imageStyles, onPress, testID, text
     }
 
     return (
-        <TouchableWithFeedback
+        <TouchableHighlight
             onPress={handleOnPress}
             style={style.container}
             testID={testID}
-            type='native'
-            underlayColor={changeOpacity(theme.centerChannelColor, 0.5)}
+            underlayColor={changeOpacity(theme.buttonBg, 0.08)}
         >
             <View style={style.row}>
                 {Boolean(image) && !rightIcon &&
                     <View style={iconStyle}>{image}</View>
                 }
                 <View style={style.textContainer}>
-                    <Text style={[style.text, destructive ? style.destructive : null, textStyles]}>{text}</Text>
+                    <Text style={[style.text, destructive && style.destructive, textStyles]}>{text}</Text>
                 </View>
                 {Boolean(image) && rightIcon &&
                     <View style={iconStyle}>{image}</View>
                 }
             </View>
-        </TouchableWithFeedback>
+        </TouchableHighlight>
     );
 };
 

@@ -115,7 +115,7 @@ function AppsFormComponent({
     submit,
     performLookupCall,
 }: Props) {
-    const scrollView = useRef<ScrollView>();
+    const scrollView = useRef<ScrollView>(null);
     const [submitting, setSubmitting] = useState(false);
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -312,10 +312,10 @@ function AppsFormComponent({
         const callResponse = res.data!;
         switch (callResponse.type) {
             case AppCallResponseTypes.OK:
-                await close();
+                close();
                 return;
             case AppCallResponseTypes.NAVIGATE:
-                await close();
+                close();
                 handleGotoLocation(serverUrl, intl, callResponse.navigate_to_url!);
                 return;
             case AppCallResponseTypes.FORM:
@@ -388,8 +388,6 @@ function AppsFormComponent({
             style={style.container}
         >
             <ScrollView
-
-                // @ts-expect-error legacy ref
                 ref={scrollView}
                 style={style.scrollView}
             >
@@ -399,6 +397,8 @@ function AppsFormComponent({
                             baseTextStyle={style.errorLabel}
                             textStyles={getMarkdownTextStyles(theme)}
                             blockStyles={getMarkdownBlockStyles(theme)}
+                            location=''
+                            disableAtMentions={true}
                             value={error}
                             theme={theme}
                         />

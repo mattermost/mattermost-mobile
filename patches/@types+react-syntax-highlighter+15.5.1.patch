@@ -1,0 +1,15 @@
+diff --git a/node_modules/@types/react-syntax-highlighter/index.d.ts b/node_modules/@types/react-syntax-highlighter/index.d.ts
+index 2679904..7c60129 100755
+--- a/node_modules/@types/react-syntax-highlighter/index.d.ts
++++ b/node_modules/@types/react-syntax-highlighter/index.d.ts
+@@ -64,6 +64,10 @@ declare module 'react-syntax-highlighter' {
+     export { default as createElement } from 'react-syntax-highlighter/dist/esm/create-element';
+ }
+ 
++declare module 'react-syntax-highlighter/create-element' {
++    export {createStyleObject} from 'react-syntax-highlighter/create-element';
++}
++
+ // esm start
+ declare module 'react-syntax-highlighter/dist/esm/default-highlight' {
+     import * as React from 'react';

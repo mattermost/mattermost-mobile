@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, StyleSheet, View} from 'react-native';
 
@@ -46,6 +46,7 @@ const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
     const isTablet = useIsTablet();
     const switchingTeam = useTeamSwitch();
     const teamId = categories[0]?.teamId;
+    const [initiaLoad, setInitialLoad] = useState(true);
 
     const onChannelSwitch = useCallback(async (channelId: string) => {
         switchToChannelById(serverUrl, channelId);
@@ -87,13 +88,31 @@ const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
         return orderedCategories;
     }, [categories, onlyUnreads, unreadsOnTop]);
 
+    useEffect(() => {
+        const t = setTimeout(() => {
+            setInitialLoad(false);
+        }, 0);
+
+        return () => clearTimeout(t);
+    }, []);
+
     if (!categories.length) {
         return <LoadCategoriesError/>;
     }
 
     return (
         <>
-            {!switchingTeam && (
+            {!switchingTeam && !initiaLoad && onlyUnreads &&
+            <View style={styles.mainList}>
+                <UnreadCategories
+                    currentTeamId={teamId}
+                    isTablet={isTablet}
+                    onChannelSwitch={onChannelSwitch}
+                    onlyUnreads={onlyUnreads}
+                />
+            </View>
+            }
+            {!switchingTeam && !initiaLoad && !onlyUnreads && (
                 <FlatList
                     data={categoriesToShow}
                     ref={listRef}
@@ -108,7 +127,7 @@ const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
                     strictMode={true}
                 />
             )}
-            {switchingTeam && (
+            {(switchingTeam || initiaLoad) && (
                 <View style={styles.loadingView}>
                     <Loading
                         size='large'

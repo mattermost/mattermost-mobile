@@ -7,6 +7,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {observePost} from '@queries/servers/post';
+import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {WithDatabaseArgs} from '@typings/database/database';
 import PostModel from '@typings/database/models/servers/post';
 
@@ -21,6 +22,7 @@ const enhance = withObservables([], ({database, postId}: OwnProps) => {
         channel: post.pipe(
             switchMap((p) => (p ? p.channel.observe() : of$(undefined))),
         ),
+        isCRTEnabled: observeIsCRTEnabled(database),
     };
 });
 

@@ -29,6 +29,7 @@ import type UserModel from '@typings/database/models/servers/user';
 type Props = {
     author?: UserModel;
     channel?: ChannelModel;
+    location: string;
     post?: PostModel;
     teammateNameDisplay: string;
     testID: string;
@@ -38,8 +39,9 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            paddingTop: 16,
+            paddingTop: 12,
             paddingRight: 16,
+            paddingBottom: 6,
             flex: 1,
             flexDirection: 'row',
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.08),
@@ -47,7 +49,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         badgeContainer: {
             marginTop: 3,
-            width: 32,
+            width: 26,
         },
         postContainer: {
             flex: 1,
@@ -56,7 +58,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
             flex: 1,
             flexDirection: 'row',
-            marginBottom: 9,
+            marginBottom: 6,
         },
         headerInfoContainer: {
             alignItems: 'center',
@@ -71,10 +73,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         threadStarter: {
             color: theme.centerChannelColor,
-            fontSize: 15,
-            fontWeight: '600',
-            lineHeight: 22,
-            paddingRight: 8,
+            ...typography('Body', 200, 'SemiBold'),
+            paddingRight: 6,
         },
         channelNameContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
@@ -86,12 +86,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Body', 25, 'SemiBold'),
             letterSpacing: 0.1,
             textTransform: 'uppercase',
-            marginHorizontal: 12,
+            marginHorizontal: 6,
             marginVertical: 2,
         },
         date: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
-            ...typography('Body', 25, 'Light'),
+            ...typography('Body', 50, 'Regular'),
         },
         message: {
             color: theme.centerChannelColor,
@@ -120,7 +120,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Props) => {
+const Thread = ({author, channel, location, post, teammateNameDisplay, testID, thread}: Props) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
@@ -143,7 +143,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
     }, [isTablet, theme, thread]);
 
     const threadStarterName = displayUsername(author, intl.locale, teammateNameDisplay);
-    const testIDPrefix = `${testID}.${thread.id}`;
+    const threadItemTestId = `${testID}.thread_item.${thread.id}`;
 
     const needBadge = thread.unreadMentions || thread.unreadReplies;
     let badgeComponent;
@@ -152,7 +152,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
             badgeComponent = (
                 <View
                     style={styles.mentionBadge}
-                    testID={`${testIDPrefix}.unread_mentions`}
+                    testID={`${threadItemTestId}.unread_mentions.badge`}
                 >
                     <Text style={styles.mentionBadgeText}>{thread.unreadMentions > 99 ? '99+' : thread.unreadMentions}</Text>
                 </View>
@@ -161,7 +161,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
             badgeComponent = (
                 <View
                     style={styles.unreadDot}
-                    testID={`${testIDPrefix}.unread_dot`}
+                    testID={`${threadItemTestId}.unread_dot.badge`}
                 />
             );
         }
@@ -176,6 +176,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
                 defaultMessage='Original Message Deleted'
                 style={[styles.threadStarter, styles.threadDeleted]}
                 numberOfLines={1}
+                testID={`${threadItemTestId}.thread_starter.user_display_name`}
             />
         );
     } else {
@@ -183,6 +184,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
             <Text
                 style={styles.threadStarter}
                 numberOfLines={1}
+                testID={`${threadItemTestId}.thread_starter.user_display_name`}
             >
                 {threadStarterName}
             </Text>
@@ -207,7 +209,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
             underlayColor={changeOpacity(theme.buttonBg, 0.08)}
             onLongPress={showThreadOptions}
             onPress={showThread}
-            testID={`${testIDPrefix}.item`}
+            testID={threadItemTestId}
         >
             <View style={styles.container}>
                 <View style={styles.badgeContainer}>
@@ -222,6 +224,7 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
                                     <Text
                                         style={styles.channelName}
                                         numberOfLines={1}
+                                        testID={`${threadItemTestId}.thread_starter.channel_display_name`}
                                     >
                                         {channel?.displayName}
                                     </Text>
@@ -234,11 +237,15 @@ const Thread = ({author, channel, post, teammateNameDisplay, testID, thread}: Pr
                         />
                     </View>
                     {postBody}
+                    {Boolean(post && thread) &&
                     <ThreadFooter
                         author={author}
-                        testID={`${testIDPrefix}.footer`}
+                        channelId={post!.channelId}
+                        location={location}
+                        testID={`${threadItemTestId}.footer`}
                         thread={thread}
                     />
+                    }
                 </View>
             </View>
         </TouchableHighlight>

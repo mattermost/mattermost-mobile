@@ -19,6 +19,7 @@ import Message from './message';
 import Reactions from './reactions';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type {SearchPattern} from '@typings/global/markdown';
 
 type BodyProps = {
     appsEnabled: boolean;
@@ -34,6 +35,7 @@ type BodyProps = {
     isPostAddChannelMember: boolean;
     location: string;
     post: PostModel;
+    searchPatterns?: SearchPattern[];
     showAddReaction?: boolean;
     theme: Theme;
 };
@@ -74,7 +76,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const Body = ({
     appsEnabled, filesCount, hasReactions, highlight, highlightReplyBar,
     isEphemeral, isFirstReply, isJumboEmoji, isLastReply, isPendingOrFailed, isPostAddChannelMember,
-    location, post, showAddReaction, theme,
+    location, post, searchPatterns, showAddReaction, theme,
 }: BodyProps) => {
     const style = getStyleSheet(theme);
     const isEdited = postEdited(post);
@@ -125,6 +127,7 @@ const Body = ({
     } else if (isPostAddChannelMember) {
         message = (
             <AddMembers
+                location={location}
                 post={post}
                 theme={theme}
             />
@@ -147,6 +150,7 @@ const Body = ({
                 layoutWidth={layoutWidth}
                 location={location}
                 post={post}
+                searchPatterns={searchPatterns}
                 theme={theme}
             />
         );
@@ -177,6 +181,7 @@ const Body = ({
                 }
                 {hasReactions && showAddReaction &&
                 <Reactions
+                    location={location}
                     post={post}
                     theme={theme}
                 />

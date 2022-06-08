@@ -8,6 +8,7 @@ import LinearGradient from 'react-native-linear-gradient';
 
 import CompassIcon from '@components/compass_icon';
 import {CELL_MAX_WIDTH, CELL_MIN_WIDTH} from '@components/markdown/markdown_table_cell';
+import {Screens} from '@constants';
 import DeviceTypes from '@constants/device';
 import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
@@ -143,16 +144,16 @@ class MarkdownTable extends PureComponent<MarkdownTableProps, MarkdownTableState
     };
 
     handlePress = preventDoubleTap(() => {
-        const {intl} = this.context;
-        const screen = 'Table';
+        const {intl} = this.props;
+        const screen = Screens.TABLE;
         const title = intl.formatMessage({
             id: 'mobile.routes.table',
             defaultMessage: 'Table',
         });
         const passProps = {
-            renderRows: this.renderRows,
-            tableWidth: this.getTableWidth(true),
             renderAsFlex: this.shouldRenderAsFlex(true),
+            renderRows: this.renderRows,
+            width: this.getTableWidth(true),
         };
 
         goToScreen(screen, title, passProps);

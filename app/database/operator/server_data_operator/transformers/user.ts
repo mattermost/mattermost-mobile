@@ -40,13 +40,28 @@ export const transformUserRecord = ({action, database, value}: TransformerArgs):
         user.roles = raw.roles;
         user.username = raw.username;
         user.notifyProps = raw.notify_props;
-        user.props = raw.props || null;
         user.timezone = raw.timezone || null;
         user.isBot = raw.is_bot;
         user.remoteId = raw?.remote_id ?? null;
         if (raw.status) {
             user.status = raw.status;
         }
+
+        if (raw.bot_description) {
+            raw.props = {
+                ...raw.props,
+                bot_description: raw.bot_description,
+            };
+        }
+
+        if (raw.bot_last_icon_update) {
+            raw.props = {
+                ...raw.props,
+                bot_last_icon_update: raw.bot_last_icon_update,
+            };
+        }
+
+        user.props = raw.props || null;
     };
 
     return prepareBaseRecord({

@@ -7,39 +7,261 @@ NOTICES:
 This document includes a list of open source components used in Mattermost Mobile, including those that have been modified.
 
 --------
-## @babel/runtime
 
-This product contains 'runtime' by Sebastian McKenzie.
+## @formatjs/intl-datetimeformat
 
-babel's modular runtime helpers
+This product contains '@formatjs/intl-datetimeformat' by FormatJS.
+
+A spec-compliant polyfill for Intl.DateTimeFormat fully tested by the official ECMAScript Conformance test suite
 
 * HOMEPAGE:
-  * https://github.com/babel/babel/tree/master/packages/babel-runtime
+  * https://github.com/formatjs/formatjs#readme
+
+* LICENSE: MIT
+
+--- 
+
+## @formatjs/intl-getcanonicallocales
+
+This product contains '@formatjs/intl-getcanonicallocales' by FormatJS.
+
+A spec-compliant polyfill/ponyfill for Intl.getCanonicalLocales tested by the official ECMAScript Conformance test suite
+
+* HOMEPAGE:
+  * https://github.com/formatjs/formatjs#readme
+
+* LICENSE: MIT
+
+---
+
+## @formatjs/intl-locale
+
+This product contains '@formatjs/intl-locale' by FormatJS.
+
+A spec-compliant polyfill/ponyfill for Intl.Locale tested by the official ECMAScript Conformance test suite
+
+* HOMEPAGE:
+  * https://github.com/formatjs/formatjs#readme
+
+* LICENSE: MIT
+
+---
+
+## @formatjs/intl-numberformat
+
+This product contains '@formatjs/intl-numberformat' by FormatJS.
+
+A polyfill for ESNext Intl.NumberFormat and Number.prototype.toLocaleString.
+
+* HOMEPAGE:
+  * https://github.com/formatjs/formatjs#readme
+
+* LICENSE: MIT
+
+---
+
+## @formatjs/intl-pluralrules
+
+This product contains '@formatjs/intl-pluralrules' by FormatJS.
+
+A spec-compliant polyfill for Intl.PluralRules fully tested by the official ECMAScript Conformance test suite
+
+* HOMEPAGE:
+  * https://github.com/formatjs/formatjs#readme
+
+* LICENSE: MIT
+
+---
+
+## @formatjs/intl-relativetimeformat
+
+This product contains '@formatjs/intl-relativetimeformat' by FormatJS.
+
+A spec-compliant polyfill for Intl.RelativeTimeFormat fully tested by the official ECMAScript Conformance test suite
+
+* HOMEPAGE:
+  * https://github.com/formatjs/formatjs#readme
+
+* LICENSE: MIT
+
+--- 
+
+## @mattermost/compass-icons
+
+This product contains '@mattermost/compass-icons' by Mattermost.
+
+Simple steps to adding new icons to the Compass Icons font
+
+* HOMEPAGE:
+  * https://github.com/mattermost/compass-icons
+
+* LICENSE: Apache License
+
+--- 
+
+## @mattermost/react-native-emm
+
+This product contains '@mattermost/react-native-emm' by Mattermost.
+
+A React Native Module for EMM managed configurations
+
+* HOMEPAGE:
+  * https://github.com/mattermost/react-native-emm
 
 * LICENSE: MIT
 
 MIT License
 
-Copyright (c) 2014-present Sebastian McKenzie and other contributors
+Copyright (c) 2020 Mattermost
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## @mattermost/react-native-network-client
+
+This product contains '@mattermost/react-native-network-client' by Mattermost.
+
+Configurable network clients for React Native. Uses Alamofire for iOS and OkHttp for Android.
+
+* HOMEPAGE:
+  * https://github.com/mattermost/react-native-network-client
+
+* LICENSE: Apache License 2.0
+
+--- 
+
+## @mattermost/react-native-paste-input
+
+This product contains '@mattermost/react-native-paste-input' by Mattermost.
+
+React Native TextInput component have functionality to capture text input from a user by using the soft and hardware keyboards but lacks the ability to restrict copy & paste options as well as allwing pasting different files formats copied from other apps, like images & videos from the Photos gallery app.
+
+* HOMEPAGE:
+  * https://github.com/mattermost/react-native-paste-input
+
+* LICENSE: MIT
+
+---
+
+## @nozbe/watermelondb
+
+This product contains 'cameraroll' by Bartol Karuza.
+
+React-native native module that provides access to the local camera roll or photo library
+
+* HOMEPAGE:
+  * https://github.com/react-native-community/react-native-cameraroll
+
+* LICENSE: MIT
+
+MIT License
+
+Copyright (c) 2020 Elias Nahum
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## @nozbe/with-observables
+
+This product contains '@nozbe/with-observables' by Nozbe.
+
+A higher-order component for connecting RxJS Observables to React components.
+
+* HOMEPAGE:
+  * https://github.com/Nozbe/withObservables
+
+* LICENSE: MIT
+
+MIT License
+
+Copyright (c) Nozbe
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+--- 
+
+## @react-native-community/art
+
+This product contains '@react-native-community/art' by react-native-art.
+
+React Native module that allows you to draw vector graphics
+
+* HOMEPAGE:
+  * https://github.com/react-native-art/art
+
+* LICENSE: MIT
+
+MIT License
+
+Copyright (c) 2019 react-native-community
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ---
 
@@ -113,6 +335,29 @@ SOFTWARE.
 
 ---
 
+## @react-native-community/datetimepicker
+
+This product contains '@react-native-community/datetimepicker' by react-native-datetimepicker.
+
+React Native date & time picker component for iOS, Android and Windows.
+
+* HOMEPAGE:
+  * https://github.com/react-native-datetimepicker/datetimepicker
+
+* LICENSE: MIT
+
+MIT License
+
+Copyright (c) 2019 React Native Community
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+---
+
 ## @react-native-community/netinfo
 
 This product contains 'netinfo' by Matt Oakes.
@@ -145,6 +390,54 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+## @react-native-cookies/cookies
+
+This product contains '@react-native-cookies/cookies' by react-native-cookies.
+
+A Cookie Manager for React Native
+
+* HOMEPAGE:	
+  * https://github.com/react-native-cookies/cookies
+
+* LICENSE: MIT
+
+MIT License
+
+Copyright (c) 2020 React Native Community
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## @react-navigation/bottom-tabs
+
+This product contains '@react-navigation/bottom-tabs' by react-navigation.	
+
+Bottom tab navigator for React Navigation following iOS design guidelines.
+
+* HOMEPAGE:	
+  * https://github.com/react-navigation/react-navigation#readme	
+
+* LICENSE: MIT
 
 ---
 
@@ -185,29 +478,6 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
 ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT	
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS	
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
----
-
-## @react-navigation/stack
-
-This product contains 'react-navigation-stack' by react-navigation.	
-
-Stack navigator for React Navigation	
-
-* HOMEPAGE:	
-  * https://github.com/react-navigation/stack	
-
-* LICENSE: MIT	
-
-MIT License	
-
-Copyright (c) 2017 React Native Community	
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:	
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.	
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---
 
@@ -461,24 +731,63 @@ SOFTWARE.
 
 ---
 
-## analytics-react-native
+## @stream-io/flat-list-mvcp
 
-This product contains a modified version of 'analytics-react-native' by Segment.
+This product contains a modified version of '@stream-io/flat-list-mvcp' by Stream.
 
-The hassle-free way to add analytics to your React-Native app.
+``maintainVisibleContentPosition`` prop support for Android react-native.
 
 * HOMEPAGE:
-  * https://github.com/segmentio/analytics-react-native
+  * https://github.com/GetStream/flat-list-mvcp
 
-* LICENSE: The MIT License (MIT)
+* LICENSE: MIT
 
-Copyright (c) 2018 Segment.io, Inc.
+MIT License
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+Copyright (c) 2020 vishtree
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## base-64
+
+This product contains a modified version of 'base-64' by Dan Kogai.
+
+Yet another Base64 transcoder.
+
+* HOMEPAGE:
+  * https://github.com/dankogai/js-base64
+
+* LICENSE: BSD 3-Clause "New" or "Revised" License
+
+Copyright (c) 2014, Dan Kogai All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+Neither the name of {{{project}}} nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ---
 
@@ -646,37 +955,6 @@ SOFTWARE.
 
 ---
 
-## core-js
-
-This product contains 'core-js' by Denis Pushkarev.
-
-Modular standard library for JavaScript.
-
-* HOMEPAGE:
-  * https://github.com/zloirock/core-js
-
-* LICENSE: Copyright (c) 2014-2019 Denis Pushkarev
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
----
-
 ## deep-equal
 
 This product contains 'deep-equal' by James Halliday.
@@ -775,39 +1053,6 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
----
-
-## form-data
-
-This product contains 'form-data' by form-data.
-
-A module to create readable "multipart/form-data" streams. Can be used to submit forms and file uploads to other web applications.
-
-* HOMEPAGE:
-  * https://github.com/form-data/form-data
-
-* LICENSE: MIT
-
-Copyright (c) 2012 Felix Geisendörfer (felix@debuggable.com) and contributors
-
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
 
 ---
 
@@ -1026,85 +1271,6 @@ Lightweight fuzzy-search
 
 ---
 
-## intl
-
-This product contains 'intl' by Andy Earnshaw.
-
-Polyfill the ECMA-402 Intl API (except collation)
-
-* HOMEPAGE:
-  * https://github.com/andyearnshaw/Intl.js#readme
-
-* LICENSE: MIT
-
-The MIT License (MIT)
-
-Copyright (c) 2013 Andy Earnshaw
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-
-------------------------------------------------------------------------------
-Contents of the `locale-data` directory are a modified form of the Unicode CLDR
-data found at http://www.unicode.org/cldr/data/.  It comes with the following
-license.
-
-COPYRIGHT AND PERMISSION NOTICE
-
-Copyright (c) 1991-2013 Unicode, Inc. All rights reserved. Distributed under
-the Terms of Use in http://www.unicode.org/copyright.html.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-the Unicode data files and any associated documentation (the "Data Files") or
-Unicode software and any associated documentation (the "Software") to deal in
-the Data Files or Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, and/or sell copies
-of the Data Files or Software, and to permit persons to whom the Data Files or
-Software are furnished to do so, provided that (a) the above copyright
-notice(s) and this permission notice appear with all copies of the Data Files
-or Software, (b) both the above copyright notice(s) and this permission notice
-appear in associated documentation, and (c) there is clear notice in each
-modified Data File or in the Software as well as in the documentation
-associated with the Data File(s) or Software that the data or software has been
-modified.
-
-THE DATA FILES AND SOFTWARE ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF THIRD
-PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN
-THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSEQUENTIAL
-DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
-WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
-OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THE DATA FILES OR
-SOFTWARE.
-
-Except as contained in this notice, the name of a copyright holder shall not be
-used in advertising or otherwise to promote the sale, use or other dealings in
-these Data Files or Software without prior written authorization of the
-copyright holder.
-
-Unicode and the Unicode logo are trademarks of Unicode, Inc. in the United
-States and other countries. All third party trademarks referenced herein are
-the property of their respective owners.
-
----
-
 ## jail-monkey
 
 This product contains 'jail-monkey' by Gant Laborde.
@@ -1150,7 +1316,6 @@ Media Type Database
   * https://github.com/jshttp/mime-db#readme
 
 * LICENSE: MIT
-
 
 The MIT License (MIT)
 
@@ -1224,6 +1389,41 @@ React is a JavaScript library for building user interfaces.
 MIT License
 
 Copyright (c) Facebook, Inc. and its affiliates.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## react-freeze
+
+This product contains 'react-freeze' by Software Mansion.
+
+This library lets you freeze the renders of parts of the React component tree using Suspense mechanism introduced in React 17.
+
+* HOMEPAGE:
+  * https://github.com/software-mansion/react-freeze
+
+* LICENSE: MIT
+
+The MIT License (MIT)
+
+Copyright (c) 2021 Software Mansion
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -1334,20 +1534,55 @@ Open Android settings from your React Native app
 
 ---
 
-## react-native-animatable
+## react-native-animated-numbers
 
-This product contains 'react-native-animatable' by Joel Arvidsson.
+This product contains 'react-native-animated-numbers' by Lake (Yeongsu Han).
 
-Easy to use declarative transitions and animations for React Native
+Library showing animation of number changes in react-native
 
 * HOMEPAGE:
-  * https://github.com/oblador/react-native-animatable
+  * https://github.com/heyman333/react-native-animated-numbers
+
+* LICENSE: MIT
+
+MIT License
+
+Copyright (c) 2020 Yeongsu Han
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## react-native-background-timer
+
+This product contains 'react-native-background-timer' by Dávid Ocetník.
+
+Emit event periodically (even when app is in the background).
+
+* HOMEPAGE:
+  * https://github.com/ocetnik/react-native-background-timer
 
 * LICENSE: MIT
 
 The MIT License (MIT)
 
-Copyright (c) 2015 Joel Arvidsson
+Copyright (c) 2016 Dávid Ocetník
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -1438,20 +1673,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---
 
-## react-native-cookies
+## react-native-create-thumbnail
 
-This product contains a modified version of 'react-native-cookies' by Joseph P. Ferraro.
+This product contains a modified version of 'react-native-create-thumbnail' by Souvik Ghosh.
 
-Cookie manager for react native.
+iOS/Android thumbnail generator with support for both local and remote videos. react-native-create-thumbnail is a wrapper around AVAssetImageGenerator (iOS) and MediaMetadataRetriever (Android)
 
 * HOMEPAGE:
-  * https://github.com/react-native-cookies/cookies
+  * https://github.com/souvik-ghosh/react-native-create-thumbnail
 
 * LICENSE: MIT
 
-The MIT License (MIT)
+MIT License
 
-Copyright (c) 2015 shimo
+Copyright (c) 2019 Souvik Ghosh
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -1470,6 +1705,68 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+## react-native-device-info
+
+This product contains a modified version of 'react-native-device-info' by react-native-device-info.
+
+Device Information for React Native.
+
+* HOMEPAGE:
+  * https://github.com/react-native-device-info/react-native-device-info
+
+* LICENSE: MIT
+
+The MIT License (MIT)
+
+Copyright (c) 2015 Rebecca Hughes
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## react-native-document-picker
+
+This product contains a modified version of 'react-native-document-picker' by React Mods.
+
+A React Native wrapper for:
+
+ - Apple's UIDocumentPickerViewController
+ - Android's Intent.ACTION_GET_CONTENT
+ - Windows Windows.Storage.Pickers
+
+* HOMEPAGE:
+  * https://github.com/rnmods/react-native-document-picker
+
+* LICENSE: MIT
+
+MIT License
+
+Copyright (c) 2016 Elyx0
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---
 
@@ -1543,20 +1840,20 @@ SOFTWARE.
 
 ---
 
-## react-native-exception-handler
+## react-native-dotenv
 
-This product contains 'react-native-exception-handler' by master-atul.
+This product contains 'react-native-dotenv' by Kemal Ahmed.
 
-A react native module that lets you to register a global error handler that can capture fatal/non fatal uncaught exceptions.
+Load environment variables using import statements.
 
 * HOMEPAGE:
-  * https://github.com/master-atul/react-native-exception-handler
+  * https://github.com/goatandsheep/react-native-dotenv
 
 * LICENSE: MIT
 
-The MIT License (MIT)
+MIT License
 
-Copyright (c) 2017 Atul
+Copyright (c) 2017 Bertrand Marron
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -1590,6 +1887,41 @@ Cross Platform React Native UI Toolkit
 * LICENSE: The MIT License (MIT)
 
 Copyright (c) 2016 Nader Dabit
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## react-native-exception-handler
+
+This product contains 'react-native-exception-handler' by master-atul.
+
+A react native module that lets you to register a global error handler that can capture fatal/non fatal uncaught exceptions.
+
+* HOMEPAGE:
+  * https://github.com/master-atul/react-native-exception-handler
+
+* LICENSE: MIT
+
+The MIT License (MIT)
+
+Copyright (c) 2017 Atul
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -1658,6 +1990,41 @@ Native file viewer for React Native. Preview any type of file supported by the m
 * LICENSE: MIT License
 
 Copyright (c) 2017 Vincenzo Scamporlino
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## react-native-fs
+
+This product contains 'react-native-fs' by Hagen Hübel.
+
+Native filesystem access for react-native
+
+* HOMEPAGE:
+  * https://github.com/itinance/react-native-fs
+
+* LICENSE: MIT
+
+The MIT License (MIT)
+
+Copyright (c) 2015 Johannes Lumpe
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -1769,30 +2136,6 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
----
-
-## react-native-image-gallery
-
-This product contains a modified version of 'react-native-image-gallery' by Archriss.
-
-Pure JavaScript image gallery component for iOS and Android
-
-* HOMEPAGE:
-  * https://github.com/archriss/react-native-image-gallery#readme
-
-* LICENSE: ISC
-
-Note: An original license file for this dependency is not available. We determined the type of license based on the package registry entry for this project. The following text has been prepared using a template from the SPDX Workgroup (https://spdx.org) for this type of license.
-
-ISC License:
-
-Copyright (c) 2004-2010 by Internet Systems Consortium, Inc. ("ISC")
-Copyright (c) 1995-2003 by Internet Software Consortium
-
-Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
-
-THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL ISC BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---
 
@@ -1971,25 +2314,6 @@ SOFTWARE.
 
 ---
 
-## react-native-local-auth
-
-This product contains a modified version of 'react-native-local-auth' by Mark Vayngrib.
-
-React Native local authentication with touch id or passcode
-
-* HOMEPAGE:
-  * https://github.com/tradle/react-native-local-auth
-
-* LICENSE: ISC
-
-Copyright (c) 2015, [Tradle, Inc](http://tradle.io/)
-
-Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
-
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
----
-
 ## react-native-localize
 
 This product contains 'react-native-localize' by React Native Community.
@@ -2023,20 +2347,20 @@ SOFTWARE.
 
 ---
 
-## react-native-mmkv-storage
+## react-native-math-view
 
-This product contains 'react-native-mmkv-storage' by Ammar Ahmed.
+This product contains a modified version of 'react-native-math-view' by Shachar.
 
-An efficient, small & encrypted mobile key-value storage framework for React Native
+A react native view used to easily display and handle math. The library doesn't use WebView.
 
 * HOMEPAGE:
-  * https://github.com/ammarahm-ed/react-native-mmkv-storage
+  * https://github.com/ShaMan123/react-native-math-view
 
 * LICENSE: MIT
 
 MIT License
 
-Copyright (c) 2020 Ammar Ahmed
+Copyright (c) 2018 ShaMan123
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -2093,6 +2417,41 @@ SOFTWARE.
 
 ---
 
+## react-native-neomorph-shadows
+
+This product contains a modified version of 'react-native-neomorph-shadows' by Daniel.
+
+Shadows and neumorphism/neomorphism for iOS & Android (like iOS).
+
+* HOMEPAGE:
+  * https://github.com/tokkozhin/react-native-neomorph-shadows
+
+* LICENSE: MIT
+
+MIT License
+
+Copyright (c) 2020 tokkozhin
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
 ## react-native-notifications
 
 This product contains a modified version of 'react-native-notifications' by Lidan Hifi.
@@ -2124,41 +2483,6 @@ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
----
-
-## react-native-passcode-status
-
-This product contains 'react-native-passcode-status' by Mark Vayngrib.
-
-check if device-level passcode is supported/enabled/disabled
-
-* HOMEPAGE:
-  * https://github.com/tradle/react-native-passcode-status
-
-* LICENSE: MIT
-
-The MIT License (MIT)
-
-Copyright (c) 2015 Tradle
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
 
 ---
 
@@ -2358,6 +2682,41 @@ limitations under the License.
 
 ---
 
+## react-native-share
+
+This product contains 'react-native-share' by react-native-share.
+
+React Native Share, a simple tool for share message and file to other apps.
+
+* HOMEPAGE:
+  * https://github.com/react-native-share/react-native-share
+
+* LICENSE: MIT
+
+The MIT License (MIT)
+
+Copyright (c) 2015 Esteban Fuentealba 🇨🇱, Mateus Andrade 🇧🇷, Mike Hardy 🇪🇨, João Marins 🇧🇷
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
 ## react-native-svg
 
 This product contains 'react-native-svg' by React Native Community.
@@ -2498,160 +2857,20 @@ SOFTWARE.
 
 ---
 
-## react-native-youtube
+## react-syntax-highlighter
 
-This product contains a modified version of 'react-native-youtube' by Param Aggarwal.
+This product contains a modified version of 'react-syntax-highlighter' by React Syntax Highlighter.
 
-A <YouTube/> component for React Native.
-
-* HOMEPAGE:
-  * https://github.com/inProgress-team/react-native-youtube#readme
-
-* LICENSE: MIT
-
-The MIT License (MIT)
-
-Copyright (c) 2015 Param Aggarwal
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-----
-
-## react-redux
-
-This product contains 'react-redux' by Dan Abramov.
-
-Official React bindings for Redux
+Syntax highlighting component for React using the seriously super amazing lowlight and refractor by wooorm
 
 * HOMEPAGE:
-  * https://github.com/reduxjs/react-redux
-
-* LICENSE: MIT
-
-The MIT License (MIT)
-
-Copyright (c) 2015-present Dan Abramov
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
----
-
-## redux
-
-This product contains 'redux' by Redux.
-
-Predictable state container for JavaScript apps
-
-* HOMEPAGE:
-  * http://redux.js.org
-
-* LICENSE: MIT
-
-The MIT License (MIT)
-
-Copyright (c) 2015-present Dan Abramov
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
----
-
-## redux-action-buffer
-
-This product contains 'redux-action-buffer' by Zack Story.
-
-A middleware for redux that buffers all actions into a queue until a breaker condition is met, at which point the queue is released (i.e. actions are triggered).
-
-* HOMEPAGE:
-  * https://github.com/rt2zz/redux-action-buffer
-
-* LICENSE: MIT
-
-The MIT License (MIT)
-
-Copyright (c) 2015-2017 rt2zz and contributors
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
----
-
-## redux-batched-actions
-
-This product contains 'redux-batched-actions' by Tim Shelburne.
-
-redux higher order reducer + action creator to reduce actions under a single subscriber notification
-
-* HOMEPAGE:
-  * https://github.com/tshelburne/redux-batched-actions
+  * https://github.com/react-syntax-highlighter/react-syntax-highlighter
 
 * LICENSE: MIT
 
 MIT License
 
-Copyright (c) 2016 Tim Shelburne
+Copyright (c) 2019 Conor Hastings
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -2673,143 +2892,24 @@ SOFTWARE.
 
 ---
 
-## redux-persist
+## reanimated-bottom-sheet
 
-This product contains 'redux-persist' by Zack Story.
+This product contains a modified version of 'reanimated-bottom-sheet' by Michał Osadnik.
 
-persist and rehydrate redux stores
+Highly configurable component imitating native bottom sheet behavior, with fully native 60 FPS animations!
 
 * HOMEPAGE:
-  * https://github.com/rt2zz/redux-persist#readme
+  * https://github.com/osdnk/react-native-reanimated-bottom-sheet
 
 * LICENSE: MIT
 
-MIT License
+Copyright 2019 – present Michał Osadnik
 
-Copyright (c) 2017 Zack Story
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
----
-
-## redux-persist-transform-filter
-
-This product contains 'redux-persist-transform-filter' by Eduard Baun.
-
-Filter transformator for redux-persist
-
-* HOMEPAGE:
-  * https://github.com/edy/redux-persist-transform-filter#readme
-
-* LICENSE: MIT
-
-MIT License
-
-Copyright (c) 2016 Eduard Baun
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
----
-
-## redux-thunk
-
-This product contains 'redux-thunk' by Dan Abramov.
-
-Thunk middleware for Redux.
-
-* HOMEPAGE:
-  * https://github.com/reduxjs/redux-thunk
-
-* LICENSE: MIT
-
-The MIT License (MIT)
-
-Copyright (c) 2015-present Dan Abramov
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
----
-
-## reselect
-
-This product contains 'reselect' by Lee Bannard.
-
-Selectors for Redux.
-
-* HOMEPAGE:
-  * https://github.com/reduxjs/reselect#readme
-
-* LICENSE: MIT
-
-The MIT License (MIT)
-
-Copyright (c) 2015-2018 Reselect Contributors
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---
 

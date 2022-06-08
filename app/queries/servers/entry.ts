@@ -26,9 +26,10 @@ type PrepareModelsArgs = {
     chData?: MyChannelsRequest;
     prefData?: MyPreferencesRequest;
     meData?: MyUserRequest;
+    isCRTEnabled?: boolean;
 }
 
-export async function prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData}: PrepareModelsArgs, isGraphQl = false): Promise<Array<Promise<Model[]>>> {
+export async function prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData, isCRTEnabled}: PrepareModelsArgs, isGraphQL = false): Promise<Array<Promise<Model[]>>> {
     const modelPromises: Array<Promise<Model[]>> = [];
 
     if (removeTeams?.length) {
@@ -53,10 +54,10 @@ export async function prepareModels({operator, initialTeamId, removeTeams, remov
     }
 
     if (initialTeamId && chData?.channels?.length && chData.memberships?.length) {
-        if (isGraphQl) {
+        if (isGraphQL) {
             modelPromises.push(...await prepareMyGraphQLChannels(operator, chData.channels, chData.memberships, chData.stats!));
         } else {
-            modelPromises.push(...await prepareMyChannelsForTeam(operator, initialTeamId, chData.channels, chData.memberships));
+            modelPromises.push(...await prepareMyChannelsForTeam(operator, initialTeamId, chData.channels, chData.memberships, isCRTEnabled));
         }
     }
 

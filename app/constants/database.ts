@@ -18,6 +18,10 @@ export const MM_TABLES = {
         CUSTOM_EMOJI: 'CustomEmoji',
         DRAFT: 'Draft',
         FILE: 'File',
+        GROUP: 'Group',
+        GROUP_CHANNEL: 'GroupChannel',
+        GROUP_MEMBERSHIP: 'GroupMembership',
+        GROUP_TEAM: 'GroupTeam',
         MY_CHANNEL: 'MyChannel',
         MY_CHANNEL_SETTINGS: 'MyChannelSettings',
         MY_TEAM: 'MyTeam',
@@ -66,6 +70,7 @@ export const SYSTEM_IDENTIFIERS = {
 export const GLOBAL_IDENTIFIERS = {
     DEVICE_TOKEN: 'deviceToken',
     MULTI_SERVER_TUTORIAL: 'multiServerTutorial',
+    PROFILE_LONG_PRESS_TUTORIAL: 'profileLongPressTutorial',
 };
 
 export default {

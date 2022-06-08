@@ -106,6 +106,7 @@ const DirectChannel = ({channel, currentUserId, isBot, members, theme}: Props) =
         if (channel.type === General.DM_CHANNEL) {
             return (
                 <Member
+                    channelId={channel.id}
                     containerStyle={{height: 96}}
                     member={channelMembers[0]}
                     size={96}
@@ -147,7 +148,6 @@ const DirectChannel = ({channel, currentUserId, isBot, members, theme}: Props) =
                 header={true}
                 favorite={true}
                 people={false}
-                theme={theme}
             />
         </View>
     );

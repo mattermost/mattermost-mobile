@@ -13,7 +13,6 @@ import {calculateDimensions, getViewPortWidth} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getYouTubeVideoId, tryOpenURL} from '@utils/url';
 
-// @ts-expect-error import svg
 import YouTubeLogo from './youtube.svg';
 
 type YouTubeProps = {
@@ -67,7 +66,7 @@ const YouTube = ({isReplyPost, layoutWidth, metadata}: YouTubeProps) => {
     const dimensions = calculateDimensions(
         MAX_YOUTUBE_IMAGE_HEIGHT,
         MAX_YOUTUBE_IMAGE_WIDTH,
-        layoutWidth || (getViewPortWidth(isReplyPost, isTablet) - 15),
+        layoutWidth || (getViewPortWidth(isReplyPost, isTablet) - 6),
     );
 
     const playYouTubeVideo = useCallback(() => {

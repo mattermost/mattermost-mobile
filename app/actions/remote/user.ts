@@ -110,6 +110,79 @@ export async function fetchProfilesInChannel(serverUrl: string, channelId: strin
     }
 }
 
+export async function fetchProfilesInGroupChannels(serverUrl: string, groupChannelIds: string[], fetchOnly = false): Promise<ProfilesPerChannelRequest> {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const {database} = operator;
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        // let's filter those channels that we already have the users
+        const membersCount = await getMembersCountByChannelsId(database, groupChannelIds);
+        const channelsToFetch = groupChannelIds.filter((c) => membersCount[c] <= 1);
+        if (!channelsToFetch.length) {
+            return {data: []};
+        }
+
+        // Batch fetching profiles per channel by chunks of 50
+        const gms = chunk(channelsToFetch, 50);
+        const data: ProfilesInChannelRequest[] = [];
+
+        const requests = gms.map((cIds) => client.getProfilesInGroupChannels(cIds));
+        const response = await Promise.all(requests);
+        for (const r of response) {
+            for (const id in r) {
+                if (r[id]) {
+                    data.push({
+                        channelId: id,
+                        users: r[id],
+                    });
+                }
+            }
+        }
+
+        if (!fetchOnly) {
+            const modelPromises: Array<Promise<Model[]>> = [];
+            const users = new Set<UserProfile>();
+            const memberships: Array<{channel_id: string; user_id: string}> = [];
+            for (const item of data) {
+                if (item.users?.length) {
+                    for (const u of item.users) {
+                        users.add(u);
+                        memberships.push({channel_id: item.channelId, user_id: u.id});
+                    }
+                }
+            }
+            if (memberships.length) {
+                modelPromises.push(operator.handleChannelMembership({
+                    channelMemberships: memberships,
+                    prepareRecordsOnly: true,
+                }));
+            }
+            if (users.size) {
+                const prepare = prepareUsers(operator, Array.from(users));
+                modelPromises.push(prepare);
+            }
+
+            const models = await Promise.all(modelPromises);
+            await operator.batchRecords(models.flat());
+        }
+
+        return {data};
+    } catch (error) {
+        return {error};
+    }
+}
+
 export async function fetchProfilesPerChannels(serverUrl: string, channelIds: string[], excludeUserId?: string, fetchOnly = false): Promise<ProfilesPerChannelRequest> {
     try {
         const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -121,10 +194,13 @@ export async function fetchProfilesPerChannels(serverUrl: string, channelIds: st
 
         // let's filter those channels that we already have the users
         const membersCount = await getMembersCountByChannelsId(database, channelIds);
-        const channelsToFetch = channelIds.filter((c) => membersCount[c] <= 1 || membersCount[c] > 2);
+        const channelsToFetch = channelIds.filter((c) => membersCount[c] <= 1);
+        if (!channelsToFetch.length) {
+            return {data: []};
+        }
 
-        // Batch fetching profiles per channel by chunks of 50
-        const channels = chunk(channelsToFetch, 50);
+        // Batch fetching profiles per channel by chunks of 300
+        const channels = chunk(channelsToFetch, 300);
         const data: ProfilesInChannelRequest[] = [];
 
         for await (const cIds of channels) {
@@ -139,10 +215,12 @@ export async function fetchProfilesPerChannels(serverUrl: string, channelIds: st
             const memberships: Array<{channel_id: string; user_id: string}> = [];
             for (const item of data) {
                 if (item.users?.length) {
-                    item.users.forEach((u) => {
-                        users.add(u);
-                        memberships.push({channel_id: item.channelId, user_id: u.id});
-                    });
+                    for (const u of item.users) {
+                        if (u.id !== excludeUserId) {
+                            users.add(u);
+                            memberships.push({channel_id: item.channelId, user_id: u.id});
+                        }
+                    }
                 }
             }
             if (memberships.length) {
@@ -152,7 +230,7 @@ export async function fetchProfilesPerChannels(serverUrl: string, channelIds: st
                 }));
             }
             if (users.size) {
-                const prepare = prepareUsers(operator, Array.from(users).filter((u) => u.id !== excludeUserId));
+                const prepare = prepareUsers(operator, Array.from(users));
                 modelPromises.push(prepare);
             }
 
@@ -743,4 +821,44 @@ export const autoUpdateTimezone = async (serverUrl: string, {deviceTimezone, use
         await updateMe(serverUrl, {timezone});
     }
     return null;
+};
+
+export const fetchTeamAndChannelMembership = async (serverUrl: string, userId: string, teamId: string, channelId?: string) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl].operator;
+    if (!operator) {
+        return {error: `No database present for ${serverUrl}`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const requests = await Promise.all([
+            client.getTeamMember(teamId, userId),
+            channelId ? client.getChannelMember(channelId, userId) : undefined,
+        ]);
+
+        const modelPromises: Array<Promise<Model[]>> = [];
+        modelPromises.push(operator.handleTeamMemberships({
+            teamMemberships: [requests[0]],
+            prepareRecordsOnly: true,
+        }));
+        const channelMemberships = requests[1];
+        if (channelMemberships) {
+            modelPromises.push(operator.handleChannelMembership({
+                channelMemberships: [channelMemberships],
+                prepareRecordsOnly: true,
+            }));
+        }
+
+        const models = await Promise.all(modelPromises);
+        await operator.batchRecords(models.flat());
+        return {error: undefined};
+    } catch (error) {
+        return {error};
+    }
 };

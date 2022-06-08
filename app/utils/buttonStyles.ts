@@ -241,16 +241,16 @@ export const buttonBackgroundStyle = (
             },
             inverted: {
                 default: {
-                    backgroundColor: changeOpacity('#FFFFFF', 0.12),
+                    backgroundColor: changeOpacity(theme.sidebarText, 0.12),
                 },
                 hover: {
-                    backgroundColor: changeOpacity('#FFFFFF', 0.16),
+                    backgroundColor: changeOpacity(theme.sidebarText, 0.16),
                 },
                 active: {
-                    backgroundColor: changeOpacity('#FFFFFF', 0.24),
+                    backgroundColor: changeOpacity(theme.sidebarText, 0.24),
                 },
                 focus: {
-                    backgroundColor: changeOpacity('#FFFFFF', 0.08),
+                    backgroundColor: changeOpacity(theme.sidebarText, 0.08),
                     borderColor: theme.sidebarTextActiveBorder, // @to-do; needs 32% white?
                     borderWidth: 2,
                 },
@@ -386,6 +386,10 @@ export const buttonTextStyle = (
     if ((type === 'inverted' && emphasis === 'primary') ||
         (type !== 'inverted' && emphasis !== 'primary')) {
         color = theme.buttonBg;
+    }
+
+    if (type === 'inverted' && emphasis === 'tertiary') {
+        color = theme.sidebarText;
     }
 
     const styles = StyleSheet.create({

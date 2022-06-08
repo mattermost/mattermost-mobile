@@ -5,7 +5,7 @@ import keyMirror from '@utils/key_mirror';
 
 export default keyMirror({
     ACCOUNT_SELECT_TABLET_VIEW: null,
-    CHANNEL_DELETED: null,
+    CHANNEL_ARCHIVED: null,
     CLOSE_BOTTOM_SHEET: null,
     CONFIG_CHANGED: null,
     FETCHING_POSTS: null,
@@ -26,4 +26,5 @@ export default keyMirror({
     POST_LIST_SCROLL_TO_BOTTOM: null,
     SWIPEABLE: null,
     ITEM_IN_VIEWPORT: null,
+    SEND_TO_POST_DRAFT: null,
 });
