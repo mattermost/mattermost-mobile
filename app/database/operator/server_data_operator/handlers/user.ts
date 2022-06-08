@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Q} from '@nozbe/watermelondb';
-
 import {MM_TABLES} from '@constants/database';
 import {buildPreferenceKey} from '@database/operator/server_data_operator/comparators';
 import {
@@ -45,14 +43,13 @@ const UserHandler = (superclass: any) => class extends superclass {
 
         // WE NEED TO SYNC THE PREFS FROM WHAT WE GOT AND WHAT WE HAVE
         const deleteValues: PreferenceModel[] = [];
+        const stored = await this.database.get(PREFERENCE).query().fetch() as PreferenceModel[];
+        const preferenesMap = new Map(stored.map((p) => {
+            return [`${p.category}-${p.name}`, p];
+        }));
         if (sync) {
-            const stored = await this.database.get(PREFERENCE).query().fetch() as PreferenceModel[];
-            const preferenceMap = preferences.reduce((r: Record<string, boolean>, p) => {
-                r[`${p.category}-${p.name}`] = true;
-                return r;
-            }, {});
             for (const pref of stored) {
-                const exists = preferenceMap[`${pref.category}-${pref.name}`];
+                const exists = preferenesMap.get(`${pref.category}-${pref.name}`);
                 if (!exists) {
                     pref.prepareDestroyPermanently();
                     deleteValues.push(pref);
@@ -60,12 +57,31 @@ const UserHandler = (superclass: any) => class extends superclass {
             }
         }
 
+        const createOrUpdateRawValues = preferences.reduce((res: PreferenceType[], p) => {
+            const id = `${p.category}-${p.name}`;
+            const exist = preferenesMap.get(id);
+            if (!exist) {
+                res.push(p);
+                return res;
+            }
+
+            if (p.category !== exist.category || p.name !== exist.name || p.value !== exist.value) {
+                res.push(p);
+            }
+
+            return res;
+        }, []);
+
+        if (!createOrUpdateRawValues.length) {
+            return [];
+        }
+
         const records: PreferenceModel[] = await this.handleRecords({
             fieldName: 'user_id',
             buildKeyRecordBy: buildPreferenceKey,
             transformer: transformPreferenceRecord,
             prepareRecordsOnly: true,
-            createOrUpdateRawValues: preferences,
+            createOrUpdateRawValues,
             tableName: PREFERENCE,
         });
 
@@ -97,30 +113,7 @@ const UserHandler = (superclass: any) => class extends superclass {
             return [];
         }
 
-        const uniqueRaws = getUniqueRawsBy({raws: users, key: 'id'}) as UserProfile[];
-        const ids = uniqueRaws.map((u: UserProfile) => u.id);
-        const db: Database = this.database;
-        const existing = await db.get<UserModel>(USER).query(
-            Q.where('id', Q.oneOf(ids)),
-        ).fetch();
-        const usersMap = new Map<string, UserModel>(existing.map((user) => [user.id, user]));
-        const createOrUpdateRawValues = uniqueRaws.reduce((res: UserProfile[], u) => {
-            const e = usersMap.get(u.id);
-            if (!e) {
-                res.push(u);
-                return res;
-            }
-
-            if (u.update_at !== e.updateAt || u.delete_at !== e.deleteAt) {
-                res.push(u);
-            }
-
-            return res;
-        }, []);
-
-        if (!createOrUpdateRawValues.length) {
-            return [];
-        }
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: users, key: 'id'});
 
         return this.handleRecords({
             fieldName: 'id',
