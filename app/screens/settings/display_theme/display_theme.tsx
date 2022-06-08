@@ -46,8 +46,7 @@ const DisplayTheme = ({allowedThemeKeys, currentTeamId, currentUserId}: DisplayT
     }, [theme.type === 'custom']);
 
     const updateTheme = useCallback((selectedThemeKey: string) => {
-        const allThemes = [...allowedThemeKeys];
-        const selectedTheme = allThemes.find((tk) => tk === selectedThemeKey);
+        const selectedTheme = allowedThemeKeys.find((tk) => tk === selectedThemeKey);
         if (!selectedTheme) {
             return;
         }
@@ -58,7 +57,7 @@ const DisplayTheme = ({allowedThemeKeys, currentTeamId, currentUserId}: DisplayT
             value: JSON.stringify(Preferences.THEMES[selectedTheme]),
         };
         savePreference(serverUrl, [pref]);
-    }, [serverUrl]);
+    }, [serverUrl, allowedThemeKeys, currentTeamId]);
 
     return (
         <ScrollView style={styles.container}>
