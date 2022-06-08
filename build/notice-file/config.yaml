@@ -1,0 +1,14 @@
+---
+
+title: "Mattermost Mobile"
+copyright: "© 2016-present Mattermost, Inc.  All Rights Reserved.  See LICENSE.txt for license information."
+description: "This document includes a list of open source components used in Mattermost Mobile, including those that have been modified."
+reviewers: 
+  - "mattermost/release-managers"
+  - "enahum"
+search:
+  - "package.json"
+dependencies: []
+devDependencies: []
+
+...
