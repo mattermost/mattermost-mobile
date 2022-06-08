@@ -128,7 +128,7 @@ const Filter = ({initialFilter, setFilter}: FilterProps) => {
         dismissBottomSheet();
     }, [selectedFilter, setFilter]);
 
-    const buttonText = intl.formatMessage({id: 'screen.search.results.filter.show_results', defaultMessage: 'Show results'});
+    const buttonText = intl.formatMessage({id: 'screen.search.results.filter.show_button', defaultMessage: 'Show results'});
     const buttonTitle = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
 
     return (

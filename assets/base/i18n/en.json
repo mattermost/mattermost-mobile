@@ -638,6 +638,8 @@
   "screen.search.results.filter.presentations": "Presentations",
   "screen.search.results.filter.spreadsheets": "Spreadsheets",
   "screen.search.results.filter.videos": "Videos",
+  "screen.search.results.filter.show_button": "Show results",
+  "screen.search.results.filter.title": "Filter by file type",
   "screens.channel_edit": "Edit Channel",
   "screens.channel_edit_header": "Edit Channel Header",
   "screens.channel_info": "Channel Info",
