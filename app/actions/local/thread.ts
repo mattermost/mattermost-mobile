@@ -3,11 +3,12 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {ActionType, General, Navigation, Screens} from '@constants';
+import {ActionType, General, Navigation, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getTranslations, t} from '@i18n';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCurrentTeamId, getCurrentUserId, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory} from '@queries/servers/team';
 import {getIsCRTEnabled, getThreadById, prepareThreadsFromReceivedPosts, queryThreadsInTeam} from '@queries/servers/thread';
@@ -15,7 +16,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import {goToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
-import {changeOpacity} from '@utils/theme';
+import {changeOpacity, setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
 
 import type Model from '@nozbe/watermelondb/Model';
 
@@ -80,9 +81,22 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
             return {error: 'Channel not found'};
         }
 
-        const theme = EphemeralStore.theme;
+        let theme = EphemeralStore.theme;
         if (!theme) {
-            return {error: 'Theme not found'};
+            theme = Preferences.THEMES.denim;
+
+            // When opening the app from a push notification the theme may not be set in the EphemeralStore
+            // causing the goToScreen to use the Appearance theme instead and that causes the screen background color to potentially
+            // not match the theme
+            let teamId = channel.teamId;
+            if (!teamId) {
+                teamId = await getCurrentTeamId(database);
+            }
+            const themes = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_THEME, teamId).fetch();
+            if (themes.length) {
+                theme = setThemeDefaults(JSON.parse(themes[0].value) as Theme);
+            }
+            updateThemeIfNeeded(theme!, true);
         }
 
         // Modal right buttons
@@ -126,7 +140,7 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
                     text: title,
                 },
                 subtitle: {
-                    color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
+                    color: changeOpacity(theme!.sidebarHeaderTextColor, 0.72),
                     text: subtitle,
                 },
                 noBorder: true,
