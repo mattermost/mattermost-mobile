@@ -202,7 +202,6 @@ const ChannelListHeader = ({
                     >
                         {serverDisplayName}
                     </Text>
-                    <LoadingUnreads/>
                     {(pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED) && (
                         <TouchableWithFeedback
                             onPress={onPushAlertPress}
@@ -217,6 +216,7 @@ const ChannelListHeader = ({
                             />
                         </TouchableWithFeedback>
                     )}
+                    <LoadingUnreads/>
                 </View>
             </>
         );
