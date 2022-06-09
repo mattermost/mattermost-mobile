@@ -39,6 +39,7 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
         channel.createAt = raw.create_at;
         channel.creatorId = raw.creator_id;
         channel.deleteAt = raw.delete_at;
+        channel.updateAt = raw.update_at;
 
         channel.displayName = extractChannelDisplayName(raw, record);
         channel.isGroupConstrained = Boolean(raw.group_constrained);
