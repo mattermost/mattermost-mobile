@@ -4,8 +4,10 @@
 import {Q} from '@nozbe/watermelondb';
 import {field, lazy} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
-import {MM_TABLES} from '@constants/database';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type GroupInterface from '@typings/database/models/servers/group';
@@ -80,4 +82,8 @@ export default class GroupModel extends Model implements GroupInterface {
     @lazy members = this.collections.
         get<UserModel>(USER).
         query(Q.on(GROUP_MEMBERSHIP, 'group_id', this.id));
+
+    @lazy isCurrentUserAMember = this.members.observe().pipe(switchMap((members) => {
+        return of$(Boolean(members.find((m) => m.id === SYSTEM_IDENTIFIERS.CURRENT_USER_ID)));
+    }));
 }

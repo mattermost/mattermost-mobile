@@ -31,6 +31,34 @@ export const fetchGroupsForAutocomplete = async (serverUrl: string, query: strin
     }
 };
 
+export const fetchGroupsByNames = async (serverUrl: string, names: string[], fetchOnly = false) => {
+    try {
+        const client: Client = NetworkManager.getClient(serverUrl);
+        const promises: Array <Promise<Group[]>> = [];
+
+        names.forEach((name) => {
+            promises.push(client.getGroups(name));
+        });
+
+        const groups = (await Promise.all(promises)).flat();
+
+        // Save locally
+        if (!fetchOnly) {
+            return await storeGroups(serverUrl, groups);
+        }
+
+        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+        if (!operator) {
+            throw new Error(`${serverUrl} operator not found`);
+        }
+
+        return await prepareGroups(operator, groups);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
 export const fetchGroupsForChannel = async (serverUrl: string, channelId: string, fetchOnly = false) => {
     try {
         const client = NetworkManager.getClient(serverUrl);

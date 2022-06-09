@@ -4,12 +4,12 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Database} from '@nozbe/watermelondb';
 import Clipboard from '@react-native-community/clipboard';
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {GestureResponderEvent, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {fetchGroupsForAutocomplete} from '@actions/remote/groups';
+import {fetchUserOrGroupsByMentionsInBatch} from '@actions/remote/user';
 import {useServerUrl} from '@app/context/server';
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -59,10 +59,20 @@ const AtMention = ({
     users,
     groups,
 }: AtMentionProps) => {
+    // Hooks
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const theme = useTheme();
     const insets = useSafeAreaInsets();
+    const serverUrl = useServerUrl();
+
+    // Effects
+    useEffect(() => {
+        // Fetches and updates the local db store with the mention
+        fetchUserOrGroupsByMentionsInBatch(serverUrl, mentionName);
+    }, []);
+
+    // Checks if the mention is a user
     const user = useMemo(() => {
         const usersByUsername = getUsersByUsername(users);
         let mn = mentionName.toLowerCase();
@@ -84,10 +94,22 @@ const AtMention = ({
         return new UserModel(database.get(USER), {username: ''});
     }, [users, mentionName]);
 
-    const serverUrl = useServerUrl();
+    const userMentionKeys = useMemo(() => {
+        if (mentionKeys) {
+            return mentionKeys;
+        }
 
+        // If the mentioned user is not the current user, ignore mention keys
+        if (user.id !== currentUserId) {
+            return [];
+        }
+
+        return user.mentionKeys;
+    }, [currentUserId, mentionKeys, user]);
+
+    // Checks if the mention is a group
     const group = useMemo(() => {
-        if (user) {
+        if (user?.username) {
             return undefined;
         }
         const getGroupsByName = (gs: GroupModelType[]) => {
@@ -119,18 +141,6 @@ const AtMention = ({
         // @ts-expect-error: The model constructor is hidden within WDB type definition
         return new GroupModel(database.get(GROUP), {name: ''});
     }, [groups, user, mentionName]);
-
-    const userMentionKeys = useMemo(() => {
-        if (mentionKeys) {
-            return mentionKeys;
-        }
-
-        if (user.id !== currentUserId) {
-            return [];
-        }
-
-        return user.mentionKeys;
-    }, [currentUserId, mentionKeys, user]);
 
     const goToUserProfile = () => {
         const screen = 'UserProfile';
@@ -223,31 +233,20 @@ const AtMention = ({
         mention = displayUsername(user, user.locale, teammateNameDisplay);
         isMention = true;
         canPress = true;
+    } else if (group?.name) {
+        // highlighted = group.isMember(currentUserId);
+        mention = group.name;
+        isMention = true;
+        canPress = false;
     } else {
         const pattern = new RegExp(/\b(all|channel|here)(?:\.\B|_\b|\b)/, 'i');
         const mentionMatch = pattern.exec(mentionName);
-
         if (mentionMatch && !disableAtChannelMentionHighlight) {
             mention = mentionMatch.length > 1 ? mentionMatch[1] : mentionMatch[0];
             suffix = mentionName.replace(mention, '');
             isMention = true;
             highlighted = true;
         } else {
-            // Search groups end point; otherwise local lookup
-            fetchGroupsForAutocomplete(serverUrl, mentionName).
-                then((fetchedGroups) => {
-                    if (Array.isArray(fetchedGroups) && fetchedGroups.length) {
-                        // See if any of the fetched ones are an exact match
-                        const matchedGroup = fetchedGroups.find((g) => g.name === mentionName);
-
-                        if (matchedGroup || group) {
-                            isMention = true;
-                        }
-                    }
-                }).
-                // eslint-disable-next-line no-console
-                catch(console.log);
-
             mention = mentionName;
         }
     }
