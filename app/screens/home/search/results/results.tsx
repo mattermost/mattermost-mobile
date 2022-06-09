@@ -13,7 +13,7 @@ import {useTheme} from '@context/theme';
 import {PostModel} from '@database/models/server';
 import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
 
-import FileCard from './fileCard';
+import FileCard from './file_card';
 import Loader from './loader';
 
 const notImplementedComponent = (

@@ -2,12 +2,16 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Text, View} from 'react-native';
+import {useIntl} from 'react-intl';
+import {Text, View, TouchableOpacity} from 'react-native';
 
 import FileIcon from '@components/post_list/post/body/files/file_icon';
 import {useTheme} from '@context/theme';
+import {bottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import FileOptions from './file_options';
 
 type Props = {
     fileInfo: FileInfo;
@@ -41,13 +45,39 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 export default function FileCard({fileInfo}: Props) {
     const theme = useTheme();
+    const intl = useIntl();
     const style = getStyleSheet(theme);
+
+    const onPress = () => {
+        const renderContent = () => {
+            return (
+                <FileOptions
+                    fileInfo={fileInfo}
+                />
+
+            );
+        };
+        bottomSheet({
+            closeButtonId: 'close-search-file-options',
+            renderContent,
+            snapPoints: [400, 10],
+            theme,
+
+            // remove following
+            title: intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'}),
+        });
+    };
     return (
         <View style={[style.container, style.border]}>
-            <Text style={style.message}>{'To be implemented'}</Text>
-            <Text style={style.message}>{`Name: ${fileInfo.name}`}</Text>
-            <Text style={style.message}>{`Size: ${fileInfo.size}`}</Text>
-            <FileIcon/>
+            <TouchableOpacity onPress={onPress}>
+                <Text style={style.message}>{'To be implemented'}</Text>
+                <Text style={style.message}>{`Name: ${fileInfo.name}`}</Text>
+                <Text style={style.message}>{`Size: ${fileInfo.size}`}</Text>
+                <FileIcon
+                    file={fileInfo}
+                    iconSize={48}
+                />
+            </TouchableOpacity>
         </View>
     );
 }
