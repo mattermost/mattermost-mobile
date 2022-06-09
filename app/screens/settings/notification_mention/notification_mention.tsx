@@ -36,10 +36,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 type NotificationMentionProps = {
-    isCRTEnabled: boolean;
+    componentId: string;
     currentUser: UserModel;
+    isCRTEnabled: boolean;
 }
-const NotificationMention = ({currentUser, isCRTEnabled}: NotificationMentionProps) => {
+const NotificationMention = ({componentId, currentUser, isCRTEnabled}: NotificationMentionProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -54,7 +55,10 @@ const NotificationMention = ({currentUser, isCRTEnabled}: NotificationMentionPro
                 contentContainerStyle={styles.scrollViewContent}
                 alwaysBounceVertical={false}
             >
-                <MentionSettings currentUser={currentUser}/>
+                <MentionSettings
+                    currentUser={currentUser}
+                    componentId={componentId}
+                />
                 {!isCRTEnabled && (
                     <ReplySettings/>
                 )}
