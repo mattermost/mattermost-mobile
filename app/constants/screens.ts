@@ -37,7 +37,7 @@ export const PERMALINK = 'Permalink';
 export const PINNED_MESSAGES = 'PinnedMessages';
 export const POST_OPTIONS = 'PostOptions';
 export const REACTIONS = 'Reactions';
-export const SAVED_POSTS = 'SavedPosts';
+export const SAVED_MESSAGES = 'SavedMessages';
 export const SEARCH = 'Search';
 export const SELECT_TEAM = 'SelectTeam';
 export const SERVER = 'Server';
@@ -91,7 +91,7 @@ export default {
     PINNED_MESSAGES,
     POST_OPTIONS,
     REACTIONS,
-    SAVED_POSTS,
+    SAVED_MESSAGES,
     SEARCH,
     SELECT_TEAM,
     SERVER,
@@ -124,7 +124,6 @@ export const MODAL_SCREENS_WITHOUT_BACK = [
     GALLERY,
     PERMALINK,
     REACTIONS,
-    SAVED_POSTS,
 ];
 
 export const NOT_READY = [

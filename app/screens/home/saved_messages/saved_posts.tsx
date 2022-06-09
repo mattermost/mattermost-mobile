@@ -2,14 +2,15 @@
 // See LICENSE.txt for license information.
 
 import {useIsFocused, useRoute} from '@react-navigation/native';
-import React, {useCallback, useState, useEffect, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {ActivityIndicator, DeviceEventEmitter, FlatList, Platform, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, FlatList, Platform, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
-import {SafeAreaView, Edge, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {fetchRecentMentions} from '@actions/remote/search';
+import {fetchSavedPosts} from '@actions/remote/post';
 import FreezeScreen from '@components/freeze_screen';
+import Loading from '@components/loading';
 import NavigationHeader from '@components/navigation_header';
 import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
@@ -19,21 +20,21 @@ import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
-import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
+import {isDateLine, getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import EmptyState from './components/empty';
 
 import type {ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
 
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
-const EDGES: Edge[] = ['bottom', 'left', 'right'];
-
 type Props = {
     currentTimezone: string | null;
     isTimezoneEnabled: boolean;
-    mentions: PostModel[];
+    posts: PostModel[];
 }
+
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
+const edges: Edge[] = ['bottom', 'left', 'right'];
 
 const styles = StyleSheet.create({
     flex: {
@@ -50,15 +51,15 @@ const styles = StyleSheet.create({
     },
 });
 
-const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Props) => {
+function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
+    const intl = useIntl();
+    const [loading, setLoading] = useState(!posts.length);
+    const [refreshing, setRefreshing] = useState(false);
     const theme = useTheme();
+    const serverUrl = useServerUrl();
     const route = useRoute();
     const isFocused = useIsFocused();
     const insets = useSafeAreaInsets();
-    const {formatMessage} = useIntl();
-    const [refreshing, setRefreshing] = useState(false);
-    const [loading, setLoading] = useState(true);
-    const serverUrl = useServerUrl();
 
     const params = route.params as {direction: string};
     const toLeft = params.direction === 'left';
@@ -66,8 +67,8 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
     const opacity = useSharedValue(isFocused ? 1 : 0);
     const translateX = useSharedValue(isFocused ? 0 : translateSide);
 
-    const title = formatMessage({id: 'screen.mentions.title', defaultMessage: 'Recent Mentions'});
-    const subtitle = formatMessage({id: 'screen.mentions.subtitle', defaultMessage: 'Messages you\'ve been mentioned in'});
+    const title = intl.formatMessage({id: 'screen.saved_messages.title', defaultMessage: 'Saved Messages'});
+    const subtitle = intl.formatMessage({id: 'screen.saved_messages.subtitle', defaultMessage: 'All messages you\'ve saved for follow up'});
 
     const onSnap = (offset: number) => {
         scrollRef.current?.scrollToOffset({offset, animated: true});
@@ -81,7 +82,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
     useEffect(() => {
         if (isFocused) {
             setLoading(true);
-            fetchRecentMentions(serverUrl).finally(() => {
+            fetchSavedPosts(serverUrl).finally(() => {
                 setLoading(false);
             });
         }
@@ -90,7 +91,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<FlatList<string>>(true, onSnap);
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop - insets.top, flexGrow: 1}), [scrollPaddingTop, insets.top]);
     const scrollViewStyle = useMemo(() => ({top: insets.top}), [insets.top]);
-    const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [mentions]);
+    const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
 
     const animated = useAnimatedStyle(() => {
         return {
@@ -105,12 +106,6 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
         };
     });
 
-    const handleRefresh = useCallback(async () => {
-        setRefreshing(true);
-        await fetchRecentMentions(serverUrl);
-        setRefreshing(false);
-    }, [serverUrl]);
-
     const onViewableItemsChanged = useCallback(({viewableItems}: ViewableItemsChanged) => {
         if (!viewableItems.length) {
             return;
@@ -118,7 +113,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
 
         const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
             if (isViewable) {
-                acc[`${Screens.MENTIONS}-${item.id}`] = true;
+                acc[`${Screens.SAVED_MESSAGES}-${item.id}`] = true;
             }
             return acc;
         }, {});
@@ -126,18 +121,24 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
         DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItemsMap);
     }, []);
 
-    const renderEmptyList = useCallback(() => (
+    const handleRefresh = useCallback(async () => {
+        setRefreshing(true);
+        await fetchSavedPosts(serverUrl);
+        setRefreshing(false);
+    }, [serverUrl]);
+
+    const emptyList = useMemo(() => (
         <View style={styles.empty}>
             {loading ? (
-                <ActivityIndicator
-                    color={theme.centerChannelColor}
+                <Loading
+                    color={theme.buttonBg}
                     size='large'
                 />
             ) : (
                 <EmptyState/>
             )}
         </View>
-    ), [loading, theme, paddingTop]);
+    ), [loading, theme.buttonBg]);
 
     const renderItem = useCallback(({item}) => {
         if (typeof item === 'string') {
@@ -155,11 +156,11 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
 
         return (
             <PostWithChannelInfo
-                location={Screens.MENTIONS}
+                location={Screens.SAVED_MESSAGES}
                 post={item}
             />
         );
-    }, []);
+    }, [currentTimezone, isTimezoneEnabled, theme]);
 
     return (
         <FreezeScreen freeze={!isFocused}>
@@ -172,8 +173,8 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
                 scrollValue={scrollValue}
             />
             <SafeAreaView
+                edges={edges}
                 style={styles.flex}
-                edges={EDGES}
             >
                 <Animated.View style={[styles.container, animated]}>
                     <Animated.View style={top}>
@@ -182,17 +183,17 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
                     <AnimatedFlatList
                         ref={scrollRef}
                         contentContainerStyle={paddingTop}
-                        ListEmptyComponent={renderEmptyList()}
-                        data={posts}
+                        ListEmptyComponent={emptyList}
+                        data={data}
+                        onRefresh={handleRefresh}
+                        refreshing={refreshing}
+                        renderItem={renderItem}
                         scrollToOverflowEnabled={true}
                         showsVerticalScrollIndicator={false}
                         progressViewOffset={scrollPaddingTop}
                         scrollEventThrottle={16}
                         indicatorStyle='black'
                         onScroll={onScroll}
-                        onRefresh={handleRefresh}
-                        refreshing={refreshing}
-                        renderItem={renderItem}
                         removeClippedSubviews={true}
                         onViewableItemsChanged={onViewableItemsChanged}
                         style={scrollViewStyle}
@@ -201,6 +202,6 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
             </SafeAreaView>
         </FreezeScreen>
     );
-};
+}
 
-export default RecentMentionsScreen;
+export default SavedMessages;

@@ -19,6 +19,7 @@ import {notificationError} from '@utils/notification';
 import Account from './account';
 import ChannelList from './channel_list';
 import RecentMentions from './recent_mentions';
+import SavedMessages from './saved_messages';
 import TabBar from './tab_bar';
 
 // import Search from './search';
@@ -126,6 +127,11 @@ export default function HomeScreen(props: HomeProps) {
                     name={Screens.MENTIONS}
                     component={RecentMentions}
                     options={{tabBarTestID: 'tab_bar.mentions.tab', lazy: true, unmountOnBlur: false}}
+                />
+                <Tab.Screen
+                    name={Screens.SAVED_MESSAGES}
+                    component={SavedMessages}
+                    options={{unmountOnBlur: false, lazy: true, tabBarTestID: 'tab_bar.saved_messages.tab'}}
                 />
                 <Tab.Screen
                     name={Screens.ACCOUNT}
