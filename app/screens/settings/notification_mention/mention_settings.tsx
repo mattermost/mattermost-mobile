@@ -1,17 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useReducer} from 'react';
+import React, {useCallback, useReducer, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, View} from 'react-native';
+import {View} from 'react-native';
 
 import Block from '@components/block';
+import FloatingTextInput from '@components/floating_text_input_label';
 import OptionItem from '@components/option_item';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import UserModel from '@typings/database/models/servers/user';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+import {getNotificationProps} from '@utils/user';
 
 const UPDATE_MENTION_PREF = 'UPDATE_MENTION_PREF';
 const INITIAL_STATE = {
@@ -63,48 +65,66 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             paddingHorizontal: 8,
         },
+        input: {
+            color: theme.centerChannelColor,
+            height: 150,
+            paddingHorizontal: 15,
+            ...typography('Body', 100, 'Regular'),
+        },
+        containerStyle: {
+            marginTop: 30,
+        },
     };
 });
 
+const getMentionKeys = (currentUser: UserModel) => {
+    const notifyProps = getNotificationProps(currentUser);
+    const mKeys = (notifyProps.mention_keys || '').split(',');
+    const usernameMentionIndex = mKeys.indexOf(currentUser.username);
+    if (usernameMentionIndex > -1) {
+        mKeys.splice(usernameMentionIndex, 1);
+    }
+    return mKeys.join(',');
+};
+
 type MentionSectionProps = {
-    currentUser?: UserModel;
-    mentionKeys: string;
+    currentUser: UserModel;
 }
-const MentionSettings = ({currentUser, mentionKeys}: MentionSectionProps) => {
+const MentionSettings = ({currentUser}: MentionSectionProps) => {
     const [{firstName, usernameMention, channel}, dispatch] = useReducer(reducer, INITIAL_STATE);
+    const [mentionKeys, setMentionKeys] = useState(() => getMentionKeys(currentUser));
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
 
-    const toggleChannelMentions = () => {
+    const toggleChannelMentions = useCallback(() => {
         dispatch({
             type: UPDATE_MENTION_PREF,
             data: {
                 channel: !channel,
             },
         });
-    };
-    const toggleUsernameMention = () => {
+    }, []);
+
+    const toggleUsernameMention = useCallback(() => {
         dispatch({
             type: UPDATE_MENTION_PREF,
             data: {
                 usernameMention: !usernameMention,
             },
         });
-    };
-    const toggleFirstNameMention = () => {
+    }, []);
+
+    const toggleFirstNameMention = useCallback(() => {
         dispatch({
             type: UPDATE_MENTION_PREF,
             data: {
                 firstName: !firstName,
             },
         });
-    };
-    const goToNotificationSettingsMentionKeywords = () => {
-        return Alert.alert(
-            'The functionality you are trying to use has not yet been implemented.',
-        );
-    };
+    }, []);
+
+    const onChangeText = useCallback((text: string) => setMentionKeys(text), []);
 
     return (
         <Block
@@ -130,7 +150,7 @@ const MentionSettings = ({currentUser, mentionKeys}: MentionSectionProps) => {
                     action={toggleUsernameMention}
                     containerStyle={styles.container}
                     description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveUsername', defaultMessage: 'Your non-case sensitive username'})}
-                    label={currentUser!.username}
+                    label={currentUser.username}
                     selected={usernameMention}
                     type='toggle'
                 />
@@ -145,12 +165,24 @@ const MentionSettings = ({currentUser, mentionKeys}: MentionSectionProps) => {
                 type='toggle'
             />
             <View style={styles.separator}/>
-            <OptionItem
-                action={goToNotificationSettingsMentionKeywords}
-                containerStyle={styles.container}
-                description={mentionKeys || intl.formatMessage({id: 'notification_settings.mentions.keywordsDescription', defaultMessage: 'Other words that trigger a mention'})}
+            <FloatingTextInput
+                allowFontScaling={true}
+                autoCapitalize='none'
+                autoCorrect={false}
+                blurOnSubmit={true}
+                containerStyle={styles.containerStyle}
+                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                 label={intl.formatMessage({id: 'notification_settings.mentions.keywords', defaultMessage: 'Keywords'})}
-                type='arrow'
+                multiline={true}
+                onChangeText={onChangeText}
+                placeholder={intl.formatMessage({id: 'notification_settings.mentions..keywordsDescription', defaultMessage: 'Other words that trigger a mention'})}
+                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
+                returnKeyType='done'
+                textInputStyle={styles.input}
+                textAlignVertical='top'
+                theme={theme}
+                underlineColorAndroid='transparent'
+                value={mentionKeys}
             />
         </Block>
     );
