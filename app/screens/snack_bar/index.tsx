@@ -104,7 +104,7 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
                     marginBottom: 30,
                 };
                 break;
-            case sourceScreen === Screens.SAVED_POSTS :
+            case sourceScreen === Screens.SAVED_MESSAGES :
                 tabletStyle = {
                     marginBottom: 20,
                     marginLeft: TABLET_SIDEBAR_WIDTH,
