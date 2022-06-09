@@ -14,6 +14,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import Account from './account';
 import Home from './home';
 import Mentions from './mentions';
+import SavedMessages from './saved_messages';
 import Search from './search';
 
 import type {BottomTabBarProps} from '@react-navigation/bottom-tabs';
@@ -55,6 +56,7 @@ const TabComponents: Record<string, any> = {
     Account,
     Home,
     Mentions,
+    SavedMessages,
     Search,
 };
 

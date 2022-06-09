@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {View} from 'react-native';
 import Button from 'react-native-button';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {switchToPenultimateChannel} from '@actions/remote/channel';
 import FormattedMarkdownText from '@components/formatted_markdown_text';
@@ -47,6 +47,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
 }));
 
+const edges: Edge[] = ['bottom'];
+
 export default function Archived({
     testID,
     deactivated,
@@ -78,7 +80,8 @@ export default function Archived({
     }
 
     return (
-        <View
+        <SafeAreaView
+            edges={edges}
             testID={testID}
             style={style.archivedWrapper}
         >
@@ -87,6 +90,7 @@ export default function Archived({
                 style={style.archivedText}
                 baseTextStyle={style.baseTextStyle}
                 textStyles={style.textStyles}
+                location=''
             />
             <Button
                 containerStyle={style.closeButton}
@@ -98,6 +102,6 @@ export default function Archived({
                     style={style.closeButtonText}
                 />
             </Button>
-        </View>
+        </SafeAreaView>
     );
 }

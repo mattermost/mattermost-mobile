@@ -54,6 +54,8 @@ function Footer({
                     <Markdown
                         baseTextStyle={style.helpText}
                         textStyles={textStyles}
+                        disableAtMentions={true}
+                        location=''
                         blockStyles={blockStyles}
                         value={disabledText}
                         theme={theme}
@@ -66,6 +68,8 @@ function Footer({
                         baseTextStyle={style.helpText}
                         textStyles={textStyles}
                         blockStyles={blockStyles}
+                        disableAtMentions={true}
+                        location=''
                         value={helpText}
                         theme={theme}
                     />
@@ -77,6 +81,8 @@ function Footer({
                         baseTextStyle={style.errorText}
                         textStyles={textStyles}
                         blockStyles={blockStyles}
+                        disableAtMentions={true}
+                        location=''
                         value={errorText}
                         theme={theme}
                     />

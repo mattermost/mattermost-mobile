@@ -10,7 +10,9 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
 type Props = {
+    channelId: string;
     link?: string;
+    location: string;
     theme: Theme;
     value?: string;
 }
@@ -33,7 +35,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const AttachmentTitle = ({link, theme, value}: Props) => {
+const AttachmentTitle = ({channelId, link, location, theme, value}: Props) => {
     const intl = useIntl();
     const style = getStyleSheet(theme);
 
@@ -69,6 +71,8 @@ const AttachmentTitle = ({link, theme, value}: Props) => {
     } else {
         title = (
             <Markdown
+                channelId={channelId}
+                location={location}
                 isEdited={false}
                 isReplyPost={false}
                 disableHashtags={true}

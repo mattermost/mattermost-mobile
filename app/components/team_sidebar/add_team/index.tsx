@@ -69,7 +69,7 @@ export default function AddTeam({otherTeams}: Props) {
 
         let height = CONTAINER_HEIGHT;
         if (otherTeams.length) {
-            height = Math.min(maxHeight, HEADER_HEIGHT + (otherTeams.length * ITEM_HEIGHT));
+            height = Math.min(maxHeight, HEADER_HEIGHT + ((otherTeams.length + 1) * ITEM_HEIGHT));
         }
 
         bottomSheet({

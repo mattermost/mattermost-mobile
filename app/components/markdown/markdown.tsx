@@ -3,7 +3,7 @@
 
 import {Parser, Node} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
-import React, {ReactElement, useRef} from 'react';
+import React, {ReactElement, useMemo, useRef} from 'react';
 import {Dimensions, GestureResponderEvent, Platform, StyleProp, Text, TextStyle, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -38,20 +38,27 @@ type MarkdownProps = {
     autolinkedUrlSchemes?: string[];
     baseTextStyle: StyleProp<TextStyle>;
     blockStyles?: MarkdownBlockStyles;
+    channelId?: string;
     channelMentions?: ChannelMentions;
     disableAtChannelMentionHighlight?: boolean;
     disableAtMentions?: boolean;
+    disableBlockQuote?: boolean;
     disableChannelLink?: boolean;
+    disableCodeBlock?: boolean;
     disableGallery?: boolean;
     disableHashtags?: boolean;
+    disableHeading?: boolean;
+    disableQuotes?: boolean;
+    disableTables?: boolean;
     enableLatex: boolean;
     enableInlineLatex: boolean;
     imagesMetadata?: Record<string, PostImage>;
     isEdited?: boolean;
     isReplyPost?: boolean;
     isSearchResult?: boolean;
+    layoutHeight?: number;
     layoutWidth?: number;
-    location?: string;
+    location: string;
     mentionKeys?: UserMentionKey[];
     minimumHashtagLength?: number;
     onPostPress?: (event: GestureResponderEvent) => void;
@@ -87,6 +94,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         atMentionOpacity: {
             opacity: 1,
         },
+        bold: {
+            fontWeight: '600',
+        },
     };
 });
 
@@ -115,10 +125,11 @@ const computeTextStyle = (textStyles: MarkdownTextStyles, baseStyle: StyleProp<T
 };
 
 const Markdown = ({
-    autolinkedUrlSchemes, baseTextStyle, blockStyles, channelMentions,
-    disableAtChannelMentionHighlight = false, disableAtMentions = false, disableChannelLink = false,
-    disableGallery = false, disableHashtags = false, enableInlineLatex, enableLatex,
-    imagesMetadata, isEdited, isReplyPost, isSearchResult, layoutWidth,
+    autolinkedUrlSchemes, baseTextStyle, blockStyles, channelId, channelMentions,
+    disableAtChannelMentionHighlight, disableAtMentions, disableBlockQuote, disableChannelLink,
+    disableCodeBlock, disableGallery, disableHashtags, disableHeading, disableTables,
+    enableInlineLatex, enableLatex,
+    imagesMetadata, isEdited, isReplyPost, isSearchResult, layoutHeight, layoutWidth,
     location, mentionKeys, minimumHashtagLength = 3, onPostPress, postId, searchPatterns,
     textStyles = {}, theme, value = '',
 }: MarkdownProps) => {
@@ -136,10 +147,12 @@ const Markdown = ({
 
         return (
             <AtMention
+                channelId={channelId}
                 disableAtChannelMentionHighlight={disableAtChannelMentionHighlight}
                 mentionStyle={textStyles.mention}
                 textStyle={[computeTextStyle(textStyles, baseTextStyle, context), style.atMentionOpacity]}
                 isSearchResult={isSearchResult}
+                location={location}
                 mentionName={mentionName}
                 onPostPress={onPostPress}
                 mentionKeys={mentionKeys}
@@ -148,6 +161,10 @@ const Markdown = ({
     };
 
     const renderBlockQuote = ({children, ...otherProps}: any) => {
+        if (disableBlockQuote) {
+            return null;
+        }
+
         return (
             <MarkdownBlockQuote
                 iconStyle={blockStyles?.quoteBlockIcon}
@@ -191,6 +208,10 @@ const Markdown = ({
     };
 
     const renderCodeBlock = (props: any) => {
+        if (disableCodeBlock) {
+            return null;
+        }
+
         // These sometimes include a trailing newline
         const content = props.literal.replace(/\n$/, '');
 
@@ -264,11 +285,20 @@ const Markdown = ({
     };
 
     const renderHeading = ({children, level}: {children: ReactElement; level: string}) => {
+        if (disableHeading) {
+            return (
+                <Text style={style.bold}>
+                    {children}
+                </Text>
+            );
+        }
+
         const containerStyle = [
             style.block,
             textStyles[`heading${level}`],
         ];
         const textStyle = textStyles[`heading${level}Text`];
+
         return (
             <View style={containerStyle}>
                 <Text style={textStyle}>
@@ -314,6 +344,7 @@ const Markdown = ({
             <MarkdownImage
                 disabled={disableGallery ?? Boolean(!location)}
                 errorTextStyle={[computeTextStyle(textStyles, baseTextStyle, context), textStyles.error]}
+                layoutHeight={layoutHeight}
                 layoutWidth={layoutWidth}
                 linkDestination={linkDestination}
                 imagesMetadata={imagesMetadata}
@@ -396,6 +427,9 @@ const Markdown = ({
     };
 
     const renderTable = ({children, numColumns}: {children: ReactElement; numColumns: number}) => {
+        if (disableTables) {
+            return null;
+        }
         return (
             <MarkdownTable
                 numColumns={numColumns}
@@ -425,7 +459,12 @@ const Markdown = ({
         }
 
         // Construct the text style based off of the parents of this node since RN's inheritance is limited
-        const styles = computeTextStyle(textStyles, baseTextStyle, context);
+        let styles;
+        if (disableHeading) {
+            styles = computeTextStyle(textStyles, baseTextStyle, context.filter((c) => !c.startsWith('heading')));
+        } else {
+            styles = computeTextStyle(textStyles, baseTextStyle, context);
+        }
 
         return (
             <Text
@@ -497,7 +536,7 @@ const Markdown = ({
     };
 
     const parser = useRef(new Parser({urlFilter, minimumHashtagLength})).current;
-    const renderer = useRef(createRenderer()).current;
+    const renderer = useMemo(createRenderer, [theme, textStyles]);
     let ast = parser.parse(value.toString());
 
     ast = combineTextNodes(ast);

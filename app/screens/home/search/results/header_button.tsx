@@ -20,8 +20,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             height: 40,
         },
         text: {
-            marginHorizontal: 16,
-            marginVertical: 8,
+            paddingHorizontal: 16,
+            paddingVertical: 8,
             ...typography('Body', 200, 'SemiBold'),
         },
         selectedButton: {

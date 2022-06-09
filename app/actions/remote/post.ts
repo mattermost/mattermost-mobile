@@ -360,18 +360,26 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
     return {posts: data.posts, order: data.order, authors, actionType, previousPostId: data.previousPostId};
 }
 
-export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: Channel[], memberships: ChannelMembership[], excludeChannelId?: string) => {
+export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: Channel[], memberships: ChannelMembership[], excludeChannelId?: string, emitEvent = false) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
     }
 
     try {
+        const promises = [];
+        if (emitEvent) {
+            DeviceEventEmitter.emit(Events.FETCHING_POSTS, true);
+        }
         for (const member of memberships) {
             const channel = channels.find((c) => c.id === member.channel_id);
             if (channel && (channel.total_msg_count - member.msg_count) > 0 && channel.id !== excludeChannelId) {
-                fetchPostsForChannel(serverUrl, channel.id);
+                promises.push(fetchPostsForChannel(serverUrl, channel.id));
             }
+        }
+        await Promise.all(promises);
+        if (emitEvent) {
+            DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
         }
     } catch (error) {
         return {error};
@@ -631,7 +639,7 @@ export async function fetchPostThread(serverUrl: string, postId: string, fetchOn
     }
 }
 
-export async function fetchPostsAround(serverUrl: string, channelId: string, postId: string, perPage = General.POST_AROUND_CHUNK_SIZE) {
+export async function fetchPostsAround(serverUrl: string, channelId: string, postId: string, perPage = General.POST_AROUND_CHUNK_SIZE, isCRTEnabled = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -646,9 +654,9 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
 
     try {
         const [after, post, before] = await Promise.all<PostsObjectsRequest>([
-            client.getPostsAfter(channelId, postId, 0, perPage),
-            client.getPostThread(postId),
-            client.getPostsBefore(channelId, postId, 0, perPage),
+            client.getPostsAfter(channelId, postId, 0, perPage, isCRTEnabled, isCRTEnabled),
+            client.getPostThread(postId, isCRTEnabled, isCRTEnabled),
+            client.getPostsBefore(channelId, postId, 0, perPage, isCRTEnabled, isCRTEnabled),
         ]);
 
         const preData: PostResponse = {
@@ -687,7 +695,6 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
 
             models.push(...posts);
 
-            const isCRTEnabled = await getIsCRTEnabled(operator.database);
             if (isCRTEnabled) {
                 const threadModels = await prepareThreadsFromReceivedPosts(operator, data.posts);
                 if (threadModels?.length) {
@@ -1022,6 +1029,88 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
         );
 
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
+        if (isCRTEnabled) {
+            promises.push(prepareThreadsFromReceivedPosts(operator, postsArray));
+        }
+
+        const modelArrays = await Promise.all(promises);
+        const models = modelArrays.flatMap((mdls) => {
+            if (!mdls || !mdls.length) {
+                return [];
+            }
+            return mdls;
+        });
+
+        await operator.batchRecords(models);
+
+        return {
+            order,
+            posts: postsArray,
+        };
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+}
+
+export async function fetchPinnedPosts(serverUrl: string, channelId: string) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const data = await client.getPinnedPosts(channelId);
+        const posts = data.posts || {};
+        const order = data.order || [];
+        const postsArray = order.map((id) => posts[id]);
+
+        if (!postsArray.length) {
+            return {
+                order,
+                posts: postsArray,
+            };
+        }
+
+        const promises: Array<Promise<Model[]>> = [];
+        const {database} = operator;
+        const isCRTEnabled = await getIsCRTEnabled(database);
+
+        const {authors} = await fetchPostAuthors(serverUrl, postsArray, true);
+        const {channels, channelMemberships} = await fetchMissingChannelsFromPosts(serverUrl, postsArray, true);
+
+        if (authors?.length) {
+            promises.push(
+                operator.handleUsers({
+                    users: authors,
+                    prepareRecordsOnly: true,
+                }),
+            );
+        }
+
+        if (channels?.length && channelMemberships?.length) {
+            const channelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships, isCRTEnabled);
+            if (channelPromises.length) {
+                promises.push(...channelPromises);
+            }
+        }
+
+        promises.push(
+            operator.handlePosts({
+                actionType: '',
+                order: [],
+                posts: postsArray,
+                previousPostId: '',
+                prepareRecordsOnly: true,
+            }),
+        );
+
         if (isCRTEnabled) {
             promises.push(prepareThreadsFromReceivedPosts(operator, postsArray));
         }

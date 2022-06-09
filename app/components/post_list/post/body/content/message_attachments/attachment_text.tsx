@@ -14,7 +14,9 @@ import type {MarkdownBlockStyles, MarkdownTextStyles} from '@typings/global/mark
 type Props = {
     baseTextStyle: StyleProp<TextStyle>;
     blockStyles?: MarkdownBlockStyles;
+    channelId: string;
     hasThumbnail?: boolean;
+    location: string;
     metadata?: PostMetadata;
     textStyles?: MarkdownTextStyles;
     theme: Theme;
@@ -28,7 +30,7 @@ const style = StyleSheet.create({
     },
 });
 
-const AttachmentText = ({baseTextStyle, blockStyles, hasThumbnail, metadata, textStyles, theme, value}: Props) => {
+const AttachmentText = ({baseTextStyle, blockStyles, channelId, hasThumbnail, location, metadata, textStyles, theme, value}: Props) => {
     const [open, setOpen] = useState(false);
     const [height, setHeight] = useState<number|undefined>();
     const dimensions = useWindowDimensions();
@@ -49,6 +51,8 @@ const AttachmentText = ({baseTextStyle, blockStyles, hasThumbnail, metadata, tex
                 >
                     <View onLayout={onLayout}>
                         <Markdown
+                            channelId={channelId}
+                            location={location}
                             baseTextStyle={baseTextStyle}
                             textStyles={textStyles}
                             blockStyles={blockStyles}

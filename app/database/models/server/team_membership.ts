@@ -37,6 +37,9 @@ export default class TeamMembershipModel extends Model implements TeamMembership
     /* user_id: The foreign key to the related User record*/
     @field('user_id') userId!: string;
 
+    /* scheme_admin: Determines if the user is an admin of the team*/
+    @field('scheme_admin') schemeAdmin!: boolean;
+
     /** memberUser: The related user in the team */
     @immutableRelation(USER, 'user_id') memberUser!: Relation<UserModel>;
 

@@ -1,29 +1,29 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactNode, useRef} from 'react';
+import React, {ReactNode} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, StyleSheet, TouchableOpacity, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
-import {View as ViewConstant} from '@constants';
+import {Screens, View as ViewConstant} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import NetworkManager from '@managers/network_manager';
-import {showModal} from '@screens/navigation';
+import {openAsBottomSheet} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 
 import type {Client} from '@client/rest';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
-import type {ImageSource} from 'react-native-vector-icons/Icon';
 
 type AvatarProps = {
     author: UserModel;
     enablePostIconOverride?: boolean;
     isAutoReponse: boolean;
+    location: string;
     post: PostModel;
 }
 
@@ -33,8 +33,7 @@ const style = StyleSheet.create({
     },
 });
 
-const Avatar = ({author, enablePostIconOverride, isAutoReponse, post}: AvatarProps) => {
-    const closeButton = useRef<ImageSource>();
+const Avatar = ({author, enablePostIconOverride, isAutoReponse, location, post}: AvatarProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -91,27 +90,21 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, post}: AvatarPro
         );
     }
 
-    const onViewUserProfile = preventDoubleTap(() => {
-        const screen = 'UserProfile';
+    const openUserProfile = preventDoubleTap(() => {
+        const screen = Screens.USER_PROFILE;
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
-        const passProps = {author};
-
-        if (!closeButton.current) {
-            closeButton.current = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        }
-
-        const options = {
-            topBar: {
-                leftButtons: [{
-                    id: 'close-settings',
-                    icon: closeButton.current,
-                    testID: 'close.settings.button',
-                }],
-            },
+        const closeButtonId = 'close-user-profile';
+        const props = {
+            closeButtonId,
+            userId: author.id,
+            channelId: post.channelId,
+            location,
+            userIconOverride: post.props?.override_username,
+            usernameOverride: post.props?.override_icon_url,
         };
 
         Keyboard.dismiss();
-        showModal(screen, title, passProps, options);
+        openAsBottomSheet({screen, title, theme, closeButtonId, props});
     });
 
     let component = (
@@ -126,7 +119,7 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, post}: AvatarPro
 
     if (!fromWebHook) {
         component = (
-            <TouchableOpacity onPress={onViewUserProfile}>
+            <TouchableOpacity onPress={openUserProfile}>
                 {component}
             </TouchableOpacity>
         );

@@ -6,18 +6,19 @@ import {Database} from '@nozbe/watermelondb';
 import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {GestureResponderEvent, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
+import {GestureResponderEvent, Keyboard, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchUserOrGroupsByMentionsInBatch} from '@actions/remote/user';
 import {useServerUrl} from '@app/context/server';
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
+import {Screens} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {useTheme} from '@context/theme';
 import GroupModel from '@database/models/server/group';
 import UserModel from '@database/models/server/user';
-import {bottomSheet, dismissBottomSheet, showModal} from '@screens/navigation';
+import {bottomSheet, dismissBottomSheet, openAsBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {displayUsername, getUsersByUsername} from '@utils/user';
 
@@ -25,10 +26,12 @@ import type GroupModelType from '@typings/database/models/servers/group';
 import type UserModelType from '@typings/database/models/servers/user';
 
 type AtMentionProps = {
+    channelId?: string;
     currentUserId: string;
     database: Database;
     disableAtChannelMentionHighlight?: boolean;
     isSearchResult?: boolean;
+    location: string;
     mentionKeys?: Array<{key: string }>;
     mentionName: string;
     mentionStyle: TextStyle;
@@ -46,10 +49,12 @@ const style = StyleSheet.create({
 });
 
 const AtMention = ({
+    channelId,
     currentUserId,
     database,
     disableAtChannelMentionHighlight,
     isSearchResult,
+    location,
     mentionName,
     mentionKeys,
     mentionStyle,
@@ -144,24 +149,14 @@ const AtMention = ({
 
     const goToUserProfile = () => {
         const screen = 'UserProfile';
+    const openUserProfile = () => {
+        const screen = Screens.USER_PROFILE;
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
-        const passProps = {
-            userId: user.id,
-        };
+        const closeButtonId = 'close-user-profile';
+        const props = {closeButtonId, location, userId: user.id, channelId};
 
-        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-
-        const options = {
-            topBar: {
-                leftButtons: [{
-                    id: 'close-settings',
-                    icon: closeButton,
-                    testID: 'close.settings.button',
-                }],
-            },
-        };
-
-        showModal(screen, title, passProps, options);
+        Keyboard.dismiss();
+        openAsBottomSheet({screen, title, theme, closeButtonId, props});
     };
 
     const handleLongPress = useCallback(() => {
@@ -253,7 +248,7 @@ const AtMention = ({
 
     if (canPress) {
         onLongPress = handleLongPress;
-        onPress = (isSearchResult ? onPostPress : goToUserProfile);
+        onPress = (isSearchResult ? onPostPress : openUserProfile);
     }
 
     if (suffix) {

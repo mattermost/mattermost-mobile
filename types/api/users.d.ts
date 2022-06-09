@@ -4,17 +4,17 @@
 type UserNotifyProps = {
     auto_responder_active?: 'true' | 'false';
     auto_responder_message?: string;
+    channel: 'true' | 'false';
+    comments: 'never' | 'root' | 'any';
     desktop: 'default' | 'all' | 'mention' | 'none';
     desktop_notification_sound?: string;
     desktop_sound: 'true' | 'false';
     email: 'true' | 'false';
+    first_name: 'true' | 'false';
     mark_unread: 'all' | 'mention';
+    mention_keys: string;
     push: 'default' | 'all' | 'mention' | 'none';
     push_status: 'ooo' | 'offline' | 'away' | 'dnd' | 'online';
-    comments: 'never' | 'root' | 'any';
-    first_name: 'true' | 'false';
-    channel: 'true' | 'false';
-    mention_keys: string;
     user_id?: string;
 };
 
@@ -43,6 +43,8 @@ type UserProfile = {
     last_picture_update: number;
     remote_id?: string;
     status?: string;
+    bot_description?: string;
+    bot_last_icon_update?: number;
 };
 
 type UsersState = {

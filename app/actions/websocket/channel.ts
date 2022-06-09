@@ -68,6 +68,10 @@ export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
 
 export async function handleChannelUnarchiveEvent(serverUrl: string, msg: any) {
     try {
+        if (EphemeralStore.isArchivingChannel(msg.data.channel_id)) {
+            return;
+        }
+
         await setChannelDeleteAt(serverUrl, msg.data.channel_id, 0);
     } catch {
         // do nothing
@@ -82,6 +86,10 @@ export async function handleChannelConvertedEvent(serverUrl: string, msg: any) {
 
     try {
         const channelId = msg.data.channel_id;
+        if (EphemeralStore.isConvertingChannel(channelId)) {
+            return;
+        }
+
         const {channel} = await fetchChannelById(serverUrl, channelId);
         if (channel) {
             operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
@@ -122,7 +130,8 @@ export async function handleChannelViewedEvent(serverUrl: string, msg: any) {
         const activeServerUrl = await DatabaseManager.getActiveServerUrl();
         const currentChannelId = await getCurrentChannelId(database);
 
-        if (activeServerUrl !== serverUrl || currentChannelId !== channelId) {
+        const viewingChannel = currentChannelId === channelId && EphemeralStore.getNavigationComponents().includes(Screens.CHANNEL);
+        if (activeServerUrl !== serverUrl || currentChannelId !== channelId || !viewingChannel) {
             await markChannelAsViewed(serverUrl, channelId, false);
         }
     } catch {
@@ -149,6 +158,11 @@ export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: an
         }
         models.push(...await operator.handleMyChannelSettings({
             settings: [updatedChannelMember],
+            prepareRecordsOnly: true,
+        }));
+
+        models.push(...await operator.handleChannelMembership({
+            channelMemberships: [updatedChannelMember],
             prepareRecordsOnly: true,
         }));
         const rolesRequest = await fetchRolesIfNeeded(serverUrl, updatedChannelMember.roles.split(','), true);
@@ -394,7 +408,7 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocke
     try {
         const {database} = operator;
         const {channel_id: channelId, delete_at: deleteAt} = msg.data;
-        if (EphemeralStore.isLeavingChannel(channelId)) {
+        if (EphemeralStore.isLeavingChannel(channelId) || EphemeralStore.isArchivingChannel(channelId)) {
             return;
         }
 
