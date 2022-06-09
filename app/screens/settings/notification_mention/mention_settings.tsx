@@ -5,9 +5,11 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
+import {updateMe} from '@actions/remote/user';
 import Block from '@components/block';
 import FloatingTextInput from '@components/floating_text_input_label';
 import OptionItem from '@components/option_item';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
@@ -79,14 +81,15 @@ type MentionSectionProps = {
     currentUser: UserModel;
 }
 const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
+    const serverUrl = useServerUrl();
     const mnKeyInitialValue = useMemo(() => getMentionKeys(currentUser), [currentUser]);
     const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
 
     const [tglFirstName, setTglFirstName] = useState(Boolean(notifyProps.first_name));
     const [tglUserName, setTglUserName] = useState(mnKeyInitialValue.usernameMention);
     const [tglChannel, setTglChannel] = useState(Boolean(notifyProps.channel));
-
     const [mentionKeys, setMentionKeys] = useState(() => getMentionKeys(currentUser).mentionKeys);
+
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
@@ -127,9 +130,10 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
     const close = useCallback(() => popTopScreen(componentId), [componentId]);
 
     const saveMention = useCallback(() => {
-        //todo: complete this method !!!
+        const notify_props = {...notifyProps, first_name: `${tglFirstName}`, channel: `${tglChannel}`, mention_keys: mentionKeys};
+        updateMe(serverUrl, {notify_props} as unknown as UserNotifyProps);
         close();
-    }, [mentionKeys, close]);
+    }, [serverUrl, notifyProps, close, tglFirstName, tglChannel, mentionKeys]);
 
     const onToggleFirstName = useCallback(() => {
         setTglFirstName((prev) => !prev);
@@ -147,7 +151,7 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
         canSave();
     }, [tglFirstName, tglUserName, tglChannel, mentionKeys]);
 
-    useNavButtonPressed(SAVE_MENTION_BUTTON_ID, componentId, () => saveMention(), [mentionKeys]);
+    useNavButtonPressed(SAVE_MENTION_BUTTON_ID, componentId, saveMention, [notifyProps, tglFirstName, tglChannel, mentionKeys]);
 
     useAndroidHardwareBackHandler(componentId, close);
 
