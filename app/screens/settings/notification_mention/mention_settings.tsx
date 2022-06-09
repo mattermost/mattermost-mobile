@@ -61,7 +61,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const getMentionKeys = (currentUser: UserModel) => {
+const getMentionProps = (currentUser: UserModel) => {
     const notifyProps = getNotificationProps(currentUser);
     const mKeys = (notifyProps.mention_keys || '').split(',');
 
@@ -82,13 +82,14 @@ type MentionSectionProps = {
 }
 const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
     const serverUrl = useServerUrl();
-    const mnKeyInitialValue = useMemo(() => getMentionKeys(currentUser), [currentUser]);
-    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
 
-    const [tglFirstName, setTglFirstName] = useState(Boolean(notifyProps.first_name));
-    const [tglUserName, setTglUserName] = useState(mnKeyInitialValue.usernameMention);
-    const [tglChannel, setTglChannel] = useState(Boolean(notifyProps.channel));
-    const [mentionKeys, setMentionKeys] = useState(() => getMentionKeys(currentUser).mentionKeys);
+    const notifyProps = currentUser.notifyProps as Partial<UserNotifyProps>;
+    const [tglFirstName, setTglFirstName] = useState(notifyProps.first_name === 'true');
+    const [tglChannel, setTglChannel] = useState(notifyProps.channel === 'true');
+
+    const mentionProps = useMemo(() => getMentionProps(currentUser), [currentUser.notifyProps]);
+    const [tglUserName, setTglUserName] = useState(mentionProps.usernameMention);
+    const [mentionKeys, setMentionKeys] = useState(mentionProps.mentionKeys);
 
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -106,12 +107,13 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
     }, [theme.sidebarHeaderTextColor]);
 
     const canSave = useCallback(() => {
-        const fNameUnChanged = tglFirstName !== Boolean(notifyProps.first_name);
-        const usnUnChanged = tglUserName !== mnKeyInitialValue.usernameMention;
-        const channelUnChanged = tglChannel !== Boolean(notifyProps.channel);
-        const kwsUnChanged = mnKeyInitialValue.mentionKeys !== mentionKeys;
+        const fNameChanged = tglFirstName !== Boolean(notifyProps.first_name);
+        const channelChanged = tglChannel !== Boolean(notifyProps.channel);
 
-        const enabled = fNameUnChanged || usnUnChanged || channelUnChanged || kwsUnChanged;
+        const usnChanged = tglUserName !== mentionProps.usernameMention;
+        const kwsChanged = mentionProps.mentionKeys !== mentionKeys;
+
+        const enabled = fNameChanged || usnChanged || channelChanged || kwsChanged;
 
         const buttons = {
             rightButtons: [{
