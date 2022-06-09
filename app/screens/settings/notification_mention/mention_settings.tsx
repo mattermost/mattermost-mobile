@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useReducer, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
@@ -17,29 +17,6 @@ import UserModel from '@typings/database/models/servers/user';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
-
-const UPDATE_MENTION_PREF = 'UPDATE_MENTION_PREF';
-const INITIAL_STATE = {
-    fNameToggler: false,
-    usnToggler: false,
-    channelToggler: false,
-};
-type Action = {
-    type: string;
-    data: Partial<typeof INITIAL_STATE>;
-}
-const reducer = (state: typeof INITIAL_STATE, action: Action) => {
-    switch (action.type) {
-        case UPDATE_MENTION_PREF:
-            return {
-                ...state,
-                ...action.data,
-            };
-
-        default:
-            return state;
-    }
-};
 
 const mentionHeaderText = {
     id: t('notification_settings.mentions.wordsTrigger'),
@@ -85,11 +62,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 const getMentionKeys = (currentUser: UserModel) => {
     const notifyProps = getNotificationProps(currentUser);
     const mKeys = (notifyProps.mention_keys || '').split(',');
+
     const usernameMentionIndex = mKeys.indexOf(currentUser.username);
     if (usernameMentionIndex > -1) {
         mKeys.splice(usernameMentionIndex, 1);
     }
-    return mKeys.join(',');
+
+    return {
+        mentionKeys: mKeys.join(','),
+        usernameMention: usernameMentionIndex > -1,
+    };
 };
 
 type MentionSectionProps = {
@@ -97,9 +79,14 @@ type MentionSectionProps = {
     currentUser: UserModel;
 }
 const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
-    const [{fNameToggler, usnToggler, channelToggler}, dispatch] = useReducer(reducer, INITIAL_STATE);
     const mnKeyInitialValue = useMemo(() => getMentionKeys(currentUser), [currentUser]);
-    const [mentionKeys, setMentionKeys] = useState(() => getMentionKeys(currentUser));
+    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
+
+    const [tglFirstName, setTglFirstName] = useState(Boolean(notifyProps.first_name));
+    const [tglUserName, setTglUserName] = useState(mnKeyInitialValue.usernameMention);
+    const [tglChannel, setTglChannel] = useState(Boolean(notifyProps.channel));
+
+    const [mentionKeys, setMentionKeys] = useState(() => getMentionKeys(currentUser).mentionKeys);
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
@@ -115,7 +102,14 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
         };
     }, [theme.sidebarHeaderTextColor]);
 
-    const canSave = useCallback((enabled: boolean) => {
+    const canSave = useCallback(() => {
+        const fNameUnChanged = tglFirstName !== Boolean(notifyProps.first_name);
+        const usnUnChanged = tglUserName !== mnKeyInitialValue.usernameMention;
+        const channelUnChanged = tglChannel !== Boolean(notifyProps.channel);
+        const kwsUnChanged = mnKeyInitialValue.mentionKeys !== mentionKeys;
+
+        const enabled = fNameUnChanged || usnUnChanged || channelUnChanged || kwsUnChanged;
+
         const buttons = {
             rightButtons: [{
                 ...saveButton,
@@ -123,52 +117,35 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
             }],
         };
         setButtons(componentId, buttons);
-    }, [componentId, saveButton]);
-
-    const toggleChannelMentions = useCallback(() => {
-        const toggled = !channelToggler;
-        dispatch({
-            type: UPDATE_MENTION_PREF,
-            data: {
-                channelToggler: toggled,
-            },
-        });
-        canSave(toggled !== INITIAL_STATE.channelToggler);
-    }, []);
-
-    const toggleUsernameMention = useCallback(() => {
-        const toggled = !usnToggler;
-        dispatch({
-            type: UPDATE_MENTION_PREF,
-            data: {
-                usnToggler: !usnToggler,
-            },
-        });
-        canSave(toggled !== INITIAL_STATE.usnToggler);
-    }, []);
-
-    const toggleFirstNameMention = useCallback(() => {
-        const toggled = !fNameToggler;
-        dispatch({
-            type: UPDATE_MENTION_PREF,
-            data: {
-                fNameToggler: !fNameToggler,
-            },
-        });
-        canSave(toggled !== INITIAL_STATE.fNameToggler);
-    }, []);
+    }, [componentId, saveButton, tglFirstName, tglChannel, tglUserName, mentionKeys, notifyProps]);
 
     const onChangeText = useCallback((text: string) => {
         setMentionKeys(text);
-        canSave(mnKeyInitialValue !== text);
-    }, []);
+        canSave();
+    }, [canSave]);
 
     const close = useCallback(() => popTopScreen(componentId), [componentId]);
 
     const saveMention = useCallback(() => {
-        // console.log('>>>  going to save mention settings ');
+        //todo: complete this method !!!
         close();
     }, [mentionKeys, close]);
+
+    const onToggleFirstName = useCallback(() => {
+        setTglFirstName((prev) => !prev);
+    }, []);
+
+    const onToggleUserName = useCallback(() => {
+        setTglUserName((prev) => !prev);
+    }, []);
+
+    const onToggleChannel = useCallback(() => {
+        setTglChannel((prev) => !prev);
+    }, []);
+
+    useEffect(() => {
+        canSave();
+    }, [tglFirstName, tglUserName, tglChannel, mentionKeys]);
 
     useNavButtonPressed(SAVE_MENTION_BUTTON_ID, componentId, () => saveMention(), [mentionKeys]);
 
@@ -188,11 +165,11 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
             { Boolean(currentUser?.firstName) && (
                 <>
                     <OptionItem
-                        action={toggleFirstNameMention}
+                        action={onToggleFirstName}
                         containerStyle={styles.container}
                         description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveName', defaultMessage: 'Your case sensitive first name'})}
-                        label={currentUser!.firstName}
-                        selected={fNameToggler}
+                        label={currentUser.firstName}
+                        selected={tglFirstName}
                         type='toggle'
                     />
                     <View style={styles.separator}/>
@@ -201,21 +178,21 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
             }
             {Boolean(currentUser?.username) && (
                 <OptionItem
-                    action={toggleUsernameMention}
+                    action={onToggleUserName}
                     containerStyle={styles.container}
                     description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveUsername', defaultMessage: 'Your non-case sensitive username'})}
                     label={currentUser.username}
-                    selected={usnToggler}
+                    selected={tglUserName}
                     type='toggle'
                 />
             )}
             <View style={styles.separator}/>
             <OptionItem
-                action={toggleChannelMentions}
+                action={onToggleChannel}
                 containerStyle={styles.container}
                 description={intl.formatMessage({id: 'notification_settings.mentions.channelWide', defaultMessage: 'Channel-wide mentions'})}
                 label='@channel, @all, @here'
-                selected={channelToggler}
+                selected={tglChannel}
                 type='toggle'
             />
             <View style={styles.separator}/>
