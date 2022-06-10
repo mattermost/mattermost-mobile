@@ -291,7 +291,7 @@ export function getNotificationProps(user: UserModel) {
         return user.notifyProps;
     }
 
-    const props: Partial<UserNotifyProps> = {
+    return {
         channel: 'true',
         comments: 'any',
         desktop: 'all',
@@ -300,7 +300,6 @@ export function getNotificationProps(user: UserModel) {
         mention_keys: user ? `${user.username},@${user.username}` : '',
         push: 'mention',
         push_status: 'online',
+        push_threads: 'all',
     };
-
-    return props;
 }

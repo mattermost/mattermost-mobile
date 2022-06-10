@@ -11,10 +11,13 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {popTopScreen, setButtons} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {getNotificationProps} from '@utils/user';
 
 import MobileSendPush from './push_send';
 import MobilePushStatus from './push_status';
 import MobilePushThread from './push_thread';
+
+import type UserModel from '@typings/database/models/servers/user';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -31,20 +34,27 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
 const edges: Edge[] = ['left', 'right'];
 
 const SAVE_NOTIF_BUTTON_ID = 'SAVE_NOTIF_BUTTON_ID';
 
 type NotificationMobileProps = {
     componentId: string;
+    currentUser: UserModel;
     isCRTEnabled: boolean;
     sendPushNotifications: boolean;
 };
-const NotificationPush = ({componentId, isCRTEnabled, sendPushNotifications}: NotificationMobileProps) => {
-    //fixme: assign proper value instead of defaulting to 'online'
-    const [pushPref, setPushPref] = useState<PushStatus>('online');
-    const [pushStatus, setPushStatus] = useState<PushStatus>('online');
-    const [pushThread, setPushThreadPref] = useState<boolean>(false);
+const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotifications}: NotificationMobileProps) => {
+    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
+
+    const [pushSend, setPushSend] = useState<PushStatus>(notifyProps.push as unknown as PushStatus);
+    const [pushStatus, setPushStatus] = useState<PushStatus>(notifyProps.push_status as unknown as PushStatus);
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const [pushThread, setPushThreadPref] = useState<PushStatus>(notifyProps.push_threads); //fixme: fix ts issue
+
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -54,12 +64,28 @@ const NotificationPush = ({componentId, isCRTEnabled, sendPushNotifications}: No
     }, [pushStatus]);
 
     const setMobilePushPref = useCallback((status: PushStatus) => {
-        setPushPref(status);
-    }, [pushPref]);
+        setPushSend(status);
+    }, [pushSend]);
 
     const onMobilePushThreadChanged = useCallback(() => {
-        setPushThreadPref((prev) => !prev);
+        setPushThreadPref(pushThread === 'all' ? 'mention' : 'all');
     }, [pushThread]);
+
+    const canSave = useCallback(() => {
+        const p = pushSend !== notifyProps.push;
+        const pT = pushThread !== notifyProps.push_threads;
+        const pS = pushStatus !== notifyProps.push_status;
+
+        const enabled = p || pT || pS;
+
+        const buttons = {
+            rightButtons: [{
+                ...saveButton,
+                enabled,
+            }],
+        };
+        setButtons(componentId, buttons);
+    }, [componentId, pushSend, pushThread, pushStatus, notifyProps]);
 
     const saveButton = useMemo(() => {
         return {
@@ -88,6 +114,10 @@ const NotificationPush = ({componentId, isCRTEnabled, sendPushNotifications}: No
         });
     }, []);
 
+    useEffect(() => {
+        canSave();
+    }, [pushSend, pushThread, pushStatus]);
+
     return (
         <SafeAreaView
             edges={edges}
@@ -100,17 +130,17 @@ const NotificationPush = ({componentId, isCRTEnabled, sendPushNotifications}: No
                 alwaysBounceVertical={false}
             >
                 <MobileSendPush
-                    pushStatus={pushPref}
+                    pushStatus={pushSend}
                     sendPushNotifications={sendPushNotifications}
                     setMobilePushPref={setMobilePushPref}
                 />
-                {isCRTEnabled && pushPref === 'mention' && (
+                {isCRTEnabled && pushSend === 'mention' && (
                     <MobilePushThread
                         pushThread={pushThread}
                         onMobilePushThreadChanged={onMobilePushThreadChanged}
                     />
                 )}
-                {sendPushNotifications && pushPref !== 'none' && (
+                {sendPushNotifications && pushSend !== 'none' && (
                     <MobilePushStatus
                         pushStatus={pushStatus}
                         setMobilePushStatus={setMobilePushStatus}
