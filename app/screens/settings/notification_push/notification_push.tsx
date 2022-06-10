@@ -1,11 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {useIntl} from 'react-intl';
 import {ScrollView} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {popTopScreen, setButtons} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import MobileSendPush from './push_send';
@@ -29,29 +33,60 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 const edges: Edge[] = ['left', 'right'];
 
+const SAVE_NOTIF_BUTTON_ID = 'SAVE_NOTIF_BUTTON_ID';
+
 type NotificationMobileProps = {
+    componentId: string;
     isCRTEnabled: boolean;
     sendPushNotifications: boolean;
 };
-const NotificationPush = ({isCRTEnabled, sendPushNotifications}: NotificationMobileProps) => {
-    const theme = useTheme();
-    const [pushStatus, setPushStatus] = useState<PushStatus>('online');
+const NotificationPush = ({componentId, isCRTEnabled, sendPushNotifications}: NotificationMobileProps) => {
+    //fixme: assign proper value instead of defaulting to 'online'
     const [pushPref, setPushPref] = useState<PushStatus>('online');
+    const [pushStatus, setPushStatus] = useState<PushStatus>('online');
     const [pushThread, setPushThreadPref] = useState<PushStatus>('online');
-
+    const intl = useIntl();
+    const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const setMobilePushStatus = (status: PushStatus) => {
+    const setMobilePushStatus = useCallback((status: PushStatus) => {
         setPushStatus(status);
-    };
+    }, [pushStatus]);
 
-    const setMobilePushPref = (status: PushStatus) => {
+    const setMobilePushPref = useCallback((status: PushStatus) => {
         setPushPref(status);
-    };
+    }, [pushPref]);
 
-    const onMobilePushThreadChanged = (status: PushStatus) => {
+    const onMobilePushThreadChanged = useCallback((status: PushStatus) => {
         setPushThreadPref(status);
-    };
+    }, [pushThread]);
+
+    const saveButton = useMemo(() => {
+        return {
+            id: SAVE_NOTIF_BUTTON_ID,
+            enabled: false,
+            showAsAction: 'always' as const,
+            testID: 'notification_settings.save.button',
+            color: theme.sidebarHeaderTextColor,
+            text: intl.formatMessage({id: 'settings.save', defaultMessage: 'Save'}),
+        };
+    }, [theme.sidebarHeaderTextColor]);
+
+    const close = useCallback(() => popTopScreen(componentId), [componentId]);
+
+    const saveNotificationSettings = useCallback(() => {
+        //todo: implement me
+    }, []);
+
+    useNavButtonPressed(SAVE_NOTIF_BUTTON_ID, componentId, saveNotificationSettings, []); //todo: add dependencies here
+
+    useAndroidHardwareBackHandler(componentId, close);
+
+    useEffect(() => {
+        setButtons(componentId, {
+            rightButtons: [saveButton],
+        });
+    }, []);
 
     return (
         <SafeAreaView
