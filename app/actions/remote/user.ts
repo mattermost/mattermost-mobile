@@ -190,17 +190,8 @@ export async function fetchProfilesPerChannels(serverUrl: string, channelIds: st
             return {error: `${serverUrl} database not found`};
         }
 
-        const {database} = operator;
-
-        // let's filter those channels that we already have the users
-        const membersCount = await getMembersCountByChannelsId(database, channelIds);
-        const channelsToFetch = channelIds.filter((c) => membersCount[c] <= 1);
-        if (!channelsToFetch.length) {
-            return {data: []};
-        }
-
-        // Batch fetching profiles per channel by chunks of 300
-        const channels = chunk(channelsToFetch, 300);
+        // Batch fetching profiles per channel by chunks of 250
+        const channels = chunk(channelIds, 250);
         const data: ProfilesInChannelRequest[] = [];
 
         for await (const cIds of channels) {
