@@ -6,9 +6,9 @@ import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import BlockItem from '@components/block_item';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
+import OptionItem from '@components/option_item';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
@@ -108,15 +108,10 @@ const NotificationAutoResponder = ({currentUser}: NotificationAutoResponderProps
                 <View
                     style={styles.enabled}
                 >
-                    <BlockItem
-                        label={
-                            <FormattedText
-                                id='notification_settings.auto_responder.enabled'
-                                defaultMessage='Enabled'
-                                style={styles.label}
-                            />}
+                    <OptionItem
+                        label={intl.formatMessage({id: 'notification_settings.auto_responder.enabled', defaultMessage: 'Enabled'})}
                         action={onAutoResponseToggle}
-                        actionType='toggle'
+                        type='toggle'
                         selected={notifyProps.auto_responder_active === 'true'}
                     />
                 </View>

@@ -17,11 +17,11 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
-import BlockItem from '@components/block_item';
 import ErrorText from '@components/error_text';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
+import OptionItem from '@components/option_item';
 import {General, Channel} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -244,12 +244,12 @@ export default function ChannelInfoForm({
                 >
                     <View>
                         {showSelector && (
-                            <BlockItem
+                            <OptionItem
                                 testID='channel_info_form.make_private'
                                 label={makePrivateLabel}
                                 description={makePrivateDescription}
                                 action={handlePress}
-                                actionType={'toggle'}
+                                type={'toggle'}
                                 selected={isPrivate}
                                 icon={'lock-outline'}
                             />

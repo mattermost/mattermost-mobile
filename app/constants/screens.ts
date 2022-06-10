@@ -43,6 +43,7 @@ export const SELECT_TEAM = 'SelectTeam';
 export const SERVER = 'Server';
 export const SETTINGS = 'Settings';
 export const SETTINGS_DISPLAY = 'SettingsDisplay';
+export const SETTINGS_DISPLAY_THEME = 'SettingsDisplayTheme';
 export const SETTINGS_NOTIFICATION = 'SettingsNotification';
 export const SETTINGS_NOTIFICATION_AUTO_RESPONDER = 'SettingsNotificationAutoResponder';
 export const SETTINGS_NOTIFICATION_MENTION = 'SettingsNotificationMention';
@@ -97,6 +98,7 @@ export default {
     SERVER,
     SETTINGS,
     SETTINGS_DISPLAY,
+    SETTINGS_DISPLAY_THEME,
     SETTINGS_NOTIFICATION,
     SETTINGS_NOTIFICATION_AUTO_RESPONDER,
     SETTINGS_NOTIFICATION_MENTION,

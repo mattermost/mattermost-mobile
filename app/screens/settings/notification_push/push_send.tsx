@@ -6,8 +6,8 @@ import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import Block from '@components/block';
-import BlockItem from '@components/block_item';
 import FormattedText from '@components/formatted_text';
+import OptionItem from '@components/option_item';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -37,6 +37,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingHorizontal: 15,
             paddingVertical: 10,
         },
+        container: {
+            paddingHorizontal: 8,
+        },
     };
 });
 
@@ -57,34 +60,34 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
         >
             {sendPushNotifications &&
                 <>
-                    <BlockItem
+                    <OptionItem
                         action={setMobilePushPref}
-                        actionType='select'
-                        actionValue='all'
+                        containerStyle={styles.container}
                         label={intl.formatMessage({id: 'notification_settings.pushNotification.allActivity', defaultMessage: 'For all activity'})}
-                        labelStyle={styles.label}
                         selected={pushStatus === 'all'}
                         testID='notification_settings.pushNotification.allActivity'
+                        type='select'
+                        value='all'
                     />
                     <View style={styles.separator}/>
-                    <BlockItem
+                    <OptionItem
                         action={setMobilePushPref}
-                        actionType='select'
-                        actionValue='mention'
+                        containerStyle={styles.container}
                         label={intl.formatMessage({id: 'notification_settings.pushNotification.onlyMentions', defaultMessage: 'Only for mentions and direct messages'})}
-                        labelStyle={styles.label}
                         selected={pushStatus === 'mention'}
                         testID='notification_settings.pushNotification.onlyMentions'
+                        type='select'
+                        value='mention'
                     />
                     <View style={styles.separator}/>
-                    <BlockItem
+                    <OptionItem
                         action={setMobilePushPref}
-                        actionType='select'
-                        actionValue='none'
+                        containerStyle={styles.container}
                         label={intl.formatMessage({id: 'notification_settings.pushNotification.never', defaultMessage: 'Never'})}
-                        labelStyle={styles.label}
                         selected={pushStatus === 'none'}
                         testID='notification_settings.pushNotification.never'
+                        type='select'
+                        value='none'
                     />
                 </>
             }

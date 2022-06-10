@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {Alert, View} from 'react-native';
 
 import Block from '@components/block';
-import BlockItem from '@components/block_item';
+import OptionItem from '@components/option_item';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import UserModel from '@typings/database/models/servers/user';
@@ -113,52 +113,44 @@ const MentionSettings = ({currentUser, mentionKeys}: MentionSectionProps) => {
         >
             { Boolean(currentUser?.firstName) && (
                 <>
-                    <BlockItem
+                    <OptionItem
                         action={toggleFirstNameMention}
-                        actionType='toggle'
                         containerStyle={styles.container}
                         description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveName', defaultMessage: 'Your case sensitive first name'})}
-                        descriptionStyle={styles.desc}
                         label={currentUser!.firstName}
-                        labelStyle={styles.label}
                         selected={firstName}
+                        type='toggle'
                     />
                     <View style={styles.separator}/>
                 </>
             )
             }
             {Boolean(currentUser?.username) && (
-                <BlockItem
+                <OptionItem
                     action={toggleUsernameMention}
-                    actionType='toggle'
                     containerStyle={styles.container}
                     description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveUsername', defaultMessage: 'Your non-case sensitive username'})}
-                    descriptionStyle={styles.desc}
                     label={currentUser!.username}
-                    labelStyle={styles.label}
                     selected={usernameMention}
+                    type='toggle'
                 />
             )}
             <View style={styles.separator}/>
-            <BlockItem
+            <OptionItem
                 action={toggleChannelMentions}
-                actionType='toggle'
                 containerStyle={styles.container}
                 description={intl.formatMessage({id: 'notification_settings.mentions.channelWide', defaultMessage: 'Channel-wide mentions'})}
-                descriptionStyle={styles.desc}
                 label='@channel, @all, @here'
-                labelStyle={styles.label}
                 selected={channel}
+                type='toggle'
             />
             <View style={styles.separator}/>
-            <BlockItem
+            <OptionItem
                 action={goToNotificationSettingsMentionKeywords}
-                actionType='arrow'
                 containerStyle={styles.container}
                 description={mentionKeys || intl.formatMessage({id: 'notification_settings.mentions.keywordsDescription', defaultMessage: 'Other words that trigger a mention'})}
-                descriptionStyle={styles.desc}
                 label={intl.formatMessage({id: 'notification_settings.mentions.keywords', defaultMessage: 'Keywords'})}
-                labelStyle={styles.label}
+                type='arrow'
             />
         </Block>
     );
