@@ -43,7 +43,7 @@ const DisplayTheme = ({allowedThemeKeys, currentTeamId, currentUserId}: DisplayT
         if (theme.type === 'custom') {
             setCustomTheme(theme);
         }
-    }, [theme.type === 'custom']);
+    }, []);
 
     const updateTheme = useCallback((selectedThemeKey: string) => {
         const selectedTheme = allowedThemeKeys.find((tk) => tk === selectedThemeKey);

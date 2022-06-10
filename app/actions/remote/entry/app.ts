@@ -57,7 +57,10 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
         setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
     }
 
+    const dt = Date.now();
     await operator.batchRecords(models);
+    // eslint-disable-next-line no-console
+    console.log('ENTRY MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
 
     const {id: currentUserId, locale: currentUserLocale} = meData?.user || (await getCurrentUser(database))!;
     const {config, license} = await getCommonSystemValues(database);
