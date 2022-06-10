@@ -54,10 +54,12 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     await EphemeralStore.waitUntilScreenHasLoaded(Screens.HOME);
 
     let switchedToScreen = false;
+    let switchedToChannel = false;
     if (myChannel && myTeam) {
         if (isThreadNotification) {
             await fetchAndSwitchToThread(serverUrl, rootId, true);
         } else {
+            switchedToChannel = true;
             await switchToChannelById(serverUrl, channelId, teamId);
         }
         switchedToScreen = true;
@@ -91,6 +93,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
             if (isThreadNotification) {
                 fetchAndSwitchToThread(serverUrl, rootId, true);
             } else {
+                switchedToChannel = true;
                 switchToChannelById(serverUrl, selectedChannelId, selectedTeamId);
             }
         } else if (selectedTeamId !== teamId || selectedChannelId !== channelId) {
@@ -111,7 +114,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(operator.database))!;
     const {config, license} = await getCommonSystemValues(operator.database);
 
-    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, selectedTeamId, switchedToScreen ? selectedChannelId : undefined);
+    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, selectedTeamId, switchedToChannel ? selectedChannelId : undefined);
     syncOtherServers(serverUrl);
 
     return {userId: currentUserId};

@@ -4,6 +4,7 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {ActionType, General, Navigation, Preferences, Screens} from '@constants';
+import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {getTranslations, t} from '@i18n';
 import {getChannelById} from '@queries/servers/channel';
@@ -104,7 +105,7 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
 
         let theme = EphemeralStore.theme;
         if (!theme) {
-            theme = Preferences.THEMES.denim;
+            theme = getDefaultThemeByAppearance();
 
             // When opening the app from a push notification the theme may not be set in the EphemeralStore
             // causing the goToScreen to use the Appearance theme instead and that causes the screen background color to potentially
@@ -154,10 +155,10 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
 
         if (isFromNotification) {
             await dismissAllModalsAndPopToRoot();
+            await EphemeralStore.waitUntilScreenIsTop(Screens.HOME);
             if (switchingTeams && isTabletDevice) {
                 DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_THREADS);
             }
-            await EphemeralStore.waitUntilScreenIsTop(Screens.HOME);
         }
         goToScreen(Screens.THREAD, '', {rootId}, {
             topBar: {
