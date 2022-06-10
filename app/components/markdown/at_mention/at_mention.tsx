@@ -11,7 +11,6 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchUserOrGroupsByMentionsInBatch} from '@actions/remote/user';
 import {useServerUrl} from '@app/context/server';
-import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
 import {MM_TABLES} from '@constants/database';
@@ -64,20 +63,12 @@ const AtMention = ({
     users,
     groups,
 }: AtMentionProps) => {
-    // Hooks
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const theme = useTheme();
     const insets = useSafeAreaInsets();
     const serverUrl = useServerUrl();
 
-    // Effects
-    useEffect(() => {
-        // Fetches and updates the local db store with the mention
-        fetchUserOrGroupsByMentionsInBatch(serverUrl, mentionName);
-    }, []);
-
-    // Checks if the mention is a user
     const user = useMemo(() => {
         const usersByUsername = getUsersByUsername(users);
         let mn = mentionName.toLowerCase();
@@ -98,13 +89,11 @@ const AtMention = ({
         // @ts-expect-error: The model constructor is hidden within WDB type definition
         return new UserModel(database.get(USER), {username: ''});
     }, [users, mentionName]);
-
     const userMentionKeys = useMemo(() => {
         if (mentionKeys) {
             return mentionKeys;
         }
 
-        // If the mentioned user is not the current user, ignore mention keys
         if (user.id !== currentUserId) {
             return [];
         }
@@ -147,8 +136,12 @@ const AtMention = ({
         return new GroupModel(database.get(GROUP), {name: ''});
     }, [groups, user, mentionName]);
 
-    const goToUserProfile = () => {
-        const screen = 'UserProfile';
+    // Effects
+    useEffect(() => {
+        // Fetches and updates the local db store with the mention
+        fetchUserOrGroupsByMentionsInBatch(serverUrl, mentionName);
+    }, []);
+
     const openUserProfile = () => {
         const screen = Screens.USER_PROFILE;
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
@@ -236,6 +229,7 @@ const AtMention = ({
     } else {
         const pattern = new RegExp(/\b(all|channel|here)(?:\.\B|_\b|\b)/, 'i');
         const mentionMatch = pattern.exec(mentionName);
+
         if (mentionMatch && !disableAtChannelMentionHighlight) {
             mention = mentionMatch.length > 1 ? mentionMatch[1] : mentionMatch[0];
             suffix = mentionName.replace(mention, '');

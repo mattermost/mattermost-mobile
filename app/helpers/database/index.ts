@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {General} from '@constants';
+import DatabaseManager from '@database/manager';
 
 import type Model from '@nozbe/watermelondb/Model';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -90,4 +91,20 @@ export const filterAndSortMyChannels = ([myChannels, channels, notifyProps]: Fil
     }
 
     return [...mentions, ...unreads, ...mutedMentions];
+};
+
+/**
+ * Gets the Server Operator for a given server url
+ *
+ * @param serverUrl
+ * @returns ServerDataOperator
+ * @throws Error
+ */
+export const getOperator = (serverUrl: string) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        throw new Error(`${serverUrl} operator not found`);
+    }
+
+    return operator;
 };

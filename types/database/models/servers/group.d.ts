@@ -51,6 +51,4 @@ export default class GroupModel extends Model {
 
     /** members : All the members (users) of this group */
     @lazy members: Query<UserModel>;
-
-    @lazy isCurrentUserAMember: Observable<boolean>;
 }
