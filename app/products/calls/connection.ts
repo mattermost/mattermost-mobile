@@ -14,6 +14,7 @@ import {
 
 import {Client4} from '@client/rest';
 import {WebsocketEvents} from '@constants';
+import {ICEServersConfigs} from '@mmproducts/calls/store/types/calls';
 
 import Peer from './simple-peer';
 import WebSocketClient from './websocket';
@@ -22,7 +23,7 @@ export let client: any = null;
 
 const websocketConnectTimeout = 3000;
 
-export async function newClient(channelID: string, iceServers: string[], closeCb: () => void, setScreenShareURL: (url: string) => void) {
+export async function newClient(channelID: string, iceServers: ICEServersConfigs, closeCb: () => void, setScreenShareURL: (url: string) => void) {
     let peer: Peer | null = null;
     let stream: MediaStream;
     let voiceTrackAdded = false;

@@ -9,7 +9,7 @@ import {getCurrentChannelId} from '@mm-redux/selectors/entities/common';
 import {getLicense, getServerVersion} from '@mm-redux/selectors/entities/general';
 import {GlobalState} from '@mm-redux/types/store';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
-import {Call} from '@mmproducts/calls/store/types/calls';
+import {Call, ICEServersConfigs} from '@mmproducts/calls/store/types/calls';
 
 export function getConfig(state: GlobalState) {
     return state.entities.calls.config;
@@ -112,5 +112,27 @@ export const isLimitRestricted: (state: GlobalState, channelId?: string) => bool
         }
 
         return max !== 0 && numParticipants >= max;
+    },
+);
+
+export const getICEServersConfigs: (state: GlobalState) => ICEServersConfigs = createSelector(
+    getConfig,
+    (config) => {
+        // if ICEServersConfigs is set, we can trust this to be complete and
+        // coming from an updated API.
+        if (config.ICEServersConfigs?.length > 0) {
+            return config.ICEServersConfigs;
+        }
+
+        // otherwise we revert to using the now deprecated field.
+        if (config.ICEServers?.length > 0) {
+            return [
+                {
+                    urls: config.ICEServers,
+                },
+            ];
+        }
+
+        return [];
     },
 );
