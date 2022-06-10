@@ -19,21 +19,26 @@ type Props = {
     category: CategoryModel;
     limit: number;
     onChannelSwitch: (channelId: string) => void;
-    unreadChannels: ChannelModel[];
+    unreadIds: Set<string>;
+    unreadsOnTop: boolean;
 };
 
 const extractKey = (item: ChannelModel) => item.id;
 
-const CategoryBody = ({sortedChannels, category, limit, onChannelSwitch, unreadChannels}: Props) => {
+const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, limit, onChannelSwitch}: Props) => {
     const serverUrl = useServerUrl();
     const ids = useMemo(() => {
-        const filteredChannels = sortedChannels;
+        const filteredChannels = unreadsOnTop ? sortedChannels.filter((c) => !unreadIds.has(c.id)) : sortedChannels;
 
         if (category.type === DMS_CATEGORY && limit > 0) {
             return filteredChannels.slice(0, limit);
         }
         return filteredChannels;
-    }, [category.type, limit, sortedChannels]);
+    }, [category.type, limit, sortedChannels, unreadIds, unreadsOnTop]);
+
+    const unreadChannels = useMemo(() => {
+        return unreadsOnTop ? [] : ids.filter((c) => unreadIds.has(c.id));
+    }, [ids, unreadIds, unreadsOnTop]);
 
     const directChannels = useMemo(() => {
         return ids.concat(unreadChannels).filter(isDMorGM);
