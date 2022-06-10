@@ -490,6 +490,7 @@ export async function fetchMissingDirectChannelsInfo(serverUrl: string, directCh
                 const ownDirectChannel = dms.find((dm) => dm.name === getDirectChannelName(currentUserId, currentUserId));
                 if (ownDirectChannel) {
                     ownDirectChannel.display_name = displayUsername(currentUser, locale, teammateDisplayNameSetting, false);
+                    ownDirectChannel.fake = true;
                     updatedChannels.add(ownDirectChannel);
                 }
             }

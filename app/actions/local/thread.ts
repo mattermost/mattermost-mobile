@@ -3,19 +3,21 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {ActionType, General, Navigation, Screens} from '@constants';
+import {ActionType, General, Navigation, Preferences, Screens} from '@constants';
+import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {getTranslations, t} from '@i18n';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
-import {getCurrentTeamId, getCurrentUserId, setCurrentTeamAndChannelId} from '@queries/servers/system';
-import {addChannelToTeamHistory} from '@queries/servers/team';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {getCommonSystemValues, getCurrentTeamId, getCurrentUserId, prepareCommonSystemValues, PrepareCommonSystemValuesArgs, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {addChannelToTeamHistory, addTeamToTeamHistory} from '@queries/servers/team';
 import {getIsCRTEnabled, getThreadById, prepareThreadsFromReceivedPosts, queryThreadsInTeam} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
-import {goToScreen} from '@screens/navigation';
+import {dismissAllModalsAndPopToRoot, goToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
-import {changeOpacity} from '@utils/theme';
+import {changeOpacity, setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
 
 import type Model from '@nozbe/watermelondb/Model';
 
@@ -59,11 +61,13 @@ export const switchToGlobalThreads = async (serverUrl: string, teamId?: string, 
     return {models};
 };
 
-export const switchToThread = async (serverUrl: string, rootId: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
+export const switchToThread = async (serverUrl: string, rootId: string, isFromNotification = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+
+    const {database} = operator;
 
     try {
         const user = await getCurrentUser(database);
@@ -80,9 +84,37 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
             return {error: 'Channel not found'};
         }
 
-        const theme = EphemeralStore.theme;
+        const system = await getCommonSystemValues(database);
+        const isTabletDevice = await isTablet();
+        const teamId = channel.teamId || system.currentTeamId;
+
+        let switchingTeams = false;
+        if (system.currentTeamId !== teamId) {
+            const modelPromises: Array<Promise<Model[]>> = [];
+            switchingTeams = true;
+            modelPromises.push(addTeamToTeamHistory(operator, teamId, true));
+            const commonValues: PrepareCommonSystemValuesArgs = {
+                currentTeamId: teamId,
+            };
+            modelPromises.push(prepareCommonSystemValues(operator, commonValues));
+            const models = (await Promise.all(modelPromises)).flat();
+            if (models.length) {
+                await operator.batchRecords(models);
+            }
+        }
+
+        let theme = EphemeralStore.theme;
         if (!theme) {
-            return {error: 'Theme not found'};
+            theme = getDefaultThemeByAppearance();
+
+            // When opening the app from a push notification the theme may not be set in the EphemeralStore
+            // causing the goToScreen to use the Appearance theme instead and that causes the screen background color to potentially
+            // not match the theme
+            const themes = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_THEME, teamId).fetch();
+            if (themes.length) {
+                theme = setThemeDefaults(JSON.parse(themes[0].value) as Theme);
+            }
+            updateThemeIfNeeded(theme!, true);
         }
 
         // Modal right buttons
@@ -120,13 +152,21 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
         }
 
         EphemeralStore.setLastViewedThreadId(rootId);
+
+        if (isFromNotification) {
+            await dismissAllModalsAndPopToRoot();
+            await EphemeralStore.waitUntilScreenIsTop(Screens.HOME);
+            if (switchingTeams && isTabletDevice) {
+                DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_THREADS);
+            }
+        }
         goToScreen(Screens.THREAD, '', {rootId}, {
             topBar: {
                 title: {
                     text: title,
                 },
                 subtitle: {
-                    color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
+                    color: changeOpacity(theme!.sidebarHeaderTextColor, 0.72),
                     text: subtitle,
                 },
                 noBorder: true,
@@ -136,6 +176,7 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
                 rightButtons,
             },
         });
+
         return {};
     } catch (error) {
         return {error};
