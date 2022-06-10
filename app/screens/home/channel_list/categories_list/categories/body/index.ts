@@ -93,7 +93,6 @@ const withUserId = withObservables([], ({database}: WithDatabaseArgs) => ({curre
 const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, locale, isTablet, database, currentUserId}: EnhanceProps) => {
     const dmMap = (p: PreferenceModel) => getDirectChannelName(p.name, currentUserId);
 
-    const observedCategory = category.observe();
     const currentChannelId = observeCurrentChannelId(database);
 
     const hiddenDmIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, undefined, 'false').
@@ -115,9 +114,8 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
             switchMap(([a, b]) => of$(new Set(a.concat(b)))),
         );
 
-    const sortedChannels = observedCategory.pipe(
-        combineLatestWith(hiddenChannelIds),
-        switchMap(([c, excludeIds]) => observeSortedChannels(database, c, Array.from(excludeIds), locale)),
+    const sortedChannels = hiddenChannelIds.pipe(
+        switchMap((excludeIds) => observeSortedChannels(database, category, Array.from(excludeIds), locale)),
         combineLatestWith(currentChannelId),
         map(([channels, ccId]) => filterArchived(channels, ccId)),
     );
@@ -141,7 +139,7 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
     const lastUnreadId = isTablet ? observeLastUnreadChannelId(database) : of$(undefined);
     const unreadChannels = category.myChannels.observeWithColumns(['mentions_count', 'is_unread']);
     const notifyProps = unreadChannels.pipe(switchMap((myChannels) => observeNotifyPropsByChannels(database, myChannels)));
-    const filterUnreads = unreadChannels.pipe(
+    const unreadIds = unreadChannels.pipe(
         combineLatestWith(notifyProps, lastUnreadId),
         map(([my, settings, lastUnread]) => {
             return my.reduce<Set<string>>((set, m) => {
@@ -154,21 +152,14 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
         }),
     );
 
-    const filtered = sortedChannels.pipe(
-        combineLatestWith(filterUnreads, unreadsOnTop),
-        map(([channels, unreadIds, unreadTop]) => {
-            return channels.filter((c) => (unreadTop ? !unreadIds.has(c.id) : true));
-        }),
-    );
-
     return {
         limit,
-        sortedChannels: filtered,
-        category: observedCategory,
-        unreadChannels: sortedChannels.pipe(
-            combineLatestWith(filterUnreads, unreadsOnTop),
-            map(([sorted, unreadIds, unreadsTop]) => (unreadsTop ? [] : sorted.filter((c) => unreadIds.has(c.id)))),
-        ),
+        sortedChannels,
+        notifyProps,
+        lastUnreadId,
+        unreadsOnTop,
+        unreadIds,
+        category,
     };
 });
 

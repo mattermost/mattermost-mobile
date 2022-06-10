@@ -62,13 +62,6 @@ export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, 
     }
 }
 
-type MembershipWithId = ChannelMembership & {id: string};
-
-type MembershipReduce = {
-    memberships: MembershipWithId[];
-    membershipsMap: Record<string, MembershipWithId>;
-}
-
 export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[], isCRTEnabled?: boolean) => {
     const {database} = operator;
     const allChannelsForTeam = (await queryAllChannelsForTeam(database, teamId).fetch()).
@@ -84,12 +77,9 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
         }, {});
 
     const channelInfos: ChannelInfo[] = [];
-    const {memberships, membershipsMap} = channelMembers.reduce<MembershipReduce>((result, cm) => {
-        const value = {...cm, id: cm.channel_id};
-        result.memberships.push(value);
-        result.membershipsMap[value.id] = value;
-        return result;
-    }, {memberships: [], membershipsMap: {}});
+    const memberships = channelMembers.map((cm) => {
+        return {...cm, id: cm.channel_id};
+    });
 
     for (const c of channels) {
         const storedChannel = allChannelsForTeam[c.id];
@@ -104,12 +94,6 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
                 guest_count = storedInfo.guestCount;
                 pinned_post_count = storedInfo.pinnedPostCount;
             }
-        }
-
-        const member = membershipsMap[c.id];
-        if (member) {
-            member.last_post_at = c.last_post_at;
-            member.last_root_post_at = c.last_root_post_at;
         }
 
         channelInfos.push({

@@ -360,18 +360,26 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
     return {posts: data.posts, order: data.order, authors, actionType, previousPostId: data.previousPostId};
 }
 
-export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: Channel[], memberships: ChannelMembership[], excludeChannelId?: string) => {
+export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: Channel[], memberships: ChannelMembership[], excludeChannelId?: string, emitEvent = false) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
     }
 
     try {
+        const promises = [];
+        if (emitEvent) {
+            DeviceEventEmitter.emit(Events.FETCHING_POSTS, true);
+        }
         for (const member of memberships) {
             const channel = channels.find((c) => c.id === member.channel_id);
             if (channel && (channel.total_msg_count - member.msg_count) > 0 && channel.id !== excludeChannelId) {
-                fetchPostsForChannel(serverUrl, channel.id);
+                promises.push(fetchPostsForChannel(serverUrl, channel.id));
             }
+        }
+        await Promise.all(promises);
+        if (emitEvent) {
+            DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
         }
     } catch (error) {
         return {error};
