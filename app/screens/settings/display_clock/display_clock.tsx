@@ -3,8 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {BackHandler, StatusBar, View} from 'react-native';
-import {Navigation} from 'react-native-navigation';
+import {StatusBar, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {savePreference} from '@actions/remote/preference';
@@ -13,9 +12,10 @@ import OptionItem from '@components/option_item';
 import {Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import {popTopScreen, setButtons} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const footer = {
@@ -94,7 +94,7 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
 
     const close = useCallback(() => popTopScreen(componentId), [componentId]);
 
-    const saveClockDisplayPreference = useCallback(async () => {
+    const saveClockDisplayPreference = useCallback(() => {
         const timePreference: PreferenceType = {
             category: Preferences.CATEGORY_DISPLAY_SETTINGS,
             name: 'use_military_time',
@@ -104,7 +104,7 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
 
         savePreference(serverUrl, [timePreference]);
         close();
-    }, []);
+    }, [isMilitaryTimeFormat, serverUrl, close]);
 
     useEffect(() => {
         setButtons(componentId, {
@@ -112,34 +112,8 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
         });
     }, []);
 
-    useEffect(() => {
-        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (EphemeralStore.getNavigationTopComponentId() === componentId) {
-                close();
-                return true;
-            }
-
-            return false;
-        });
-
-        return () => {
-            backHandler.remove();
-        };
-    }, []);
-
-    useEffect(() => {
-        const unsubscribe = Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
-                if (buttonId === SAVE_CLOCK_BUTTON_ID) {
-                    saveClockDisplayPreference();
-                }
-            },
-        }, componentId);
-
-        return () => {
-            unsubscribe.remove();
-        };
-    }, []);
+    useAndroidHardwareBackHandler(componentId, close);
+    useNavButtonPressed(SAVE_CLOCK_BUTTON_ID, componentId, saveClockDisplayPreference, [isMilitaryTimeFormat]);
 
     return (
         <SafeAreaView
