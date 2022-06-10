@@ -286,9 +286,10 @@ export function filterProfilesMatchingTerm(users: UserProfile[], term: string): 
     });
 }
 
-export function getNotificationProps(user: UserModel) {
+type ExtraNotificationProps = Partial<UserNotifyProps> & { push_threads: 'all' | 'mention' }
+export function getNotificationProps(user: UserModel): ExtraNotificationProps {
     if (user && user.notifyProps) {
-        return user.notifyProps;
+        return user.notifyProps as ExtraNotificationProps;
     }
 
     return {

@@ -6,6 +6,8 @@ import {useIntl} from 'react-intl';
 import {ScrollView} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import {updateMe} from '@actions/remote/user';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
@@ -46,14 +48,13 @@ type NotificationMobileProps = {
     sendPushNotifications: boolean;
 };
 const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotifications}: NotificationMobileProps) => {
+    const serverUrl = useServerUrl();
+
     const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
 
     const [pushSend, setPushSend] = useState<PushStatus>(notifyProps.push as unknown as PushStatus);
     const [pushStatus, setPushStatus] = useState<PushStatus>(notifyProps.push_status as unknown as PushStatus);
-
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const [pushThread, setPushThreadPref] = useState<PushStatus>(notifyProps.push_threads); //fixme: fix ts issue
+    const [pushThread, setPushThreadPref] = useState<PushStatus>(notifyProps.push_threads as unknown as PushStatus);
 
     const intl = useIntl();
     const theme = useTheme();
@@ -101,10 +102,12 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
     const close = useCallback(() => popTopScreen(componentId), [componentId]);
 
     const saveNotificationSettings = useCallback(() => {
-        //todo: implement me
-    }, []);
+        const notify_props = {...notifyProps, push: pushSend, push_status: pushStatus, push_threads: pushThread};
+        updateMe(serverUrl, {notify_props} as unknown as UserNotifyProps);
+        close();
+    }, [serverUrl, notifyProps, pushSend, pushStatus, pushThread, close]);
 
-    useNavButtonPressed(SAVE_NOTIF_BUTTON_ID, componentId, saveNotificationSettings, []); //todo: add dependencies here
+    useNavButtonPressed(SAVE_NOTIF_BUTTON_ID, componentId, saveNotificationSettings, []);
 
     useAndroidHardwareBackHandler(componentId, close);
 
