@@ -13,7 +13,7 @@ import {getCommonSystemValues, getCurrentTeamId, getCurrentUserId, prepareCommon
 import {addChannelToTeamHistory, addTeamToTeamHistory} from '@queries/servers/team';
 import {getIsCRTEnabled, getThreadById, prepareThreadsFromReceivedPosts, queryThreadsInTeam} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
-import {dismissAllModals, dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen, goToScreen, popToRoot} from '@screens/navigation';
+import {dismissAllModalsAndPopToRoot, goToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
 import {changeOpacity, setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
