@@ -40,9 +40,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             paddingHorizontal: 8,
         },
-        container: {
-            paddingHorizontal: 8,
-        },
     };
 });
 
