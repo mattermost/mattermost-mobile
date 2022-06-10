@@ -307,6 +307,24 @@ class DatabaseManager {
         return undefined;
     };
 
+    public getAppDatabaseAndOperator = () => {
+        const app = this.appDatabase;
+        if (!app) {
+            throw new Error('App database not found');
+        }
+
+        return app;
+    };
+
+    public getServerDatabaseAndOperator = (serverUrl: string) => {
+        const server = this.serverDatabases[serverUrl];
+        if (!server) {
+            throw new Error(`${serverUrl} database not found`);
+        }
+
+        return server;
+    };
+
     /**
     * setActiveServerDatabase: Set the new active server database.
     * This method should be called when switching to another server.
