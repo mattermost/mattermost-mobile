@@ -49,7 +49,7 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, 
         const post = await getPostById(database, rootId);
         if (post) {
             const thread = await getThreadById(database, rootId);
-            if (thread && (isFromNotification || thread.unreadReplies || thread.unreadMentions)) {
+            if (thread) {
                 const channel = await getChannelById(database, post.channelId);
                 if (channel) {
                     markThreadAsRead(serverUrl, channel.teamId, thread.id);
@@ -58,7 +58,7 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, 
         }
     }
 
-    switchToThread(serverUrl, rootId);
+    switchToThread(serverUrl, rootId, isFromNotification);
 
     return {};
 };
