@@ -3,14 +3,14 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Keyboard, Platform, Text, View} from 'react-native';
+import {Keyboard, Platform, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
-import {General, Navigation, Screens} from '@constants';
+import {General, Screens} from '@constants';
 import {QUICK_OPTIONS_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -140,19 +140,22 @@ const ChannelHeader = ({
         });
     }, [channelId, channelType, isTablet, onTitlePress, theme]);
 
-    const rightButtons: HeaderRightButton[] = useMemo(() => ([{
-        iconName: 'magnify',
-        onPress: () => {
-            DeviceEventEmitter.emit(Navigation.NAVIGATE_TO_TAB, {screen: 'Search', params: {searchTerm: `in: ${searchTerm}`}});
-            if (!isTablet) {
-                popTopScreen(componentId);
-            }
-        },
-    }, {
-        iconName: Platform.select({android: 'dots-vertical', default: 'dots-horizontal'}),
-        onPress: onChannelQuickAction,
-        buttonType: 'opacity',
-    }]), [isTablet, searchTerm, onChannelQuickAction]);
+    const rightButtons: HeaderRightButton[] = useMemo(() => ([
+
+        // {
+        //     iconName: 'magnify',
+        //     onPress: () => {
+        //         DeviceEventEmitter.emit(Navigation.NAVIGATE_TO_TAB, {screen: 'Search', params: {searchTerm: `in: ${searchTerm}`}});
+        //         if (!isTablet) {
+        //             popTopScreen(componentId);
+        //         }
+        //     },
+        // },
+        {
+            iconName: Platform.select({android: 'dots-vertical', default: 'dots-horizontal'}),
+            onPress: onChannelQuickAction,
+            buttonType: 'opacity',
+        }]), [isTablet, searchTerm, onChannelQuickAction]);
 
     let title = displayName;
     if (isOwnDirectMessage) {

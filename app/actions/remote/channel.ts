@@ -13,7 +13,7 @@ import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import NetworkManager from '@managers/network_manager';
-import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo, queryMyChannelSettingsByIds} from '@queries/servers/channel';
+import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo, queryMyChannelSettingsByIds, getMembersCountByChannelsId} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCommonSystemValues, getConfig, getCurrentTeamId, getCurrentUserId, getLicense, setCurrentChannelId} from '@queries/servers/system';
 import {prepareMyTeams, getNthLastChannelFromTeam, getMyTeamById, getTeamById, getTeamByName, queryMyTeams} from '@queries/servers/team';
@@ -438,10 +438,16 @@ export async function fetchMissingDirectChannelsInfo(serverUrl: string, directCh
     const updatedChannels = new Set<Channel>();
 
     const dms: Channel[] = [];
+    const dmIds: string[] = [];
+    const dmWithoutDisplayName = new Set<string>();
     const gms: Channel[] = [];
     for (const c of directChannels) {
         if (c.type === General.DM_CHANNEL) {
             dms.push(c);
+            dmIds.push(c.id);
+            if (!c.display_name) {
+                dmWithoutDisplayName.add(c.id);
+            }
             continue;
         }
         gms.push(c);
@@ -449,8 +455,12 @@ export async function fetchMissingDirectChannelsInfo(serverUrl: string, directCh
 
     try {
         const currentUser = await getCurrentUser(database);
+
+        // let's filter those channels that we already have the users
+        const membersCount = await getMembersCountByChannelsId(database, dmIds);
+        const profileChannelsToFetch = dmIds.filter((id) => membersCount[id] <= 1 || dmWithoutDisplayName.has(id));
         const results = await Promise.all([
-            fetchProfilesPerChannels(serverUrl, dms.map((c) => c.id), currentUserId, false),
+            profileChannelsToFetch.length ? fetchProfilesPerChannels(serverUrl, profileChannelsToFetch, currentUserId, false) : Promise.resolve({data: undefined}),
             fetchProfilesInGroupChannels(serverUrl, gms.map((c) => c.id), false),
         ]);
 

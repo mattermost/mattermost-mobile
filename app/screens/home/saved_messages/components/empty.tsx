@@ -35,7 +35,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
 }));
 
-function EmptySavedPosts() {
+function EmptySavedMessages() {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -44,18 +44,18 @@ function EmptySavedPosts() {
             <SavedPostsIcon style={styles.icon}/>
             <FormattedText
                 defaultMessage='No saved messages yet'
-                id='saved_posts.empty.title'
+                id='saved_messages.empty.title'
                 style={styles.title}
-                testID='saved_posts.empty.title'
+                testID='saved_messages.empty.title'
             />
             <FormattedText
                 defaultMessage={'To save something for later, long-press on a message and choose Save from the menu. Saved messages are only visible to you.'}
-                id='saved_posts.empty.paragraph'
+                id='saved_messages.empty.paragraph'
                 style={styles.paragraph}
-                testID='saved_posts.empty.paragraph'
+                testID='saved_messages.empty.paragraph'
             />
         </View>
     );
 }
 
-export default EmptySavedPosts;
+export default EmptySavedMessages;
