@@ -53,7 +53,7 @@ const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusPro
             headerStyles={styles.upperCase}
         >
             <OptionItem
-                action={setMobilePushStatus}
+                action={() => setMobilePushStatus('online')}
                 containerStyle={styles.container}
                 label={intl.formatMessage({id: 'notification_settings.mobile.online', defaultMessage: 'Online, away or offline'})}
                 selected={pushStatus === 'online'}
@@ -62,7 +62,7 @@ const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusPro
             />
             <View style={styles.separator}/>
             <OptionItem
-                action={setMobilePushStatus}
+                action={() => setMobilePushStatus('away')}
                 containerStyle={styles.container}
                 label={intl.formatMessage({id: 'notification_settings.mobile.away', defaultMessage: 'Away or offline'})}
                 selected={pushStatus === 'away'}
@@ -71,7 +71,7 @@ const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusPro
             />
             <View style={styles.separator}/>
             <OptionItem
-                action={setMobilePushStatus}
+                action={() => setMobilePushStatus('offline')}
                 containerStyle={styles.container}
                 label={intl.formatMessage({id: 'notification_settings.mobile.offline', defaultMessage: 'Offline'})}
                 selected={pushStatus === 'offline'}

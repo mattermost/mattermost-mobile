@@ -44,7 +44,7 @@ const footerText = {
 
 type MobilePushThreadProps = {
     onMobilePushThreadChanged: (status: string) => void;
-    pushThread: PushStatus;
+    pushThread: boolean;
 }
 
 const MobilePushThread = ({pushThread, onMobilePushThreadChanged}: MobilePushThreadProps) => {
@@ -62,7 +62,7 @@ const MobilePushThread = ({pushThread, onMobilePushThreadChanged}: MobilePushThr
             <OptionItem
                 action={onMobilePushThreadChanged}
                 label={intl.formatMessage({id: 'notification_settings.push_threads.description', defaultMessage: 'Notify me about all replies to threads I\'m following'})}
-                selected={pushThread === 'all'}
+                selected={pushThread}
                 type='toggle'
             />
             <View style={styles.separator}/>

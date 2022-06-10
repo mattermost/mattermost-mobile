@@ -44,7 +44,7 @@ const NotificationPush = ({componentId, isCRTEnabled, sendPushNotifications}: No
     //fixme: assign proper value instead of defaulting to 'online'
     const [pushPref, setPushPref] = useState<PushStatus>('online');
     const [pushStatus, setPushStatus] = useState<PushStatus>('online');
-    const [pushThread, setPushThreadPref] = useState<PushStatus>('online');
+    const [pushThread, setPushThreadPref] = useState<boolean>(false);
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -57,8 +57,8 @@ const NotificationPush = ({componentId, isCRTEnabled, sendPushNotifications}: No
         setPushPref(status);
     }, [pushPref]);
 
-    const onMobilePushThreadChanged = useCallback((status: PushStatus) => {
-        setPushThreadPref(status);
+    const onMobilePushThreadChanged = useCallback(() => {
+        setPushThreadPref((prev) => !prev);
     }, [pushThread]);
 
     const saveButton = useMemo(() => {
@@ -100,8 +100,8 @@ const NotificationPush = ({componentId, isCRTEnabled, sendPushNotifications}: No
                 alwaysBounceVertical={false}
             >
                 <MobileSendPush
-                    sendPushNotifications={sendPushNotifications}
                     pushStatus={pushPref}
+                    sendPushNotifications={sendPushNotifications}
                     setMobilePushPref={setMobilePushPref}
                 />
                 {isCRTEnabled && pushPref === 'mention' && (
