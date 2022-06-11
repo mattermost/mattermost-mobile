@@ -10,7 +10,7 @@ import {getCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, s
 import {getMyTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {emitNotificationError} from '@utils/notification';
 
@@ -51,7 +51,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     const isCRTEnabled = await getIsCRTEnabled(database);
     const isThreadNotification = isCRTEnabled && Boolean(rootId);
 
-    await EphemeralStore.waitUntilScreenHasLoaded(Screens.HOME);
+    await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
 
     let switchedToScreen = false;
     let switchedToChannel = false;
