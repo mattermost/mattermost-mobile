@@ -307,6 +307,12 @@ class DatabaseManager {
         return undefined;
     };
 
+    /**
+     * getAppDatabaseAndOperator: Helper function that returns App the database and operator.
+     * use within a try/catch block
+     * @returns AppDatabase
+     * @throws Error
+     */
     public getAppDatabaseAndOperator = () => {
         const app = this.appDatabase;
         if (!app) {
@@ -316,6 +322,14 @@ class DatabaseManager {
         return app;
     };
 
+    /**
+     * getServerDatabaseAndOperator: Helper function that returns the database and operator
+     * for a specific server.
+     * use within a try/catch block
+     * @param serverUrl the url of the server
+     * @returns ServerDatabase
+     * @throws Error
+     */
     public getServerDatabaseAndOperator = (serverUrl: string) => {
         const server = this.serverDatabases[serverUrl];
         if (!server) {
