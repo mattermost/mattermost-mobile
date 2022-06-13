@@ -4,12 +4,12 @@
 import {EffectCallback, useEffect} from 'react';
 import {BackHandler} from 'react-native';
 
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 
 const useAndroidHardwareBackHandler = (componentId: string, callback: EffectCallback) => {
     useEffect(() => {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (EphemeralStore.getNavigationTopComponentId() === componentId) {
+            if (NavigationStore.getNavigationTopComponentId() === componentId) {
                 callback();
                 return true;
             }
