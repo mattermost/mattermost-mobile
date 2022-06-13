@@ -83,7 +83,7 @@ type MentionSectionProps = {
 const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
     const serverUrl = useServerUrl();
 
-    const notifyProps = currentUser.notifyProps as Partial<UserNotifyProps>;
+    const notifyProps = currentUser.notifyProps as UserNotifyProps;
     const [tglFirstName, setTglFirstName] = useState(notifyProps.first_name === 'true');
     const [tglChannel, setTglChannel] = useState(notifyProps.channel === 'true');
 
@@ -109,8 +109,8 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
     const close = () => popTopScreen(componentId);
 
     const saveMention = useCallback(() => {
-        const notify_props = {...notifyProps, first_name: `${tglFirstName}`, channel: `${tglChannel}`, mention_keys: mentionKeys};
-        updateMe(serverUrl, {notify_props} as unknown as UserNotifyProps);
+        const notify_props: UserNotifyProps = {...notifyProps, first_name: `${tglFirstName}`, channel: `${tglChannel}`, mention_keys: mentionKeys};
+        updateMe(serverUrl, {notify_props});
         close();
     }, [serverUrl, notifyProps, tglFirstName, tglChannel, mentionKeys]);
 
