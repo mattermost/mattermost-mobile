@@ -60,14 +60,6 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const setMobilePushStatus = useCallback((status: PushStatus) => {
-        setPushStatus(status);
-    }, []);
-
-    const setMobilePushPref = useCallback((status: PushStatus) => {
-        setPushSend(status);
-    }, [pushSend]);
-
     const onMobilePushThreadChanged = useCallback(() => {
         setPushThreadPref(pushThread === 'all' ? 'mention' : 'all');
     }, [pushThread]);
@@ -131,7 +123,7 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
                 <MobileSendPush
                     pushStatus={pushSend}
                     sendPushNotifications={sendPushNotifications}
-                    setMobilePushPref={setMobilePushPref}
+                    setMobilePushPref={setPushSend}
                 />
                 {isCRTEnabled && pushSend === 'mention' && (
                     <MobilePushThread
@@ -142,7 +134,7 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
                 {sendPushNotifications && pushSend !== 'none' && (
                     <MobilePushStatus
                         pushStatus={pushStatus}
-                        setMobilePushStatus={setMobilePushStatus}
+                        setMobilePushStatus={setPushStatus}
                     />
                 )}
             </ScrollView>
