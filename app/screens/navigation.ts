@@ -14,6 +14,7 @@ import NavigationConstants from '@constants/navigation';
 import {NOT_READY} from '@constants/screens';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {LaunchProps, LaunchType} from '@typings/launch';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
@@ -149,7 +150,7 @@ Navigation.setDefaultOptions({
 
 Appearance.addChangeListener(() => {
     const theme = getThemeFromState();
-    const screens = EphemeralStore.getAllNavigationComponents();
+    const screens = NavigationStore.getAllNavigationComponents();
 
     if (screens.includes(Screens.SERVER)) {
         for (const screen of screens) {
@@ -198,7 +199,7 @@ export function resetToHome(passProps: LaunchProps = {launchType: LaunchType.Nor
         return;
     }
 
-    EphemeralStore.clearNavigationComponents();
+    NavigationStore.clearNavigationComponents();
 
     const stack = {
         children: [{
@@ -240,7 +241,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
     const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
-    EphemeralStore.clearNavigationComponents();
+    NavigationStore.clearNavigationComponents();
 
     const children = [{
         component: {
@@ -288,7 +289,7 @@ export function resetToTeams() {
     const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
-    EphemeralStore.clearNavigationComponents();
+    NavigationStore.clearNavigationComponents();
 
     Navigation.setRoot({
         root: {
@@ -331,7 +332,7 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
 
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
-    const componentId = EphemeralStore.getNavigationTopComponentId();
+    const componentId = NavigationStore.getNavigationTopComponentId();
     DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, false);
     const defaultOptions: Options = {
         layout: {
@@ -378,13 +379,13 @@ export function popTopScreen(screenId?: string) {
     if (screenId) {
         Navigation.pop(screenId);
     } else {
-        const componentId = EphemeralStore.getNavigationTopComponentId();
+        const componentId = NavigationStore.getNavigationTopComponentId();
         Navigation.pop(componentId);
     }
 }
 
 export async function popToRoot() {
-    const componentId = EphemeralStore.getNavigationTopComponentId();
+    const componentId = NavigationStore.getNavigationTopComponentId();
 
     try {
         await Navigation.popToRoot(componentId);
@@ -411,7 +412,7 @@ export async function dismissAllModalsAndPopToRoot() {
  */
 export async function dismissAllModalsAndPopToScreen(screenId: string, title: string, passProps = {}, options = {}) {
     await dismissAllModals();
-    if (EphemeralStore.getNavigationComponents().includes(screenId)) {
+    if (NavigationStore.getNavigationComponents().includes(screenId)) {
         let mergeOptions = options;
         if (title) {
             mergeOptions = merge(mergeOptions, {
@@ -466,7 +467,7 @@ export function showModal(name: string, title: string, passProps = {}, options =
         },
     };
 
-    EphemeralStore.addNavigationModal(name);
+    NavigationStore.addNavigationModal(name);
     Navigation.showModal({
         stack: {
             children: [{
@@ -563,15 +564,15 @@ export function showSearchModal(initialValue = '') {
 }
 
 export async function dismissModal(options?: Options & { componentId: string}) {
-    if (!EphemeralStore.hasModalsOpened()) {
+    if (!NavigationStore.hasModalsOpened()) {
         return;
     }
 
-    const componentId = options?.componentId || EphemeralStore.getNavigationTopModalId();
+    const componentId = options?.componentId || NavigationStore.getNavigationTopModalId();
     if (componentId) {
         try {
             await Navigation.dismissModal(componentId, options);
-            EphemeralStore.removeNavigationModal(componentId);
+            NavigationStore.removeNavigationModal(componentId);
         } catch (error) {
             // RNN returns a promise rejection if there is no modal to
             // dismiss. We'll do nothing in this case.
@@ -580,14 +581,14 @@ export async function dismissModal(options?: Options & { componentId: string}) {
 }
 
 export async function dismissAllModals() {
-    if (!EphemeralStore.hasModalsOpened()) {
+    if (!NavigationStore.hasModalsOpened()) {
         return;
     }
 
     try {
-        const modals = [...EphemeralStore.getAllNavigationModals()];
+        const modals = [...NavigationStore.getAllNavigationModals()];
         for await (const modal of modals) {
-            EphemeralStore.removeNavigationModal(modal);
+            NavigationStore.removeNavigationModal(modal);
             await Navigation.dismissModal(modal, {animations: {dismissModal: {enabled: false}}});
         }
     } catch (error) {
@@ -685,7 +686,7 @@ export async function bottomSheet({title, renderContent, snapPoints, initialSnap
 
 export async function dismissBottomSheet(alternativeScreen = Screens.BOTTOM_SHEET) {
     DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
-    await EphemeralStore.waitUntilScreensIsRemoved(alternativeScreen);
+    await NavigationStore.waitUntilScreensIsRemoved(alternativeScreen);
 }
 
 type AsBottomSheetArgs = {

@@ -16,7 +16,7 @@ import GlobalEventHandler from './app/managers/global_event_handler';
 import NetworkManager from './app/managers/network_manager';
 import WebsocketManager from './app/managers/websocket_manager';
 import {registerScreens} from './app/screens';
-import EphemeralStore from './app/store/ephemeral_store';
+import NavigationStore from './app/store/navigation_store';
 import setFontFamily from './app/utils/font_family';
 import './app/utils/emoji'; // Imported to ensure it is loaded when used
 
@@ -92,7 +92,7 @@ function screenWillAppear({componentId}: ComponentDidAppearEvent) {
 
 function screenDidAppearListener({componentId, passProps, componentType}: ComponentDidAppearEvent) {
     if (!(passProps as any)?.overlay && componentType === 'Component') {
-        EphemeralStore.addNavigationComponentId(componentId);
+        NavigationStore.addNavigationComponentId(componentId);
     }
 }
 
@@ -102,25 +102,25 @@ function screenDidDisappearListener({componentId}: ComponentDidDisappearEvent) {
             DeviceEventEmitter.emit(Events.PAUSE_KEYBOARD_TRACKING_VIEW, false);
         }
 
-        if (EphemeralStore.getNavigationTopComponentId() === Screens.HOME) {
+        if (NavigationStore.getNavigationTopComponentId() === Screens.HOME) {
             DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
         }
     }
 }
 
 function screenPoppedListener({componentId}: ScreenPoppedEvent) {
-    EphemeralStore.removeNavigationComponentId(componentId);
-    if (EphemeralStore.getNavigationTopComponentId() === Screens.HOME) {
+    NavigationStore.removeNavigationComponentId(componentId);
+    if (NavigationStore.getNavigationTopComponentId() === Screens.HOME) {
         DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
     }
 }
 
 function modalDismissedListener({componentId}: ModalDismissedEvent) {
-    const topScreen = EphemeralStore.getNavigationTopComponentId();
-    const topModal = EphemeralStore.getNavigationTopModalId();
+    const topScreen = NavigationStore.getNavigationTopComponentId();
+    const topModal = NavigationStore.getNavigationTopModalId();
     const toRemove = topScreen === topModal ? topModal : componentId;
-    EphemeralStore.removeNavigationModal(toRemove);
-    if (EphemeralStore.getNavigationTopComponentId() === Screens.HOME) {
+    NavigationStore.removeNavigationModal(toRemove);
+    if (NavigationStore.getNavigationTopComponentId() === Screens.HOME) {
         DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
     }
 }

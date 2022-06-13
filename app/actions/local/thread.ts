@@ -16,6 +16,7 @@ import {getIsCRTEnabled, getThreadById, prepareThreadsFromReceivedPosts, queryTh
 import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot, goToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {changeOpacity, setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
 
@@ -155,7 +156,7 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
 
         if (isFromNotification) {
             await dismissAllModalsAndPopToRoot();
-            await EphemeralStore.waitUntilScreenIsTop(Screens.HOME);
+            await NavigationStore.waitUntilScreenIsTop(Screens.HOME);
             if (switchingTeams && isTabletDevice) {
                 DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_THREADS);
             }

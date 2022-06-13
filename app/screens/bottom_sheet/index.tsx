@@ -12,7 +12,7 @@ import {Events} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {dismissModal} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {hapticFeedback} from '@utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -56,7 +56,7 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
 
     useEffect(() => {
         const listener = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (EphemeralStore.getNavigationTopComponentId() === componentId) {
+            if (NavigationStore.getNavigationTopComponentId() === componentId) {
                 if (sheetRef.current) {
                     sheetRef.current.snapTo(1);
                 } else {
