@@ -61,7 +61,7 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
             {sendPushNotifications &&
                 <>
                     <OptionItem
-                        action={() => setMobilePushPref('all')}
+                        action={setMobilePushPref}
                         containerStyle={styles.container}
                         label={intl.formatMessage({id: 'notification_settings.pushNotification.allActivity', defaultMessage: 'For all activity'})}
                         selected={pushStatus === 'all'}
@@ -71,7 +71,7 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
                     />
                     <View style={styles.separator}/>
                     <OptionItem
-                        action={() => setMobilePushPref('mention')}
+                        action={setMobilePushPref}
                         containerStyle={styles.container}
                         label={intl.formatMessage({id: 'notification_settings.pushNotification.onlyMentions', defaultMessage: 'Only for mentions and direct messages'})}
                         selected={pushStatus === 'mention'}
@@ -81,7 +81,7 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
                     />
                     <View style={styles.separator}/>
                     <OptionItem
-                        action={() => setMobilePushPref('none')}
+                        action={setMobilePushPref}
                         containerStyle={styles.container}
                         label={intl.formatMessage({id: 'notification_settings.pushNotification.never', defaultMessage: 'Never'})}
                         selected={pushStatus === 'none'}

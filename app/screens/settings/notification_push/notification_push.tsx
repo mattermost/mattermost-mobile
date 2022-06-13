@@ -62,7 +62,7 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
 
     const setMobilePushStatus = useCallback((status: PushStatus) => {
         setPushStatus(status);
-    }, [pushStatus]);
+    }, []);
 
     const setMobilePushPref = useCallback((status: PushStatus) => {
         setPushSend(status);
@@ -71,22 +71,6 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
     const onMobilePushThreadChanged = useCallback(() => {
         setPushThreadPref(pushThread === 'all' ? 'mention' : 'all');
     }, [pushThread]);
-
-    const canSave = useCallback(() => {
-        const p = pushSend !== notifyProps.push;
-        const pT = pushThread !== notifyProps.push_threads;
-        const pS = pushStatus !== notifyProps.push_status;
-
-        const enabled = p || pT || pS;
-
-        const buttons = {
-            rightButtons: [{
-                ...saveButton,
-                enabled,
-            }],
-        };
-        setButtons(componentId, buttons);
-    }, [componentId, pushSend, pushThread, pushStatus, notifyProps]);
 
     const saveButton = useMemo(() => {
         return {
@@ -107,10 +91,6 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
         close();
     }, [serverUrl, notifyProps, pushSend, pushStatus, pushThread, close]);
 
-    useNavButtonPressed(SAVE_NOTIF_BUTTON_ID, componentId, saveNotificationSettings, []);
-
-    useAndroidHardwareBackHandler(componentId, close);
-
     useEffect(() => {
         setButtons(componentId, {
             rightButtons: [saveButton],
@@ -118,8 +98,30 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
     }, []);
 
     useEffect(() => {
-        canSave();
-    }, [pushSend, pushThread, pushStatus]);
+        const p = pushSend !== notifyProps.push;
+        const pT = pushThread !== notifyProps.push_threads;
+        const pS = pushStatus !== notifyProps.push_status;
+
+        const enabled = p || pT || pS;
+
+        const buttons = {
+            rightButtons: [{
+                ...saveButton,
+                enabled,
+            }],
+        };
+        setButtons(componentId, buttons);
+    }, [
+        componentId,
+        notifyProps,
+        pushSend,
+        pushStatus,
+        pushThread,
+    ]);
+
+    useNavButtonPressed(SAVE_NOTIF_BUTTON_ID, componentId, saveNotificationSettings, [saveNotificationSettings]);
+
+    useAndroidHardwareBackHandler(componentId, close);
 
     return (
         <SafeAreaView
