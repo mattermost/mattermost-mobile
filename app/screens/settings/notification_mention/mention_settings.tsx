@@ -152,12 +152,6 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
 
     useAndroidHardwareBackHandler(componentId, close);
 
-    useEffect(() => {
-        setButtons(componentId, {
-            rightButtons: [saveButton],
-        });
-    }, []);
-
     return (
         <Block
             headerText={mentionHeaderText}
