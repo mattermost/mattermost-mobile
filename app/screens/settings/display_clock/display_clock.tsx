@@ -76,21 +76,9 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
         };
     }, [theme.sidebarHeaderTextColor]);
 
-    const canSave = useCallback((enabled: boolean) => {
-        const buttons = {
-            rightButtons: [{
-                ...saveButton,
-                enabled,
-            }],
-        };
-        setButtons(componentId, buttons);
-    }, [componentId, saveButton]);
-
     const onSelectClockPreference = useCallback((clockType: keyof typeof CLOCK_TYPE) => {
-        const militaryTimeFormat = clockType === CLOCK_TYPE.MILITARY;
-        setIsMilitaryTimeFormat(militaryTimeFormat);
-        canSave(hasMilitaryTimeFormat !== militaryTimeFormat);
-    }, [canSave]);
+        setIsMilitaryTimeFormat(clockType === CLOCK_TYPE.MILITARY);
+    }, []);
 
     const close = () => popTopScreen(componentId);
 
@@ -105,6 +93,16 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
         savePreference(serverUrl, [timePreference]);
         close();
     };
+
+    useEffect(() => {
+        const buttons = {
+            rightButtons: [{
+                ...saveButton,
+                enabled: hasMilitaryTimeFormat !== isMilitaryTimeFormat,
+            }],
+        };
+        setButtons(componentId, buttons);
+    }, [componentId, saveButton, isMilitaryTimeFormat]);
 
     useEffect(() => {
         setButtons(componentId, {
