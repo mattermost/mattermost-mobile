@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {switchToChannelById} from '@actions/remote/channel';
+import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getMyChannel} from '@queries/servers/channel';
@@ -25,6 +26,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
 
     // We only reach this point if we have a channel Id in the notification payload
     const channelId = notification.payload!.channel_id!;
+    const rootId = notification.payload!.root_id!;
     const {database} = operator;
     const currentTeamId = await getCurrentTeamId(database);
     const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
@@ -45,14 +47,22 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     // To make the switch faster we determine if we already have the team & channel
     const myChannel = await getMyChannel(database, channelId);
     const myTeam = await getMyTeamById(database, teamId);
+
     const isCRTEnabled = await getIsCRTEnabled(database);
+    const isThreadNotification = isCRTEnabled && Boolean(rootId);
 
     await EphemeralStore.waitUntilScreenHasLoaded(Screens.HOME);
 
-    let switchedToChannel = isCRTEnabled;
-    if (myChannel && myTeam && !switchedToChannel) {
-        await switchToChannelById(serverUrl, channelId, teamId);
-        switchedToChannel = true;
+    let switchedToScreen = false;
+    let switchedToChannel = false;
+    if (myChannel && myTeam) {
+        if (isThreadNotification) {
+            await fetchAndSwitchToThread(serverUrl, rootId, true);
+        } else {
+            switchedToChannel = true;
+            await switchToChannelById(serverUrl, channelId, teamId);
+        }
+        switchedToScreen = true;
     }
 
     const entryData = await entry(serverUrl, teamId, channelId);
@@ -76,11 +86,16 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         }
     }
 
-    if (!switchedToChannel) {
+    if (!switchedToScreen) {
         if (isTabletDevice || (selectedChannelId === channelId)) {
             // Make switch again to get the missing data and make sure the team is the correct one
-            switchedToChannel = true;
-            switchToChannelById(serverUrl, selectedChannelId, selectedTeamId);
+            switchedToScreen = true;
+            if (isThreadNotification) {
+                fetchAndSwitchToThread(serverUrl, rootId, true);
+            } else {
+                switchedToChannel = true;
+                switchToChannelById(serverUrl, selectedChannelId, selectedTeamId);
+            }
         } else if (selectedTeamId !== teamId || selectedChannelId !== channelId) {
             // If in the end the selected team or channel is different than the one from the notification
             // we switch again

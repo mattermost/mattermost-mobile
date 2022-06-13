@@ -123,6 +123,22 @@ class EphemeralStore {
     };
 
     /**
+     * Waits until a passed screen is the top screen
+     * Use this function only if you know what you are doing
+     * this function will run until the screen is in the top
+     * @param componentId string
+     */
+    waitUntilScreenIsTop = async (componentId: string) => {
+        let found = false;
+        while (!found) {
+            // eslint-disable-next-line no-await-in-loop
+            await (new Promise((r) => requestAnimationFrame(r)));
+
+            found = this.getNavigationTopComponentId() === componentId;
+        }
+    };
+
+    /**
      * Waits until a screen has been removed as part of the stack.
      * Use this function only if you know what you are doing
      * this function will run until the screen disappears from the stack

@@ -65,10 +65,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
 
     const isCRTEnabled = await getIsCRTEnabled(database);
     if (isCRTEnabled) {
-        const {models: threadModels} = await createThreadFromNewPost(serverUrl, post, true);
-        if (threadModels?.length) {
-            models.push(...threadModels);
-        }
+        await createThreadFromNewPost(serverUrl, post, false);
     }
 
     // Ensure the channel membership

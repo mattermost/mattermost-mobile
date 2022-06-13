@@ -163,7 +163,7 @@ extension Network {
                                         let userId = participant.id
                                         if (userId != currentUserId) {
                                             threadParticipantUserIds.insert(userId)
-                                            if (threadParticipantUsers[userId] != nil) {
+                                            if (threadParticipantUsers[userId] == nil) {
                                                 threadParticipantUsers[userId] = participant
                                             }
                                         }
