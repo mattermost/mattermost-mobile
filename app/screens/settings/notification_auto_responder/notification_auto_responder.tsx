@@ -139,12 +139,6 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
         setButtons(componentId, buttons);
     }, [autoResponderActive, autoResponderMessage, componentId, currentUser.status, userNotifyProps.auto_responder_message]);
 
-    useEffect(() => {
-        setButtons(componentId, {
-            rightButtons: [saveButton],
-        });
-    }, []);
-
     useNavButtonPressed(SAVE_OOO_BUTTON_ID, componentId, saveAutoResponder, [saveAutoResponder]);
 
     useAndroidHardwareBackHandler(componentId, close);
