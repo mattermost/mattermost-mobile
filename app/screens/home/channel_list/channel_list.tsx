@@ -15,7 +15,7 @@ import {Navigation as NavigationConstants, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {resetToTeams} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 
 import AdditionalTabletView from './additional_tablet_view';
 import CategoriesList from './categories_list';
@@ -54,8 +54,8 @@ const ChannelListScreen = (props: ChannelProps) => {
     const canAddOtherServers = managedConfig?.allowOtherServers !== 'false';
 
     const handleBackPress = useCallback(() => {
-        const isHomeScreen = EphemeralStore.getNavigationTopComponentId() === Screens.HOME;
-        const homeTab = EphemeralStore.getVisibleTab() === Screens.HOME;
+        const isHomeScreen = NavigationStore.getNavigationTopComponentId() === Screens.HOME;
+        const homeTab = NavigationStore.getVisibleTab() === Screens.HOME;
         const focused = navigation.isFocused() && isHomeScreen && homeTab;
         if (!backPressedCount && focused) {
             backPressedCount++;

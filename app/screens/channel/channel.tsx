@@ -15,6 +15,7 @@ import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
 import {popTopScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 
 import ChannelPostList from './channel_post_list';
 import ChannelHeader from './header';
@@ -58,7 +59,7 @@ const Channel = ({channelId, componentId}: ChannelProps) => {
         let back: NativeEventSubscription|undefined;
         if (!isTablet && componentId) {
             back = BackHandler.addEventListener('hardwareBackPress', () => {
-                if (EphemeralStore.getNavigationTopComponentId() === componentId) {
+                if (NavigationStore.getNavigationTopComponentId() === componentId) {
                     popTopScreen(componentId);
                     return true;
                 }
@@ -74,11 +75,20 @@ const Channel = ({channelId, componentId}: ChannelProps) => {
     useEffect(() => {
         // This is done so that the header renders
         // and the screen does not look totally blank
-        const t = requestAnimationFrame(() => {
+        const raf = requestAnimationFrame(() => {
             setShouldRenderPosts(Boolean(channelId));
         });
 
-        return () => cancelAnimationFrame(t);
+        // This is done to give time to the WS event
+        const t = setTimeout(() => {
+            EphemeralStore.removeSwitchingToChannel(channelId);
+        }, 500);
+
+        return () => {
+            cancelAnimationFrame(raf);
+            clearTimeout(t);
+            EphemeralStore.removeSwitchingToChannel(channelId);
+        };
     }, [channelId]);
 
     return (

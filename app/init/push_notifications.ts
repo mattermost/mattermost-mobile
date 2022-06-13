@@ -27,6 +27,7 @@ import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {showOverlay} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {convertToNotificationData} from '@utils/notification';
 
@@ -147,10 +148,10 @@ class PushNotifications {
             }
 
             const isDifferentChannel = payload?.channel_id !== channelId;
-            const isVisibleThread = payload?.root_id === EphemeralStore.getLastViewedThreadId() && EphemeralStore.getNavigationTopComponentId() === Screens.THREAD;
-            let isChannelScreenVisible = EphemeralStore.getNavigationTopComponentId() === Screens.CHANNEL;
+            const isVisibleThread = payload?.root_id === EphemeralStore.getLastViewedThreadId() && NavigationStore.getNavigationTopComponentId() === Screens.THREAD;
+            let isChannelScreenVisible = NavigationStore.getNavigationTopComponentId() === Screens.CHANNEL;
             if (isTabletDevice) {
-                isChannelScreenVisible = EphemeralStore.getVisibleTab() === Screens.HOME;
+                isChannelScreenVisible = NavigationStore.getVisibleTab() === Screens.HOME;
             }
 
             if (isDifferentChannel || (!isChannelScreenVisible && !isVisibleThread)) {
