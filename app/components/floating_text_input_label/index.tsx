@@ -123,7 +123,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     onBlur,
     onFocus,
     onLayout,
-    onPress = undefined,
+    onPress,
     placeholder,
     showErrorIcon = true,
     testID,

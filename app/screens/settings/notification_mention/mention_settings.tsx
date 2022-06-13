@@ -106,29 +106,6 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
         };
     }, [theme.sidebarHeaderTextColor]);
 
-    const canSave = useCallback(() => {
-        const fNameChanged = tglFirstName !== Boolean(notifyProps.first_name);
-        const channelChanged = tglChannel !== Boolean(notifyProps.channel);
-
-        const usnChanged = tglUserName !== mentionProps.usernameMention;
-        const kwsChanged = mentionProps.mentionKeys !== mentionKeys;
-
-        const enabled = fNameChanged || usnChanged || channelChanged || kwsChanged;
-
-        const buttons = {
-            rightButtons: [{
-                ...saveButton,
-                enabled,
-            }],
-        };
-        setButtons(componentId, buttons);
-    }, [componentId, saveButton, tglFirstName, tglChannel, tglUserName, mentionKeys, notifyProps]);
-
-    const onChangeText = useCallback((text: string) => {
-        setMentionKeys(text);
-        canSave();
-    }, [canSave]);
-
     const close = () => popTopScreen(componentId);
 
     const saveMention = useCallback(() => {
@@ -149,11 +126,29 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
         setTglChannel((prev) => !prev);
     }, []);
 
-    useEffect(() => {
-        canSave();
-    }, [tglFirstName, tglUserName, tglChannel, mentionKeys]);
+    const onChangeText = useCallback((text: string) => {
+        setMentionKeys(text);
+    }, []);
 
-    useNavButtonPressed(SAVE_MENTION_BUTTON_ID, componentId, saveMention, [notifyProps, tglFirstName, tglChannel, mentionKeys]);
+    useEffect(() => {
+        const fNameChanged = tglFirstName !== Boolean(notifyProps.first_name);
+        const channelChanged = tglChannel !== Boolean(notifyProps.channel);
+
+        const usnChanged = tglUserName !== mentionProps.usernameMention;
+        const kwsChanged = mentionProps.mentionKeys !== mentionKeys;
+
+        const enabled = fNameChanged || usnChanged || channelChanged || kwsChanged;
+
+        const buttons = {
+            rightButtons: [{
+                ...saveButton,
+                enabled,
+            }],
+        };
+        setButtons(componentId, buttons);
+    }, [componentId, saveButton, tglFirstName, tglChannel, tglUserName, mentionKeys, notifyProps]);
+
+    useNavButtonPressed(SAVE_MENTION_BUTTON_ID, componentId, saveMention, [saveMention]);
 
     useAndroidHardwareBackHandler(componentId, close);
 
