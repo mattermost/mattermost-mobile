@@ -112,7 +112,7 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
         const notify_props = {...notifyProps, first_name: `${tglFirstName}`, channel: `${tglChannel}`, mention_keys: mentionKeys};
         updateMe(serverUrl, {notify_props} as unknown as UserNotifyProps);
         close();
-    }, [serverUrl, notifyProps, close, tglFirstName, tglChannel, mentionKeys]);
+    }, [serverUrl, notifyProps, tglFirstName, tglChannel, mentionKeys]);
 
     const onToggleFirstName = useCallback(() => {
         setTglFirstName((prev) => !prev);
