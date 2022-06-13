@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Clipboard from '@react-native-community/clipboard';
-import React, {useCallback} from 'react';
+import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
+import {switchToChannelById} from '@actions/remote/channel';
+import {fetchPostById} from '@actions/remote/post';
 import FormattedDate from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
 import MenuItem from '@components/menu_item';
@@ -16,6 +17,8 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import BottomSheetContent from '@screens/bottom_sheet/content';
+import CopyPublicLink from '@screens/gallery/footer/copy_public_link';
+import DownloadWithAction from '@screens/gallery/footer/download_with_action';
 import {dismissBottomSheet} from '@screens/navigation';
 import {getFormattedFileSize} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -58,6 +61,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 type FileOption = {
     id: string;
     iconName: string;
+    type: string;
     defaultMessage: string;
 }
 
@@ -65,14 +69,17 @@ const data: FileOption[] = [
     {
         id: t('screen.search.results.file_options.download'),
         iconName: 'download-outline',
+        type: 'download',
         defaultMessage: 'Download',
     }, {
         id: t('screen.search.results.file_options.open_in_channel'),
         iconName: 'globe',
+        type: 'goto-channel',
         defaultMessage: 'Open in channel',
     }, {
         id: t('screen.search.results.file.copy_link'),
         iconName: 'link-variant',
+        type: 'copy-link',
         defaultMessage: 'Copy Link',
     },
 ];
@@ -80,13 +87,49 @@ const data: FileOption[] = [
 type Props = {
     fileInfo: FileInfo;
 }
-
-const Filter = ({fileInfo}: Props) => {
+const FileOptions = ({fileInfo}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
+    const serverUrl = useServerUrl();
+    const [action, setAction] = useState<GalleryAction>('none');
+
+    const galleryItem = {...fileInfo, type: 'image'} as GalleryItemType;
+
+    const handleDownload = useCallback(async () => {
+        setAction('downloading');
+    }, []);
+
+    const handleCopyLink = useCallback(async () => {
+        setAction('copying');
+    }, []);
+
+    const handleGotoChannel = useCallback(async () => {
+        const post = await fetchPostById(serverUrl, fileInfo.post_id, true);
+        switchToChannelById(serverUrl, post!.post!.channel_id);
+
+        // TODO: scroll to post in channel
+    }, []);
+
+    const handlePress = (item: FileOption) => {
+        switch (item.type) {
+            case 'download':
+                handleDownload();
+                break;
+            case 'goto-channel':
+                handleGotoChannel();
+                break;
+            case 'copy-link':
+                handleCopyLink();
+                break;
+
+            default:
+        }
+
+        // TODO: determine when and if to dismiss the modal
+        // dismissBottomSheet();
+    };
 
     const renderLabelComponent = useCallback((item: FileOption) => {
         return (
@@ -97,24 +140,6 @@ const Filter = ({fileInfo}: Props) => {
             />
         );
     }, [style]);
-
-    const handlePress = (item: FileOption) => {
-        switch (item.iconName) {
-            case 'download-outline':
-                dismissBottomSheet();
-                break;
-            case 'globe':
-                dismissBottomSheet();
-                break;
-            case 'link-variant':
-                dismissBottomSheet();
-
-                //Clipboard.setString(`${serverUrl}/${fileInfo.teamName}/pl/${this.props.fileInfo.post_id}`);
-                break;
-
-            default:
-        }
-    };
 
     const renderHeader = () => {
         const size = getFormattedFileSize(fileInfo.size);
@@ -167,8 +192,21 @@ const Filter = ({fileInfo}: Props) => {
                 renderItem={renderItem}
                 contentContainerStyle={style.contentContainer}
             />
+            {['downloading'].includes(action) &&
+                <DownloadWithAction
+                    action={action}
+                    item={galleryItem}
+                    setAction={setAction}
+                />
+            }
+            {action === 'copying' &&
+                <CopyPublicLink
+                    item={galleryItem}
+                    setAction={setAction}
+                />
+            }
         </BottomSheetContent>
     );
 };
 
-export default Filter;
+export default FileOptions;
