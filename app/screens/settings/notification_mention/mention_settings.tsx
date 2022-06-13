@@ -73,6 +73,7 @@ const getMentionProps = (currentUser: UserModel) => {
     return {
         mentionKeys: mKeys.join(','),
         usernameMention: usernameMentionIndex > -1,
+        notifyProps,
     };
 };
 
@@ -82,12 +83,12 @@ type MentionSectionProps = {
 }
 const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
     const serverUrl = useServerUrl();
+    const mentionProps = useMemo(() => getMentionProps(currentUser), [currentUser.notifyProps]);
 
-    const notifyProps = currentUser.notifyProps as UserNotifyProps;
+    const notifyProps = currentUser.notifyProps || mentionProps.notifyProps;
     const [tglFirstName, setTglFirstName] = useState(notifyProps.first_name === 'true');
     const [tglChannel, setTglChannel] = useState(notifyProps.channel === 'true');
 
-    const mentionProps = useMemo(() => getMentionProps(currentUser), [currentUser.notifyProps]);
     const [tglUserName, setTglUserName] = useState(mentionProps.usernameMention);
     const [mentionKeys, setMentionKeys] = useState(mentionProps.mentionKeys);
 
@@ -109,7 +110,11 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
     const close = () => popTopScreen(componentId);
 
     const saveMention = useCallback(() => {
-        const notify_props: UserNotifyProps = {...notifyProps, first_name: `${tglFirstName}`, channel: `${tglChannel}`, mention_keys: mentionKeys};
+        const notify_props: UserNotifyProps = {
+            ...notifyProps,
+            first_name: `${tglFirstName}`,
+            channel: `${tglChannel}`,
+            mention_keys: mentionKeys};
         updateMe(serverUrl, {notify_props});
         close();
     }, [serverUrl, notifyProps, tglFirstName, tglChannel, mentionKeys]);

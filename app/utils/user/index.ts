@@ -291,7 +291,9 @@ export function getNotificationProps(user: UserModel) {
         return user.notifyProps;
     }
 
-    const props: Partial<UserNotifyProps> = {
+    const props: UserNotifyProps = {
+        email: 'true',
+        mark_unread: 'all',
         channel: 'true',
         comments: 'any',
         desktop: 'all',
