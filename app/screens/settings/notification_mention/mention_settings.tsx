@@ -129,7 +129,7 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
         canSave();
     }, [canSave]);
 
-    const close = useCallback(() => popTopScreen(componentId), [componentId]);
+    const close = () => popTopScreen(componentId);
 
     const saveMention = useCallback(() => {
         const notify_props = {...notifyProps, first_name: `${tglFirstName}`, channel: `${tglChannel}`, mention_keys: mentionKeys};
