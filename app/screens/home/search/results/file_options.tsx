@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {useIntl} from 'react-intl';
 import {View, Text} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
@@ -19,7 +18,6 @@ import {t} from '@i18n';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import CopyPublicLink from '@screens/gallery/footer/copy_public_link';
 import DownloadWithAction from '@screens/gallery/footer/download_with_action';
-import {dismissBottomSheet} from '@screens/navigation';
 import {getFormattedFileSize} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -88,7 +86,6 @@ type Props = {
     fileInfo: FileInfo;
 }
 const FileOptions = ({fileInfo}: Props) => {
-    const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const isTablet = useIsTablet();
