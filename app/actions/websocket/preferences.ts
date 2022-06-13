@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {resetAfterCRTChange} from '@actions/app/global';
 import {updateDmGmDisplayName} from '@actions/local/channel';
 import {fetchPostById} from '@actions/remote/post';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPostById} from '@queries/servers/post';
-import {deletePreferences, differsFromLocalNameFormat} from '@queries/servers/preference';
+import {deletePreferences, differsFromLocalNameFormat, queryHasCRTChanged} from '@queries/servers/preference';
 
 export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const operator = DatabaseManager.serverDatabases[serverUrl].operator;
@@ -19,7 +20,7 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
         handleSavePostAdded(serverUrl, [preference]);
 
         const hasDiffNameFormatPref = await differsFromLocalNameFormat(operator.database, [preference]);
-
+        const crtToggled = await queryHasCRTChanged(operator.database, [preference]);
         if (operator) {
             await operator.handlePreferences({
                 prepareRecordsOnly: false,
@@ -29,6 +30,10 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
 
         if (hasDiffNameFormatPref) {
             updateDmGmDisplayName(serverUrl);
+        }
+
+        if (crtToggled) {
+            await resetAfterCRTChange(serverUrl);
         }
     } catch (error) {
         // Do nothing
@@ -45,7 +50,7 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
         handleSavePostAdded(serverUrl, preferences);
 
         const hasDiffNameFormatPref = await differsFromLocalNameFormat(operator.database, preferences);
-
+        const crtToggled = await queryHasCRTChanged(operator.database, preferences);
         if (operator) {
             await operator.handlePreferences({
                 prepareRecordsOnly: false,
@@ -55,6 +60,10 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
 
         if (hasDiffNameFormatPref) {
             updateDmGmDisplayName(serverUrl);
+        }
+
+        if (crtToggled) {
+            await resetAfterCRTChange(serverUrl);
         }
     } catch (error) {
         // Do nothing
@@ -90,4 +99,3 @@ async function handleSavePostAdded(serverUrl: string, preferences: PreferenceTyp
         }
     }
 }
-

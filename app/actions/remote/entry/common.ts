@@ -3,6 +3,7 @@
 
 import {Model} from '@nozbe/watermelondb';
 
+import {resetAfterCRTChange} from '@actions/app/global';
 import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, MyChannelsRequest} from '@actions/remote/channel';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
@@ -23,6 +24,7 @@ import {getDeviceToken} from '@queries/app/global';
 import {queryAllServers} from '@queries/app/servers';
 import {queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
+import {queryHasCRTChanged} from '@queries/servers/preference';
 import {getConfig, getPushVerificationStatus, getWebSocketLastDisconnected} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, getNthLastChannelFromTeam, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
@@ -99,6 +101,19 @@ export const entry = async (serverUrl: string, teamId?: string, channelId?: stri
     const error = teamData.error || chData?.error || prefData.error || meData.error;
     if (error) {
         return {error};
+    }
+
+    if (prefData.preferences) {
+        const crtToggled = await queryHasCRTChanged(database, prefData.preferences);
+        if (crtToggled) {
+            if (operator) {
+                await operator.handlePreferences({
+                    prepareRecordsOnly: false,
+                    preferences: prefData.preferences,
+                });
+            }
+            return resetAfterCRTChange(serverUrl);
+        }
     }
 
     const rolesData = await fetchRoles(serverUrl, teamData.memberships, chData?.memberships, meData.user, true);
