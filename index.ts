@@ -102,6 +102,10 @@ function screenDidDisappearListener({componentId}: ComponentDidDisappearEvent) {
             DeviceEventEmitter.emit(Events.PAUSE_KEYBOARD_TRACKING_VIEW, false);
         }
 
+        if (NavigationStore.getNavigationTopComponentId() === componentId) {
+            NavigationStore.removeNavigationComponentId(componentId);
+        }
+
         if (NavigationStore.getNavigationTopComponentId() === Screens.HOME) {
             DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
         }
