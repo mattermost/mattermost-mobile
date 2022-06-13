@@ -93,7 +93,7 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
 
     const styles = getStyleSheet(theme);
 
-    const close = useCallback(() => popTopScreen(componentId), [componentId]);
+    const close = () => popTopScreen(componentId);
 
     const saveButton = useMemo(() => {
         return {
