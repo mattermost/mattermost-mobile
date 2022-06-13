@@ -63,8 +63,9 @@ const SearchScreen = ({teamId}: Props) => {
         setLoading(true);
         setLastSearchedValue(searchValue);
 
+        const filterTerms = filterFileExtensions(filter) ? ' ' + filterFileExtensions(filter) : '';
         const searchParams: PostSearchParams | FileSearchParams = {
-            terms: searchValue + filterFileExtensions(filter),
+            terms: searchValue + filterTerms,
             is_or_search: true,
         };
 
@@ -84,19 +85,18 @@ const SearchScreen = ({teamId}: Props) => {
         scrollRef.current?.scrollToOffset({offset, animated: true});
     };
 
-    const handleFilterChange = useCallback((filterValue: FileFilter) => {
+    const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
         setLoading(true);
         setFilter(filterValue);
+        const filterTerms = filterFileExtensions(filterValue) ? ' ' + filterFileExtensions(filterValue) : '';
         const searchParams: FileSearchParams = {
-            terms: lastSearchedValue + filterFileExtensions(filterValue),
+            terms: lastSearchedValue + filterTerms,
             is_or_search: true,
         };
 
-        (async () => {
-            const fileResults = await searchFiles(serverUrl, teamId, searchParams);
-            const fileInfosResult = fileResults?.file_infos && Object.values(fileResults?.file_infos);
-            setFileInfos(fileInfosResult?.length ? fileInfosResult : emptyFileResults);
-        })();
+        const fileResults = await searchFiles(serverUrl, teamId, searchParams);
+        const fileInfosResult = fileResults?.file_infos && Object.values(fileResults?.file_infos);
+        setFileInfos(fileInfosResult?.length ? fileInfosResult : emptyFileResults);
         setLoading(false);
     }, [lastSearchedValue]);
 

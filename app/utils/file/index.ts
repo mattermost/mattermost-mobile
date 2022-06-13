@@ -105,7 +105,7 @@ export function filterFileExtensions(filter: FileFilter): string {
         default:
             return '';
     }
-    return ' ext:' + searchTerms.join(' ext:');
+    return 'ext:' + searchTerms.join(' ext:');
 }
 
 /**
