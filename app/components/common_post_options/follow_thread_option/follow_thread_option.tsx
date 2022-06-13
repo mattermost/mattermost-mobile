@@ -44,12 +44,12 @@ const FollowThreadOption = ({thread, teamId}: FollowThreadOptionProps) => {
 
     const serverUrl = useServerUrl();
 
-    const handleToggleFollow = () => {
+    const handleToggleFollow = async () => {
         if (teamId == null) {
             return;
         }
+        await dismissBottomSheet(Screens.POST_OPTIONS);
         updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing);
-        dismissBottomSheet(Screens.POST_OPTIONS);
     };
 
     const followThreadOptionTestId = thread.isFollowing ? 'post_options.following_thread.option' : 'post_options.follow_thread.option';

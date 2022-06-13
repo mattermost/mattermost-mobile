@@ -57,6 +57,12 @@ const Display = ({isTimezoneEnabled, isThemeSwitchingEnabled}: DisplayProps) => 
         goToScreen(screen, title);
     });
 
+    const goToClockDisplaySettings = preventDoubleTap(() => {
+        const screen = Screens.SETTINGS_DISPLAY_CLOCK;
+        const title = intl.formatMessage({id: 'display_settings.clockDisplay', defaultMessage: 'Clock Display'});
+        goToScreen(screen, title);
+    });
+
     return (
         <SafeAreaView
             edges={['left', 'right']}
@@ -76,7 +82,7 @@ const Display = ({isTimezoneEnabled, isThemeSwitchingEnabled}: DisplayProps) => 
                 )}
                 <SettingOption
                     optionName='clock'
-                    onPress={onPressHandler}
+                    onPress={goToClockDisplaySettings}
                 />
                 {isTimezoneEnabled && (
                     <SettingOption

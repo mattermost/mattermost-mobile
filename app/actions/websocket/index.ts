@@ -15,7 +15,7 @@ import {getCommonSystemValues, getConfig, getWebSocketLastDisconnected, resetWeb
 import {getCurrentTeam} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 
 import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
@@ -117,7 +117,7 @@ async function doReconnect(serverUrl: string) {
     // if no longer a member of the current team or the current channel
     if (initialTeamId !== currentTeam?.id || initialChannelId !== currentChannel?.id) {
         const currentServer = await queryActiveServer(appDatabase);
-        const isChannelScreenMounted = EphemeralStore.getNavigationComponents().includes(Screens.CHANNEL);
+        const isChannelScreenMounted = NavigationStore.getNavigationComponents().includes(Screens.CHANNEL);
         if (serverUrl === currentServer?.url) {
             if (currentTeam && initialTeamId !== currentTeam.id) {
                 DeviceEventEmitter.emit(Events.LEAVE_TEAM, {displayName: currentTeam.displayName});

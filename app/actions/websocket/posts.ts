@@ -16,7 +16,7 @@ import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {getCurrentChannelId, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
 
@@ -141,7 +141,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
                 // Don't mark as read if we're in global threads screen
                 // the currentChannelId still refers to previously viewed channel
 
-                const isChannelScreenMounted = EphemeralStore.getNavigationComponents().includes(Screens.CHANNEL);
+                const isChannelScreenMounted = NavigationStore.getNavigationComponents().includes(Screens.CHANNEL);
 
                 const isTabletDevice = await isTablet();
                 if (isChannelScreenMounted || isTabletDevice) {
