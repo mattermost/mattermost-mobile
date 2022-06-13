@@ -92,9 +92,9 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
         canSave(hasMilitaryTimeFormat !== militaryTimeFormat);
     }, [canSave]);
 
-    const close = useCallback(() => popTopScreen(componentId), [componentId]);
+    const close = () => popTopScreen(componentId);
 
-    const saveClockDisplayPreference = useCallback(() => {
+    const saveClockDisplayPreference = () => {
         const timePreference: PreferenceType = {
             category: Preferences.CATEGORY_DISPLAY_SETTINGS,
             name: 'use_military_time',
@@ -104,7 +104,7 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
 
         savePreference(serverUrl, [timePreference]);
         close();
-    }, [isMilitaryTimeFormat, serverUrl, close]);
+    };
 
     useEffect(() => {
         setButtons(componentId, {
