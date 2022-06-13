@@ -84,12 +84,8 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
     const serverUrl = useServerUrl();
     const intl = useIntl();
     const userNotifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
-
-    const [notifyProps, setNotifyProps] = useState<Partial<UserNotifyProps>>({
-        ...userNotifyProps,
-        auto_responder_active: (currentUser.status === General.OUT_OF_OFFICE && userNotifyProps.auto_responder_active) ? 'true' : 'false',
-        auto_responder_message: userNotifyProps.auto_responder_message || intl.formatMessage(OOO),
-    });
+    const [autoResponderActive, setAutoResponderActive] = useState((currentUser.status === General.OUT_OF_OFFICE && userNotifyProps.auto_responder_active) ? 'true' : 'false');
+    const [autoResponderMessage, setAutoResponderMessage] = useState(userNotifyProps.auto_responder_message || intl.formatMessage(OOO));
 
     const styles = getStyleSheet(theme);
 
@@ -106,7 +102,34 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
         };
     }, [theme.sidebarHeaderTextColor]);
 
-    const canSave = useCallback((enabled: boolean) => {
+    const onAutoResponseToggle = useCallback((active: boolean) => {
+        setAutoResponderActive(`${active}`);
+    }, []);
+
+    const onAutoResponseChangeText = useCallback((message: string) => {
+        setAutoResponderMessage(message);
+    }, []);
+
+    const saveAutoResponder = useCallback(() => {
+        const notifyProps = {
+            ...userNotifyProps,
+            auto_responder_active: autoResponderActive,
+            auto_responder_message: autoResponderMessage,
+        } as unknown as UserNotifyProps;
+
+        updateMe(serverUrl, {
+            notify_props: notifyProps,
+        });
+        close();
+    }, [serverUrl, autoResponderActive, autoResponderMessage, userNotifyProps]);
+
+    useEffect(() => {
+        const updatedMsg = userNotifyProps?.auto_responder_message !== autoResponderMessage;
+        const enabling = currentUser.status !== General.OUT_OF_OFFICE && autoResponderActive === 'true';
+        const disabling = currentUser.status === General.OUT_OF_OFFICE && autoResponderActive === 'false';
+
+        const enabled = enabling || disabling || updatedMsg;
+
         const buttons = {
             rightButtons: [{
                 ...saveButton,
@@ -114,36 +137,7 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
             }],
         };
         setButtons(componentId, buttons);
-    }, [componentId, saveButton]);
-
-    const shouldSaveAutoResponder = useCallback((notify: Partial<UserNotifyProps>) => {
-        const {auto_responder_active: autoResponderActive} = notify;
-        const prevProps = getNotificationProps(currentUser);
-        const updatedMsg = prevProps.auto_responder_message !== notify.auto_responder_message;
-        const enabling = currentUser.status !== General.OUT_OF_OFFICE && autoResponderActive === 'true';
-        const disabling = currentUser.status === General.OUT_OF_OFFICE && autoResponderActive === 'false';
-
-        canSave(enabling || disabling || updatedMsg);
-    }, [currentUser.status, canSave]);
-
-    const updateNotifyProps = useCallback((obj: Partial<UserNotifyProps>) => {
-        const notify = {...notifyProps, ...obj};
-        setNotifyProps(notify);
-        shouldSaveAutoResponder(notify);
-    }, [shouldSaveAutoResponder]);
-
-    const onAutoResponseToggle = useCallback((active: boolean) => {
-        updateNotifyProps({auto_responder_active: `${active}`});
-    }, [notifyProps]);
-
-    const onAutoResponseChangeText = useCallback((message: string) => {
-        updateNotifyProps({auto_responder_message: message});
-    }, [notifyProps]);
-
-    const saveAutoResponder = useCallback(() => {
-        updateMe(serverUrl, {notify_props: notifyProps as unknown as UserNotifyProps});
-        close();
-    }, [serverUrl, notifyProps]);
+    }, [autoResponderActive, autoResponderMessage, componentId, currentUser.status, userNotifyProps.auto_responder_message]);
 
     useEffect(() => {
         setButtons(componentId, {
@@ -151,7 +145,7 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
         });
     }, []);
 
-    useNavButtonPressed(SAVE_OOO_BUTTON_ID, componentId, saveAutoResponder, [notifyProps]);
+    useNavButtonPressed(SAVE_OOO_BUTTON_ID, componentId, saveAutoResponder, [saveAutoResponder]);
 
     useAndroidHardwareBackHandler(componentId, close);
 
@@ -168,10 +162,10 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
                         label={intl.formatMessage({id: 'notification_settings.auto_responder.enabled', defaultMessage: 'Enabled'})}
                         action={onAutoResponseToggle}
                         type='toggle'
-                        selected={notifyProps.auto_responder_active === 'true'}
+                        selected={autoResponderActive === 'true'}
                     />
                 </View>
-                {notifyProps.auto_responder_active === 'true' && (
+                {autoResponderActive === 'true' && (
                     <FloatingTextInput
                         allowFontScaling={true}
                         autoCapitalize='none'
@@ -188,7 +182,7 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
                         textAlignVertical='top'
                         theme={theme}
                         underlineColorAndroid='transparent'
-                        value={notifyProps.auto_responder_message || ''}
+                        value={autoResponderMessage || ''}
                     />
                 )}
                 <FormattedText
