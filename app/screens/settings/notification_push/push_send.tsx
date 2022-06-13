@@ -33,9 +33,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         disabled: {
             color: theme.centerChannelColor,
-            fontSize: 15,
             paddingHorizontal: 15,
             paddingVertical: 10,
+            ...typography('Body', 200, 'Regular'),
         },
         container: {
             paddingHorizontal: 8,

@@ -7,6 +7,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import MentionSettings from './mention_settings';
 import ReplySettings from './reply_settings';
@@ -21,8 +22,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         input: {
             color: theme.centerChannelColor,
-            fontSize: 12,
             height: 40,
+            ...typography('Body', 75, 'Regular'),
         },
         scrollView: {
             flex: 1,
@@ -35,11 +36,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 type NotificationMentionProps = {
-    isCRTEnabled?: boolean;
-    currentUser?: UserModel;
-    mentionKeys: string;
+    componentId: string;
+    currentUser: UserModel;
+    isCRTEnabled: boolean;
 }
-const NotificationMention = ({currentUser, mentionKeys, isCRTEnabled}: NotificationMentionProps) => {
+const NotificationMention = ({componentId, currentUser, isCRTEnabled}: NotificationMentionProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -55,8 +56,8 @@ const NotificationMention = ({currentUser, mentionKeys, isCRTEnabled}: Notificat
                 alwaysBounceVertical={false}
             >
                 <MentionSettings
-                    mentionKeys={mentionKeys}
                     currentUser={currentUser}
+                    componentId={componentId}
                 />
                 {!isCRTEnabled && (
                     <ReplySettings/>
