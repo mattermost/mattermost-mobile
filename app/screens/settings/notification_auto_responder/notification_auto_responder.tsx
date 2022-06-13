@@ -49,10 +49,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         input: {
             color: theme.centerChannelColor,
-            fontSize: 15,
             height: 150,
             paddingHorizontal: 15,
             paddingVertical: 10,
+            ...typography('Body', 200, 'Regular'),
         },
         footer: {
             paddingHorizontal: 15,
@@ -65,7 +65,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         label: {
             color: theme.centerChannelColor,
-            ...typography('Body', 200, 'Regular'),
+            ...typography('Body', 100, 'Regular'),
         },
         enabled: {
             paddingHorizontal: 8,
@@ -172,7 +172,7 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
                         placeholder={intl.formatMessage(headerText)}
                         placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
                         returnKeyType='done'
-                        style={styles.input}
+                        textInputStyle={styles.input}
                         textAlignVertical='top'
                         theme={theme}
                         underlineColorAndroid='transparent'
