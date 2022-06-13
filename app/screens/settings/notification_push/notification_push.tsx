@@ -92,12 +92,6 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
     }, [serverUrl, notifyProps, pushSend, pushStatus, pushThread, close]);
 
     useEffect(() => {
-        setButtons(componentId, {
-            rightButtons: [saveButton],
-        });
-    }, []);
-
-    useEffect(() => {
         const p = pushSend !== notifyProps.push;
         const pT = pushThread !== notifyProps.push_threads;
         const pS = pushStatus !== notifyProps.push_status;
