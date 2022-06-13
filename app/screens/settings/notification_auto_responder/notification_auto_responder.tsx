@@ -151,7 +151,7 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
         });
     }, []);
 
-    useNavButtonPressed(SAVE_OOO_BUTTON_ID, componentId, () => saveAutoResponder(), [notifyProps]);
+    useNavButtonPressed(SAVE_OOO_BUTTON_ID, componentId, saveAutoResponder, [notifyProps]);
 
     useAndroidHardwareBackHandler(componentId, close);
 
