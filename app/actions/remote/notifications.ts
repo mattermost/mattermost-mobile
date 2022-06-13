@@ -3,10 +3,11 @@
 
 import {Platform} from 'react-native';
 
-import {updatePostSinceCache} from '@actions/local/notification';
+import {updatePostSinceCache, updatePostsInThreadsSinceCache} from '@actions/local/notification';
 import {fetchDirectChannelsInfo, fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {fetchMyTeam} from '@actions/remote/team';
+import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import DatabaseManager from '@database/manager';
 import {getMyChannel, getChannelById} from '@queries/servers/channel';
 import {getCommonSystemValues, getWebSocketLastDisconnected} from '@queries/servers/system';
@@ -85,15 +86,16 @@ export const backgroundNotification = async (serverUrl: string, notification: No
         return;
     }
 
-    const isCRTEnabled = await getIsCRTEnabled(database);
-    if (isCRTEnabled && notification.payload?.root_id) {
-        return;
-    }
-
     const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
     if (lastDisconnectedAt) {
         if (Platform.OS === 'ios') {
-            updatePostSinceCache(serverUrl, notification);
+            const isCRTEnabled = await getIsCRTEnabled(database);
+            const isThreadNotification = isCRTEnabled && Boolean(notification.payload?.root_id);
+            if (isThreadNotification) {
+                updatePostsInThreadsSinceCache(serverUrl, notification);
+            } else {
+                updatePostSinceCache(serverUrl, notification);
+            }
         }
 
         await fetchNotificationData(serverUrl, notification, true);
@@ -109,10 +111,11 @@ export const openNotification = async (serverUrl: string, notification: Notifica
     try {
         const {database} = operator;
         const channelId = notification.payload!.channel_id!;
+        const rootId = notification.payload!.root_id!;
+
         const isCRTEnabled = await getIsCRTEnabled(database);
-        if (isCRTEnabled && notification.payload?.root_id) {
-            return {error: 'Opening CRT notifications not implemented yet'};
-        }
+        const isThreadNotification = isCRTEnabled && Boolean(rootId);
+
         const system = await getCommonSystemValues(database);
         const currentServerUrl = await DatabaseManager.getActiveServerUrl();
         let teamId = notification.payload?.team_id;
@@ -131,6 +134,9 @@ export const openNotification = async (serverUrl: string, notification: Notifica
         const myTeam = await getMyTeamById(database, teamId);
 
         if (myChannel && myTeam) {
+            if (isThreadNotification) {
+                return fetchAndSwitchToThread(serverUrl, rootId, true);
+            }
             return switchToChannelById(serverUrl, channelId, teamId);
         }
 
@@ -139,6 +145,9 @@ export const openNotification = async (serverUrl: string, notification: Notifica
             return {error: result.error};
         }
 
+        if (isThreadNotification) {
+            return fetchAndSwitchToThread(serverUrl, rootId, true);
+        }
         return switchToChannelById(serverUrl, channelId, teamId);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);

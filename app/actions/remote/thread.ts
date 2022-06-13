@@ -33,7 +33,7 @@ type FetchThreadsOptions = {
     totalsOnly?: boolean;
 };
 
-export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string) => {
+export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, isFromNotification = false) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -49,7 +49,7 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string) 
         const post = await getPostById(database, rootId);
         if (post) {
             const thread = await getThreadById(database, rootId);
-            if (thread?.unreadReplies || thread?.unreadMentions) {
+            if (thread) {
                 const channel = await getChannelById(database, post.channelId);
                 if (channel) {
                     markThreadAsRead(serverUrl, channel.teamId, thread.id);
@@ -58,7 +58,7 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string) 
         }
     }
 
-    switchToThread(serverUrl, rootId);
+    switchToThread(serverUrl, rootId, isFromNotification);
 
     return {};
 };

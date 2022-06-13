@@ -17,7 +17,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {dismissModal} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {closePermalink} from '@utils/permalink';
 import {preventDoubleTap} from '@utils/tap';
@@ -152,7 +152,7 @@ function Permalink({channel, isCRTEnabled, postId}: Props) {
 
     useEffect(() => {
         const listener = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (EphemeralStore.getNavigationTopComponentId() === Screens.PERMALINK) {
+            if (NavigationStore.getNavigationTopComponentId() === Screens.PERMALINK) {
                 handleClose();
                 return true;
             }

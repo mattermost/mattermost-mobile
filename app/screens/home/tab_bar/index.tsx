@@ -8,7 +8,7 @@ import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Events, Navigation as NavigationConstants, Screens, View as ViewConstants} from '@constants';
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Account from './account';
@@ -77,7 +77,7 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
 
     useEffect(() => {
         const listner = DeviceEventEmitter.addListener(NavigationConstants.NAVIGATION_HOME, () => {
-            EphemeralStore.setVisibleTap(Screens.HOME);
+            NavigationStore.setVisibleTap(Screens.HOME);
             navigation.navigate(Screens.HOME);
         });
 
@@ -102,7 +102,7 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
             if (!event.defaultPrevented) {
                 // The `merge: true` option makes sure that the params inside the tab screen are preserved
                 navigation.navigate({params: {direction, ...params}, name: route.name, merge: false});
-                EphemeralStore.setVisibleTap(route.name);
+                NavigationStore.setVisibleTap(route.name);
             }
         });
 
@@ -168,7 +168,7 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
                     if (!isFocused && !event.defaultPrevented) {
                         // The `merge: true` option makes sure that the params inside the tab screen are preserved
                         navigation.navigate({params: {direction}, name: route.name, merge: false});
-                        EphemeralStore.setVisibleTap(route.name);
+                        NavigationStore.setVisibleTap(route.name);
                     }
                 };
 

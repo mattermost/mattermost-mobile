@@ -13,7 +13,7 @@ import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {popTopScreen} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {isDateLine, getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import EmptyState from './empty';
@@ -80,7 +80,7 @@ function SavedMessages({
 
     useEffect(() => {
         const listener = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (EphemeralStore.getNavigationTopComponentId() === componentId) {
+            if (NavigationStore.getNavigationTopComponentId() === componentId) {
                 close();
                 return true;
             }
