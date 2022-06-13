@@ -308,6 +308,38 @@ class DatabaseManager {
     };
 
     /**
+     * getAppDatabaseAndOperator: Helper function that returns App the database and operator.
+     * use within a try/catch block
+     * @returns AppDatabase
+     * @throws Error
+     */
+    public getAppDatabaseAndOperator = () => {
+        const app = this.appDatabase;
+        if (!app) {
+            throw new Error('App database not found');
+        }
+
+        return app;
+    };
+
+    /**
+     * getServerDatabaseAndOperator: Helper function that returns the database and operator
+     * for a specific server.
+     * use within a try/catch block
+     * @param serverUrl the url of the server
+     * @returns ServerDatabase
+     * @throws Error
+     */
+    public getServerDatabaseAndOperator = (serverUrl: string) => {
+        const server = this.serverDatabases[serverUrl];
+        if (!server) {
+            throw new Error(`${serverUrl} database not found`);
+        }
+
+        return server;
+    };
+
+    /**
     * setActiveServerDatabase: Set the new active server database.
     * This method should be called when switching to another server.
     * @param {string} serverUrl

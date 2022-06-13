@@ -5,14 +5,9 @@ import DatabaseManager from '@database/manager';
 import {getPostById, queryPostsInChannel, queryPostsInThread} from '@queries/servers/post';
 
 export const updatePostSinceCache = async (serverUrl: string, notification: NotificationWithData) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
     try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         if (notification.payload?.channel_id) {
-            const {database} = operator;
             const chunks = await queryPostsInChannel(database, notification.payload.channel_id).fetch();
             if (chunks.length) {
                 const recent = chunks[0];
@@ -28,6 +23,8 @@ export const updatePostSinceCache = async (serverUrl: string, notification: Noti
         }
         return {};
     } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Failed updatePostSinceCache', error);
         return {error};
     }
 };

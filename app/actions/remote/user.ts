@@ -7,7 +7,6 @@ import {Model} from '@nozbe/watermelondb';
 import {chunk} from 'lodash';
 
 import {updateChannelsDisplayName} from '@actions/local/channel';
-import {getUserTimezone} from '@actions/local/timezone';
 import {updateRecentCustomStatuses, updateLocalUser} from '@actions/local/user';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {General} from '@constants';
@@ -17,7 +16,7 @@ import NetworkManager from '@managers/network_manager';
 import {getMembersCountByChannelsId, queryChannelsByTypes} from '@queries/servers/channel';
 import {getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {getCurrentUser, getUserById, prepareUsers, queryAllUsers, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
-import {removeUserFromList} from '@utils/user';
+import {getUserTimezoneProps, removeUserFromList} from '@utils/user';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -804,7 +803,7 @@ export const autoUpdateTimezone = async (serverUrl: string, {deviceTimezone, use
         return null;
     }
 
-    const currentTimezone = getUserTimezone(currentUser);
+    const currentTimezone = getUserTimezoneProps(currentUser);
     const newTimezoneExists = currentTimezone.automaticTimezone !== deviceTimezone;
 
     if (currentTimezone.useAutomaticTimezone && newTimezoneExists) {

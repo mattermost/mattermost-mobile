@@ -101,6 +101,21 @@ export const getUsersByUsername = (users: UserModel[]) => {
     return usersByUsername;
 };
 
+export const getUserTimezoneProps = (currentUser: UserModel) => {
+    if (currentUser?.timezone) {
+        return {
+            ...currentUser?.timezone,
+            useAutomaticTimezone: currentUser?.timezone?.useAutomaticTimezone === 'true',
+        };
+    }
+
+    return {
+        useAutomaticTimezone: true,
+        automaticTimezone: '',
+        manualTimezone: '',
+    };
+};
+
 export const getUserTimezone = (user: UserModel) => {
     return getTimezone(user.timezone);
 };

@@ -13,107 +13,95 @@ import type Model from '@nozbe/watermelondb/Model';
 import type UserModel from '@typings/database/models/servers/user';
 
 export async function setCurrentUserStatusOffline(serverUrl: string) {
-    const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
-    if (!serverDatabase) {
-        return {error: `No database present for ${serverUrl}`};
-    }
-
-    const {database, operator} = serverDatabase;
-
-    const user = await getCurrentUser(database);
-    if (!user) {
-        return {error: `No current user for ${serverUrl}`};
-    }
-
-    user.prepareStatus(General.OFFLINE);
-
     try {
-        await operator.batchRecords([user]);
-    } catch {
-        // eslint-disable-next-line no-console
-        console.log('FAILED TO BATCH CHANGES FOR SET CURRENT USER STATUS OFFLINE');
-    }
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const user = await getCurrentUser(database);
+        if (!user) {
+            throw new Error(`No current user for ${serverUrl}`);
+        }
 
-    return null;
+        user.prepareStatus(General.OFFLINE);
+        await operator.batchRecords([user]);
+        return null;
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Failed setCurrentUserStatusOffline', error);
+        return {error};
+    }
 }
 
 export async function updateLocalCustomStatus(serverUrl: string, user: UserModel, customStatus?: UserCustomStatus) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const models: Model[] = [];
+        const currentProps = {...user.props, customStatus: customStatus || {}};
+        const userModel = user.prepareUpdate((u: UserModel) => {
+            u.props = currentProps;
+        });
 
-    const models: Model[] = [];
-    const currentProps = {...user.props, customStatus: customStatus || {}};
-    const userModel = user.prepareUpdate((u: UserModel) => {
-        u.props = currentProps;
-    });
+        models.push(userModel);
+        if (customStatus) {
+            const recent = await updateRecentCustomStatuses(serverUrl, customStatus, true);
+            if (Array.isArray(recent)) {
+                models.push(...recent);
+            }
 
-    models.push(userModel);
-    if (customStatus) {
-        const recent = await updateRecentCustomStatuses(serverUrl, customStatus, true);
-        if (Array.isArray(recent)) {
-            models.push(...recent);
-        }
-
-        if (customStatus.emoji) {
-            const recentEmojis = await addRecentReaction(serverUrl, [customStatus.emoji], true);
-            if (Array.isArray(recentEmojis)) {
-                models.push(...recentEmojis);
+            if (customStatus.emoji) {
+                const recentEmojis = await addRecentReaction(serverUrl, [customStatus.emoji], true);
+                if (Array.isArray(recentEmojis)) {
+                    models.push(...recentEmojis);
+                }
             }
         }
-    }
 
-    try {
         await operator.batchRecords(models);
-    } catch {
-        // eslint-disable-next-line no-console
-        console.log('FAILED TO BATCH CHANGES FOR UPDATING CUSTOM STATUS');
-    }
 
-    return {};
+        return {};
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Failed updateLocalCustomStatus', error);
+        return {error};
+    }
 }
 
 export const updateRecentCustomStatuses = async (serverUrl: string, customStatus: UserCustomStatus, prepareRecordsOnly = false, remove = false) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    const recentStatuses = await getRecentCustomStatuses(operator.database);
-    const index = recentStatuses.findIndex((cs) => (
-        cs.emoji === customStatus.emoji &&
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const recentStatuses = await getRecentCustomStatuses(database);
+        const index = recentStatuses.findIndex((cs) => (
+            cs.emoji === customStatus.emoji &&
         cs.text === customStatus.text &&
         cs.duration === customStatus.duration
-    ));
+        ));
 
-    if (index !== -1) {
-        recentStatuses.splice(index, 1);
+        if (index !== -1) {
+            recentStatuses.splice(index, 1);
+        }
+
+        if (!remove) {
+            recentStatuses.unshift(customStatus);
+        }
+
+        return operator.handleSystem({
+            systems: [{
+                id: SYSTEM_IDENTIFIERS.RECENT_CUSTOM_STATUS,
+                value: JSON.stringify(recentStatuses),
+            }],
+            prepareRecordsOnly,
+        });
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Failed updateRecentCustomStatuses', error);
+        return {error};
     }
-
-    if (!remove) {
-        recentStatuses.unshift(customStatus);
-    }
-
-    return operator.handleSystem({
-        systems: [{
-            id: SYSTEM_IDENTIFIERS.RECENT_CUSTOM_STATUS,
-            value: JSON.stringify(recentStatuses),
-        }],
-        prepareRecordsOnly,
-    });
 };
 
 export const updateLocalUser = async (
     serverUrl: string,
     userDetails: Partial<UserProfile> & { status?: string},
 ) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
     try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const user = await getCurrentUser(database);
         if (user) {
             await database.write(async () => {
@@ -135,21 +123,17 @@ export const updateLocalUser = async (
                 });
             });
         }
+        return {user};
     } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Failed updateLocalUser', error);
         return {error};
     }
-
-    return {};
 };
 
 export const storeProfile = async (serverUrl: string, profile: UserProfile) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
     try {
-        const {database} = operator;
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const user = await getUserById(database, profile.id);
         if (user) {
             return {user};
@@ -162,6 +146,8 @@ export const storeProfile = async (serverUrl: string, profile: UserProfile) => {
 
         return {user: records[0]};
     } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Failed storeProfile', error);
         return {error};
     }
 };
