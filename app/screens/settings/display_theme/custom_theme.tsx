@@ -41,7 +41,7 @@ const CustomTheme = ({customTheme, setTheme}: CustomThemeProps) => {
                 action={setTheme}
                 type='select'
                 value={customTheme.type}
-                label={intl.formatMessage({id: 'user.settings.display.custom_theme', defaultMessage: 'Custom Theme'})}
+                label={intl.formatMessage({id: 'settings_display.custom_theme', defaultMessage: 'Custom Theme'})}
                 selected={theme.type?.toLowerCase() === customTheme.type?.toLowerCase()}
             />
         </Block>

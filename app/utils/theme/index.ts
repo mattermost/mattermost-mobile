@@ -8,6 +8,7 @@ import tinyColor from 'tinycolor2';
 import {Preferences} from '@constants';
 import {MODAL_SCREENS_WITHOUT_BACK} from '@constants/screens';
 import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 
 import type {Options} from 'react-native-navigation';
@@ -113,7 +114,7 @@ export function setNavigatorStyles(componentId: string, theme: Theme, additional
 }
 
 export function setNavigationStackStyles(theme: Theme) {
-    EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
+    NavigationStore.allNavigationComponentIds.forEach((componentId) => {
         if (!appearanceControlledScreens.has(componentId)) {
             setNavigatorStyles(componentId, theme);
         }

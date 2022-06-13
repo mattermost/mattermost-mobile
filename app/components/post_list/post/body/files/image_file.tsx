@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {StyleProp, StyleSheet, useWindowDimensions, View, ViewStyle} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -82,7 +82,7 @@ const ImageFile = ({
     const dimensions = useWindowDimensions();
     const theme = useTheme();
     const serverUrl = useServerUrl();
-    const [isGif, setIsGif] = useState(isGifImage(file));
+    const isGif = useMemo(() => isGifImage(file), [file]);
     const [failed, setFailed] = useState(false);
     const style = getStyleSheet(theme);
     let image;
@@ -116,10 +116,6 @@ const ImageFile = ({
         }
         return props;
     };
-
-    useEffect(() => {
-        setIsGif(isGifImage(file));
-    }, [file]);
 
     if (file.height <= SMALL_IMAGE_MAX_HEIGHT || file.width <= SMALL_IMAGE_MAX_WIDTH) {
         let wrapperStyle: StyleProp<ViewStyle> = style.fileImageWrapper;

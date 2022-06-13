@@ -18,7 +18,7 @@ import {
 import {CustomStatusDuration} from '@constants/custom_status';
 import {observeCurrentUser} from '@queries/servers/user';
 import {dismissModal, popTopScreen} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -113,7 +113,7 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
 
     onBackPress = () => {
         const {componentId} = this.props;
-        if (EphemeralStore.getNavigationTopComponentId() === componentId) {
+        if (NavigationStore.getNavigationTopComponentId() === componentId) {
             if (this.props.isModal) {
                 dismissModal({componentId});
             } else {
