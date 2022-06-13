@@ -52,9 +52,9 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
 
     const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
 
-    const [pushSend, setPushSend] = useState<PushStatus>(notifyProps.push as unknown as PushStatus);
-    const [pushStatus, setPushStatus] = useState<PushStatus>(notifyProps.push_status as unknown as PushStatus);
-    const [pushThread, setPushThreadPref] = useState<PushStatus>(notifyProps.push_threads as unknown as PushStatus);
+    const [pushSend, setPushSend] = useState<PushStatus>(notifyProps.push);
+    const [pushStatus, setPushStatus] = useState<PushStatus>(notifyProps.push_status);
+    const [pushThread, setPushThreadPref] = useState<PushStatus>(notifyProps?.push_threads || 'all');
 
     const intl = useIntl();
     const theme = useTheme();

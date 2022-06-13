@@ -286,21 +286,24 @@ export function filterProfilesMatchingTerm(users: UserProfile[], term: string): 
     });
 }
 
-type ExtraNotificationProps = Partial<UserNotifyProps> & { push_threads: 'all' | 'mention' }
-export function getNotificationProps(user: UserModel): ExtraNotificationProps {
+export function getNotificationProps(user: UserModel) {
     if (user && user.notifyProps) {
-        return user.notifyProps as ExtraNotificationProps;
+        return user.notifyProps;
     }
 
-    return {
+    const props: UserNotifyProps = {
         channel: 'true',
         comments: 'any',
         desktop: 'all',
         desktop_sound: 'true',
+        email: 'true',
         first_name: (!user || !user.firstName) ? 'false' : 'true',
+        mark_unread: 'all',
         mention_keys: user ? `${user.username},@${user.username}` : '',
         push: 'mention',
         push_status: 'online',
         push_threads: 'all',
     };
+
+    return props;
 }
