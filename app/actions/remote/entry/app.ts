@@ -1,23 +1,41 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {resetAfterCRTChange} from '@actions/app/global';
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
+import {queryHasCRTChanged} from '@app/queries/servers/preference';
 import DatabaseManager from '@database/manager';
 import {prepareCommonSystemValues, getCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId, getCurrentChannelId} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
 
+import {fetchMyPreferences} from '../preference';
+
 import {deferredAppEntryActions, entry, registerDeviceToken, syncOtherServers, verifyPushProxy} from './common';
 
-export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) {
+export async function appEntry(serverUrl: string, since = 0, isUpgrade = false): Promise<{error?: any; userId?: string}> {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
     const {database} = operator;
+    const myPreferences = await fetchMyPreferences(serverUrl, true);
+
+    if (myPreferences.preferences) {
+        const crtToggled = await queryHasCRTChanged(database, myPreferences.preferences);
+        if (crtToggled) {
+            if (operator) {
+                await operator.handlePreferences({
+                    prepareRecordsOnly: false,
+                    preferences: myPreferences.preferences,
+                });
+            }
+            return resetAfterCRTChange(serverUrl);
+        }
+    }
 
     if (!since) {
         registerDeviceToken(serverUrl);

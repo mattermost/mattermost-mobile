@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {entry} from '@actions/remote/entry/common';
+import {appEntry} from '@actions/remote/entry';
 import {MM_TABLES} from '@app/constants/database';
+import {resetWebSocketLastDisconnected} from '@app/queries/servers/system';
+import {popToRoot} from '@app/screens/navigation';
 import {GLOBAL_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 
@@ -51,12 +53,14 @@ export const storeProfileLongPressTutorial = async (prepareRecordsOnly = false) 
     }
 };
 
-export async function resetAfterCRTChange(serverUrl: string) {
-    const database = DatabaseManager.serverDatabases?.[serverUrl].database;
+export async function resetAfterCRTChange(serverUrl: string): Promise<{error?: any; userId?: string}> {
+    const operator = DatabaseManager.serverDatabases?.[serverUrl].operator;
 
-    if (!database) {
+    if (!operator) {
         return {error: 'No App database found'};
     }
+
+    const database = operator.database;
 
     try {
         await database.write(() => {
@@ -74,7 +78,14 @@ export async function resetAfterCRTChange(serverUrl: string) {
                 ],
             });
         });
-        return await entry(serverUrl);
+
+        const currentServerUrl = await DatabaseManager.getActiveServerUrl();
+        await resetWebSocketLastDisconnected(operator);
+        if (currentServerUrl === serverUrl) {
+            popToRoot();
+        }
+
+        return appEntry(serverUrl);
     } catch (error) {
         if (__DEV__) {
             throw error;
