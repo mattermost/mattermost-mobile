@@ -3,7 +3,6 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {getDeviceTimezone, isTimezoneEnabled} from '@actions/local/timezone';
 import {Database, Events} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -14,6 +13,7 @@ import {getDeviceToken} from '@queries/app/global';
 import {getCurrentUserId, getCommonSystemValues} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import {getCSRFFromCookie} from '@utils/security';
+import {getDeviceTimezone, isTimezoneEnabled} from '@utils/timezone';
 
 import {loginEntry} from './entry';
 import {fetchDataRetentionPolicy} from './systems';

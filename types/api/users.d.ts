@@ -16,6 +16,7 @@ type UserNotifyProps = {
     push: 'default' | 'all' | 'mention' | 'none';
     push_status: 'ooo' | 'offline' | 'away' | 'dnd' | 'online';
     user_id?: string;
+    push_threads?: 'all' | 'mention';
 };
 
 type UserProfile = {

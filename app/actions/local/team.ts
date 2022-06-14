@@ -5,31 +5,28 @@ import DatabaseManager from '@database/manager';
 import {prepareDeleteTeam, getMyTeamById, removeTeamFromTeamHistory} from '@queries/servers/team';
 
 export async function removeUserFromTeam(serverUrl: string, teamId: string) {
-    const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
-    if (!serverDatabase) {
-        return;
-    }
-
-    const {operator, database} = serverDatabase;
-
-    const myTeam = await getMyTeamById(database, teamId);
-    if (myTeam) {
-        const team = await myTeam.team.fetch();
-        if (!team) {
-            return;
-        }
-        const models = await prepareDeleteTeam(team);
-        const system = await removeTeamFromTeamHistory(operator, team.id, true);
-        if (system) {
-            models.push(...system);
-        }
-        if (models.length) {
-            try {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const myTeam = await getMyTeamById(database, teamId);
+        if (myTeam) {
+            const team = await myTeam.team.fetch();
+            if (!team) {
+                throw new Error('Team not found');
+            }
+            const models = await prepareDeleteTeam(team);
+            const system = await removeTeamFromTeamHistory(operator, team.id, true);
+            if (system) {
+                models.push(...system);
+            }
+            if (models.length) {
                 await operator.batchRecords(models);
-            } catch {
-                // eslint-disable-next-line no-console
-                console.log('FAILED TO BATCH CHANGES FOR REMOVE USER FROM TEAM');
             }
         }
+
+        return {error: undefined};
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Failed removeUserFromTeam', error);
+        return {error};
     }
 }
