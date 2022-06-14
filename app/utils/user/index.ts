@@ -307,16 +307,17 @@ export function getNotificationProps(user: UserModel) {
     }
 
     const props: UserNotifyProps = {
-        email: 'true',
-        mark_unread: 'all',
         channel: 'true',
         comments: 'any',
         desktop: 'all',
         desktop_sound: 'true',
+        email: 'true',
         first_name: (!user || !user.firstName) ? 'false' : 'true',
+        mark_unread: 'all',
         mention_keys: user ? `${user.username},@${user.username}` : '',
         push: 'mention',
         push_status: 'online',
+        push_threads: 'all',
     };
 
     return props;
