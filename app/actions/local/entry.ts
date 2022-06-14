@@ -16,7 +16,7 @@ const {
     MY_CHANNEL,
 } = MM_TABLES.SERVER;
 
-export async function resetAfterCRTChange(serverUrl: string): Promise<{error: any}> {
+export async function resetAfterCRTChange(serverUrl: string, isSameServer: boolean): Promise<{error: any}> {
     const operator = DatabaseManager.serverDatabases?.[serverUrl].operator;
 
     if (!operator) {
@@ -41,9 +41,8 @@ export async function resetAfterCRTChange(serverUrl: string): Promise<{error: an
             });
         });
 
-        const currentServerUrl = await DatabaseManager.getActiveServerUrl();
         await resetWebSocketLastDisconnected(operator);
-        if (currentServerUrl === serverUrl) {
+        if (isSameServer) {
             popToRoot();
         }
     } catch (error) {

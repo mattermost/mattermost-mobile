@@ -34,7 +34,7 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
         }
 
         if (crtToggled) {
-            const {error} = await resetAfterCRTChange(serverUrl);
+            const {error} = await resetAfterCRTChange(serverUrl, true);
             if (!error) {
                 await appEntry(serverUrl);
             }
@@ -67,7 +67,7 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
         }
 
         if (crtToggled) {
-            const {error} = await resetAfterCRTChange(serverUrl);
+            const {error} = await resetAfterCRTChange(serverUrl, true);
             if (!error) {
                 await appEntry(serverUrl);
             }

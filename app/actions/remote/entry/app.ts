@@ -33,11 +33,16 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false):
                     preferences: myPreferences.preferences,
                 });
             }
-            const {error} = await resetAfterCRTChange(serverUrl);
+            const currentServerUrl = await DatabaseManager.getActiveServerUrl();
+            const isSameServer = currentServerUrl === serverUrl;
+            const {error} = await resetAfterCRTChange(serverUrl, isSameServer);
             if (error) {
                 return {error: `Resetting CRT on ${serverUrl} failed`};
             }
-            return appEntry(serverUrl);
+            if (isSameServer) {
+                return appEntry(serverUrl);
+            }
+            return appEntry(serverUrl, since, isUpgrade);
         }
     }
 
