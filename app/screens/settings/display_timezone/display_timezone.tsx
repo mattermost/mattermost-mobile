@@ -14,6 +14,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {goToScreen, popTopScreen, setButtons} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {getDeviceTimezone} from '@utils/timezone';
 import {getTimezoneRegion, getUserTimezoneProps} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -58,9 +59,23 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    console.log('>>>  userTimezone', {userTimezone});
-    const updateAutomaticTimezone = () => {
-        //todo:
+    const updateAutomaticTimezone = (useAutomaticTimezone: boolean) => {
+        const automaticTimezone = getDeviceTimezone();
+        setUserTimezone((prev) => ({
+            ...prev,
+            useAutomaticTimezone,
+            automaticTimezone,
+        }));
+
+        //todo: confirm with Elias
+        // if (manualTimezone?.length > 0) {
+        //     // Preserve state change in server if manualTimezone exists
+        //     this.submitUser({
+        //         useAutomaticTimezone,
+        //         automaticTimezone,
+        //         manualTimezone,
+        //     });
+        // }
     };
 
     const updateManualTimezone = (mtz: string) => {
