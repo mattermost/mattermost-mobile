@@ -25,7 +25,7 @@ const style = StyleSheet.create({
 });
 
 const CustomStatus = ({customStatus, customStatusExpired, isCustomStatusEnabled, isInfo}: Props) => {
-    const showCustomStatusEmoji = Boolean(isCustomStatusEnabled && customStatus && !customStatusExpired);
+    const showCustomStatusEmoji = Boolean(isCustomStatusEnabled && customStatus?.emoji && !customStatusExpired);
 
     if (!showCustomStatusEmoji) {
         return null;

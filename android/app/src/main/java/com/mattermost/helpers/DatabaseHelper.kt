@@ -142,7 +142,7 @@ class DatabaseHelper {
         return null
     }
 
-    fun handlePosts(db: Database, postsData: ReadableMap?, channelId: String) {
+    fun handlePosts(db: Database, postsData: ReadableMap?, channelId: String, receivingThreads: Boolean) {
         // Posts, PostInChannel, PostInThread, Reactions, Files, CustomEmojis, Users
         if (postsData != null) {
             val ordered = postsData.getArray("order")?.toArrayList()
@@ -205,8 +205,35 @@ class DatabaseHelper {
                 }
             }
 
-            handlePostsInChannel(db, channelId, earliest, latest)
+            if (!receivingThreads) {
+                handlePostsInChannel(db, channelId, earliest, latest)
+            }
             handlePostsInThread(db, postsInThread)
+        }
+    }
+
+    fun handleThreads(db: Database, threads: ReadableArray) {
+        for (i in 0 until threads.size()) {
+            val thread = threads.getMap(i)
+            val threadId = thread.getString("id")
+
+            // Insert/Update the thread
+            val existingRecord = find(db, "Thread", threadId)
+            if (existingRecord == null) {
+                insertThread(db, thread)
+            } else {
+                updateThread(db, thread, existingRecord)
+            }
+
+            // Delete existing and insert thread participants
+            val participants = thread.getArray("participants")
+            if (participants != null) {
+                db.execute("delete from ThreadParticipant where thread_id = ?", arrayOf(threadId))
+
+                if (participants.size() > 0) {
+                    insertThreadParticipants(db, threadId!!, participants)
+                }
+            }
         }
     }
 
@@ -219,6 +246,8 @@ class DatabaseHelper {
             } catch (e: NoSuchKeyException) {
                 false
             }
+
+            val lastPictureUpdate = try { user.getDouble("last_picture_update") } catch (e: NoSuchKeyException) { 0 }
 
 
             db.execute(
@@ -235,7 +264,7 @@ class DatabaseHelper {
                             isBot,
                             roles.contains("system_guest"),
                             user.getString("last_name"),
-                            user.getDouble("last_picture_update"),
+                            lastPictureUpdate,
                             user.getString("locale"),
                             user.getString("nickname"),
                             user.getString("position"),
@@ -248,6 +277,27 @@ class DatabaseHelper {
                     )
             )
         }
+    }
+
+    fun getServerVersion(db: Database): String? {
+        val config = getSystemConfig(db)
+        if (config != null) {
+            return config.getString("Version")
+        }
+        return null
+    }
+
+    private fun getSystemConfig(db: Database): JSONObject? {
+        val configRecord = find(db, "System", "config")
+        if (configRecord != null) {
+            val value = configRecord.getString("value");
+            try {
+                return JSONObject(value)
+            } catch(e: JSONException) {
+                return null
+            }
+        }
+        return null
     }
 
     private fun setDefaultDatabase(context: Context) {
@@ -357,6 +407,67 @@ class DatabaseHelper {
 
         if (customEmojis != null && customEmojis.length() > 0) {
             insertCustomEmojis(db, customEmojis)
+        }
+    }
+
+    private fun insertThread(db: Database, thread: ReadableMap) {
+        // These fields are not present when we extract threads from posts
+        val isFollowing = try { thread.getBoolean("is_following") } catch (e: NoSuchKeyException) { false };
+        val lastViewedAt = try { thread.getDouble("last_viewed_at") } catch (e: NoSuchKeyException) { 0 };
+        val unreadReplies = try { thread.getInt("unread_replies") } catch (e: NoSuchKeyException) { 0 };
+        val unreadMentions = try { thread.getInt("unread_mentions") } catch (e: NoSuchKeyException) { 0 };
+
+        db.execute(
+                "insert into Thread " +
+                        "(id, last_reply_at, last_viewed_at, reply_count, is_following, unread_replies, unread_mentions, _status)" +
+                        " values (?, ?, ?, ?, ?, ?, ?, 'created')",
+                arrayOf(
+                        thread.getString("id"),
+                        thread.getDouble("last_reply_at") ?: 0,
+                        lastViewedAt,
+                        thread.getInt("reply_count") ?: 0,
+                        isFollowing,
+                        unreadReplies,
+                        unreadMentions
+                )
+        )
+    }
+
+    private fun updateThread(db: Database, thread: ReadableMap, existingRecord: ReadableMap) {
+        // These fields are not present when we extract threads from posts
+        val isFollowing = try { thread.getBoolean("is_following") } catch (e: NoSuchKeyException) { existingRecord.getInt("is_following") == 1 };
+        val lastViewedAt = try { thread.getDouble("last_viewed_at") } catch (e: NoSuchKeyException) { existingRecord.getDouble("last_viewed_at") };
+        val unreadReplies = try { thread.getInt("unread_replies") } catch (e: NoSuchKeyException) { existingRecord.getInt("unread_replies") };
+        val unreadMentions = try { thread.getInt("unread_mentions") } catch (e: NoSuchKeyException) { existingRecord.getInt("unread_mentions") };
+
+        db.execute(
+                "update Thread SET last_reply_at = ?, last_viewed_at = ?, reply_count = ?, is_following = ?, unread_replies = ?, unread_mentions = ?, _status = 'updated' where id = ?",
+                arrayOf(
+                        thread.getDouble("last_reply_at") ?: 0,
+                        lastViewedAt,
+                        thread.getInt("reply_count") ?: 0,
+                        isFollowing,
+                        unreadReplies,
+                        unreadMentions,
+                        thread.getString("id")
+                )
+        )
+    }
+
+    private fun insertThreadParticipants(db: Database, threadId: String, participants: ReadableArray) {
+        for (i in 0 until participants.size()) {
+            val participant = participants.getMap(i)
+            val id = RandomId.generate()
+            db.execute(
+                    "insert into ThreadParticipant " +
+                            "(id, thread_id, user_id, _status)" +
+                            " values (?, ?, ?, 'created')",
+                    arrayOf(
+                            id,
+                            threadId,
+                            participant.getString("id")
+                    )
+            )
         }
     }
 

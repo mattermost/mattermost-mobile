@@ -149,9 +149,9 @@ const UserItem = ({
                 </Text>
                 }
             </View>
-            {isCustomStatusEnabled && !bot && customStatus && (
+            {Boolean(isCustomStatusEnabled && !bot && customStatus?.emoji) && (
                 <CustomStatusEmoji
-                    customStatus={customStatus}
+                    customStatus={customStatus!}
                     style={style.icon}
                 />
             )}

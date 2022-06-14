@@ -10,7 +10,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import CustomStatus from './custom_status';
 import Logout from './logout';
-import SavedMessages from './saved_messages';
 import Settings from './settings';
 import UserPresence from './user_presence';
 import YourProfile from './your_profile';
@@ -82,11 +81,11 @@ const AccountOptions = ({user, enableCustomUserStatuses, isCustomStatusExpirySup
                     style={styles.menuLabel}
                     theme={theme}
                 />
-                <SavedMessages
+                {/* <SavedMessages
                     isTablet={isTablet}
                     style={styles.menuLabel}
                     theme={theme}
-                />
+                /> */}
                 <Settings
                     isTablet={isTablet}
                     style={styles.menuLabel}

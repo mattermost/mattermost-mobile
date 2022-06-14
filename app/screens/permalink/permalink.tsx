@@ -20,7 +20,7 @@ import DatabaseManager from '@database/manager';
 import {useIsTablet} from '@hooks/device';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {dismissModal} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {closePermalink} from '@utils/permalink';
 import {preventDoubleTap} from '@utils/tap';
@@ -252,7 +252,7 @@ function Permalink({
 
     useEffect(() => {
         const listener = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (EphemeralStore.getNavigationTopComponentId() === Screens.PERMALINK) {
+            if (NavigationStore.getNavigationTopComponentId() === Screens.PERMALINK) {
                 handleClose();
                 return true;
             }
