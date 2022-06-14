@@ -23,24 +23,19 @@ import {changeOpacity, setThemeDefaults, updateThemeIfNeeded} from '@utils/theme
 import type Model from '@nozbe/watermelondb/Model';
 
 export const switchToGlobalThreads = async (serverUrl: string, teamId?: string, prepareRecordsOnly = false) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    const {database} = operator;
-    const models: Model[] = [];
-
-    let teamIdToUse = teamId;
-    if (!teamId) {
-        teamIdToUse = await getCurrentTeamId(database);
-    }
-
-    if (!teamIdToUse) {
-        return {error: 'no team to switch to'};
-    }
-
     try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const models: Model[] = [];
+
+        let teamIdToUse = teamId;
+        if (!teamId) {
+            teamIdToUse = await getCurrentTeamId(database);
+        }
+
+        if (!teamIdToUse) {
+            throw new Error('no team to switch to');
+        }
+
         await setCurrentTeamAndChannelId(operator, teamIdToUse, '');
         const history = await addChannelToTeamHistory(operator, teamIdToUse, Screens.GLOBAL_THREADS, true);
         models.push(...history);
@@ -55,34 +50,30 @@ export const switchToGlobalThreads = async (serverUrl: string, teamId?: string, 
         } else {
             goToScreen(Screens.GLOBAL_THREADS, '', {}, {topBar: {visible: false}});
         }
+
+        return {models};
     } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Failed switchToGlobalThreads', error);
         return {error};
     }
-
-    return {models};
 };
 
 export const switchToThread = async (serverUrl: string, rootId: string, isFromNotification = false) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    const {database} = operator;
-
     try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const user = await getCurrentUser(database);
         if (!user) {
-            return {error: 'User not found'};
+            throw new Error('User not found');
         }
 
         const post = await getPostById(database, rootId);
         if (!post) {
-            return {error: 'Post not found'};
+            throw new Error('Post not found');
         }
         const channel = await getChannelById(database, post.channelId);
         if (!channel) {
-            return {error: 'Channel not found'};
+            throw new Error('Channel not found');
         }
 
         const system = await getCommonSystemValues(database);
@@ -180,6 +171,8 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
 
         return {};
     } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Failed switchToThread', error);
         return {error};
     }
 };
@@ -188,105 +181,104 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
 // 1. If a reply, then update the reply_count, add user as the participant
 // 2. Else add the post as a thread
 export async function createThreadFromNewPost(serverUrl: string, post: Post, prepareRecordsOnly = false) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    const models: Model[] = [];
-    if (post.root_id) {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const models: Model[] = [];
+        if (post.root_id) {
         // Update the thread data: `reply_count`
-        const {model: threadModel} = await updateThread(serverUrl, post.root_id, {reply_count: post.reply_count}, true);
-        if (threadModel) {
-            models.push(threadModel);
+            const {model: threadModel} = await updateThread(serverUrl, post.root_id, {reply_count: post.reply_count}, true);
+            if (threadModel) {
+                models.push(threadModel);
+            }
+
+            // Add user as a participant to the thread
+            const threadParticipantModels = await operator.handleThreadParticipants({
+                threadsParticipants: [{
+                    thread_id: post.root_id,
+                    participants: [{
+                        thread_id: post.root_id,
+                        id: post.user_id,
+                    }],
+                }],
+                prepareRecordsOnly: true,
+                skipSync: true,
+            });
+            models.push(...threadParticipantModels);
+        } else { // If the post is a root post, then we need to add it to the thread table
+            const threadModels = await prepareThreadsFromReceivedPosts(operator, [post]);
+            models.push(...threadModels);
         }
 
-        // Add user as a participant to the thread
-        const threadParticipantModels = await operator.handleThreadParticipants({
-            threadsParticipants: [{
-                thread_id: post.root_id,
-                participants: [{
-                    thread_id: post.root_id,
-                    id: post.user_id,
-                }],
-            }],
-            prepareRecordsOnly: true,
-            skipSync: true,
-        });
-        models.push(...threadParticipantModels);
-    } else { // If the post is a root post, then we need to add it to the thread table
-        const threadModels = await prepareThreadsFromReceivedPosts(operator, [post]);
-        models.push(...threadModels);
-    }
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords(models);
+        }
 
-    if (!prepareRecordsOnly) {
-        await operator.batchRecords(models);
+        return {models};
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Failed createThreadFromNewPost', error);
+        return {error};
     }
-
-    return {models};
 }
 
 // On receiving threads, Along with the "threads" & "thread participants", extract and save "posts" & "users"
 export async function processReceivedThreads(serverUrl: string, threads: Thread[], teamId: string, loadedInGlobalThreads = false, prepareRecordsOnly = false) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const currentUserId = await getCurrentUserId(database);
 
-    const {database} = operator;
-    const currentUserId = await getCurrentUserId(database);
+        const posts: Post[] = [];
+        const users: UserProfile[] = [];
 
-    const posts: Post[] = [];
-    const users: UserProfile[] = [];
+        // Extract posts & users from the received threads
+        for (let i = 0; i < threads.length; i++) {
+            const {participants, post} = threads[i];
+            posts.push(post);
+            participants.forEach((participant) => {
+                if (currentUserId !== participant.id) {
+                    users.push(participant);
+                }
+            });
+        }
 
-    // Extract posts & users from the received threads
-    for (let i = 0; i < threads.length; i++) {
-        const {participants, post} = threads[i];
-        posts.push(post);
-        participants.forEach((participant) => {
-            if (currentUserId !== participant.id) {
-                users.push(participant);
-            }
-        });
-    }
-
-    const postModels = await operator.handlePosts({
-        actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
-        order: [],
-        posts,
-        prepareRecordsOnly: true,
-    });
-
-    const threadModels = await operator.handleThreads({
-        threads,
-        teamId,
-        prepareRecordsOnly: true,
-        loadedInGlobalThreads,
-    });
-
-    const models = [...postModels, ...threadModels];
-
-    if (users.length) {
-        const userModels = await operator.handleUsers({
-            users,
+        const postModels = await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [],
+            posts,
             prepareRecordsOnly: true,
         });
-        models.push(...userModels);
-    }
 
-    if (!prepareRecordsOnly) {
-        await operator.batchRecords(models);
+        const threadModels = await operator.handleThreads({
+            threads,
+            teamId,
+            prepareRecordsOnly: true,
+            loadedInGlobalThreads,
+        });
+
+        const models = [...postModels, ...threadModels];
+
+        if (users.length) {
+            const userModels = await operator.handleUsers({
+                users,
+                prepareRecordsOnly: true,
+            });
+            models.push(...userModels);
+        }
+
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords(models);
+        }
+        return {models};
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Failed processReceivedThreads', error);
+        return {error};
     }
-    return {models};
 }
 
 export async function markTeamThreadsAsRead(serverUrl: string, teamId: string, prepareRecordsOnly = false) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
     try {
-        const {database} = operator;
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const threads = await queryThreadsInTeam(database, teamId, true, true, true).fetch();
         const models = threads.map((thread) => thread.prepareUpdate((record) => {
             record.unreadMentions = 0;
@@ -298,35 +290,35 @@ export async function markTeamThreadsAsRead(serverUrl: string, teamId: string, p
         }
         return {models};
     } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Failed markTeamThreadsAsRead', error);
         return {error};
     }
 }
 
 export async function updateThread(serverUrl: string, threadId: string, updatedThread: Partial<Thread>, prepareRecordsOnly = false) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
     try {
-        const {database} = operator;
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const thread = await getThreadById(database, threadId);
-        if (thread) {
-            const model = thread.prepareUpdate((record) => {
-                record.isFollowing = updatedThread.is_following ?? record.isFollowing;
-                record.replyCount = updatedThread.reply_count ?? record.replyCount;
-
-                record.lastViewedAt = updatedThread.last_viewed_at ?? record.lastViewedAt;
-                record.unreadMentions = updatedThread.unread_mentions ?? record.unreadMentions;
-                record.unreadReplies = updatedThread.unread_replies ?? record.unreadReplies;
-            });
-            if (!prepareRecordsOnly) {
-                await operator.batchRecords([model]);
-            }
-            return {model};
+        if (!thread) {
+            throw new Error('Thread not found');
         }
-        return {error: 'Thread not found'};
+
+        const model = thread.prepareUpdate((record) => {
+            record.isFollowing = updatedThread.is_following ?? record.isFollowing;
+            record.replyCount = updatedThread.reply_count ?? record.replyCount;
+
+            record.lastViewedAt = updatedThread.last_viewed_at ?? record.lastViewedAt;
+            record.unreadMentions = updatedThread.unread_mentions ?? record.unreadMentions;
+            record.unreadReplies = updatedThread.unread_replies ?? record.unreadReplies;
+        });
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords([model]);
+        }
+        return {model};
     } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Failed markTeamThreadsAsRead', error);
         return {error};
     }
 }

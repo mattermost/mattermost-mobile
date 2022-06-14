@@ -12,17 +12,65 @@ import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
 export const sendAddToChannelEphemeralPost = async (serverUrl: string, user: UserModel, addedUsernames: string[], messages: string[], channeId: string, postRootId = '') => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const timestamp = Date.now();
+        const posts = addedUsernames.map((addedUsername, index) => {
+            const message = messages[index];
+            return {
+                id: generateId(),
+                user_id: user.id,
+                channel_id: channeId,
+                message,
+                type: Post.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL as PostType,
+                create_at: timestamp,
+                edit_at: 0,
+                update_at: timestamp,
+                delete_at: 0,
+                is_pinned: false,
+                original_id: '',
+                hashtags: '',
+                pending_post_id: '',
+                reply_count: 0,
+                metadata: {},
+                root_id: postRootId,
+                props: {
+                    username: user.username,
+                    addedUsername,
+                },
+            } as Post;
+        });
 
-    const timestamp = Date.now();
-    const posts = addedUsernames.map((addedUsername, index) => {
-        const message = messages[index];
-        return {
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_NEW,
+            order: posts.map((p) => p.id),
+            posts,
+        });
+
+        return {posts};
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Failed sendAddToChannelEphemeralPost', error);
+        return {error};
+    }
+};
+
+export const sendEphemeralPost = async (serverUrl: string, message: string, channeId: string, rootId = '', userId?: string) => {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        if (!channeId) {
+            throw new Error('channel Id not defined');
+        }
+
+        let authorId = userId;
+        if (!authorId) {
+            authorId = await getCurrentUserId(database);
+        }
+
+        const timestamp = Date.now();
+        const post = {
             id: generateId(),
-            user_id: user.id,
+            user_id: authorId,
             channel_id: channeId,
             message,
             type: Post.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL as PostType,
@@ -36,122 +84,82 @@ export const sendAddToChannelEphemeralPost = async (serverUrl: string, user: Use
             pending_post_id: '',
             reply_count: 0,
             metadata: {},
-            root_id: postRootId,
-            props: {
-                username: user.username,
-                addedUsername,
-            },
+            participants: null,
+            root_id: rootId,
+            props: {},
         } as Post;
-    });
 
-    await operator.handlePosts({
-        actionType: ActionType.POSTS.RECEIVED_NEW,
-        order: posts.map((p) => p.id),
-        posts,
-    });
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_NEW,
+            order: [post.id],
+            posts: [post],
+        });
 
-    return {posts};
-};
-
-export const sendEphemeralPost = async (serverUrl: string, message: string, channeId: string, rootId = '', userId?: string) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
+        return {post};
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Failed sendEphemeralPost', error);
+        return {error};
     }
-
-    if (!channeId) {
-        return {error: 'channel Id not defined'};
-    }
-
-    let authorId = userId;
-    if (!authorId) {
-        authorId = await getCurrentUserId(operator.database);
-    }
-
-    const timestamp = Date.now();
-    const post = {
-        id: generateId(),
-        user_id: authorId,
-        channel_id: channeId,
-        message,
-        type: Post.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL as PostType,
-        create_at: timestamp,
-        edit_at: 0,
-        update_at: timestamp,
-        delete_at: 0,
-        is_pinned: false,
-        original_id: '',
-        hashtags: '',
-        pending_post_id: '',
-        reply_count: 0,
-        metadata: {},
-        participants: null,
-        root_id: rootId,
-        props: {},
-    } as Post;
-
-    await operator.handlePosts({
-        actionType: ActionType.POSTS.RECEIVED_NEW,
-        order: [post.id],
-        posts: [post],
-    });
-
-    return {post};
 };
 
 export async function removePost(serverUrl: string, post: PostModel | Post) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        if (post.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY && post.props?.system_post_ids) {
+            const systemPostIds = getPostIdsForCombinedUserActivityPost(post.id);
+            const removeModels = [];
+            for await (const id of systemPostIds) {
+                const postModel = await getPostById(database, id);
+                if (postModel) {
+                    const preparedPost = await prepareDeletePost(postModel);
+                    removeModels.push(...preparedPost);
+                }
+            }
 
-    if (post.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY && post.props?.system_post_ids) {
-        const systemPostIds = getPostIdsForCombinedUserActivityPost(post.id);
-        const removeModels = [];
-        for await (const id of systemPostIds) {
-            const postModel = await getPostById(operator.database, id);
+            if (removeModels.length) {
+                await operator.batchRecords(removeModels);
+            }
+        } else {
+            const postModel = await getPostById(database, post.id);
             if (postModel) {
                 const preparedPost = await prepareDeletePost(postModel);
-                removeModels.push(...preparedPost);
+                if (preparedPost.length) {
+                    await operator.batchRecords(preparedPost);
+                }
             }
         }
 
-        if (removeModels.length) {
-            await operator.batchRecords(removeModels);
-        }
-    } else {
-        const postModel = await getPostById(operator.database, post.id);
-        if (postModel) {
-            const preparedPost = await prepareDeletePost(postModel);
-            if (preparedPost.length) {
-                await operator.batchRecords(preparedPost);
-            }
-        }
+        return {post};
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Failed removePost', error);
+        return {error};
     }
-
-    return {post};
 }
 
 export async function markPostAsDeleted(serverUrl: string, post: Post, prepareRecordsOnly = false) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const dbPost = await getPostById(database, post.id);
+        if (!dbPost) {
+            throw new Error('Post not found');
+        }
 
-    const dbPost = await getPostById(operator.database, post.id);
-    if (!dbPost) {
-        return {error: 'Post not found'};
-    }
+        const model = dbPost.prepareUpdate((p) => {
+            p.deleteAt = Date.now();
+            p.message = '';
+            p.metadata = null;
+            p.props = undefined;
+        });
 
-    const model = dbPost.prepareUpdate((p) => {
-        p.deleteAt = Date.now();
-        p.message = '';
-        p.metadata = null;
-        p.props = undefined;
-    });
-
-    if (!prepareRecordsOnly) {
-        await operator.batchRecords([dbPost]);
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords([dbPost]);
+        }
+        return {model};
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Failed markPostAsDeleted', error);
+        return {error};
     }
-    return {model};
 }
