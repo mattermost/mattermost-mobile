@@ -561,7 +561,7 @@
   "mobile.routes.login": "Logga in",
   "mobile.routes.loginOptions": "Välj inloggningsmetod",
   "mobile.routes.mfa": "Flerfaktorsautentisering",
-  "mobile.routes.selectChannel": "Ändra kanalnamn",
+  "mobile.routes.selectChannel": "Välj kanal",
   "mobile.routes.selectTeam": "Välj team",
   "mobile.routes.settings": "Inställningar",
   "mobile.routes.sso": "Auto-inloggning",
