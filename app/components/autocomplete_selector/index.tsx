@@ -7,7 +7,7 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
-import CompasIcon from '@components/compass_icon';
+import CompassIcon from '@components/compass_icon';
 import Footer from '@components/settings/footer';
 import Label from '@components/settings/label';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -210,7 +210,7 @@ function AutoCompleteSelector({
                     >
                         {itemText || title}
                     </Text>
-                    <CompasIcon
+                    <CompassIcon
                         name='chevron-down'
                         color={changeOpacity(theme.centerChannelColor, 0.5)}
                         style={style.icon}
