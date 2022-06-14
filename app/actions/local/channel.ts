@@ -6,6 +6,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {General, Navigation as NavigationConstants, Preferences, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {extractChannelDisplayName} from '@helpers/database';
@@ -40,6 +41,8 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
         const isTabletDevice = await isTablet();
         const system = await getCommonSystemValues(database);
         const member = await getMyChannel(database, channelId);
+
+        EphemeralStore.addSwitchingToChannel(channelId);
 
         if (member) {
             const channel = await member.channel.fetch();
@@ -93,7 +96,7 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                     // causing the goToScreen to use the Appearance theme instead and that causes the screen background color to potentially
                     // not match the theme
                     const themes = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_THEME, toTeamId).fetch();
-                    let theme = Preferences.THEMES.denim;
+                    let theme = getDefaultThemeByAppearance();
                     if (themes.length) {
                         theme = setThemeDefaults(JSON.parse(themes[0].value) as Theme);
                     }
@@ -231,7 +234,7 @@ export async function markChannelAsUnread(serverUrl: string, channelId: string, 
 
     member.prepareUpdate((m) => {
         m.viewedAt = lastViewed - 1;
-        m.lastViewedAt = lastViewed;
+        m.lastViewedAt = lastViewed - 1;
         m.messageCount = messageCount;
         m.mentionsCount = mentionsCount;
         m.manuallyUnread = true;

@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Database, Q} from '@nozbe/watermelondb';
+
 import {MM_TABLES} from '@constants/database';
 import {
     transformCategoryChannelRecord,
@@ -43,7 +45,33 @@ const CategoryHandler = (superclass: any) => class extends superclass {
             return [];
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: categories, key: 'id'});
+        const uniqueRaws = getUniqueRawsBy({raws: categories, key: 'id'}) as Category[];
+        const ids = uniqueRaws.map((c) => c.id);
+        const db: Database = this.database;
+        const exists = await db.get<CategoryModel>(CATEGORY).query(
+            Q.where('id', Q.oneOf(ids)),
+        ).fetch();
+        const categoryMap = new Map<String, CategoryModel>(exists.map((c) => [c.id, c]));
+        const createOrUpdateRawValues = uniqueRaws.reduce((res: Category[], c) => {
+            const e = categoryMap.get(c.id);
+            if (!e) {
+                res.push(c);
+            } else if (
+                e.displayName !== c.display_name ||
+                e.muted !== c.muted ||
+                e.sortOrder !== (c.sort_order / 10) ||
+                e.sorting !== (c.sorting || 'recent') ||
+                e.teamId !== c.team_id ||
+                e.type !== c.type
+            ) {
+                res.push(c);
+            }
+            return res;
+        }, []);
+
+        if (!createOrUpdateRawValues.length) {
+            return [];
+        }
 
         return this.handleRecords({
             fieldName: 'id',

@@ -15,10 +15,11 @@ import type ReactionModel from '@typings/database/models/servers/reaction';
 
 type Props = {
     initialEmoji: string;
+    location: string;
     reactions?: ReactionModel[];
 }
 
-const Reactions = ({initialEmoji, reactions}: Props) => {
+const Reactions = ({initialEmoji, location, reactions}: Props) => {
     const [sortedReactions, setSortedReactions] = useState(Array.from(new Set(reactions?.map((r) => getEmojiFirstAlias(r.emojiName)))));
     const [index, setIndex] = useState(sortedReactions.indexOf(initialEmoji));
     const reactionsByName = useMemo(() => {
@@ -56,11 +57,12 @@ const Reactions = ({initialEmoji, reactions}: Props) => {
                 <EmojiAliases emoji={emojiAlias}/>
                 <ReactorsList
                     key={emojiAlias}
+                    location={location}
                     reactions={reactionsByName.get(emojiAlias)!}
                 />
             </>
         );
-    }, [index, reactions, sortedReactions]);
+    }, [index, location, reactions, sortedReactions]);
 
     useEffect(() => {
         // This helps keep the reactions in the same position at all times until unmounted

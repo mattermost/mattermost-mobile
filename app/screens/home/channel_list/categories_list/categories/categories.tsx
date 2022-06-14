@@ -102,7 +102,17 @@ const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
 
     return (
         <>
-            {!switchingTeam && !initiaLoad && (
+            {!switchingTeam && !initiaLoad && onlyUnreads &&
+            <View style={styles.mainList}>
+                <UnreadCategories
+                    currentTeamId={teamId}
+                    isTablet={isTablet}
+                    onChannelSwitch={onChannelSwitch}
+                    onlyUnreads={onlyUnreads}
+                />
+            </View>
+            }
+            {!switchingTeam && !initiaLoad && !onlyUnreads && (
                 <FlatList
                     data={categoriesToShow}
                     ref={listRef}

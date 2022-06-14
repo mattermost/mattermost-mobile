@@ -39,6 +39,7 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
         channel.createAt = raw.create_at;
         channel.creatorId = raw.creator_id;
         channel.deleteAt = raw.delete_at;
+        channel.updateAt = raw.update_at;
 
         channel.displayName = extractChannelDisplayName(raw, record);
         channel.isGroupConstrained = Boolean(raw.group_constrained);
@@ -165,6 +166,7 @@ export const transformChannelMembershipRecord = ({action, database, value}: Tran
         channelMember._raw.id = isCreateAction ? (raw?.id ?? channelMember.id) : record.id;
         channelMember.channelId = raw.channel_id;
         channelMember.userId = raw.user_id;
+        channelMember.schemeAdmin = raw.scheme_admin ?? false;
     };
 
     return prepareBaseRecord({

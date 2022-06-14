@@ -190,17 +190,8 @@ export async function fetchProfilesPerChannels(serverUrl: string, channelIds: st
             return {error: `${serverUrl} database not found`};
         }
 
-        const {database} = operator;
-
-        // let's filter those channels that we already have the users
-        const membersCount = await getMembersCountByChannelsId(database, channelIds);
-        const channelsToFetch = channelIds.filter((c) => membersCount[c] <= 1);
-        if (!channelsToFetch.length) {
-            return {data: []};
-        }
-
-        // Batch fetching profiles per channel by chunks of 300
-        const channels = chunk(channelsToFetch, 300);
+        // Batch fetching profiles per channel by chunks of 250
+        const channels = chunk(channelIds, 250);
         const data: ProfilesInChannelRequest[] = [];
 
         for await (const cIds of channels) {
@@ -821,4 +812,44 @@ export const autoUpdateTimezone = async (serverUrl: string, {deviceTimezone, use
         await updateMe(serverUrl, {timezone});
     }
     return null;
+};
+
+export const fetchTeamAndChannelMembership = async (serverUrl: string, userId: string, teamId: string, channelId?: string) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl].operator;
+    if (!operator) {
+        return {error: `No database present for ${serverUrl}`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const requests = await Promise.all([
+            client.getTeamMember(teamId, userId),
+            channelId ? client.getChannelMember(channelId, userId) : undefined,
+        ]);
+
+        const modelPromises: Array<Promise<Model[]>> = [];
+        modelPromises.push(operator.handleTeamMemberships({
+            teamMemberships: [requests[0]],
+            prepareRecordsOnly: true,
+        }));
+        const channelMemberships = requests[1];
+        if (channelMemberships) {
+            modelPromises.push(operator.handleChannelMembership({
+                channelMemberships: [channelMemberships],
+                prepareRecordsOnly: true,
+            }));
+        }
+
+        const models = await Promise.all(modelPromises);
+        await operator.batchRecords(models.flat());
+        return {error: undefined};
+    } catch (error) {
+        return {error};
+    }
 };

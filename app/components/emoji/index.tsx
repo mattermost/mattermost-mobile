@@ -54,7 +54,6 @@ const Emoji = (props: Props) => {
     let unicode;
     let imageUrl = '';
     const name = emojiName.trim();
-
     if (EmojiIndicesByAlias.has(name)) {
         const emoji = Emojis[EmojiIndicesByAlias.get(name)!];
         if (emoji.category === 'custom') {
@@ -62,7 +61,7 @@ const Emoji = (props: Props) => {
         } else {
             unicode = emoji.image;
         }
-    } else if (!isUnicodeEmoji(name)) {
+    } else {
         const custom = customEmojis.find((ce) => ce.name === name);
         if (custom) {
             try {
@@ -71,7 +70,7 @@ const Emoji = (props: Props) => {
             } catch {
                 // do nothing
             }
-        } else if (name) {
+        } else if (name && !isUnicodeEmoji(name)) {
             fetchCustomEmojiInBatch(serverUrl, name);
         }
     }

@@ -38,6 +38,7 @@ type MarkdownProps = {
     autolinkedUrlSchemes?: string[];
     baseTextStyle: StyleProp<TextStyle>;
     blockStyles?: MarkdownBlockStyles;
+    channelId?: string;
     channelMentions?: ChannelMentions;
     disableAtChannelMentionHighlight?: boolean;
     disableAtMentions?: boolean;
@@ -57,7 +58,7 @@ type MarkdownProps = {
     isSearchResult?: boolean;
     layoutHeight?: number;
     layoutWidth?: number;
-    location?: string;
+    location: string;
     mentionKeys?: UserMentionKey[];
     minimumHashtagLength?: number;
     onPostPress?: (event: GestureResponderEvent) => void;
@@ -124,7 +125,7 @@ const computeTextStyle = (textStyles: MarkdownTextStyles, baseStyle: StyleProp<T
 };
 
 const Markdown = ({
-    autolinkedUrlSchemes, baseTextStyle, blockStyles, channelMentions,
+    autolinkedUrlSchemes, baseTextStyle, blockStyles, channelId, channelMentions,
     disableAtChannelMentionHighlight, disableAtMentions, disableBlockQuote, disableChannelLink,
     disableCodeBlock, disableGallery, disableHashtags, disableHeading, disableTables,
     enableInlineLatex, enableLatex,
@@ -146,10 +147,12 @@ const Markdown = ({
 
         return (
             <AtMention
+                channelId={channelId}
                 disableAtChannelMentionHighlight={disableAtChannelMentionHighlight}
                 mentionStyle={textStyles.mention}
                 textStyle={[computeTextStyle(textStyles, baseTextStyle, context), style.atMentionOpacity]}
                 isSearchResult={isSearchResult}
+                location={location}
                 mentionName={mentionName}
                 onPostPress={onPostPress}
                 mentionKeys={mentionKeys}

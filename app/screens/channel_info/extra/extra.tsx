@@ -10,12 +10,14 @@ import Emoji from '@components/emoji';
 import FormattedDate from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
+    channelId: string;
     createdAt: number;
     createdBy: string;
     customStatus?: UserCustomStatus;
@@ -63,7 +65,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const Extra = ({createdAt, createdBy, customStatus, header}: Props) => {
+const Extra = ({channelId, createdAt, createdBy, customStatus, header}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
@@ -123,6 +125,7 @@ const Extra = ({createdAt, createdBy, customStatus, header}: Props) => {
                     style={styles.extraHeading}
                 />
                 <Markdown
+                    channelId={channelId}
                     baseTextStyle={styles.header}
                     blockStyles={blockStyles}
                     disableBlockQuote={true}
@@ -130,6 +133,7 @@ const Extra = ({createdAt, createdBy, customStatus, header}: Props) => {
                     disableGallery={true}
                     disableHeading={true}
                     disableTables={true}
+                    location={Screens.CHANNEL_INFO}
                     textStyles={textStyles}
                     layoutHeight={48}
                     layoutWidth={100}
