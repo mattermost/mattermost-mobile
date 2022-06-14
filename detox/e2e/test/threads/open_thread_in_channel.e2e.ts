@@ -88,14 +88,15 @@ describe('Threads - Open Thread in Channel', () => {
 
         // * Verify on channel screen and thread is displayed
         await ChannelScreen.toBeVisible();
-        const {postListPostItem} = ThreadScreen.getPostListPostItem(parentPost.id, parentMessage);
+        const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
         await expect(postListPostItem).toBeVisible();
 
         // # Go back to channel list screen
         await ChannelScreen.back();
+        await GlobalThreadsScreen.back();
     });
 
-    it('MM-T4810_1 - should be able to open a thread in channel by permalink', async () => {
+    it('MM-T4810_2 - should be able to open a thread in channel by permalink', async () => {
         // # Create a thread, go back to channel list screen, and then go to global threads screen
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -128,7 +129,7 @@ describe('Threads - Open Thread in Channel', () => {
 
         // * Verify on channel screen and thread is displayed
         await ChannelScreen.toBeVisible();
-        const {postListPostItem} = ThreadScreen.getPostListPostItem(parentPost.id, parentMessage);
+        const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
         await expect(postListPostItem).toBeVisible();
 
         // # Go back to channel list screen

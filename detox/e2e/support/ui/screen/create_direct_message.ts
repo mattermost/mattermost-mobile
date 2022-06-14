@@ -15,6 +15,7 @@ class CreateDirectMessageScreen {
         searchCancelButton: 'create_direct_message.search_bar.search.cancel.button',
         flatUserList: 'create_direct_message.user_list.flat_list',
         sectionUserList: 'create_direct_message.user_list.section_list',
+        tutorialHighlight: 'tutorial_highlight',
     };
 
     createDirectMessageScreen = element(by.id(this.testID.createDirectMessageScreen));
@@ -25,6 +26,7 @@ class CreateDirectMessageScreen {
     searchCancelButton = element(by.id(this.testID.searchCancelButton));
     flatUserList = element(by.id(this.testID.flatUserList));
     sectionUserList = element(by.id(this.testID.sectionUserList));
+    tutorialHighlight = element(by.id(this.testID.tutorialHighlight));
 
     getSelectedUser = (userId: string) => {
         return element(by.id(`create_direct_message.selected_user.${userId}`));
@@ -67,6 +69,12 @@ class CreateDirectMessageScreen {
     close = async () => {
         await this.closeButton.tap();
         await expect(this.createDirectMessageScreen).not.toBeVisible();
+    };
+
+    closeTutorial = async () => {
+        await expect(this.tutorialHighlight).toExist();
+        await this.closeButton.tap();
+        await expect(this.tutorialHighlight).not.toExist();
     };
 }
 

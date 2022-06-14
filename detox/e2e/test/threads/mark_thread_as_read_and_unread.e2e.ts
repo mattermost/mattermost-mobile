@@ -71,6 +71,7 @@ describe('Threads - Mark Thread as Read and Unread', () => {
         await ThreadScreen.postMessage(replyMessage);
         await ThreadScreen.back();
         await ChannelScreen.back();
+        await device.reloadReactNative();
         await GlobalThreadsScreen.open();
         await GlobalThreadsScreen.headerUnreadThreadsButton.tap();
 
@@ -109,6 +110,7 @@ describe('Threads - Mark Thread as Read and Unread', () => {
         await ThreadScreen.postMessage(replyMessage);
         await ThreadScreen.back();
         await ChannelScreen.back();
+        await device.reloadReactNative();
         await GlobalThreadsScreen.open();
         await GlobalThreadsScreen.headerUnreadThreadsButton.tap();
 
@@ -156,6 +158,7 @@ describe('Threads - Mark Thread as Read and Unread', () => {
         await ThreadScreen.postMessage(replyMessage);
         await ThreadScreen.back();
         await ChannelScreen.back();
+        await device.reloadReactNative();
         await GlobalThreadsScreen.open();
         await GlobalThreadsScreen.headerUnreadThreadsButton.tap();
 
