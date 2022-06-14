@@ -124,12 +124,10 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
     }, [theme.sidebarHeaderTextColor]);
 
     useEffect(() => {
-        const enabled = false; //fixme
-
         const buttons = {
             rightButtons: [{
                 ...saveButton,
-                enabled,
+                enabled: timezone.useAutomaticTimezone !== userTimezone.useAutomaticTimezone,
             }],
         };
         setButtons(componentId, buttons);
