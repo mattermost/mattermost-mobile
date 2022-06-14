@@ -90,7 +90,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
 
     const goToSelectTimezone = preventDoubleTap(() => {
         const screen = Screens.SETTINGS_DISPLAY_TIMEZONE_SELECT;
-        const title = intl.formatMessage({id: 'mobile.timezone_settings.select', defaultMessage: 'Select Timezone'});
+        const title = intl.formatMessage({id: 'settings_display.timezone.select', defaultMessage: 'Select Timezone'});
         const passProps = {
             selectedTimezone: timezone.manualTimezone,
             onBack: updateManualTimezone,
