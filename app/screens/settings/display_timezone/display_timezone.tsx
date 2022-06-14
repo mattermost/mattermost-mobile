@@ -8,11 +8,13 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateMe} from '@actions/remote/user';
 import OptionItem from '@app/components/option_item';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {goToScreen, popTopScreen, setButtons} from '@screens/navigation';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getDeviceTimezone} from '@utils/timezone';
 import {getTimezoneRegion, getUserTimezoneProps} from '@utils/user';
@@ -86,8 +88,8 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
         });
     };
 
-    const goToSelectTimezone = () => {
-        const screen = 'SelectTimezone';
+    const goToSelectTimezone = preventDoubleTap(() => {
+        const screen = Screens.SETTINGS_DISPLAY_TIMEZONE_SELECT;
         const title = intl.formatMessage({id: 'mobile.timezone_settings.select', defaultMessage: 'Select Timezone'});
         const passProps = {
             selectedTimezone: timezone.manualTimezone,
@@ -95,7 +97,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
         };
 
         goToScreen(screen, title, passProps);
-    };
+    });
 
     const close = () => popTopScreen(componentId);
 
