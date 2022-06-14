@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -25,7 +25,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.centerChannelBg,
         },
         searchBarInput: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             color: theme.centerChannelColor,
             ...typography('Body', 100, 'Regular'),
         },
@@ -75,14 +74,10 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
         ));
     };
 
-    const onPressTimezone = (tzne: string) => {
+    const onPressTimezone = useCallback((tzne: string) => {
         onBack(tzne);
         popTopScreen();
-    };
-
-    const handleTextChanged = (text: string) => {
-        setValue(text);
-    };
+    }, []);
 
     const renderItem = ({item: timezone}: {item: string}) => {
         return (
@@ -126,7 +121,7 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
                     containerStyle={styles.searchBarContainer}
                     inputStyle={styles.searchBarInput}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                    onChangeText={handleTextChanged}
+                    onChangeText={setValue}
                     placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     selectionColor={changeOpacity(theme.centerChannelColor, 0.5)}
