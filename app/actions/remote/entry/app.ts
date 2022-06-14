@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {resetAfterCRTChange} from '@actions/app/global';
+import {resetAfterCRTChange} from '@actions/local/entry';
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {queryHasCRTChanged} from '@app/queries/servers/preference';
@@ -33,7 +33,11 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false):
                     preferences: myPreferences.preferences,
                 });
             }
-            return resetAfterCRTChange(serverUrl);
+            const {error} = await resetAfterCRTChange(serverUrl);
+            if (error) {
+                return {error: `Resetting CRT on ${serverUrl} failed`};
+            }
+            return appEntry(serverUrl);
         }
     }
 

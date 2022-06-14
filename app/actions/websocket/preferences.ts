@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {resetAfterCRTChange} from '@actions/app/global';
 import {updateDmGmDisplayName} from '@actions/local/channel';
+import {resetAfterCRTChange} from '@actions/local/entry';
+import {appEntry} from '@actions/remote/entry';
 import {fetchPostById} from '@actions/remote/post';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -33,7 +34,10 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
         }
 
         if (crtToggled) {
-            await resetAfterCRTChange(serverUrl);
+            const {error} = await resetAfterCRTChange(serverUrl);
+            if (!error) {
+                await appEntry(serverUrl);
+            }
         }
     } catch (error) {
         // Do nothing
@@ -63,7 +67,10 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
         }
 
         if (crtToggled) {
-            await resetAfterCRTChange(serverUrl);
+            const {error} = await resetAfterCRTChange(serverUrl);
+            if (!error) {
+                await appEntry(serverUrl);
+            }
         }
     } catch (error) {
         // Do nothing
