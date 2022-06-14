@@ -60,22 +60,6 @@ const SUPPORTED_VIDEO_FORMAT = Platform.select({
 const types: Record<string, string> = {};
 const extensions: Record<string, readonly string[]> = {};
 
-export function filterFiles<T extends FileModel | FileInfo>(files: T[], filter: FileFilter) {
-    switch (filter) {
-        case 'all':
-            return files;
-        case 'videos':
-            return files.filter((f) => isVideo(f));
-        case 'documents':
-            return files.filter((f) => isDocument(f));
-        case 'images':
-            return files.filter((f) => isImage(f));
-        default:
-            // TODO create the rest of the filters
-            return files.filter((f) => !isVideo(f) && !isDocument(f) && !isImage(f));
-    }
-}
-
 export function filterFileExtensions(filter: FileFilter): string {
     let searchTerms: string[] = [];
     switch (filter) {
