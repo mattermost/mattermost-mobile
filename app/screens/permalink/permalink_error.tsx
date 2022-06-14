@@ -95,8 +95,8 @@ function PermalinkError({
         );
     }
 
-    const buttonStyleSecondary = buttonBackgroundStyle(theme, 'lg', 'secondary');
-    const buttonTextStyleSecondary = buttonTextStyle(theme, 'lg', 'secondary');
+    const buttonStyleTertiary = buttonBackgroundStyle(theme, 'lg', 'tertiary');
+    const buttonTextStyleTertiary = buttonTextStyle(theme, 'lg', 'tertiary');
 
     const isPrivate = error.privateChannel || error.privateTeam;
     let image;
@@ -152,14 +152,14 @@ function PermalinkError({
                     <Text style={buttonTextStylePrimary}>{button}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    style={[buttonStyleSecondary, {marginTop: 8}]}
+                    style={[buttonStyleTertiary, {marginTop: 8}]}
                     onPress={handleClose}
                 >
                     <FormattedText
                         testID='permalink.error.cancel'
                         id='permalink.error.cancel'
                         defaultMessage='Cancel'
-                        style={buttonTextStyleSecondary}
+                        style={buttonTextStyleTertiary}
                     />
                 </TouchableOpacity>
             </View>

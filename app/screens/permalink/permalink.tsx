@@ -58,6 +58,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
         margin: 10,
         opacity: 1,
+        borderWidth: 1,
+        borderColor: changeOpacity(theme.centerChannelColor, 0.16),
     },
     header: {
         alignItems: 'center',
