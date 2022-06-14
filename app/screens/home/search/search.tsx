@@ -129,6 +129,10 @@ const SearchScreen = ({teamId}: Props) => {
         };
     }, [headerHeight, lastSearchedValue]);
 
+    const onClear = useCallback(() => {
+        setFilter('all');
+    }, [filter]);
+
     let header = null;
     if (lastSearchedValue) {
         header = (
@@ -161,6 +165,7 @@ const SearchScreen = ({teamId}: Props) => {
                 blurOnSubmit={true}
                 placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
                 defaultValue={searchValue}
+                onClear={onClear}
             />
             <SafeAreaView
                 style={styles.flex}
