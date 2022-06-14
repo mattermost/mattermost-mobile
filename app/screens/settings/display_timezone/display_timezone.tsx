@@ -6,11 +6,13 @@ import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import {updateMe} from '@actions/remote/user';
 import OptionItem from '@app/components/option_item';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {popTopScreen, setButtons} from '@screens/navigation';
+import {goToScreen, popTopScreen, setButtons} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getTimezoneRegion, getUserTimezoneProps} from '@utils/user';
 
@@ -50,26 +52,48 @@ type DisplayTimezoneProps = {
 }
 const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
     const intl = useIntl();
+    const serverUrl = useServerUrl();
+    const timezone = useMemo(() => getUserTimezoneProps(currentUser), [currentUser.timezone]);
+    const [userTimezone, setUserTimezone] = useState(timezone);
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const timezone = useMemo(() => getUserTimezoneProps(currentUser), [currentUser.timezone]);
 
-    const [automaticTimezone, setAutomaticTimezone] = useState(timezone.useAutomaticTimezone);
-    const [timezoneRegion, setTimezoneRegion] = useState<string>(getTimezoneRegion(timezone.manualTimezone));
-
+    console.log('>>>  userTimezone', {userTimezone});
     const updateAutomaticTimezone = () => {
         //todo:
     };
 
+    const updateManualTimezone = (mtz: string) => {
+        setUserTimezone({
+            useAutomaticTimezone: false,
+            automaticTimezone: '',
+            manualTimezone: mtz,
+        });
+    };
+
     const goToSelectTimezone = () => {
-        //todo:
+        const screen = 'SelectTimezone';
+        const title = intl.formatMessage({id: 'mobile.timezone_settings.select', defaultMessage: 'Select Timezone'});
+        const passProps = {
+            selectedTimezone: timezone.manualTimezone,
+            onBack: updateManualTimezone,
+        };
+
+        goToScreen(screen, title, passProps);
     };
 
     const close = () => popTopScreen(componentId);
 
     const saveTimezone = useCallback(() => {
-        //todo:
-    }, [automaticTimezone, timezoneRegion, currentUser.timezone]);
+        const timeZone = {
+            useAutomaticTimezone: userTimezone.useAutomaticTimezone.toString(),
+            automaticTimezone: userTimezone.automaticTimezone,
+            manualTimezone: userTimezone.manualTimezone,
+        };
+
+        updateMe(serverUrl, {timezone: timeZone});
+        close();
+    }, [userTimezone, currentUser.timezone, serverUrl]);
 
     const saveButton = useMemo(() => {
         return {
@@ -108,19 +132,19 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
                 <OptionItem
                     action={updateAutomaticTimezone}
                     containerStyle={styles.content}
-                    description={timezoneRegion}
-                    label={intl.formatMessage({id: 'mobile.timezone_settings.automatically', defaultMessage: 'Set automatically'})}
-                    selected={automaticTimezone}
+                    description={getTimezoneRegion(userTimezone.automaticTimezone)}
+                    label={intl.formatMessage({id: 'settings_display.timezone.automatically', defaultMessage: 'Set automatically'})}
+                    selected={userTimezone.useAutomaticTimezone}
                     type='toggle'
                 />
-                {!automaticTimezone && (
+                {!userTimezone.useAutomaticTimezone && (
                     <View>
                         <View style={styles.separator}/>
                         <OptionItem
                             action={goToSelectTimezone}
                             containerStyle={styles.content}
-                            description={timezoneRegion}
-                            label={intl.formatMessage({id: 'mobile.timezone_settings.manual', defaultMessage: 'Change timezone'})}
+                            description={getTimezoneRegion(userTimezone.manualTimezone)}
+                            label={intl.formatMessage({id: 'settings_display.timezone.manual', defaultMessage: 'Change timezone'})}
                             type='arrow'
                         />
                     </View>

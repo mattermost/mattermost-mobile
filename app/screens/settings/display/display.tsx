@@ -60,7 +60,7 @@ const Display = ({isTimezoneEnabled, isThemeSwitchingEnabled}: DisplayProps) => 
 
     const goToTimezoneSettings = preventDoubleTap(() => {
         const screen = Screens.SETTINGS_DISPLAY_TIMEZONE;
-        const title = intl.formatMessage({id: 'mobile.advanced_settings.timezone', defaultMessage: 'Timezone'});
+        const title = intl.formatMessage({id: 'display_settings.timezone', defaultMessage: 'Timezone'});
 
         goToScreen(screen, title);
     });
