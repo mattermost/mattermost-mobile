@@ -7,7 +7,6 @@ import NetworkManager from '@managers/network_manager';
 import {prepareMissingChannelsForAllTeams} from '@queries/servers/channel';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
-import {processPostsFetched} from '@utils/post';
 
 import {fetchPostAuthors, fetchMissingChannelsFromPosts} from './post';
 import {forceLogoutIfNecessary} from './session';
