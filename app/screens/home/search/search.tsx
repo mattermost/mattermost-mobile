@@ -54,6 +54,16 @@ const SearchScreen = ({teamId}: Props) => {
     const [postIds, setPostIds] = useState<string[]>(emptyPostResults);
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
 
+    const getSearchParams = useCallback((filterValue?: FileFilter) => {
+        const terms = filterValue ? lastSearchedValue : searchValue;
+        const fileExtensions = filterFileExtensions(filterValue || filter);
+        const extensionTerms = fileExtensions ? ' ' + fileExtensions : '';
+        return {
+            terms: terms + extensionTerms,
+            is_or_search: true,
+        };
+    }, [filter, lastSearchedValue, searchValue]);
+
     const handleSearch = useCallback((debounce(async () => {
         // execute the search for the text in the navigation text box
         // handle recent searches
@@ -62,13 +72,7 @@ const SearchScreen = ({teamId}: Props) => {
 
         setLoading(true);
         setLastSearchedValue(searchValue);
-
-        const filterTerms = filterFileExtensions(filter) ? ' ' + filterFileExtensions(filter) : '';
-        const searchParams: PostSearchParams | FileSearchParams = {
-            terms: searchValue + filterTerms,
-            is_or_search: true,
-        };
-
+        const searchParams = getSearchParams();
         const [postResults, fileResults] = await Promise.all([
             searchPosts(serverUrl, searchParams),
             searchFiles(serverUrl, teamId, searchParams),
@@ -88,15 +92,11 @@ const SearchScreen = ({teamId}: Props) => {
     const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
         setLoading(true);
         setFilter(filterValue);
-        const filterTerms = filterFileExtensions(filterValue) ? ' ' + filterFileExtensions(filterValue) : '';
-        const searchParams: FileSearchParams = {
-            terms: lastSearchedValue + filterTerms,
-            is_or_search: true,
-        };
-
+        const searchParams = getSearchParams(filterValue);
         const fileResults = await searchFiles(serverUrl, teamId, searchParams);
         const fileInfosResult = fileResults?.file_infos && Object.values(fileResults?.file_infos);
         setFileInfos(fileInfosResult?.length ? fileInfosResult : emptyFileResults);
+
         setLoading(false);
     }, [lastSearchedValue]);
 
