@@ -9,7 +9,6 @@ import {Text, TextStyle} from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {getUserTimezone} from '@actions/local/timezone';
 import FormattedDate from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
@@ -19,6 +18,7 @@ import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCurrentUser} from '@queries/servers/user';
 import {getCurrentMomentForTimezone} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {getUserTimezoneProps} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type UserModel from '@typings/database/models/servers/user';
@@ -46,7 +46,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const CustomStatusExpiry = ({currentUser, isMilitaryTime, showPrefix, showTimeCompulsory, showToday, testID = '', textStyles = {}, theme, time, withinBrackets}: Props) => {
-    const userTimezone = getUserTimezone(currentUser);
+    const userTimezone = getUserTimezoneProps(currentUser);
     const timezone = userTimezone.useAutomaticTimezone ? userTimezone.automaticTimezone : userTimezone.manualTimezone;
     const styles = getStyleSheet(theme);
     const currentMomentTime = getCurrentMomentForTimezone(timezone);

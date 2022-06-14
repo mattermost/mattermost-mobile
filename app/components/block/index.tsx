@@ -47,7 +47,7 @@ type SectionProps = {
     disableFooter?: boolean;
     disableHeader?: boolean;
     footerText?: SectionText;
-    headerText: SectionText;
+    headerText?: SectionText;
     containerStyles?: StyleProp<ViewStyle>;
     headerStyles?: StyleProp<TextStyle>;
     footerStyles?: StyleProp<TextStyle>;

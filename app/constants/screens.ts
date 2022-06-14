@@ -37,12 +37,14 @@ export const PERMALINK = 'Permalink';
 export const PINNED_MESSAGES = 'PinnedMessages';
 export const POST_OPTIONS = 'PostOptions';
 export const REACTIONS = 'Reactions';
-export const SAVED_POSTS = 'SavedPosts';
+export const SAVED_MESSAGES = 'SavedMessages';
 export const SEARCH = 'Search';
 export const SELECT_TEAM = 'SelectTeam';
 export const SERVER = 'Server';
 export const SETTINGS = 'Settings';
 export const SETTINGS_DISPLAY = 'SettingsDisplay';
+export const SETTINGS_DISPLAY_CLOCK = 'SettingsDisplayClock';
+export const SETTINGS_DISPLAY_THEME = 'SettingsDisplayTheme';
 export const SETTINGS_NOTIFICATION = 'SettingsNotification';
 export const SETTINGS_NOTIFICATION_AUTO_RESPONDER = 'SettingsNotificationAutoResponder';
 export const SETTINGS_NOTIFICATION_MENTION = 'SettingsNotificationMention';
@@ -91,12 +93,14 @@ export default {
     PINNED_MESSAGES,
     POST_OPTIONS,
     REACTIONS,
-    SAVED_POSTS,
+    SAVED_MESSAGES,
     SEARCH,
     SELECT_TEAM,
     SERVER,
     SETTINGS,
     SETTINGS_DISPLAY,
+    SETTINGS_DISPLAY_CLOCK,
+    SETTINGS_DISPLAY_THEME,
     SETTINGS_NOTIFICATION,
     SETTINGS_NOTIFICATION_AUTO_RESPONDER,
     SETTINGS_NOTIFICATION_MENTION,
@@ -124,7 +128,6 @@ export const MODAL_SCREENS_WITHOUT_BACK = [
     GALLERY,
     PERMALINK,
     REACTIONS,
-    SAVED_POSTS,
 ];
 
 export const NOT_READY = [

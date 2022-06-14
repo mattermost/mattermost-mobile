@@ -57,7 +57,7 @@ export type EntryResponse = {
     error: unknown;
 }
 
-const FETCH_MISSING_DM_TIMEOUT = 1000;
+const FETCH_MISSING_DM_TIMEOUT = 2500;
 
 export const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[]) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -265,7 +265,7 @@ export async function deferredAppEntryActions(
         channelsToFetchProfiles = new Set<Channel>(directChannels);
 
         // defer fetching posts for unread channels on initial team
-        fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId);
+        fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId, true);
     }
 
     // defer fetch channels and unread posts for other teams
@@ -288,8 +288,8 @@ export async function deferredAppEntryActions(
         }
     }
 
-    fetchAllTeams(serverUrl);
-    updateAllUsersSince(serverUrl, since);
+    await fetchAllTeams(serverUrl);
+    await updateAllUsersSince(serverUrl, since);
     setTimeout(async () => {
         if (channelsToFetchProfiles?.size) {
             const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config, license);

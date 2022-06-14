@@ -12,13 +12,13 @@ import {Events, Screens, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
-import {queryActiveServer} from '@queries/app/servers';
+import {getActiveServerUrl, queryActiveServer} from '@queries/app/servers';
 import {getCurrentChannel} from '@queries/servers/channel';
 import {getCommonSystemValues, getConfig, getWebSocketLastDisconnected, resetWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {getCurrentTeam} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 
 import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
@@ -93,8 +93,16 @@ async function doReconnectRest(serverUrl: string, operator: ServerDataOperator, 
     const {database} = operator;
     const currentTeam = await getCurrentTeam(database);
     const currentChannel = await getCurrentChannel(database);
+    const currentActiveServerUrl = await getActiveServerUrl(DatabaseManager.appDatabase!.database);
+
+    if (serverUrl === currentActiveServerUrl) {
+        DeviceEventEmitter.emit(Events.FETCHING_POSTS, true);
+    }
     const entryData = await entry(serverUrl, currentTeam?.id, currentChannel?.id, lastDisconnectedAt);
     if ('error' in entryData) {
+        if (serverUrl === currentActiveServerUrl) {
+            DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
+        }
         return;
     }
     const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
@@ -104,7 +112,7 @@ async function doReconnectRest(serverUrl: string, operator: ServerDataOperator, 
     // if no longer a member of the current team or the current channel
     if (initialTeamId !== currentTeam?.id || initialChannelId !== currentChannel?.id) {
         const currentServer = await queryActiveServer(appDatabase);
-        const isChannelScreenMounted = EphemeralStore.getNavigationComponents().includes(Screens.CHANNEL);
+        const isChannelScreenMounted = NavigationStore.getNavigationComponents().includes(Screens.CHANNEL);
         if (serverUrl === currentServer?.url) {
             if (currentTeam && initialTeamId !== currentTeam.id) {
                 DeviceEventEmitter.emit(Events.LEAVE_TEAM, {displayName: currentTeam.displayName});
@@ -129,7 +137,10 @@ async function doReconnectRest(serverUrl: string, operator: ServerDataOperator, 
         }
     }
 
+    const dt = Date.now();
     await operator.batchRecords(models);
+    // eslint-disable-next-line no-console
+    console.log('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
 
     const {locale: currentUserLocale} = (await getCurrentUser(database))!;
     await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchedToChannel ? initialChannelId : undefined);

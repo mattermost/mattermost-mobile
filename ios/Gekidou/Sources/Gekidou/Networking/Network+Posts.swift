@@ -31,11 +31,20 @@ public struct PostData: Codable {
 }
 
 extension Network {
-    public func fetchPostsForChannel(withId channelId: String, withSince since: Int64?, withServerUrl serverUrl: String, completionHandler: @escaping ResponseHandler) {
-        let queryParams = since == nil ?
-            "?page=0&per_page=\(POST_CHUNK_SIZE)" :
-            "?since=\(since!)"
-        let endpoint = "/channels/\(channelId)/posts\(queryParams)"
+    public func fetchPostsForChannel(withId channelId: String, withSince since: Int64?, withServerUrl serverUrl: String, withIsCRTEnabled isCRTEnabled: Bool, withRootId rootId: String, completionHandler: @escaping ResponseHandler) {
+        
+        let additionalParams = isCRTEnabled ? "&collapsedThreads=true&collapsedThreadsExtended=true" : ""
+        
+        let endpoint: String
+        if (isCRTEnabled && !rootId.isEmpty) {
+            let queryParams = "?skipFetchThreads=false&perPage=60&fromCreatedAt=0&direction=up"
+            endpoint = "/posts/\(rootId)/thread\(queryParams)\(additionalParams)"
+        } else {
+            let queryParams = since == nil ?
+                "?page=0&per_page=\(POST_CHUNK_SIZE)" :
+                "?since=\(since!)"
+            endpoint = "/channels/\(channelId)/posts\(queryParams)\(additionalParams)"
+        }
         let url = buildApiUrl(serverUrl, endpoint)
         
         return request(url, withMethod: "GET", withServerUrl: serverUrl, completionHandler: completionHandler)

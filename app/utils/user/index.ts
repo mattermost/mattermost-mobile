@@ -101,6 +101,21 @@ export const getUsersByUsername = (users: UserModel[]) => {
     return usersByUsername;
 };
 
+export const getUserTimezoneProps = (currentUser: UserModel) => {
+    if (currentUser?.timezone) {
+        return {
+            ...currentUser?.timezone,
+            useAutomaticTimezone: currentUser?.timezone?.useAutomaticTimezone === 'true',
+        };
+    }
+
+    return {
+        useAutomaticTimezone: true,
+        automaticTimezone: '',
+        manualTimezone: '',
+    };
+};
+
 export const getUserTimezone = (user: UserModel) => {
     return getTimezone(user.timezone);
 };
@@ -291,15 +306,18 @@ export function getNotificationProps(user: UserModel) {
         return user.notifyProps;
     }
 
-    const props: Partial<UserNotifyProps> = {
+    const props: UserNotifyProps = {
         channel: 'true',
         comments: 'any',
         desktop: 'all',
         desktop_sound: 'true',
+        email: 'true',
         first_name: (!user || !user.firstName) ? 'false' : 'true',
+        mark_unread: 'all',
         mention_keys: user ? `${user.username},@${user.username}` : '',
         push: 'mention',
         push_status: 'online',
+        push_threads: 'all',
     };
 
     return props;

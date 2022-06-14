@@ -61,14 +61,10 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             screen = withServerDatabase(require('@screens/apps_form').default);
             break;
         case Screens.BOTTOM_SHEET:
-            screen = withServerDatabase(
-                require('@screens/bottom_sheet').default,
-            );
+            screen = withServerDatabase(require('@screens/bottom_sheet').default);
             break;
         case Screens.BROWSE_CHANNELS:
-            screen = withServerDatabase(
-                require('@screens/browse_channels').default,
-            );
+            screen = withServerDatabase(require('@screens/browse_channels').default);
             break;
         case Screens.CHANNEL:
             screen = withServerDatabase(require('@screens/channel').default);
@@ -83,14 +79,10 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             screen = withServerDatabase(require('@screens/create_or_edit_channel').default);
             break;
         case Screens.CUSTOM_STATUS:
-            screen = withServerDatabase(
-                require('@screens/custom_status').default,
-            );
+            screen = withServerDatabase(require('@screens/custom_status').default);
             break;
         case Screens.CUSTOM_STATUS_CLEAR_AFTER:
-            screen = withServerDatabase(
-                require('@screens/custom_status_clear_after').default,
-            );
+            screen = withServerDatabase(require('@screens/custom_status_clear_after').default);
             break;
         case Screens.CREATE_DIRECT_MESSAGE:
             screen = withServerDatabase(require('@screens/create_direct_message').default);
@@ -99,9 +91,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             screen = withServerDatabase(require('@screens/edit_post').default);
             break;
         case Screens.EDIT_PROFILE:
-            screen = withServerDatabase(
-                require('@screens/edit_profile').default,
-            );
+            screen = withServerDatabase(require('@screens/edit_profile').default);
             break;
         case Screens.EDIT_SERVER:
             screen = withIntl(require('@screens/edit_server').default);
@@ -125,8 +115,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             screen = withServerDatabase(require('@screens/interactive_dialog').default);
             break;
         case Screens.IN_APP_NOTIFICATION: {
-            const notificationScreen =
-                require('@screens/in_app_notification').default;
+            const notificationScreen = require('@screens/in_app_notification').default;
             Navigation.registerComponent(Screens.IN_APP_NOTIFICATION, () =>
                 Platform.select({
                     default: notificationScreen,
@@ -154,30 +143,34 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             screen = withServerDatabase(require('@screens/pinned_messages').default);
             break;
         case Screens.POST_OPTIONS:
-            screen = withServerDatabase(
-                require('@screens/post_options').default,
-            );
+            screen = withServerDatabase(require('@screens/post_options').default);
             break;
         case Screens.REACTIONS:
             screen = withServerDatabase(require('@screens/reactions').default);
             break;
-        case Screens.SAVED_POSTS:
-            screen = withServerDatabase((require('@screens/saved_posts').default));
-            break;
         case Screens.SETTINGS:
             screen = withServerDatabase(require('@screens/settings').default);
             break;
+        case Screens.SETTINGS_DISPLAY:
+            screen = withServerDatabase(require('@screens/settings/display').default);
+            break;
+        case Screens.SETTINGS_DISPLAY_CLOCK:
+            screen = withServerDatabase(require('@screens/settings/display_clock').default);
+            break;
+        case Screens.SETTINGS_DISPLAY_THEME:
+            screen = withServerDatabase(require('@screens/settings/display_theme').default);
+            break;
         case Screens.SETTINGS_NOTIFICATION:
             screen = withServerDatabase(require('@screens/settings/notifications').default);
+            break;
+        case Screens.SETTINGS_NOTIFICATION_AUTO_RESPONDER:
+            screen = withServerDatabase(require('@screens/settings/notification_auto_responder').default);
             break;
         case Screens.SETTINGS_NOTIFICATION_MENTION:
             screen = withServerDatabase(require('@screens/settings/notification_mention').default);
             break;
         case Screens.SETTINGS_NOTIFICATION_PUSH:
             screen = withServerDatabase(require('@screens/settings/notification_push').default);
-            break;
-        case Screens.SETTINGS_NOTIFICATION_AUTO_RESPONDER:
-            screen = withServerDatabase(require('@screens/settings/notification_auto_responder').default);
             break;
         case Screens.SNACK_BAR: {
             const snackBarScreen = withServerDatabase(require('@screens/snack_bar').default);

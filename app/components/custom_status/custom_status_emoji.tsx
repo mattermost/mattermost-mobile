@@ -15,17 +15,21 @@ interface ComponentProps {
 
 const CustomStatusEmoji = ({customStatus, emojiSize = 16, style, testID}: ComponentProps) => {
     const testIdPrefix = testID ? `${testID}.` : '';
-    return (
-        <View
-            style={style}
-            testID={`${testIdPrefix}custom_status_emoji.${customStatus.emoji}`}
-        >
-            <Emoji
-                size={emojiSize}
-                emojiName={customStatus.emoji!}
-            />
-        </View>
-    );
+    if (customStatus.emoji) {
+        return (
+            <View
+                style={style}
+                testID={`${testIdPrefix}custom_status_emoji.${customStatus.emoji}`}
+            >
+                <Emoji
+                    size={emojiSize}
+                    emojiName={customStatus.emoji!}
+                />
+            </View>
+        );
+    }
+
+    return null;
 };
 
 export default CustomStatusEmoji;

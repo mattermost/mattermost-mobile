@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {switchToChannelById} from '@actions/remote/channel';
+import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getMyChannel} from '@queries/servers/channel';
@@ -9,7 +10,7 @@ import {getCommonSystemValues, getConfig, getCurrentTeamId, getWebSocketLastDisc
 import {getMyTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {emitNotificationError} from '@utils/notification';
 
@@ -24,6 +25,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
 
     // We only reach this point if we have a channel Id in the notification payload
     const channelId = notification.payload!.channel_id!;
+    const rootId = notification.payload!.root_id!;
     const {database} = operator;
     const currentTeamId = await getCurrentTeamId(database);
     const currentServerUrl = await DatabaseManager.getActiveServerUrl();
@@ -40,17 +42,17 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         await DatabaseManager.setActiveServerDatabase(serverUrl);
     }
 
-    await EphemeralStore.waitUntilScreenHasLoaded(Screens.HOME);
+    await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
 
     const config = await getConfig(database);
     if (config?.FeatureFlagGraphQL === 'true') {
         return graphQLCommon(serverUrl, true, teamId, channelId);
     }
 
-    return restNotificationEntry(serverUrl, teamId, channelId, isDirectChannel);
+    return restNotificationEntry(serverUrl, teamId, channelId, rootId, isDirectChannel);
 }
 
-const restNotificationEntry = async (serverUrl: string, teamId: string, channelId: string, isDirectChannel: boolean) => {
+const restNotificationEntry = async (serverUrl: string, teamId: string, channelId: string, rootId: string, isDirectChannel: boolean) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -81,19 +83,31 @@ const restNotificationEntry = async (serverUrl: string, teamId: string, channelI
     const myChannel = await getMyChannel(database, channelId);
     const myTeam = await getMyTeamById(database, teamId);
     const isCRTEnabled = await getIsCRTEnabled(database);
+    const isThreadNotification = isCRTEnabled && Boolean(rootId);
 
-    let switchedToChannel = isCRTEnabled;
-    if (myChannel && myTeam && !switchedToChannel) {
-        await switchToChannelById(serverUrl, channelId, teamId);
-        switchedToChannel = true;
+    let switchedToScreen = false;
+    let switchedToChannel = false;
+    if (myChannel && myTeam) {
+        if (isThreadNotification) {
+            await fetchAndSwitchToThread(serverUrl, rootId, true);
+        } else {
+            switchedToChannel = true;
+            await switchToChannelById(serverUrl, channelId, teamId);
+        }
+        switchedToScreen = true;
     }
 
-    if (!switchedToChannel) {
+    if (!switchedToScreen) {
         const isTabletDevice = await isTablet();
         if (isTabletDevice || (selectedChannelId === channelId)) {
             // Make switch again to get the missing data and make sure the team is the correct one
-            switchedToChannel = true;
-            switchToChannelById(serverUrl, selectedChannelId, selectedTeamId);
+            switchedToScreen = true;
+            if (isThreadNotification) {
+                fetchAndSwitchToThread(serverUrl, rootId, true);
+            } else {
+                switchedToChannel = true;
+                switchToChannelById(serverUrl, selectedChannelId, selectedTeamId);
+            }
         } else if (selectedTeamId !== teamId || selectedChannelId !== channelId) {
             // If in the end the selected team or channel is different than the one from the notification
             // we switch again
