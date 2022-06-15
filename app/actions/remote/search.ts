@@ -155,4 +155,3 @@ export const searchFiles = async (serverUrl: string, teamId: string, params: Fil
 
     return data;
 };
-
