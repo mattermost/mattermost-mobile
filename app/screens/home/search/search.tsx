@@ -71,6 +71,7 @@ const SearchScreen = ({teamId}: Props) => {
         // - updated recent createdAt if exists??
 
         setLoading(true);
+        setFilter('all');
         setLastSearchedValue(searchValue);
         const searchParams = getSearchParams();
         const [postResults, fileResults] = await Promise.all([
