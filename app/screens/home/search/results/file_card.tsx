@@ -20,7 +20,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             flex: 1,
             flexDirection: 'row',
-            float: 'left',
 
             marginHorizontal: 20,
             marginVertical: 4,
@@ -38,15 +37,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             shadowOpacity: 0.8,
             elevation: 1,
         },
+        flex: {
+            column: {flexDirection: 'column'},
+            row: {flexDirection: 'row'},
+        },
         iconContainer: {
             marginHorizontal: 8,
         },
         nameText: {
             color: theme.centerChannelColor,
             ...typography('Heading', 200, 'SemiBold'),
-        },
-        infoContainer: {
-            flexDirection: 'row',
         },
         infoText: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
@@ -61,14 +61,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         dateText: {
             marginBottom: 2,
         },
-        infoColumn: {
-            flexDirection: 'column',
-        },
-        iconEnd: {
+        threeDotContainer: {
             flex: 1,
             alignItems: 'flex-end',
         },
-        icon: {
+        threeDot: {
             top: 13,
             right: 20,
         },
@@ -80,6 +77,12 @@ export default function FileCard({fileInfo}: Props) {
     const style = getStyleSheet(theme);
     const size = getFormattedFileSize(fileInfo.size);
     const format = 'MMM DD HH:MM A';
+
+    // TODO: hook this up
+    const openGallery = () => {
+        /* eslint-disable no-console */
+        console.log('Open Gallery');
+    };
 
     // TODO: hook this up
     const handleThreeDotPress = () => {
@@ -98,16 +101,19 @@ export default function FileCard({fileInfo}: Props) {
     };
 
     return (
-        <View style={style.container}>
+        <TouchableOpacity
+            onPress={openGallery}
+            style={style.container}
+        >
             <View style={style.iconContainer}>
                 <FileIcon
                     file={fileInfo}
                     iconSize={48}
                 />
             </View>
-            <View style={style.infoColumn}>
+            <View style={style.flex.column}>
                 <Text style={style.nameText}>{fileInfo.name}</Text>
-                <View style={style.infoContainer}>
+                <View style={style.flex.row}>
                     {/* <Text style={[style.infoText, style.channelText]}>{channelName()}</Text> */}
                     {/* <Text style={style.infoText}>{fileType()}</Text> */}
                     <Text style={style.infoText}>{size}</Text>
@@ -119,17 +125,15 @@ export default function FileCard({fileInfo}: Props) {
                     />
                 </View>
             </View>
-            <TouchableOpacity
-                onPress={handleThreeDotPress}
-                style={style.iconEnd}
-            >
+            <View style={style.threeDotContainer}>
                 <CompassIcon
+                    onPress={handleThreeDotPress}
                     name='dots-horizontal'
                     color={changeOpacity(theme.centerChannelColor, 0.56)}
-                    style={style.icon}
+                    style={style.threeDot}
                     size={18}
                 />
-            </TouchableOpacity>
-        </View>
+            </View>
+        </TouchableOpacity>
     );
 }
