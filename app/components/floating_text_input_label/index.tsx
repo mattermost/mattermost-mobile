@@ -92,44 +92,44 @@ export type FloatingTextInputRef = {
 
 type FloatingTextInputProps = TextInputProps & {
     containerStyle?: ViewStyle;
-    textInputStyle?: TextStyle;
-    labelTextStyle?: TextStyle;
     editable?: boolean;
     error?: string;
     errorIcon?: string;
     isKeyboardInput?: boolean;
     label: string;
+    labelTextStyle?: TextStyle;
     multiline?: boolean;
     onBlur?: (event: NativeSyntheticEvent<TargetedEvent>) => void;
     onFocus?: (e: NativeSyntheticEvent<TargetedEvent>) => void;
-    onPress?: (e: GestureResponderEvent) => void;
     onLayout?: (e: LayoutChangeEvent) => void;
+    onPress?: (e: GestureResponderEvent) => void;
     placeholder?: string;
     showErrorIcon?: boolean;
     testID?: string;
+    textInputStyle?: TextStyle;
     theme: Theme;
     value: string;
 }
 
 const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProps>(({
-    error,
     containerStyle,
-    isKeyboardInput = true,
     editable = true,
+    error,
     errorIcon = 'alert-outline',
+    isKeyboardInput = true,
     label = '',
-    onPress = undefined,
-    onFocus,
-    onBlur,
-    onLayout,
-    showErrorIcon = true,
-    placeholder,
+    labelTextStyle,
     multiline,
+    onBlur,
+    onFocus,
+    onLayout,
+    onPress,
+    placeholder,
+    showErrorIcon = true,
+    testID,
+    textInputStyle,
     theme,
     value = '',
-    textInputStyle,
-    labelTextStyle,
-    testID,
     ...props
 }: FloatingTextInputProps, ref) => {
     const [focused, setIsFocused] = useState(false);

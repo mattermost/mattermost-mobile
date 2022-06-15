@@ -85,6 +85,7 @@ const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPo
                         <Markdown
                             baseTextStyle={style.message}
                             blockStyles={blockStyles}
+                            channelId={post.channelId}
                             channelMentions={post.props?.channel_mentions}
                             imagesMetadata={post.metadata?.images}
                             isEdited={isEdited}

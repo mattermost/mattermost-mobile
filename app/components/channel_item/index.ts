@@ -58,7 +58,7 @@ const enhance = withObservables(['channel', 'showTeamName'], ({channel, database
 
     let membersCount = of$(0);
     if (channel.type === General.GM_CHANNEL) {
-        membersCount = channel.members.observeCount();
+        membersCount = channel.members.observeCount(false);
     }
 
     const isUnread = myChannel.pipe(

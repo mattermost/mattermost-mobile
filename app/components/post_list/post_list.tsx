@@ -248,6 +248,7 @@ const PostList = ({
                 const postProps = {
                     currentUsername,
                     postId: item,
+                    location,
                     style: Platform.OS === 'ios' ? styles.scale : styles.container,
                     testID: `${testID}.combined_user_activity`,
                     showJoinLeave: shouldShowJoinLeaveMessages,

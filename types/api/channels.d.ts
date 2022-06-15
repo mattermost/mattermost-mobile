@@ -51,6 +51,7 @@ type ChannelMember = {
     id?: string;
     channel_id: string;
     user_id: string;
+    scheme_admin?: boolean;
 }
 type ChannelMembership = {
     id?: string;

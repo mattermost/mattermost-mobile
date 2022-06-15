@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import Block from '@components/block';
-import BlockItem from '@components/block_item';
+import OptionItem from '@components/option_item';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -52,33 +52,30 @@ const ReplySettings = () => {
             headerText={replyHeaderText}
             headerStyles={styles.upperCase}
         >
-            <BlockItem
+            <OptionItem
                 action={setReplyNotifications}
-                actionType='select'
-                actionValue='any'
+                type='select'
+                value='any'
                 containerStyle={styles.container}
                 label={intl.formatMessage({id: 'notification_settings.threads_start_participate', defaultMessage: 'Threads that I start or participate in'})}
-                labelStyle={styles.label}
                 selected={replyNotificationType === 'any'}
             />
             <View style={styles.separator}/>
-            <BlockItem
+            <OptionItem
                 action={setReplyNotifications}
-                actionType='select'
-                actionValue='root'
+                type='select'
+                value='root'
                 containerStyle={styles.container}
                 label={intl.formatMessage({id: 'notification_settings.threads_start', defaultMessage: 'Threads that I start'})}
-                labelStyle={styles.label}
                 selected={replyNotificationType === 'root'}
             />
             <View style={styles.separator}/>
-            <BlockItem
+            <OptionItem
                 action={setReplyNotifications}
-                actionType='select'
-                actionValue='never'
+                type='select'
+                value='never'
                 containerStyle={styles.container}
                 label={intl.formatMessage({id: 'notification_settings.threads_mentions', defaultMessage: 'Mentions in threads'})}
-                labelStyle={styles.label}
                 selected={replyNotificationType === 'never'}
             />
         </Block>

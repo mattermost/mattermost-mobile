@@ -24,6 +24,7 @@ type Props = {
     canDelete: boolean;
     currentUserId?: string;
     currentUsername?: string;
+    location: string;
     post: Post;
     showJoinLeave: boolean;
     testID?: string;
@@ -58,7 +59,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const CombinedUserActivity = ({
-    canDelete, currentUserId, currentUsername,
+    canDelete, currentUserId, currentUsername, location,
     post, showJoinLeave, testID, theme, usernamesById = {}, style,
 }: Props) => {
     const intl = useIntl();
@@ -135,7 +136,9 @@ const CombinedUserActivity = ({
             return (
                 <LastUsers
                     key={postType + actorId}
+                    channelId={post.channel_id}
                     actor={actor}
+                    location={location}
                     postType={postType}
                     theme={theme}
                     usernames={usernames}
@@ -162,8 +165,10 @@ const CombinedUserActivity = ({
         const formattedMessage = intl.formatMessage(localeHolder, {firstUser, secondUser, actor});
         return (
             <Markdown
+                channelId={post.channel_id}
                 key={postType + actorId}
                 baseTextStyle={styles.baseText}
+                location={location}
                 textStyles={textStyles}
                 value={formattedMessage}
                 theme={theme}

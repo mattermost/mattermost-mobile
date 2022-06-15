@@ -7,6 +7,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General} from '@constants';
+import {observeProfileLongPresTutorial} from '@queries/app/global';
 import {observeConfig, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {observeTeammateNameDisplay} from '@queries/servers/user';
 
@@ -23,6 +24,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         teammateNameDisplay: observeTeammateNameDisplay(database),
         currentUserId: observeCurrentUserId(database),
         currentTeamId: observeCurrentTeamId(database),
+        tutorialWatched: observeProfileLongPresTutorial(),
         restrictDirectMessage,
     };
 });

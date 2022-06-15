@@ -21,6 +21,8 @@ import type UserModel from '@typings/database/models/servers/user';
 const OVERFLOW_DISPLAY_LIMIT = 99;
 
 type Props = {
+    channelId: string;
+    location: string;
     users: UserModel[];
     breakAt?: number;
     style?: StyleProp<ViewStyle>;
@@ -93,7 +95,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const UserAvatarsStack = ({breakAt = 3, style: baseContainerStyle, users}: Props) => {
+const UserAvatarsStack = ({breakAt = 3, channelId, location, style: baseContainerStyle, users}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -110,18 +112,22 @@ const UserAvatarsStack = ({breakAt = 3, style: baseContainerStyle, users}: Props
                         />
                     </View>
                 )}
-                <UsersList users={users}/>
+                <UsersList
+                    channelId={channelId}
+                    location={location}
+                    users={users}
+                />
             </>
         );
-
         bottomSheet({
             closeButtonId: 'close-set-user-status',
             renderContent,
-            snapPoints: [(Math.min(14, users.length) + 3) * 40, 10],
+            initialSnapIndex: 1,
+            snapPoints: ['90%', '50%', 10],
             title: intl.formatMessage({id: 'mobile.participants.header', defaultMessage: 'Thread Participants'}),
             theme,
         });
-    }), [isTablet, theme, users]);
+    }), [isTablet, theme, users, channelId, location]);
 
     const displayUsers = users.slice(0, breakAt);
     const overflowUsersCount = Math.min(users.length - displayUsers.length, OVERFLOW_DISPLAY_LIMIT);

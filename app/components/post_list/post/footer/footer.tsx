@@ -18,6 +18,8 @@ import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
+    channelId: string;
+    location: string;
     participants: UserModel[];
     teamId?: string;
     thread: ThreadModel;
@@ -76,7 +78,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Footer = ({participants, teamId, thread}: Props) => {
+const Footer = ({channelId, location, participants, teamId, thread}: Props) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -156,6 +158,8 @@ const Footer = ({participants, teamId, thread}: Props) => {
     if (participantsList.length) {
         userAvatarsStack = (
             <UserAvatarsStack
+                channelId={channelId}
+                location={location}
                 style={styles.avatarsContainer}
                 users={participantsList}
             />

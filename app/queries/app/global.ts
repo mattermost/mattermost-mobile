@@ -6,6 +6,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {GLOBAL_IDENTIFIERS, MM_TABLES} from '@constants/database';
+import DatabaseManager from '@database/manager';
 
 import type GlobalModel from '@typings/database/models/app/global';
 
@@ -22,6 +23,17 @@ export const getDeviceToken = async (appDatabase: Database): Promise<string> => 
 
 export const observeMultiServerTutorial = (appDatabase: Database) => {
     return appDatabase.get<GlobalModel>(GLOBAL).query(Q.where('id', GLOBAL_IDENTIFIERS.MULTI_SERVER_TUTORIAL), Q.take(1)).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(false))),
+        switchMap((v) => of$(Boolean(v))),
+    );
+};
+
+export const observeProfileLongPresTutorial = () => {
+    const appDatabase = DatabaseManager.appDatabase?.database;
+    if (!appDatabase) {
+        return of$(false);
+    }
+    return appDatabase.get<GlobalModel>(GLOBAL).query(Q.where('id', GLOBAL_IDENTIFIERS.PROFILE_LONG_PRESS_TUTORIAL), Q.take(1)).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(false))),
         switchMap((v) => of$(Boolean(v))),
     );

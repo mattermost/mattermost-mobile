@@ -218,6 +218,10 @@ export type HandleCategoryArgs = PrepareOnly & {
   categories?: Category[];
 };
 
+export type HandleGroupArgs = PrepareOnly & {
+  groups?: Group[];
+};
+
 export type HandleCategoryChannelArgs = PrepareOnly & {
   categoryChannels?: CategoryChannel[];
 };
@@ -239,7 +243,7 @@ export type HandleTeamArgs = PrepareOnly & {
 };
 
 export type HandleChannelMembershipArgs = PrepareOnly & {
-  channelMemberships?: Array<Pick<ChannelMembership, 'user_id' | 'channel_id'>>;
+  channelMemberships?: Array<Pick<ChannelMembership, 'user_id' | 'channel_id' | 'scheme_admin'>>;
 };
 
 export type HandleTeamMembershipArgs = PrepareOnly & {

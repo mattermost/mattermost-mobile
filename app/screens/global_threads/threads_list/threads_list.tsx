@@ -6,7 +6,7 @@ import {FlatList, StyleSheet} from 'react-native';
 
 import {fetchRefreshThreads, fetchThreads} from '@actions/remote/thread';
 import Loading from '@components/loading';
-import {General} from '@constants';
+import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 
@@ -141,6 +141,7 @@ const ThreadsList = ({
 
     const renderItem = useCallback(({item}) => (
         <Thread
+            location={Screens.GLOBAL_THREADS}
             testID={testID}
             teammateNameDisplay={teammateNameDisplay}
             thread={item}

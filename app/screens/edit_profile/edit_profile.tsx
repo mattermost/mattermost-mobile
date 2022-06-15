@@ -16,7 +16,7 @@ import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {preventDoubleTap} from '@utils/tap';
 
 import ProfileForm from './components/form';
@@ -106,7 +106,7 @@ const EditProfile = ({
 
     useEffect(() => {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (EphemeralStore.getNavigationTopComponentId() === componentId) {
+            if (NavigationStore.getNavigationTopComponentId() === componentId) {
                 close();
                 return true;
             }

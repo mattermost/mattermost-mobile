@@ -24,6 +24,9 @@ export default class TeamMembershipModel extends Model {
     /* user_id: The foreign key to the related User record*/
     userId: string;
 
+    /* scheme_admin: Determines if the user is an admin of the channel*/
+    schemeAdmin: boolean;
+
     /** memberUser: The related user in the team */
     memberUser: Relation<UserModel>;
 

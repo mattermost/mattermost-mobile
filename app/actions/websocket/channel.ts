@@ -130,7 +130,7 @@ export async function handleChannelViewedEvent(serverUrl: string, msg: any) {
         const activeServerUrl = await DatabaseManager.getActiveServerUrl();
         const currentChannelId = await getCurrentChannelId(database);
 
-        if (activeServerUrl !== serverUrl || currentChannelId !== channelId) {
+        if (activeServerUrl !== serverUrl || (currentChannelId !== channelId && !EphemeralStore.isSwitchingToChannel(channelId))) {
             await markChannelAsViewed(serverUrl, channelId, false);
         }
     } catch {
@@ -157,6 +157,11 @@ export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: an
         }
         models.push(...await operator.handleMyChannelSettings({
             settings: [updatedChannelMember],
+            prepareRecordsOnly: true,
+        }));
+
+        models.push(...await operator.handleChannelMembership({
+            channelMemberships: [updatedChannelMember],
             prepareRecordsOnly: true,
         }));
         const rolesRequest = await fetchRolesIfNeeded(serverUrl, updatedChannelMember.roles.split(','), true);
