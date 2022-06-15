@@ -4,7 +4,7 @@
 import ServerDataOperator from '@database/operator/server_data_operator';
 
 import {prepareCategories, prepareCategoryChannels} from './categories';
-import {prepareDeleteChannel, prepareMyChannelsForTeam, prepareMyGraphQLChannels} from './channel';
+import {prepareDeleteChannel, prepareMyChannelsForTeam} from './channel';
 import {prepareMyPreferences} from './preference';
 import {prepareDeleteTeam, prepareMyTeams} from './team';
 import {prepareUsers} from './user';
@@ -53,11 +53,11 @@ export async function prepareModels({operator, initialTeamId, removeTeams, remov
         modelPromises.push(prepareCategoryChannels(operator, chData.categories));
     }
 
-    if (initialTeamId && chData?.channels?.length && chData.memberships?.length) {
+    if (chData?.channels?.length && chData.memberships?.length) {
         if (isGraphQL) {
-            modelPromises.push(...await prepareMyGraphQLChannels(operator, chData.channels, chData.memberships, chData.stats!));
-        } else {
-            modelPromises.push(...await prepareMyChannelsForTeam(operator, initialTeamId, chData.channels, chData.memberships, isCRTEnabled));
+            modelPromises.push(...await prepareMyChannelsForTeam(operator, '', chData.channels, chData.memberships, isCRTEnabled, true));
+        } else if (initialTeamId) {
+            modelPromises.push(...await prepareMyChannelsForTeam(operator, initialTeamId, chData.channels, chData.memberships, isCRTEnabled, false));
         }
     }
 

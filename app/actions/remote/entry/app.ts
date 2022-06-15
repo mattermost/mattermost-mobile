@@ -31,17 +31,23 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
     }
 
     const config = await getConfig(database);
+    let result;
     if (config?.FeatureFlagGraphQL === 'true') {
         const {currentTeamId, currentChannelId} = await getCommonSystemValues(database);
-        const result = await graphQLCommon(serverUrl, true, currentTeamId, currentChannelId, isUpgrade);
-        if (!since) {
-            // Load data from other servers
-            syncOtherServers(serverUrl);
+        result = await graphQLCommon(serverUrl, true, currentTeamId, currentChannelId, isUpgrade);
+        if (result.error) {
+            console.log('Error using GraphQL, trying REST', result.error);
+            result = restAppEntry(serverUrl, since, isUpgrade);
         }
-        return result;
+    } else {
+        result = restAppEntry(serverUrl, since, isUpgrade);
     }
 
-    return restAppEntry(serverUrl, since, isUpgrade);
+    if (!since) {
+        // Load data from other servers
+        syncOtherServers(serverUrl);
+    }
+    return result;
 }
 
 const restAppEntry = async (serverUrl: string, since = 0, isUpgrade = false) => {
@@ -90,10 +96,6 @@ const restAppEntry = async (serverUrl: string, since = 0, isUpgrade = false) => 
     const {id: currentUserId, locale: currentUserLocale} = meData?.user || (await getCurrentUser(database))!;
     const {config, license} = await getCommonSystemValues(database);
     await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchToChannel ? initialChannelId : undefined);
-    if (!since) {
-        // Load data from other servers
-        syncOtherServers(serverUrl);
-    }
 
     verifyPushProxy(serverUrl);
 
@@ -117,6 +119,7 @@ export async function upgradeEntry(serverUrl: string) {
 
         return {error, time: Date.now() - dt};
     } catch (e) {
+        console.log(e);
         return {error: e, time: Date.now() - dt};
     }
 }

@@ -24,8 +24,12 @@ const doGQLQuery = async (serverUrl: string, query: string, operationName: strin
 };
 
 export const gqlEntry = async (serverUrl: string) => {
-    const response = await doGQLQuery(serverUrl, entryQuery, 'entry');
-    if ('error' in response) {
+    return doGQLQuery(serverUrl, entryQuery, 'entry');
+};
+
+export const gqlEntryChannels = async (serverUrl: string, teamId: string) => {
+    const response = await doGQLQuery(serverUrl, channelsQuery(teamId, false), 'channels');
+    if ('error' in response || 'errors' in response) {
         return response;
     }
 
@@ -35,7 +39,7 @@ export const gqlEntry = async (serverUrl: string) => {
         let pageResponse;
         try {
             // eslint-disable-next-line no-await-in-loop
-            pageResponse = await gqlEntryNextPage(serverUrl, members[members.length - 1].cursor!);
+            pageResponse = await gqlEntryChannelsNextPage(serverUrl, teamId, members[members.length - 1].cursor!, false);
         } catch {
             break;
         }
@@ -50,9 +54,36 @@ export const gqlEntry = async (serverUrl: string) => {
 
     return response;
 };
+const gqlEntryChannelsNextPage = async (serverUrl: string, teamId: string, cursor: string, exclude: boolean) => {
+    return doGQLQuery(serverUrl, nextPageChannelsQuery(teamId, cursor, exclude), 'channelsNextPage');
+};
 
-export const gqlEntryNextPage = async (serverUrl: string, cursor: string) => {
-    return doGQLQuery(serverUrl, nextPageLoginQuery(cursor), 'loginNextPage');
+export const gqlOtherChannels = async (serverUrl: string, teamId: string) => {
+    const response = await doGQLQuery(serverUrl, channelsQuery(teamId, true), 'channels');
+    if ('error' in response) {
+        return response;
+    }
+
+    let members = response.data.channelMembers;
+
+    while (members?.length === MEMBERS_PER_PAGE) {
+        let pageResponse;
+        try {
+            // eslint-disable-next-line no-await-in-loop
+            pageResponse = await gqlEntryChannelsNextPage(serverUrl, teamId, members[members.length - 1].cursor!, true);
+        } catch {
+            break;
+        }
+
+        if ('error' in pageResponse || 'errors' in pageResponse) {
+            break;
+        }
+
+        members = pageResponse.data.channelMembers!;
+        response.data.channelMembers?.push(...members);
+    }
+
+    return response;
 };
 
 const entryQuery = `
@@ -114,66 +145,14 @@ query entry {
             allowOpenInvite
             updateAt
         }
-        sidebarCategories {
-            id
-            displayName
-            sorting
-            # sortOrder
-            muted
-            collapsed
-            type
-            channelIds
-        }
-        user {
-            id
-        }
-    }
-    channelMembers(userId:"me", first:PER_PAGE) {
-        cursor
-        msgCount
-        mentionCount
-        lastViewedAt
-        notifyProps
-        roles {
-            id
-            name
-            permissions
-        }
-        channel {
-            id
-            header
-            purpose
-            type
-            createAt
-            creatorId
-            deleteAt
-            displayName
-            prettyDisplayName
-            groupConstrained
-            name
-            shared
-            lastPostAt
-            totalMsgCount
-            team {
-                id
-            }
-            #stats {
-            #    guestCount
-            #    memberCount
-            #    pinnedPostCount
-            #}
-        }
-        user {
-            id
-        }
     }
 }
-`.replace('PER_PAGE', `${MEMBERS_PER_PAGE}`);
+`;
 
-const nextPageLoginQuery = (cursor: string) => {
+const channelsQuery = (teamId: string, exclude: boolean) => {
     return `
-query loginNextPage {
-    channelMembers(userId:"me", first:PER_PAGE, after:"CURSOR") {
+query channels {
+    channelMembers(userId:"me", first:PER_PAGE, teamId:"TEAM_ID", excludeTeam:EXCLUDE) {
         cursor
         msgCount
         mentionCount
@@ -202,17 +181,61 @@ query loginNextPage {
             team {
                 id
             }
-            #stats {
-            #    guestCount
-            #    memberCount
-            #    pinnedPostCount
-            #}
         }
-        user {
+    }
+    sidebarCategories(userId:"me", teamId:"TEAM_ID", excludeTeam:EXCLUDE) {
+        displayName
+        id
+        sorting
+        type
+        muted
+        collapsed
+        channelIds
+        teamId
+    }
+}
+`.replace('PER_PAGE', `${MEMBERS_PER_PAGE}`).
+        replace('TEAM_ID', teamId).replace('TEAM_ID', teamId).
+        replace('EXCLUDE', String(exclude)).replace('EXCLUDE', String(exclude));
+};
+
+const nextPageChannelsQuery = (teamId: string, cursor: string, exclude: boolean) => {
+    return `
+query loginNextPage {
+    channelMembers(userId:"me", first:PER_PAGE, after:"CURSOR", teamId:"TEAM_ID") {
+        cursor
+        msgCount
+        mentionCount
+        lastViewedAt
+        notifyProps
+        roles {
             id
+            name
+            permissions
+        }
+        channel {
+            id
+            header
+            purpose
+            type
+            createAt
+            creatorId
+            deleteAt
+            displayName
+            prettyDisplayName
+            groupConstrained
+            name
+            shared
+            lastPostAt
+            totalMsgCount
+            team {
+                id
+            }
         }
     }
 }
 `.replace('PER_PAGE', `${MEMBERS_PER_PAGE}`).
-        replace('CURSOR', cursor);
+        replace('CURSOR', cursor).
+        replace('TEAM_ID', teamId).
+        replace('EXCLUDE', String(exclude));
 };

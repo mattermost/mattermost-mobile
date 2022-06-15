@@ -1,17 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Database} from '@nozbe/watermelondb';
+
 import {markChannelAsRead, MyChannelsRequest} from '@actions/remote/channel';
 import {fetchPostsForChannel, fetchPostsForUnreadChannels} from '@actions/remote/post';
-import {fetchAllTeams, MyTeamsRequest} from '@actions/remote/team';
-import {updateAllUsersSince} from '@actions/remote/user';
-import {gqlEntry} from '@client/graphQL/entry';
-import {gqlToClientChannel, gqlToClientChannelMembership, gqlToClientChannelStats, gqlToClientPreference, gqlToClientRole, gqlToClientSidebarCategory, gqlToClientTeam, gqlToClientTeamMembership, gqlToClientUser} from '@client/graphQL/types';
+import {MyTeamsRequest} from '@actions/remote/team';
+import {MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
+import {gqlEntry, gqlEntryChannels, gqlOtherChannels} from '@client/graphQL/entry';
+import {GQLRole, gqlToClientChannel, gqlToClientChannelMembership, gqlToClientPreference, gqlToClientRole, gqlToClientSidebarCategory, gqlToClientTeam, gqlToClientTeamMembership, gqlToClientUser} from '@client/graphQL/types';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
-import {queryAllChannels} from '@queries/servers/channel';
+import {queryAllChannels, queryAllChannelsForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
 import {prepareCommonSystemValues} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, queryMyTeams} from '@queries/servers/team';
@@ -30,22 +32,27 @@ import type TeamModel from '@typings/database/models/servers/team';
 export async function deferredAppEntryGraphQLActions(
     serverUrl: string,
     since: number,
-    preferences: PreferenceType[] | undefined,
-    config: ClientConfig,
+    meData: MyUserRequest,
     teamData: MyTeamsRequest,
     chData: MyChannelsRequest | undefined,
     isTabletDevice: boolean,
     initialTeamId?: string,
     initialChannelId?: string,
     isCRTEnabled = false,
+    syncDatabase?: boolean,
 ) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+    const {database} = operator;
+
     // defer fetching posts for initial channel
     if (initialChannelId && isTabletDevice) {
         fetchPostsForChannel(serverUrl, initialChannelId);
         markChannelAsRead(serverUrl, initialChannelId);
     }
 
-    // defer sidebar DM & GM profiles
     if (chData?.channels?.length && chData.memberships?.length) {
         // defer fetching posts for unread channels on initial team
         fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId);
@@ -66,12 +73,84 @@ export async function deferredAppEntryGraphQLActions(
         }
     }
 
-    fetchAllTeams(serverUrl);
+    if (initialTeamId) {
+        const result = await getChannelData(serverUrl, initialTeamId, meData.user!.id, true);
+        if ('error' in result) {
+            return result;
+        }
+
+        const removeChannels = await getRemoveChannels(database, result.chData, initialTeamId, false, syncDatabase);
+
+        const modelPromises = await prepareModels({operator, removeChannels, chData: result.chData}, true);
+
+        modelPromises.push(operator.handleRole({roles: filterAndTransformRoles(result.roles), prepareRecordsOnly: true}));
+        const models = (await Promise.all(modelPromises)).flat();
+        operator.batchRecords(models);
+    }
+
     updateAllUsersSince(serverUrl, since);
+
+    return {};
 }
 
+const getRemoveChannels = async (database: Database, chData: MyChannelsRequest | undefined, initialTeamId: string, singleTeam: boolean, syncDatabase?: boolean) => {
+    const removeChannels: ChannelModel[] = [];
+    if (syncDatabase) {
+        if (chData?.channels) {
+            const fetchedChannelIds = chData.channels?.map((channel) => channel.id);
+
+            const query = singleTeam ? queryAllChannelsForTeam(database, initialTeamId) : queryAllChannels(database);
+            const channels = await query.fetch();
+
+            for (const channel of channels) {
+                const excludeCondition = singleTeam ? true : channel.teamId !== initialTeamId && channel.teamId !== '';
+                if (excludeCondition && !fetchedChannelIds?.includes(channel.id)) {
+                    removeChannels.push(channel);
+                }
+            }
+        }
+    }
+
+    return removeChannels;
+};
+
+const getChannelData = async (serverUrl: string, initialTeamId: string, userId: string, exclude: boolean): Promise<{chData: MyChannelsRequest; roles: Array<Partial<GQLRole>|undefined>} | {error: unknown}> => {
+    let response;
+    try {
+        const request = exclude ? gqlOtherChannels : gqlEntryChannels;
+        const time = Date.now();
+        response = await request(serverUrl, initialTeamId);
+        console.log('fetch channels', Date.now() - time);
+    } catch (error) {
+        return {error: (error as ClientError).message};
+    }
+
+    if ('error' in response) {
+        return {error: response.error};
+    }
+
+    if ('errors' in response && response.errors?.length) {
+        return {error: response.errors[0].message};
+    }
+
+    const channelsFetchedData = response.data;
+
+    const chData = {
+        channels: channelsFetchedData.channelMembers?.map((m) => gqlToClientChannel(m.channel!)),
+        memberships: channelsFetchedData.channelMembers?.map((m) => gqlToClientChannelMembership(m, userId)),
+        categories: channelsFetchedData.sidebarCategories?.map((c) => gqlToClientSidebarCategory(c, '')),
+    };
+    const roles = channelsFetchedData.channelMembers?.map((m) => m.roles).flat() || [];
+
+    return {chData, roles};
+};
+
+const filterAndTransformRoles = (roles: Array<Partial<GQLRole> | undefined>) => {
+    return roles.filter((v, i, a) => a.slice(0, i).find((v2) => v?.name === v2?.name)).map((r) => gqlToClientRole(r!));
+};
+
 export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, currentTeamId: string, currentChannelId: string, isUpgrade = false) => {
-    console.log('using graphQL');
+    console.log('using graphQL', serverUrl);
     const dt = Date.now();
 
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -89,15 +168,13 @@ export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, cu
     } catch (error) {
         return {error: (error as ClientError).message};
     }
-    console.log('fetch', Date.now() - time);
+    console.log('fetch teams', Date.now() - time);
 
     if ('error' in response) {
-        console.log('error1', response);
         return {error: response.error};
     }
 
     if ('errors' in response && response.errors?.length) {
-        console.log('error2', response);
         return {error: response.errors[0].message};
     }
 
@@ -106,31 +183,18 @@ export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, cu
     const config = fetchedData.config || {} as ClientConfig;
     const license = fetchedData.license || {} as ClientLicense;
 
-    const teamData = {
-        teams: fetchedData.teamMembers.map((m) => gqlToClientTeam(m.team!)),
-        memberships: fetchedData.teamMembers.map((m) => gqlToClientTeamMembership(m)),
+    const meData = {
+        user: gqlToClientUser(fetchedData.user!),
     };
 
-    const chData = {
-        channels: fetchedData.channelMembers?.map((m) => gqlToClientChannel(m.channel!)),
-        stats: fetchedData.channelMembers?.map((m) => gqlToClientChannelStats(m.channel!)),
-        memberships: fetchedData.channelMembers?.map((m) => gqlToClientChannelMembership(m)),
-        categories: fetchedData.teamMembers.map((m) => m.sidebarCategories!.map((c) => gqlToClientSidebarCategory(c, m.team!.id!))).flat(),
+    const teamData = {
+        teams: fetchedData.teamMembers.map((m) => gqlToClientTeam(m.team!)),
+        memberships: fetchedData.teamMembers.map((m) => gqlToClientTeamMembership(m, meData.user.id)),
     };
 
     const prefData = {
         preferences: fetchedData.user?.preferences?.map((p) => gqlToClientPreference(p)),
     };
-
-    const meData = {
-        user: gqlToClientUser(fetchedData.user!),
-    };
-
-    const roles = [
-        ...fetchedData.user?.roles || [],
-        ...fetchedData.channelMembers?.map((m) => m.roles).flat() || [],
-        ...fetchedData.teamMembers?.map((m) => m.roles).flat() || [],
-    ].filter((v, i, a) => a.slice(0, i).find((v2) => v?.name === v2?.name)).map((r) => gqlToClientRole(r!));
 
     if (isUpgrade && meData?.user) {
         const me = await prepareCommonSystemValues(operator, {currentUserId: meData.user.id});
@@ -139,8 +203,41 @@ export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, cu
         }
     }
 
+    let initialTeamId = currentTeamId;
+    if (!teamData.teams.length) {
+        initialTeamId = '';
+    } else if (!initialTeamId || !teamData.teams.find((t) => t.id === currentTeamId)) {
+        const teamOrderPreference = getPreferenceValue(prefData.preferences!, Preferences.TEAMS_ORDER, '', '') as string;
+        initialTeamId = selectDefaultTeam(teamData.teams, meData.user.locale, teamOrderPreference, config.ExperimentalPrimaryTeam)?.id || '';
+    }
+    const gqlRoles = [
+        ...fetchedData.user?.roles || [],
+        ...fetchedData.teamMembers?.map((m) => m.roles).flat() || [],
+    ];
+
+    let chData;
+    if (initialTeamId) {
+        const result = await getChannelData(serverUrl, initialTeamId, meData.user.id, false);
+        if ('error' in result) {
+            return result;
+        }
+
+        chData = result.chData;
+        gqlRoles.push(...result.roles);
+    }
+
+    const roles = filterAndTransformRoles(gqlRoles);
+
+    let initialChannelId = currentChannelId;
+    if (initialTeamId !== currentTeamId || !chData?.channels?.find((c) => c.id === currentChannelId)) {
+        initialChannelId = '';
+        if (isTabletDevice && chData?.channels && chData.memberships) {
+            initialChannelId = selectDefaultChannelForTeam(chData.channels, chData.memberships, initialTeamId, roles, meData.user.locale)?.id || '';
+        }
+    }
+
     let removeTeams: TeamModel[] = [];
-    const removeChannels: ChannelModel[] = [];
+    const removeChannels = await getRemoveChannels(database, chData, initialTeamId, true, syncDatabase);
 
     if (syncDatabase) {
         const removeTeamIds = [];
@@ -157,33 +254,6 @@ export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, cu
         }
 
         removeTeams = await teamsToRemove(serverUrl, removeTeamIds);
-
-        if (chData?.channels) {
-            const fetchedChannelIds = chData.channels.map((channel) => channel.id);
-
-            const channels = await queryAllChannels(database).fetch();
-            for (const channel of channels) {
-                if (!fetchedChannelIds.includes(channel.id)) {
-                    removeChannels.push(channel);
-                }
-            }
-        }
-    }
-
-    let initialTeamId = currentTeamId;
-    if (!teamData.teams.length) {
-        initialTeamId = '';
-    } else if (!initialTeamId || !teamData.teams.find((t) => t.id === currentTeamId)) {
-        const teamOrderPreference = getPreferenceValue(prefData.preferences!, Preferences.TEAMS_ORDER, '', '') as string;
-        initialTeamId = selectDefaultTeam(teamData.teams, meData.user.locale, teamOrderPreference, config.ExperimentalPrimaryTeam)?.id || '';
-    }
-
-    let initialChannelId = currentChannelId;
-    if (initialTeamId !== currentTeamId || !chData.channels?.find((c) => c.id === currentChannelId)) {
-        initialChannelId = '';
-        if (isTabletDevice && chData.channels && chData.memberships) {
-            initialChannelId = selectDefaultChannelForTeam(chData.channels, chData.memberships, initialTeamId, roles, meData.user.locale)?.id || '';
-        }
     }
 
     const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData}, true);
@@ -221,9 +291,9 @@ export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, cu
     console.log('batch', Date.now() - time);
 
     const isCRTEnabled = Boolean(prefData.preferences && processIsCRTEnabled(prefData.preferences, config));
-    deferredAppEntryGraphQLActions(serverUrl, 0, prefData.preferences, config, teamData, chData, isTabletDevice, initialTeamId, initialChannelId, isCRTEnabled);
+    deferredAppEntryGraphQLActions(serverUrl, 0, meData, teamData, chData, isTabletDevice, initialTeamId, initialChannelId, isCRTEnabled, syncDatabase);
 
     const timeElapsed = Date.now() - dt;
     console.log('Time elapsed', Date.now() - dt);
-    return {time: timeElapsed, hasTeams: Boolean(teamData.teams.length), userId: meData.user.id};
+    return {time: timeElapsed, hasTeams: Boolean(teamData.teams.length), userId: meData.user.id, error: undefined};
 };

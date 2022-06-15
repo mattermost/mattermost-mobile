@@ -15,6 +15,7 @@ export type GQLData = {
     channels?: Array<Partial<GQLChannel>>;
     channelsLeft?: Array<Partial<GQLChannel>>;
     channelMembers?: Array<Partial<GQLChannelMembership>>;
+    sidebarCategories?: Array<Partial<GQLSidebarCategory>>;
 }
 
 export type GQLError = {
@@ -98,15 +99,14 @@ export type GQLTeamMembership = {
 	schemeGuest: boolean;
 	schemeUser: boolean;
 	schemeAdmin: boolean;
-	sidebarCategories: Array<Partial<GQLSidebarCategory>>;
 }
 
-export const gqlToClientTeamMembership = (m: Partial<GQLTeamMembership>): TeamMembership => {
+export const gqlToClientTeamMembership = (m: Partial<GQLTeamMembership>, userId?: string): TeamMembership => {
     return {
         team_id: m.team?.id || '',
         delete_at: m.deleteAt || 0,
         roles: m.roles?.map((v) => v.name!).join(',') || '',
-        user_id: m.user?.id || '',
+        user_id: m.user?.id || userId || '',
         scheme_admin: m.schemeAdmin || false,
         scheme_user: m.schemeUser || false,
         mention_count: 0,
@@ -123,6 +123,7 @@ export type GQLSidebarCategory = {
 	collapsed: boolean;
 	channelIds: string[];
     sortOrder: number;
+    teamId: string;
 }
 
 export const gqlToClientSidebarCategory = (m: Partial<GQLSidebarCategory>, teamId: string): CategoryWithChannels => {
@@ -134,7 +135,7 @@ export const gqlToClientSidebarCategory = (m: Partial<GQLSidebarCategory>, teamI
         muted: m.muted || false,
         sort_order: m.sortOrder || 0,
         sorting: m.sorting || 'alpha',
-        team_id: teamId,
+        team_id: m.teamId || teamId,
         type: m.type || 'channels',
     };
 };
@@ -224,7 +225,7 @@ export type GQLChannelMembership = {
 	cursor: string;
 }
 
-export const gqlToClientChannelMembership = (m: Partial<GQLChannelMembership>): ChannelMembership => {
+export const gqlToClientChannelMembership = (m: Partial<GQLChannelMembership>, userId?: string): ChannelMembership => {
     return {
         channel_id: m.channel?.id || '',
         last_update_at: m.lastUpdateAt || 0,
@@ -233,7 +234,7 @@ export const gqlToClientChannelMembership = (m: Partial<GQLChannelMembership>): 
         msg_count: m.msgCount || 0,
         notify_props: m.notifyProps || {},
         roles: m.roles?.map((r) => r.name).join(',') || '',
-        user_id: m.user?.id || '',
+        user_id: m.user?.id || userId || '',
         is_unread: false,
         last_post_at: 0,
         post_root_id: '',
@@ -270,7 +271,7 @@ export type GQLStats = {
     pinnePostCount: number;
 }
 
-export const gqlToClientChannel = (m: Partial<GQLChannel>): Channel => {
+export const gqlToClientChannel = (m: Partial<GQLChannel>, teamId?: string): Channel => {
     return {
         create_at: m.createAt || 0,
         creator_id: m.creatorId || '',
@@ -285,7 +286,7 @@ export const gqlToClientChannel = (m: Partial<GQLChannel>): Channel => {
         purpose: m.purpose || '',
         scheme_id: m.schemeId || '',
         shared: m.shared || false,
-        team_id: m.team?.id || '',
+        team_id: m.team?.id || teamId || '',
         total_msg_count: m.totalMsgCount || 0,
         type: m.type || 'O',
         update_at: m.updateAt || 0,

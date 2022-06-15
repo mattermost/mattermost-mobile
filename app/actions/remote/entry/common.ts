@@ -28,6 +28,8 @@ import {deleteMyTeams, getAvailableTeamIds, getNthLastChannelFromTeam, queryMyTe
 import {isDMorGM} from '@utils/channel';
 import {processIsCRTEnabled} from '@utils/thread';
 
+import {appEntry} from './app';
+
 import type ClientError from '@client/rest/error';
 
 export type AppEntryData = {
@@ -324,34 +326,9 @@ export const syncOtherServers = async (serverUrl: string) => {
         for (const server of servers) {
             if (server.url !== serverUrl && server.lastActiveAt > 0) {
                 registerDeviceToken(server.url);
-                syncAllChannelMembers(server.url);
+                appEntry(server.url, server.lastActiveAt, false);
             }
         }
-    }
-};
-
-const syncAllChannelMembers = async (serverUrl: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return;
-    }
-
-    let client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch {
-        return;
-    }
-
-    try {
-        const myTeams = await client.getMyTeams();
-        let excludeDirect = false;
-        for (const myTeam of myTeams) {
-            fetchMyChannelsForTeam(serverUrl, myTeam.id, false, 0, false, excludeDirect);
-            excludeDirect = true;
-        }
-    } catch {
-        // Do nothing
     }
 };
 

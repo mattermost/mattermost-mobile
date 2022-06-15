@@ -45,11 +45,20 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
 
     const config = await getConfig(database);
+    let result;
     if (config?.FeatureFlagGraphQL === 'true') {
-        return graphQLCommon(serverUrl, true, teamId, channelId);
+        result = await graphQLCommon(serverUrl, true, teamId, channelId);
+        if (result.error) {
+            console.log('Error using GraphQL, trying REST', result.error);
+            result = restNotificationEntry(serverUrl, teamId, channelId, rootId, isDirectChannel);
+        }
+    } else {
+        result = restNotificationEntry(serverUrl, teamId, channelId, rootId, isDirectChannel);
     }
 
-    return restNotificationEntry(serverUrl, teamId, channelId, rootId, isDirectChannel);
+    syncOtherServers(serverUrl);
+
+    return result;
 }
 
 const restNotificationEntry = async (serverUrl: string, teamId: string, channelId: string, rootId: string, isDirectChannel: boolean) => {
@@ -128,7 +137,6 @@ const restNotificationEntry = async (serverUrl: string, teamId: string, channelI
 
     const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
     await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, selectedTeamId, switchedToChannel ? selectedChannelId : undefined);
-    syncOtherServers(serverUrl);
 
     return {userId: currentUserId};
 };
