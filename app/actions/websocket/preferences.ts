@@ -2,13 +2,27 @@
 // See LICENSE.txt for license information.
 
 import {updateDmGmDisplayName} from '@actions/local/channel';
-import {resetAfterCRTChange} from '@actions/local/entry';
 import {appEntry} from '@actions/remote/entry';
 import {fetchPostById} from '@actions/remote/post';
+import {truncateCrtRelatedTables} from '@app/queries/servers/entry';
+import {popToRoot} from '@app/screens/navigation';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPostById} from '@queries/servers/post';
 import {deletePreferences, differsFromLocalNameFormat, queryHasCRTChanged} from '@queries/servers/preference';
+
+async function handleCRTToggled(serverUrl: string) {
+    const currentServerUrl = await DatabaseManager.getActiveServerUrl();
+    const isSameServer = currentServerUrl === serverUrl;
+
+    const {error} = await truncateCrtRelatedTables(serverUrl);
+    if (!error) {
+        await appEntry(serverUrl);
+        if (isSameServer) {
+            popToRoot();
+        }
+    }
+}
 
 export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const operator = DatabaseManager.serverDatabases[serverUrl].operator;
@@ -34,10 +48,7 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
         }
 
         if (crtToggled) {
-            const {error} = await resetAfterCRTChange(serverUrl, true);
-            if (!error) {
-                await appEntry(serverUrl);
-            }
+            handleCRTToggled(serverUrl);
         }
     } catch (error) {
         // Do nothing
@@ -67,10 +78,7 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
         }
 
         if (crtToggled) {
-            const {error} = await resetAfterCRTChange(serverUrl, true);
-            if (!error) {
-                await appEntry(serverUrl);
-            }
+            handleCRTToggled(serverUrl);
         }
     } catch (error) {
         // Do nothing

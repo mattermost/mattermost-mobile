@@ -1,17 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {resetAfterCRTChange} from '@actions/local/entry';
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
-import {queryHasCRTChanged} from '@app/queries/servers/preference';
+import {popToRoot} from '@app/screens/navigation';
 import DatabaseManager from '@database/manager';
 import {prepareCommonSystemValues, getCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId, getCurrentChannelId} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
-
-import {fetchMyPreferences} from '../preference';
 
 import {deferredAppEntryActions, entry, registerDeviceToken, syncOtherServers, verifyPushProxy} from './common';
 
@@ -22,29 +19,6 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false):
     }
 
     const {database} = operator;
-    const myPreferences = await fetchMyPreferences(serverUrl, true);
-
-    if (myPreferences.preferences) {
-        const crtToggled = await queryHasCRTChanged(database, myPreferences.preferences);
-        if (crtToggled) {
-            if (operator) {
-                await operator.handlePreferences({
-                    prepareRecordsOnly: false,
-                    preferences: myPreferences.preferences,
-                });
-            }
-            const currentServerUrl = await DatabaseManager.getActiveServerUrl();
-            const isSameServer = currentServerUrl === serverUrl;
-            const {error} = await resetAfterCRTChange(serverUrl, isSameServer);
-            if (error) {
-                return {error: `Resetting CRT on ${serverUrl} failed`};
-            }
-            if (isSameServer) {
-                return appEntry(serverUrl);
-            }
-            return appEntry(serverUrl, since, isUpgrade);
-        }
-    }
 
     if (!since) {
         registerDeviceToken(serverUrl);
@@ -65,12 +39,16 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false):
     if ('error' in entryData) {
         return {error: entryData.error};
     }
-    const {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData} = entryData;
+    const {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData, shouldPopToRoot} = entryData;
     if (isUpgrade && meData?.user) {
         const me = await prepareCommonSystemValues(operator, {currentUserId: meData.user.id});
         if (me?.length) {
             await operator.batchRecords(me);
         }
+    }
+
+    if (shouldPopToRoot) {
+        popToRoot();
     }
 
     let switchToChannel = false;

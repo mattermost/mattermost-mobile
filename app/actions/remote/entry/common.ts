@@ -11,6 +11,7 @@ import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
 import {fetchNewThreads} from '@actions/remote/thread';
 import {fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
+import {queryHasCRTChanged} from '@app/queries/servers/preference';
 import {Preferences} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
@@ -22,7 +23,7 @@ import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {queryAllServers} from '@queries/app/servers';
 import {queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
-import {prepareModels} from '@queries/servers/entry';
+import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getConfig, getPushVerificationStatus, getWebSocketLastDisconnected} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, getNthLastChannelFromTeam, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
@@ -39,6 +40,7 @@ export type AppEntryData = {
     removeTeamIds?: string[];
     removeChannelIds?: string[];
     isCRTEnabled: boolean;
+    shouldPopToRoot?: boolean;
 }
 
 export type AppEntryError = {
@@ -53,6 +55,7 @@ export type EntryResponse = {
     teamData: MyTeamsRequest;
     chData?: MyChannelsRequest;
     meData?: MyUserRequest;
+    shouldPopToRoot?: boolean;
 } | {
     error: unknown;
 }
@@ -95,7 +98,7 @@ export const entry = async (serverUrl: string, teamId?: string, channelId?: stri
         return {error: fetchedData.error};
     }
 
-    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds, isCRTEnabled} = fetchedData;
+    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds, isCRTEnabled, shouldPopToRoot} = fetchedData;
     const error = teamData.error || chData?.error || prefData.error || meData.error;
     if (error) {
         return {error};
@@ -125,21 +128,37 @@ export const entry = async (serverUrl: string, teamId?: string, channelId?: stri
 
     const models = await Promise.all(modelPromises);
 
-    return {models: models.flat(), initialChannelId, initialTeamId, prefData, teamData, chData, meData};
+    return {models: models.flat(), initialChannelId, initialTeamId, prefData, teamData, chData, meData, shouldPopToRoot};
 };
 
-export const fetchAppEntryData = async (serverUrl: string, since: number, initialTeamId = ''): Promise<AppEntryData | AppEntryError> => {
+export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, initialTeamId = ''): Promise<AppEntryData | AppEntryError> => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
     }
-
+    let since = sinceArg;
+    let shouldPopToRoot = false;
     const includeDeletedChannels = true;
     const fetchOnly = true;
 
     const confReq = await fetchConfigAndLicense(serverUrl);
     const prefData = await fetchMyPreferences(serverUrl, fetchOnly);
     const isCRTEnabled = Boolean(prefData.preferences && processIsCRTEnabled(prefData.preferences, confReq.config));
+    if (prefData.preferences) {
+        const crtToggled = await queryHasCRTChanged(database, prefData.preferences);
+        if (crtToggled) {
+            const currentServerUrl = await DatabaseManager.getActiveServerUrl();
+            const isSameServer = currentServerUrl === serverUrl;
+            if (isSameServer) {
+                shouldPopToRoot = true;
+                since = 0;
+            }
+            const {error} = await truncateCrtRelatedTables(serverUrl);
+            if (error) {
+                return {error: `Resetting CRT on ${serverUrl} failed`};
+            }
+        }
+    }
 
     // Fetch in parallel teams / team membership / channels for current team / user preferences / user
     const promises: [Promise<MyTeamsRequest>, Promise<MyChannelsRequest | undefined>, Promise<MyUserRequest>] = [
@@ -178,6 +197,7 @@ export const fetchAppEntryData = async (serverUrl: string, since: number, initia
         meData,
         removeTeamIds,
         isCRTEnabled,
+        shouldPopToRoot,
     };
 
     if (teamData.teams?.length === 0 && !teamData.error) {
