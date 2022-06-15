@@ -12,7 +12,7 @@ import {isTablet} from '@utils/helpers';
 
 import {deferredAppEntryActions, entry, registerDeviceToken, syncOtherServers, verifyPushProxy} from './common';
 
-export async function appEntry(serverUrl: string, since = 0, isUpgrade = false): Promise<{error?: any; userId?: string}> {
+export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
