@@ -98,7 +98,7 @@ const Filter = ({initialFilter, setFilter}: FilterProps) => {
                     id={item.id}
                     defaultMessage={item.defaultMessage}
                 />
-                {(selectedFilter === item.defaultMessage) && (
+                {(selectedFilter === item.filterType) && (
                     <CompassIcon
                         style={style.selected}
                         name={'check'}

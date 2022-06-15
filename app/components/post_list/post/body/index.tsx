@@ -111,7 +111,7 @@ const Body = ({
     }, []);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
-        if (location === Screens.SAVED_POSTS) {
+        if (location === Screens.SAVED_MESSAGES) {
             setLayoutWidth(e.nativeEvent.layout.width);
         }
     }, [location]);
@@ -127,6 +127,7 @@ const Body = ({
     } else if (isPostAddChannelMember) {
         message = (
             <AddMembers
+                location={location}
                 post={post}
                 theme={theme}
             />
@@ -180,6 +181,7 @@ const Body = ({
                 }
                 {hasReactions && showAddReaction &&
                 <Reactions
+                    location={location}
                     post={post}
                     theme={theme}
                 />

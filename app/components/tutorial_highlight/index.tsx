@@ -11,7 +11,7 @@ type Props = {
     itemBounds: TutorialItemBounds;
     itemBorderRadius?: number;
     onDismiss: () => void;
-    onShow: () => void;
+    onShow?: () => void;
 }
 
 const TutorialHighlight = ({children, itemBounds, itemBorderRadius, onDismiss, onShow}: Props) => {

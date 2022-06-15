@@ -58,6 +58,8 @@ public class Database: NSObject {
     internal var fileTable = Table("File")
     internal var emojiTable = Table("CustomEmoji")
     internal var userTable = Table("User")
+    internal var threadTable = Table("Thread")
+    internal var threadParticipantTable = Table("ThreadParticipant")
     
     @objc public static let `default` = Database()
     

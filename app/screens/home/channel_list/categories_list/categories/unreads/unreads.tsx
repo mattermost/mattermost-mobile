@@ -7,12 +7,20 @@ import {FlatList, Text} from 'react-native';
 
 import ChannelItem from '@components/channel_item';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import Empty from './empty_state';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    empty: {
+        alignItems: 'center',
+        flexGrow: 1,
+        justifyContent: 'center',
+    },
     heading: {
         color: changeOpacity(theme.sidebarText, 0.64),
         ...typography('Heading', 75),
@@ -24,16 +32,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type UnreadCategoriesProps = {
-    unreadChannels: ChannelModel[];
     onChannelSwitch: (channelId: string) => void;
+    onlyUnreads: boolean;
+    unreadChannels: ChannelModel[];
 }
 
 const extractKey = (item: ChannelModel) => item.id;
 
-const UnreadCategories = ({onChannelSwitch, unreadChannels}: UnreadCategoriesProps) => {
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
+const UnreadCategories = ({onChannelSwitch, onlyUnreads, unreadChannels}: UnreadCategoriesProps) => {
     const intl = useIntl();
+    const theme = useTheme();
+    const isTablet = useIsTablet();
+    const styles = getStyleSheet(theme);
 
     const renderItem = useCallback(({item}: {item: ChannelModel}) => {
         return (
@@ -44,20 +54,31 @@ const UnreadCategories = ({onChannelSwitch, unreadChannels}: UnreadCategoriesPro
         );
     }, [onChannelSwitch]);
 
-    if (!unreadChannels.length) {
+    const showEmptyState = onlyUnreads && !unreadChannels.length;
+    const showTitle = !onlyUnreads || (onlyUnreads && !showEmptyState);
+    const EmptyState = showEmptyState && !isTablet ? (
+        <Empty onlyUnreads={onlyUnreads}/>
+    ) : undefined;
+
+    if (!unreadChannels.length && !onlyUnreads) {
         return null;
     }
+
     return (
         <>
+            {showTitle &&
             <Text
                 style={styles.heading}
             >
                 {intl.formatMessage({id: 'mobile.channel_list.unreads', defaultMessage: 'UNREADS'})}
             </Text>
+            }
             <FlatList
+                contentContainerStyle={showEmptyState && !isTablet && styles.empty}
                 data={unreadChannels}
                 renderItem={renderItem}
                 keyExtractor={extractKey}
+                ListEmptyComponent={EmptyState}
                 removeClippedSubviews={true}
             />
         </>

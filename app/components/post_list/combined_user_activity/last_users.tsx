@@ -15,6 +15,8 @@ import {postTypeMessages, systemMessages} from './messages';
 
 type LastUsersProps = {
     actor: string;
+    channelId?: string;
+    location: string;
     postType: string;
     usernames: string[];
     theme: Theme;
@@ -35,7 +37,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const LastUsers = ({actor, postType, theme, usernames}: LastUsersProps) => {
+const LastUsers = ({actor, channelId, location, postType, theme, usernames}: LastUsersProps) => {
     const [expanded, setExpanded] = useState(false);
     const intl = useIntl();
     const style = getStyleSheet(theme);
@@ -58,6 +60,8 @@ const LastUsers = ({actor, postType, theme, usernames}: LastUsersProps) => {
         return (
             <Markdown
                 baseTextStyle={style.baseText}
+                channelId={channelId}
+                location={location}
                 textStyles={textStyles}
                 value={formattedMessage}
                 theme={theme}
@@ -71,8 +75,10 @@ const LastUsers = ({actor, postType, theme, usernames}: LastUsersProps) => {
     return (
         <Text>
             <FormattedMarkdownText
+                channelId={channelId}
                 id={'last_users_message.first'}
                 defaultMessage={'{firstUser} and '}
+                location={location}
                 values={{firstUser}}
                 baseTextStyle={style.baseText}
                 style={style.baseText}
@@ -90,8 +96,10 @@ const LastUsers = ({actor, postType, theme, usernames}: LastUsersProps) => {
                 />
             </Text>
             <FormattedMarkdownText
+                channelId={channelId}
                 id={systemMessages[postType].id}
                 defaultMessage={systemMessages[postType].defaultMessage}
+                location={location}
                 values={{actor}}
                 baseTextStyle={style.baseText}
                 style={style.baseText}

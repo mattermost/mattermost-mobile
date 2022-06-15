@@ -61,7 +61,7 @@ public struct User: Codable, Hashable {
         roles = try container.decode(String.self, forKey: .roles)
         is_guest = roles.contains("system_guest")
         last_name = try container.decode(String.self, forKey: .last_name)
-        last_picture_update = try container.decode(Int64.self, forKey: .last_picture_update)
+        last_picture_update = try container.decodeIfPresent(Int64.self, forKey: .last_picture_update) ?? 0
         locale = try container.decode(String.self, forKey: .locale)
         nickname = try container.decode(String.self, forKey: .nickname)
         position = try container.decode(String.self, forKey: .position)

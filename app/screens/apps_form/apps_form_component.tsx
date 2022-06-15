@@ -397,6 +397,8 @@ function AppsFormComponent({
                             baseTextStyle={style.errorLabel}
                             textStyles={getMarkdownTextStyles(theme)}
                             blockStyles={getMarkdownBlockStyles(theme)}
+                            location=''
+                            disableAtMentions={true}
                             value={error}
                             theme={theme}
                         />

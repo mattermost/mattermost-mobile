@@ -55,6 +55,7 @@ ChannelMembership
 id PK string # composition ID Channel.id-User.id
 channel_id string INDEX FK >- Channel.id
 user_id string INDEX FK >- User.id
+scheme_admin bool
 
 CustomEmoji
 -
@@ -241,6 +242,7 @@ TeamMembership
 id PK string # auto-generated
 team_id string INDEX FK >- Team.id
 user_id string INDEX FK >- User.id
+scheme_admin bool
 
 
 TeamSearchHistory

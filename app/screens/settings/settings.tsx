@@ -12,7 +12,7 @@ import {Screens} from '@constants';
 import {useServerDisplayName} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -95,7 +95,7 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
 
     useEffect(() => {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (EphemeralStore.getNavigationTopComponentId() === componentId) {
+            if (NavigationStore.getNavigationTopComponentId() === componentId) {
                 close();
                 return true;
             }

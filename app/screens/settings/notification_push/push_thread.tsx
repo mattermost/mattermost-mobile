@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import Block from '@components/block';
-import BlockItem from '@components/block_item';
-import FormattedText from '@components/formatted_text';
+import OptionItem from '@components/option_item';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -49,6 +49,7 @@ type MobilePushThreadProps = {
 
 const MobilePushThread = ({pushThread, onMobilePushThreadChanged}: MobilePushThreadProps) => {
     const theme = useTheme();
+    const intl = useIntl();
     const styles = getStyleSheet(theme);
 
     return (
@@ -58,17 +59,11 @@ const MobilePushThread = ({pushThread, onMobilePushThreadChanged}: MobilePushThr
             headerStyles={styles.upperCase}
             containerStyles={styles.area}
         >
-            <BlockItem
-                label={(
-                    <FormattedText
-                        id='notification_settings.push_threads.description'
-                        defaultMessage={'Notify me about all replies to threads I\'m following'}
-                        style={styles.label}
-                    />
-                )}
+            <OptionItem
                 action={onMobilePushThreadChanged}
-                actionType='toggle'
+                label={intl.formatMessage({id: 'notification_settings.push_threads.description', defaultMessage: 'Notify me about all replies to threads I\'m following'})}
                 selected={pushThread === 'all'}
+                type='toggle'
             />
             <View style={styles.separator}/>
         </Block>
