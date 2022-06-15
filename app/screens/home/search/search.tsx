@@ -17,6 +17,7 @@ import {useServerUrl} from '@context/server';
 import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, filterFiles} from '@utils/file';
 
+import Modifiers from './modifiers/modifiers';
 import Results from './results';
 import Header, {SelectTab} from './results/header';
 
@@ -160,16 +161,25 @@ const SearchScreen = ({teamId}: Props) => {
                         <RoundedHeaderContext/>
                         {header}
                     </Animated.View>
-                    <Results
-                        selectedTab={selectedTab}
-                        searchValue={lastSearchedValue}
-                        postIds={postIds}
-                        fileInfos={filteredFileInfos}
-                        scrollRef={scrollRef}
-                        onScroll={onScroll}
-                        scrollPaddingTop={scrollPaddingTop}
-                        loading={loading}
-                    />
+                    {!searchValue &&
+                        <Modifiers
+                            setSearchValue={setSearchValue}
+                            searchValue={searchValue}
+                            scrollPaddingTop={scrollPaddingTop}
+                        />
+                    }
+                    {searchValue &&
+                        <Results
+                            selectedTab={selectedTab}
+                            searchValue={lastSearchedValue}
+                            postIds={postIds}
+                            fileInfos={filteredFileInfos}
+                            scrollRef={scrollRef}
+                            onScroll={onScroll}
+                            scrollPaddingTop={scrollPaddingTop}
+                            loading={loading}
+                        />
+                    }
                 </Animated.View>
             </SafeAreaView>
         </FreezeScreen>
