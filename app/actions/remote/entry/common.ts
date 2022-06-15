@@ -40,7 +40,6 @@ export type AppEntryData = {
     removeTeamIds?: string[];
     removeChannelIds?: string[];
     isCRTEnabled: boolean;
-    shouldPopToRoot?: boolean;
 }
 
 export type AppEntryError = {
@@ -55,7 +54,6 @@ export type EntryResponse = {
     teamData: MyTeamsRequest;
     chData?: MyChannelsRequest;
     meData?: MyUserRequest;
-    shouldPopToRoot?: boolean;
 } | {
     error: unknown;
 }
@@ -98,7 +96,7 @@ export const entry = async (serverUrl: string, teamId?: string, channelId?: stri
         return {error: fetchedData.error};
     }
 
-    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds, isCRTEnabled, shouldPopToRoot} = fetchedData;
+    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds, isCRTEnabled} = fetchedData;
     const error = teamData.error || chData?.error || prefData.error || meData.error;
     if (error) {
         return {error};
@@ -128,7 +126,7 @@ export const entry = async (serverUrl: string, teamId?: string, channelId?: stri
 
     const models = await Promise.all(modelPromises);
 
-    return {models: models.flat(), initialChannelId, initialTeamId, prefData, teamData, chData, meData, shouldPopToRoot};
+    return {models: models.flat(), initialChannelId, initialTeamId, prefData, teamData, chData, meData};
 };
 
 export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, initialTeamId = ''): Promise<AppEntryData | AppEntryError> => {
@@ -137,7 +135,6 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
         return {error: `${serverUrl} database not found`};
     }
     let since = sinceArg;
-    let shouldPopToRoot = false;
     const includeDeletedChannels = true;
     const fetchOnly = true;
 
@@ -150,7 +147,6 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
             const currentServerUrl = await DatabaseManager.getActiveServerUrl();
             const isSameServer = currentServerUrl === serverUrl;
             if (isSameServer) {
-                shouldPopToRoot = true;
                 since = 0;
             }
             const {error} = await truncateCrtRelatedTables(serverUrl);
@@ -197,7 +193,6 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
         meData,
         removeTeamIds,
         isCRTEnabled,
-        shouldPopToRoot,
     };
 
     if (teamData.teams?.length === 0 && !teamData.error) {

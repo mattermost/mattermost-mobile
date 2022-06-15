@@ -3,7 +3,6 @@
 
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
-import {popToRoot} from '@app/screens/navigation';
 import DatabaseManager from '@database/manager';
 import {prepareCommonSystemValues, getCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId, getCurrentChannelId} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
@@ -39,16 +38,12 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
     if ('error' in entryData) {
         return {error: entryData.error};
     }
-    const {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData, shouldPopToRoot} = entryData;
+    const {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData} = entryData;
     if (isUpgrade && meData?.user) {
         const me = await prepareCommonSystemValues(operator, {currentUserId: meData.user.id});
         if (me?.length) {
             await operator.batchRecords(me);
         }
-    }
-
-    if (shouldPopToRoot) {
-        popToRoot();
     }
 
     let switchToChannel = false;
