@@ -5,7 +5,6 @@ import React from 'react';
 import {IntlShape, useIntl} from 'react-intl';
 import {StyleProp, Text, View, ViewStyle} from 'react-native';
 
-import {typography} from '@app/utils/typography';
 import ChannelIcon from '@components/channel_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedText from '@components/formatted_text';
@@ -14,6 +13,7 @@ import {BotTag, GuestTag} from '@components/tag';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {getUserCustomStatus, isBot, isGuest, isShared} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';

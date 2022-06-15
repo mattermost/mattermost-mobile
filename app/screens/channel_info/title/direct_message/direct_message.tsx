@@ -4,8 +4,8 @@
 import React from 'react';
 import {Text, View} from 'react-native';
 
-import {BotTag, GuestTag} from '@app/components/tag';
 import ProfilePicture from '@components/profile_picture';
+import {BotTag, GuestTag} from '@components/tag';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';

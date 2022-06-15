@@ -6,9 +6,9 @@ import {FlatList} from 'react-native';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {fetchDirectChannelsInfo} from '@actions/remote/channel';
-import {useServerUrl} from '@app/context/server';
 import ChannelItem from '@components/channel_item';
 import {DMS_CATEGORY} from '@constants/categories';
+import {useServerUrl} from '@context/server';
 import {isDMorGM} from '@utils/channel';
 
 import type CategoryModel from '@typings/database/models/servers/category';

@@ -5,9 +5,9 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {Platform} from 'react-native';
 
-import {goToScreen} from '@app/screens/navigation';
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
+import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
