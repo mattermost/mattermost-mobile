@@ -28,6 +28,7 @@ import CallsTypes from '@mmproducts/calls/store/action_types/calls';
 import {
     getCallInCurrentChannel,
     getConfig,
+    getICEServersConfigs,
     getNumCurrentConnectedParticipants,
 } from '@mmproducts/calls/store/selectors/calls';
 import {Call, CallParticipant, DefaultServerConfig} from '@mmproducts/calls/store/types/calls';
@@ -201,7 +202,7 @@ export function joinCall(channelId: string, intl: typeof intlShape): ActionFunc 
         dispatch(setSpeakerphoneOn(false));
 
         try {
-            ws = await newClient(channelId, getConfig(getState()).ICEServers, () => {
+            ws = await newClient(channelId, getICEServersConfigs(getState()), () => {
                 dispatch(setSpeakerphoneOn(false));
                 dispatch({type: CallsTypes.RECEIVED_MYSELF_LEFT_CALL});
             }, setScreenShareURL);

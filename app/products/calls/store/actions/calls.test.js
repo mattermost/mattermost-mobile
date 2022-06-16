@@ -34,7 +34,10 @@ jest.mock('@client/rest', () => ({
             },
         ]),
         getCallsConfig: jest.fn(() => ({
-            ICEServers: ['mattermost.com'],
+            ICEServersConfigs: [{
+                urls: 'stun:stun1.example.com',
+            },
+            ],
             AllowEnableCalls: true,
             DefaultEnabled: true,
             last_retrieved_at: 1234,

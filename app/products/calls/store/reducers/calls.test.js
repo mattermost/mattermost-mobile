@@ -408,7 +408,7 @@ describe('Reducers.calls.config', () => {
         const testAction = {
             type: CallsTypes.RECEIVED_CONFIG,
             data: {
-                ICEServers: ['google.com'],
+                ICEServers: ['stun:stun.example.com'],
                 AllowEnableCalls: true,
                 DefaultEnabled: true,
                 last_retrieved_at: 123,

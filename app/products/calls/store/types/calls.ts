@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {ConfigurationParamWithUrls, ConfigurationParamWithUrl} from 'react-native-webrtc';
+
 import {UserProfile} from '@mm-redux/types/users';
 import {Dictionary} from '@mm-redux/types/utilities';
 
@@ -60,6 +62,7 @@ export type VoiceEventData = {
 
 export type ServerConfig = {
     ICEServers: string[];
+    ICEServersConfigs: ICEServersConfigs;
     AllowEnableCalls: boolean;
     DefaultEnabled: boolean;
     MaxCallParticipants: number;
@@ -69,9 +72,12 @@ export type ServerConfig = {
 
 export const DefaultServerConfig = {
     ICEServers: [],
+    ICEServersConfigs: [],
     AllowEnableCalls: false,
     DefaultEnabled: false,
     MaxCallParticipants: 0,
     sku_short_name: '',
     last_retrieved_at: 0,
 } as ServerConfig;
+
+export type ICEServersConfigs = ConfigurationParamWithUrls[] | ConfigurationParamWithUrl[];

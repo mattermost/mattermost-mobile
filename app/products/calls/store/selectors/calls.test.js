@@ -197,4 +197,47 @@ describe('Selectors.Calls', () => {
         // On cloud, MaxCallParticipants missing, default should be used.
         assert.equal(Selectors.isLimitRestricted(newState, 'call1'), true);
     });
+
+    it('getICEServersConfigs', () => {
+        assert.deepEqual(Selectors.getICEServersConfigs(testState), []);
+
+        // backwards compatible case, no ICEServersConfigs present.
+        let newState = {
+            ...testState,
+            entities: {
+                ...testState.entities,
+                calls: {
+                    ...testState.entities.calls,
+                    config: {
+                        ...testState.entities.calls.config,
+                        ICEServers: ['stun:stun1.example.com'],
+                    },
+                },
+            },
+        };
+        assert.deepEqual(Selectors.getICEServersConfigs(newState), [{urls: ['stun:stun1.example.com']}]);
+
+        // ICEServersConfigs defined case
+        newState = {
+            ...testState,
+            entities: {
+                ...testState.entities,
+                calls: {
+                    ...testState.entities.calls,
+                    config: {
+                        ...testState.entities.calls.config,
+                        ICEServers: ['stun:stun1.example.com'],
+                        ICEServersConfigs: [
+                            {urls: 'stun:stun1.example.com'},
+                            {urls: 'turn:turn.example.com', username: 'username', credentail: 'password'},
+                        ],
+                    },
+                },
+            },
+        };
+        assert.deepEqual(Selectors.getICEServersConfigs(newState), [
+            {urls: 'stun:stun1.example.com'},
+            {urls: 'turn:turn.example.com', username: 'username', credentail: 'password'},
+        ]);
+    });
 });
