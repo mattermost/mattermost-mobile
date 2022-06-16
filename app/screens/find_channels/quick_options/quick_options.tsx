@@ -66,7 +66,7 @@ const QuickOptions = ({canCreateChannels, canJoinChannels, close}: Props) => {
     return (
         <Animated.View
             entering={FadeInDown.duration(200)}
-            exiting={FadeOutUp.duration(200)}
+            exiting={FadeOutUp.duration(100)}
             style={styles.container}
         >
             <Animated.View style={styles.wrapper}>
