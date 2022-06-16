@@ -18,8 +18,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         showMore: {
             color: theme.buttonBg,
             paddingLeft: 20,
-            paddingVertical: 12,
-            ...typography('Body', 400, 'SemiBold'),
+            ...typography('Body', 200, 'SemiBold'),
         },
     };
 });

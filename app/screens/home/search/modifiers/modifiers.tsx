@@ -158,15 +158,16 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             height: SECTION_HEIGHT,
         },
         title: {
+            marginTop: 20,
             paddingVertical: 12,
             paddingHorizontal: 20,
             color: theme.centerChannelColor,
-            ...typography('Heading', 600, 'SemiBold'),
+            ...typography('Heading', 300, 'SemiBold'),
         },
         showMore: {
-            padding: 20,
+            padding: 0,
             color: theme.buttonBg,
-            ...typography('Body', 600, 'SemiBold'),
+            ...typography('Body', 200, 'SemiBold'),
         },
         separatorContainer: {
             justifyContent: 'center',

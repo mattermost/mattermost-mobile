@@ -32,12 +32,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         modifierLabelValue: {
             marginLeft: 16,
             color: theme.centerChannelColor,
-            ...typography('Body', 400, 'SemiBold'),
+            ...typography('Body', 200, 'SemiBold'),
         },
         modifierItemDescription: {
             fontSize: 16,
             color: theme.centerChannelColor,
-            ...typography('Body', 400, 'Regular'),
+            ...typography('Body', 200, 'Regular'),
         },
     };
 });
