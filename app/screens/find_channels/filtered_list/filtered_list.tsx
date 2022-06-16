@@ -74,6 +74,8 @@ const sortByUserOrChannel = <T extends Channel |UserModel>(locale: string, teamm
     return aDisplayName.toLowerCase().localeCompare(bDisplayName.toLowerCase(), locale, {numeric: true});
 };
 
+const emptyData: Array<ChannelModel | Channel | UserModel> = [];
+
 const FilteredList = ({
     archivedChannels, close, channelsMatch, channelsMatchStart, currentTeamId,
     keyboardHeight, loading, onLoading, restrictDirectMessage, showTeamName,
@@ -89,7 +91,6 @@ const FilteredList = ({
     const totalLocalResults = channelsMatchStart.length + channelsMatch.length + usersMatchStart.length;
 
     const search = async () => {
-        onLoading(true);
         if (mounted.current) {
             setRemoteChannels({archived: [], startWith: [], matches: []});
         }
@@ -201,7 +202,7 @@ const FilteredList = ({
         }
 
         return null;
-    }, [term, loading, theme]);
+    }, [!loading && term, theme]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<ChannelModel|Channel|UserModel>) => {
         if ('teamId' in item) {
@@ -232,6 +233,9 @@ const FilteredList = ({
     }, [onJoinChannel, onOpenDirectMessage, onSwitchToChannel, showTeamName, teammateDisplayNameSetting]);
 
     const data = useMemo(() => {
+        if (loading) {
+            return emptyData;
+        }
         const items: Array<ChannelModel|Channel|UserModel> = [...channelsMatchStart];
 
         // Channels that matches
@@ -263,8 +267,12 @@ const FilteredList = ({
             items.push(...archivedAlpha.slice(0, MAX_RESULTS + 1));
         }
 
+        if (!items.length) {
+            return emptyData;
+        }
+
         return [...new Set(items)].slice(0, MAX_RESULTS + 1);
-    }, [archivedChannels, channelsMatchStart, channelsMatch, remoteChannels, usersMatch, usersMatchStart, locale, teammateDisplayNameSetting]);
+    }, [archivedChannels, channelsMatchStart, channelsMatch, remoteChannels, usersMatch, usersMatchStart, locale, teammateDisplayNameSetting, loading]);
 
     useEffect(() => {
         mounted.current = true;
@@ -274,12 +282,14 @@ const FilteredList = ({
     });
 
     useEffect(() => {
+        const nextLoading = Boolean(term);
+        if (loading !== nextLoading) {
+            onLoading(nextLoading);
+        }
         bounce.current = debounce(search, 500);
         bounce.current();
         return () => {
-            if (bounce.current) {
-                bounce.current.cancel();
-            }
+            bounce.current?.cancel();
         };
     }, [term]);
 
