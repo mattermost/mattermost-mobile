@@ -48,6 +48,7 @@ const SearchScreen = ({teamId}: Props) => {
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
     const [selectedTab, setSelectedTab] = useState<SelectTab>('messages');
     const [filter, setFilter] = useState<FileFilter>('all');
+    const [showResults, setShowResults] = useState(false);
 
     const [loading, setLoading] = useState(false);
     const [lastSearchedValue, setLastSearchedValue] = useState('');
@@ -80,15 +81,12 @@ const SearchScreen = ({teamId}: Props) => {
         setPostIds(postResults?.order?.length ? postResults.order : emptyPostResults);
 
         setLoading(false);
+        setShowResults(true);
     })), [searchValue]);
 
     const onSnap = (offset: number) => {
         scrollRef.current?.scrollToOffset({offset, animated: true});
     };
-
-    useEffect(() => {
-        setSearchValue(searchTerm);
-    }, [searchTerm]);
 
     useEffect(() => {
         setFilteredFileInfos(filterFiles(fileInfos, filter));
@@ -119,6 +117,13 @@ const SearchScreen = ({teamId}: Props) => {
         };
     }, [headerHeight, lastSearchedValue]);
 
+    const handleClearSearch = useCallback(() => {
+        setSearchValue('');
+        setLastSearchedValue('');
+        setFilter('all');
+        setShowResults(false);
+    }, [filter, searchValue, lastSearchedValue]);
+
     let header = null;
     if (lastSearchedValue) {
         header = (
@@ -137,10 +142,7 @@ const SearchScreen = ({teamId}: Props) => {
         <FreezeScreen freeze={!isFocused}>
             <NavigationHeader
                 isLargeTitle={true}
-                onBackPress={() => {
-                    // eslint-disable-next-line no-console
-                    console.log('BACK');
-                }}
+                onBackPress={handleClearSearch}
                 showBackButton={false}
                 title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
                 hasSearch={true}
@@ -150,6 +152,7 @@ const SearchScreen = ({teamId}: Props) => {
                 onSubmitEditing={handleSearch}
                 blurOnSubmit={true}
                 placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
+                onClear={handleClearSearch}
                 defaultValue={searchValue}
             />
             <SafeAreaView
@@ -161,14 +164,14 @@ const SearchScreen = ({teamId}: Props) => {
                         <RoundedHeaderContext/>
                         {header}
                     </Animated.View>
-                    {!searchValue &&
+                    {!showResults &&
                         <Modifiers
                             setSearchValue={setSearchValue}
                             searchValue={searchValue}
                             scrollPaddingTop={scrollPaddingTop}
                         />
                     }
-                    {searchValue &&
+                    {showResults &&
                         <Results
                             selectedTab={selectedTab}
                             searchValue={lastSearchedValue}

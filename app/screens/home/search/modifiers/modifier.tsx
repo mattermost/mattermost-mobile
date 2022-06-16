@@ -17,7 +17,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flext: 1,
-            height: 48,
+            height: MODIFIER_LABEL_HEIGHT,
             marginLeft: 20,
             justifyContent: 'center',
         },
@@ -46,7 +46,7 @@ export type ModifierItem = {
         description: string;
         modifier: string;
         testID: string;
-        id: string;
+        id?: string;
         value: string;
 }
 
@@ -61,13 +61,12 @@ const Modifier = ({item, searchValue, setSearchValue}: Props) => {
 
     const handlePress = useCallback(() => {
         setModifierValue(item.value);
-    }, [item.value]);
+    }, [item.value, searchValue]);
 
     const style = getStyleFromTheme(theme);
 
     const setModifierValue = preventDoubleTap((modifier) => {
         let newValue = '';
-
         if (!searchValue) {
             newValue = modifier;
         } else if (searchValue.endsWith(' ')) {
