@@ -6,7 +6,6 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {General, Navigation as NavigationConstants, Preferences, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
-import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {extractChannelDisplayName} from '@helpers/database';
@@ -22,7 +21,6 @@ import {getCurrentUser, queryUsersById} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
-import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
 import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from '@utils/user';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -84,18 +82,6 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
 
                 if (models.length && !prepareRecordsOnly) {
                     await operator.batchRecords(models);
-                }
-
-                if (!EphemeralStore.theme) {
-                    // When opening the app from a push notification the theme may not be set in the EphemeralStore
-                    // causing the goToScreen to use the Appearance theme instead and that causes the screen background color to potentially
-                    // not match the theme
-                    const themes = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_THEME, toTeamId).fetch();
-                    let theme = getDefaultThemeByAppearance();
-                    if (themes.length) {
-                        theme = setThemeDefaults(JSON.parse(themes[0].value) as Theme);
-                    }
-                    updateThemeIfNeeded(theme, true);
                 }
 
                 if (isTabletDevice) {
