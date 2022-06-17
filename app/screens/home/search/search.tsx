@@ -18,6 +18,7 @@ import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, filterFiles} from '@utils/file';
 
 import Modifiers from './modifiers/modifiers';
+import RecentSearches from './recent_searches/recent_searches';
 import Results from './results';
 import Header, {SelectTab} from './results/header';
 
@@ -168,11 +169,19 @@ const SearchScreen = ({teamId}: Props) => {
                         {header}
                     </Animated.View>
                     {!showResults &&
-                        <Modifiers
-                            setSearchValue={setSearchValue}
-                            searchValue={searchValue}
-                            scrollPaddingTop={scrollPaddingTop}
-                        />
+                        <>
+                            <Modifiers
+                                setSearchValue={setSearchValue}
+                                searchValue={searchValue}
+                                scrollPaddingTop={scrollPaddingTop}
+                            />
+                            <RecentSearches
+                                setSearchValue={setSearchValue}
+
+                                //searchValue={searchValue}
+                                //scrollPaddingTop={scrollPaddingTop}
+                            />
+                        </>
                     }
                     {showResults &&
                         <Results
