@@ -16,10 +16,8 @@ import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import {ErrorType} from './common';
-
 type Props = {
-    error: ErrorType;
+    error: PermalinkErrorType;
     handleClose: () => void;
     handleJoin: () => void;
 }

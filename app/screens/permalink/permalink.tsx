@@ -27,7 +27,6 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import {ErrorType} from './common';
 import PermalinkError from './permalink_error';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -133,7 +132,7 @@ function Permalink({
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
     const style = getStyleSheet(theme);
-    const [error, setError] = useState<ErrorType>();
+    const [error, setError] = useState<PermalinkErrorType>();
     const [channelId, setChannelId] = useState(channel?.id);
 
     const containerStyle = useMemo(() => {
