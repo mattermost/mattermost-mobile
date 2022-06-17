@@ -256,7 +256,7 @@ const FilteredList = ({
             items.push(...remoteChannels.startWith);
         }
 
-        // // Users & Channels that matches
+        // Users & Channels that matches
         if (items.length < MAX_RESULTS) {
             const sortedByAlpha = [...usersMatch, ...remoteChannels.matches].
                 sort(sortByUserOrChannel.bind(null, locale, teammateDisplayNameSetting));
