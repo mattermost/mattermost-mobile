@@ -56,6 +56,7 @@ describe('Channels - Create Direct Message', () => {
     it('MM-T4730_1 - should match elements on create direct message screen', async () => {
         // # Open create direct message screen
         await CreateDirectMessageScreen.open();
+        await CreateDirectMessageScreen.closeTutorial();
 
         // * Verify basic elements on create direct message screen
         await expect(CreateDirectMessageScreen.closeButton).toBeVisible();
@@ -99,6 +100,7 @@ describe('Channels - Create Direct Message', () => {
 
         // # Go back to channel list screen
         await ChannelScreen.back();
+        await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
 
         // * Verify direct message channel for the new user is added to direct message list
@@ -144,6 +146,7 @@ describe('Channels - Create Direct Message', () => {
 
         // # Go back to channel list screen
         await ChannelScreen.back();
+        await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
 
         // * Verify group message channel for the other two new users is added to direct message list

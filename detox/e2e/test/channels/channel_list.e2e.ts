@@ -115,20 +115,20 @@ describe('Channels - Channel List', () => {
         // # Toggle channels category to collapse
         await ChannelListScreen.getCategoryExpanded(channelsCategory).tap();
 
-        // * Verify category is collapsed and only currently active channel is listed
+        // * Verify category is collapsed and channels are not listed
         await expect(ChannelListScreen.getCategoryCollapsed(channelsCategory)).toBeVisible();
-        await expect(ChannelListScreen.getChannelListItemExpanded(channelsCategory, testChannel.name)).toBeVisible();
-        await expect(ChannelListScreen.getChannelListItemCollapsed(channelsCategory, offTopicChannelName)).toBeVisible();
-        await expect(ChannelListScreen.getChannelListItemCollapsed(channelsCategory, townSquareChannelName)).toBeVisible();
+        await expect(ChannelListScreen.getChannelListItemDisplayName(channelsCategory, testChannel.name)).not.toBeVisible();
+        await expect(ChannelListScreen.getChannelListItemDisplayName(channelsCategory, offTopicChannelName)).not.toBeVisible();
+        await expect(ChannelListScreen.getChannelListItemDisplayName(channelsCategory, townSquareChannelName)).not.toBeVisible();
 
         // # Toggle channels category to expand
         await ChannelListScreen.getCategoryCollapsed(channelsCategory).tap();
 
         // * Verify category is expanded and all channels are listed
         await expect(ChannelListScreen.getCategoryExpanded(channelsCategory)).toBeVisible();
-        await expect(ChannelListScreen.getChannelListItemExpanded(channelsCategory, testChannel.name)).toBeVisible();
-        await expect(ChannelListScreen.getChannelListItemExpanded(channelsCategory, offTopicChannelName)).toBeVisible();
-        await expect(ChannelListScreen.getChannelListItemExpanded(channelsCategory, townSquareChannelName)).toBeVisible();
+        await expect(ChannelListScreen.getChannelListItemDisplayName(channelsCategory, testChannel.name)).toBeVisible();
+        await expect(ChannelListScreen.getChannelListItemDisplayName(channelsCategory, offTopicChannelName)).toBeVisible();
+        await expect(ChannelListScreen.getChannelListItemDisplayName(channelsCategory, townSquareChannelName)).toBeVisible();
     });
 
     it('MM-T4728_4 - should be able to go to browse channels screen', async () => {
@@ -152,6 +152,7 @@ describe('Channels - Channel List', () => {
         await CreateDirectMessageScreen.toBeVisible();
 
         // # Go back to channel list screen
+        await CreateDirectMessageScreen.closeTutorial();
         await CreateDirectMessageScreen.close();
     });
 
@@ -191,7 +192,7 @@ describe('Channels - Channel List', () => {
         // * Verify on first team and team sidebar item is selected and has correct display name abbreviation
         await expect(ChannelListScreen.headerTeamDisplayName).toHaveText(testTeam.display_name);
         await expect(ChannelListScreen.getTeamItemSelected(testTeam.id)).toBeVisible();
-        await expect(ChannelListScreen.getTeamItemDisplayNameAbbreviation(testTeam.id)).toHaveText(testTeam.display_name.substring(0, 2).toUpperCase());
+        await expect(ChannelListScreen.getTeamItemDisplayNameAbbreviation(testTeam.id)).toHaveText(testTeam.display_name.substring(0, 2));
 
         // # Tap on second team item from team sidebar
         await ChannelListScreen.getTeamItemNotSelected(testTeamTwo.id).tap();
@@ -199,7 +200,7 @@ describe('Channels - Channel List', () => {
         // * Verify on second team and team sidebar item is selected and has correct display name abbreviation
         await expect(ChannelListScreen.headerTeamDisplayName).toHaveText(testTeamTwo.display_name);
         await expect(ChannelListScreen.getTeamItemSelected(testTeamTwo.id)).toBeVisible();
-        await expect(ChannelListScreen.getTeamItemDisplayNameAbbreviation(testTeamTwo.id)).toHaveText(testTeamTwo.display_name.substring(0, 2).toUpperCase());
+        await expect(ChannelListScreen.getTeamItemDisplayNameAbbreviation(testTeamTwo.id)).toHaveText(testTeamTwo.display_name.substring(0, 2));
 
         // # Tap back on first team item from team sidebar
         await ChannelListScreen.getTeamItemNotSelected(testTeam.id).tap();

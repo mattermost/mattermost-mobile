@@ -62,7 +62,7 @@ describe('Threads - Global Threads', () => {
 
     it('MM-T4805_1 - should match elements on global threads screen', async () => {
         // # Open global threads screen
-        await ChannelListScreen.open();
+        await GlobalThreadsScreen.open();
 
         // * Verify basic elements on global threads screen
         await expect(GlobalThreadsScreen.headerAllThreadsButton).toBeVisible();
@@ -92,6 +92,7 @@ describe('Threads - Global Threads', () => {
         // # Go back to channel list screen, then go to global threads screen, and tap on all your threads button
         await ThreadScreen.back();
         await ChannelScreen.back();
+        await device.reloadReactNative();
         await GlobalThreadsScreen.open();
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
 

@@ -5,10 +5,10 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {Platform} from 'react-native';
 
-import {t} from '@app/i18n';
-import {goToScreen} from '@app/screens/navigation';
 import OptionItem from '@components/option_item';
 import {NotificationLevel, Screens} from '@constants';
+import {t} from '@i18n';
+import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 
 type Props = {

@@ -152,10 +152,11 @@ describe('Smoke Test - Threads', () => {
 
         // * Verify on channel screen and thread is displayed
         await ChannelScreen.toBeVisible();
-        const {postListPostItem} = ThreadScreen.getPostListPostItem(parentPost.id, parentMessage);
+        const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
         await expect(postListPostItem).toBeVisible();
 
         // # Go back to channel list screen
         await ChannelScreen.back();
+        await GlobalThreadsScreen.back();
     });
 });

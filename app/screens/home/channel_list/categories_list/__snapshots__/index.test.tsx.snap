@@ -190,7 +190,7 @@ exports[`components/categories_list should render channels error 1`] = `
         style={
           Object {
             "borderBottomColor": "rgba(255,255,255,0.16)",
-            "borderLeftColor": "#1c58d9",
+            "borderLeftColor": "#ffffff",
             "borderRadius": 7,
             "borderRightColor": "rgba(255,255,255,0.16)",
             "borderTopColor": "rgba(255,255,255,0.16)",

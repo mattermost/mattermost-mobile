@@ -20,8 +20,6 @@ A spec-compliant polyfill for Intl.DateTimeFormat fully tested by the official E
 
 * LICENSE: MIT
 
---- 
-
 ---
 
 ## @formatjs/intl-getcanonicallocales
@@ -91,8 +89,6 @@ A spec-compliant polyfill for Intl.RelativeTimeFormat fully tested by the offici
 
 * LICENSE: MIT
 
---- 
-
 ---
 
 ## @mattermost/compass-icons
@@ -105,8 +101,6 @@ Simple steps to adding new icons to the Compass Icons font
   * https://github.com/mattermost/compass-icons
 
 * LICENSE: Apache License
-
---- 
 
 ---
 
@@ -156,8 +150,6 @@ Configurable network clients for React Native. Uses Alamofire for iOS and OkHttp
   * https://github.com/mattermost/react-native-network-client
 
 * LICENSE: Apache License 2.0
-
---- 
 
 ---
 
@@ -243,8 +235,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
---- 
 
 ---
 

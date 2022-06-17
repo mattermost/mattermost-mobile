@@ -35,11 +35,12 @@ type UnreadCategoriesProps = {
     onChannelSwitch: (channelId: string) => void;
     onlyUnreads: boolean;
     unreadChannels: ChannelModel[];
+    unreadThreads: {unreads: number; mentions: number};
 }
 
 const extractKey = (item: ChannelModel) => item.id;
 
-const UnreadCategories = ({onChannelSwitch, onlyUnreads, unreadChannels}: UnreadCategoriesProps) => {
+const UnreadCategories = ({onChannelSwitch, onlyUnreads, unreadChannels, unreadThreads}: UnreadCategoriesProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -60,7 +61,7 @@ const UnreadCategories = ({onChannelSwitch, onlyUnreads, unreadChannels}: Unread
         <Empty onlyUnreads={onlyUnreads}/>
     ) : undefined;
 
-    if (!unreadChannels.length && !onlyUnreads) {
+    if (!unreadChannels.length && !unreadThreads.mentions && !unreadThreads.mentions && !onlyUnreads) {
         return null;
     }
 

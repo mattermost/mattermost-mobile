@@ -47,14 +47,6 @@ class ChannelListScreen {
         return element(by.id(`category_header.${categoryKey}.display_name`));
     };
 
-    getChannelListItemCollapsed = (categoryKey: string, channelName: string) => {
-        return element(by.id(`category.${categoryKey}.channel_list_item.${channelName}.collapsed.true`));
-    };
-
-    getChannelListItemExpanded = (categoryKey: string, channelName: string) => {
-        return element(by.id(`category.${categoryKey}.channel_list_item.${channelName}.collapsed.false`));
-    };
-
     getChannelListItemDisplayName = (categoryKey: string, channelName: string) => {
         return element(by.id(`category.${categoryKey}.channel_list_item.${channelName}.display_name`));
     };
