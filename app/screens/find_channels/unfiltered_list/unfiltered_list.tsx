@@ -21,6 +21,7 @@ type Props = {
     recentChannels: ChannelModel[];
     showTeamName: boolean;
     unreadChannels: ChannelModel[];
+    testID?: string;
 }
 
 const sectionNames = {
@@ -57,7 +58,7 @@ const buildSections = (unreadChannels: ChannelModel[], recentChannels: ChannelMo
     return sections;
 };
 
-const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, unreadChannels}: Props) => {
+const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, unreadChannels, testID}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const [sections, setSections] = useState(buildSections(unreadChannels, recentChannels));
@@ -79,6 +80,7 @@ const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, un
                 isInfo={true}
                 onPress={onPress}
                 showTeamName={showTeamName}
+                testID='find_channels.unfiltered_list.channel_item'
             />
         );
     }, [onPress, showTeamName]);
@@ -102,6 +104,7 @@ const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, un
                 sections={sections}
                 showsVerticalScrollIndicator={false}
                 stickySectionHeadersEnabled={true}
+                testID={`${testID}.section_list`}
             />
         </Animated.View>
     );

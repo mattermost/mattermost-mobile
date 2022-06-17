@@ -16,8 +16,8 @@ import {
     siteOneUrl,
 } from '@support/test_config';
 import {
-    ChannelScreen,
     ChannelListScreen,
+    ChannelScreen,
     HomeScreen,
     LoginScreen,
     PostOptionsScreen,
@@ -27,9 +27,10 @@ import {
 import {getRandomId} from '@support/utils';
 import {expect} from 'detox';
 
-describe('Messaging - Message Reply', () => {
+describe('Messaging - Pin and Unpin Message', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
+    const pinnedText = 'Pinned';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -51,82 +52,59 @@ describe('Messaging - Message Reply', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T4785_1 - should be able to reply to a post via post options reply option', async () => {
+    it('MM-T4865_1 - should be able to pin/unpin a message via post options on channel screen', async () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
 
-        // * Verify message is added to post list
+        // * Verify message is posted
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toExist();
+        await expect(postListPostItem).toBeVisible();
 
-        // # Open post options for the message that was just posted, tap reply option
+        // # Open post options for message and tap on pin to channel option
         await ChannelScreen.openPostOptionsFor(post.id, message);
-        await PostOptionsScreen.replyPostOption.tap();
+        await PostOptionsScreen.pinPostOption.tap();
 
-        // * Verify on reply thread screen and parent post is shown
-        await ThreadScreen.toBeVisible();
-        const {postListPostItem: threadParentPostListPostItem} = ThreadScreen.getPostListPostItem(post.id, message);
-        await expect(threadParentPostListPostItem).toExist();
+        // * Verify pinned text is displayed on the post pre-header
+        const {postListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(post.id, message);
+        await expect(postListPostItemPreHeaderText).toHaveText(pinnedText);
 
-        // # Reply to parent post
-        const replyMessage = `${message} reply`;
-        await ThreadScreen.postMessage(replyMessage);
+        // # Open post options for message and tap on unpin from channel option
+        await ChannelScreen.openPostOptionsFor(post.id, message);
+        await PostOptionsScreen.unpinPostOption.tap();
 
-        // * Verify reply message is posted
-        const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id, replyMessage);
-        await expect(replyPostListPostItem).toExist();
+        // * Verify pinned text is not displayed on the post pre-header
+        await expect(postListPostItemPreHeaderText).not.toBeVisible();
 
         // # Go back to channel list screen
-        await ThreadScreen.back();
         await ChannelScreen.back();
     });
 
-    it('MM-T4785_2 - should be able to open reply thread by tapping on the post', async () => {
-        // # Open a channel screen and post a message
-        const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-
-        // * Verify message is added to post list
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toExist();
-
-        // # Tap on post to open thread
-        await postListPostItem.tap();
-
-        // * Verify on reply thread screen
-        await ThreadScreen.toBeVisible();
-
-        // # Go back to channel list screen
-        await ThreadScreen.back();
-        await ChannelScreen.back();
-    });
-
-    it('MM-T4785_3 - should not have reply option available on reply thread post options', async () => {
-        // # Open a channel screen, post a message, and tap on the post
+    it('MM-T4865_2 - should be able to pin/unpin a message via post options on thread screen', async () => {
+        // # Open a channel screen, post a message, tap on post to open thread, open post options for message, and tap on pin to channel option
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await postListPostItem.tap();
-
-        // * Verify on reply thread screen
-        await ThreadScreen.toBeVisible();
-
-        // # Open post options for the parent message
         await ThreadScreen.openPostOptionsFor(post.id, message);
+        await PostOptionsScreen.pinPostOption.tap();
 
-        // * Verify reply option is not available
-        await expect(PostOptionsScreen.replyPostOption).not.toExist();
+        // * Verify pinned text is displayed on the post pre-header
+        const {postListPostItemPreHeaderText} = ThreadScreen.getPostListPostItem(post.id, message);
+        await expect(postListPostItemPreHeaderText).toHaveText(pinnedText);
+
+        // # Open post options for message and tap on unpin from channel option
+        await ThreadScreen.openPostOptionsFor(post.id, message);
+        await PostOptionsScreen.unpinPostOption.tap();
+
+        // * Verify pinned text is not displayed on the post pre-header
+        await expect(postListPostItemPreHeaderText).not.toBeVisible();
 
         // # Go back to channel list screen
-        await PostOptionsScreen.close();
         await ThreadScreen.back();
         await ChannelScreen.back();
     });

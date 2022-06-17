@@ -21,7 +21,7 @@ const EmojiPickerScreen = ({closeButton, componentId, onEmojiPress}: Props) => {
                 {
                     icon: closeButton,
                     id: 'close-add-reaction',
-                    testID: 'close.add_reaction.button',
+                    testID: 'close.emoji_picker.button',
                 },
             ],
             rightButtons: [],
@@ -50,7 +50,12 @@ const EmojiPickerScreen = ({closeButton, componentId, onEmojiPress}: Props) => {
         close();
     }, []);
 
-    return <EmojiPicker onEmojiPress={handleEmojiPress}/>;
+    return (
+        <EmojiPicker
+            onEmojiPress={handleEmojiPress}
+            testID='emoji_picker'
+        />
+    );
 };
 
 export default EmojiPickerScreen;

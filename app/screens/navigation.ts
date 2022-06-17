@@ -81,6 +81,7 @@ export const loginAnimationOptions = () => {
 export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string) => {
     if (closeButtonId) {
         const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
+        const closeButtonTestId = `${closeButtonId.replace('close-', 'close.').replace(/-/g, '_')}.button`;
         return {
             modalPresentationStyle: OptionsModalPresentationStyle.formSheet,
             modal: {
@@ -90,7 +91,7 @@ export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string) =>
                 leftButtons: [{
                     id: closeButtonId,
                     icon: closeButton,
-                    testID: closeButtonId,
+                    testID: closeButtonTestId,
                 }],
                 leftButtonColor: changeOpacity(theme.centerChannelColor, 0.56),
                 background: {
@@ -724,7 +725,7 @@ export async function findChannels(title: string, theme: Theme) {
         leftButtons: [{
             id: closeButtonId,
             icon: closeButton,
-            testID: closeButtonId,
+            testID: 'close.find_channels.button',
         }],
     };
 

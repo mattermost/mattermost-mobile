@@ -83,6 +83,7 @@ describe('Smoke Test - Threads', () => {
         // # Go back to channel list screen, then go to global threads screen, tap on all your threads button, open thread options for thread, tap on mark as unread option, and tap on unread threads button
         await ThreadScreen.back();
         await ChannelScreen.back();
+        await device.reloadReactNative();
         await GlobalThreadsScreen.open();
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);

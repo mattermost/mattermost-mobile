@@ -16,6 +16,7 @@ class ChannelListScreen {
         headerServerDisplayName: 'channel_list_header.server_display_name',
         headerChevronButton: 'channel_list_header.chevron.button',
         headerPlusButton: 'channel_list_header.plus.button',
+        subheaderSearchFieldButton: 'channel_list_subheader.search_field.button',
         findChannelsInput: 'channel_list.search_field.find_channels.input',
         threadsButton: 'channel_list.threads.button',
     };
@@ -26,6 +27,7 @@ class ChannelListScreen {
     headerServerDisplayName = element(by.id(this.testID.headerServerDisplayName));
     headerChevronButton = element(by.id(this.testID.headerChevronButton));
     headerPlusButton = element(by.id(this.testID.headerPlusButton));
+    subheaderSearchFieldButton = element(by.id(this.testID.subheaderSearchFieldButton));
     findChannelsInput = element(by.id(this.testID.findChannelsInput));
     threadsButton = element(by.id(this.testID.threadsButton));
 
@@ -36,19 +38,23 @@ class ChannelListScreen {
     openDirectMessageItem = PlusMenu.openDirectMessageItem;
 
     getCategoryCollapsed = (categoryKey: string) => {
-        return element(by.id(`category_header.${categoryKey}.collapsed.true`));
+        return element(by.id(`channel_list.category_header.${categoryKey}.collapsed.true`));
     };
 
     getCategoryExpanded = (categoryKey: string) => {
-        return element(by.id(`category_header.${categoryKey}.collapsed.false`));
+        return element(by.id(`channel_list.category_header.${categoryKey}.collapsed.false`));
     };
 
     getCategoryHeaderDisplayName = (categoryKey: string) => {
-        return element(by.id(`category_header.${categoryKey}.display_name`));
+        return element(by.id(`channel_list.category_header.${categoryKey}.display_name`));
     };
 
-    getChannelListItemDisplayName = (categoryKey: string, channelName: string) => {
-        return element(by.id(`category.${categoryKey}.channel_list_item.${channelName}.display_name`));
+    getChannelItem = (categoryKey: string, channelName: string) => {
+        return element(by.id(`channel_list.category.${categoryKey}.channel_item.${channelName}`));
+    };
+
+    getChannelItemDisplayName = (categoryKey: string, channelName: string) => {
+        return element(by.id(`channel_list.category.${categoryKey}.channel_item.${channelName}.display_name`));
     };
 
     getTeamItemSelected = (teamId: string) => {

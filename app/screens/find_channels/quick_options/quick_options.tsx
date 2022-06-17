@@ -76,6 +76,7 @@ const QuickOptions = ({canCreateChannels, canJoinChannels, close}: Props) => {
                         iconName='globe'
                         onPress={browseChannels}
                         text={intl.formatMessage({id: 'find_channels.directory', defaultMessage: 'Directory'})}
+                        testID='find_channels.quick_options.directory.option'
                     />
                     <View style={styles.separator}/>
                 </>
@@ -84,6 +85,7 @@ const QuickOptions = ({canCreateChannels, canJoinChannels, close}: Props) => {
                     iconName='account-outline'
                     onPress={openDirectMessage}
                     text={intl.formatMessage({id: 'find_channels.open_dm', defaultMessage: 'Open a DM'})}
+                    testID='find_channels.quick_options.open_dm.option'
                 />
                 {canCreateChannels &&
                 <>
@@ -92,6 +94,7 @@ const QuickOptions = ({canCreateChannels, canJoinChannels, close}: Props) => {
                         iconName='plus'
                         onPress={createNewChannel}
                         text={intl.formatMessage({id: 'find_channels.new_channel', defaultMessage: 'New Channel'})}
+                        testID='find_channels.quick_options.new_channel.option'
                     />
                 </>
                 }

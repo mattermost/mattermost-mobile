@@ -51,6 +51,7 @@ const UnreadCategories = ({onChannelSwitch, onlyUnreads, unreadChannels, unreadT
             <ChannelItem
                 channel={item}
                 onPress={onChannelSwitch}
+                testID='channel_list.category.unreads.channel_item'
             />
         );
     }, [onChannelSwitch]);

@@ -83,7 +83,10 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
     }, []);
 
     return (
-        <View style={styles.container}>
+        <View
+            style={styles.container}
+            testID='find_channels.screen'
+        >
             <SearchBar
                 autoCapitalize='none'
                 autoFocus={true}
@@ -99,6 +102,7 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
                 selectionColor={color}
                 showLoading={loading}
                 value={term}
+                testID='find_channels.search_bar'
             />
             {term === '' && <QuickOptions close={close}/>}
             <View style={styles.listContainer}>
@@ -106,6 +110,7 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
                 <UnfilteredList
                     close={close}
                     keyboardHeight={keyboardHeight}
+                    testID='find_channels.unfiltered_list'
                 />
                 }
                 {Boolean(term) &&
@@ -115,6 +120,7 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
                     loading={loading}
                     onLoading={setLoading}
                     term={term}
+                    testID='find_channels.filtered_list'
                 />
                 }
             </View>

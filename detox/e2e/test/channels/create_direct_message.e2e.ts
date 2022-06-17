@@ -75,7 +75,7 @@ describe('Channels - Create Direct Message', () => {
 
         // * Verify no direct message channel for the new user appears on channel list screen
         const newUserDisplayName = newUser.username;
-        await expect(ChannelListScreen.getChannelListItemDisplayName(directMessagesCategory, newUserDisplayName)).not.toBeVisible();
+        await expect(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, newUserDisplayName)).not.toBeVisible();
 
         // # Open create direct message screen and search for the new user
         await CreateDirectMessageScreen.open();
@@ -105,7 +105,7 @@ describe('Channels - Create Direct Message', () => {
 
         // * Verify direct message channel for the new user is added to direct message list
         const {channel: directMessageChannel} = await Channel.apiCreateDirectChannel(siteOneUrl, [testUser.id, newUser.id]);
-        await expect(ChannelListScreen.getChannelListItemDisplayName(directMessagesCategory, directMessageChannel.name)).toHaveText(newUserDisplayName);
+        await expect(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, directMessageChannel.name)).toHaveText(newUserDisplayName);
     });
 
     it('MM-T4730_3 - should be able to create a group message', async () => {
@@ -151,5 +151,19 @@ describe('Channels - Create Direct Message', () => {
 
         // * Verify group message channel for the other two new users is added to direct message list
         await expect(element(by.text(groupDisplayName))).toBeVisible();
+    });
+
+    it('MM-T4730_4 - should display empty search state for create direct message', async () => {
+        // # Open create direct message screen and search for a non-existent user
+        const searchTerm = 'blahblahblahblah';
+        await CreateDirectMessageScreen.open();
+        await CreateDirectMessageScreen.searchInput.replaceText(searchTerm);
+
+        // * Verify empty search state for create direct message
+        await expect(element(by.text(`No results for “${searchTerm}”`))).toBeVisible();
+        await expect(element(by.text('Check the spelling or try another search.'))).toBeVisible();
+
+        // # Go back to channel list screen
+        await CreateDirectMessageScreen.close();
     });
 });
