@@ -29,7 +29,7 @@ export const gqlEntry = async (serverUrl: string) => {
 
 export const gqlEntryChannels = async (serverUrl: string, teamId: string) => {
     const response = await doGQLQuery(serverUrl, channelsQuery(teamId, false), 'channels');
-    if ('error' in response || 'errors' in response) {
+    if ('error' in response || response.errors) {
         return response;
     }
 
@@ -60,7 +60,7 @@ const gqlEntryChannelsNextPage = async (serverUrl: string, teamId: string, curso
 
 export const gqlOtherChannels = async (serverUrl: string, teamId: string) => {
     const response = await doGQLQuery(serverUrl, channelsQuery(teamId, true), 'channels');
-    if ('error' in response) {
+    if ('error' in response || response.errors) {
         return response;
     }
 
@@ -84,6 +84,38 @@ export const gqlOtherChannels = async (serverUrl: string, teamId: string) => {
     }
 
     return response;
+};
+
+export const gqlAllChannels = async (serverUrl: string) => {
+    const response = await doGQLQuery(serverUrl, allChannelsQuery, 'all_channels');
+    if ('error' in response || response.errors) {
+        return response;
+    }
+
+    let members = response.data.channelMembers;
+
+    while (members?.length === MEMBERS_PER_PAGE) {
+        let pageResponse;
+        try {
+            // eslint-disable-next-line no-await-in-loop
+            pageResponse = await gqlAllChannelsNextPage(serverUrl, members[members.length - 1].cursor!);
+        } catch {
+            break;
+        }
+
+        if ('error' in pageResponse || 'errors' in pageResponse) {
+            break;
+        }
+
+        members = pageResponse.data.channelMembers!;
+        response.data.channelMembers?.push(...members);
+    }
+
+    return response;
+};
+
+const gqlAllChannelsNextPage = async (serverUrl: string, cursor: string) => {
+    return doGQLQuery(serverUrl, nextPageAllChannelsQuery(cursor), 'channelsNextPage');
 };
 
 const entryQuery = `
@@ -201,8 +233,8 @@ query channels {
 
 const nextPageChannelsQuery = (teamId: string, cursor: string, exclude: boolean) => {
     return `
-query loginNextPage {
-    channelMembers(userId:"me", first:PER_PAGE, after:"CURSOR", teamId:"TEAM_ID") {
+query channelsNextPage {
+    channelMembers(userId:"me", first:PER_PAGE, after:"CURSOR", teamId:"TEAM_ID", excludeTeam:EXCLUDE) {
         cursor
         msgCount
         mentionCount
@@ -238,4 +270,69 @@ query loginNextPage {
         replace('CURSOR', cursor).
         replace('TEAM_ID', teamId).
         replace('EXCLUDE', String(exclude));
+};
+
+const allChannelsQuery = `
+query all_channels {
+    channelMembers(userId:"me", first:PER_PAGE) {
+        cursor
+        msgCount
+        mentionCount
+        lastViewedAt
+        notifyProps
+        channel {
+            id
+            header
+            purpose
+            type
+            createAt
+            creatorId
+            deleteAt
+            displayName
+            prettyDisplayName
+            groupConstrained
+            name
+            shared
+            lastPostAt
+            totalMsgCount
+            team {
+                id
+            }
+        }
+    }
+}
+`.replace('PER_PAGE', `${MEMBERS_PER_PAGE}`);
+
+const nextPageAllChannelsQuery = (cursor: string) => {
+    return `
+query loginNextPage {
+    channelMembers(userId:"me", first:PER_PAGE, after:"CURSOR") {
+        cursor
+        msgCount
+        mentionCount
+        lastViewedAt
+        notifyProps
+        channel {
+            id
+            header
+            purpose
+            type
+            createAt
+            creatorId
+            deleteAt
+            displayName
+            prettyDisplayName
+            groupConstrained
+            name
+            shared
+            lastPostAt
+            totalMsgCount
+            team {
+                id
+            }
+        }
+    }
+}
+`.replace('PER_PAGE', `${MEMBERS_PER_PAGE}`).
+        replace('CURSOR', cursor);
 };

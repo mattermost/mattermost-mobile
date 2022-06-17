@@ -11,6 +11,8 @@ import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
 import {fetchNewThreads} from '@actions/remote/thread';
 import {fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
+import {gqlAllChannels} from '@client/graphQL/entry';
+import {gqlToClientChannel, gqlToClientChannelMembership} from '@client/graphQL/types';
 import {Preferences} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
@@ -21,14 +23,12 @@ import {DEFAULT_LOCALE} from '@i18n';
 import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {queryAllServers} from '@queries/app/servers';
-import {queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
+import {prepareMyChannelsForTeam, queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
-import {getConfig, getPushVerificationStatus, getWebSocketLastDisconnected} from '@queries/servers/system';
+import {getConfig, getCurrentUserId, getPushVerificationStatus, getWebSocketLastDisconnected} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, getNthLastChannelFromTeam, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
 import {processIsCRTEnabled} from '@utils/thread';
-
-import {appEntry} from './app';
 
 import type ClientError from '@client/rest/error';
 
@@ -326,9 +326,79 @@ export const syncOtherServers = async (serverUrl: string) => {
         for (const server of servers) {
             if (server.url !== serverUrl && server.lastActiveAt > 0) {
                 registerDeviceToken(server.url);
-                appEntry(server.url, server.lastActiveAt, false);
+                syncAllChannelMembers(server.url);
             }
         }
+    }
+};
+
+const syncAllChannelMembers = async (serverUrl: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return;
+    }
+
+    const config = await getConfig(database);
+
+    if (config?.FeatureFlagGraphQL === 'true') {
+        const error = await graphQLSyncAllChannelMembers(serverUrl);
+        if (error) {
+            console.log('failed graphQL, falling back to rest', error);
+            restSyncAllChannelMembers(serverUrl);
+        }
+    } else {
+        restSyncAllChannelMembers(serverUrl);
+    }
+};
+
+const graphQLSyncAllChannelMembers = async (serverUrl: string) => {
+    const response = await gqlAllChannels(serverUrl);
+    if ('error' in response) {
+        return response.error;
+    }
+
+    if (response.errors) {
+        return response.errors[0].message;
+    }
+
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return 'Server database not found';
+    }
+
+    const userId = await getCurrentUserId(operator.database);
+
+    const channels = response.data.channelMembers?.map((m) => gqlToClientChannel(m.channel!));
+    const memberships = response.data.channelMembers?.map((m) => gqlToClientChannelMembership(m, userId));
+
+    if (channels && memberships) {
+        const modelPromises = await prepareMyChannelsForTeam(operator, '', channels, memberships, undefined, true);
+        const models = (await Promise.all([...modelPromises])).flat();
+        if (models.length) {
+            operator.batchRecords(models);
+        }
+    }
+
+    return '';
+};
+
+const restSyncAllChannelMembers = async (serverUrl: string) => {
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch {
+        return;
+    }
+
+    try {
+        const myTeams = await client.getMyTeams();
+        let excludeDirect = false;
+        for (const myTeam of myTeams) {
+            fetchMyChannelsForTeam(serverUrl, myTeam.id, false, 0, false, excludeDirect);
+            excludeDirect = true;
+        }
+    } catch {
+        // Do nothing
     }
 };
 
