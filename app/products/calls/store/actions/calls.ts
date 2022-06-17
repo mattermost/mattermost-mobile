@@ -202,8 +202,9 @@ export function joinCall(channelId: string, intl: typeof intlShape): ActionFunc 
         dispatch(setSpeakerphoneOn(false));
 
         try {
-            const iceConfigs = [...getICEServersConfigs(getState())];
-            if (getConfig(getState()).NeedsTURNCredentials) {
+            const state = getState();
+            const iceConfigs = [...getICEServersConfigs(state)];
+            if (getConfig(state).NeedsTURNCredentials) {
                 iceConfigs.push(...await Client4.genTURNCredentials());
             }
 
