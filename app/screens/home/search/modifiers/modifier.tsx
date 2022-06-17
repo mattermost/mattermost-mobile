@@ -89,7 +89,7 @@ const Modifier = ({item, searchValue, setSearchValue}: Props) => {
                         style={style.icon}
                     />
                     <Text style={style.modifierLabelValue}>{item.term}</Text>
-                    <Text style={style.modifierItemDescription}>{item.description}</Text>
+                    <Text style={style.modifierItemDescription}>{' ' + item.description}</Text>
                 </View>
             }
             separator={false}
