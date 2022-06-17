@@ -244,6 +244,13 @@ const FilteredList = ({
             items.push(...usersMatchStart);
         }
 
+        // Archived channels local
+        if (items.length < MAX_RESULTS) {
+            const archivedAlpha = archivedChannels.
+                sort(sortChannelsByDisplayName.bind(null, locale));
+            items.push(...archivedAlpha.slice(0, MAX_RESULTS + 1));
+        }
+
         // Remote Channels that start with
         if (items.length < MAX_RESULTS) {
             items.push(...remoteChannels.startWith);
@@ -258,7 +265,7 @@ const FilteredList = ({
 
         // Archived channels
         if (items.length < MAX_RESULTS) {
-            const archivedAlpha = [...archivedChannels, ...remoteChannels.archived].
+            const archivedAlpha = remoteChannels.archived.
                 sort(sortChannelsByDisplayName.bind(null, locale));
             items.push(...archivedAlpha.slice(0, MAX_RESULTS + 1));
         }
@@ -285,8 +292,8 @@ const FilteredList = ({
 
     return (
         <Animated.View
-            entering={FadeInDown.duration(200)}
-            exiting={FadeOutUp.duration(200)}
+            entering={FadeInDown.duration(100)}
+            exiting={FadeOutUp.duration(100)}
             style={style.flex}
         >
             <FlatList

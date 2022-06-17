@@ -90,7 +90,7 @@ const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, un
     return (
         <Animated.View
             entering={FadeInDown.duration(200)}
-            exiting={FadeOutUp.duration(200)}
+            exiting={FadeOutUp.duration(100)}
             style={style.flex}
         >
             <SectionList
