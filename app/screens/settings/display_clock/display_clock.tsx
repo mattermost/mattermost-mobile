@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {StatusBar, View} from 'react-native';
+import {View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {savePreference} from '@actions/remote/preference';
@@ -104,12 +104,6 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
         setButtons(componentId, buttons);
     }, [componentId, saveButton, isMilitaryTimeFormat]);
 
-    useEffect(() => {
-        setButtons(componentId, {
-            rightButtons: [saveButton],
-        });
-    }, []);
-
     useAndroidHardwareBackHandler(componentId, close);
     useNavButtonPressed(SAVE_CLOCK_BUTTON_ID, componentId, saveClockDisplayPreference, [isMilitaryTimeFormat]);
 
@@ -119,7 +113,6 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
             style={styles.container}
             testID='settings_display.screen'
         >
-            <StatusBar/>
             <View style={styles.wrapper}>
                 <Block
                     disableHeader={true}
