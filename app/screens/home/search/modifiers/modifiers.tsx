@@ -17,131 +17,6 @@ import ShowMoreButton from './show_more';
 const SECTION_HEIGHT = 20;
 const RECENT_SEPARATOR_HEIGHT = 3;
 
-const getModifiersSectionsData = (intl: IntlShape): ModifierItem[] => {
-    const formatMessage = intl.formatMessage;
-    const sectionsData = [
-        {
-            value: 'From:',
-            testID: 'search.from_section',
-            modifier: `${formatMessage({id: 'mobile.search.from_modifier_title', defaultMessage: 'username'})}`,
-            id: 'mobile.search.from_modifier_title',
-            description: formatMessage({
-                id: 'mobile.search.from_modifier_description',
-                defaultMessage: ' a specific user',
-            }),
-        }, {
-            value: 'In:',
-            testID: 'search.in_section',
-            modifier: `${formatMessage({id: 'mobile.search.in_modifier_title', defaultMessage: 'channel-name'})}`,
-            description: formatMessage({
-                id: 'mobile.search.in_modifier_description',
-                defaultMessage: ' a specific channel',
-            }),
-
-        }, {
-            value: 'On:',
-            testID: 'search.on_section',
-            modifier: 'YYYY-MM-DD',
-            description: formatMessage({
-                id: 'mobile.search.on_modifier_description',
-                defaultMessage: ' a specific date',
-            }),
-        }, {
-
-            // TODO: After is not shown in figma
-            value: 'After:',
-            testID: 'search.after_section',
-            modifier: 'YYYY-MM-DD',
-            description: formatMessage({
-                id: 'mobile.search.after_modifier_description',
-                defaultMessage: ' after a date',
-            }),
-        }, {
-            value: 'Before:',
-            testID: 'search.before_section',
-            modifier: 'YYYY-MM-DD',
-            description: formatMessage({
-                id: 'mobile.search.before_modifier_description',
-                defaultMessage: ' before a date',
-            }),
-        }, {
-            value: '-',
-            testID: 'search.exclude_section',
-            modifier: 'YYYY-MM-DD',
-            description: formatMessage({
-                id: 'mobile.search.exclude_modifier_description',
-                defaultMessage: ' exclude search terms',
-            }),
-        }, {
-            value: '""',
-            testID: 'search.phrases_section',
-            modifier: 'YYYY-MM-DD',
-            description: formatMessage({
-                id: 'mobile.search.phrases_modifier_description',
-                defaultMessage: ' messages with phrases',
-            }),
-        },
-    ];
-    return sectionsData;
-};
-
-type Props = {
-    scrollPaddingTop: number;
-    setSearchValue: (value: string) => void;
-    searchValue?: string;
-}
-const SearchModifiers = ({scrollPaddingTop, searchValue, setSearchValue}: Props) => {
-    const theme = useTheme();
-    const intl = useIntl();
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
-
-    const [showMore, setShowMore] = useState(false);
-    const show = useSharedValue(3 * MODIFIER_LABEL_HEIGHT);
-    const data = useMemo(() => getModifiersSectionsData(intl), [intl]);
-
-    const styles = getStyleFromTheme(theme);
-    const animatedStyle = useAnimatedStyle(() => (
-        {
-            width: '100%',
-            height: withTiming(show.value, {duration: 300}),
-            overflow: 'hidden',
-        }
-    ));
-
-    const handleShowMore = useCallback(() => {
-        setShowMore(!showMore);
-        show.value = (showMore ? 3 : data.length) * MODIFIER_LABEL_HEIGHT;
-    }, [showMore]);
-
-    const renderModifier = (item: ModifierItem) => {
-        return (
-            <Modifier
-                key={item.value}
-                item={item}
-                searchValue={searchValue}
-                setSearchValue={setSearchValue}
-            />
-        );
-    };
-
-    return (
-        <View style={paddingTop}>
-            <FormattedText
-                style={styles.title}
-                id={'screen.search.modifier.header'}
-                defaultMessage='Search options'
-            />
-            <Animated.View style={animatedStyle}>
-                {data.map((item) => renderModifier(item))}
-            </Animated.View>
-            <ShowMoreButton
-                onPress={handleShowMore}
-                showMore={showMore}
-            />
-        </View>
-    );
-};
-
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         flex: {
@@ -183,6 +58,99 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+const getModifiersSectionsData = (intl: IntlShape): ModifierItem[] => {
+    const formatMessage = intl.formatMessage;
+    const sectionsData = [
+        {
+            term: 'From:',
+            testID: 'search.from_section',
+            description: formatMessage({id: 'mobile.search.from_modifier_description', defaultMessage: ' a specific user'}),
+        }, {
+            term: 'In:',
+            testID: 'search.in_section',
+            description: formatMessage({id: 'mobile.search.in_modifier_description', defaultMessage: ' a specific channel'}),
+        }, {
+            term: 'On:',
+            testID: 'search.on_section',
+            description: formatMessage({id: 'mobile.search.on_modifier_description', defaultMessage: ' a specific date'}),
+        }, {
+            term: 'After:',
+            testID: 'search.after_section',
+            description: formatMessage({id: 'mobile.search.after_modifier_description', defaultMessage: ' after a date'}),
+        }, {
+            term: 'Before:',
+            testID: 'search.before_section',
+            description: formatMessage({id: 'mobile.search.before_modifier_description', defaultMessage: ' before a date'}),
+        }, {
+            term: '-',
+            testID: 'search.exclude_section',
+            description: formatMessage({id: 'mobile.search.exclude_modifier_description', defaultMessage: ' exclude search terms'}),
+        }, {
+            term: '""',
+            testID: 'search.phrases_section',
+            description: formatMessage({id: 'mobile.search.phrases_modifier_description', defaultMessage: ' messages with phrases'}),
+        },
+    ];
+    return sectionsData;
+};
+
+type Props = {
+    scrollPaddingTop: number;
+    setSearchValue: (value: string) => void;
+    searchValue?: string;
+}
+const SearchModifiers = ({scrollPaddingTop, searchValue, setSearchValue}: Props) => {
+    const theme = useTheme();
+    const intl = useIntl();
+    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
+
+    const [showMore, setShowMore] = useState(false);
+    const show = useSharedValue(3 * MODIFIER_LABEL_HEIGHT);
+    const data = useMemo(() => getModifiersSectionsData(intl), [intl]);
+
+    const styles = getStyleFromTheme(theme);
+    const animatedStyle = useAnimatedStyle(() => (
+        {
+            width: '100%',
+            height: withTiming(show.value, {duration: 300}),
+            overflow: 'hidden',
+        }
+    ));
+
+    const handleShowMore = useCallback(() => {
+        setShowMore(!showMore);
+        show.value = (showMore ? 3 : data.length) * MODIFIER_LABEL_HEIGHT;
+    }, [showMore]);
+
+    const renderModifier = (item: ModifierItem) => {
+        return (
+            <Modifier
+                key={item.term}
+                item={item}
+                searchValue={searchValue}
+                setSearchValue={setSearchValue}
+            />
+        );
+    };
+
+    return (
+        <View style={paddingTop}>
+            <FormattedText
+                style={styles.title}
+                id={'screen.search.modifier.header'}
+                defaultMessage='Search options'
+            />
+            <Animated.View style={animatedStyle}>
+                {data.map((item) => renderModifier(item))}
+            </Animated.View>
+            <ShowMoreButton
+                onPress={handleShowMore}
+                showMore={showMore}
+            />
+        </View>
+    );
+};
 
 export default SearchModifiers;
 

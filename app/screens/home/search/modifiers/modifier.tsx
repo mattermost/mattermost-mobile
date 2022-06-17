@@ -35,7 +35,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             ...typography('Body', 200, 'SemiBold'),
         },
         modifierItemDescription: {
-            fontSize: 16,
             color: theme.centerChannelColor,
             ...typography('Body', 200, 'Regular'),
         },
@@ -44,10 +43,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 
 export type ModifierItem = {
         description: string;
-        modifier: string;
         testID: string;
-        id?: string;
-        value: string;
+        term: string;
 }
 
 type Props = {
@@ -60,19 +57,19 @@ const Modifier = ({item, searchValue, setSearchValue}: Props) => {
     const theme = useTheme();
 
     const handlePress = useCallback(() => {
-        setModifierValue(item.value);
-    }, [item.value, searchValue]);
+        addModifierTerm(item.term);
+    }, [item.term, searchValue]);
 
     const style = getStyleFromTheme(theme);
 
-    const setModifierValue = preventDoubleTap((modifier) => {
+    const addModifierTerm = preventDoubleTap((modifierTerm) => {
         let newValue = '';
         if (!searchValue) {
-            newValue = modifier;
+            newValue = modifierTerm;
         } else if (searchValue.endsWith(' ')) {
-            newValue = `${searchValue}${modifier}`;
+            newValue = `${searchValue}${modifierTerm}`;
         } else {
-            newValue = `${searchValue} ${modifier}`;
+            newValue = `${searchValue} ${modifierTerm}`;
         }
 
         setSearchValue(newValue);
@@ -91,12 +88,10 @@ const Modifier = ({item, searchValue, setSearchValue}: Props) => {
                         color={changeOpacity(theme.centerChannelColor, 0.6)}
                         style={style.icon}
                     />
-                    <Text style={style.modifierLabelValue}>{item.value}</Text>
+                    <Text style={style.modifierLabelValue}>{item.term}</Text>
                     <Text style={style.modifierItemDescription}>{item.description}</Text>
                 </View>
             }
-
-            i18nId={item.id}
             separator={false}
             theme={theme}
         />
