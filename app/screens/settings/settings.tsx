@@ -16,6 +16,7 @@ import NavigationStore from '@store/navigation_store';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+import {tryOpenURL} from '@utils/url';
 
 import SettingOption from './setting_option';
 
@@ -62,13 +63,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 type SettingsProps = {
     componentId: string;
-    siteName: string;
+    helpLink: string;
     showHelp: boolean;
+    siteName: string;
 }
 
 //todo: handle display on tablet and Profile the whole feature - https://mattermost.atlassian.net/browse/MM-39711
 
-const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
+const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) => {
     const theme = useTheme();
     const intl = useIntl();
     const styles = getStyleSheet(theme);
@@ -121,12 +123,6 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
         };
     }, []);
 
-    const onPressHandler = () => {
-        return Alert.alert(
-            'The functionality you are trying to use has not yet been implemented.',
-        );
-    };
-
     const goToNotifications = preventDoubleTap(() => {
         const screen = Screens.SETTINGS_NOTIFICATION;
         const title = intl.formatMessage({id: 'settings.notifications', defaultMessage: 'Notifications'});
@@ -148,6 +144,27 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
         goToScreen(screen, title);
     });
 
+    const goToAdvancedSettings = preventDoubleTap(() => {
+        const screen = Screens.SETTINGS_ADVANCED;
+        const title = intl.formatMessage({id: 'settings.advanced_settings', defaultMessage: 'Advanced Settings'});
+
+        goToScreen(screen, title);
+    });
+
+    const openHelp = preventDoubleTap(() => {
+        const link = helpLink ? helpLink.toLowerCase() : '';
+
+        if (link) {
+            const onError = () => {
+                Alert.alert(
+                    intl.formatMessage({id: 'mobile.link.error.title', defaultMessage: 'Error'}),
+                    intl.formatMessage({id: 'mobile.link.error.text', defaultMessage: 'Unable to open the link.'}),
+                );
+            };
+
+            tryOpenURL(link, onError);
+        }
+    });
     let middleDividerStyle = styles.divider;
     if (Platform.OS === 'ios') {
         middleDividerStyle = styles.middleDivider;
@@ -177,7 +194,7 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
                     />
                     <SettingOption
                         optionName='advanced_settings'
-                        onPress={onPressHandler}
+                        onPress={goToAdvancedSettings}
                     />
                     <SettingOption
                         optionName='about'
@@ -193,7 +210,7 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
                     {showHelp &&
                     <SettingOption
                         optionName='help'
-                        onPress={onPressHandler}
+                        onPress={openHelp}
                         isLink={true}
                         containerStyle={styles.innerContainerStyle}
                     />
