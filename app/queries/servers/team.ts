@@ -332,7 +332,7 @@ export const queryTeamsById = (database: Database, teamIds: string[]) => {
     return database.get<TeamModel>(TEAM).query(Q.where('id', Q.oneOf(teamIds)));
 };
 
-export const queryTeamByName = async (database: Database, teamName: string) => {
+export const queryTeamByName = (database: Database, teamName: string) => {
     return database.get<TeamModel>(TEAM).query(Q.where('name', teamName));
 };
 
