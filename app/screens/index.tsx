@@ -151,6 +151,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.SETTINGS:
             screen = withServerDatabase(require('@screens/settings').default);
             break;
+        case Screens.SETTINGS_ADVANCED:
+            screen = withServerDatabase(require('@screens/settings/advanced').default);
+            break;
         case Screens.SETTINGS_DISPLAY:
             screen = withServerDatabase(require('@screens/settings/display').default);
             break;

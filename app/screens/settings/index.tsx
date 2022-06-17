@@ -16,10 +16,12 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const siteName = observeConfigValue(database, 'SiteName');
     const showHelp = observeConfigValue(database, 'HelpLink').pipe(switchMap((link) => of$(link ? isValidUrl(link) : false)));
+    const helpLink = observeConfigValue(database, 'HelpLink');
 
     return {
         showHelp,
         siteName,
+        helpLink,
     };
 });
 

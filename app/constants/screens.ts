@@ -8,7 +8,6 @@ export const BOTTOM_SHEET = 'BottomSheet';
 export const BROWSE_CHANNELS = 'BrowseChannels';
 export const CHANNEL = 'Channel';
 export const CHANNEL_ADD_PEOPLE = 'ChannelAddPeople';
-export const CHANNEL_EDIT = 'ChannelEdit';
 export const CHANNEL_INFO = 'ChannelInfo';
 export const CHANNEL_MENTION = 'ChannelMention';
 export const CODE = 'Code';
@@ -42,6 +41,7 @@ export const SEARCH = 'Search';
 export const SELECT_TEAM = 'SelectTeam';
 export const SERVER = 'Server';
 export const SETTINGS = 'Settings';
+export const SETTINGS_ADVANCED = 'SettingsAdvanced';
 export const SETTINGS_DISPLAY = 'SettingsDisplay';
 export const SETTINGS_DISPLAY_CLOCK = 'SettingsDisplayClock';
 export const SETTINGS_DISPLAY_THEME = 'SettingsDisplayTheme';
@@ -98,6 +98,7 @@ export default {
     SELECT_TEAM,
     SERVER,
     SETTINGS,
+    SETTINGS_ADVANCED,
     SETTINGS_DISPLAY,
     SETTINGS_DISPLAY_CLOCK,
     SETTINGS_DISPLAY_THEME,
