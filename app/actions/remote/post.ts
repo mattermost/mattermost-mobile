@@ -410,6 +410,16 @@ export async function fetchPosts(serverUrl: string, channelId: string, page = 0,
                 actionType: ActionType.POSTS.RECEIVED_SINCE,
                 prepareRecordsOnly: true,
             });
+
+            const {authors} = await fetchPostAuthors(serverUrl, result.posts, true);
+            if (authors?.length) {
+                const userModels = await operator.handleUsers({
+                    users: authors,
+                    prepareRecordsOnly: true,
+                });
+                models.push(...userModels);
+            }
+
             if (isCRTEnabled) {
                 const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
                 if (threadModels?.length) {
@@ -515,6 +525,16 @@ export async function fetchPostsSince(serverUrl: string, channelId: string, sinc
                 actionType: ActionType.POSTS.RECEIVED_SINCE,
                 prepareRecordsOnly: true,
             });
+
+            const {authors} = await fetchPostAuthors(serverUrl, result.posts, true);
+            if (authors?.length) {
+                const userModels = await operator.handleUsers({
+                    users: authors,
+                    prepareRecordsOnly: true,
+                });
+                models.push(...userModels);
+            }
+
             if (isCRTEnabled) {
                 const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
                 if (threadModels?.length) {
@@ -624,6 +644,16 @@ export async function fetchPostThread(serverUrl: string, postId: string, fetchOn
                 actionType: ActionType.POSTS.RECEIVED_IN_THREAD,
                 prepareRecordsOnly: true,
             });
+
+            const {authors} = await fetchPostAuthors(serverUrl, result.posts, true);
+            if (authors?.length) {
+                const userModels = await operator.handleUsers({
+                    users: authors,
+                    prepareRecordsOnly: true,
+                });
+                models.push(...userModels);
+            }
+
             if (isCRTEnabled) {
                 const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
                 if (threadModels?.length) {
