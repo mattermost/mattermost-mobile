@@ -11,9 +11,12 @@ import {useTheme} from '@context/theme';
 import {getFormattedFileSize} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
 type Props = {
     fileInfo: FileInfo;
 }
+
+const hitSlop = {top: 24, bottom: 24, left: 24, right: 24};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -37,10 +40,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             shadowOpacity: 0.8,
             elevation: 1,
         },
-        flex: {
-            column: {flexDirection: 'column'},
-            row: {flexDirection: 'row'},
-        },
+        flexColumn: {flexDirection: 'column'},
+        flexRow: {flexDirection: 'row'},
         iconContainer: {
             marginHorizontal: 8,
         },
@@ -111,9 +112,9 @@ export default function FileCard({fileInfo}: Props) {
                     iconSize={48}
                 />
             </View>
-            <View style={style.flex.column}>
+            <View style={style.flexColumn}>
                 <Text style={style.nameText}>{fileInfo.name}</Text>
-                <View style={style.flex.row}>
+                <View style={style.flexRow}>
                     {/* <Text style={[style.infoText, style.channelText]}>{channelName()}</Text> */}
                     {/* <Text style={style.infoText}>{fileType()}</Text> */}
                     <Text style={style.infoText}>{size}</Text>
@@ -126,13 +127,17 @@ export default function FileCard({fileInfo}: Props) {
                 </View>
             </View>
             <View style={style.threeDotContainer}>
-                <CompassIcon
+                <TouchableOpacity
                     onPress={handleThreeDotPress}
-                    name='dots-horizontal'
-                    color={changeOpacity(theme.centerChannelColor, 0.56)}
-                    style={style.threeDot}
-                    size={18}
-                />
+                    hitSlop={hitSlop}
+                >
+                    <CompassIcon
+                        name='dots-horizontal'
+                        color={changeOpacity(theme.centerChannelColor, 0.56)}
+                        style={style.threeDot}
+                        size={18}
+                    />
+                </TouchableOpacity>
             </View>
         </TouchableOpacity>
     );
