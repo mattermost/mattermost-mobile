@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {SearchBar} from '@support/ui/component';
 import {ChannelListScreen} from '@support/ui/screen';
 import {timeouts} from '@support/utils';
 import {expect} from 'detox';
@@ -8,10 +9,8 @@ import {expect} from 'detox';
 class FindChannelsScreen {
     testID = {
         findChannelsScreen: 'find_channels.screen',
+        findChannelsPrefix: 'find_channels.',
         closeButton: 'close.find_channels.button',
-        searchInput: 'find_channels.search_bar.search.input',
-        searchClearButton: 'find_channels.search_bar.search.clear.button',
-        searchCancelButton: 'find_channels.search_bar.search.cancel.button',
         directoryQuickOption: 'find_channels.quick_options.directory.option',
         openDirectMessageQuickOption: 'find_channels.quick_options.open_dm.option',
         newChannelQuickOption: 'find_channels.quick_options.new_channel.option',
@@ -21,14 +20,17 @@ class FindChannelsScreen {
 
     findChannelsScreen = element(by.id(this.testID.findChannelsScreen));
     closeButton = element(by.id(this.testID.closeButton));
-    searchInput = element(by.id(this.testID.searchInput));
-    searchClearButton = element(by.id(this.testID.searchClearButton));
-    searchCancelButton = element(by.id(this.testID.searchCancelButton));
     directoryQuickOption = element(by.id(this.testID.directoryQuickOption));
     openDirectMessageQuickOption = element(by.id(this.testID.openDirectMessageQuickOption));
     newChannelQuickOption = element(by.id(this.testID.newChannelQuickOption));
     sectionUnfilteredChannelList = element(by.id(this.testID.sectionUnfilteredChannelList));
     flatFilteredChannelList = element(by.id(this.testID.flatFilteredChannelList));
+
+    // convenience props
+    searchBar = SearchBar.getSearchBar(this.testID.findChannelsPrefix);
+    searchInput = SearchBar.getSearchInput(this.testID.findChannelsPrefix);
+    cancelButton = SearchBar.getCancelButton(this.testID.findChannelsPrefix);
+    clearButton = SearchBar.getClearButton(this.testID.findChannelsPrefix);
 
     getUnfilteredChannelItem = (channelName: string) => {
         return element(by.id(`find_channels.unfiltered_list.channel_item.${channelName}`));

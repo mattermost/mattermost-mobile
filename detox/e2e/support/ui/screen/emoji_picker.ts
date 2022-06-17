@@ -9,11 +9,11 @@ class EmojiPickerScreen {
     testID = {
         emojiPickerScreen: 'emoji_picker.screen',
         emojiPickerPrefix: 'emoji_picker.',
-        closeEmojiPickerButton: 'close.emoji_picker.button',
+        closeButton: 'close.emoji_picker.button',
     };
 
     emojiPickerScreen = element(by.id(this.testID.emojiPickerScreen));
-    closeEmojiPickerButton = element(by.id(this.testID.closeEmojiPickerButton));
+    closeButton = element(by.id(this.testID.closeButton));
 
     // convenience props
     searchBar = SearchBar.getSearchBar(this.testID.emojiPickerPrefix);
@@ -35,7 +35,7 @@ class EmojiPickerScreen {
     };
 
     close = async () => {
-        await this.closeEmojiPickerButton.tap();
+        await this.closeButton.tap();
         await expect(this.emojiPickerScreen).not.toBeVisible();
     };
 }
