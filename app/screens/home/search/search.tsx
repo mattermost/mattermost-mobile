@@ -131,6 +131,8 @@ const SearchScreen = ({teamId}: Props) => {
     }, [headerHeight, lastSearchedValue]);
 
     const onClear = useCallback(() => {
+        setSearchValue('');
+        setLastSearchedValue('');
         setFilter(FileFilters.ALL);
     }, [filter]);
 
