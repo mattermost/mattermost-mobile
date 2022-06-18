@@ -15,6 +15,7 @@ import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
 import {Files} from '@constants';
 import {generateId} from '@utils/general';
+import keyMirror from '@utils/key_mirror';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
 
@@ -24,7 +25,17 @@ const EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
 const CONTENT_DISPOSITION_REGEXP = /inline;filename=".*\.([a-z]+)";/i;
 const DEFAULT_SERVER_MAX_FILE_SIZE = 50 * 1024 * 1024;// 50 Mb
 
-export type FileFilter = 'all' | 'documents' | 'spreadsheets'| 'presentations' | 'code' | 'images' | 'audio' | 'videos'
+export const FileFilters = keyMirror({
+    ALL: null,
+    DOCUMENTS: null,
+    SPREADSHEETS: null,
+    PRESENTATIONS: null,
+    CODE: null,
+    IMAGES: null,
+    AUDIO: null,
+    VIDEOS: null,
+});
+export type FileFilter = keyof typeof FileFilters
 
 export const GENERAL_SUPPORTED_DOCS_FORMAT = [
     'application/json',
@@ -63,27 +74,27 @@ const extensions: Record<string, readonly string[]> = {};
 export function filterFileExtensions(filter: FileFilter): string {
     let searchTerms: string[] = [];
     switch (filter) {
-        case 'all':
+        case FileFilters.ALL:
             return '';
-        case 'documents':
+        case FileFilters.DOCUMENTS:
             searchTerms = Files.DOCUMENT_TYPES;
             break;
-        case 'spreadsheets':
+        case FileFilters.SPREADSHEETS:
             searchTerms = Files.SPREADSHEET_TYPES;
             break;
-        case 'presentations':
+        case FileFilters.PRESENTATIONS:
             searchTerms = Files.PRESENTATION_TYPES;
             break;
-        case 'code':
+        case FileFilters.CODE:
             searchTerms = Files.CODE_TYPES;
             break;
-        case 'images':
+        case FileFilters.IMAGES:
             searchTerms = Files.IMAGE_TYPES;
             break;
-        case 'audio':
+        case FileFilters.AUDIO:
             searchTerms = Files.AUDIO_TYPES;
             break;
-        case 'videos':
+        case FileFilters.VIDEOS:
             searchTerms = Files.VIDEO_TYPES;
             break;
         default:

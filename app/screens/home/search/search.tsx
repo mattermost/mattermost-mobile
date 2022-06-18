@@ -15,7 +15,7 @@ import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {useServerUrl} from '@context/server';
 import {useCollapsibleHeader} from '@hooks/header';
-import {FileFilter, filterFileExtensions} from '@utils/file';
+import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 
 import Results from './results';
 import Header, {SelectTab} from './results/header';
@@ -46,7 +46,7 @@ const SearchScreen = ({teamId}: Props) => {
 
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
     const [selectedTab, setSelectedTab] = useState<SelectTab>('messages');
-    const [filter, setFilter] = useState<FileFilter>('all');
+    const [filter, setFilter] = useState<FileFilter>(FileFilters.ALL);
 
     const [loading, setLoading] = useState(false);
     const [lastSearchedValue, setLastSearchedValue] = useState('');
@@ -71,7 +71,7 @@ const SearchScreen = ({teamId}: Props) => {
         // - updated recent createdAt if exists??
 
         setLoading(true);
-        setFilter('all');
+        setFilter(FileFilters.ALL);
         setLastSearchedValue(searchValue);
         const searchParams = getSearchParams();
         const [postResults, fileResults] = await Promise.all([
@@ -131,7 +131,7 @@ const SearchScreen = ({teamId}: Props) => {
     }, [headerHeight, lastSearchedValue]);
 
     const onClear = useCallback(() => {
-        setFilter('all');
+        setFilter(FileFilters.ALL);
     }, [filter]);
 
     let header = null;

@@ -14,7 +14,7 @@ import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import {dismissBottomSheet} from '@screens/navigation';
-import {FileFilter} from '@utils/file';
+import {FileFilter, FileFilters} from '@utils/file';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -43,35 +43,35 @@ const data: FilterItem[] = [
     {
         id: t('screen.search.results.filter.all_file_types'),
         defaultMessage: 'All file types',
-        filterType: 'all',
+        filterType: FileFilters.ALL,
     }, {
         id: t('screen.search.results.filter.documents'),
         defaultMessage: 'Documents',
-        filterType: 'documents',
+        filterType: FileFilters.DOCUMENTS,
     }, {
         id: t('screen.search.results.filter.spreadsheets'),
         defaultMessage: 'Spreadsheets',
-        filterType: 'spreadsheets',
+        filterType: FileFilters.SPREADSHEETS,
     }, {
         id: t('screen.search.results.filter.presentations'),
         defaultMessage: 'Presentations',
-        filterType: 'presentations',
+        filterType: FileFilters.PRESENTATIONS,
     }, {
         id: t('screen.search.results.filter.code'),
         defaultMessage: 'Code',
-        filterType: 'code',
+        filterType: FileFilters.CODE,
     }, {
         id: t('screen.search.results.filter.images'),
         defaultMessage: 'Images',
-        filterType: 'images',
+        filterType: FileFilters.IMAGES,
     }, {
         id: t('screen.search.results.filter.audio'),
         defaultMessage: 'Audio',
-        filterType: 'audio',
+        filterType: FileFilters.AUDIO,
     }, {
         id: t('screen.search.results.filter.videos'),
         defaultMessage: 'Videos',
-        filterType: 'videos',
+        filterType: FileFilters.VIDEOS,
         separator: false,
     },
 ];

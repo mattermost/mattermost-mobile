@@ -8,7 +8,7 @@ import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
-import {FileFilter} from '@utils/file';
+import {FileFilter, FileFilters} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Filter from './filter';
@@ -68,7 +68,7 @@ const Header = ({
     const filesText = intl.formatMessage({id: 'screen.search.header.files', defaultMessage: 'Files'});
 
     const showFilterIcon = selectedTab === 'files';
-    const hasFilters = selectedFilter !== 'all';
+    const hasFilters = selectedFilter !== FileFilters.ALL;
 
     const handleMessagesPress = useCallback(() => {
         onTabSelect('messages');
