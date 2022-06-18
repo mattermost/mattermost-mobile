@@ -443,7 +443,7 @@ const AtMention = ({
             renderSectionHeader={renderSectionHeader}
             style={[style.listView, {maxHeight: maxListHeight}]}
             sections={sections}
-            testID='at_mention_suggestion.list'
+            testID='autocomplete.at_mention.section_list'
         />
     );
 };

@@ -100,11 +100,9 @@ const EmojiPicker = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmo
         <SafeAreaView
             style={styles.flex}
             edges={edges}
+            testID={`${testID}.screen`}
         >
-            <View
-                style={styles.searchBar}
-                testID={testID}
-            >
+            <View style={styles.searchBar}>
                 <SearchBar
                     autoCapitalize='none'
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}

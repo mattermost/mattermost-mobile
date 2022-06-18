@@ -45,6 +45,7 @@ type Props = {
     term: string;
     usersMatch: UserModel[];
     usersMatchStart: UserModel[];
+    testID?: string;
 }
 
 const style = StyleSheet.create({
@@ -77,7 +78,7 @@ const sortByUserOrChannel = <T extends Channel |UserModel>(locale: string, teamm
 const FilteredList = ({
     archivedChannels, close, channelsMatch, channelsMatchStart, currentTeamId,
     keyboardHeight, loading, onLoading, restrictDirectMessage, showTeamName,
-    teamIds, teammateDisplayNameSetting, term, usersMatch, usersMatchStart,
+    teamIds, teammateDisplayNameSetting, term, usersMatch, usersMatchStart, testID,
 }: Props) => {
     const bounce = useRef<DebouncedFunc<() => void>>();
     const mounted = useRef(false);
@@ -211,6 +212,7 @@ const FilteredList = ({
                     isInfo={true}
                     onPress={onSwitchToChannel}
                     showTeamName={showTeamName}
+                    testID='find_channels.filtered_list.channel_item'
                 />
             );
         } else if ('username' in item) {
@@ -304,6 +306,7 @@ const FilteredList = ({
                 renderItem={renderItem}
                 data={data}
                 showsVerticalScrollIndicator={false}
+                testID={`${testID}.flat_list`}
             />
         </Animated.View>
     );

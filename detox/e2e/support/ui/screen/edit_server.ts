@@ -2,11 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {timeouts} from '@support/utils';
+import {expect} from 'detox';
 
 class EditServerScreen {
     testID = {
         editServerScreen: 'edit_server.screen',
-        closeButton: 'close-server-edit',
+        closeButton: 'close.server_edit.button',
         headerTitle: 'edit_server_header.title',
         headerDescription: 'edit_server_header.description',
         serverDisplayNameInput: 'edit_server_form.server_display_name.input',
@@ -31,6 +32,11 @@ class EditServerScreen {
         await waitFor(this.serverDisplayNameInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.editServerScreen;
+    };
+
+    close = async () => {
+        await this.closeButton.tap();
+        await expect(this.editServerScreen).not.toBeVisible();
     };
 }
 

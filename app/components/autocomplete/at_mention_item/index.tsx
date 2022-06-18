@@ -40,7 +40,7 @@ const AtMentionItem = ({
         >
             <UserItem
                 user={user}
-                testID='at_mention'
+                testID='at_mention.user_item'
             />
         </TouchableWithFeedback>
     );
