@@ -16,6 +16,7 @@ type Props = {
     fileInfo: FileInfo;
 }
 
+const format = 'MMM DD HH:MM A';
 const hitSlop = {top: 24, bottom: 24, left: 24, right: 24};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -77,7 +78,6 @@ export default function FileCard({fileInfo}: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const size = getFormattedFileSize(fileInfo.size);
-    const format = 'MMM DD HH:MM A';
 
     // TODO: hook this up
     const openGallery = () => {
@@ -117,8 +117,7 @@ export default function FileCard({fileInfo}: Props) {
                 <View style={style.flexRow}>
                     {/* <Text style={[style.infoText, style.channelText]}>{channelName()}</Text> */}
                     {/* <Text style={style.infoText}>{fileType()}</Text> */}
-                    <Text style={style.infoText}>{size}</Text>
-                    <Text style={style.infoText}>{' • '}</Text>
+                    <Text style={style.infoText}>{`${size} • `}</Text>
                     <FormattedDate
                         style={[style.infoText, style.dateText]}
                         format={format}
