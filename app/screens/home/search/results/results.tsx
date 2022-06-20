@@ -12,6 +12,7 @@ import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {PostModel} from '@database/models/server';
 import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
+import {TabTypes, TabType} from '@utils/search';
 
 import FileCard from './file_card';
 import Loader from './loader';
@@ -32,7 +33,7 @@ const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 type Props = {
     searchValue: string;
-    selectedTab: 'messages' | 'files';
+    selectedTab: TabType;
     currentTimezone: string;
     isTimezoneEnabled: boolean;
     posts: PostModel[];
@@ -59,7 +60,6 @@ const SearchResults = ({
 }: Props) => {
     const theme = useTheme();
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
-
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<string|FileInfo | Post>) => {
@@ -112,7 +112,7 @@ const SearchResults = ({
     let data;
     if (loading || !searchValue) {
         data = emptyList;
-    } else if (selectedTab === 'messages') {
+    } else if (selectedTab === TabTypes.MESSAGES) {
         data = orderedPosts;
     } else {
         data = fileInfos;

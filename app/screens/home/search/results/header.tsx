@@ -9,17 +9,16 @@ import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
 import {FileFilter} from '@utils/file';
+import {TabTypes, TabType} from '@utils/search';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Filter from './filter';
 import SelectButton from './header_button';
 
-export type SelectTab = 'files' | 'messages'
-
 type Props = {
-    onTabSelect: (tab: SelectTab) => void;
+    onTabSelect: (tab: TabType) => void;
     onFilterChanged: (filter: FileFilter) => void;
-    selectedTab: SelectTab;
+    selectedTab: TabType;
     selectedFilter: FileFilter;
     numberMessages: number;
     numberFiles: number;
@@ -67,15 +66,15 @@ const Header = ({
     const messagesText = intl.formatMessage({id: 'screen.search.header.messages', defaultMessage: 'Messages'});
     const filesText = intl.formatMessage({id: 'screen.search.header.files', defaultMessage: 'Files'});
 
-    const showFilterIcon = selectedTab === 'files';
+    const showFilterIcon = selectedTab === TabTypes.FILES;
     const hasFilters = selectedFilter !== 'all';
 
     const handleMessagesPress = useCallback(() => {
-        onTabSelect('messages');
+        onTabSelect(TabTypes.MESSAGES);
     }, [onTabSelect]);
 
     const handleFilesPress = useCallback(() => {
-        onTabSelect('files');
+        onTabSelect(TabTypes.FILES);
     }, [onTabSelect]);
 
     const handleFilterPress = useCallback(() => {
@@ -100,12 +99,12 @@ const Header = ({
         <>
             <View style={styles.container}>
                 <SelectButton
-                    selected={selectedTab === 'messages'}
+                    selected={selectedTab === TabTypes.MESSAGES}
                     onPress={handleMessagesPress}
                     text={`${messagesText} (${numberMessages})`}
                 />
                 <SelectButton
-                    selected={selectedTab === 'files'}
+                    selected={selectedTab === TabTypes.FILES}
                     onPress={handleFilesPress}
                     text={`${filesText} (${numberFiles})`}
                 />

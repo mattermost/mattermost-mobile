@@ -16,9 +16,10 @@ import RoundedHeaderContext from '@components/rounded_header_context';
 import {useServerUrl} from '@context/server';
 import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, filterFiles} from '@utils/file';
+import {TabTypes, TabType} from '@utils/search';
 
 import Results from './results';
-import Header, {SelectTab} from './results/header';
+import Header from './results/header';
 
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
 
@@ -45,7 +46,7 @@ const SearchScreen = ({teamId}: Props) => {
     const {searchTerm} = nav.getState().routes[stateIndex].params;
 
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
-    const [selectedTab, setSelectedTab] = useState<SelectTab>('messages');
+    const [selectedTab, setSelectedTab] = useState<TabType>(TabTypes.MESSAGES);
     const [filter, setFilter] = useState<FileFilter>('all');
 
     const [loading, setLoading] = useState(false);
