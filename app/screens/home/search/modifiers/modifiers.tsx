@@ -65,31 +65,31 @@ const getModifiersSectionsData = (intl: IntlShape): ModifierItem[] => {
         {
             term: 'From:',
             testID: 'search.from_section',
-            description: formatMessage({id: 'mobile.search.modifier_from', defaultMessage: ' a specific user'}),
+            description: formatMessage({id: 'mobile.search.modifier.from', defaultMessage: ' a specific user'}),
         }, {
             term: 'In:',
             testID: 'search.in_section',
-            description: formatMessage({id: 'mobile.search.modifier_in', defaultMessage: ' a specific channel'}),
+            description: formatMessage({id: 'mobile.search.modifier.in', defaultMessage: ' a specific channel'}),
         }, {
             term: 'On:',
             testID: 'search.on_section',
-            description: formatMessage({id: 'mobile.search.modifier_on', defaultMessage: ' a specific date'}),
+            description: formatMessage({id: 'mobile.search.modifier.on', defaultMessage: ' a specific date'}),
         }, {
             term: 'After:',
             testID: 'search.after_section',
-            description: formatMessage({id: 'mobile.search.modifier_after', defaultMessage: ' after a date'}),
+            description: formatMessage({id: 'mobile.search.modifier.after', defaultMessage: ' after a date'}),
         }, {
             term: 'Before:',
             testID: 'search.before_section',
-            description: formatMessage({id: 'mobile.search.modifier_before', defaultMessage: ' before a date'}),
+            description: formatMessage({id: 'mobile.search.modifier.before', defaultMessage: ' before a date'}),
         }, {
             term: '-',
             testID: 'search.exclude_section',
-            description: formatMessage({id: 'mobile.search.modifier_exclude', defaultMessage: ' exclude search terms'}),
+            description: formatMessage({id: 'mobile.search.modifier.exclude', defaultMessage: ' exclude search terms'}),
         }, {
             term: '""',
             testID: 'search.phrases_section',
-            description: formatMessage({id: 'mobile.search.modifier_phrases', defaultMessage: ' messages with phrases'}),
+            description: formatMessage({id: 'mobile.search.modifier.phrases', defaultMessage: ' messages with phrases'}),
         },
     ];
     return sectionsData;
