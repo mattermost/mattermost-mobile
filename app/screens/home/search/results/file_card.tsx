@@ -8,7 +8,7 @@ import CompassIcon from '@components/compass_icon';
 import FormattedDate from '@components/formatted_date';
 import FileIcon from '@components/post_list/post/body/files/file_icon';
 import {useTheme} from '@context/theme';
-import {getFormattedFileSize, trimFileName} from '@utils/file';
+import {getFormattedFileSize} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -24,6 +24,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             flex: 1,
             flexDirection: 'row',
+            alignItems: 'center',
 
             marginHorizontal: 20,
             marginVertical: 4,
@@ -41,10 +42,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             shadowOpacity: 0.8,
             elevation: 1,
         },
-        flexColumn: {flexDirection: 'column'},
         flexRow: {flexDirection: 'row'},
         iconContainer: {
             marginHorizontal: 8,
+        },
+        textContainer: {
+            flex: 1,
+            flexDirection: 'column',
+            flexGrow: 1,
         },
         nameText: {
             color: theme.centerChannelColor,
@@ -60,16 +65,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderRadius: 4,
             paddingHorizontal: 4,
         },
-        dateText: {
-            marginBottom: 2,
-        },
         threeDotContainer: {
-            flex: 1,
             alignItems: 'flex-end',
         },
         threeDot: {
-            top: 13,
-            right: 20,
+            marginHorizontal: 20,
         },
     };
 });
@@ -78,7 +78,6 @@ export default function FileCard({fileInfo}: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const size = getFormattedFileSize(fileInfo.size);
-    const trimmedFilename = trimFileName(fileInfo.name);
 
     // TODO: hook this up
     const openGallery = () => {
@@ -108,31 +107,36 @@ export default function FileCard({fileInfo}: Props) {
                     iconSize={48}
                 />
             </View>
-            <View style={style.flexColumn}>
-                <Text style={style.nameText}>{trimmedFilename}</Text>
-                <View style={style.flexRow}>
+            <View style={style.textContainer}>
+                <Text
+                    style={style.nameText}
+                    numberOfLines={1}
+                    ellipsizeMode={'tail'}
+                >
+                    {fileInfo.name}
+                </Text>
+                <View style={[style.flexRow]}>
                     {/* <Text style={[style.infoText, style.channelText]}>{channelName()}</Text> */}
                     <Text style={style.infoText}>{`${size} • `}</Text>
                     <FormattedDate
-                        style={[style.infoText, style.dateText]}
+                        style={style.infoText}
                         format={format}
                         value={fileInfo.create_at as number}
                     />
                 </View>
             </View>
-            <View style={style.threeDotContainer}>
-                <TouchableOpacity
-                    onPress={handleThreeDotPress}
-                    hitSlop={hitSlop}
-                >
-                    <CompassIcon
-                        name='dots-horizontal'
-                        color={changeOpacity(theme.centerChannelColor, 0.56)}
-                        style={style.threeDot}
-                        size={18}
-                    />
-                </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+                onPress={handleThreeDotPress}
+                style={style.threeDotContainer}
+                hitSlop={hitSlop}
+            >
+                <CompassIcon
+                    name='dots-horizontal'
+                    color={changeOpacity(theme.centerChannelColor, 0.56)}
+                    style={style.threeDot}
+                    size={18}
+                />
+            </TouchableOpacity>
         </TouchableOpacity>
     );
 }

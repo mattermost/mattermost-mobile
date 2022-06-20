@@ -13,7 +13,7 @@ import FileSystem from 'react-native-fs';
 import {Asset} from 'react-native-image-picker';
 import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
-import {Files, MAX_FILENAME_LENGTH} from '@constants/files';
+import {Files} from '@constants/files';
 import {generateId} from '@utils/general';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
@@ -469,13 +469,4 @@ export const hasWriteStoragePermission = async (intl: IntlShape) => {
         }
         default: return true;
     }
-};
-
-export const trimFileName = (filename: string) => {
-    let trimmedFilename = filename;
-    if (filename.length > MAX_FILENAME_LENGTH) {
-        trimmedFilename = filename.substring(0, Math.min(MAX_FILENAME_LENGTH, filename.length)) + '...';
-    }
-
-    return trimmedFilename;
 };
