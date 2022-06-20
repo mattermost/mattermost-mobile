@@ -73,12 +73,13 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
 
     const onPressDeleteData = useCallback(async () => {
         try {
-            const delFilePromises = [];
-            for (const file of files) {
-                delFilePromises.push(FileSystem.unlink(file.path));
+            if (files.length > 0) {
+                const delFilePromises = [];
+                for (const file of files) {
+                    delFilePromises.push(FileSystem.unlink(file.path));
+                }
+                await Promise.all(delFilePromises);
             }
-
-            await Promise.all(delFilePromises);
 
             const uris = await getApplicationPhotoUris(applicationName);
 
