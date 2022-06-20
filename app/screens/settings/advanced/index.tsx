@@ -3,7 +3,7 @@
 
 import CameraRoll from '@react-native-community/cameraroll';
 import React, {useCallback, useEffect, useState} from 'react';
-import {Text, View} from 'react-native';
+import {Platform, Text, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import FileSystem, {ReadDirItem} from 'react-native-fs';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -81,14 +81,16 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
                 await Promise.all(delFilePromises);
             }
 
-            const uris = await getApplicationPhotoUris(applicationName);
+            if (Platform.Version < 30 || Platform.OS === 'ios') {
+                const uris = await getApplicationPhotoUris(applicationName);
 
-            if (uris.length > 0) {
-                await CameraRoll.deletePhotos(uris);
+                if (uris.length > 0) {
+                    await CameraRoll.deletePhotos(uris);
+                }
             }
             await getAllCachedFiles();
         } catch (e) {
-            //todo: show toast if error ?
+            //todo: show toast if error https://mattermost.atlassian.net/browse/MM-44926
         }
     }, [files]);
 
