@@ -345,7 +345,6 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
             right: {enabled: false},
         },
         statusBar: {
-            backgroundColor: null,
             style: isDark ? 'light' : 'dark',
         },
         topBar: {
