@@ -85,7 +85,7 @@ describe('Messaging - Message Reply', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T4785_2 - should be able to open reply thread by tapping the post', async () => {
+    it('MM-T4785_2 - should be able to open reply thread by tapping on the post', async () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -96,7 +96,7 @@ describe('Messaging - Message Reply', () => {
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItem).toExist();
 
-        // # Tap the post
+        // # Tap on post to open thread
         await postListPostItem.tap();
 
         // * Verify on reply thread screen

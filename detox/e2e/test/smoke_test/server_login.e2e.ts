@@ -72,6 +72,7 @@ describe('Smoke Test - Server Login', () => {
 
         // * Verify on channel list screen of the second server
         await ChannelListScreen.toBeVisible();
+        await device.reloadReactNative();
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverTwoDisplayName);
 
         // # Go back to first server

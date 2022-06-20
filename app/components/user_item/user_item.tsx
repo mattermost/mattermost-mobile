@@ -5,7 +5,6 @@ import React from 'react';
 import {IntlShape, useIntl} from 'react-intl';
 import {StyleProp, Text, View, ViewStyle} from 'react-native';
 
-import {typography} from '@app/utils/typography';
 import ChannelIcon from '@components/channel_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedText from '@components/formatted_text';
@@ -14,6 +13,7 @@ import {BotTag, GuestTag} from '@components/tag';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {getUserCustomStatus, isBot, isGuest, isShared} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -108,14 +108,19 @@ const UserItem = ({
     const name = getName(user, showFullName, isCurrentUser, intl);
     const customStatus = getUserCustomStatus(user);
 
+    const userItemTestId = `${testID}.${user?.id}`;
+
     return (
-        <View style={[style.row, containerStyle]}>
+        <View
+            style={[style.row, containerStyle]}
+            testID={userItemTestId}
+        >
             <View style={style.rowPicture}>
                 <ProfilePicture
                     author={user}
                     size={24}
                     showStatus={false}
-                    testID={`${testID}.profile_picture`}
+                    testID={`${userItemTestId}.profile_picture`}
                 />
             </View>
             <View
@@ -127,7 +132,7 @@ const UserItem = ({
                     <Text
                         style={style.rowFullname}
                         numberOfLines={1}
-                        testID={`${testID}.name`}
+                        testID={`${userItemTestId}.display_name`}
                     >
                         {name}
                     </Text>
@@ -143,7 +148,7 @@ const UserItem = ({
                 <Text
                     style={style.rowUsername}
                     numberOfLines={1}
-                    testID='at_mention_item.username'
+                    testID={`${userItemTestId}.username`}
                 >
                     {` @${user!.username}`}
                 </Text>
@@ -153,6 +158,7 @@ const UserItem = ({
                 <CustomStatusEmoji
                     customStatus={customStatus!}
                     style={style.icon}
+                    testID={testID}
                 />
             )}
             {shared && (

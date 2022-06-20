@@ -34,6 +34,7 @@ const EmojiAliases = ({emoji}: Props) => {
                 ellipsizeMode='tail'
                 numberOfLines={1}
                 style={style.title}
+                testID={`emoji_aliases.${emoji}`}
             >
                 {aliases}
             </Text>

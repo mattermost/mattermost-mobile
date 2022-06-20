@@ -6,9 +6,9 @@ import {FlatList} from 'react-native';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {fetchDirectChannelsInfo} from '@actions/remote/channel';
-import {useServerUrl} from '@app/context/server';
 import ChannelItem from '@components/channel_item';
 import {DMS_CATEGORY} from '@constants/categories';
+import {useServerUrl} from '@context/server';
 import {isDMorGM} from '@utils/channel';
 
 import type CategoryModel from '@typings/database/models/servers/category';
@@ -48,9 +48,9 @@ const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, limit,
         return (
             <ChannelItem
                 channel={item}
-                testID={`category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_list_item`}
                 onPress={onChannelSwitch}
                 key={item.id}
+                testID={`channel_list.category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_item`}
             />
         );
     }, [onChannelSwitch]);
