@@ -54,6 +54,7 @@ const SearchField = () => {
             style={styles.container}
             onPress={onPress}
             underlayColor={changeOpacity(theme.sidebarText, 0.32)}
+            testID='channel_list_subheader.search_field.button'
         >
             <>
                 <CompassIcon

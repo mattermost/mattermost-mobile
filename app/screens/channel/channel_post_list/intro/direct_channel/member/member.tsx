@@ -53,7 +53,7 @@ const Member = ({channelId, containerStyle, size = 72, showStatus = true, theme,
                 iconSize={48}
                 showStatus={showStatus}
                 statusSize={24}
-                testID='channel_intro.profile_picture'
+                testID={`channel_intro.${user.id}.profile_picture`}
             />
         </TouchableWithFeedback>
     );

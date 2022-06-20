@@ -60,9 +60,9 @@ const AccountUserInfo = ({user, showFullName, theme}: Props) => {
                 iconSize={28}
                 showStatus={true}
                 author={user}
-                testID={'account.profile_picture'}
                 statusStyle={styles.statusStyle}
                 statusSize={24}
+                testID={`account.${user.id}.profile_picture`}
             />
             {showFullName && <Text style={styles.textFullName}>{title}</Text>}
             <Text style={showFullName ? styles.textUserName : styles.textFullName}>{`${userName}`}</Text>
