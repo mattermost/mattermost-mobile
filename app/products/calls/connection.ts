@@ -44,7 +44,7 @@ export async function newClient(channelID: string, iceServers: ICEServersConfigs
         console.log('Unable to get media device:', err); // eslint-disable-line no-console
     }
 
-    const ws = new WebSocketClient(Client4.getWebSocketUrl());
+    const ws = new WebSocketClient(Client4.getWebSocketUrl(), Client4.getToken());
 
     const disconnect = () => {
         if (!isClosed) {
