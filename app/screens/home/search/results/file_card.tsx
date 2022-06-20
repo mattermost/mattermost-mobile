@@ -8,7 +8,7 @@ import CompassIcon from '@components/compass_icon';
 import FormattedDate from '@components/formatted_date';
 import FileIcon from '@components/post_list/post/body/files/file_icon';
 import {useTheme} from '@context/theme';
-import {getFormattedFileSize} from '@utils/file';
+import {getFormattedFileSize, trimFileName} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -48,7 +48,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         nameText: {
             color: theme.centerChannelColor,
-            ...typography('Heading', 200, 'SemiBold'),
+            ...typography('Body', 200, 'SemiBold'),
         },
         infoText: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
@@ -78,6 +78,7 @@ export default function FileCard({fileInfo}: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const size = getFormattedFileSize(fileInfo.size);
+    const trimmedFilename = trimFileName(fileInfo.name);
 
     // TODO: hook this up
     const openGallery = () => {
@@ -113,7 +114,7 @@ export default function FileCard({fileInfo}: Props) {
                 />
             </View>
             <View style={style.flexColumn}>
-                <Text style={style.nameText}>{fileInfo.name}</Text>
+                <Text style={style.nameText}>{trimmedFilename}</Text>
                 <View style={style.flexRow}>
                     {/* <Text style={[style.infoText, style.channelText]}>{channelName()}</Text> */}
                     {/* <Text style={style.infoText}>{fileType()}</Text> */}
