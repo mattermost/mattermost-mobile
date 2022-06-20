@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {Switch, Text, TouchableOpacity, View} from 'react-native';
+import {Platform, StyleProp, Switch, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
@@ -20,6 +20,7 @@ type Props = {
     testID?: string;
     type: OptionType;
     value?: string;
+    containerStyle?: StyleProp<ViewStyle>;
 }
 
 const OptionType = {
@@ -79,7 +80,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const OptionItem = ({
     action, description, destructive, icon,
     info, label, selected,
-    testID = 'optionItem', type, value,
+    testID = 'optionItem', type, value, containerStyle,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -95,10 +96,19 @@ const OptionItem = ({
             />
         );
     } else if (type === OptionType.TOGGLE) {
+        const trackColor = Platform.select({
+            ios: {true: theme.buttonBg, false: changeOpacity(theme.centerChannelColor, 0.16)},
+            default: {true: changeOpacity(theme.buttonBg, 0.32), false: changeOpacity(theme.centerChannelColor, 0.24)},
+        });
+        const thumbColor = Platform.select({
+            android: selected ? theme.buttonBg : '#F3F3F3', // Hardcoded color specified in ticket MM-45143
+        });
         actionComponent = (
             <Switch
                 onValueChange={action}
                 value={selected}
+                trackColor={trackColor}
+                thumbColor={thumbColor}
                 testID={`${testID}.toggled.${selected}`}
             />
         );
@@ -119,7 +129,7 @@ const OptionItem = ({
     const component = (
         <View
             testID={testID}
-            style={styles.container}
+            style={[styles.container, containerStyle]}
         >
             <View style={styles.row}>
                 <View style={styles.labelContainer}>

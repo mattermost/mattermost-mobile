@@ -1,11 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchMyChannelsForTeam} from '@actions/remote/channel';
 import DatabaseManager from '@database/manager';
-import {getCommonSystemValues} from '@queries/servers/system';
-import {getTeamById, getTeamByName} from '@queries/servers/team';
-import {permalinkBadTeam} from '@utils/draft';
+import {getCurrentTeam} from '@queries/servers/team';
 import {displayPermalink} from '@utils/permalink';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 
@@ -21,30 +18,14 @@ export const showPermalink = async (serverUrl: string, teamName: string, postId:
     try {
         let name = teamName;
         let team: TeamModel | undefined;
-        const system = await getCommonSystemValues(database);
         if (!name || name === PERMALINK_GENERIC_TEAM_NAME_REDIRECT) {
-            team = await getTeamById(database, system.currentTeamId);
+            team = await getCurrentTeam(database);
             if (team) {
                 name = team.name;
             }
         }
 
-        if (!team) {
-            team = await getTeamByName(database, name);
-            if (!team) {
-                permalinkBadTeam(intl);
-                return {error: 'Bad Permalink team'};
-            }
-        }
-
-        if (team.id !== system.currentTeamId) {
-            const result = await fetchMyChannelsForTeam(serverUrl, team.id, true, 0, false, true);
-            if (result.error) {
-                return {error: result.error};
-            }
-        }
-
-        await displayPermalink(team.name, postId, openAsPermalink);
+        await displayPermalink(name, postId, openAsPermalink);
 
         return {error: undefined};
     } catch (error) {

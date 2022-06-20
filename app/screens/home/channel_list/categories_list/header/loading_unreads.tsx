@@ -14,7 +14,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         height: 14,
         borderRadius: 7,
         borderBottomColor: changeOpacity(theme.sidebarText, 0.16),
-        borderLeftColor: theme.buttonBg,
+        borderLeftColor: theme.sidebarText,
         borderRightColor: changeOpacity(theme.sidebarText, 0.16),
         borderTopColor: changeOpacity(theme.sidebarText, 0.16),
         borderWidth: 2,

@@ -67,7 +67,7 @@ describe('Channels - Browse Channels', () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
 
         // * Verify new channel does not appear on channel list screen
-        await expect(ChannelListScreen.getChannelListItemDisplayName(channelsCategory, channel.display_name)).not.toExist();
+        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, channel.display_name)).not.toExist();
 
         // # Open browse channels screen and search for the new channel name to join
         await BrowseChannelsScreen.open();
@@ -89,6 +89,20 @@ describe('Channels - Browse Channels', () => {
         await ChannelListScreen.toBeVisible();
 
         // * Verify newly joined channel is added to channel list
-        await expect(ChannelListScreen.getChannelListItemDisplayName(channelsCategory, channel.name)).toBeVisible();
+        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, channel.name)).toBeVisible();
+    });
+
+    it('MM-T4729_3 - should display empty search state for browse channels', async () => {
+        // # Open browse channels screen and search for a non-existent channel
+        const searchTerm = 'blahblahblahblah';
+        await BrowseChannelsScreen.open();
+        await BrowseChannelsScreen.searchInput.replaceText(searchTerm);
+
+        // * Verify empty search state for browse channels
+        await expect(element(by.text(`No results for “${searchTerm}”`))).toBeVisible();
+        await expect(element(by.text('Check the spelling or try another search.'))).toBeVisible();
+
+        // # Go back to channel list screen
+        await BrowseChannelsScreen.close();
     });
 });

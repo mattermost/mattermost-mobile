@@ -12,7 +12,7 @@ import {enableFreeze, enableScreens} from 'react-native-screens';
 import {Events, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {findChannels} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {alertChannelArchived, alertChannelRemove, alertTeamRemove} from '@utils/navigation';
 import {notificationError} from '@utils/notification';
 
@@ -76,7 +76,7 @@ export default function HomeScreen(props: HomeProps) {
 
     useEffect(() => {
         const listener = HWKeyboardEvent.onHWKeyPressed((keyEvent: {pressedKey: string}) => {
-            const screen = EphemeralStore.getAllNavigationComponents();
+            const screen = NavigationStore.getAllNavigationComponents();
             if (!screen.includes(Screens.FIND_CHANNELS) && keyEvent.pressedKey === 'find-channels') {
                 findChannels(
                     intl.formatMessage({id: 'find_channels.title', defaultMessage: 'Find Channels'}),

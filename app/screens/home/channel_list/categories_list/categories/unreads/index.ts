@@ -12,6 +12,7 @@ import {filterAndSortMyChannels, makeChannelsMap} from '@helpers/database';
 import {getChannelById, observeChannelsByLastPostAt, observeCurrentChannel, observeNotifyPropsByChannels, queryMyChannelUnreads} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeLastUnreadChannelId} from '@queries/servers/system';
+import {observeUnreadsAndMentionsInTeam} from '@queries/servers/thread';
 
 import UnreadCategories from './unreads';
 
@@ -63,8 +64,11 @@ const enhanced = withObservables(['currentTeamId', 'isTablet', 'onlyUnreads'], (
         }
         return of$([]);
     }));
+    const unreadThreads = observeUnreadsAndMentionsInTeam(database, currentTeamId, true);
+
     return {
         unreadChannels,
+        unreadThreads,
     };
 });
 

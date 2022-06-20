@@ -5,40 +5,37 @@ import {GLOBAL_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 
 export const storeDeviceToken = async (token: string, prepareRecordsOnly = false) => {
-    const operator = DatabaseManager.appDatabase?.operator;
-
-    if (!operator) {
-        return {error: 'No App database found'};
+    try {
+        const {operator} = DatabaseManager.getAppDatabaseAndOperator();
+        return operator.handleGlobal({
+            globals: [{id: GLOBAL_IDENTIFIERS.DEVICE_TOKEN, value: token}],
+            prepareRecordsOnly,
+        });
+    } catch (error) {
+        return {error};
     }
-
-    return operator.handleGlobal({
-        globals: [{id: GLOBAL_IDENTIFIERS.DEVICE_TOKEN, value: token}],
-        prepareRecordsOnly,
-    });
 };
 
 export const storeMultiServerTutorial = async (prepareRecordsOnly = false) => {
-    const operator = DatabaseManager.appDatabase?.operator;
-
-    if (!operator) {
-        return {error: 'No App database found'};
+    try {
+        const {operator} = DatabaseManager.getAppDatabaseAndOperator();
+        return operator.handleGlobal({
+            globals: [{id: GLOBAL_IDENTIFIERS.MULTI_SERVER_TUTORIAL, value: 'true'}],
+            prepareRecordsOnly,
+        });
+    } catch (error) {
+        return {error};
     }
-
-    return operator.handleGlobal({
-        globals: [{id: GLOBAL_IDENTIFIERS.MULTI_SERVER_TUTORIAL, value: 'true'}],
-        prepareRecordsOnly,
-    });
 };
 
 export const storeProfileLongPressTutorial = async (prepareRecordsOnly = false) => {
-    const operator = DatabaseManager.appDatabase?.operator;
-
-    if (!operator) {
-        return {error: 'No App database found'};
+    try {
+        const {operator} = DatabaseManager.getAppDatabaseAndOperator();
+        return operator.handleGlobal({
+            globals: [{id: GLOBAL_IDENTIFIERS.PROFILE_LONG_PRESS_TUTORIAL, value: 'true'}],
+            prepareRecordsOnly,
+        });
+    } catch (error) {
+        return {error};
     }
-
-    return operator.handleGlobal({
-        globals: [{id: GLOBAL_IDENTIFIERS.PROFILE_LONG_PRESS_TUTORIAL, value: 'true'}],
-        prepareRecordsOnly,
-    });
 };

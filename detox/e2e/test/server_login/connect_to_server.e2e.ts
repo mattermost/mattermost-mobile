@@ -85,6 +85,7 @@ describe('Server Login - Connect to Server', () => {
         await expect(serverUrlInputError).toHaveText(connectionError);
 
         // # Connect with invalid host and valid server display name
+        await device.reloadReactNative();
         await serverUrlInput.replaceText('wrong.host.badssl.com');
         await serverDisplayNameInput.replaceText('Server 1');
         await connectButton.tap();

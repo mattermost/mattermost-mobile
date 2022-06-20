@@ -19,7 +19,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {t} from '@i18n';
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {extractFileInfo} from '@utils/file';
 import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
@@ -219,7 +219,7 @@ export default function PostInput({
     }, [addFiles, intl]);
 
     const handleHardwareEnterPress = useCallback((keyEvent: {pressedKey: string}) => {
-        const topScreen = EphemeralStore.getNavigationTopComponentId();
+        const topScreen = NavigationStore.getNavigationTopComponentId();
         let sourceScreen = Screens.CHANNEL;
         if (rootId) {
             sourceScreen = Screens.THREAD;

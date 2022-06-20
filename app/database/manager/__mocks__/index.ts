@@ -229,6 +229,24 @@ class DatabaseManager {
         return undefined;
     };
 
+    public getAppDatabaseAndOperator = () => {
+        const app = this.appDatabase;
+        if (!app) {
+            throw new Error('App database not found');
+        }
+
+        return app;
+    };
+
+    public getServerDatabaseAndOperator = (serverUrl: string) => {
+        const server = this.serverDatabases[serverUrl];
+        if (!server) {
+            throw new Error(`${serverUrl} database not found`);
+        }
+
+        return server;
+    };
+
     public getActiveServerDatabase = async (): Promise<Database|undefined> => {
         const database = this.appDatabase?.database;
         if (database) {
