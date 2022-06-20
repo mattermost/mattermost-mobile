@@ -97,11 +97,6 @@ export default function FileCard({fileInfo}: Props) {
         return 'channelName';
     };
 
-    // TODO: Get the filetype and display
-    const fileType = () => { // eslint-disable-line @typescript-eslint/no-unused-vars
-        return 'fileType';
-    };
-
     return (
         <TouchableOpacity
             onPress={openGallery}
@@ -117,7 +112,6 @@ export default function FileCard({fileInfo}: Props) {
                 <Text style={style.nameText}>{trimmedFilename}</Text>
                 <View style={style.flexRow}>
                     {/* <Text style={[style.infoText, style.channelText]}>{channelName()}</Text> */}
-                    {/* <Text style={style.infoText}>{fileType()}</Text> */}
                     <Text style={style.infoText}>{`${size} • `}</Text>
                     <FormattedDate
                         style={[style.infoText, style.dateText]}
