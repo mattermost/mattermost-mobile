@@ -222,7 +222,6 @@ const AtMention = ({
         isMention = true;
         canPress = true;
     } else if (group?.name) {
-        // highlighted = group.isMember(currentUserId);
         mention = group.name;
         isMention = true;
         canPress = false;

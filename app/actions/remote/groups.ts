@@ -3,7 +3,7 @@
 
 import {storeGroups} from '@actions/local/group';
 import {Client} from '@client/rest';
-import {getOperator} from '@helpers/database';
+import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {prepareGroups} from '@queries/servers/group';
 
@@ -11,16 +11,16 @@ import {forceLogoutIfNecessary} from './session';
 
 export const fetchGroupsForAutocomplete = async (serverUrl: string, query: string, fetchOnly = false) => {
     try {
-        const operator = getOperator(serverUrl);
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getGroups(query);
 
         // Save locally
         if (!fetchOnly) {
-            return await storeGroups(serverUrl, response);
+            return storeGroups(serverUrl, response);
         }
 
-        return await prepareGroups(operator, response);
+        return prepareGroups(operator, response);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -29,7 +29,7 @@ export const fetchGroupsForAutocomplete = async (serverUrl: string, query: strin
 
 export const fetchGroupsByNames = async (serverUrl: string, names: string[], fetchOnly = false) => {
     try {
-        const operator = getOperator(serverUrl);
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const client: Client = NetworkManager.getClient(serverUrl);
         const promises: Array <Promise<Group[]>> = [];
@@ -42,10 +42,10 @@ export const fetchGroupsByNames = async (serverUrl: string, names: string[], fet
 
         // Save locally
         if (!fetchOnly) {
-            return await storeGroups(serverUrl, groups);
+            return storeGroups(serverUrl, groups);
         }
 
-        return await prepareGroups(operator, groups);
+        return prepareGroups(operator, groups);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -54,15 +54,15 @@ export const fetchGroupsByNames = async (serverUrl: string, names: string[], fet
 
 export const fetchGroupsForChannel = async (serverUrl: string, channelId: string, fetchOnly = false) => {
     try {
-        const operator = getOperator(serverUrl);
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToChannel(channelId);
 
         if (!fetchOnly) {
-            return await storeGroups(serverUrl, response.groups);
+            return storeGroups(serverUrl, response.groups);
         }
 
-        return await prepareGroups(operator, response.groups);
+        return prepareGroups(operator, response.groups);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -71,15 +71,15 @@ export const fetchGroupsForChannel = async (serverUrl: string, channelId: string
 
 export const fetchGroupsForTeam = async (serverUrl: string, teamId: string, fetchOnly = false) => {
     try {
-        const operator = getOperator(serverUrl);
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToTeam(teamId);
 
         if (!fetchOnly) {
-            return await storeGroups(serverUrl, response.groups);
+            return storeGroups(serverUrl, response.groups);
         }
 
-        return await prepareGroups(operator, response.groups);
+        return prepareGroups(operator, response.groups);
     } catch (error) {
         return {error};
     }

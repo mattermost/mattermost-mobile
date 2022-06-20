@@ -284,34 +284,46 @@ export const fetchUserOrGroupsByMentionsInBatch = (serverUrl: string, mentionNam
     mentionNames.add(mentionName);
     return debouncedFetchUserOrGroupsByMentionNames.apply(null, [serverUrl]);
 };
-const debouncedFetchUserOrGroupsByMentionNames = debounce((serverUrl: string) => {
-    fetchUserOrGroupsByMentionNames(serverUrl, Array.from(mentionNames));
-}, 200, false, () => {
-    mentionNames.clear();
-});
+const debouncedFetchUserOrGroupsByMentionNames = debounce(
+    (serverUrl: string) => {
+        fetchUserOrGroupsByMentionNames(serverUrl, Array.from(mentionNames));
+    },
+    200,
+    false,
+    () => {
+        mentionNames.clear();
+    },
+);
 
 const fetchUserOrGroupsByMentionNames = async (serverUrl: string, mentions: string[]) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        // Get any missing users
+        const usersInDb = await queryUsersByIdsOrUsernames(database, [], mentions).fetch();
+        const usersMap = new Set(usersInDb.map((u) => u.username));
+        const usernamesToFetch = mentions.filter((m) => !usersMap.has(m));
+
+        let fetchedUsers;
+        if (usernamesToFetch.length) {
+            const {users} = await fetchUsersByUsernames(serverUrl, usernamesToFetch, false);
+            fetchedUsers = users;
+        }
+
+        // Get any missing groups
+        const fetchedUserMentions = new Set(fetchedUsers?.map((u) => u.username));
+        const groupsToCheck = usernamesToFetch.filter((m) => !fetchedUserMentions.has(m));
+        const groupsInDb = await queryGroupsByNames(database, groupsToCheck).fetch();
+        const groupsMap = new Set(groupsInDb.map((g) => g.name));
+        const groupsToFetch = groupsToCheck.filter((g) => !groupsMap.has(g));
+
+        if (groupsToFetch.length) {
+            await fetchGroupsByNames(serverUrl, groupsToFetch, false);
+        }
+        return {data: true};
+    } catch (e) {
+        return {error: e};
     }
-
-    const {database} = operator;
-
-    // Get any missing users
-    const usersInDb = await queryUsersByIdsOrUsernames(database, [], mentions).fetch();
-    const usersMap = new Set(usersInDb.map((u) => u.username));
-    const usernamesToFetch = mentions.filter((m) => !usersMap.has(m));
-    const {users} = await fetchUsersByUsernames(serverUrl, usernamesToFetch, false);
-
-    // Get any missing groups
-    const fetchedUserMentions = new Set(users?.map((u) => u.username));
-    const groupsToCheck = usernamesToFetch.filter((m) => !fetchedUserMentions.has(m));
-    const groupsInDb = await queryGroupsByNames(database, groupsToCheck).fetch();
-    const groupsMap = new Set(groupsInDb.map((g) => g.name));
-    const groupsToFetch = groupsToCheck.filter((g) => !groupsMap.has(g));
-    await fetchGroupsByNames(serverUrl, groupsToFetch, false);
-    return {data: true};
 };
 
 export async function fetchStatusByIds(serverUrl: string, userIds: string[], fetchOnly = false) {
