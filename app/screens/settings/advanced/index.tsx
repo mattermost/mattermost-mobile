@@ -1,10 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import CameraRoll from '@react-native-community/cameraroll';
 import React, {useCallback, useEffect, useState} from 'react';
-import {Platform, Text, View} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
+import {Text, View} from 'react-native';
 import FileSystem, {ReadDirItem} from 'react-native-fs';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -13,7 +11,7 @@ import MenuItem from '@components/menu_item';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {popTopScreen} from '@screens/navigation';
-import {getApplicationPhotoUris, getFormattedFileSize} from '@utils/file';
+import {getFormattedFileSize} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -63,7 +61,6 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
     const [files, setFiles] = useState<ReadDirItem[]>(EMPTY_FILES);
 
     const styles = getStyleSheet(theme);
-    const applicationName = DeviceInfo.getApplicationName();
 
     const getAllCachedFiles = useCallback(async () => {
         const {totalSize, files: cachedFiles} = await getAllFilesInCachesDirectory();
@@ -79,14 +76,6 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
                     delFilePromises.push(FileSystem.unlink(file.path));
                 }
                 await Promise.all(delFilePromises);
-            }
-
-            if (Platform.Version < 30 || Platform.OS === 'ios') {
-                const uris = await getApplicationPhotoUris(applicationName);
-
-                if (uris.length > 0) {
-                    await CameraRoll.deletePhotos(uris);
-                }
             }
             await getAllCachedFiles();
         } catch (e) {

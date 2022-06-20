@@ -3,7 +3,6 @@
 
 import {PastedFile} from '@mattermost/react-native-paste-input';
 import Model from '@nozbe/watermelondb/Model';
-import CameraRoll from '@react-native-community/cameraroll';
 import mimeDB from 'mime-db';
 import {IntlShape} from 'react-intl';
 import {Alert, Platform} from 'react-native';
@@ -472,28 +471,3 @@ export const hasWriteStoragePermission = async (intl: IntlShape) => {
     }
 };
 
-export const getApplicationPhotoUris = async (applicationName: string, photoURI?: string[], endCursor?: string) => {
-    const uris: string[] = photoURI || [];
-    try {
-        const photos = await CameraRoll.getPhotos({
-            first: 200,
-            ...(endCursor && {after: endCursor}),
-            assetType: 'All',
-            groupName: applicationName,
-            groupTypes: 'Album',
-        });
-
-        for (const photo of photos.edges) {
-            uris.push(photo.node.image.uri);
-        }
-
-        if (photos.page_info.has_next_page) {
-            await getApplicationPhotoUris(applicationName, uris, photos.page_info.end_cursor);
-        }
-        return uris;
-    } catch (e) {
-        // does nothing
-    }
-
-    return uris;
-};
