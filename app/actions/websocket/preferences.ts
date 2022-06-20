@@ -1,27 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {DeviceEventEmitter} from 'react-native';
+
 import {updateDmGmDisplayName} from '@actions/local/channel';
 import {appEntry} from '@actions/remote/entry';
 import {fetchPostById} from '@actions/remote/post';
-import {truncateCrtRelatedTables} from '@app/queries/servers/entry';
-import {popToRoot} from '@app/screens/navigation';
-import {Preferences} from '@constants';
+import {Events, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
+import {truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getPostById} from '@queries/servers/post';
 import {deletePreferences, differsFromLocalNameFormat, queryHasCRTChanged} from '@queries/servers/preference';
 
 async function handleCRTToggled(serverUrl: string) {
     const currentServerUrl = await DatabaseManager.getActiveServerUrl();
-    const isSameServer = currentServerUrl === serverUrl;
-
-    const {error} = await truncateCrtRelatedTables(serverUrl);
-    if (!error) {
-        await appEntry(serverUrl);
-        if (isSameServer) {
-            popToRoot();
-        }
-    }
+    await truncateCrtRelatedTables(serverUrl);
+    appEntry(serverUrl);
+    DeviceEventEmitter.emit(Events.CRT_TOGGLED, serverUrl === currentServerUrl);
 }
 
 export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {

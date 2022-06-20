@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES} from '@app/constants/database';
-import {resetWebSocketLastDisconnected} from '@app/queries/servers/system';
+import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
 
 import {prepareCategories, prepareCategoryChannels} from './categories';
 import {prepareDeleteChannel, prepareMyChannelsForTeam} from './channel';
 import {prepareMyPreferences} from './preference';
+import {resetWebSocketLastDisconnected} from './system';
 import {prepareDeleteTeam, prepareMyTeams} from './team';
 import {prepareUsers} from './user';
 
@@ -82,12 +82,7 @@ export async function prepareModels({operator, initialTeamId, removeTeams, remov
 }
 
 export async function truncateCrtRelatedTables(serverUrl: string): Promise<{error: any}> {
-    const operator = DatabaseManager.serverDatabases?.[serverUrl].operator;
-
-    if (!operator) {
-        return {error: 'No App database found'};
-    }
-    const database = operator.database;
+    const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
     try {
         await database.write(() => {
