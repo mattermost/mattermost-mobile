@@ -13,7 +13,7 @@ import MenuItem from '@components/menu_item';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {popTopScreen} from '@screens/navigation';
-import {getFormattedFileSize} from '@utils/file';
+import {getApplicationPhotoUris, getFormattedFileSize} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -50,27 +50,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
 const EMPTY_FILES: ReadDirItem[] = [];
-const PHOTO_URIS: string[] = [];
 const EDGES: Edge[] = ['left', 'right'];
-
-const getAppPhotoUris = async (applicationName: string, endCursor?: string) => {
-    const photos = await CameraRoll.getPhotos({
-        first: 200,
-        ...(endCursor && {after: endCursor}),
-        assetType: 'All',
-        groupName: applicationName,
-        groupTypes: 'Album',
-    });
-
-    for (const photo of photos.edges) {
-        PHOTO_URIS.push(photo.node.image.uri);
-    }
-
-    if (photos.page_info.has_next_page) {
-        await getAppPhotoUris(applicationName, photos.page_info.end_cursor);
-    }
-};
 
 type AdvancedSettingsProps = {
     componentId: string;
@@ -95,11 +77,13 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
             for (const file of files) {
                 delFilePromises.push(FileSystem.unlink(file.path));
             }
-            await Promise.all(delFilePromises);
-            await getAppPhotoUris(applicationName);
 
-            if (PHOTO_URIS.length > 0) {
-                await CameraRoll.deletePhotos(PHOTO_URIS);
+            await Promise.all(delFilePromises);
+
+            const uris = await getApplicationPhotoUris(applicationName);
+
+            if (uris.length > 0) {
+                await CameraRoll.deletePhotos(uris);
             }
             await getAllCachedFiles();
         } catch (e) {
