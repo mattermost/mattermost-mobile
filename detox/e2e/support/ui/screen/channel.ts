@@ -87,7 +87,7 @@ class ChannelScreen {
 
     open = async (categoryKey: string, channelName: string) => {
         // # Open channel screen
-        await ChannelListScreen.getChannelListItemDisplayName(categoryKey, channelName).tap();
+        await ChannelListScreen.getChannelItemDisplayName(categoryKey, channelName).tap();
 
         return this.toBeVisible();
     };

@@ -14,11 +14,13 @@ type Props = {
     buttonIcon?: string;
     buttonText?: string;
     children: React.ReactNode;
+    disableButton?: boolean;
     onPress?: (e: GestureResponderEvent) => void;
     showButton: boolean;
     showTitle: boolean;
     testID?: string;
     title?: string;
+    titleSeparator?: boolean;
 }
 
 export const TITLE_HEIGHT = 38;
@@ -45,7 +47,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const BottomSheetContent = ({buttonText, buttonIcon, children, onPress, showButton, showTitle, testID, title}: Props) => {
+const BottomSheetContent = ({buttonText, buttonIcon, children, disableButton, onPress, showButton, showTitle, testID, title, titleSeparator}: Props) => {
     const dimensions = useWindowDimensions();
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -68,6 +70,9 @@ const BottomSheetContent = ({buttonText, buttonIcon, children, onPress, showButt
                     </Text>
                 </View>
             }
+            {titleSeparator &&
+                <View style={[styles.separator, {width: separatorWidth, marginBottom: (isTablet ? 20 : 12)}]}/>
+            }
             <>
                 {children}
             </>
@@ -75,6 +80,7 @@ const BottomSheetContent = ({buttonText, buttonIcon, children, onPress, showButt
                 <>
                     <View style={[styles.separator, {width: separatorWidth, marginBottom: (isTablet ? 20 : 12)}]}/>
                     <Button
+                        disabled={disableButton}
                         onPress={onPress}
                         icon={buttonIcon}
                         testID={buttonTestId}

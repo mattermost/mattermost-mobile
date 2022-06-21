@@ -235,6 +235,7 @@ function unsupportedServerAlert(intl: IntlShape) {
 
 function buildServerModalOptions(theme: Theme, closeButtonId: string) {
     const closeButton = CompassIcon.getImageSourceSync('close', 24, changeOpacity(theme.centerChannelColor, 0.56));
+    const closeButtonTestId = `${closeButtonId.replace('close-', 'close.').replace(/-/g, '_')}.button`;
     return {
         layout: {
             backgroundColor: theme.centerChannelBg,
@@ -251,7 +252,7 @@ function buildServerModalOptions(theme: Theme, closeButtonId: string) {
             leftButtons: [{
                 id: closeButtonId,
                 icon: closeButton,
-                testID: closeButtonId,
+                testID: closeButtonTestId,
             }],
             leftButtonColor: undefined,
             title: {color: theme.sidebarHeaderTextColor},

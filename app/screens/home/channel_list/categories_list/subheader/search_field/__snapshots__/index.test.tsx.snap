@@ -23,6 +23,7 @@ exports[`Search Field should match snapshot 1`] = `
       "padding": 8,
     }
   }
+  testID="channel_list_subheader.search_field.button"
 >
   <Icon
     name="magnify"

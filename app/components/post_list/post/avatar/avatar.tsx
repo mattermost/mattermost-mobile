@@ -113,7 +113,7 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, location, post}:
             size={ViewConstant.PROFILE_PICTURE_SIZE}
             iconSize={24}
             showStatus={!isAutoReponse || author.isBot}
-            testID='post_profile_picture.profile_picture'
+            testID={`post_profile_picture.${author.id}.profile_picture`}
         />
     );
 

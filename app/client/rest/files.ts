@@ -16,6 +16,8 @@ export interface ClientFilesMix {
         onError: (response: ClientResponseError) => void,
         skipBytes?: number,
     ) => () => void;
+    searchFiles: (teamId: string, terms: string) => Promise<any>;
+    searchFilesWithParams: (teamId: string, FileSearchParams: string) => Promise<any>;
 }
 
 const ClientFiles = (superclass: any) => class extends superclass {
@@ -70,10 +72,21 @@ const ClientFiles = (superclass: any) => class extends superclass {
                     channel_id: channelId,
                 },
             },
+            timeoutInterval: 3 * 60 * 1000, // 3 minutes
         };
         const promise = this.apiClient.upload(url, file.localPath, options) as ProgressPromise<ClientResponse>;
         promise.progress!(onProgress).then(onComplete).catch(onError);
         return promise.cancel!;
+    };
+
+    searchFilesWithParams = async (teamId: string, params: FileSearchParams) => {
+        this.analytics.trackAPI('api_files_search');
+        const endpoint = teamId ? `${this.getTeamRoute(teamId)}/files/search` : `${this.getFilesRoute()}/search`;
+        return this.doFetch(endpoint, {method: 'post', body: params});
+    };
+
+    searchFiles = async (teamId: string, terms: string, isOrSearch: boolean) => {
+        return this.searchFilesWithParams(teamId, {terms, is_or_search: isOrSearch});
     };
 };
 

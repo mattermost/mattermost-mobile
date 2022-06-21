@@ -3,16 +3,20 @@
 
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
-import {Screens} from '@constants';
+import {Preferences, Screens} from '@constants';
+import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {getMyChannel} from '@queries/servers/channel';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {getMyTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
+import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {emitNotificationError} from '@utils/notification';
+import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
 
 import {deferredAppEntryActions, entry, syncOtherServers} from './common';
 
@@ -50,6 +54,18 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
 
     const isCRTEnabled = await getIsCRTEnabled(database);
     const isThreadNotification = isCRTEnabled && Boolean(rootId);
+
+    if (!EphemeralStore.theme) {
+        // When opening the app from a push notification the theme may not be set in the EphemeralStore
+        // causing the goToScreen to use the Appearance theme instead and that causes the screen background color to potentially
+        // not match the theme
+        const themes = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_THEME, teamId).fetch();
+        let theme = getDefaultThemeByAppearance();
+        if (themes.length) {
+            theme = setThemeDefaults(JSON.parse(themes[0].value) as Theme);
+        }
+        updateThemeIfNeeded(theme, true);
+    }
 
     await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
 

@@ -97,7 +97,7 @@ const CategoryHeader = ({category, hasChannels}: Props) => {
     return (
         <TouchableOpacity
             onPress={toggleCollapse}
-            testID={`category_header.${category.type}.collapsed.${category.collapsed}`}
+            testID={`channel_list.category_header.${category.type}.collapsed.${category.collapsed}`}
         >
             <View style={[styles.container, category.muted ? styles.muted : null]}>
                 <AnimatedCompassIcon
@@ -107,7 +107,7 @@ const CategoryHeader = ({category, hasChannels}: Props) => {
                 />
                 <Text
                     style={styles.heading}
-                    testID={`category_header.${category.type}.display_name`}
+                    testID={`channel_list.category_header.${category.type}.display_name`}
                 >
                     {displayName}
                 </Text>
