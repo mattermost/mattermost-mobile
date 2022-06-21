@@ -149,7 +149,13 @@ const FileOptions = ({fileInfo}: Props) => {
                         iconSize={72}
                     />
                 </View>
-                <Text style={style.nameText}>{fileInfo.name}</Text>
+                <Text
+                    style={style.nameText}
+                    numberOfLines={2}
+                    ellipsizeMode={'tail'}
+                >
+                    {fileInfo.name}
+                </Text>
                 <View style={style.infoContainer}>
                     <Text style={style.infoText}>{size}</Text>
                     <Text style={style.infoText}>{' • '}</Text>
