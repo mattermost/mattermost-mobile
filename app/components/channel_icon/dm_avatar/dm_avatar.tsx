@@ -8,6 +8,8 @@ import ProfilePicture from '@components/profile_picture';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+import ChannelIcon from '..';
+
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
@@ -29,6 +31,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const DmAvatar = ({author, isInfo}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
+
+    if (author?.deleteAt && author.deleteAt > 0) {
+        return (
+            <ChannelIcon
+                name={author.username}
+                isArchived={true}
+                shared={false}
+                type=''
+            />
+        );
+    }
+
     return (
         <View style={style.container}>
             <ProfilePicture
