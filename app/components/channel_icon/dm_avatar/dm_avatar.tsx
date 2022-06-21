@@ -39,6 +39,7 @@ const DmAvatar = ({author, isInfo}: Props) => {
                 isArchived={true}
                 shared={false}
                 type=''
+                size={24}
             />
         );
     }
