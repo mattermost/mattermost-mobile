@@ -45,6 +45,7 @@ const Reactor = ({channelId, location, user}: Props) => {
             <UserItem
                 containerStyle={style.container}
                 user={user}
+                testID='reactors_list.user_item'
             />
         </TouchableOpacity>
     );

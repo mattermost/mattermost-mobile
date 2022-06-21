@@ -7,7 +7,7 @@ import {expect} from 'detox';
 class ServerScreen {
     testID = {
         serverScreen: 'server.screen',
-        closeButton: 'close-server',
+        closeButton: 'close.server.button',
         headerTitleAddServer: 'server_header.title.add_server',
         headerTitleConnectToServer: 'server_header.title.connect_to_server',
         headerWelcome: 'server_header.welcome',

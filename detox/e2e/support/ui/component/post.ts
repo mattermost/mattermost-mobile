@@ -5,7 +5,7 @@ import ProfilePicture from './profile_picture';
 
 class Post {
     testID = {
-        postProfilePicturePrefix: 'post_profile_picture.profile_picture.',
+        postProfilePicturePrefix: 'post_profile_picture.',
         blockQuote: 'markdown_block_quote',
         editedIndicator: 'edited_indicator',
         emoji: 'markdown_emoji',

@@ -480,13 +480,13 @@ export const observeDirectChannelsByTerm = (database: Database, term: string, ta
     const currentUserId = observeCurrentUserId(database);
     return currentUserId.pipe(
         switchMap((uId) => {
-            return database.get<MyChannelModel>(CHANNEL).query(
+            return database.get<MyChannelModel>(MY_CHANNEL).query(
                 Q.unsafeSqlQuery(`SELECT DISTINCT my.* FROM ${MY_CHANNEL} my
                 INNER JOIN ${CHANNEL} c ON c.id=my.id AND c.team_id='' AND c.delete_at=0 ${onlyDMs}
                 INNER JOIN ${CHANNEL_MEMBERSHIP} cm ON cm.channel_id=my.id
-                INNER JOIN ${USER} u ON u.id=cm.user_id AND (cm.user_id != '${uId}' AND ${username})
-                OR ${displayname}
-                ORDER BY my.last_viewed_at DESC
+                LEFT JOIN ${USER} u ON u.id=cm.user_id AND (CASE WHEN c.type = 'D' THEN cm.user_id != '${uId}' ELSE 1 END)
+                WHERE ${displayname} OR CASE WHEN c.type = 'G' THEN 0 ELSE ${username} END
+                ORDER BY CASE c.type WHEN 'D' THEN 0 ELSE 1 END ASC, my.last_viewed_at DESC
                 LIMIT ${take}`),
             ).observe();
         }),
@@ -525,7 +525,7 @@ export const observeNotDirectChannelsByTerm = (database: Database, term: string,
                 Q.unsafeSqlQuery(`SELECT DISTINCT u.* FROM User u
                 LEFT JOIN ChannelMembership cm ON cm.user_id=u.id
                 LEFT JOIN Channel c ON c.id=cm.id AND c.type='${General.DM_CHANNEL}'
-                WHERE cm.user_id IS NULL AND (${displayname} OR ${username} OR ${nickname})
+                WHERE cm.user_id IS NULL AND (${displayname} OR ${username} OR ${nickname}) AND u.delete_at=0
                 ${sortBy} LIMIT ${take}`),
             ).observe();
         }),

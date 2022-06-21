@@ -3,8 +3,8 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {combineLatest, of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {of as of$} from 'rxjs';
+import {combineLatestWith, switchMap} from 'rxjs/operators';
 
 import {General} from '@constants';
 import {observeArchiveChannelsByTerm, observeDirectChannelsByTerm, observeJoinedChannelsByTerm, observeNotDirectChannelsByTerm} from '@queries/servers/channel';
@@ -31,13 +31,15 @@ const enhanced = withObservables(['term'], ({database, term}: EnhanceProps) => {
     const directChannelsMatchStart = observeDirectChannelsByTerm(database, term, MAX_RESULTS, true);
     const directChannelsMatch = observeDirectChannelsByTerm(database, term, MAX_RESULTS);
 
-    const channelsMatchStart = combineLatest([joinedChannelsMatchStart, directChannelsMatchStart]).pipe(
+    const channelsMatchStart = joinedChannelsMatchStart.pipe(
+        combineLatestWith(directChannelsMatchStart),
         switchMap((matchStart) => {
             return retrieveChannels(database, matchStart.flat(), true);
         }),
     );
 
-    const channelsMatch = combineLatest([joinedChannelsMatch, directChannelsMatch]).pipe(
+    const channelsMatch = joinedChannelsMatch.pipe(
+        combineLatestWith(directChannelsMatch),
         switchMap((matched) => retrieveChannels(database, matched.flat(), true)),
     );
 

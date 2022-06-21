@@ -17,7 +17,7 @@ exports[`components/channel_list/categories/header should match snapshot 1`] = `
       "opacity": 1,
     }
   }
-  testID="category_header.custom.collapsed.false"
+  testID="channel_list.category_header.custom.collapsed.false"
 >
   <View
     style={
@@ -75,7 +75,7 @@ exports[`components/channel_list/categories/header should match snapshot 1`] = `
           "textTransform": "uppercase",
         }
       }
-      testID="category_header.custom.display_name"
+      testID="channel_list.category_header.custom.display_name"
     >
       Test Category
     </Text>

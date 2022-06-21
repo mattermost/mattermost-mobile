@@ -120,7 +120,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
             onEmojiPress: handleAddReactionToPost,
         };
 
-        showModal(Screens.EMOJI_PICKER, title, passProps);
+        showModal(Screens.EMOJI_PICKER, title, passProps, {modal: {swipeToDismiss: false}});
     }), [intl, theme]);
 
     const handleReactionPress = useCallback(async (emoji: string, remove: boolean) => {

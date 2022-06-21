@@ -101,7 +101,7 @@ const ProfilePicture = ({
     return (
         <View
             style={containerStyle}
-            testID={`${testID}.${author?.id}`}
+            testID={testID}
         >
             <Image
                 author={author}

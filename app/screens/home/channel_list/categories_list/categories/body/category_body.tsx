@@ -48,9 +48,9 @@ const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, limit,
         return (
             <ChannelItem
                 channel={item}
-                testID={`category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_list_item`}
                 onPress={onChannelSwitch}
                 key={item.id}
+                testID={`channel_list.category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_item`}
             />
         );
     }, [onChannelSwitch]);

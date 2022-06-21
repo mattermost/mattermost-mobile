@@ -139,8 +139,10 @@ export default function UserListRow({
                 endX: x + w + 20,
                 endY: y + h,
             };
-            setShowTutorial(true);
-            setItemBounds(bounds);
+            if (viewRef.current) {
+                setShowTutorial(true);
+                setItemBounds(bounds);
+            }
         });
     };
 
