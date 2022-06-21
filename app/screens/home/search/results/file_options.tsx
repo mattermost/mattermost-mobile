@@ -35,6 +35,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         iconContainer: {
             marginLeft: -10,
+            marginBottom: 8,
             alignSelf: 'flex-start',
         },
         nameText: {
