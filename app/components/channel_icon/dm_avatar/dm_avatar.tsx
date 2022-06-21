@@ -4,11 +4,10 @@
 import React from 'react';
 import {View} from 'react-native';
 
+import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
 import {useTheme} from '@context/theme';
-import {makeStyleSheetFromTheme} from '@utils/theme';
-
-import ChannelIcon from '..';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -26,6 +25,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     statusInfo: {
         backgroundColor: theme.centerChannelBg,
     },
+    icon: {
+        color: changeOpacity(theme.sidebarText, 0.4),
+    },
 }));
 
 const DmAvatar = ({author, isInfo}: Props) => {
@@ -34,12 +36,9 @@ const DmAvatar = ({author, isInfo}: Props) => {
 
     if (author?.deleteAt && author.deleteAt > 0) {
         return (
-            <ChannelIcon
-                name={author.username}
-                isArchived={true}
-                shared={false}
-                type=''
-                size={24}
+            <CompassIcon
+                name='archive-outline'
+                style={[style.icon, {fontSize: 24, left: 1}]}
             />
         );
     }
