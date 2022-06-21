@@ -18,6 +18,7 @@ import {t} from '@i18n';
 import CopyPublicLink from '@screens/gallery/footer/copy_public_link';
 import DownloadWithAction from '@screens/gallery/footer/download_with_action';
 import {getFormattedFileSize} from '@utils/file';
+import {OptionsActions, OptionActionType} from '@utils/search';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -66,7 +67,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 type FileOption = {
     id: string;
     iconName: string;
-    type: string;
+    type: OptionActionType;
     defaultMessage: string;
 }
 
@@ -74,17 +75,17 @@ const data: FileOption[] = [
     {
         id: t('screen.search.results.file_options.download'),
         iconName: 'download-outline',
-        type: 'download',
+        type: OptionsActions.DOWNLOAD,
         defaultMessage: 'Download',
     }, {
         id: t('screen.search.results.file_options.open_in_channel'),
         iconName: 'globe',
-        type: 'goto-channel',
+        type: OptionsActions.GOTO_CHANNEL,
         defaultMessage: 'Open in channel',
     }, {
         id: t('screen.search.results.file.copy_link'),
         iconName: 'link-variant',
-        type: 'copy-link',
+        type: OptionsActions.COPY_LINK,
         defaultMessage: 'Copy Link',
     },
 ];
@@ -118,13 +119,13 @@ const FileOptions = ({fileInfo}: Props) => {
 
     const handlePress = (item: FileOption) => {
         switch (item.type) {
-            case 'download':
+            case OptionsActions.DOWNLOAD:
                 handleDownload();
                 break;
-            case 'goto-channel':
+            case OptionsActions.GOTO_CHANNEL:
                 handleGotoChannel();
                 break;
-            case 'copy-link':
+            case OptionsActions.COPY_LINK:
                 handleCopyLink();
                 break;
 
