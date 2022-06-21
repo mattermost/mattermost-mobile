@@ -17,7 +17,7 @@ type Props = {
 }
 
 const format = 'MMM DD HH:MM A';
-const hitSlop = {top: 24, bottom: 24, left: 24, right: 24};
+const hitSlop = {top: 5, bottom: 5, left: 5, right: 5};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -67,8 +67,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         threeDotContainer: {
             alignItems: 'flex-end',
-        },
-        threeDot: {
             marginHorizontal: 20,
         },
     };
@@ -133,7 +131,6 @@ export default function FileCard({fileInfo}: Props) {
                 <CompassIcon
                     name='dots-horizontal'
                     color={changeOpacity(theme.centerChannelColor, 0.56)}
-                    style={style.threeDot}
                     size={18}
                 />
             </TouchableOpacity>
