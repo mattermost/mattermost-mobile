@@ -77,7 +77,7 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
     const onPressTimezone = useCallback((tzne: string) => {
         onBack(tzne);
         popTopScreen();
-    }, []);
+    }, [onBack]);
 
     const renderItem = ({item: timezone}: {item: string}) => {
         return (
@@ -103,7 +103,8 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
                     }
                 }
             } catch (error) {
-                setTimezones(EMPTY_TIMEZONES);
+                // eslint-disable-next-line no-console
+                console.log('FAILED TO GET ALL TIMEZONES', error);
             }
         };
         getSupportedTimezones();
