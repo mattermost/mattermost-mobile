@@ -60,6 +60,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75, 'Regular'),
         },
+        fileStatsContainer: {
+            flexGrow: 1,
+            flexDirection: 'row',
+        },
         channelText: {
             marginRight: 4,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
@@ -114,20 +118,23 @@ export default function FileCard({channelName, fileInfo}: Props) {
                 >
                     {fileInfo.name}
                 </Text>
-                <Text
-                    style={[style.infoText, style.channelText]}
-                    numberOfLines={1}
-                    ellipsizeMode={'tail'}
-                >
-                    {channelName}
-                </Text>
                 <View style={[style.flexRow]}>
-                    <Text style={style.infoText}>{`${size} • `}</Text>
-                    <FormattedDate
-                        style={style.infoText}
-                        format={format}
-                        value={fileInfo.create_at as number}
-                    />
+                    <View style={{flexShrink: 1}}>
+                        <Text
+                            style={[style.infoText, style.channelText]}
+                            numberOfLines={1}
+                        >
+                            {channelName}
+                        </Text>
+                    </View>
+                    <View style={style.fileStatsContainer}>
+                        <Text style={style.infoText}>{`${size} • `}</Text>
+                        <FormattedDate
+                            style={style.infoText}
+                            format={format}
+                            value={fileInfo.create_at as number}
+                        />
+                    </View>
                 </View>
             </View>
             <TouchableOpacity
