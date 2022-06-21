@@ -5,8 +5,8 @@ import React, {useCallback, useState} from 'react';
 import {View, Text} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
-import {switchToChannelById} from '@actions/remote/channel';
 import {fetchPostById} from '@actions/remote/post';
+import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import FormattedDate from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
 import MenuItem from '@components/menu_item';
@@ -113,11 +113,15 @@ const FileOptions = ({fileInfo}: Props) => {
     }, []);
 
     const handleGotoChannel = useCallback(async () => {
-        const post = await fetchPostById(serverUrl, fileInfo.post_id, true);
-        switchToChannelById(serverUrl, post!.post!.channel_id);
-
-        // TODO: scroll to post in channel
-    }, []);
+        const fetchedPost = await fetchPostById(serverUrl, fileInfo.post_id, true);
+        const post = fetchedPost.post;
+        const rootId = post?.root_id || post?.id;
+        if (rootId) {
+            fetchAndSwitchToThread(serverUrl, rootId);
+        } else {
+            // what to do?
+        }
+    }, [fileInfo]);
 
     const handlePress = (item: FileOption) => {
         switch (item.type) {
