@@ -2,12 +2,22 @@
 // See LICENSE.txt for license information.
 
 import {fetchFilteredChannelGroups, fetchFilteredTeamGroups, fetchGroupsForAutocomplete} from '@actions/remote/groups';
+import {forceLogoutIfNecessary} from '@actions/remote/session';
 import DatabaseManager from '@database/manager';
 import {prepareGroups, queryGroupsByName, queryGroupsByNameInChannel, queryGroupsByNameInTeam} from '@queries/servers/group';
 
 import type GroupModel from '@typings/database/models/servers/group';
 
 export const searchGroupsByName = async (serverUrl: string, name: string): Promise<GroupModel[]> => {
+    let database;
+
+    try {
+        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+    } catch (e) {
+        forceLogoutIfNecessary(serverUrl, e as ClientErrorProps);
+        return [];
+    }
+
     try {
         const groups = await fetchGroupsForAutocomplete(serverUrl, name);
 
@@ -18,12 +28,20 @@ export const searchGroupsByName = async (serverUrl: string, name: string): Promi
     } catch (e) {
         // eslint-disable-next-line no-console
         console.log('searchGroupsByName - ERROR', e);
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         return queryGroupsByName(database, name).fetch();
     }
 };
 
 export const searchGroupsByNameInTeam = async (serverUrl: string, name: string, teamId: string): Promise<GroupModel[]> => {
+    let database;
+
+    try {
+        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+    } catch (e) {
+        forceLogoutIfNecessary(serverUrl, e as ClientErrorProps);
+        return [];
+    }
+
     try {
         const groups = await fetchFilteredTeamGroups(serverUrl, name, teamId);
 
@@ -34,12 +52,20 @@ export const searchGroupsByNameInTeam = async (serverUrl: string, name: string, 
     } catch (e) {
         // eslint-disable-next-line no-console
         console.log('searchGroupsByNameInTeam - ERROR', e);
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         return queryGroupsByNameInTeam(database, name, teamId).fetch();
     }
 };
 
 export const searchGroupsByNameInChannel = async (serverUrl: string, name: string, channelId: string): Promise<GroupModel[]> => {
+    let database;
+
+    try {
+        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+    } catch (e) {
+        forceLogoutIfNecessary(serverUrl, e as ClientErrorProps);
+        return [];
+    }
+
     try {
         const groups = await fetchFilteredChannelGroups(serverUrl, name, channelId);
 
@@ -50,7 +76,6 @@ export const searchGroupsByNameInChannel = async (serverUrl: string, name: strin
     } catch (e) {
         // eslint-disable-next-line no-console
         console.log('searchGroupsByNameInChannel - ERROR', e);
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         return queryGroupsByNameInChannel(database, name, channelId).fetch();
     }
 };
