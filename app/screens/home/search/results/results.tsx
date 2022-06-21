@@ -64,7 +64,7 @@ const SearchResults = ({
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
 
-    const getContainerStyle = useCallback(() => {
+    const getContainerStyle = useMemo(() => {
         let padding = 0;
         if (selectedTab === TabTypes.MESSAGES) {
             padding = posts.length ? 4 : 8;
@@ -153,7 +153,7 @@ const SearchResults = ({
             onScroll={onScroll}
             removeClippedSubviews={true}
             ref={scrollRef}
-            style={getContainerStyle()}
+            style={getContainerStyle}
         />
     );
 };
