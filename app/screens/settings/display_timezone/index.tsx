@@ -5,9 +5,10 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
 import {observeCurrentUser} from '@queries/servers/user';
-import {WithDatabaseArgs} from '@typings/database/database';
 
 import DisplayTimezone from './display_timezone';
+
+import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     return {

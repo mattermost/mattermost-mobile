@@ -1,9 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {
-    transformGroupRecord,
-} from '@database/operator/server_data_operator/transformers/group';
+import {transformGroupRecord} from '@database/operator/server_data_operator/transformers/group';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
 import {OperationType} from '@typings/database/enums';
 

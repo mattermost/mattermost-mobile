@@ -8,9 +8,10 @@ import {switchMap} from 'rxjs/operators';
 
 import {observeConfig} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
-import {WithDatabaseArgs} from '@typings/database/database';
 
 import EditProfile from './edit_profile';
+
+import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const config = observeConfig(database);
