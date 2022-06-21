@@ -114,8 +114,14 @@ export default function FileCard({channelName, fileInfo}: Props) {
                 >
                     {fileInfo.name}
                 </Text>
+                <Text
+                    style={[style.infoText, style.channelText]}
+                    numberOfLines={1}
+                    ellipsizeMode={'tail'}
+                >
+                    {channelName}
+                </Text>
                 <View style={[style.flexRow]}>
-                    <Text style={[style.infoText, style.channelText]}>{channelName}</Text>
                     <Text style={style.infoText}>{`${size} • `}</Text>
                     <FormattedDate
                         style={style.infoText}
