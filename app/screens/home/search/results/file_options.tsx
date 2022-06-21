@@ -22,6 +22,8 @@ import {OptionsActions, OptionActionType} from '@utils/search';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+const format = 'MMM DD YYYY HH:MM A';
+
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
@@ -148,7 +150,6 @@ const FileOptions = ({fileInfo}: Props) => {
 
     const renderHeader = () => {
         const size = getFormattedFileSize(fileInfo.size);
-        const format = 'MMM DD YYYY HH:MM A';
         return (
             <View style={style.headerContainer}>
                 <View style={style.iconContainer}>
@@ -199,17 +200,17 @@ const FileOptions = ({fileInfo}: Props) => {
                 contentContainerStyle={style.contentContainer}
             />
             {['downloading'].includes(action) &&
-            <DownloadWithAction
-                action={action}
-                item={galleryItem}
-                setAction={setAction}
-            />
+                <DownloadWithAction
+                    action={action}
+                    item={galleryItem}
+                    setAction={setAction}
+                />
             }
             {action === 'copying' &&
-            <CopyPublicLink
-                item={galleryItem}
-                setAction={setAction}
-            />
+                <CopyPublicLink
+                    item={galleryItem}
+                    setAction={setAction}
+                />
             }
         </View>
 
