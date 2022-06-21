@@ -12,11 +12,11 @@ import {
     NativeSyntheticEvent,
     NativeScrollEvent,
     Platform,
+    useWindowDimensions,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import useHeaderHeight from '@app/hooks/header';
 import Autocomplete from '@components/autocomplete';
 import ErrorText from '@components/error_text';
 import FloatingTextInput from '@components/floating_text_input_label';
@@ -25,6 +25,7 @@ import Loading from '@components/loading';
 import OptionItem from '@components/option_item';
 import {General, Channel} from '@constants';
 import {useTheme} from '@context/theme';
+import useHeaderHeight from '@hooks/header';
 import {t} from '@i18n';
 import {
     changeOpacity,
@@ -101,7 +102,8 @@ export default function ChannelInfoForm({
     const intl = useIntl();
     const {formatMessage} = intl;
     const titleBarHeight = useHeaderHeight();
-
+    const {height: windowHeight} = useWindowDimensions();
+    const {top: insetsTop, bottom: insetsBottom} = useSafeAreaInsets();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -114,7 +116,8 @@ export default function ChannelInfoForm({
     const updateScrollTimeout = useRef<NodeJS.Timeout>();
 
     const [keyboardVisible, setKeyBoardVisible] = useState(false);
-    const [keyboardPosition, setKeyboardPosition] = useState(0);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const [keyboardPosition, setKeyboardPosition] = useState(windowHeight);
     const [scrollPosition, setScrollPosition] = useState(0);
 
     const [headerPosition, setHeaderPosition] = useState(0);
@@ -165,16 +168,14 @@ export default function ChannelInfoForm({
 
     const onKeyboardDidShow = useCallback((frames: any) => {
         setKeyBoardVisible(true);
-        if (Platform.OS === 'android') {
-            setKeyboardPosition(frames.endCoordinates.screenY);
-        }
-    }, [headerPosition]);
+        setKeyboardPosition(frames.endCoordinates.screenY);
+        setKeyboardHeight(frames.endCoordinates.height);
+    }, []);
 
     const onKeyboardDidHide = useCallback((frames: any) => {
         setKeyBoardVisible(false);
-        if (Platform.OS === 'android') {
-            setKeyboardPosition(frames.endCoordinates.screenY);
-        }
+        setKeyboardPosition(frames.endCoordinates.screenY);
+        setKeyboardHeight(0);
     }, []);
 
     const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -217,141 +218,144 @@ export default function ChannelInfoForm({
             </SafeAreaView>
         );
     }
+
     const autocompleteSize = Math.min(
-        Math.max((keyboardPosition + scrollPosition) - (titleBarHeight.defaultHeight + (StatusBar.currentHeight || 0) + SCROLL_VERTICAL_PADDING + headerPosition + headerHeight), 80),
+        Math.max((keyboardPosition + scrollPosition) - (insetsBottom + titleBarHeight.defaultHeight + insetsTop + (StatusBar.currentHeight || 0) + SCROLL_VERTICAL_PADDING + headerPosition + headerHeight), 80),
         200);
 
+    const position = Platform.select({ios: keyboardHeight - insetsBottom, default: 0});
     return (
-        <SafeAreaView
-            edges={['bottom', 'left', 'right']}
-            style={styles.container}
-            testID='create_or_edit_channel.screen'
-        >
-            <KeyboardAwareScrollView
-                testID={'create_or_edit_channel.scrollview'}
-                ref={scrollViewRef}
-                keyboardShouldPersistTaps={'always'}
-                onKeyboardDidShow={onKeyboardDidShow}
-                onKeyboardDidHide={onKeyboardDidHide}
-                enableAutomaticScroll={!keyboardVisible}
-                contentContainerStyle={styles.scrollView}
-                onScroll={onScroll}
+        <>
+            <SafeAreaView
+                edges={['bottom', 'left', 'right']}
+                style={styles.container}
+                testID='create_or_edit_channel.screen'
             >
-                {displayError}
-                <TouchableWithoutFeedback
-                    onPress={blur}
+                <KeyboardAwareScrollView
+                    testID={'create_or_edit_channel.scrollview'}
+                    ref={scrollViewRef}
+                    keyboardShouldPersistTaps={'always'}
+                    onKeyboardDidShow={onKeyboardDidShow}
+                    onKeyboardDidHide={onKeyboardDidHide}
+                    enableAutomaticScroll={!keyboardVisible}
+                    contentContainerStyle={styles.scrollView}
+                    onScroll={onScroll}
                 >
-                    <View>
-                        {showSelector && (
-                            <OptionItem
-                                testID='channel_info_form.make_private'
-                                label={makePrivateLabel}
-                                description={makePrivateDescription}
-                                action={handlePress}
-                                type={'toggle'}
-                                selected={isPrivate}
-                                icon={'lock-outline'}
-                                containerStyle={styles.makePrivateContainer}
-                            />
-                        )}
-                        {!displayHeaderOnly && (
-                            <>
-                                <FloatingTextInput
-                                    autoCorrect={false}
-                                    autoCapitalize={'none'}
-                                    blurOnSubmit={false}
-                                    disableFullscreenUI={true}
-                                    enablesReturnKeyAutomatically={true}
-                                    label={labelDisplayName}
-                                    placeholder={placeholderDisplayName}
-                                    onChangeText={onDisplayNameChange}
-                                    maxLength={Channel.MAX_CHANNEL_NAME_LENGTH}
-                                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                                    returnKeyType='next'
-                                    showErrorIcon={false}
-                                    spellCheck={false}
-                                    testID='channel_info_form.display_name.input'
-                                    value={displayName}
-                                    ref={nameInput}
-                                    containerStyle={styles.fieldContainer}
-                                    theme={theme}
+                    {displayError}
+                    <TouchableWithoutFeedback
+                        onPress={blur}
+                    >
+                        <View>
+                            {showSelector && (
+                                <OptionItem
+                                    testID='channel_info_form.make_private'
+                                    label={makePrivateLabel}
+                                    description={makePrivateDescription}
+                                    action={handlePress}
+                                    type={'toggle'}
+                                    selected={isPrivate}
+                                    icon={'lock-outline'}
+                                    containerStyle={styles.makePrivateContainer}
                                 />
-                                <View style={styles.fieldContainer}>
+                            )}
+                            {!displayHeaderOnly && (
+                                <>
                                     <FloatingTextInput
                                         autoCorrect={false}
                                         autoCapitalize={'none'}
                                         blurOnSubmit={false}
                                         disableFullscreenUI={true}
                                         enablesReturnKeyAutomatically={true}
-                                        label={labelPurpose}
-                                        placeholder={placeholderPurpose}
-                                        onChangeText={onPurposeChange}
+                                        label={labelDisplayName}
+                                        placeholder={placeholderDisplayName}
+                                        onChangeText={onDisplayNameChange}
+                                        maxLength={Channel.MAX_CHANNEL_NAME_LENGTH}
                                         keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                         returnKeyType='next'
                                         showErrorIcon={false}
                                         spellCheck={false}
-                                        testID='channel_info_form.purpose.input'
-                                        value={purpose}
-                                        ref={purposeInput}
+                                        testID='channel_info_form.display_name.input'
+                                        value={displayName}
+                                        ref={nameInput}
+                                        containerStyle={styles.fieldContainer}
                                         theme={theme}
                                     />
-                                    <FormattedText
-                                        style={styles.helpText}
-                                        id='channel_modal.descriptionHelp'
-                                        defaultMessage='Describe how this channel should be used.'
-                                        testID='channel_info_form.purpose.description'
-                                    />
-                                </View>
-                            </>
-                        )}
-                        <View
-                            style={styles.fieldContainer}
-                            onLayout={onHeaderLayout}
-                        >
-                            <FloatingTextInput
-                                autoCorrect={false}
-                                autoCapitalize={'none'}
-                                blurOnSubmit={false}
-                                disableFullscreenUI={true}
-                                enablesReturnKeyAutomatically={true}
-                                label={labelHeader}
-                                placeholder={placeholderHeader}
-                                onChangeText={onHeaderChange}
-                                multiline={true}
-                                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                                returnKeyType='next'
-                                showErrorIcon={false}
-                                spellCheck={false}
-                                testID='channel_info_form.header.input'
-                                value={header}
-                                ref={headerInput}
-                                theme={theme}
-                                onLayout={onHeaderInputLayout}
-                                onFocus={scrollHeaderToTop}
-                            />
-                            <FormattedText
-                                style={styles.helpText}
-                                id='channel_modal.headerHelp'
-                                defaultMessage={'Specify text to appear in the channel header beside the channel name. For example, include frequently used links by typing link text [Link Title](http://example.com).'}
-                                testID='channel_info_form.header.description'
+                                    <View style={styles.fieldContainer}>
+                                        <FloatingTextInput
+                                            autoCorrect={false}
+                                            autoCapitalize={'none'}
+                                            blurOnSubmit={false}
+                                            disableFullscreenUI={true}
+                                            enablesReturnKeyAutomatically={true}
+                                            label={labelPurpose}
+                                            placeholder={placeholderPurpose}
+                                            onChangeText={onPurposeChange}
+                                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                                            returnKeyType='next'
+                                            showErrorIcon={false}
+                                            spellCheck={false}
+                                            testID='channel_info_form.purpose.input'
+                                            value={purpose}
+                                            ref={purposeInput}
+                                            theme={theme}
+                                        />
+                                        <FormattedText
+                                            style={styles.helpText}
+                                            id='channel_modal.descriptionHelp'
+                                            defaultMessage='Describe how this channel should be used.'
+                                            testID='channel_info_form.purpose.description'
+                                        />
+                                    </View>
+                                </>
+                            )}
+                            <View
+                                style={styles.fieldContainer}
+                                onLayout={onHeaderLayout}
+                            >
+                                <FloatingTextInput
+                                    autoCorrect={false}
+                                    autoCapitalize={'none'}
+                                    blurOnSubmit={false}
+                                    disableFullscreenUI={true}
+                                    enablesReturnKeyAutomatically={true}
+                                    label={labelHeader}
+                                    placeholder={placeholderHeader}
+                                    onChangeText={onHeaderChange}
+                                    multiline={true}
+                                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                                    returnKeyType='next'
+                                    showErrorIcon={false}
+                                    spellCheck={false}
+                                    testID='channel_info_form.header.input'
+                                    value={header}
+                                    ref={headerInput}
+                                    theme={theme}
+                                    onLayout={onHeaderInputLayout}
+                                    onFocus={scrollHeaderToTop}
+                                />
+                                <FormattedText
+                                    style={styles.helpText}
+                                    id='channel_modal.headerHelp'
+                                    defaultMessage={'Specify text to appear in the channel header beside the channel name. For example, include frequently used links by typing link text [Link Title](http://example.com).'}
+                                    testID='channel_info_form.header.description'
 
-                            />
+                                />
+                            </View>
                         </View>
-                    </View>
-                </TouchableWithoutFeedback>
-            </KeyboardAwareScrollView>
+                    </TouchableWithoutFeedback>
+                </KeyboardAwareScrollView>
+            </SafeAreaView>
             <View>
                 <Autocomplete
-                    postInputTop={1}
+                    postInputTop={position}
                     updateValue={onHeaderChange}
                     cursorPosition={header.length}
                     value={header}
                     nestedScrollEnabled={true}
                     maxHeightOverride={autocompleteSize}
                     inPost={false}
-                    fixedBottomPosition={true}
                 />
             </View>
-        </SafeAreaView>
+        </>
     );
 }
