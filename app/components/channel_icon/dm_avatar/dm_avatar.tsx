@@ -27,6 +27,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     icon: {
         color: changeOpacity(theme.sidebarText, 0.4),
+        left: 1,
+    },
+    iconInfo: {
+        color: changeOpacity(theme.centerChannelColor, 0.72),
     },
 }));
 
@@ -34,11 +38,12 @@ const DmAvatar = ({author, isInfo}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    if (author?.deleteAt && author.deleteAt > 0) {
+    if (author?.deleteAt) {
         return (
             <CompassIcon
                 name='archive-outline'
-                style={[style.icon, {fontSize: 24, left: 1}]}
+                style={[style.icon, isInfo && style.iconInfo]}
+                size={24}
             />
         );
     }
