@@ -10,7 +10,7 @@ import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {PostModel} from '@database/models/server';
+import {PostModel, ChannelModel} from '@database/models/server';
 import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
 import {TabTypes, TabType} from '@utils/search';
 
@@ -37,6 +37,7 @@ type Props = {
     currentTimezone: string;
     isTimezoneEnabled: boolean;
     posts: PostModel[];
+    fileChannels: ChannelModel[];
     fileInfos: FileInfo[];
     scrollRef: React.RefObject<FlatList>;
     onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
@@ -51,6 +52,7 @@ const SearchResults = ({
     fileInfos,
     isTimezoneEnabled,
     posts,
+    fileChannels,
     searchValue,
     selectedTab,
     scrollRef,
@@ -71,6 +73,13 @@ const SearchResults = ({
         }
         return {top: padding};
     }, [selectedTab, posts, fileInfos]);
+
+    const getChannelName = useCallback((id: string) => {
+        const result = fileChannels.filter((channel) => {
+            return channel._raw.id === id;
+        }).map((channel) => channel._raw.display_name);
+        return result[0];
+    }, [fileChannels]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<string|FileInfo | Post>) => {
         if (typeof item === 'string') {
@@ -99,9 +108,10 @@ const SearchResults = ({
             <FileCard
                 fileInfo={item}
                 key={item.id}
+                channelName={getChannelName(item.channel_id)}
             />
         );
-    }, [theme]);
+    }, [theme, getChannelName]);
 
     const noResults = useMemo(() => {
         if (searchValue) {

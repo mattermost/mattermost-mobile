@@ -54,6 +54,7 @@ const SearchScreen = ({teamId}: Props) => {
 
     const [postIds, setPostIds] = useState<string[]>(emptyPostResults);
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
+    const [fileChannelIds, setFileChannelIds] = useState<string[]>([]);
     const [filteredFileInfos, setFilteredFileInfos] = useState<FileInfo[]>(emptyFileResults);
 
     const handleSearch = useCallback((debounce(async () => {
@@ -78,6 +79,12 @@ const SearchScreen = ({teamId}: Props) => {
         const fileInfosResult = fileResults?.file_infos && Object.values(fileResults?.file_infos);
         setFileInfos(fileInfosResult?.length ? fileInfosResult : emptyFileResults);
         setPostIds(postResults?.order?.length ? postResults.order : emptyPostResults);
+
+        if (fileInfosResult?.length) {
+            const fchannelIds = fileInfosResult.map((info) => info.channel_id);
+            const uniqueFileChannelIds = [...new Set(fchannelIds)];
+            setFileChannelIds(uniqueFileChannelIds);
+        }
 
         setLoading(false);
     })), [searchValue]);
@@ -166,6 +173,7 @@ const SearchScreen = ({teamId}: Props) => {
                         searchValue={lastSearchedValue}
                         postIds={postIds}
                         fileInfos={filteredFileInfos}
+                        fileChannelIds={fileChannelIds}
                         scrollRef={scrollRef}
                         onScroll={onScroll}
                         scrollPaddingTop={scrollPaddingTop}

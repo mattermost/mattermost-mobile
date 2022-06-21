@@ -139,14 +139,9 @@ export const searchFiles = async (serverUrl: string, teamId: string, params: Fil
     }
 
     let client: Client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
     let data;
     try {
+        client = NetworkManager.getClient(serverUrl);
         data = await client.searchFiles(teamId, params.terms);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);

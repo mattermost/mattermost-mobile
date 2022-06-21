@@ -14,6 +14,7 @@ import {typography} from '@utils/typography';
 
 type Props = {
     fileInfo: FileInfo;
+    channelName: string;
 }
 
 const format = 'MMM DD HH:MM A';
@@ -72,7 +73,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default function FileCard({fileInfo}: Props) {
+export default function FileCard({channelName, fileInfo}: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const size = getFormattedFileSize(fileInfo.size);
@@ -90,9 +91,9 @@ export default function FileCard({fileInfo}: Props) {
     };
 
     // TODO: Get the channel name and display
-    const channelName = () => { // eslint-disable-line @typescript-eslint/no-unused-vars
-        return 'channelName';
-    };
+    // const channelName = () => { // eslint-disable-line @typescript-eslint/no-unused-vars
+    //     return 'channelName';
+    // };
 
     return (
         <TouchableOpacity
@@ -114,7 +115,7 @@ export default function FileCard({fileInfo}: Props) {
                     {fileInfo.name}
                 </Text>
                 <View style={[style.flexRow]}>
-                    {/* <Text style={[style.infoText, style.channelText]}>{channelName()}</Text> */}
+                    <Text style={[style.infoText, style.channelText]}>{channelName}</Text>
                     <Text style={style.infoText}>{`${size} • `}</Text>
                     <FormattedDate
                         style={style.infoText}
