@@ -62,9 +62,7 @@ export default function FileCard({fileInfo}: Props) {
             renderContent,
             snapPoints: [400, 10],
             theme,
-
-            // remove following
-            title: intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'}),
+            title: '',
         });
     };
     return (

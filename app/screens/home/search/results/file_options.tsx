@@ -15,7 +15,6 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
-import BottomSheetContent from '@screens/bottom_sheet/content';
 import CopyPublicLink from '@screens/gallery/footer/copy_public_link';
 import DownloadWithAction from '@screens/gallery/footer/download_with_action';
 import {getFormattedFileSize} from '@utils/file';
@@ -24,9 +23,15 @@ import {typography} from '@utils/typography';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        container: {
+            marginTop: -20,
+            marginLeft: -20,
+        },
         headerContainer: {
             float: 'left',
             marginLeft: 20,
+            marginTop: 20,
+            marginBottom: 8,
         },
         iconContainer: {
             marginLeft: -10,
@@ -34,9 +39,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         nameText: {
             color: theme.centerChannelColor,
-            ...typography('Heading', 400, 'Regular'),
+            ...typography('Heading', 400, 'SemiBold'),
         },
         infoContainer: {
+            marginVertical: 8,
             alignItems: 'center',
             flexDirection: 'row',
         },
@@ -46,12 +52,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             ...typography('Body', 200, 'Regular'),
         },
         date: {
-            marginBottom: 2,
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 200, 'Regular'),
         },
         menuText: {
             color: theme.centerChannelColor,
+            ...typography('Body', 200, 'Regular'),
         },
     };
 });
@@ -157,8 +163,7 @@ const FileOptions = ({fileInfo}: Props) => {
                     {fileInfo.name}
                 </Text>
                 <View style={style.infoContainer}>
-                    <Text style={style.infoText}>{size}</Text>
-                    <Text style={style.infoText}>{' • '}</Text>
+                    <Text style={style.infoText}>{`${size} • `}</Text>
                     <FormattedDate
                         style={style.date}
                         format={format}
@@ -184,11 +189,7 @@ const FileOptions = ({fileInfo}: Props) => {
     }, [renderLabelComponent, theme]);
 
     return (
-        <BottomSheetContent
-            showButton={false}
-            showTitle={!isTablet}
-            testID='file.options'
-        >
+        <View style={style.container}>
             {renderHeader()}
             <FlatList
                 data={data}
@@ -196,19 +197,20 @@ const FileOptions = ({fileInfo}: Props) => {
                 contentContainerStyle={style.contentContainer}
             />
             {['downloading'].includes(action) &&
-                <DownloadWithAction
-                    action={action}
-                    item={galleryItem}
-                    setAction={setAction}
-                />
+            <DownloadWithAction
+                action={action}
+                item={galleryItem}
+                setAction={setAction}
+            />
             }
             {action === 'copying' &&
-                <CopyPublicLink
-                    item={galleryItem}
-                    setAction={setAction}
-                />
+            <CopyPublicLink
+                item={galleryItem}
+                setAction={setAction}
+            />
             }
-        </BottomSheetContent>
+        </View>
+
     );
 };
 
