@@ -142,9 +142,6 @@ const FileOptions = ({fileInfo}: Props) => {
                 break;
             default:
         }
-
-        // TODO: determine when and if to dismiss the modal
-        // dismissBottomSheet();
     };
 
     const renderLabelComponent = useCallback((item: FileOption) => {
