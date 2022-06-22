@@ -7,10 +7,3 @@ export const TabTypes = keyMirror({
     FILES: null,
 });
 export type TabType = keyof typeof TabTypes;
-
-export const OptionsActions = keyMirror({
-    DOWNLOAD: null,
-    GOTO_CHANNEL: null,
-    COPY_LINK: null,
-});
-export type OptionActionType = keyof typeof OptionsActions
