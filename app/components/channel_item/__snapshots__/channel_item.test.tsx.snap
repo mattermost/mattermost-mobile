@@ -34,7 +34,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
         },
       ]
     }
-    testID="channel_list_item.hello.collapsed.true"
+    testID="channel_item.hello"
   >
     <View
       style={
@@ -103,7 +103,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
               false,
             ]
           }
-          testID="channel_list_item.hello.display_name"
+          testID="channel_item.hello.display_name"
         >
           Hello!
         </Text>
@@ -147,7 +147,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
         },
       ]
     }
-    testID="channel_list_item.hello.collapsed.true"
+    testID="channel_item.hello"
   >
     <View
       style={
@@ -216,7 +216,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
               false,
             ]
           }
-          testID="channel_list_item.hello.display_name"
+          testID="channel_item.hello.display_name"
         >
           Hello!
         </Text>

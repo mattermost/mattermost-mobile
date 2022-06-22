@@ -28,7 +28,7 @@ type OwnProps = {
 
 const observeFirst = (v: DraftModel[]) => v[0]?.observe() || of$(undefined);
 
-const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => {
+const enhanced = withObservables(['channelId', 'rootId', 'channelIsArchived'], (ownProps: WithDatabaseArgs & OwnProps) => {
     const {database, rootId = ''} = ownProps;
     let channelId = of$(ownProps.channelId);
     if (!ownProps.channelId) {

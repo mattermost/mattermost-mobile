@@ -12,7 +12,7 @@ class ThreadOptionsScreen {
         followThreadOption: 'post_options.follow_thread.option',
         followingThreadOption: 'post_options.following_thread.option',
         openInChannelOption: 'thread_options.open_in_channel.option',
-        markAsReadOption: 'thread_options.mark_as_unread.option',
+        markAsReadOption: 'thread_options.mark_as_read.option',
         markAsUnreadOption: 'thread_options.mark_as_unread.option',
         saveThreadOption: 'post_options.save_post.option',
         unsaveThreadOption: 'post_options.unsave_post.option',
@@ -25,7 +25,7 @@ class ThreadOptionsScreen {
     followThreadOption = element(by.id(this.testID.followThreadOption));
     followingThreadOption = element(by.id(this.testID.followingThreadOption));
     openInChannelOption = element(by.id(this.testID.openInChannelOption));
-    markAsReadOption = element(by.id(this.testID.markAsUnreadOption));
+    markAsReadOption = element(by.id(this.testID.markAsReadOption));
     markAsUnreadOption = element(by.id(this.testID.markAsUnreadOption));
     saveThreadOption = element(by.id(this.testID.saveThreadOption));
     unsaveThreadOption = element(by.id(this.testID.unsaveThreadOption));

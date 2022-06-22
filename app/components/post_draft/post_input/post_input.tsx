@@ -17,7 +17,6 @@ import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import useDidUpdate from '@hooks/did_update';
 import {t} from '@i18n';
 import NavigationStore from '@store/navigation_store';
 import {extractFileInfo} from '@utils/file';
@@ -295,22 +294,6 @@ export default function PostInput({
             listener.remove();
         };
     }, [handleHardwareEnterPress]);
-
-    useDidUpdate(() => {
-        if (!value) {
-            if (Platform.OS === 'android') {
-                // Fixes the issue where Android predictive text would prepend suggestions to the post draft when messages
-                // are typed successively without blurring the input
-                setKeyboardType('email-address');
-            }
-        }
-    }, [value]);
-
-    useDidUpdate(() => {
-        if (Platform.OS === 'android' && keyboardType === 'email-address') {
-            setKeyboardType('default');
-        }
-    }, [keyboardType]);
 
     return (
         <PasteableTextInput

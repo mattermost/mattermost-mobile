@@ -116,7 +116,6 @@ describe('Threads - Follow and Unfollow Thread', () => {
         await expect(postListPostItemFooterFollowingButton).toBeVisible();
 
         // # Go back to channel list screen
-        await ThreadScreen.back();
         await ChannelScreen.back();
     });
 
@@ -147,8 +146,7 @@ describe('Threads - Follow and Unfollow Thread', () => {
         // * Verify thread is not followed by user via post options
         await expect(PostOptionsScreen.followThreadOption).toBeVisible();
 
-        // # Open post options for thread and follow thread via post options
-        await ChannelScreen.openPostOptionsFor(parentPost.id, parentMessage);
+        // # Tap on follow thread option
         await PostOptionsScreen.followThreadOption.tap();
 
         // * Verify thread is followed by user via post footer
@@ -188,14 +186,13 @@ describe('Threads - Follow and Unfollow Thread', () => {
         // * Verify thread is followed by user via thread options
         await expect(ThreadOptionsScreen.followingThreadOption).toBeVisible();
 
-        // # Unfollow thread via thread options
+        // # Tap on unfollow thread option
         await ThreadOptionsScreen.followingThreadOption.tap();
 
         // * Verify thread is not displayed anymore in all your threads section
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
+        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible();
 
         // # Go back to channel list screen
         await GlobalThreadsScreen.back();
-        await ChannelScreen.back();
     });
 });

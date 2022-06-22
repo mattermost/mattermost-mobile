@@ -349,7 +349,7 @@ const ChannelMention = ({
             renderSectionHeader={renderSectionHeader}
             style={listStyle}
             sections={sections}
-            testID='channel_mention_suggestion.list'
+            testID='autocomplete.channel_mention.section_list'
         />
     );
 };
