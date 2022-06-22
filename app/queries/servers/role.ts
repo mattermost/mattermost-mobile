@@ -37,8 +37,7 @@ export const queryRolesByNames = (database: Database, names: string[]) => {
     return database.get<RoleModel>(ROLE).query(Q.where('name', Q.oneOf(names)));
 };
 
-export function observePermissionForChannel(channel: ChannelModel, user: UserModel, permission: string, defaultValue: boolean) {
-    const database = channel.database;
+export function observePermissionForChannel(database: Database, channel: ChannelModel, user: UserModel, permission: string, defaultValue: boolean) {
     const myChannel = observeMyChannel(database, channel.id);
     const myTeam = channel.teamId ? observeMyTeam(database, channel.teamId) : of$(undefined);
 
@@ -56,8 +55,7 @@ export function observePermissionForChannel(channel: ChannelModel, user: UserMod
     }));
 }
 
-export function observePermissionForTeam(team: TeamModel, user: UserModel, permission: string, defaultValue: boolean) {
-    const database = team.database;
+export function observePermissionForTeam(database: Database, team: TeamModel, user: UserModel, permission: string, defaultValue: boolean) {
     return observeMyTeam(database, team.id).pipe(
         switchMap((myTeam) => {
             const rolesArray = [...user.roles.split(' ')];
@@ -73,17 +71,17 @@ export function observePermissionForTeam(team: TeamModel, user: UserModel, permi
     );
 }
 
-export function observePermissionForPost(post: PostModel, user: UserModel, permission: string, defaultValue: boolean) {
-    return observeChannel(post.database, post.channelId).pipe(switchMap((c) => (c ? observePermissionForChannel(c, user, permission, defaultValue) : of$(defaultValue))));
+export function observePermissionForPost(database: Database, post: PostModel, user: UserModel, permission: string, defaultValue: boolean) {
+    return observeChannel(database, post.channelId).pipe(switchMap((c) => (c ? observePermissionForChannel(database, c, user, permission, defaultValue) : of$(defaultValue))));
 }
 
-export function observeCanManageChannelMembers(post: PostModel, user: UserModel) {
-    return observeChannel(post.database, post.channelId).pipe((switchMap((c) => {
+export function observeCanManageChannelMembers(database: Database, post: PostModel, user: UserModel) {
+    return observeChannel(database, post.channelId).pipe((switchMap((c) => {
         if (!c || c.deleteAt !== 0 || isDMorGM(c) || c.name === General.DEFAULT_CHANNEL) {
             return of$(false);
         }
 
         const permission = c.type === General.OPEN_CHANNEL ? Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS : Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS;
-        return observePermissionForChannel(c, user, permission, true);
+        return observePermissionForChannel(database, c, user, permission, true);
     })));
 }

@@ -20,6 +20,7 @@ import {isSystemAdmin} from '@utils/user';
 
 import PostOptions from './post_options';
 
+import type {Database} from '@nozbe/watermelondb';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
@@ -33,7 +34,7 @@ type EnhancedProps = WithDatabaseArgs & {
     location: string;
 }
 
-const observeCanEditPost = (isOwner: boolean, post: PostModel, postEditTimeLimit: number, isLicensed: boolean, channel: ChannelModel, user: UserModel) => {
+const observeCanEditPost = (database: Database, isOwner: boolean, post: PostModel, postEditTimeLimit: number, isLicensed: boolean, channel: ChannelModel, user: UserModel) => {
     if (!post || isSystemMessage(post)) {
         return of$(false);
     }
@@ -45,11 +46,11 @@ const observeCanEditPost = (isOwner: boolean, post: PostModel, postEditTimeLimit
         }
     }
 
-    return observePermissionForChannel(channel, user, Permissions.EDIT_POST, false).pipe(switchMap((v) => {
+    return observePermissionForChannel(database, channel, user, Permissions.EDIT_POST, false).pipe(switchMap((v) => {
         if (!v || isOwner) {
             return of$(v);
         }
-        return observePermissionForChannel(channel, user, Permissions.EDIT_OTHERS_POSTS, false);
+        return observePermissionForChannel(database, channel, user, Permissions.EDIT_OTHERS_POSTS, false);
     }));
 };
 
@@ -78,11 +79,11 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
     const serverVersion = config.pipe(switchMap((cfg) => of$(cfg?.Version || '')));
     const postEditTimeLimit = config.pipe(switchMap((cfg) => of$(parseInt(cfg?.PostEditTimeLimit || '-1', 10))));
 
-    const canPostPermission = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => ((c && u) ? observePermissionForChannel(c, u, Permissions.CREATE_POST, false) : of$(false))));
-    const hasAddReactionPermission = currentUser.pipe(switchMap((u) => (u ? observePermissionForPost(post, u, Permissions.ADD_REACTION, true) : of$(false))));
+    const canPostPermission = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => ((c && u) ? observePermissionForChannel(database, c, u, Permissions.CREATE_POST, false) : of$(false))));
+    const hasAddReactionPermission = currentUser.pipe(switchMap((u) => (u ? observePermissionForPost(database, post, u, Permissions.ADD_REACTION, true) : of$(false))));
     const canDeletePostPermission = currentUser.pipe(switchMap((u) => {
         const isOwner = post.userId === u?.id;
-        return u ? observePermissionForPost(post, u, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false) : of$(false);
+        return u ? observePermissionForPost(database, post, u, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false) : of$(false);
     }));
 
     const experimentalTownSquareIsReadOnly = config.pipe(switchMap((value) => of$(value?.ExperimentalTownSquareIsReadOnly === 'true')));
@@ -117,7 +118,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
     const canEdit = combineLatest([postEditTimeLimit, isLicensed, channel, currentUser, channelIsArchived, channelIsReadOnly, canEditUntil, canPostPermission]).pipe(
         switchMap(([lt, ls, c, u, isArchived, isReadOnly, until, canPost]) => {
             const isOwner = u?.id === post.userId;
-            const canEditPostPermission = (c && u) ? observeCanEditPost(isOwner, post, lt, ls, c, u) : of$(false);
+            const canEditPostPermission = (c && u) ? observeCanEditPost(database, isOwner, post, lt, ls, c, u) : of$(false);
             const timeNotReached = (until === -1) || (until > Date.now());
             return canEditPostPermission.pipe(
                 // eslint-disable-next-line max-nested-callbacks

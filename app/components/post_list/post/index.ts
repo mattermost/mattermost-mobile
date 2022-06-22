@@ -20,6 +20,7 @@ import {areConsecutivePosts, isPostEphemeral} from '@utils/post';
 
 import Post from './post';
 
+import type {Database} from '@nozbe/watermelondb';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type PostModel from '@typings/database/models/servers/post';
@@ -35,8 +36,8 @@ type PropsInput = WithDatabaseArgs & {
     previousPost: PostModel | undefined;
 }
 
-function observeShouldHighlightReplyBar(currentUser: UserModel, post: PostModel, postsInThread: PostsInThreadModel) {
-    const myPostsCount = queryPostsBetween(postsInThread.database, postsInThread.earliest, postsInThread.latest, null, currentUser.id, '', post.rootId || post.id).observeCount();
+function observeShouldHighlightReplyBar(database: Database, currentUser: UserModel, post: PostModel, postsInThread: PostsInThreadModel) {
+    const myPostsCount = queryPostsBetween(database, postsInThread.earliest, postsInThread.latest, null, currentUser.id, '', post.rootId || post.id).observeCount();
     const root = post.root.observe().pipe(switchMap((rl) => (rl.length ? rl[0].observe() : of$(undefined))));
 
     return combineLatest([myPostsCount, root]).pipe(
@@ -101,7 +102,7 @@ const withPost = withObservables(
         let isPostAddChannelMember = of$(false);
         const isOwner = currentUser.id === post.userId;
         const author = post.userId ? post.author.observe() : of$(null);
-        const canDelete = observePermissionForPost(post, currentUser, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false);
+        const canDelete = observePermissionForPost(database, post, currentUser, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false);
         const isEphemeral = of$(isPostEphemeral(post));
         const isSaved = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, post.id).
             observeWithColumns(['value']).pipe(
@@ -109,13 +110,13 @@ const withPost = withObservables(
             );
 
         if (post.props?.add_channel_member && isPostEphemeral(post)) {
-            isPostAddChannelMember = observeCanManageChannelMembers(post, currentUser);
+            isPostAddChannelMember = observeCanManageChannelMembers(database, post, currentUser);
         }
 
         const highlightReplyBar = post.postsInThread.observe().pipe(
             switchMap((postsInThreads: PostsInThreadModel[]) => {
                 if (postsInThreads.length) {
-                    return observeShouldHighlightReplyBar(currentUser, post, postsInThreads[0]);
+                    return observeShouldHighlightReplyBar(database, currentUser, post, postsInThreads[0]);
                 }
                 return of$(false);
             }));
@@ -127,7 +128,7 @@ const withPost = withObservables(
         }
 
         if (post.message.length && !(/^\s{4}/).test(post.message)) {
-            isJumboEmoji = queryAllCustomEmojis(post.database).observe().pipe(
+            isJumboEmoji = queryAllCustomEmojis(database).observe().pipe(
                 // eslint-disable-next-line max-nested-callbacks
                 switchMap((customEmojis: CustomEmojiModel[]) => of$(hasJumboEmojiOnly(post.message, customEmojis.map((c) => c.name))),
                 ),
