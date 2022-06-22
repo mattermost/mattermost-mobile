@@ -8,9 +8,12 @@ import CompassIcon from '@components/compass_icon';
 import FormattedDate from '@components/formatted_date';
 import FileIcon from '@components/post_list/post/body/files/file_icon';
 import {useTheme} from '@context/theme';
+import {bottomSheet} from '@screens/navigation';
 import {getFormattedFileSize} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import FileOptions from './file_options';
 
 type Props = {
     fileInfo: FileInfo;
@@ -90,8 +93,21 @@ export default function FileCard({channelName, fileInfo}: Props) {
 
     // TODO: hook this up
     const handleThreeDotPress = () => {
-        /* eslint-disable no-console */
-        console.log('pressed 3 dot');
+        const renderContent = () => {
+            return (
+                <FileOptions
+                    fileInfo={fileInfo}
+                />
+
+            );
+        };
+        bottomSheet({
+            closeButtonId: 'close-search-file-options',
+            renderContent,
+            snapPoints: [400, 10],
+            theme,
+            title: '',
+        });
     };
 
     // TODO: Get the channel name and display
