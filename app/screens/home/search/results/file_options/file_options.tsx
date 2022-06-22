@@ -1,9 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
 import React, {useCallback, useState} from 'react';
 import {View, Text} from 'react-native';
-import {FlatList} from 'react-native-gesture-handler';
 
 import {fetchPostById} from '@actions/remote/post';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
@@ -15,11 +13,11 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
+import Action from '@screens/gallery/footer/actions/action';
 import CopyPublicLink from '@screens/gallery/footer/copy_public_link';
 import DownloadWithAction from '@screens/gallery/footer/download_with_action';
 import {dismissBottomSheet} from '@screens/navigation';
 import {getFormattedFileSize} from '@utils/file';
-import {OptionsActions, OptionActionType} from '@utils/search';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -64,39 +62,43 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             ...typography('Body', 200, 'Regular'),
         },
+        toast: {
+            marginTop: 100,
+            alignItems: 'center',
+        },
     };
 });
 
 type FileOption = {
     id: string;
     iconName: string;
-    type: OptionActionType;
     defaultMessage: string;
 }
 
-const data: FileOption[] = [
-    {
-        id: t('screen.search.results.file_options.download'),
-        iconName: 'download-outline',
-        type: OptionsActions.DOWNLOAD,
-        defaultMessage: 'Download',
-    }, {
-        id: t('screen.search.results.file_options.open_in_channel'),
-        iconName: 'globe',
-        type: OptionsActions.GOTO_CHANNEL,
-        defaultMessage: 'Open in channel',
-    }, {
-        id: t('screen.search.results.file.copy_link'),
-        iconName: 'link-variant',
-        type: OptionsActions.COPY_LINK,
-        defaultMessage: 'Copy Link',
-    },
-];
+const dataDownload: FileOption = {
+    id: t('screen.search.results.file_options.download'),
+    iconName: 'download-outline',
+    defaultMessage: 'Download',
+};
+
+const dataGoto: FileOption = {
+    id: t('screen.search.results.file_options.open_in_channel'),
+    iconName: 'globe',
+    defaultMessage: 'Open in channel',
+};
+
+const dataCopyLink: FileOption = {
+    id: t('screen.search.results.file.copy_link'),
+    iconName: 'link-variant',
+    defaultMessage: 'Copy Link',
+};
 
 type Props = {
+    canDownloadFiles: boolean;
+    enablePublicLink: boolean;
     fileInfo: FileInfo;
 }
-const FileOptions = ({fileInfo}: Props) => {
+const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const isTablet = useIsTablet();
@@ -112,6 +114,8 @@ const FileOptions = ({fileInfo}: Props) => {
     const handleCopyLink = useCallback(async () => {
         setAction('copying');
         dismissBottomSheet();
+
+        // setTimeout(dismissBottomSheet, 3000);
     }, []);
 
     const handleGotoChannel = useCallback(async () => {
@@ -126,22 +130,9 @@ const FileOptions = ({fileInfo}: Props) => {
     }, [fileInfo]);
 
     const onDownloadSuccess = () => {
-        dismissBottomSheet();
-    };
+        // setTimeout(dismissBottomSheet, 3000);
 
-    const handlePress = (item: FileOption) => {
-        switch (item.type) {
-            case OptionsActions.DOWNLOAD:
-                handleDownload();
-                break;
-            case OptionsActions.GOTO_CHANNEL:
-                handleGotoChannel();
-                break;
-            case OptionsActions.COPY_LINK:
-                handleCopyLink();
-                break;
-            default:
-        }
+        // dismissBottomSheet();
     };
 
     const renderLabelComponent = useCallback((item: FileOption) => {
@@ -154,7 +145,7 @@ const FileOptions = ({fileInfo}: Props) => {
         );
     }, [style]);
 
-    const renderHeader = () => {
+    const renderHeader = useCallback(() => {
         const size = getFormattedFileSize(fileInfo.size);
         return (
             <View style={style.headerContainer}>
@@ -181,44 +172,55 @@ const FileOptions = ({fileInfo}: Props) => {
                 </View>
             </View>
         );
-    };
-
-    const renderItem = useCallback(({item}: {item: FileOption}) => {
-        return (
-            <MenuItem
-                labelComponent={renderLabelComponent(item)}
-                iconName={item.iconName}
-                iconContainerStyle={style.selected}
-                onPress={() => handlePress(item)}
-                testID={item.id}
-                theme={theme}
-                separator={false}
-            />
-        );
-    }, [renderLabelComponent, theme]);
+    }, [fileInfo]);
 
     return (
         <View style={style.container}>
             {renderHeader()}
-            <FlatList
-                data={data}
-                renderItem={renderItem}
-                contentContainerStyle={style.contentContainer}
+            {canDownloadFiles &&
+                <MenuItem
+                    labelComponent={renderLabelComponent(dataDownload)}
+                    iconName={dataDownload.iconName}
+                    onPress={handleDownload}
+                    testID={dataDownload.id}
+                    theme={theme}
+                    separator={false}
+                />
+            }
+            <MenuItem
+                labelComponent={renderLabelComponent(dataGoto)}
+                iconName={dataGoto.iconName}
+                onPress={handleGotoChannel}
+                testID={dataGoto.id}
+                theme={theme}
+                separator={false}
             />
-            {['downloading'].includes(action) &&
+            {enablePublicLink &&
+                <MenuItem
+                    labelComponent={renderLabelComponent(dataCopyLink)}
+                    iconName={dataCopyLink.iconName}
+                    onPress={handleCopyLink}
+                    testID={dataCopyLink.id}
+                    theme={theme}
+                    separator={false}
+                />
+            }
+            <View style={style.toast} >
+                {action === 'downloading' &&
                 <DownloadWithAction
                     action={action}
                     item={galleryItem}
                     setAction={setAction}
                     onDownloadSuccess={onDownloadSuccess}
                 />
-            }
-            {action === 'copying' &&
+                }
+                {action === 'copying' &&
                 <CopyPublicLink
                     item={galleryItem}
                     setAction={setAction}
                 />
-            }
+                }
+            </View>
         </View>
 
     );
