@@ -34,14 +34,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderWidth: 1,
             borderRadius: 4,
             borderColor: changeOpacity(theme.centerChannelColor, 0.16),
-
-            shadowColor: changeOpacity(theme.centerChannelColor, 0.16),
-            shadowOffset: {
-                width: 0,
-                height: 2,
-            },
-            shadowOpacity: 0.8,
-            elevation: 1,
         },
         flexRow: {flexDirection: 'row'},
         iconContainer: {
@@ -66,9 +58,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         channelText: {
             marginRight: 4,
+            color: changeOpacity(theme.centerChannelColor, 0.64),
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             borderRadius: 4,
             paddingHorizontal: 4,
+            ...typography('Body', 50, 'SemiBold'),
         },
         threeDotContainer: {
             alignItems: 'flex-end',
@@ -121,7 +115,7 @@ export default function FileCard({channelName, fileInfo}: Props) {
                 <View style={[style.flexRow]}>
                     <View style={{flexShrink: 1}}>
                         <Text
-                            style={[style.infoText, style.channelText]}
+                            style={style.channelText}
                             numberOfLines={1}
                         >
                             {channelName}
