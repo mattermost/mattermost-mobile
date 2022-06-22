@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {View, Text, TouchableOpacity} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -9,6 +9,7 @@ import FormattedDate from '@components/formatted_date';
 import FileIcon from '@components/post_list/post/body/files/file_icon';
 import {useTheme} from '@context/theme';
 import {getFormattedFileSize} from '@utils/file';
+import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -77,16 +78,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+const galleryIdentifier = 'downloaded-item';
+
 export default function FileCard({channelName, fileInfo}: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const size = getFormattedFileSize(fileInfo.size);
 
     // TODO: hook this up
-    const openGallery = () => {
-        /* eslint-disable no-console */
-        console.log('Open Gallery');
-    };
+    const openGallery = useCallback(() => {
+        const item = fileToGalleryItem(fileInfo);
+        openGalleryAtIndex(galleryIdentifier, 0, [item], false);
+    }, [fileInfo]);
 
     // TODO: hook this up
     const handleThreeDotPress = () => {
