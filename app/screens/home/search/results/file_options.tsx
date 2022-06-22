@@ -17,6 +17,7 @@ import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import CopyPublicLink from '@screens/gallery/footer/copy_public_link';
 import DownloadWithAction from '@screens/gallery/footer/download_with_action';
+import {dismissBottomSheet} from '@screens/navigation';
 import {getFormattedFileSize} from '@utils/file';
 import {OptionsActions, OptionActionType} from '@utils/search';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -110,6 +111,7 @@ const FileOptions = ({fileInfo}: Props) => {
 
     const handleCopyLink = useCallback(async () => {
         setAction('copying');
+        dismissBottomSheet();
     }, []);
 
     const handleGotoChannel = useCallback(async () => {
@@ -123,6 +125,10 @@ const FileOptions = ({fileInfo}: Props) => {
         }
     }, [fileInfo]);
 
+    const onDownloadSuccess = () => {
+        dismissBottomSheet();
+    };
+
     const handlePress = (item: FileOption) => {
         switch (item.type) {
             case OptionsActions.DOWNLOAD:
@@ -134,7 +140,6 @@ const FileOptions = ({fileInfo}: Props) => {
             case OptionsActions.COPY_LINK:
                 handleCopyLink();
                 break;
-
             default:
         }
 
@@ -208,6 +213,7 @@ const FileOptions = ({fileInfo}: Props) => {
                     action={action}
                     item={galleryItem}
                     setAction={setAction}
+                    onDownloadSuccess={onDownloadSuccess}
                 />
             }
             {action === 'copying' &&
