@@ -3,7 +3,7 @@
 
 import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$, combineLatest} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Database as DatabaseConstants, General, Permissions} from '@constants';
 import {isDMorGM} from '@utils/channel';
@@ -53,7 +53,9 @@ export function observePermissionForChannel(channel: ChannelModel, user: UserMod
         return queryRolesByNames(database, rolesArray).observeWithColumns(['permissions']).pipe(
             switchMap((r) => of$(hasPermission(r, permission, defaultValue))),
         );
-    }));
+    }),
+    distinctUntilChanged(),
+    );
 }
 
 export function observePermissionForTeam(team: TeamModel, user: UserModel, permission: string, defaultValue: boolean) {
@@ -70,11 +72,15 @@ export function observePermissionForTeam(team: TeamModel, user: UserModel, permi
                 switchMap((roles) => of$(hasPermission(roles, permission, defaultValue))),
             );
         }),
+        distinctUntilChanged(),
     );
 }
 
 export function observePermissionForPost(post: PostModel, user: UserModel, permission: string, defaultValue: boolean) {
-    return observeChannel(post.database, post.channelId).pipe(switchMap((c) => (c ? observePermissionForChannel(c, user, permission, defaultValue) : of$(defaultValue))));
+    return observeChannel(post.database, post.channelId).pipe(
+        switchMap((c) => (c ? observePermissionForChannel(c, user, permission, defaultValue) : of$(defaultValue))),
+        distinctUntilChanged(),
+    );
 }
 
 export function observeCanManageChannelMembers(post: PostModel, user: UserModel) {
@@ -85,5 +91,7 @@ export function observeCanManageChannelMembers(post: PostModel, user: UserModel)
 
         const permission = c.type === General.OPEN_CHANNEL ? Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS : Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS;
         return observePermissionForChannel(c, user, permission, true);
-    })));
+    })),
+    distinctUntilChanged(),
+    );
 }
