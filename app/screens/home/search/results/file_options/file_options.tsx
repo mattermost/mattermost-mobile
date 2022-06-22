@@ -13,10 +13,8 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
-import Action from '@screens/gallery/footer/actions/action';
 import CopyPublicLink from '@screens/gallery/footer/copy_public_link';
 import DownloadWithAction from '@screens/gallery/footer/download_with_action';
-import {dismissBottomSheet} from '@screens/navigation';
 import {getFormattedFileSize} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -43,7 +41,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             ...typography('Heading', 400, 'SemiBold'),
         },
         actionsContainer: {
-            marginHorizontal: -15,
+            marginHorizontal: -20,
         },
         infoContainer: {
             marginVertical: 8,
