@@ -27,15 +27,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             marginTop: -20,
-            marginLeft: -20,
         },
         headerContainer: {
             float: 'left',
-            marginLeft: 20,
             marginTop: 20,
             marginBottom: 8,
         },
-        iconContainer: {
+        fileIconContainer: {
             marginLeft: -10,
             marginBottom: 8,
             alignSelf: 'flex-start',
@@ -43,6 +41,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         nameText: {
             color: theme.centerChannelColor,
             ...typography('Heading', 400, 'SemiBold'),
+        },
+        actionsContainer: {
+            marginHorizontal: -15,
         },
         infoContainer: {
             marginVertical: 8,
@@ -113,9 +114,6 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
 
     const handleCopyLink = useCallback(async () => {
         setAction('copying');
-        dismissBottomSheet();
-
-        // setTimeout(dismissBottomSheet, 3000);
     }, []);
 
     const handleGotoChannel = useCallback(async () => {
@@ -128,12 +126,6 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
             // what to do?
         }
     }, [fileInfo]);
-
-    const onDownloadSuccess = () => {
-        // setTimeout(dismissBottomSheet, 3000);
-
-        // dismissBottomSheet();
-    };
 
     const renderLabelComponent = useCallback((item: FileOption) => {
         return (
@@ -149,7 +141,7 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
         const size = getFormattedFileSize(fileInfo.size);
         return (
             <View style={style.headerContainer}>
-                <View style={style.iconContainer}>
+                <View style={style.fileIconContainer}>
                     <FileIcon
                         file={fileInfo}
                         iconSize={72}
@@ -177,7 +169,8 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
     return (
         <View style={style.container}>
             {renderHeader()}
-            {canDownloadFiles &&
+            <View style={style.actionsContainer}>
+                {canDownloadFiles &&
                 <MenuItem
                     labelComponent={renderLabelComponent(dataDownload)}
                     iconName={dataDownload.iconName}
@@ -186,16 +179,16 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
                     theme={theme}
                     separator={false}
                 />
-            }
-            <MenuItem
-                labelComponent={renderLabelComponent(dataGoto)}
-                iconName={dataGoto.iconName}
-                onPress={handleGotoChannel}
-                testID={dataGoto.id}
-                theme={theme}
-                separator={false}
-            />
-            {enablePublicLink &&
+                }
+                <MenuItem
+                    labelComponent={renderLabelComponent(dataGoto)}
+                    iconName={dataGoto.iconName}
+                    onPress={handleGotoChannel}
+                    testID={dataGoto.id}
+                    theme={theme}
+                    separator={false}
+                />
+                {enablePublicLink &&
                 <MenuItem
                     labelComponent={renderLabelComponent(dataCopyLink)}
                     iconName={dataCopyLink.iconName}
@@ -204,14 +197,14 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
                     theme={theme}
                     separator={false}
                 />
-            }
+                }
+            </View>
             <View style={style.toast} >
                 {action === 'downloading' &&
                 <DownloadWithAction
                     action={action}
                     item={galleryItem}
                     setAction={setAction}
-                    onDownloadSuccess={onDownloadSuccess}
                 />
                 }
                 {action === 'copying' &&
