@@ -75,10 +75,8 @@ const SearchResults = ({
     }, [selectedTab, posts, fileInfos]);
 
     const getChannelName = useCallback((id: string) => {
-        const result = fileChannels.filter((channel) => {
-            return channel._raw.id === id;
-        }).map((channel) => channel._raw.display_name);
-        return result[0];
+        const channel = fileChannels.filter((c) => c.id === id)[0];
+        return channel.displayName;
     }, [fileChannels]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<string|FileInfo | Post>) => {
