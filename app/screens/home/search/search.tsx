@@ -16,9 +16,10 @@ import RoundedHeaderContext from '@components/rounded_header_context';
 import {useServerUrl} from '@context/server';
 import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, filterFiles} from '@utils/file';
+import {TabTypes, TabType} from '@utils/search';
 
 import Results from './results';
-import Header, {SelectTab} from './results/header';
+import Header from './results/header';
 
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
 
@@ -45,7 +46,7 @@ const SearchScreen = ({teamId}: Props) => {
     const {searchTerm} = nav.getState().routes[stateIndex].params;
 
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
-    const [selectedTab, setSelectedTab] = useState<SelectTab>('messages');
+    const [selectedTab, setSelectedTab] = useState<TabType>(TabTypes.MESSAGES);
     const [filter, setFilter] = useState<FileFilter>('all');
 
     const [loading, setLoading] = useState(false);
@@ -53,6 +54,7 @@ const SearchScreen = ({teamId}: Props) => {
 
     const [postIds, setPostIds] = useState<string[]>(emptyPostResults);
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
+    const [fileChannelIds, setFileChannelIds] = useState<string[]>([]);
     const [filteredFileInfos, setFilteredFileInfos] = useState<FileInfo[]>(emptyFileResults);
 
     const handleSearch = useCallback((debounce(async () => {
@@ -77,6 +79,12 @@ const SearchScreen = ({teamId}: Props) => {
         const fileInfosResult = fileResults?.file_infos && Object.values(fileResults?.file_infos);
         setFileInfos(fileInfosResult?.length ? fileInfosResult : emptyFileResults);
         setPostIds(postResults?.order?.length ? postResults.order : emptyPostResults);
+
+        if (fileInfosResult?.length) {
+            const fchannelIds = fileInfosResult.map((info) => info.channel_id);
+            const uniqueFileChannelIds = [...new Set(fchannelIds)];
+            setFileChannelIds(uniqueFileChannelIds);
+        }
 
         setLoading(false);
     })), [searchValue]);
@@ -165,6 +173,7 @@ const SearchScreen = ({teamId}: Props) => {
                         searchValue={lastSearchedValue}
                         postIds={postIds}
                         fileInfos={filteredFileInfos}
+                        fileChannelIds={fileChannelIds}
                         scrollRef={scrollRef}
                         onScroll={onScroll}
                         scrollPaddingTop={scrollPaddingTop}

@@ -7,6 +7,7 @@ import compose from 'lodash/fp/compose';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+import {queryChannelsById} from '@queries/servers/channel';
 import {queryPostsById} from '@queries/servers/post';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
@@ -18,15 +19,18 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 type enhancedProps = WithDatabaseArgs & {
     postIds: string[];
+        fileChannelIds: string[];
 }
 
-const enhance = withObservables(['postIds'], ({database, postIds}: enhancedProps) => {
+const enhance = withObservables(['postIds', 'fileChannelIds'], ({database, postIds, fileChannelIds}: enhancedProps) => {
     const posts = queryPostsById(database, postIds).observe();
+    const fileChannels = queryChannelsById(database, fileChannelIds).observe();
     const currentUser = observeCurrentUser(database);
     return {
         currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
         isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
         posts,
+        fileChannels,
     };
 });
 

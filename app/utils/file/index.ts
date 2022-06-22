@@ -13,7 +13,7 @@ import FileSystem from 'react-native-fs';
 import {Asset} from 'react-native-image-picker';
 import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
-import {Files} from '@constants';
+import {Files} from '@constants/files';
 import {generateId} from '@utils/general';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';

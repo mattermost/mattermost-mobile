@@ -2,12 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useIntl} from 'react-intl';
-import {Text, View, TouchableOpacity} from 'react-native';
+import {View, Text, TouchableOpacity} from 'react-native';
 
+import CompassIcon from '@components/compass_icon';
+import FormattedDate from '@components/formatted_date';
 import FileIcon from '@components/post_list/post/body/files/file_icon';
 import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
+import {getFormattedFileSize} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -15,40 +17,82 @@ import FileOptions from './file_options';
 
 type Props = {
     fileInfo: FileInfo;
-    layoutWidth?: number;
-    location?: string;
-    metadata?: PostMetadata;
-    postId?: string;
-    theme?: Theme;
+    channelName: string;
 }
+
+const format = 'MMM DD HH:MM A';
+const hitSlop = {top: 5, bottom: 5, left: 5, right: 5};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.15),
-            borderRightColor: changeOpacity(theme.centerChannelColor, 0.15),
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.15),
-            borderBottomWidth: 1,
-            borderRightWidth: 1,
-            borderTopWidth: 1,
-            marginTop: 5,
-            padding: 12,
-            borderLeftColor: changeOpacity(theme.linkColor, 0.6),
-            borderLeftWidth: 3,
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+
+            marginHorizontal: 20,
+            marginVertical: 4,
+            paddingVertical: 8,
+
+            borderWidth: 1,
+            borderRadius: 4,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.16),
+
+            shadowColor: changeOpacity(theme.centerChannelColor, 0.16),
+            shadowOffset: {
+                width: 0,
+                height: 2,
+            },
+            shadowOpacity: 0.8,
+            elevation: 1,
         },
-        message: {
+        flexRow: {flexDirection: 'row'},
+        iconContainer: {
+            marginHorizontal: 8,
+        },
+        textContainer: {
+            flex: 1,
+            flexDirection: 'column',
+            flexGrow: 1,
+        },
+        nameText: {
             color: theme.centerChannelColor,
-            ...typography('Body', 100, 'Regular'),
+            ...typography('Body', 200, 'SemiBold'),
+        },
+        infoText: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 75, 'Regular'),
+        },
+        fileStatsContainer: {
+            flexGrow: 1,
+            flexDirection: 'row',
+        },
+        channelText: {
+            marginRight: 4,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            borderRadius: 4,
+            paddingHorizontal: 4,
+        },
+        threeDotContainer: {
+            alignItems: 'flex-end',
+            marginHorizontal: 20,
         },
     };
 });
 
-export default function FileCard({fileInfo}: Props) {
+export default function FileCard({channelName, fileInfo}: Props) {
     const theme = useTheme();
-    const intl = useIntl();
     const style = getStyleSheet(theme);
+    const size = getFormattedFileSize(fileInfo.size);
 
-    const onPress = () => {
+    // TODO: hook this up
+    const openGallery = () => {
+        /* eslint-disable no-console */
+        console.log('Open Gallery');
+    };
+
+    // TODO: hook this up
+    const handleThreeDotPress = () => {
         const renderContent = () => {
             return (
                 <FileOptions
@@ -66,16 +110,54 @@ export default function FileCard({fileInfo}: Props) {
         });
     };
     return (
-        <View style={[style.container, style.border]}>
-            <TouchableOpacity onPress={onPress}>
-                <Text style={style.message}>{'To be implemented'}</Text>
-                <Text style={style.message}>{`Name: ${fileInfo.name}`}</Text>
-                <Text style={style.message}>{`Size: ${fileInfo.size}`}</Text>
+        <TouchableOpacity
+            onPress={openGallery}
+            style={style.container}
+        >
+            <View style={style.iconContainer}>
                 <FileIcon
                     file={fileInfo}
                     iconSize={48}
                 />
+            </View>
+            <View style={style.textContainer}>
+                <Text
+                    style={style.nameText}
+                    numberOfLines={1}
+                    ellipsizeMode={'tail'}
+                >
+                    {fileInfo.name}
+                </Text>
+                <View style={[style.flexRow]}>
+                    <View style={{flexShrink: 1}}>
+                        <Text
+                            style={[style.infoText, style.channelText]}
+                            numberOfLines={1}
+                        >
+                            {channelName}
+                        </Text>
+                    </View>
+                    <View style={style.fileStatsContainer}>
+                        <Text style={style.infoText}>{`${size} • `}</Text>
+                        <FormattedDate
+                            style={style.infoText}
+                            format={format}
+                            value={fileInfo.create_at as number}
+                        />
+                    </View>
+                </View>
+            </View>
+            <TouchableOpacity
+                onPress={handleThreeDotPress}
+                style={style.threeDotContainer}
+                hitSlop={hitSlop}
+            >
+                <CompassIcon
+                    name='dots-horizontal'
+                    color={changeOpacity(theme.centerChannelColor, 0.56)}
+                    size={18}
+                />
             </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
     );
 }
