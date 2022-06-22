@@ -81,7 +81,7 @@ const SearchScreen = ({teamId}: Props) => {
         setPostIds(postResults?.order?.length ? postResults.order : emptyPostResults);
 
         if (fileInfosResult?.length) {
-            const fchannelIds = fileInfosResult.map((info) => info.channel_id);
+            const fchannelIds = fileInfosResult.map((info) => info.channel_id!);
             const uniqueFileChannelIds = [...new Set(fchannelIds)];
             setFileChannelIds(uniqueFileChannelIds);
         }

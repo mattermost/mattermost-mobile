@@ -108,7 +108,7 @@ const SearchResults = ({
             <FileCard
                 fileInfo={item}
                 key={item.id}
-                channelName={getChannelName(item.channel_id)}
+                channelName={getChannelName(item.channel_id!)}
             />
         );
     }, [theme, getChannelName]);
