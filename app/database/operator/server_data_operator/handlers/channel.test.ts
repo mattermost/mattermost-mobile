@@ -20,7 +20,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
     let operator: ServerDataOperator;
     beforeAll(async () => {
         await DatabaseManager.init(['baseHandler.test.com']);
-        operator = DatabaseManager.serverDatabases['baseHandler.test.com'].operator;
+        operator = DatabaseManager.serverDatabases['baseHandler.test.com']!.operator;
     });
 
     it('=> HandleChannel: should write to the CHANNEL table', async () => {

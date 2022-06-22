@@ -631,8 +631,13 @@ export async function markChannelAsRead(serverUrl: string, channelId: string) {
 }
 
 export async function switchToChannelByName(serverUrl: string, channelName: string, teamName: string, errorHandler: (intl: IntlShape) => void, intl: IntlShape) {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
+    let database;
+    let operator;
+    try {
+        const result = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        database = result.database;
+        operator = result.operator;
+    } catch (e) {
         return {error: `${serverUrl} database not found`};
     }
 
@@ -737,7 +742,6 @@ export async function switchToChannelByName(serverUrl: string, channelName: stri
         }
 
         const modelPromises: Array<Promise<Model[]>> = [];
-        const {operator} = DatabaseManager.serverDatabases[serverUrl];
         if (!(team instanceof Model)) {
             modelPromises.push(...prepareMyTeams(operator, [team], [(myTeam as TeamMembership)]));
         } else if (!(myTeam instanceof Model)) {

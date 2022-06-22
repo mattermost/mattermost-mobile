@@ -466,7 +466,7 @@ const ServerItem = ({
 
             {Boolean(database) && server.lastActiveAt > 0 &&
             <WebSocket
-                database={database}
+                database={database!}
             />
             }
             {showTutorial &&
