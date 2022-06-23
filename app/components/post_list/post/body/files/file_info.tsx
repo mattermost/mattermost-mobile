@@ -36,6 +36,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75, 'Regular'),
         },
+        fileInfo: {
+            fontSize: 14,
+            flexDirection: 'row',
+            color: theme.centerChannelColor,
+        },
         fileName: {
             flexDirection: 'column',
             flexWrap: 'wrap',
@@ -72,12 +77,12 @@ const FileInfo = ({file, channelName, showDate, onPress, theme}: FileInfoProps) 
                 <View style={style.fileDownloadContainer}>
                     <View style={style.channelWrapper}>
                         {channelName &&
-                        <Text
-                            style={style.channelText}
-                            numberOfLines={1}
-                        >
-                            {channelName}
-                        </Text>
+                            <Text
+                                style={style.channelText}
+                                numberOfLines={1}
+                            >
+                                {channelName}
+                            </Text>
                         }
                     </View>
                     <View style={style.fileStatsContainer}>
