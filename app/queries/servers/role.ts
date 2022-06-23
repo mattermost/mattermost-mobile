@@ -3,7 +3,7 @@
 
 import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$, combineLatest} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Database as DatabaseConstants, General, Permissions} from '@constants';
 import {isDMorGM} from '@utils/channel';
@@ -52,7 +52,9 @@ export function observePermissionForChannel(database: Database, channel: Channel
         return queryRolesByNames(database, rolesArray).observeWithColumns(['permissions']).pipe(
             switchMap((r) => of$(hasPermission(r, permission, defaultValue))),
         );
-    }));
+    }),
+    distinctUntilChanged(),
+    );
 }
 
 export function observePermissionForTeam(database: Database, team: TeamModel, user: UserModel, permission: string, defaultValue: boolean) {
@@ -68,20 +70,27 @@ export function observePermissionForTeam(database: Database, team: TeamModel, us
                 switchMap((roles) => of$(hasPermission(roles, permission, defaultValue))),
             );
         }),
+        distinctUntilChanged(),
     );
 }
 
 export function observePermissionForPost(database: Database, post: PostModel, user: UserModel, permission: string, defaultValue: boolean) {
-    return observeChannel(database, post.channelId).pipe(switchMap((c) => (c ? observePermissionForChannel(database, c, user, permission, defaultValue) : of$(defaultValue))));
+    return observeChannel(database, post.channelId).pipe(
+        switchMap((c) => (c ? observePermissionForChannel(database, c, user, permission, defaultValue) : of$(defaultValue))),
+        distinctUntilChanged(),
+    );
 }
 
 export function observeCanManageChannelMembers(database: Database, post: PostModel, user: UserModel) {
-    return observeChannel(database, post.channelId).pipe((switchMap((c) => {
-        if (!c || c.deleteAt !== 0 || isDMorGM(c) || c.name === General.DEFAULT_CHANNEL) {
-            return of$(false);
-        }
+    return observeChannel(database, post.channelId).pipe(
+        switchMap((c) => {
+            if (!c || c.deleteAt !== 0 || isDMorGM(c) || c.name === General.DEFAULT_CHANNEL) {
+                return of$(false);
+            }
 
-        const permission = c.type === General.OPEN_CHANNEL ? Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS : Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS;
-        return observePermissionForChannel(database, c, user, permission, true);
-    })));
+            const permission = c.type === General.OPEN_CHANNEL ? Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS : Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS;
+            return observePermissionForChannel(database, c, user, permission, true);
+        }),
+        distinctUntilChanged(),
+    );
 }

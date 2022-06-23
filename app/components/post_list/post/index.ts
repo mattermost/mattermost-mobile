@@ -5,7 +5,7 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {of as of$, combineLatest} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Permissions, Preferences} from '@constants';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
@@ -107,6 +107,7 @@ const withPost = withObservables(
         const isSaved = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, post.id).
             observeWithColumns(['value']).pipe(
                 switchMap((pref) => of$(Boolean(pref.length))),
+                distinctUntilChanged(),
             );
 
         if (post.props?.add_channel_member && isPostEphemeral(post)) {
@@ -119,7 +120,9 @@ const withPost = withObservables(
                     return observeShouldHighlightReplyBar(database, currentUser, post, postsInThreads[0]);
                 }
                 return of$(false);
-            }));
+            }),
+            distinctUntilChanged(),
+        );
 
         let differentThreadSequence = true;
         if (post.rootId) {
@@ -129,14 +132,17 @@ const withPost = withObservables(
 
         if (post.message.length && !(/^\s{4}/).test(post.message)) {
             isJumboEmoji = queryAllCustomEmojis(database).observe().pipe(
-                // eslint-disable-next-line max-nested-callbacks
-                switchMap((customEmojis: CustomEmojiModel[]) => of$(hasJumboEmojiOnly(post.message, customEmojis.map((c) => c.name))),
+                switchMap(
+                    // eslint-disable-next-line max-nested-callbacks
+                    (customEmojis: CustomEmojiModel[]) => of$(hasJumboEmojiOnly(post.message, customEmojis.map((c) => c.name))),
                 ),
+                distinctUntilChanged(),
             );
         }
         const hasReplies = observeHasReplies(post);
         const isConsecutivePost = author.pipe(
             switchMap((user) => of$(Boolean(post && previousPost && !user?.isBot && areConsecutivePosts(post, previousPost)))),
+            distinctUntilChanged(),
         );
 
         return {
