@@ -49,6 +49,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             paddingRight: 10,
         },
+        channelWrapper: {
+            flexShrink: 1,
+        },
         channelText: {
             marginRight: 4,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
@@ -72,14 +75,16 @@ const FileInfo = ({file, channelName, showDate, onPress, theme}: FileInfoProps) 
                     {file.name.trim()}
                 </Text>
                 <View style={style.fileDownloadContainer}>
-                    {channelName &&
+                    <View style={style.channelWrapper}>
+                        {channelName &&
                         <Text
                             style={[style.infoText, style.channelText]}
                             numberOfLines={1}
                         >
                             {channelName}
                         </Text>
-                    }
+                        }
+                    </View>
                     <View style={style.fileStatsContainer}>
                         <Text style={style.infoText}>
                             {`${getFormattedFileSize(file.size)}`}
