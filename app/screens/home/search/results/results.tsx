@@ -109,6 +109,7 @@ const Results = ({
     });
 
     const handleOptionsPress = preventDoubleTap((idx: number) => {
+        /* eslint-disable no-console */
         console.log('Options button pressed for..  ', idx);
     });
 
