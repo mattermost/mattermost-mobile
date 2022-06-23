@@ -36,18 +36,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75, 'Regular'),
         },
-        fileInfo: {
-            fontSize: 14,
-            flexDirection: 'row',
-            color: theme.centerChannelColor,
-        },
         fileName: {
             flexDirection: 'column',
             flexWrap: 'wrap',
-            fontSize: 14,
-            fontFamily: 'OpenSans-SemiBold',
             color: theme.centerChannelColor,
             paddingRight: 10,
+            ...typography('Body', 200, 'SemiBold'),
         },
         channelWrapper: {
             flexShrink: 1,
@@ -57,6 +51,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             borderRadius: 4,
             paddingHorizontal: 4,
+            ...typography('Body', 50, 'SemiBold'),
         },
     };
 });
@@ -78,7 +73,7 @@ const FileInfo = ({file, channelName, showDate, onPress, theme}: FileInfoProps) 
                     <View style={style.channelWrapper}>
                         {channelName &&
                         <Text
-                            style={[style.infoText, style.channelText]}
+                            style={style.channelText}
                             numberOfLines={1}
                         >
                             {channelName}
