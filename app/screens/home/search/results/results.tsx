@@ -184,7 +184,7 @@ const Results = ({
                 key={item.id}
             >
                 <File
-                    channelName={getChannelName(item.channel_id)}
+                    channelName={getChannelName(item.channel_id!)}
                     galleryIdentifier={galleryIdentifier}
                     key={item.id}
                     canDownloadFiles={canDownloadFiles}
