@@ -13,6 +13,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import DocumentFile, {DocumentFileRef} from './document_file';
 import FileIcon from './file_icon';
 import FileInfo from './file_info';
+import FileOptionsIcon from './file_options_icon';
 import ImageFile from './image_file';
 import ImageFileOverlay from './image_file_overlay';
 import VideoFile from './video_file';
@@ -27,8 +28,11 @@ type FileProps = {
     nonVisibleImagesCount: number;
     onPress: (index: number) => void;
     publicLinkEnabled: boolean;
+    channelName?: string;
+    onOptionsPress?: (index: number) => void;
     theme: Theme;
     wrapperWidth?: number;
+    showDate?: boolean;
     updateFileForGallery: (idx: number, file: FileInfo) => void;
 };
 
@@ -37,6 +41,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         fileWrapper: {
             flex: 1,
             flexDirection: 'row',
+            alignItems: 'center',
             marginTop: 10,
             borderWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.4),
@@ -52,8 +57,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const File = ({
-    canDownloadFiles, file, galleryIdentifier, index, inViewPort = false, isSingleImage = false,
-    nonVisibleImagesCount = 0, onPress, publicLinkEnabled, theme, wrapperWidth = 300, updateFileForGallery,
+    canDownloadFiles, channelName, file, galleryIdentifier, showDate = false, index, inViewPort = false, isSingleImage = false,
+    nonVisibleImagesCount = 0, onPress, onOptionsPress, publicLinkEnabled, theme, wrapperWidth = 300, updateFileForGallery,
 }: FileProps) => {
     const document = useRef<DocumentFileRef>(null);
     const style = getStyleSheet(theme);
@@ -64,6 +69,13 @@ const File = ({
         } else {
             onPress(index);
         }
+    }, [index]);
+
+    const handleOnOptionsPress = useCallback(() => {
+        if (!onOptionsPress) {
+            return;
+        }
+        onOptionsPress(index);
     }, [index]);
 
     const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePreviewPress);
@@ -129,31 +141,44 @@ const File = ({
                 </View>
                 <FileInfo
                     file={file}
+                    showDate={showDate}
+                    channelName={channelName}
                     onPress={handlePreviewPress}
                     theme={theme}
                 />
+                {onOptionsPress &&
+                    <FileOptionsIcon
+                        onPress={handleOnOptionsPress}
+                    />
+                }
             </View>
         );
     }
 
     return (
-        <View style={[style.fileWrapper]}>
+        <TouchableWithFeedback
+            onPress={handlePreviewPress}
+            type={'opacity'}
+            style={style.fileWrapper}
+        >
             <View style={style.iconWrapper}>
-                <TouchableWithFeedback
-                    onPress={handlePreviewPress}
-                    type={'opacity'}
-                >
-                    <FileIcon
-                        file={file}
-                    />
-                </TouchableWithFeedback>
+                <FileIcon
+                    file={file}
+                />
             </View>
             <FileInfo
                 file={file}
+                showDate={showDate}
+                channelName={channelName}
                 onPress={handlePreviewPress}
                 theme={theme}
             />
-        </View>
+            {onOptionsPress &&
+                <FileOptionsIcon
+                    onPress={handleOnOptionsPress}
+                />
+            }
+        </TouchableWithFeedback>
     );
 };
 

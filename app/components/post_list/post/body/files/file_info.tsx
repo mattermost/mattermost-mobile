@@ -4,14 +4,19 @@
 import React from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 
+import FormattedDate from '@components/formatted_date';
 import {getFormattedFileSize} from '@utils/file';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type FileInfoProps = {
     file: FileInfo;
+    showDate: boolean;
+    channelName?: string ;
     onPress: () => void;
     theme: Theme;
 }
+const format = ' • MMM DD HH:MM A';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -23,8 +28,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row',
             marginTop: 3,
         },
+        fileStatsContainer: {
+            flexGrow: 1,
+            flexDirection: 'row',
+        },
+        infoText: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 75, 'Regular'),
+        },
         fileInfo: {
             fontSize: 14,
+            flexDirection: 'row',
             color: theme.centerChannelColor,
         },
         fileName: {
@@ -35,10 +49,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             paddingRight: 10,
         },
+        channelText: {
+            marginRight: 4,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            borderRadius: 4,
+            paddingHorizontal: 4,
+        },
     };
 });
 
-const FileInfo = ({file, onPress, theme}: FileInfoProps) => {
+const FileInfo = ({file, channelName, showDate, onPress, theme}: FileInfoProps) => {
     const style = getStyleSheet(theme);
 
     return (
@@ -52,13 +72,26 @@ const FileInfo = ({file, onPress, theme}: FileInfoProps) => {
                     {file.name.trim()}
                 </Text>
                 <View style={style.fileDownloadContainer}>
-                    <Text
-                        numberOfLines={1}
-                        ellipsizeMode='tail'
-                        style={style.fileInfo}
-                    >
-                        {`${getFormattedFileSize(file.size)}`}
-                    </Text>
+                    {channelName &&
+                        <Text
+                            style={[style.infoText, style.channelText]}
+                            numberOfLines={1}
+                        >
+                            {channelName}
+                        </Text>
+                    }
+                    <View style={style.fileStatsContainer}>
+                        <Text style={style.infoText}>
+                            {`${getFormattedFileSize(file.size)}`}
+                        </Text>
+                        {showDate &&
+                            <FormattedDate
+                                style={style.infoText}
+                                format={format}
+                                value={file.create_at as number}
+                            />
+                        }
+                    </View>
                 </View>
             </TouchableOpacity>
         </View>
