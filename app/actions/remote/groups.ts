@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {storeGroups} from '@actions/local/group';
+import {storeGroupMembershipsForMember, storeGroups} from '@actions/local/group';
 import {Client} from '@client/rest';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -82,6 +82,20 @@ export const fetchGroupsForTeam = async (serverUrl: string, teamId: string, fetc
         return prepareGroups(operator, response.groups);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const fetchGroupsForMember = async (serverUrl: string, userId: string, fetchOnly = false) => {
+    try {
+        const client: Client = NetworkManager.getClient(serverUrl);
+        const response = await client.getAllGroupsAssociatedToMembership(userId);
+
+        const groups = await storeGroups(serverUrl, response, fetchOnly);
+        const groupMemberships = await storeGroupMembershipsForMember(serverUrl, response, userId, fetchOnly);
+
+        return {groups, groupMemberships};
+    } catch (error) {
         return {error};
     }
 };

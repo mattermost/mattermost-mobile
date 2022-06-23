@@ -3,7 +3,7 @@
 
 import {fetchFilteredChannelGroups, fetchFilteredTeamGroups, fetchGroupsForAutocomplete} from '@actions/remote/groups';
 import DatabaseManager from '@database/manager';
-import {prepareGroups, queryGroupsByName, queryGroupsByNameInChannel, queryGroupsByNameInTeam} from '@queries/servers/group';
+import {queryGroupsByName, queryGroupsByNameInChannel, queryGroupsByNameInTeam} from '@queries/servers/group';
 import {logError} from '@utils/log';
 
 import type GroupModel from '@typings/database/models/servers/group';
@@ -61,8 +61,7 @@ export const searchGroupsByNameInChannel = async (serverUrl: string, name: strin
     try {
         database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log('searchGroupsByNameInChannel - DB Error', e);
+        logError('searchGroupsByNameInChannel - DB Error', e);
         return [];
     }
 
@@ -84,20 +83,34 @@ export const searchGroupsByNameInChannel = async (serverUrl: string, name: strin
  *
  * @param serverUrl string - The Server URL
  * @param groups Group[] - The groups fetched from the API
+ * @param prepareRecordsOnly boolean - Only prepares records
  */
-export const storeGroups = async (serverUrl: string, groups: Group[]) => {
+export const storeGroups = async (serverUrl: string, groups: Group[], prepareRecordsOnly = false) => {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const preparedGroups = await prepareGroups(operator, groups);
-
-        if (preparedGroups.length) {
-            operator.batchRecords(preparedGroups);
-        }
-
-        return preparedGroups;
+        return operator.handleGroups({groups, prepareRecordsOnly});
     } catch (e) {
+        logError('storeGroups', e);
         return {error: e};
     }
 };
 
+/**
+ * Store fetched group memberships locally for member
+ *
+ * @param serverUrl string - The Server URL
+ * @param groups Group[] - The groups fetched from the API
+ * @param userId string - The member (user) to associate the groups with
+ * @param prepareRecordsOnly boolean - Only prepares records
+ */
+export const storeGroupMembershipsForMember = async (serverUrl: string, groups: Group[], userId: string, prepareRecordsOnly = false) => {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        return operator.handleGroupMembershipsForMember({userId, groups, prepareRecordsOnly});
+    } catch (e) {
+        logError('storeGroupMembershipsForMember', e);
+        return {error: e};
+    }
+};

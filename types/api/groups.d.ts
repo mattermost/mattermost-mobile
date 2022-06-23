@@ -42,4 +42,7 @@ type GroupChannel = {
     update_at: number;
 }
 
-type GroupMembership = UserProfile[]
+type GroupMembership = {
+    group_id: string;
+    user_id: string;
+}
