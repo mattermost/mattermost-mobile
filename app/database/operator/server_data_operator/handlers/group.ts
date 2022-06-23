@@ -61,13 +61,13 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
 
         // Prune memberships that are no longer required
         const membershipsToRemove = existingGroupMemberships.
-            filter((gm) => groups?.some((g) => gm.groupId === g.id)).
+            filter((gm) => !groups?.some((g) => gm.groupId === g.id)).
             map((gm) => gm.prepareDestroyPermanently());
 
         // Ensure we aren't adding existing ones
         const createOrUpdateRawValues = groups?.
             filter((g) => !existingGroupMemberships.some((gm) => gm.groupId === g.id)).
-            map((g) => ({id: `${userId}-${g.id}`, user_id: userId, group_id: g.id}));
+            map((g) => ({id: `${g.id}-${userId}`, user_id: userId, group_id: g.id}));
 
         // Handle our new records
         const records: GroupMembershipModel[] = await this.handleRecords({
