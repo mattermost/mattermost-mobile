@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {BackHandler, DeviceEventEmitter, Keyboard, Platform, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, Keyboard, Platform, StyleSheet, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -15,8 +15,8 @@ import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
-import NavigationStore from '@store/navigation_store';
 import {preventDoubleTap} from '@utils/tap';
 
 import ProfileForm from './components/form';
@@ -105,20 +105,6 @@ const EditProfile = ({
     }, [userInfo]);
 
     useEffect(() => {
-        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (NavigationStore.getNavigationTopComponentId() === componentId) {
-                close();
-                return true;
-            }
-
-            return false;
-        });
-        return () => {
-            backHandler.remove();
-        };
-    }, []);
-
-    useEffect(() => {
         if (!isTablet) {
             setButtons(componentId, {
                 rightButtons: [rightButton!],
@@ -136,6 +122,8 @@ const EditProfile = ({
             popTopScreen(componentId);
         }
     }, []);
+
+    useAndroidHardwareBackHandler(componentId, close);
 
     const enableSaveButton = useCallback((value: boolean) => {
         if (!isTablet) {
