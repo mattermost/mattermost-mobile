@@ -3,7 +3,6 @@
 
 import React, {useCallback, useEffect, useState} from 'react';
 import {Text, View} from 'react-native';
-import FileSystem, {ReadDirItem} from 'react-native-fs';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {getAllFilesInCachesDirectory} from '@actions/local/file';
@@ -11,9 +10,12 @@ import MenuItem from '@components/menu_item';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {popTopScreen} from '@screens/navigation';
-import {getFormattedFileSize} from '@utils/file';
+import {deleteFileCache, getFormattedFileSize} from '@utils/file';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import type {ReadDirItem} from 'react-native-fs';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -50,6 +52,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 const EMPTY_FILES: ReadDirItem[] = [];
+const EMPTY_SERVERS: string[] = [];
 const EDGES: Edge[] = ['left', 'right'];
 
 type AdvancedSettingsProps = {
@@ -59,29 +62,30 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
     const theme = useTheme();
     const [dataSize, setDataSize] = useState<number|undefined>(0);
     const [files, setFiles] = useState<ReadDirItem[]>(EMPTY_FILES);
-
+    const [serverUrls, setServerUrls] = useState<string[]>(EMPTY_SERVERS);
     const styles = getStyleSheet(theme);
 
     const getAllCachedFiles = useCallback(async () => {
-        const {totalSize, files: cachedFiles} = await getAllFilesInCachesDirectory();
+        const {totalSize, files: cachedFiles, serverUrls: allServerUrls} = await getAllFilesInCachesDirectory();
         setDataSize(totalSize);
         setFiles(cachedFiles || EMPTY_FILES);
+        setServerUrls(allServerUrls || EMPTY_SERVERS);
     }, []);
 
-    const onPressDeleteData = useCallback(async () => {
+    const onPressDeleteData = preventDoubleTap(async () => {
         try {
             if (files.length > 0) {
-                const delFilePromises = [];
-                for (const file of files) {
-                    delFilePromises.push(FileSystem.unlink(file.path));
+                const deletePromises = [];
+                for (const server of serverUrls) {
+                    deletePromises.push(deleteFileCache(server));
                 }
-                await Promise.all(delFilePromises);
+                await Promise.all(deletePromises);
             }
             await getAllCachedFiles();
         } catch (e) {
             //todo: show toast if error https://mattermost.atlassian.net/browse/MM-44926
         }
-    }, [files]);
+    });
 
     useEffect(() => {
         getAllCachedFiles();

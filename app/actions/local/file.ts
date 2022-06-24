@@ -6,8 +6,8 @@ import FileSystem from 'react-native-fs';
 import DatabaseManager from '@database/manager';
 import {queryAllServers} from '@queries/app/servers';
 import {getFileById} from '@queries/servers/file';
-import {hashCode} from '@utils/security';
 import {logError} from '@utils/log';
+import {hashCode} from '@utils/security';
 
 export const updateLocalFile = async (serverUrl: string, file: FileInfo) => {
     try {
@@ -46,24 +46,25 @@ export const getAllFilesInCachesDirectory = async () => {
             return {error: 'No servers'};
         }
 
-        const cachesDirectories = servers.map((server) => `${FileSystem.CachesDirectoryPath}/${hashCode(server.url)}`);
-
+        const serverUrls = [];
         const files: FileSystem.ReadDirItem[][] = [];
 
-        for await (const directory of cachesDirectories) {
-            const directoryFiles = await FileSystem.readDir(directory);
+        for await (const server of servers) {
+            const directoryFiles = await FileSystem.readDir(`${FileSystem.CachesDirectoryPath}/${hashCode(server.url)}`);
             files.push(directoryFiles);
+            serverUrls.push(server.url);
         }
+
         const flattenedFiles = files.flat();
         const totalSize = flattenedFiles.reduce((acc, file) => acc + file.size, 0);
 
         return {
             files: flattenedFiles,
             totalSize,
+            serverUrls,
         };
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed getAllFilesInCachesDirectory', error);
+        logError('Failed getAllFilesInCachesDirectory', error);
         return {error};
     }
 };
