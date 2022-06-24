@@ -42,6 +42,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
         },
         fileName: {
+            marginTop: -4,
             flexDirection: 'column',
             flexWrap: 'wrap',
             color: theme.centerChannelColor,
@@ -57,6 +58,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderRadius: 4,
             paddingHorizontal: 4,
             ...typography('Body', 50, 'SemiBold'),
+            color: changeOpacity(theme.centerChannelColor, 0.72)
         },
     };
 });
