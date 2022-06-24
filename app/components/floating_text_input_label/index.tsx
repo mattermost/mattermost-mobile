@@ -43,6 +43,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         fontFamily: 'OpenSans',
         fontSize: 16,
         zIndex: 10,
+        maxWidth: 315,
     },
     smallLabel: {
         fontSize: 10,
@@ -242,6 +243,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
                     onPress={onAnimatedTextPress}
                     style={[styles.label, labelTextStyle, textAnimatedTextStyle]}
                     suppressHighlighting={true}
+                    numberOfLines={1}
                 >
                     {label}
                 </Animated.Text>
