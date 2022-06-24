@@ -191,7 +191,7 @@ export const markThreadAsRead = async (serverUrl: string, teamId: string | undef
         const isCRTEnabled = await getIsCRTEnabled(database);
         const post = await getPostById(database, threadId);
         if (post) {
-            PushNotifications.cancelChannelNotifications(post.channelId, post.rootId, isCRTEnabled);
+            PushNotifications.cancelChannelNotifications(post.channelId, threadId, isCRTEnabled);
         }
 
         return {data};

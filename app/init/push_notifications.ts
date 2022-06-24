@@ -78,10 +78,10 @@ class PushNotifications {
                 if (notification.channel_id === channelId) {
                     let doesNotificationMatch = true;
                     if (clearThreads) {
-                        doesNotificationMatch = notification.payload.root_id === rootId;
+                        doesNotificationMatch = notification.thread === rootId;
                     } else if (isCRTEnabled) {
                         // Do not match when CRT is enabled BUT post is not a root post
-                        doesNotificationMatch = !notification.payload.root_id;
+                        doesNotificationMatch = !notification.root_id;
                     }
                     if (doesNotificationMatch) {
                         ids.push(notification.identifier);
