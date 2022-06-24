@@ -5,7 +5,6 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, Platform, StyleSheet, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalUser} from '@actions/local/user';
@@ -16,6 +15,7 @@ import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 
@@ -84,25 +84,6 @@ const EditProfile = ({
             testID: CLOSE_BUTTON_ID,
         };
     }, [isTablet, theme.centerChannelColor]);
-
-    useEffect(() => {
-        const unsubscribe = Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
-                switch (buttonId) {
-                    case UPDATE_BUTTON_ID:
-                        submitUser();
-                        break;
-                    case CLOSE_BUTTON_ID:
-                        close();
-                        break;
-                }
-            },
-        }, componentId);
-
-        return () => {
-            unsubscribe.remove();
-        };
-    }, [userInfo]);
 
     useEffect(() => {
         if (!isTablet) {
@@ -204,6 +185,9 @@ const EditProfile = ({
         enableSaveButton(true);
         scrollViewRef.current?.scrollToPosition(0, 0, true);
     }, [enableSaveButton]);
+
+    useNavButtonPressed(UPDATE_BUTTON_ID, componentId, submitUser, [userInfo]);
+    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, []);
 
     return (
         <>
