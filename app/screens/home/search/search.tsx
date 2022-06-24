@@ -16,6 +16,7 @@ import RoundedHeaderContext from '@components/rounded_header_context';
 import {useServerUrl} from '@context/server';
 import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, filterFiles} from '@utils/file';
+import {logInfo} from '@utils/log';
 
 import Results from './results';
 import Header, {SelectTab} from './results/header';
@@ -137,8 +138,7 @@ const SearchScreen = ({teamId}: Props) => {
             <NavigationHeader
                 isLargeTitle={true}
                 onBackPress={() => {
-                    // eslint-disable-next-line no-console
-                    console.log('BACK');
+                    logInfo('BACK');
                 }}
                 showBackButton={false}
                 title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}

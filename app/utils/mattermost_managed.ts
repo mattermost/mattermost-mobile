@@ -24,7 +24,7 @@ export const getIOSAppGroupDetails = (): IOSAppGroupDetails => {
         appGroupDatabase: databasePath,
     };
 
-    // console.log('appGroup => ', appGroup.appGroupDatabase);
+    // logInfo('appGroup => ', appGroup.appGroupDatabase);
     return appGroup;
 };
 

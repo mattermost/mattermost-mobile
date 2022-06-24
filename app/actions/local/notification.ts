@@ -3,6 +3,7 @@
 
 import DatabaseManager from '@database/manager';
 import {getPostById, queryPostsInChannel, queryPostsInThread} from '@queries/servers/post';
+import {logError} from '@utils/log';
 
 export const updatePostSinceCache = async (serverUrl: string, notification: NotificationWithData) => {
     try {
@@ -23,8 +24,7 @@ export const updatePostSinceCache = async (serverUrl: string, notification: Noti
         }
         return {};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed updatePostSinceCache', error);
+        logError('Failed updatePostSinceCache', error);
         return {error};
     }
 };

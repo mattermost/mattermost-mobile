@@ -21,6 +21,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {generateChannelNameFromDisplayName, getDirectChannelName, isDMorGM} from '@utils/channel';
 import {isTablet} from '@utils/helpers';
+import {logError, logInfo} from '@utils/log';
 import {showMuteChannelSnackbar} from '@utils/snack_bar';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
@@ -581,8 +582,7 @@ export async function joinChannel(serverUrl: string, userId: string, teamId: str
                     try {
                         await operator.batchRecords(flattenedModels);
                     } catch {
-                        // eslint-disable-next-line no-console
-                        console.log('FAILED TO BATCH CHANNELS');
+                        logError('FAILED TO BATCH CHANNELS');
                     }
                 }
             }
@@ -720,7 +720,7 @@ export async function switchToChannelByName(serverUrl: string, channelName: stri
                     errorHandler(intl);
                     return {error: 'Refused to join Private channel'};
                 }
-                console.log('joining channel', displayName, channel.id); //eslint-disable-line
+                logInfo('joining channel', displayName, channel.id);
                 const result = await joinChannel(serverUrl, system.currentUserId, team.id, channel.id, undefined, true);
                 if (result.error || !result.channel) {
                     if (joinedNewTeam) {
