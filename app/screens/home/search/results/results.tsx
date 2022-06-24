@@ -200,6 +200,7 @@ const Results = ({
                     inViewPort={true}
                     wrapperWidth={(getViewPortWidth(isReplyPost, isTablet) - 6)}
                     nonVisibleImagesCount={0}
+                    asCard={true}
                 />
             </View>
         );
