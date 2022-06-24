@@ -57,7 +57,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         imageVideo: {
             height: 40,
             width: 40,
-            marginRight: 8,
+            marginHorizontal: 4,
         },
     };
 });
