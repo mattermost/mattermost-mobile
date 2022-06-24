@@ -68,16 +68,6 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
             useAutomaticTimezone,
             automaticTimezone,
         }));
-
-        //todo: confirm with Elias
-        // if (manualTimezone?.length > 0) {
-        //     // Preserve state change in server if manualTimezone exists
-        //     this.submitUser({
-        //         useAutomaticTimezone,
-        //         automaticTimezone,
-        //         manualTimezone,
-        //     });
-        // }
     };
 
     const updateManualTimezone = (mtz: string) => {
