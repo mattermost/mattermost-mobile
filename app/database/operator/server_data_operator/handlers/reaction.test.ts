@@ -9,7 +9,7 @@ describe('*** Operator: User Handlers tests ***', () => {
 
     beforeAll(async () => {
         await DatabaseManager.init(['baseHandler.test.com']);
-        operator = DatabaseManager.serverDatabases['baseHandler.test.com'].operator;
+        operator = DatabaseManager.serverDatabases['baseHandler.test.com']!.operator;
     });
 
     it('=> HandleReactions: should write to Reactions table', async () => {

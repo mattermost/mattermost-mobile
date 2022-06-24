@@ -42,7 +42,7 @@ export type ServerDatabase = {
 }
 
 export type ServerDatabases = {
-  [x: string]: ServerDatabase;
+  [x: string]: ServerDatabase | undefined;
 };
 
 export type TransformerArgs = {
