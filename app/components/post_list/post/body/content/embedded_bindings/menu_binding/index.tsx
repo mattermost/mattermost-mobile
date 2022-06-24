@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
@@ -11,6 +12,7 @@ import AutocompleteSelector from '@components/autocomplete_selector';
 import {AppBindingLocations, AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import {observeCurrentTeamId} from '@queries/servers/system';
+import {WithDatabaseArgs} from '@typings/database/database';
 import {createCallContext} from '@utils/apps';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -94,9 +96,9 @@ const MenuBinding = ({binding, currentTeamId, post, teamID}: Props) => {
     );
 };
 
-const withTeamId = withObservables(['post'], ({post}: {post: PostModel}) => ({
+const withTeamId = withObservables(['post'], ({post, database}: {post: PostModel} & WithDatabaseArgs) => ({
     teamID: post.channel.observe().pipe(map((channel: ChannelModel) => channel.teamId)),
-    currentTeamId: observeCurrentTeamId(post.database),
+    currentTeamId: observeCurrentTeamId(database),
 }));
 
-export default withTeamId(MenuBinding);
+export default withDatabase(withTeamId(MenuBinding));

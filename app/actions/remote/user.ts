@@ -288,11 +288,20 @@ export async function fetchStatusByIds(serverUrl: string, userIds: string[], fet
         return {statuses: []};
     }
 
+    let database;
+    let operator;
+    try {
+        const result = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        database = result.database;
+        operator = result.operator;
+    } catch (e) {
+        return {error: `${serverUrl} database not found`};
+    }
+
     try {
         const statuses = await client.getStatusesByIds(userIds);
 
         if (!fetchOnly && DatabaseManager.serverDatabases[serverUrl]) {
-            const {database, operator} = DatabaseManager.serverDatabases[serverUrl];
             if (operator) {
                 const users = await queryUsersById(database, userIds).fetch();
                 const userStatuses = statuses.reduce((result: Record<string, UserStatus>, s) => {
@@ -792,9 +801,12 @@ export const buildProfileImageUrl = (serverUrl: string, userId: string, timestam
 };
 
 export const autoUpdateTimezone = async (serverUrl: string, {deviceTimezone, userId}: {deviceTimezone: string; userId: string}) => {
-    const database = DatabaseManager.serverDatabases[serverUrl].database;
-    if (!database) {
-        return {error: `No database present for ${serverUrl}`};
+    let database;
+    try {
+        const result = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        database = result.database;
+    } catch (e) {
+        return {error: `${serverUrl} database not found`};
     }
 
     const currentUser = await getUserById(database, userId);
@@ -814,9 +826,12 @@ export const autoUpdateTimezone = async (serverUrl: string, {deviceTimezone, use
 };
 
 export const fetchTeamAndChannelMembership = async (serverUrl: string, userId: string, teamId: string, channelId?: string) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl].operator;
-    if (!operator) {
-        return {error: `No database present for ${serverUrl}`};
+    let operator;
+    try {
+        const result = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        operator = result.operator;
+    } catch (e) {
+        return {error: `${serverUrl} database not found`};
     }
 
     let client: Client;

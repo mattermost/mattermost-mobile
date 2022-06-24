@@ -81,7 +81,7 @@ export const differsFromLocalNameFormat = async (database: Database, preferences
     return true;
 };
 
-export async function queryHasCRTChanged(database: Database, preferences: PreferenceType[]): Promise<boolean> {
+export async function getHasCRTChanged(database: Database, preferences: PreferenceType[]): Promise<boolean> {
     const oldCRT = await getIsCRTEnabled(database);
     const newCRTPref = preferences.filter((p) => p.name === Preferences.COLLAPSED_REPLY_THREADS)?.[0];
 

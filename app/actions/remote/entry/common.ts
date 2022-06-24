@@ -23,7 +23,7 @@ import {getDeviceToken} from '@queries/app/global';
 import {queryAllServers} from '@queries/app/servers';
 import {queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
 import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
-import {queryHasCRTChanged} from '@queries/servers/preference';
+import {getHasCRTChanged} from '@queries/servers/preference';
 import {getConfig, getPushVerificationStatus, getWebSocketLastDisconnected} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, getNthLastChannelFromTeam, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
@@ -142,7 +142,7 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
     const prefData = await fetchMyPreferences(serverUrl, fetchOnly);
     const isCRTEnabled = Boolean(prefData.preferences && processIsCRTEnabled(prefData.preferences, confReq.config));
     if (prefData.preferences) {
-        const crtToggled = await queryHasCRTChanged(database, prefData.preferences);
+        const crtToggled = await getHasCRTChanged(database, prefData.preferences);
         if (crtToggled) {
             const currentServerUrl = await DatabaseManager.getActiveServerUrl();
             const isSameServer = currentServerUrl === serverUrl;

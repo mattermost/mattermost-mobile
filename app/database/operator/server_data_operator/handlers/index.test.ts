@@ -15,7 +15,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
     let operator: ServerDataOperator;
     beforeAll(async () => {
         await DatabaseManager.init(['baseHandler.test.com']);
-        operator = DatabaseManager.serverDatabases['baseHandler.test.com'].operator;
+        operator = DatabaseManager.serverDatabases['baseHandler.test.com']!.operator;
     });
 
     it('=> HandleRole: should write to the ROLE table', async () => {

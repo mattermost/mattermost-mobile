@@ -860,12 +860,15 @@ export class AppCommandParser {
 
     constructor(serverUrl: string, intl: IntlShape, channelID: string, teamID = '', rootPostID = '', theme: Theme) {
         this.serverUrl = serverUrl;
-        this.database = DatabaseManager.serverDatabases[serverUrl]?.database;
         this.channelID = channelID;
         this.rootPostID = rootPostID;
         this.teamID = teamID;
         this.intl = intl;
         this.theme = theme;
+
+        // We are making the assumption the database is always present at this level.
+        // This assumption may not be correct. Please review.
+        this.database = DatabaseManager.serverDatabases[serverUrl]!.database;
     }
 
     // composeCommandSubmitCall creates the form submission call

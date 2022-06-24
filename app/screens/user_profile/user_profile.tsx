@@ -8,8 +8,8 @@ import {useIntl} from 'react-intl';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchTeamAndChannelMembership} from '@actions/remote/user';
-import {useServerUrl} from '@app/context/server';
 import {Screens} from '@constants';
+import {useServerUrl} from '@context/server';
 import {getLocaleFromLanguage} from '@i18n';
 import BottomSheet from '@screens/bottom_sheet';
 import {getUserTimezone} from '@utils/user';

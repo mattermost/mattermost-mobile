@@ -86,4 +86,4 @@ const DateSeparator = (props: DateSeparatorProps) => {
     );
 };
 
-export default DateSeparator;
+export default React.memo(DateSeparator);

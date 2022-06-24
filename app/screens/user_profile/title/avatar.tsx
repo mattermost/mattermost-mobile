@@ -7,7 +7,7 @@ import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import ProfilePicture from '@app/components/profile_picture';
+import ProfilePicture from '@components/profile_picture';
 
 import type UserModel from '@typings/database/models/servers/user';
 

@@ -143,6 +143,8 @@ const InAppNotification = ({componentId, serverName, serverUrl, notification}: I
     // eslint-disable-next-line new-cap
     const gesture = Gesture.Pan().activeOffsetY(-20).onStart(() => runOnJS(animateDismissOverlay)());
 
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+
     return (
         <GestureHandlerRootView>
             <GestureDetector gesture={gesture}>
@@ -156,14 +158,16 @@ const InAppNotification = ({componentId, serverName, serverUrl, notification}: I
                             onPress={notificationTapped}
                             activeOpacity={1}
                         >
+                            {Boolean(database) &&
                             <Icon
-                                database={DatabaseManager.serverDatabases[serverUrl].database}
+                                database={database!}
                                 fromWebhook={notification.payload?.from_webhook === 'true'}
                                 overrideIconUrl={notification.payload?.override_icon_url}
                                 senderId={notification.payload?.sender_id || ''}
                                 serverUrl={serverUrl}
                                 useUserIcon={notification.payload?.use_user_icon === 'true'}
                             />
+                            }
                             <View style={styles.titleContainer}>
                                 <Title channelName={notification.payload?.channel_name || ''}/>
                                 <View style={styles.flex}>

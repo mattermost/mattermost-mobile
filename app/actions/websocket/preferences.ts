@@ -10,7 +10,7 @@ import {Events, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getPostById} from '@queries/servers/post';
-import {deletePreferences, differsFromLocalNameFormat, queryHasCRTChanged} from '@queries/servers/preference';
+import {deletePreferences, differsFromLocalNameFormat, getHasCRTChanged} from '@queries/servers/preference';
 
 async function handleCRTToggled(serverUrl: string) {
     const currentServerUrl = await DatabaseManager.getActiveServerUrl();
@@ -20,8 +20,13 @@ async function handleCRTToggled(serverUrl: string) {
 }
 
 export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    const operator = DatabaseManager.serverDatabases[serverUrl].operator;
-    if (!operator) {
+    let database;
+    let operator;
+    try {
+        const result = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        database = result.database;
+        operator = result.operator;
+    } catch (e) {
         return;
     }
 
@@ -29,8 +34,9 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
         const preference: PreferenceType = JSON.parse(msg.data.preference);
         handleSavePostAdded(serverUrl, [preference]);
 
-        const hasDiffNameFormatPref = await differsFromLocalNameFormat(operator.database, [preference]);
-        const crtToggled = await queryHasCRTChanged(operator.database, [preference]);
+        const hasDiffNameFormatPref = await differsFromLocalNameFormat(database, [preference]);
+        const crtToggled = await getHasCRTChanged(database, [preference]);
+
         if (operator) {
             await operator.handlePreferences({
                 prepareRecordsOnly: false,
@@ -60,7 +66,7 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
         handleSavePostAdded(serverUrl, preferences);
 
         const hasDiffNameFormatPref = await differsFromLocalNameFormat(operator.database, preferences);
-        const crtToggled = await queryHasCRTChanged(operator.database, preferences);
+        const crtToggled = await getHasCRTChanged(operator.database, preferences);
         if (operator) {
             await operator.handlePreferences({
                 prepareRecordsOnly: false,
