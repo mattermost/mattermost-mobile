@@ -867,3 +867,15 @@ export const fetchTeamAndChannelMembership = async (serverUrl: string, userId: s
         return {error};
     }
 };
+
+export const getAllSupportedTimezones = async (serverUrl: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const allTzs = await client.getTimezones();
+        return allTzs;
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('FAILED TO GET ALL TIMEZONES', error);
+        return [];
+    }
+};

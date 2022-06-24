@@ -6,11 +6,11 @@ import {Database, Model, Q} from '@nozbe/watermelondb';
 import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {getPreferenceValue} from '@helpers/api/preference';
-import {ServerDatabase} from '@typings/database/database';
 
 import {getCurrentTeamId} from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type {ServerDatabase} from '@typings/database/database';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
 const {SERVER: {PREFERENCE}} = MM_TABLES;

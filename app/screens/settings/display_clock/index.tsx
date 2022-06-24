@@ -10,9 +10,10 @@ import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCurrentUserId} from '@queries/servers/system';
-import {WithDatabaseArgs} from '@typings/database/database';
 
 import DisplayClock from './display_clock';
+
+import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
