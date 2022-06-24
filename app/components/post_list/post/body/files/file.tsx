@@ -34,7 +34,7 @@ type FileProps = {
     wrapperWidth?: number;
     showDate?: boolean;
     updateFileForGallery: (idx: number, file: FileInfo) => void;
-    asCard: boolean;
+    asCard?: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
