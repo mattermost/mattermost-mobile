@@ -16,6 +16,7 @@ import {Client} from '@client/rest';
 import * as ClientConstants from '@client/rest/constants';
 import {CERTIFICATE_ERRORS} from '@constants/network';
 import ManagedApp from '@init/managed_app';
+import {logError} from '@utils/log';
 import {getCSRFFromCookie} from '@utils/security';
 
 import type {ServerCredential} from '@typings/credentials';
@@ -55,7 +56,7 @@ class NetworkManager {
             try {
                 await this.createClient(serverUrl, token);
             } catch (error) {
-                console.log('NetworkManager init error', error); //eslint-disable-line no-console
+                logError('NetworkManager init error', error);
             }
         }
     };

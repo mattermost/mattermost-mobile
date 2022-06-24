@@ -20,6 +20,7 @@ import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import Background from '@screens/background';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
+import {logInfo} from '@utils/log';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -152,8 +153,7 @@ const MFA = ({config, goToHome, license, loginId, password, serverDisplayName, s
             setError(result.error.message);
         }
         if (!result.hasTeams && !result.error) {
-            // eslint-disable-next-line no-console
-            console.log('GO TO NO TEAMS');
+            logInfo('GO TO NO TEAMS');
             return;
         }
         goToHome(result.time || 0, result.error as never);

@@ -15,10 +15,11 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import {popTopScreen, setButtons} from '@screens/navigation';
-import UserModel from '@typings/database/models/servers/user';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
+
+import type UserModel from '@typings/database/models/servers/user';
 
 const mentionHeaderText = {
     id: t('notification_settings.mentions.wordsTrigger'),

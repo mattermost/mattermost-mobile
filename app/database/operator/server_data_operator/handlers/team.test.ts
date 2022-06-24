@@ -20,7 +20,7 @@ describe('*** Operator: Team Handlers tests ***', () => {
     let operator: ServerDataOperator;
     beforeAll(async () => {
         await DatabaseManager.init(['baseHandler.test.com']);
-        operator = DatabaseManager.serverDatabases['baseHandler.test.com'].operator;
+        operator = DatabaseManager.serverDatabases['baseHandler.test.com']!.operator;
     });
 
     it('=> HandleTeam: should write to the TEAM table', async () => {

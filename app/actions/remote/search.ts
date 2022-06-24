@@ -7,6 +7,7 @@ import NetworkManager from '@managers/network_manager';
 import {prepareMissingChannelsForAllTeams} from '@queries/servers/channel';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
+import {logError} from '@utils/log';
 
 import {fetchPostAuthors, fetchMissingChannelsFromPosts} from './post';
 import {forceLogoutIfNecessary} from './session';
@@ -124,8 +125,7 @@ export const searchPosts = async (serverUrl: string, params: PostSearchParams): 
             posts: postsArray,
         };
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed: searchPosts', error);
+        logError('Failed: searchPosts', error);
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }

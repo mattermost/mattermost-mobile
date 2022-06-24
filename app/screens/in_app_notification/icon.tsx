@@ -12,9 +12,9 @@ import CompassIcon from '@components/compass_icon';
 import NetworkManager from '@managers/network_manager';
 import {observeConfig} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
-import {WithDatabaseArgs} from '@typings/database/database';
 
 import type {Client} from '@client/rest';
+import type {WithDatabaseArgs} from '@typings/database/database';
 import type UserModel from '@typings/database/models/servers/user';
 
 interface NotificationIconProps {

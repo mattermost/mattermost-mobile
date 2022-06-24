@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Platform, ScrollView, View} from 'react-native';
+import {Platform, ScrollView, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
@@ -44,11 +44,6 @@ const Display = ({isTimezoneEnabled, isThemeSwitchingEnabled}: DisplayProps) => 
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
-    const onPressHandler = () => {
-        return Alert.alert(
-            'The functionality you are trying to use has not yet been implemented.',
-        );
-    };
 
     const goToThemeSettings = preventDoubleTap(() => {
         const screen = Screens.SETTINGS_DISPLAY_THEME;
@@ -60,6 +55,13 @@ const Display = ({isTimezoneEnabled, isThemeSwitchingEnabled}: DisplayProps) => 
     const goToClockDisplaySettings = preventDoubleTap(() => {
         const screen = Screens.SETTINGS_DISPLAY_CLOCK;
         const title = intl.formatMessage({id: 'display_settings.clockDisplay', defaultMessage: 'Clock Display'});
+        goToScreen(screen, title);
+    });
+
+    const goToTimezoneSettings = preventDoubleTap(() => {
+        const screen = Screens.SETTINGS_DISPLAY_TIMEZONE;
+        const title = intl.formatMessage({id: 'display_settings.timezone', defaultMessage: 'Timezone'});
+
         goToScreen(screen, title);
     });
 
@@ -87,7 +89,7 @@ const Display = ({isTimezoneEnabled, isThemeSwitchingEnabled}: DisplayProps) => 
                 {isTimezoneEnabled && (
                     <SettingOption
                         optionName='timezone'
-                        onPress={onPressHandler}
+                        onPress={goToTimezoneSettings}
                     />
                 )}
                 <View style={styles.divider}/>

@@ -49,7 +49,7 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, 
         const post = await getPostById(database, rootId);
         if (post) {
             const thread = await getThreadById(database, rootId);
-            if (thread) {
+            if (thread?.isFollowing) {
                 const channel = await getChannelById(database, post.channelId);
                 if (channel) {
                     markThreadAsRead(serverUrl, channel.teamId, thread.id);
