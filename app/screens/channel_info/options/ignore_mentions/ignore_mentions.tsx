@@ -34,6 +34,7 @@ const IgnoreMentions = ({channelId, ignoring}: Props) => {
             icon='at'
             type='toggle'
             selected={ignored}
+            testID={`channel_info.options.ignore_mentions.option.toggled.${ignored}`}
         />
     );
 };

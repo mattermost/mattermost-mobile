@@ -5,7 +5,7 @@ import ProfilePicture from './profile_picture';
 
 class Post {
     testID = {
-        postProfilePicturePrefix: 'post_profile_picture.',
+        postAvatarPrefix: 'post_avatar.',
         blockQuote: 'markdown_block_quote',
         editedIndicator: 'edited_indicator',
         emoji: 'markdown_emoji',
@@ -17,8 +17,9 @@ class Post {
         postHeaderCommentedOn: 'post_header.commented_on',
         postHeaderDateTime: 'post_header.date_time',
         postHeaderDisplayName: 'post_header.display_name',
-        postHeaderBotTag: 'post_header.bot_tag',
-        postHeaderGuestTag: 'post_header.guest_tag',
+        postHeaderBotTag: 'post_header.bot.tag',
+        postHeaderGuestTag: 'post_header.guest.tag',
+        postHeaderAutoResponderTag: 'post_header.auto_responder.tag',
         postHeaderReply: 'post_header.reply',
         postHeaderReplyCount: 'post_header.reply_count',
         postPreHeaderText: 'post_pre_header.text',
@@ -83,6 +84,7 @@ class Post {
         const postItemHeaderDisplayNameMatcher = by.id(this.testID.postHeaderDisplayName).withAncestor(postItemMatcher);
         const postItemHeaderBotTagMatcher = by.id(this.testID.postHeaderBotTag).withAncestor(postItemMatcher);
         const postItemHeaderGuestTagMatcher = by.id(this.testID.postHeaderGuestTag).withAncestor(postItemMatcher);
+        const postItemHeaderAutoResponderTagMatcher = by.id(this.testID.postHeaderAutoResponderTag).withAncestor(postItemMatcher);
         const postItemHeaderReplyMatcher = by.id(this.testID.postHeaderReply).withAncestor(postItemMatcher);
         const postItemHeaderReplyCountMatcher = by.id(this.testID.postHeaderReplyCount).withAncestor(postItemMatcher);
 
@@ -92,6 +94,7 @@ class Post {
             postItemHeaderDisplayName: element(postItemHeaderDisplayNameMatcher),
             postItemHeaderBotTag: element(postItemHeaderBotTagMatcher),
             postItemHeaderGuestTag: element(postItemHeaderGuestTagMatcher),
+            postItemHeaderAutoResponderTag: element(postItemHeaderAutoResponderTagMatcher),
             postItemHeaderReply: element(postItemHeaderReplyMatcher),
             postItemHeaderReplyCount: element(postItemHeaderReplyCountMatcher),
         };
@@ -115,7 +118,7 @@ class Post {
             };
         }
 
-        const profilePictureItemMatcher = ProfilePicture.getProfilePictureItemMatcher(this.testID.postProfilePicturePrefix, postProfileOptions.userId);
+        const profilePictureItemMatcher = ProfilePicture.getProfilePictureItemMatcher(this.testID.postAvatarPrefix, postProfileOptions.userId);
         const profilePictureItemUserStatusMatcher = ProfilePicture.getProfilePictureItemUserStatusMatcher(profilePictureItemMatcher, postProfileOptions.userStatus);
         const postItemProfilePictureMatcher = profilePictureItemMatcher.withAncestor(postItemMatcher);
         const postItemProfilePictureUserStatusMatcher = profilePictureItemUserStatusMatcher.withAncestor(postItemMatcher);

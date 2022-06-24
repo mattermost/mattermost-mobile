@@ -24,17 +24,19 @@ class ChannelScreen {
         channelScreenPrefix: 'channel.',
         channelScreen: 'channel.screen',
         introDisplayName: 'channel_post_list.intro.display_name',
-        introOptionAddPeopleItem: 'channel_post_list.intro.option_item.add_people',
-        introOptionSetHeaderItem: 'channel_post_list.intro.option_item.set_header',
-        introOptionChannelDetailsItem: 'channel_post_list.intro.option_item.channel_details',
+        introAddPeopleOption: 'channel_post_list.intro_options.add_people.option',
+        introSetHeaderOption: 'channel_post_list.intro_options.set_header.option',
+        introFavoriteOption: 'channel_post_list.intro_options.set_header.option',
+        introChannelDetailsOption: 'channel_post_list.intro_options.channel_details.option',
         flatPostList: 'channel.post_list.flat_list',
     };
 
     channelScreen = element(by.id(this.testID.channelScreen));
     introDisplayName = element(by.id(this.testID.introDisplayName));
-    introOptionAddPeopleItem = element(by.id(this.testID.introOptionAddPeopleItem));
-    introOptionSetHeaderItem = element(by.id(this.testID.introOptionSetHeaderItem));
-    introOptionChannelDetailsItem = element(by.id(this.testID.introOptionChannelDetailsItem));
+    introAddPeopleOption = element(by.id(this.testID.introAddPeopleOption));
+    introSetHeaderOption = element(by.id(this.testID.introSetHeaderOption));
+    introFavoriteOption = element(by.id(this.testID.introFavoriteOption));
+    introChannelDetailsOption = element(by.id(this.testID.introChannelDetailsOption));
     flatPostList = element(by.id(this.testID.flatPostList));
 
     // convenience props
@@ -71,7 +73,7 @@ class ChannelScreen {
         return this.postList.getNewMessagesDivider();
     };
 
-    getPostListPostItem = (postId: string, text: string, postProfileOptions: any = {}) => {
+    getPostListPostItem = (postId: string, text = '', postProfileOptions: any = {}) => {
         return this.postList.getPost(postId, text, postProfileOptions);
     };
 

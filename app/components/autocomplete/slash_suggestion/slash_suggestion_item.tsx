@@ -153,11 +153,14 @@ const SlashSuggestionItem = ({
         }
     }
 
+    const slashSuggestionItemTestId = `autocomplete.slash_suggestion_item.${suggestion}`;
+
     return (
         <TouchableWithFeedback
             onPress={completeSuggestion}
             style={touchableStyle}
             underlayColor={changeOpacity(theme.buttonBg, 0.08)}
+            testID={slashSuggestionItemTestId}
             type={'native'}
         >
             <View style={style.container}>
@@ -165,12 +168,18 @@ const SlashSuggestionItem = ({
                     {image}
                 </View>
                 <View style={style.suggestionContainer}>
-                    <Text style={style.suggestionName}>{`${suggestionText}`}</Text>
+                    <Text
+                        style={style.suggestionName}
+                        testID={`${slashSuggestionItemTestId}.name`}
+                    >
+                        {`${suggestionText}`}
+                    </Text>
                     {Boolean(description) &&
                         <Text
                             ellipsizeMode='tail'
                             numberOfLines={1}
                             style={style.suggestionDescription}
+                            testID={`${slashSuggestionItemTestId}.description`}
                         >
                             {description}
                         </Text>

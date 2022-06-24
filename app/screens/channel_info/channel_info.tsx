@@ -62,11 +62,13 @@ const ChannelInfo = ({channelId, closeButtonId, componentId, type}: Props) => {
         <SafeAreaView
             edges={edges}
             style={styles.flex}
+            testID='channel_info.screen'
         >
             <ScrollView
                 bounces={true}
                 alwaysBounceVertical={false}
                 contentContainerStyle={styles.content}
+                testID='channel_info.scrollview'
             >
                 <Title
                     channelId={channelId}
@@ -75,6 +77,7 @@ const ChannelInfo = ({channelId, closeButtonId, componentId, type}: Props) => {
                 <ChannelActions
                     channelId={channelId}
                     inModal={true}
+                    testID='channel_info.channel_actions'
                 />
                 <Extra channelId={channelId}/>
                 <View style={styles.separator}/>

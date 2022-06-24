@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Alert from './alert';
+import Autocomplete from './autocomplete';
 import CameraQuickAction from './camera_quick_action';
 import FileQuickAction from './file_quick_action';
 import ImageQuickAction from './image_quick_action';
@@ -18,6 +19,7 @@ import TeamSidebar from './team_sidebar';
 
 export {
     Alert,
+    Autocomplete,
     CameraQuickAction,
     FileQuickAction,
     ImageQuickAction,

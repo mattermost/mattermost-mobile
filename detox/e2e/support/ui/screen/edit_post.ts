@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {PostOptionsScreen} from '@support/ui/screen';
 import {timeouts} from '@support/utils';
+import {expect} from 'detox';
 
 class EditPostScreen {
     testID = {
@@ -25,6 +27,17 @@ class EditPostScreen {
         await waitFor(this.messageInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.editPostScreen;
+    };
+
+    open = async () => {
+        await PostOptionsScreen.editPostOption.tap();
+
+        return this.toBeVisible();
+    };
+
+    close = async () => {
+        await this.closeButton.tap();
+        await expect(this.editPostScreen).not.toBeVisible();
     };
 }
 
