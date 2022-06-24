@@ -6,11 +6,11 @@ import {useIntl} from 'react-intl';
 import {FlatList, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import {getAllSupportedTimezones} from '@actions/remote/user';
 import Search from '@components/search';
 import {List} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import NetworkManager from '@managers/network_manager';
 import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -92,19 +92,13 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
     useEffect(() => {
         // let's get all supported timezones
         const getSupportedTimezones = async () => {
-            try {
-                const client = NetworkManager.getClient(serverUrl);
-                const allTzs = await client.getTimezones();
-                if (Array.isArray(allTzs)) {
-                    setTimezones(allTzs);
-                    const timezoneIndex = allTzs.findIndex((timezone) => timezone === selectedTimezone);
-                    if (timezoneIndex > 0) {
-                        setInitialScrollIndex(timezoneIndex);
-                    }
+            const allTzs = await getAllSupportedTimezones(serverUrl);
+            if (allTzs.length > 0) {
+                setTimezones(allTzs);
+                const timezoneIndex = allTzs.findIndex((timezone) => timezone === selectedTimezone);
+                if (timezoneIndex > 0) {
+                    setInitialScrollIndex(timezoneIndex);
                 }
-            } catch (error) {
-                // eslint-disable-next-line no-console
-                console.log('FAILED TO GET ALL TIMEZONES', error);
             }
         };
         getSupportedTimezones();
