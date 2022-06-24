@@ -7,7 +7,7 @@ import {Platform} from 'react-native';
 import Config from '@assets/config.json';
 
 import {ClientError} from './client_error';
-import {logWarning} from './log';
+import {logError, logWarning} from './log';
 
 export const BREADCRUMB_UNCAUGHT_APP_ERROR = 'uncaught-app-error';
 export const BREADCRUMB_UNCAUGHT_NON_ERROR = 'uncaught-non-error';
@@ -154,8 +154,8 @@ function capture(captureFunc: () => void, config?: ClientConfig) {
         }
     } catch (e) {
         // Don't want this to get into an infinite loop again...
-        logWarning('Exception occured while sending to Sentry');
-        logWarning(e);
+        logError('Exception occured while sending to Sentry');
+        logError(e);
     }
 }
 
