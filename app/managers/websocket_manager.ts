@@ -14,6 +14,7 @@ import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
+import {logError} from '@utils/log';
 
 import type {ServerCredential} from '@typings/credentials';
 
@@ -46,7 +47,7 @@ class WebsocketManager {
                     try {
                         this.createClient(serverUrl, token, 0);
                     } catch (error) {
-                        console.log('WebsocketManager init error', error); //eslint-disable-line no-console
+                        logError('WebsocketManager init error', error);
                     }
                 },
             ),

@@ -6,6 +6,7 @@ import General from '@constants/general';
 import DatabaseManager from '@database/manager';
 import {getRecentCustomStatuses} from '@queries/servers/system';
 import {getCurrentUser, getUserById} from '@queries/servers/user';
+import {logError} from '@utils/log';
 
 import {addRecentReaction} from './reactions';
 
@@ -24,8 +25,7 @@ export async function setCurrentUserStatusOffline(serverUrl: string) {
         await operator.batchRecords([user]);
         return null;
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed setCurrentUserStatusOffline', error);
+        logError('Failed setCurrentUserStatusOffline', error);
         return {error};
     }
 }
@@ -58,8 +58,7 @@ export async function updateLocalCustomStatus(serverUrl: string, user: UserModel
 
         return {};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed updateLocalCustomStatus', error);
+        logError('Failed updateLocalCustomStatus', error);
         return {error};
     }
 }
@@ -90,8 +89,7 @@ export const updateRecentCustomStatuses = async (serverUrl: string, customStatus
             prepareRecordsOnly,
         });
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed updateRecentCustomStatuses', error);
+        logError('Failed updateRecentCustomStatuses', error);
         return {error};
     }
 };
@@ -125,8 +123,7 @@ export const updateLocalUser = async (
         }
         return {user};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed updateLocalUser', error);
+        logError('Failed updateLocalUser', error);
         return {error};
     }
 };
@@ -146,8 +143,7 @@ export const storeProfile = async (serverUrl: string, profile: UserProfile) => {
 
         return {user: records[0]};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed storeProfile', error);
+        logError('Failed storeProfile', error);
         return {error};
     }
 };

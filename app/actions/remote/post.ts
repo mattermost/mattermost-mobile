@@ -24,6 +24,7 @@ import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {queryAllUsers} from '@queries/servers/user';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
+import {logError} from '@utils/log';
 import {processPostsFetched} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
@@ -307,8 +308,7 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
             const {authors: fetchedAuthors} = await fetchPostAuthors(serverUrl, data.posts, true);
             authors = fetchedAuthors || [];
         } catch (error) {
-            // eslint-disable-next-line no-console
-            console.log('FETCH AUTHORS ERROR', error);
+            logError('FETCH AUTHORS ERROR', error);
         }
 
         if (!fetchOnly) {
@@ -487,8 +487,7 @@ export async function fetchPostsBefore(serverUrl: string, channelId: string, pos
 
                 await operator.batchRecords(models);
             } catch (error) {
-                // eslint-disable-next-line no-console
-                console.log('FETCH AUTHORS ERROR', error);
+                logError('FETCH AUTHORS ERROR', error);
             }
         }
 
@@ -713,8 +712,7 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
                     models.push(...userModels);
                 }
             } catch (error) {
-                // eslint-disable-next-line no-console
-                console.error('FETCH AUTHORS ERROR', error);
+                logError('FETCH AUTHORS ERROR', error);
             }
 
             posts = await operator.handlePosts({
@@ -736,8 +734,7 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
 
         return {posts: extractRecordsForTable<PostModel>(posts, MM_TABLES.SERVER.POST)};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('FETCH POSTS AROUND ERROR', error);
+        logError('FETCH POSTS AROUND ERROR', error);
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }

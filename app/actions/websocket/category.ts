@@ -5,6 +5,7 @@ import {deleteCategory, storeCategories} from '@actions/local/category';
 import {fetchCategories} from '@actions/remote/category';
 import DatabaseManager from '@database/manager';
 import {queryCategoriesById} from '@queries/servers/categories';
+import {logError} from '@utils/log';
 
 type WebsocketCategoriesMessage = {
     broadcast: {
@@ -23,8 +24,7 @@ const addOrUpdateCategories = async (serverUrl: string, categories: CategoryWith
     try {
         storeCategories(serverUrl, categories);
     } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log('Category WS: addOrUpdateCategories', e, categories);
+        logError('Category WS: addOrUpdateCategories', e, categories);
     }
 };
 
@@ -36,8 +36,7 @@ export async function handleCategoryCreatedEvent(serverUrl: string, msg: Websock
             addOrUpdateCategories(serverUrl, [category]);
         }
     } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log('Category WS: handleCategoryCreatedEvent', e, msg);
+        logError('Category WS: handleCategoryCreatedEvent', e, msg);
 
         if (msg.broadcast.team_id) {
             fetchCategories(serverUrl, msg.broadcast.team_id);
@@ -54,8 +53,7 @@ export async function handleCategoryUpdatedEvent(serverUrl: string, msg: Websock
             addOrUpdateCategories(serverUrl, categories);
         }
     } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log('Category WS: handleCategoryUpdatedEvent', e, msg);
+        logError('Category WS: handleCategoryUpdatedEvent', e, msg);
         if (msg.broadcast.team_id) {
             fetchCategories(serverUrl, msg.broadcast.team_id, true);
         }
@@ -74,8 +72,7 @@ export async function handleCategoryDeletedEvent(serverUrl: string, msg: Websock
             fetchCategories(serverUrl, msg.broadcast.team_id);
         }
     } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log('Category WS: handleCategoryDeletedEvent', e, msg);
+        logError('Category WS: handleCategoryDeletedEvent', e, msg);
     }
 }
 
@@ -102,8 +99,7 @@ export async function handleCategoryOrderUpdatedEvent(serverUrl: string, msg: We
             await operator.batchRecords(categories);
         }
     } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log('Category WS: handleCategoryOrderUpdatedEvent', e, msg);
+        logError('Category WS: handleCategoryOrderUpdatedEvent', e, msg);
 
         if (msg.broadcast.team_id) {
             fetchCategories(serverUrl, msg.data.team_id);

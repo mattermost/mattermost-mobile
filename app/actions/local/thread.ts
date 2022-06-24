@@ -16,6 +16,7 @@ import {dismissAllModalsAndPopToRoot, goToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
+import {logError} from '@utils/log';
 import {changeOpacity} from '@utils/theme';
 
 import type Model from '@nozbe/watermelondb/Model';
@@ -51,8 +52,7 @@ export const switchToGlobalThreads = async (serverUrl: string, teamId?: string, 
 
         return {models};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed switchToGlobalThreads', error);
+        logError('Failed switchToGlobalThreads', error);
         return {error};
     }
 };
@@ -155,8 +155,7 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
 
         return {};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed switchToThread', error);
+        logError('Failed switchToThread', error);
         return {error};
     }
 };
@@ -199,8 +198,7 @@ export async function createThreadFromNewPost(serverUrl: string, post: Post, pre
 
         return {models};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed createThreadFromNewPost', error);
+        logError('Failed createThreadFromNewPost', error);
         return {error};
     }
 }
@@ -254,8 +252,7 @@ export async function processReceivedThreads(serverUrl: string, threads: Thread[
         }
         return {models};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed processReceivedThreads', error);
+        logError('Failed processReceivedThreads', error);
         return {error};
     }
 }
@@ -274,8 +271,7 @@ export async function markTeamThreadsAsRead(serverUrl: string, teamId: string, p
         }
         return {models};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed markTeamThreadsAsRead', error);
+        logError('Failed markTeamThreadsAsRead', error);
         return {error};
     }
 }
@@ -301,8 +297,7 @@ export async function updateThread(serverUrl: string, threadId: string, updatedT
         }
         return {model};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed markTeamThreadsAsRead', error);
+        logError('Failed markTeamThreadsAsRead', error);
         return {error};
     }
 }

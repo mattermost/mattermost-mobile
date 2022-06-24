@@ -17,6 +17,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
+import {logInfo} from '@utils/log';
 
 import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
 import {handleChannelConvertedEvent, handleChannelCreatedEvent,
@@ -142,8 +143,7 @@ async function doReconnect(serverUrl: string) {
 
     const dt = Date.now();
     await operator.batchRecords(models);
-    // eslint-disable-next-line no-console
-    console.log('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
+    logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
 
     const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
     const {config, license} = await getCommonSystemValues(database);

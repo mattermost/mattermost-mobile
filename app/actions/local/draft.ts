@@ -3,6 +3,7 @@
 
 import DatabaseManager from '@database/manager';
 import {getDraft} from '@queries/servers/drafts';
+import {logError} from '@utils/log';
 
 export async function updateDraftFile(serverUrl: string, channelId: string, rootId: string, file: FileInfo, prepareRecordsOnly = false) {
     try {
@@ -30,8 +31,7 @@ export async function updateDraftFile(serverUrl: string, channelId: string, root
 
         return {draft};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed updateDraftFile', error);
+        logError('Failed updateDraftFile', error);
         return {error};
     }
 }
@@ -63,8 +63,7 @@ export async function removeDraftFile(serverUrl: string, channelId: string, root
 
         return {draft};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed removeDraftFile', error);
+        logError('Failed removeDraftFile', error);
         return {error};
     }
 }
@@ -105,8 +104,7 @@ export async function updateDraftMessage(serverUrl: string, channelId: string, r
 
         return {draft};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed updateDraftMessage', error);
+        logError('Failed updateDraftMessage', error);
         return {error};
     }
 }
@@ -136,8 +134,7 @@ export async function addFilesToDraft(serverUrl: string, channelId: string, root
 
         return {draft};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed addFilesToDraft', error);
+        logError('Failed addFilesToDraft', error);
         return {error};
     }
 }
@@ -154,8 +151,7 @@ export const removeDraft = async (serverUrl: string, channelId: string, rootId =
 
         return {draft};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed removeDraft', error);
+        logError('Failed removeDraft', error);
         return {error};
     }
 };

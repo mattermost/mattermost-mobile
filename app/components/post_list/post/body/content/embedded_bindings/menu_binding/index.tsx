@@ -14,6 +14,7 @@ import {useServerUrl} from '@context/server';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {WithDatabaseArgs} from '@typings/database/database';
 import {createCallContext} from '@utils/apps';
+import {logDebug} from '@utils/log';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
@@ -38,7 +39,7 @@ const MenuBinding = ({binding, currentTeamId, post, teamID}: Props) => {
 
         const bind = binding.bindings?.find((b) => b.location === picked);
         if (!bind) {
-            console.debug('Trying to select element not present in binding.'); //eslint-disable-line no-console
+            logDebug('Trying to select element not present in binding.');
             return;
         }
 
