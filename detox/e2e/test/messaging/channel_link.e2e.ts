@@ -54,7 +54,7 @@ describe('Messaging - Channel Link', () => {
         await HomeScreen.logout();
     });
 
-    xit('MM-T4877_1 - should be able to open joined channel by tapping on channel link from main channel -- KNOWN ISSUE: MM-45217', async () => {
+    it('MM-T4877_1 - should be able to open joined channel by tapping on channel link from main channel -- KNOWN ISSUE: MM-45217', async () => {
         // # Open a channel screen and post a channel link to target channel
         await ChannelScreen.open(channelsCategory, testChannel.name);
         const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
@@ -73,7 +73,7 @@ describe('Messaging - Channel Link', () => {
         await ChannelScreen.back();
     });
 
-    xit('MM-T4877_2 - should be able to open joined channel by tapping on channel link from reply thread -- KNOWN ISSUE: MM-45217', async () => {
+    it('MM-T4877_2 - should be able to open joined channel by tapping on channel link from reply thread -- KNOWN ISSUE: MM-45217', async () => {
         // # Open a channel screen, post a channel link to target channel, tap on post to open reply thread, and tap on channel link
         await ChannelScreen.open(channelsCategory, testChannel.name);
         const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
