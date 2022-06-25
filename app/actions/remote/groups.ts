@@ -81,6 +81,7 @@ export const fetchGroupsForTeam = async (serverUrl: string, teamId: string, fetc
 
         return prepareGroups(operator, response.groups);
     } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };

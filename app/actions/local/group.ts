@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {fetchFilteredChannelGroups, fetchFilteredTeamGroups, fetchGroupsForAutocomplete} from '@actions/remote/groups';
-import {forceLogoutIfNecessary} from '@actions/remote/session';
 import DatabaseManager from '@database/manager';
 import {prepareGroups, queryGroupsByName, queryGroupsByNameInChannel, queryGroupsByNameInTeam} from '@queries/servers/group';
 
@@ -14,7 +13,8 @@ export const searchGroupsByName = async (serverUrl: string, name: string): Promi
     try {
         database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     } catch (e) {
-        forceLogoutIfNecessary(serverUrl, e as ClientErrorProps);
+        // eslint-disable-next-line no-console
+        console.log('searchGroupsByName - DB Error', e);
         return [];
     }
 
@@ -38,7 +38,8 @@ export const searchGroupsByNameInTeam = async (serverUrl: string, name: string, 
     try {
         database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     } catch (e) {
-        forceLogoutIfNecessary(serverUrl, e as ClientErrorProps);
+        // eslint-disable-next-line no-console
+        console.log('searchGroupsByNameInTeam - DB Error', e);
         return [];
     }
 
@@ -62,7 +63,8 @@ export const searchGroupsByNameInChannel = async (serverUrl: string, name: strin
     try {
         database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     } catch (e) {
-        forceLogoutIfNecessary(serverUrl, e as ClientErrorProps);
+        // eslint-disable-next-line no-console
+        console.log('searchGroupsByNameInChannel - DB Error', e);
         return [];
     }
 
