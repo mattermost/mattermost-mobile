@@ -45,16 +45,15 @@ export async function fetchRecentMentions(serverUrl: string): Promise<PostSearch
             throw results.error;
         }
 
-        const promises: Array<Promise<Model[]>> = [];
         const mentions: IdValue = {
             id: SYSTEM_IDENTIFIERS.RECENT_MENTIONS,
             value: JSON.stringify(results.order),
         };
 
-        promises.push(operator.handleSystem({
+        await operator.handleSystem({
             systems: [mentions],
-            prepareRecordsOnly: true,
-        }));
+            prepareRecordsOnly: false,
+        });
 
         return results;
     } catch (error) {
