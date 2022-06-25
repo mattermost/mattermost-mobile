@@ -92,6 +92,33 @@ public struct User: Codable, Hashable {
 }
 
 extension Database {
+    public func queryCurrentUserId(_ serverUrl: String) throws -> String {
+        let db = try getDatabaseForServer(serverUrl)
+        
+        let idCol = Expression<String>("id")
+        let valueCol = Expression<String>("value")
+        let query = systemTable.where(idCol == "currentUserId")
+        
+        if let result = try db.pluck(query) {
+            return try result.get(valueCol).replacingOccurrences(of: "\"", with: "")
+        }
+        
+        throw DatabaseError.NoResults(query.asSQL())
+    }
+    
+    public func queryCurrentUser(_ serverUrl: String) throws -> Row? {
+        let currentUserId = try queryCurrentUserId(serverUrl)
+        let idCol = Expression<String>("id")
+        let query = userTable.where(idCol == currentUserId)
+        let db = try getDatabaseForServer(serverUrl)
+
+        if let result = try db.pluck(query) {
+            return result
+        }
+        
+        throw DatabaseError.NoResults(query.asSQL())
+    }
+
     public func queryUsers(byIds: Set<String>, withServerUrl: String) throws -> Set<String> {
         let db = try getDatabaseForServer(withServerUrl)
 
