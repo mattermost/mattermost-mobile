@@ -7,7 +7,7 @@ import {DeviceEventEmitter, StyleSheet, Text, View} from 'react-native';
 import {RectButton, TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
 
-import FileIcon from '@components/post_list/post/body/files/file_icon';
+import FileIcon from '@components/files/file_icon';
 import {Events, Preferences} from '@constants';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {isDocument} from '@utils/file';

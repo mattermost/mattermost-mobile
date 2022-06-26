@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Animated, StyleSheet, TouchableWithoutFeedback, View} from 'react-native';
 
 import {getRedirectLocation} from '@actions/remote/general';
-import FileIcon from '@components/post_list/post/body/files/file_icon';
+import FileIcon from '@components/files/file_icon';
 import ProgressiveImage from '@components/progressive_image';
 import {GalleryInit} from '@context/gallery';
 import {useServerUrl} from '@context/server';

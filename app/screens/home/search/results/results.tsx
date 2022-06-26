@@ -6,9 +6,9 @@ import {StyleSheet, FlatList, ListRenderItemInfo, NativeScrollEvent, NativeSynth
 import Animated, {useDerivedValue} from 'react-native-reanimated';
 
 import {buildFilePreviewUrl, buildFileUrl} from '@actions/remote/file';
+import File from '@components/files/file';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import DateSeparator from '@components/post_list/date_separator';
-import File from '@components/post_list/post/body/files/file';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
