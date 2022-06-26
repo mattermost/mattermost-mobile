@@ -59,29 +59,46 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
         // Get existing group memberships
         const existingGroupMemberships = await queryGroupMembershipForMember(this.database, userId).fetch();
 
-        // Prune memberships that are no longer required
-        const membershipsToRemove = existingGroupMemberships.
-            filter((gm) => !groups?.some((g) => gm.groupId === g.id)).
-            map((gm) => gm.prepareDestroyPermanently());
+        let records: GroupMembershipModel[] = [];
+        let rawValues: GroupMembership[] = [];
 
-        // Ensure we aren't adding existing ones
-        const createOrUpdateRawValues = groups?.
-            filter((g) => !existingGroupMemberships.some((gm) => gm.groupId === g.id)).
-            map((g) => ({id: `${g.id}-${userId}`, user_id: userId, group_id: g.id}));
+        // Nothing to add or remove
+        if (!groups?.length && !existingGroupMemberships.length) {
+            return records;
+        }
 
-        // Handle our new records
-        const records: GroupMembershipModel[] = await this.handleRecords({
+        // No groups - remove all existing ones
+        if (!groups?.length && existingGroupMemberships.length) {
+            records = existingGroupMemberships.map((gm) => gm.prepareDestroyPermanently());
+        }
+
+        // No existing groups - add all new ones
+        if (groups?.length && !existingGroupMemberships.length) {
+            rawValues = groups.map((g) => ({id: `${g.id}-${userId}`, user_id: userId, group_id: g.id}));
+        }
+
+        if (groups?.length && existingGroupMemberships.length) {
+            for (const gm of existingGroupMemberships) {
+                // Check if existingGroups overlaps with groups
+                const index = rawValues.findIndex((g) => g.id === gm.groupId);
+
+                if (index > -1) {
+                    // If there is an existing group already, we don't need to add it
+                    rawValues.splice(index, 1);
+                } else {
+                    // No group? Remove existing one
+                    records.push(gm.prepareDestroyPermanently());
+                }
+            }
+        }
+
+        records.push(...(await this.handleRecords({
             fieldName: 'id',
             transformer: transformGroupMembershipRecord,
-            createOrUpdateRawValues,
+            rawValues,
             tableName: GROUP_MEMBERSHIP,
             prepareRecordsOnly: true,
-        });
-
-        // If we have any memberships to remove, add them to our records
-        if (membershipsToRemove.length) {
-            records.push(...membershipsToRemove);
-        }
+        })));
 
         // Batch update if there are records
         if (records.length && !prepareRecordsOnly) {
