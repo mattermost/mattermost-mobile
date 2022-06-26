@@ -45,19 +45,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
             marginTop: 10,
             borderWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.4),
-            borderRadius: 5,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.24),
+            borderRadius: 4,
         },
         iconWrapper: {
             marginTop: 7.8,
-            marginRight: 6,
+            marginRight: 7,
             marginBottom: 8.2,
-            marginLeft: 8,
+            marginLeft: 6,
         },
         imageVideo: {
             height: 40,
             width: 40,
-            marginHorizontal: 4,
+            margin: 4,
         },
     };
 });
