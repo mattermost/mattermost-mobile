@@ -51,12 +51,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         channelWrapper: {
             flexShrink: 1,
-        },
-        channelText: {
             marginRight: 4,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-            borderRadius: 4,
             paddingHorizontal: 4,
+            borderRadius: 4,
+        },
+        channelText: {
             ...typography('Body', 50, 'SemiBold'),
             color: changeOpacity(theme.centerChannelColor, 0.72),
         },
