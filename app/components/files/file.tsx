@@ -78,10 +78,9 @@ const File = ({
     }, [index]);
 
     const handleOnOptionsPress = useCallback(() => {
-        if (!onOptionsPress) {
-            return;
+        if (onOptionsPress) {
+            onOptionsPress(index);
         }
-        onOptionsPress(index);
     }, [index]);
 
     const optionsButton = useMemo(() => {
@@ -175,7 +174,7 @@ const File = ({
                         {videoFile}
                     </View>
                     {fileInfo}
-                    {onOptionsPress && optionsButton}
+                    {Boolean(onOptionsPress) && optionsButton}
                 </View>
             );
         }
@@ -190,7 +189,7 @@ const File = ({
                         {imageFile}
                     </View>
                     {fileInfo}
-                    {onOptionsPress && optionsButton}
+                    {Boolean(onOptionsPress) && optionsButton}
                 </View>
             );
         }
@@ -201,7 +200,7 @@ const File = ({
         <View style={[style.fileWrapper]}>
             {documentFile}
             {fileInfo}
-            {onOptionsPress && optionsButton}
+            {Boolean(onOptionsPress) && optionsButton}
         </View>;
     }
 
@@ -218,7 +217,7 @@ const File = ({
                 </TouchableWithFeedback>
             </View>
             {fileInfo}
-            {onOptionsPress && optionsButton}
+            {Boolean(onOptionsPress) && optionsButton}
         </View>
     );
 };
