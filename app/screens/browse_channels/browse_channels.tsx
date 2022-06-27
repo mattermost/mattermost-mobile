@@ -170,7 +170,6 @@ export default function BrowseChannels(props: Props) {
     }, [intl.locale]);
 
     useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, [close]);
-
     useNavButtonPressed(CREATE_BUTTON_ID, componentId, handleCreate, [handleCreate]);
 
     useEffect(() => {

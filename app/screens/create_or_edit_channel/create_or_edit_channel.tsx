@@ -226,9 +226,7 @@ const CreateOrEditChannel = ({
     }, [isModal]);
 
     useNavButtonPressed(CLOSE_BUTTON_ID, componentId, handleClose, [handleClose]);
-
     useNavButtonPressed(CREATE_BUTTON_ID, componentId, onCreateChannel, [onCreateChannel]);
-
     useNavButtonPressed(EDIT_BUTTON_ID, componentId, onUpdateChannel, [onUpdateChannel]);
 
     return (

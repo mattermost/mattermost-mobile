@@ -300,7 +300,6 @@ export default function CreateDirectMessage({
     }, [intl.locale, theme]);
 
     useNavButtonPressed(START_BUTTON, componentId, startConversation, [startConversation]);
-
     useNavButtonPressed(CLOSE_BUTTON, componentId, close, [close]);
 
     useEffect(() => {
