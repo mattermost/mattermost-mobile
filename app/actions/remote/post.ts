@@ -577,17 +577,12 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
 
     const usernamesToLoad = getNeededAtMentionedUsernames(existingUserNames, posts, excludeUsername);
     const userIdsToLoad = new Set<string>();
-    posts.forEach((p) => {
-        const userId = p.user_id;
-
-        if (userId === currentUserId) {
-            return;
+    for (const p of posts) {
+        const {user_id} = p;
+        if (user_id !== currentUserId) {
+            userIdsToLoad.add(user_id);
         }
-
-        if (!existingUserIds.has(userId)) {
-            userIdsToLoad.add(userId);
-        }
-    });
+    }
 
     try {
         const promises: Array<Promise<UserProfile[]>> = [];
