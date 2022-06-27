@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import React, {useCallback} from 'react';
+import React from 'react';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import {ITEM_HEIGHT} from '@components/menu_item';
@@ -46,9 +46,9 @@ const PostOptions = ({
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
 
-    const close = useCallback(() => {
+    const close = () => {
         dismissModal({componentId});
-    }, []);
+    };
 
     useNavButtonPressed(POST_OPTIONS_BUTTON, componentId, close, []);
 

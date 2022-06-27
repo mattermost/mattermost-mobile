@@ -30,10 +30,10 @@ const EmojiPickerScreen = ({closeButton, componentId, onEmojiPress}: Props) => {
         });
     }, []);
 
-    const close = useCallback(() => {
+    const close = () => {
         Keyboard.dismiss();
-        dismissModal();
-    }, []);
+        dismissModal({componentId});
+    };
 
     useNavButtonPressed(EMOJI_PICKER_BUTTON, componentId, close, []);
 

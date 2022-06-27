@@ -103,9 +103,6 @@ const EditProfile = ({
             popTopScreen(componentId);
         }
     }, []);
-
-    useAndroidHardwareBackHandler(componentId, close);
-
     const enableSaveButton = useCallback((value: boolean) => {
         if (!isTablet) {
             const buttons = {
@@ -118,24 +115,6 @@ const EditProfile = ({
         }
         setCanSave(value);
     }, [componentId, rightButton]);
-
-    const onUpdateProfilePicture = useCallback((newProfileImage: NewProfileImage) => {
-        changedProfilePicture.current = newProfileImage;
-        enableSaveButton(true);
-    }, [enableSaveButton]);
-
-    const onUpdateField = useCallback((fieldKey: string, name: string) => {
-        const update = {...userInfo};
-        update[fieldKey] = name;
-        setUserInfo(update);
-
-        // @ts-expect-error access object property by string key
-        const currentValue = currentUser[fieldKey];
-        const didChange = currentValue !== name;
-        hasUpdateUserInfo.current = currentValue !== name;
-        enableSaveButton(didChange);
-    }, [userInfo, currentUser, enableSaveButton]);
-
     const submitUser = useCallback(preventDoubleTap(async () => {
         enableSaveButton(false);
         setError(undefined);
@@ -178,6 +157,27 @@ const EditProfile = ({
         }
     }), [userInfo, enableSaveButton]);
 
+    useAndroidHardwareBackHandler(componentId, close);
+    useNavButtonPressed(UPDATE_BUTTON_ID, componentId, submitUser, [userInfo]);
+    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, []);
+
+    const onUpdateProfilePicture = useCallback((newProfileImage: NewProfileImage) => {
+        changedProfilePicture.current = newProfileImage;
+        enableSaveButton(true);
+    }, [enableSaveButton]);
+
+    const onUpdateField = useCallback((fieldKey: string, name: string) => {
+        const update = {...userInfo};
+        update[fieldKey] = name;
+        setUserInfo(update);
+
+        // @ts-expect-error access object property by string key
+        const currentValue = currentUser[fieldKey];
+        const didChange = currentValue !== name;
+        hasUpdateUserInfo.current = currentValue !== name;
+        enableSaveButton(didChange);
+    }, [userInfo, currentUser, enableSaveButton]);
+
     const resetScreen = useCallback((resetError: Error) => {
         setError(resetError?.message);
         Keyboard.dismiss();
@@ -185,9 +185,6 @@ const EditProfile = ({
         enableSaveButton(true);
         scrollViewRef.current?.scrollToPosition(0, 0, true);
     }, [enableSaveButton]);
-
-    useNavButtonPressed(UPDATE_BUTTON_ID, componentId, submitUser, [userInfo]);
-    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, []);
 
     return (
         <>

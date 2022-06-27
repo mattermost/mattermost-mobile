@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import React, {useCallback} from 'react';
+import React from 'react';
 import {View} from 'react-native';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
@@ -59,9 +59,9 @@ const ThreadOptions = ({
 
     const style = getStyleSheet(theme);
 
-    const close = useCallback(() => {
+    const close = () => {
         dismissModal({componentId});
-    }, []);
+    };
 
     useNavButtonPressed(THREAD_OPTIONS_BUTTON, componentId, close, []);
 

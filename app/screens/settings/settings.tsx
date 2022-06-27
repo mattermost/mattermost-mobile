@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo} from 'react';
+import React, {useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Platform, ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -83,9 +83,9 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
         };
     }, [theme.centerChannelColor]);
 
-    const close = useCallback(() => {
+    const close = () => {
         dismissModal({componentId});
-    }, []);
+    };
 
     useEffect(() => {
         setButtons(componentId, {
@@ -95,7 +95,7 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
 
     useAndroidHardwareBackHandler(componentId, close);
 
-    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, [close]);
+    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, []);
 
     const onPressHandler = () => {
         return Alert.alert(

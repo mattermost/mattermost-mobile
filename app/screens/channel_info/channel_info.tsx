@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React from 'react';
 import {ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -44,9 +44,9 @@ const ChannelInfo = ({channelId, closeButtonId, componentId, type}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const onPressed = useCallback(() => {
+    const onPressed = () => {
         dismissModal({componentId});
-    }, []);
+    };
 
     useNavButtonPressed(closeButtonId, componentId, onPressed, []);
 
