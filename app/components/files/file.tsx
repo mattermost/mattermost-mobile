@@ -81,15 +81,18 @@ const File = ({
         if (onOptionsPress) {
             onOptionsPress(index);
         }
-    }, [index]);
+    }, [index, onOptionsPress]);
 
-    const optionsButton = useMemo(() => {
-        return (
-            <FileOptionsIcon
-                onPress={handleOnOptionsPress}
-            />
-        );
-    }, [file]);
+    const renderOptionsButton = useCallback(() => {
+        if (onOptionsPress) {
+            return (
+                <FileOptionsIcon
+                    onPress={handleOnOptionsPress}
+                />
+            );
+        }
+        return null;
+    }, [file, onOptionsPress, handleOnOptionsPress]);
 
     const fileInfo = useMemo(() => {
         return (
@@ -101,9 +104,21 @@ const File = ({
                 theme={theme}
             />
         );
-    }, [file]);
+    }, [file, showDate, channelName, handlePreviewPress, theme]);
 
     const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePreviewPress);
+
+    const renderImageFileOverlay = useCallback(() => {
+        if (nonVisibleImagesCount) {
+            return (
+                <ImageFileOverlay
+                    theme={theme}
+                    value={nonVisibleImagesCount}
+                />
+            );
+        }
+        return null;
+    }, [theme, nonVisibleImagesCount]);
 
     const imageFile = useMemo(() => {
         return (
@@ -117,16 +132,11 @@ const File = ({
                         resizeMode={'cover'}
                         wrapperWidth={wrapperWidth}
                     />
-                    {Boolean(nonVisibleImagesCount) &&
-                    <ImageFileOverlay
-                        theme={theme}
-                        value={nonVisibleImagesCount}
-                    />
-                    }
+                    {renderImageFileOverlay()}
                 </Animated.View>
             </TouchableWithoutFeedback>
         );
-    }, [file, theme]);
+    }, [file, ref, inViewPort, isSingleImage, wrapperWidth, styles, onGestureEvent, renderImageFileOverlay]);
 
     const videoFile = useMemo(() => {
         return (
@@ -142,16 +152,11 @@ const File = ({
                         updateFileForGallery={updateFileForGallery}
                         index={index}
                     />
-                    {Boolean(nonVisibleImagesCount) &&
-                        <ImageFileOverlay
-                            theme={theme}
-                            value={nonVisibleImagesCount}
-                        />
-                    }
+                    {renderImageFileOverlay()}
                 </Animated.View>
             </TouchableWithoutFeedback>
         );
-    }, [file, theme]);
+    }, [file, ref, inViewPort, isSingleImage, wrapperWidth, styles, updateFileForGallery, index, onGestureEvent]);
 
     const documentFile = useMemo(() => {
         return (
@@ -164,7 +169,7 @@ const File = ({
                 />
             </View>
         );
-    }, [file, canDownloadFiles, theme]);
+    }, [document, file, canDownloadFiles, theme]);
 
     if (isVideo(file) && publicLinkEnabled) {
         if (asCard) {
@@ -174,7 +179,7 @@ const File = ({
                         {videoFile}
                     </View>
                     {fileInfo}
-                    {Boolean(onOptionsPress) && optionsButton}
+                    {renderOptionsButton()}
                 </View>
             );
         }
@@ -189,7 +194,7 @@ const File = ({
                         {imageFile}
                     </View>
                     {fileInfo}
-                    {Boolean(onOptionsPress) && optionsButton}
+                    {renderOptionsButton()}
                 </View>
             );
         }
@@ -200,7 +205,7 @@ const File = ({
         <View style={[style.fileWrapper]}>
             {documentFile}
             {fileInfo}
-            {Boolean(onOptionsPress) && optionsButton}
+            {renderOptionsButton()}
         </View>;
     }
 
@@ -217,7 +222,7 @@ const File = ({
                 </TouchableWithFeedback>
             </View>
             {fileInfo}
-            {Boolean(onOptionsPress) && optionsButton}
+            {renderOptionsButton()}
         </View>
     );
 };
