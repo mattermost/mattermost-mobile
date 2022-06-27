@@ -97,10 +97,7 @@ const Results = ({
     }, [selectedTab, posts, fileInfos]);
 
     const getChannelName = useCallback((id: string) => {
-        const result = fileChannels.filter((channel) => {
-            return channel.id === id;
-        }).map((channel) => channel.displayName);
-        return result[0];
+        return fileChannels.find((c) => c.id === id)?.displayName;
     }, [fileChannels]);
 
     const handlePreviewPress = preventDoubleTap((idx: number) => {
