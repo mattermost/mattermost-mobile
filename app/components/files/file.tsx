@@ -84,7 +84,7 @@ const File = ({
         onOptionsPress(index);
     }, [index]);
 
-    const renderOptionsButton = useMemo(() => {
+    const optionsButton = useMemo(() => {
         return (
             <FileOptionsIcon
                 onPress={handleOnOptionsPress}
@@ -92,7 +92,7 @@ const File = ({
         );
     }, [file]);
 
-    const renderFileInfo = useMemo(() => {
+    const fileInfo = useMemo(() => {
         return (
             <FileInfo
                 file={file}
@@ -106,7 +106,7 @@ const File = ({
 
     const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePreviewPress);
 
-    const renderImageFile = useMemo(() => {
+    const imageFile = useMemo(() => {
         return (
             <TouchableWithoutFeedback onPress={onGestureEvent}>
                 <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
@@ -129,7 +129,7 @@ const File = ({
         );
     }, [file, theme]);
 
-    const renderVideoFile = useMemo(() => {
+    const videoFile = useMemo(() => {
         return (
             <TouchableWithoutFeedback onPress={onGestureEvent}>
                 <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
@@ -154,7 +154,7 @@ const File = ({
         );
     }, [file, theme]);
 
-    const renderDocumentFile = useMemo(() => {
+    const documentFile = useMemo(() => {
         return (
             <View style={style.iconWrapper}>
                 <DocumentFile
@@ -172,14 +172,14 @@ const File = ({
             return (
                 <View style={[style.fileWrapper]}>
                     <View style={style.iconWrapper}>
-                        {renderVideoFile}
+                        {videoFile}
                     </View>
-                    {renderFileInfo}
-                    {onOptionsPress && renderOptionsButton}
+                    {fileInfo}
+                    {onOptionsPress && optionsButton}
                 </View>
             );
         }
-        return (renderVideoFile);
+        return (videoFile);
     }
 
     if (isImage(file)) {
@@ -187,21 +187,21 @@ const File = ({
             return (
                 <View style={[style.fileWrapper]}>
                     <View style={style.iconWrapper}>
-                        {renderImageFile}
+                        {imageFile}
                     </View>
-                    {renderFileInfo}
-                    {onOptionsPress && renderOptionsButton}
+                    {fileInfo}
+                    {onOptionsPress && optionsButton}
                 </View>
             );
         }
-        return (renderImageFile);
+        return (imageFile);
     }
 
     if (isDocument(file)) {
         <View style={[style.fileWrapper]}>
-            {renderDocumentFile}
-            {renderFileInfo}
-            {onOptionsPress && renderOptionsButton}
+            {documentFile}
+            {fileInfo}
+            {onOptionsPress && optionsButton}
         </View>;
     }
 
@@ -217,8 +217,8 @@ const File = ({
                     />
                 </TouchableWithFeedback>
             </View>
-            {renderFileInfo}
-            {onOptionsPress && renderOptionsButton}
+            {fileInfo}
+            {onOptionsPress && optionsButton}
         </View>
     );
 };
