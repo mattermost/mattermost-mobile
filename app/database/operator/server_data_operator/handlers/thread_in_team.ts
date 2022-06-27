@@ -6,6 +6,7 @@ import {Q, Database} from '@nozbe/watermelondb';
 import {MM_TABLES} from '@constants/database';
 import {transformThreadInTeamRecord} from '@database/operator/server_data_operator/transformers/thread';
 import {getRawRecordPairs, getValidRecordsForUpdate} from '@database/operator/utils/general';
+import {logWarning} from '@utils/log';
 
 import type {HandleThreadInTeamArgs, RecordPair} from '@typings/database/database';
 import type ThreadInTeamModel from '@typings/database/models/servers/thread_in_team';
@@ -19,8 +20,7 @@ const {THREADS_IN_TEAM} = MM_TABLES.SERVER;
 const ThreadInTeamHandler = (superclass: any) => class extends superclass {
     handleThreadInTeam = async ({threadsMap, loadedInGlobalThreads, prepareRecordsOnly = false}: HandleThreadInTeamArgs): Promise<ThreadInTeamModel[]> => {
         if (!threadsMap || !Object.keys(threadsMap).length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "threadsMap" object has been passed to the handleReceivedPostForChannel method',
             );
             return [];

@@ -14,7 +14,7 @@ describe('*** Operator: Group Handlers tests ***', () => {
     let operator: ServerDataOperator;
     beforeAll(async () => {
         await DatabaseManager.init(['baseHandler.test.com']);
-        operator = DatabaseManager.serverDatabases['baseHandler.test.com'].operator;
+        operator = DatabaseManager.serverDatabases['baseHandler.test.com']!.operator;
     });
 
     it('=> handleGroups: should write to the GROUP table', async () => {

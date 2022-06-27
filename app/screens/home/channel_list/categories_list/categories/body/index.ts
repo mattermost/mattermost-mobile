@@ -14,11 +14,11 @@ import {observeChannelsByCategoryChannelSortOrder, observeChannelsByLastPostAtIn
 import {observeNotifyPropsByChannels, queryChannelsByNames} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCurrentChannelId, observeCurrentUserId, observeLastUnreadChannelId} from '@queries/servers/system';
-import {WithDatabaseArgs} from '@typings/database/database';
 import {getDirectChannelName} from '@utils/channel';
 
 import CategoryBody from './category_body';
 
+import type {WithDatabaseArgs} from '@typings/database/database';
 import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PreferenceModel from '@typings/database/models/servers/preference';

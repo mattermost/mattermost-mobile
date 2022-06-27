@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {storeGroups} from '@actions/local/group';
-import {prepareGroups} from '@app/queries/servers/group';
 import {Client} from '@client/rest';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import {prepareGroups} from '@queries/servers/group';
 
 import {forceLogoutIfNecessary} from './session';
 

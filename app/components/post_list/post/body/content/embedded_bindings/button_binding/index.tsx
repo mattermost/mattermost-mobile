@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useRef} from 'react';
 import {useIntl} from 'react-intl';
@@ -18,6 +19,7 @@ import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 import ButtonBindingText from './button_binding_text';
 
+import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -125,9 +127,9 @@ const ButtonBinding = ({currentTeamId, binding, post, teamID, theme}: Props) => 
     return null;
 };
 
-const withTeamId = withObservables(['post'], ({post}: {post: PostModel}) => ({
+const withTeamId = withObservables(['post'], ({post, database}: {post: PostModel} & WithDatabaseArgs) => ({
     teamID: post.channel.observe().pipe(map((channel: ChannelModel) => channel.teamId)),
-    currentTeamId: observeCurrentTeamId(post.database),
+    currentTeamId: observeCurrentTeamId(database),
 }));
 
-export default withTeamId(ButtonBinding);
+export default withDatabase(withTeamId(ButtonBinding));

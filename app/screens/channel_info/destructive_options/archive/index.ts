@@ -47,10 +47,10 @@ const enhanced = withObservables(['channelId', 'type'], ({channelId, database, t
             }
 
             if (type === General.OPEN_CHANNEL) {
-                return observePermissionForChannel(ch, u, Permissions.DELETE_PUBLIC_CHANNEL, true);
+                return observePermissionForChannel(database, ch, u, Permissions.DELETE_PUBLIC_CHANNEL, true);
             }
 
-            return observePermissionForChannel(ch, u, Permissions.DELETE_PRIVATE_CHANNEL, true);
+            return observePermissionForChannel(database, ch, u, Permissions.DELETE_PRIVATE_CHANNEL, true);
         }),
     );
 
@@ -64,7 +64,7 @@ const enhanced = withObservables(['channelId', 'type'], ({channelId, database, t
                 return of$(false);
             }
 
-            return observePermissionForTeam(t, u, Permissions.MANAGE_TEAM, false);
+            return observePermissionForTeam(database, t, u, Permissions.MANAGE_TEAM, false);
         }),
     );
 

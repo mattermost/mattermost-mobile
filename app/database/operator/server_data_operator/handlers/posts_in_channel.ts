@@ -6,6 +6,7 @@ import {Q} from '@nozbe/watermelondb';
 import {Database} from '@constants';
 import {getPostListEdges} from '@database//operator/utils/post';
 import {transformPostsInChannelRecord} from '@database/operator/server_data_operator/transformers/post';
+import {logWarning} from '@utils/log';
 
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 
@@ -58,8 +59,7 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
 
     handleReceivedPostsInChannel = async (posts?: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
         if (!posts?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "posts" array has been passed to the handleReceivedPostsInChannel method',
             );
             return [];
@@ -125,8 +125,7 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
 
     handleReceivedPostsInChannelSince = async (posts: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
         if (!posts?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "posts" array has been passed to the handleReceivedPostsInChannelSince method',
             );
             return [];
@@ -176,8 +175,7 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
 
     handleReceivedPostsInChannelBefore = async (posts: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
         if (!posts?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "posts" array has been passed to the handleReceivedPostsInChannelBefore method',
             );
             return [];
@@ -230,8 +228,7 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
 
     handleReceivedPostForChannel = async (posts: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
         if (!posts?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "posts" array has been passed to the handleReceivedPostForChannel method',
             );
             return [];
