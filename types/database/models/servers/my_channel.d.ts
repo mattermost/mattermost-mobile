@@ -17,6 +17,9 @@ export default class MyChannelModel extends Model {
     /** last_post_at : The timestamp for any last post on this channel */
     lastPostAt: number;
 
+    /** last_fetched_at : The timestamp when we successfully last fetched post on this channel */
+    lastFetchedAt: number;
+
     /** last_viewed_at : The timestamp showing the user's last viewed post on this channel */
     lastViewedAt: number;
 
