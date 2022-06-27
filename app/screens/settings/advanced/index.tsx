@@ -2,51 +2,35 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {Text, View} from 'react-native';
+import {useIntl} from 'react-intl';
+import {View, TouchableOpacity} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {getAllFilesInCachesDirectory} from '@actions/local/file';
-import MenuItem from '@components/menu_item';
+import OptionItem from '@components/option_item';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {popTopScreen} from '@screens/navigation';
 import {deleteFileCache, getFormattedFileSize} from '@utils/file';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 
 import type {ReadDirItem} from 'react-native-fs';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        container: {
+        screen: {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
         },
-        wrapper: {
+        body: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
             flex: 1,
             paddingTop: 35,
         },
-        divider: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 1,
-        },
-        containerStyle: {
+        itemStyle: {
             backgroundColor: theme.centerChannelBg,
-            height: 48,
-        },
-        fileSize: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 100, 'Regular'),
-        },
-        iconContainerStyle: {
-            height: '100%',
-        },
-        rightComponent: {
-            justifyContent: 'center',
-            height: '100%',
-            marginRight: 10,
+            paddingHorizontal: 8,
         },
     };
 });
@@ -60,6 +44,7 @@ type AdvancedSettingsProps = {
 }
 const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
     const theme = useTheme();
+    const intl = useIntl();
     const [dataSize, setDataSize] = useState<number|undefined>(0);
     const [files, setFiles] = useState<ReadDirItem[]>(EMPTY_FILES);
     const [serverUrls, setServerUrls] = useState<string[]>(EMPTY_SERVERS);
@@ -91,46 +76,33 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
         getAllCachedFiles();
     }, []);
 
-    const renderFileSize = useCallback(() => {
-        return (
-            <View
-                style={styles.rightComponent}
-            >
-                <Text
-                    style={styles.fileSize}
-                >
-                    {getFormattedFileSize(dataSize || 0)}
-                </Text>
-            </View>
-        );
-    }, [dataSize, theme.centerChannelColor]);
-
     const close = () => popTopScreen(componentId);
     useAndroidHardwareBackHandler(componentId, close);
+
+    const disabled = Boolean(dataSize && (dataSize > 0));
 
     return (
         <SafeAreaView
             edges={EDGES}
-            style={styles.container}
+            style={styles.screen}
             testID='settings_display.screen'
         >
             <View
-                style={styles.wrapper}
+                style={styles.body}
             >
-                <MenuItem
-                    containerStyle={styles.containerStyle}
-                    defaultMessage='Delete Documents & Data'
-                    i18nId='advanced_settings.delete_data'
-                    iconContainerStyle={styles.iconContainerStyle}
-                    iconName='trash-can-outline'
-                    isDestructor={true}
+                <TouchableOpacity
                     onPress={onPressDeleteData}
-                    rightComponent={renderFileSize()}
-                    separator={false}
-                    showArrow={false}
-                    testID='advanced_settings.delete_data'
-                    theme={theme}
-                />
+                    disabled={disabled}
+                    activeOpacity={disabled ? 0 : 1}
+                >
+                    <OptionItem
+                        containerStyle={styles.itemStyle}
+                        destructive={true}
+                        label={intl.formatMessage({id: 'advanced_settings.delete_data', defaultMessage: 'Delete Documents & Data'})}
+                        info={getFormattedFileSize(dataSize || 0)}
+                        type='none'
+                    />
+                </TouchableOpacity>
             </View>
         </SafeAreaView>
     );
