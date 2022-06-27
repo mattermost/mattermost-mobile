@@ -138,6 +138,17 @@ export const getTimezone = (timezone: UserTimezone | null) => {
     return timezone.manualTimezone;
 };
 
+export const getTimezoneRegion = (timezone: string): string => {
+    if (timezone) {
+        const split = timezone.split('/');
+        if (split.length > 1) {
+            return split.pop()!.replace(/_/g, ' ');
+        }
+    }
+
+    return timezone;
+};
+
 export const getUserCustomStatus = (user?: UserModel | UserProfile): UserCustomStatus | undefined => {
     try {
         if (typeof user?.props?.customStatus === 'string') {

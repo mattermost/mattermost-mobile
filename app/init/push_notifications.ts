@@ -30,6 +30,7 @@ import {showOverlay} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
+import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
 
 const CATEGORY = 'CAN_REPLY';
@@ -199,8 +200,7 @@ class PushNotifications {
     };
 
     handleSessionNotification = async (notification: NotificationWithData) => {
-        // eslint-disable-next-line no-console
-        console.log('Session expired notification');
+        logInfo('Session expired notification');
 
         const serverUrl = await this.getServerUrlFromNotification(notification);
 

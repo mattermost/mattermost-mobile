@@ -24,8 +24,16 @@ export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string
         return {error};
     }
 
-    const database = DatabaseManager.serverDatabases[serverUrl].database;
-    const operator = DatabaseManager.serverDatabases[serverUrl].operator;
+    let database;
+    let operator;
+    try {
+        const result = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        database = result.database;
+        operator = result.operator;
+    } catch (e) {
+        return {error: `${serverUrl} database not found`};
+    }
+
     let newRoles;
     if (force) {
         newRoles = updatedRoles;

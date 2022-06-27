@@ -9,6 +9,7 @@ import {
     transformCategoryRecord,
 } from '@database/operator/server_data_operator/transformers/category';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
+import {logWarning} from '@utils/log';
 
 import type {
     HandleCategoryChannelArgs,
@@ -38,8 +39,7 @@ const CategoryHandler = (superclass: any) => class extends superclass {
      */
     handleCategories = async ({categories, prepareRecordsOnly = true}: HandleCategoryArgs): Promise<CategoryModel[]> => {
         if (!categories?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "categories" array has been passed to the handleCategories method',
             );
             return [];
@@ -92,8 +92,7 @@ const CategoryHandler = (superclass: any) => class extends superclass {
      */
     handleCategoryChannels = async ({categoryChannels, prepareRecordsOnly = true}: HandleCategoryChannelArgs): Promise<CategoryModel[]> => {
         if (!categoryChannels?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "categoryChannels" array has been passed to the handleCategories method',
             );
 

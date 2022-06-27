@@ -9,6 +9,7 @@ import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import NetworkManager from '@managers/network_manager';
 import {getCommonSystemValues} from '@queries/servers/system';
+import {logError} from '@utils/log';
 
 import type ClientError from '@client/rest/error';
 
@@ -43,8 +44,7 @@ export const fetchDataRetentionPolicy = async (serverUrl: string) => {
 
         operator.handleSystem({systems, prepareRecordsOnly: false}).
             catch((error) => {
-                // eslint-disable-next-line no-console
-                console.log('An error ocurred while saving data retention policies', error);
+                logError('An error ocurred while saving data retention policies', error);
             });
     }
 
@@ -89,8 +89,7 @@ export const fetchConfigAndLicense = async (serverUrl: string, fetchOnly = false
                 if (systems.length) {
                     await operator.handleSystem({systems, prepareRecordsOnly: false}).
                         catch((error) => {
-                            // eslint-disable-next-line no-console
-                            console.log('An error ocurred while saving config & license', error);
+                            logError('An error ocurred while saving config & license', error);
                         });
                 }
             }

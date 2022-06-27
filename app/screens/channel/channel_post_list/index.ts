@@ -7,7 +7,7 @@ import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {AppStateStatus} from 'react-native';
 import {combineLatest, of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
@@ -28,6 +28,7 @@ const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({dat
         isCRTEnabled: isCRTEnabledObserver,
         lastViewedAt: observeMyChannel(database, channelId).pipe(
             switchMap((myChannel) => of$(myChannel?.viewedAt)),
+            distinctUntilChanged(),
         ),
         posts: combineLatest([isCRTEnabledObserver, postsInChannelObserver]).pipe(
             switchMap(([isCRTEnabled, postsInChannel]) => {
@@ -42,6 +43,7 @@ const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({dat
         shouldShowJoinLeaveMessages: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE).
             observeWithColumns(['value']).pipe(
                 switchMap((preferences) => of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE, true))),
+                distinctUntilChanged(),
             ),
     };
 });

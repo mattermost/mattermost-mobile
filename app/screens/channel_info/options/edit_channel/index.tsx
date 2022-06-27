@@ -19,7 +19,7 @@ const EditChannel = ({channelId}: Props) => {
     const title = formatMessage({id: 'screens.channel_edit', defaultMessage: 'Edit Channel'});
 
     const goToEditChannel = preventDoubleTap(async () => {
-        goToScreen(Screens.CREATE_OR_EDIT_CHANNEL, title, {channelId, isModal: false});
+        goToScreen(Screens.CREATE_OR_EDIT_CHANNEL, title, {channelId});
     });
 
     return (

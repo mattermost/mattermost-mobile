@@ -59,7 +59,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
                 return of$(true);
             }
 
-            return u ? observePermissionForChannel(c, u, Permissions.USE_CHANNEL_MENTIONS, false) : of$(false);
+            return u ? observePermissionForChannel(database, c, u, Permissions.USE_CHANNEL_MENTIONS, false) : of$(false);
         }),
     );
 

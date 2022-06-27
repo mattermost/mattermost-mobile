@@ -10,10 +10,11 @@ import {observePost} from '@queries/servers/post';
 import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {queryMyTeamsByIds, queryTeamByName} from '@queries/servers/team';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
-import {WithDatabaseArgs} from '@typings/database/database';
 import PostModel from '@typings/database/models/servers/post';
 
 import Permalink from './permalink';
+
+import type {WithDatabaseArgs} from '@typings/database/database';
 
 type OwnProps = {
     postId: PostModel['id'];

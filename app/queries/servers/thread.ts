@@ -41,6 +41,7 @@ export const observeIsCRTEnabled = (database: Database) => {
         map(
             ([cfg, prefs]) => processIsCRTEnabled(prefs, cfg),
         ),
+        distinctUntilChanged(),
     );
 };
 
