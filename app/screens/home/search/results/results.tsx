@@ -151,7 +151,7 @@ const Results = ({
             filesForGallery.value[idx] = file;
         };
         const container: StyleProp<ViewStyle> = fileInfos.length > 1 ? styles.container : undefined;
-        const isSingleImage = () => (fileInfos.length === 1 && (isImage(fileInfos[0]) || isVideo(fileInfos[0])));
+        const isSingleImage = fileInfos.length === 1 && (isImage(fileInfos[0]) || isVideo(fileInfos[0]));
         const isReplyPost = false;
 
         return (
@@ -169,7 +169,7 @@ const Results = ({
                     onPress={handlePreviewPress}
                     onOptionsPress={handleOptionsPress}
                     theme={theme}
-                    isSingleImage={isSingleImage()}
+                    isSingleImage={isSingleImage}
                     showDate={true}
                     publicLinkEnabled={publicLinkEnabled}
                     updateFileForGallery={updateFileForGallery}
