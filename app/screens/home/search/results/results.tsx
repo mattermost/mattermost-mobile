@@ -81,20 +81,27 @@ const Results = ({
     const theme = useTheme();
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
+
+    const orderedFileInfos = useMemo(() => (
+        fileInfos.sort((a: FileInfo, b: FileInfo) => {
+            return b.create_at! - a.create_at!;
+        })
+    ), [fileInfos]);
+
     const isTablet = useIsTablet();
     const galleryIdentifier = 'search-files-location';
 
-    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
+    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(orderedFileInfos, publicLinkEnabled);
 
     const getContainerStyle = useMemo(() => {
         let padding = 0;
         if (selectedTab === TabTypes.MESSAGES) {
             padding = posts.length ? 4 : 8;
         } else {
-            padding = fileInfos.length ? 8 : 0;
+            padding = orderedFileInfos.length ? 8 : 0;
         }
         return {top: padding};
-    }, [selectedTab, posts, fileInfos]);
+    }, [selectedTab, posts, orderedFileInfos]);
 
     const getChannelName = useCallback((id: string) => {
         return fileChannels.find((c) => c.id === id)?.displayName;
@@ -140,15 +147,15 @@ const Results = ({
             );
         }
 
-        if (!fileInfos.length) {
+        if (!orderedFileInfos.length) {
             return noResults;
         }
         const updateFileForGallery = (idx: number, file: FileInfo) => {
             'worklet';
             filesForGallery.value[idx] = file;
         };
-        const container: StyleProp<ViewStyle> = fileInfos.length > 1 ? styles.container : undefined;
-        const isSingleImage = fileInfos.length === 1 && (isImage(fileInfos[0]) || isVideo(fileInfos[0]));
+        const container: StyleProp<ViewStyle> = orderedFileInfos.length > 1 ? styles.container : undefined;
+        const isSingleImage = orderedFileInfos.length === 1 && (isImage(orderedFileInfos[0]) || isVideo(orderedFileInfos[0]));
         const isReplyPost = false;
 
         return (
@@ -177,7 +184,7 @@ const Results = ({
                 />
             </View>
         );
-    }, [theme, fileInfos, fileChannels]);
+    }, [theme, orderedFileInfos, fileChannels]);
 
     const noResults = useMemo(() => {
         if (searchValue) {
@@ -201,7 +208,7 @@ const Results = ({
     } else if (selectedTab === TabTypes.MESSAGES) {
         data = orderedPosts;
     } else {
-        data = fileInfos;
+        data = orderedFileInfos;
     }
 
     return (
