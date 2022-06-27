@@ -112,9 +112,8 @@ const Results = ({
         openGalleryAtIndex(galleryIdentifier, idx, items);
     });
 
-    const handleOptionsPress = preventDoubleTap((idx: number) => {
-        /* eslint-disable no-console */
-        console.log('Options button pressed for..  ', idx);
+    const handleOptionsPress = preventDoubleTap(() => {
+        // hook up in another PR
     });
 
     const filesForGallery = useDerivedValue(() => imageAttachments.concat(nonImageAttachments),
