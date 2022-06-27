@@ -16,6 +16,7 @@ import NetworkManager from '@managers/network_manager';
 import {getMembersCountByChannelsId, queryChannelsByTypes} from '@queries/servers/channel';
 import {getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {getCurrentUser, getUserById, prepareUsers, queryAllUsers, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
+import {logError} from '@utils/log';
 import {getUserTimezoneProps, removeUserFromList} from '@utils/user';
 
 import {forceLogoutIfNecessary} from './session';
@@ -865,5 +866,16 @@ export const fetchTeamAndChannelMembership = async (serverUrl: string, userId: s
         return {error: undefined};
     } catch (error) {
         return {error};
+    }
+};
+
+export const getAllSupportedTimezones = async (serverUrl: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const allTzs = await client.getTimezones();
+        return allTzs;
+    } catch (error) {
+        logError('FAILED TO GET ALL TIMEZONES', error);
+        return [];
     }
 };

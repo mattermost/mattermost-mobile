@@ -5,6 +5,7 @@ import moment from 'moment';
 import {getLocales} from 'react-native-localize';
 
 import en from '@assets/i18n/en.json';
+import {logError} from '@utils/log';
 
 import availableLanguages from './languages';
 
@@ -189,7 +190,7 @@ function loadTranslation(locale?: string) {
         }
         return translations;
     } catch (e) {
-        console.error('NO Translation found', e); //eslint-disable-line no-console
+        logError('NO Translation found', e);
         return en;
     }
 }

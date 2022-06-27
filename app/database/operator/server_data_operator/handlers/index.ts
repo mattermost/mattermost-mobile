@@ -9,6 +9,7 @@ import {
     transformSystemRecord,
 } from '@database/operator/server_data_operator/transformers/general';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
+import {logWarning} from '@utils/log';
 
 import type {Model} from '@nozbe/watermelondb';
 import type {HandleCustomEmojiArgs, HandleRoleArgs, HandleSystemArgs, OperationArgs} from '@typings/database/database';
@@ -21,8 +22,7 @@ const {SERVER: {CUSTOM_EMOJI, ROLE, SYSTEM}} = MM_TABLES;
 export default class ServerDataOperatorBase extends BaseDataOperator {
     handleRole = async ({roles, prepareRecordsOnly = true}: HandleRoleArgs) => {
         if (!roles?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "roles" array has been passed to the handleRole',
             );
             return [];
@@ -39,8 +39,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
 
     handleCustomEmojis = async ({emojis, prepareRecordsOnly = true}: HandleCustomEmojiArgs) => {
         if (!emojis?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "emojis" array has been passed to the handleCustomEmojis',
             );
             return [];
@@ -57,8 +56,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
 
     handleSystem = async ({systems, prepareRecordsOnly = true}: HandleSystemArgs) => {
         if (!systems?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "systems" array has been passed to the handleSystem',
             );
             return [];

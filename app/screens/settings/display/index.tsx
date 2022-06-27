@@ -7,9 +7,10 @@ import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {observeAllowedThemesKeys, observeConfigBooleanValue} from '@queries/servers/system';
-import {WithDatabaseArgs} from '@typings/database/database';
 
 import DisplaySettings from './display';
+
+import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const isTimezoneEnabled = observeConfigBooleanValue(database, 'ExperimentalTimezone');

@@ -4,20 +4,17 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
-import {observeConfigBooleanValue} from '@queries/servers/system';
-import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 
-import NotificationPush from './notification_push';
+import DisplayTimezone from './display_timezone';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         currentUser: observeCurrentUser(database),
-        isCRTEnabled: observeIsCRTEnabled(database),
-        sendPushNotifications: observeConfigBooleanValue(database, 'SendPushNotifications'),
     };
 });
 
-export default withDatabase(enhanced(NotificationPush));
+export default withDatabase(enhanced(DisplayTimezone));
+

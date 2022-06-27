@@ -13,6 +13,7 @@ import {
 } from '@database/operator/server_data_operator/transformers/post';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {createPostsChain} from '@database/operator/utils/post';
+import {logWarning} from '@utils/log';
 
 import type Database from '@nozbe/watermelondb/Database';
 import type Model from '@nozbe/watermelondb/Model';
@@ -49,8 +50,7 @@ const PostHandler = (superclass: any) => class extends superclass {
      */
     handleDraft = async ({drafts, prepareRecordsOnly = true}: HandleDraftArgs): Promise<DraftModel[]> => {
         if (!drafts?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "drafts" array has been passed to the handleDraft method',
             );
             return [];
@@ -83,8 +83,7 @@ const PostHandler = (superclass: any) => class extends superclass {
 
         // We rely on the posts array; if it is empty, we stop processing
         if (!posts?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "posts" array has been passed to the handlePosts method',
             );
             return [];
@@ -235,8 +234,7 @@ const PostHandler = (superclass: any) => class extends superclass {
      */
     handleFiles = async ({files, prepareRecordsOnly}: HandleFilesArgs): Promise<FileModel[]> => {
         if (!files?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "files" array has been passed to the handleFiles method',
             );
             return [];
@@ -273,8 +271,7 @@ const PostHandler = (superclass: any) => class extends superclass {
      */
     handlePostsInThread = async (postsMap: Record<string, Post[]>, actionType: never, prepareRecordsOnly = false): Promise<PostsInThreadModel[]> => {
         if (!postsMap || !Object.keys(postsMap).length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "postsMap" object has been passed to the handlePostsInThread method',
             );
             return [];
@@ -304,8 +301,7 @@ const PostHandler = (superclass: any) => class extends superclass {
         const permittedActions = Object.values(ActionType.POSTS);
 
         if (!posts.length || !permittedActions.includes(actionType)) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "posts" array or an non-supported actionType has been passed to the handlePostsInChannel method',
             );
             return [];

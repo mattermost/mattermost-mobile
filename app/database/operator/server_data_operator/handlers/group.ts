@@ -4,6 +4,7 @@
 import {MM_TABLES} from '@constants/database';
 import {transformGroupRecord} from '@database/operator/server_data_operator/transformers/group';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
+import {logWarning} from '@utils/log';
 
 import type {HandleGroupArgs} from '@typings/database/database';
 import type GroupModel from '@typings/database/models/servers/group';
@@ -24,8 +25,7 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
       */
     handleGroups = async ({groups, prepareRecordsOnly = true}: HandleGroupArgs): Promise<GroupModel[]> => {
         if (!groups?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "groups" array has been passed to the handleGroups method',
             );
             return [];

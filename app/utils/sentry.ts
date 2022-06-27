@@ -7,6 +7,7 @@ import {Platform} from 'react-native';
 import Config from '@assets/config.json';
 
 import {ClientError} from './client_error';
+import {logError, logWarning} from './log';
 
 export const BREADCRUMB_UNCAUGHT_APP_ERROR = 'uncaught-app-error';
 export const BREADCRUMB_UNCAUGHT_NON_ERROR = 'uncaught-non-error';
@@ -28,7 +29,7 @@ export function initializeSentry() {
     const dsn = getDsn();
 
     if (!dsn) {
-        console.warn('Sentry is enabled, but not configured on this platform'); // eslint-disable-line no-console
+        logWarning('Sentry is enabled, but not configured on this platform');
         return;
     }
 
@@ -51,8 +52,7 @@ export function captureException(error: Error | string, logger: string) {
     }
 
     if (!error || !logger) {
-        // eslint-disable-next-line no-console
-        console.warn('captureException called with missing arguments', error, logger);
+        logWarning('captureException called with missing arguments', error, logger);
         return;
     }
 
@@ -69,8 +69,7 @@ export function captureJSException(error: Error | ClientError, isFatal: boolean)
     }
 
     if (!error) {
-        // eslint-disable-next-line no-console
-        console.warn('captureJSException called with missing arguments', error);
+        logWarning('captureJSException called with missing arguments', error);
         return;
     }
 
@@ -117,7 +116,7 @@ function captureClientErrorAsBreadcrumb(error: ClientError, isFatal: boolean) {
         Sentry.addBreadcrumb(breadcrumb);
     } catch (e) {
         // Do nothing since this is only here to make sure we don't crash when handling an exception
-        console.warn('Failed to capture breadcrumb of non-error', e); // eslint-disable-line no-console
+        logWarning('Failed to capture breadcrumb of non-error', e);
     }
 }
 
@@ -147,16 +146,16 @@ function capture(captureFunc: () => void, config?: ClientConfig) {
         }
 
         if (hasUserContext) {
-            console.warn('Capturing with Sentry at ' + getDsn() + '...'); // eslint-disable-line no-console
+            logWarning('Capturing with Sentry at ' + getDsn() + '...');
 
             captureFunc();
         } else {
-            console.warn('No user context, skipping capture'); // eslint-disable-line no-console
+            logWarning('No user context, skipping capture');
         }
     } catch (e) {
         // Don't want this to get into an infinite loop again...
-        console.warn('Exception occured while sending to Sentry'); // eslint-disable-line no-console
-        console.warn(e); // eslint-disable-line no-console
+        logError('Exception occured while sending to Sentry');
+        logError(e);
     }
 }
 

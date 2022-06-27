@@ -8,10 +8,10 @@ import {switchMap} from 'rxjs/operators';
 
 import {observePost} from '@queries/servers/post';
 import {observeUser} from '@queries/servers/user';
-import {WithDatabaseArgs} from '@typings/database/database';
 
 import Reactor from './reactor';
 
+import type {WithDatabaseArgs} from '@typings/database/database';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 
 const enhance = withObservables(['reaction'], ({database, reaction}: {reaction: ReactionModel} & WithDatabaseArgs) => ({

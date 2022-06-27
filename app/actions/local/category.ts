@@ -10,6 +10,7 @@ import {getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
 import {pluckUnique} from '@utils/helpers';
+import {logError} from '@utils/log';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 
@@ -26,8 +27,7 @@ export const deleteCategory = async (serverUrl: string, categoryId: string) => {
 
         return {category};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('FAILED TO DELETE CATEGORY', categoryId);
+        logError('FAILED TO DELETE CATEGORY', categoryId);
         return {error};
     }
 };
@@ -77,8 +77,7 @@ export async function storeCategories(serverUrl: string, categories: CategoryWit
 
         return {models: flattenedModels};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('FAILED TO STORE CATEGORIES', error);
+        logError('FAILED TO STORE CATEGORIES', error);
         return {error};
     }
 }
@@ -98,8 +97,7 @@ export const toggleCollapseCategory = async (serverUrl: string, categoryId: stri
 
         return {category};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('FAILED TO COLLAPSE CATEGORY', categoryId, error);
+        logError('FAILED TO COLLAPSE CATEGORY', categoryId, error);
         return {error};
     }
 };
