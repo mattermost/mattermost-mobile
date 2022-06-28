@@ -106,64 +106,37 @@ struct ThreadSetters {
 extension Database {
     public func queryPostsSinceForChannel(withId channelId: String, withServerUrl serverUrl: String) throws -> Int64? {
         let db = try getDatabaseForServer(serverUrl)
-        
-        let earliestCol = Expression<Int64>("earliest")
-        let latestCol = Expression<Int64>("latest")
-        let channelIdCol = Expression<String>("channel_id")
-        let earliestLatestQuery = postsInChannelTable
-            .select(earliestCol, latestCol)
-            .where(channelIdCol == channelId)
-            .order(latestCol.desc)
-            .limit(1)
-        
 
-        var earliest: Int64?
-        var latest: Int64?
-        if let result = try? db.pluck(earliestLatestQuery) {
-            earliest = try? result.get(earliestCol)
-            latest = try? result.get(latestCol)
-        } else {
-            return nil
-        }
+        let idCol = Expression<String>("id")
+        let lastFetchedAtColAsDouble = Expression<Double?>("last_fetched_at")
+        let lastFetchedAtColAsInt64 = Expression<Int64?>("last_fetched_at")
+        let query = myChannelTable.where(idCol == channelId)
         
-        let createAtCol = Expression<Int64>("create_at")
-        let deleteAtCol = Expression<Int64>("delete_at")
-        var postQuery = postTable
-            .select(createAtCol)
-            .where(channelIdCol == channelId && deleteAtCol == 0)
-        
-        if let earliest = earliest, let latest = latest {
-            postQuery = postQuery.filter(earliest...latest ~= createAtCol)
-        }
-        postQuery = postQuery.order(createAtCol.desc).limit(1)
-        
-        if let result = try db.pluck(postQuery) {
-            return try result.get(createAtCol)
+        if let result = try db.pluck(query) {
+            let lastFetchAtInt64 = result[lastFetchedAtColAsInt64]
+            if lastFetchAtInt64 != nil {
+                return lastFetchAtInt64
+            }
+            if let last = result[lastFetchedAtColAsDouble] {
+                return Int64(last)
+            }
         }
         
         return nil
     }
     
-    private func queryPostsInChannelEarliestAndLatest(_ serverUrl: String, _ channelId: String) throws -> (Int64, Int64) {
-        let db = try getDatabaseForServer(serverUrl)
-        let earliest = Expression<Int64>("earliest")
-        let latest = Expression<Int64>("latest")
-        let id = Expression<String>("channel_id")
-        let query = postsInChannelTable
-            .select(earliest, latest)
-            .where(id == channelId)
-            .order(latest.desc)
-            .limit(1)
+    private func updateMyChannelLastFetchedAt(_ db: Connection, _ channelId: String, _ latest: Int64) throws {
+        let idCol = Expression<String>("id")
+        let lastFetchedAtCol = Expression<Int64>("last_fetched_at")
+        let statusCol = Expression<String>("_status")
         
-
-        for result in try db.prepare(query) {
-            return (try result.get(earliest),
-                    try result.get(latest))
-        }
+        let query = myChannelTable
+            .where(idCol == channelId)
+            .update(lastFetchedAtCol <- latest, statusCol <- "updated")
         
-        return (0, 0)
+        try db.run(query)
     }
-
+    
     public func handlePostData(_ db: Connection, _ postData: PostData, _ channelId: String, _ usedSince: Bool = false, _ receivingThreads: Bool = false) throws {
         let sortedChainedPosts = chainAndSortPosts(postData)
         try insertOrUpdatePosts(db, sortedChainedPosts, channelId)
@@ -171,6 +144,9 @@ extension Database {
         let latest = sortedChainedPosts.last!.create_at
         if (!receivingThreads) {
             try handlePostsInChannel(db, channelId, earliest, latest, usedSince)
+            
+            let lastFetchedAt = postData.posts.map({max($0.create_at, $0.update_at, $0.delete_at)}).max()
+            try updateMyChannelLastFetchedAt(db, channelId, lastFetchedAt ?? 0)
         }
         try handlePostsInThread(db, postData.posts)
     }
