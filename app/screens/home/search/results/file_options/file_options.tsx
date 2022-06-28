@@ -1,21 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
+import {useIntl} from 'react-intl';
 import {View, Text} from 'react-native';
 
 import {fetchPostById} from '@actions/remote/post';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import FileIcon from '@components/files/file_icon';
+import ImageFile from '@components/files/image_file';
+import VideoFile from '@components/files/video_file';
 import FormattedDate from '@components/formatted_date';
-import FormattedText from '@components/formatted_text';
-import MenuItem from '@components/menu_item';
-import FileIcon from '@components/post_list/post/body/files/file_icon';
+import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {t} from '@i18n';
 import CopyPublicLink from '@screens/gallery/footer/copy_public_link';
 import DownloadWithAction from '@screens/gallery/footer/download_with_action';
-import {getFormattedFileSize} from '@utils/file';
+import {getFormattedFileSize, isImage, isVideo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -40,8 +41,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             ...typography('Heading', 400, 'SemiBold'),
         },
-        actionsContainer: {
-            marginHorizontal: -20,
+        imageVideo: {
+            marginLeft: 10,
+            height: 72,
+            width: 72,
         },
         infoContainer: {
             marginVertical: 8,
@@ -57,40 +60,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 200, 'Regular'),
         },
-        menuText: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 200, 'Regular'),
-        },
         toast: {
             marginTop: 100,
             alignItems: 'center',
         },
     };
 });
-
-type FileOption = {
-    id: string;
-    iconName: string;
-    defaultMessage: string;
-}
-
-const dataDownload: FileOption = {
-    id: t('screen.search.results.file_options.download'),
-    iconName: 'download-outline',
-    defaultMessage: 'Download',
-};
-
-const dataGoto: FileOption = {
-    id: t('screen.search.results.file_options.open_in_channel'),
-    iconName: 'globe',
-    defaultMessage: 'Open in channel',
-};
-
-const dataCopyLink: FileOption = {
-    id: t('screen.search.results.file.copy_link'),
-    iconName: 'link-variant',
-    defaultMessage: 'Copy Link',
-};
 
 type Props = {
     canDownloadFiles: boolean;
@@ -100,7 +75,9 @@ type Props = {
 const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
+    const intl = useIntl();
     const isTablet = useIsTablet();
+    const ref = useRef<any>();
     const serverUrl = useServerUrl();
     const [action, setAction] = useState<GalleryAction>('none');
 
@@ -125,25 +102,47 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
         }
     }, [fileInfo]);
 
-    const renderLabelComponent = useCallback((item: FileOption) => {
+    const icon = useMemo(() => {
+        if (isImage(fileInfo)) {
+            return (
+                <View style={style.imageVideo}>
+                    <ImageFile
+                        file={fileInfo}
+                        forwardRef={ref}
+                        inViewPort={true}
+                        resizeMode={'cover'}
+                    />
+                </View>
+            );
+        }
+        if (isVideo(fileInfo)) {
+            return (
+                <View style={style.imageVideo}>
+                    <VideoFile
+                        file={fileInfo}
+                        forwardRef={ref}
+                        resizeMode={'cover'}
+                        inViewPort={true}
+                        index={0}
+                        wrapperWidth={78}
+                    />
+                </View>
+            );
+        }
         return (
-            <FormattedText
-                style={style.menuText}
-                id={item.id}
-                defaultMessage={item.defaultMessage}
+            <FileIcon
+                file={fileInfo}
+                iconSize={72}
             />
         );
-    }, [style]);
+    }, [fileInfo]);
 
-    const renderHeader = useCallback(() => {
+    const header = useMemo(() => {
         const size = getFormattedFileSize(fileInfo.size);
         return (
             <View style={style.headerContainer}>
                 <View style={style.fileIconContainer}>
-                    <FileIcon
-                        file={fileInfo}
-                        iconSize={72}
-                    />
+                    {icon}
                 </View>
                 <Text
                     style={style.nameText}
@@ -162,38 +161,32 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
                 </View>
             </View>
         );
-    }, [fileInfo]);
+    }, [fileInfo, icon]);
 
     return (
         <View style={style.container}>
-            {renderHeader()}
-            <View style={style.actionsContainer}>
+            {header}
+            <View>
                 {canDownloadFiles &&
-                <MenuItem
-                    labelComponent={renderLabelComponent(dataDownload)}
-                    iconName={dataDownload.iconName}
-                    onPress={handleDownload}
-                    testID={dataDownload.id}
-                    theme={theme}
-                    separator={false}
+                <OptionItem
+                    action={handleDownload}
+                    label={intl.formatMessage({id: 'screen.search.results.file_options.download', defaultMessage: 'Download'})}
+                    icon={'download-outline'}
+                    type='default'
                 />
                 }
-                <MenuItem
-                    labelComponent={renderLabelComponent(dataGoto)}
-                    iconName={dataGoto.iconName}
-                    onPress={handleGotoChannel}
-                    testID={dataGoto.id}
-                    theme={theme}
-                    separator={false}
+                <OptionItem
+                    action={handleGotoChannel}
+                    label={intl.formatMessage({id: 'screen.search.results.file_options.open_in_channel', defaultMessage: 'Open in channel'})}
+                    icon={'globe'}
+                    type='default'
                 />
                 {enablePublicLink &&
-                <MenuItem
-                    labelComponent={renderLabelComponent(dataCopyLink)}
-                    iconName={dataCopyLink.iconName}
-                    onPress={handleCopyLink}
-                    testID={dataCopyLink.id}
-                    theme={theme}
-                    separator={false}
+                <OptionItem
+                    action={handleCopyLink}
+                    label={intl.formatMessage({id: 'screen.search.results.file_options.copy_link', defaultMessage: 'Copy link'})}
+                    icon={'link-variant'}
+                    type='default'
                 />
                 }
             </View>
@@ -213,7 +206,6 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
                 }
             </View>
         </View>
-
     );
 };
 

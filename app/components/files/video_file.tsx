@@ -27,7 +27,7 @@ type Props = {
     isSingleImage?: boolean;
     resizeMode?: ResizeMode;
     wrapperWidth: number;
-    updateFileForGallery: (idx: number, file: FileInfo) => void;
+    updateFileForGallery?: (idx: number, file: FileInfo) => void;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -118,7 +118,9 @@ const VideoFile = ({
             );
             data.height = th;
             data.width = tw;
-            updateFileForGallery(index, data);
+            if (updateFileForGallery) {
+                updateFileForGallery(index, data);
+            }
         }
     };
 
