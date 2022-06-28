@@ -11,11 +11,12 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import Modifier, {ModifierItem, MODIFIER_LABEL_HEIGHT} from './modifier';
+import Modifier, {ModifierItem} from './modifier';
 import ShowMoreButton from './show_more';
 
 const SECTION_HEIGHT = 20;
 const RECENT_SEPARATOR_HEIGHT = 3;
+const MODIFIER_LABEL_HEIGHT = 48;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {

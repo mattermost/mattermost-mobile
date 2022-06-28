@@ -7,8 +7,6 @@ import {StyleSheet} from 'react-native';
 import OptionItem from '@components/option_item';
 import {preventDoubleTap} from '@utils/tap';
 
-export const MODIFIER_LABEL_HEIGHT = 48;
-
 const styles = StyleSheet.create({
     container: {
         marginLeft: 20,

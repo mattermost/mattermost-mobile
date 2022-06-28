@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {Platform, StyleProp, Switch, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -64,8 +64,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexShrink: 1,
             justifyContent: 'center',
         },
+        inlineLabelText: {
+            color: theme.centerChannelColor,
+            ...typography('Body', 200, 'SemiBold'),
+        },
         inlineDescription: {
-            color: changeOpacity(theme.centerChannelColor, 0.64),
+            color: theme.centerChannelColor,
             ...typography('Body', 200),
         },
         label: {
@@ -94,6 +98,28 @@ const OptionItem = ({
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+
+    const useInLine = useMemo(() => {
+        return inline && Boolean(description);
+    }, [inline, description]);
+
+    const labelStyle = useMemo(() => {
+        return useInLine ? styles.inlineLabel : styles.label;
+    }, [inline, styles, useInLine]);
+
+    const labelTextStyle = useMemo(() => {
+        return [
+            useInLine ? styles.inlineLabelText : styles.labelText,
+            destructive && styles.destructive,
+        ];
+    }, [inline, destructive, styles, useInLine]);
+
+    const descriptionTextStyle = useMemo(() => {
+        return [
+            useInLine ? styles.inlineDescription : styles.description,
+            destructive && styles.destructive,
+        ];
+    }, [inline, destructive, styles, useInLine]);
 
     let actionComponent;
     if (type === OptionType.SELECT && selected) {
@@ -152,16 +178,16 @@ const OptionItem = ({
                             />
                         </View>
                     )}
-                    <View style={inline ? styles.inlineLabel : styles.label}>
+                    <View style={labelStyle}>
                         <Text
-                            style={[styles.labelText, destructive && styles.destructive]}
+                            style={labelTextStyle}
                             testID={`${testID}.label`}
                         >
                             {label}
                         </Text>
                         {Boolean(description) &&
                         <Text
-                            style={[inline ? styles.inlineDescription : styles.description, destructive && styles.destructive]}
+                            style={descriptionTextStyle}
                             testID={`${testID}.description`}
                         >
                             {description}
