@@ -29,7 +29,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: Props) =
                 return of$(false);
             }
 
-            return observePermissionForChannel(ch, u, Permissions.CONVERT_PUBLIC_CHANNEL_TO_PRIVATE, false);
+            return observePermissionForChannel(database, ch, u, Permissions.CONVERT_PUBLIC_CHANNEL_TO_PRIVATE, false);
         }),
     );
 

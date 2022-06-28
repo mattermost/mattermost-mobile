@@ -12,6 +12,7 @@ import Post from './post';
 import PostDraft from './post_draft';
 import PostList from './post_list';
 import ProfilePicture from './profile_picture';
+import SearchBar from './search_bar';
 import SendButton from './send_button';
 import TeamSidebar from './team_sidebar';
 
@@ -27,6 +28,7 @@ export {
     PostDraft,
     PostList,
     ProfilePicture,
+    SearchBar,
     SendButton,
     TeamSidebar,
 };

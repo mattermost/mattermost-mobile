@@ -6,6 +6,7 @@ import DatabaseManager from '@database/manager';
 import {getPostById, prepareDeletePost} from '@queries/servers/post';
 import {getCurrentUserId} from '@queries/servers/system';
 import {generateId} from '@utils/general';
+import {logError} from '@utils/log';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -49,8 +50,7 @@ export const sendAddToChannelEphemeralPost = async (serverUrl: string, user: Use
 
         return {posts};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed sendAddToChannelEphemeralPost', error);
+        logError('Failed sendAddToChannelEphemeralPost', error);
         return {error};
     }
 };
@@ -97,8 +97,7 @@ export const sendEphemeralPost = async (serverUrl: string, message: string, chan
 
         return {post};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed sendEphemeralPost', error);
+        logError('Failed sendEphemeralPost', error);
         return {error};
     }
 };
@@ -132,8 +131,7 @@ export async function removePost(serverUrl: string, post: PostModel | Post) {
 
         return {post};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed removePost', error);
+        logError('Failed removePost', error);
         return {error};
     }
 }
@@ -158,8 +156,7 @@ export async function markPostAsDeleted(serverUrl: string, post: Post, prepareRe
         }
         return {model};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed markPostAsDeleted', error);
+        logError('Failed markPostAsDeleted', error);
         return {error};
     }
 }

@@ -7,9 +7,10 @@ import withObservables from '@nozbe/with-observables';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
-import {WithDatabaseArgs} from '@typings/database/database';
 
 import NotificationPush from './notification_push';
+
+import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     return {

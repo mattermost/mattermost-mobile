@@ -202,8 +202,11 @@ const ServerItem = ({
                 endX: x + w + 20,
                 endY: y + h,
             };
-            setShowTutorial(true);
-            setItemBounds(bounds);
+
+            if (viewRef.current) {
+                setShowTutorial(true);
+                setItemBounds(bounds);
+            }
         });
     };
 
@@ -463,7 +466,7 @@ const ServerItem = ({
 
             {Boolean(database) && server.lastActiveAt > 0 &&
             <WebSocket
-                database={database}
+                database={database!}
             />
             }
             {showTutorial &&

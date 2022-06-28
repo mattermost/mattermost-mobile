@@ -6,7 +6,6 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {General, Navigation as NavigationConstants, Preferences, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
-import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {extractChannelDisplayName} from '@helpers/database';
@@ -22,7 +21,7 @@ import {getCurrentUser, queryUsersById} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
-import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
+import {logError, logInfo} from '@utils/log';
 import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from '@utils/user';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -86,18 +85,6 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                     await operator.batchRecords(models);
                 }
 
-                if (!EphemeralStore.theme) {
-                    // When opening the app from a push notification the theme may not be set in the EphemeralStore
-                    // causing the goToScreen to use the Appearance theme instead and that causes the screen background color to potentially
-                    // not match the theme
-                    const themes = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_THEME, toTeamId).fetch();
-                    let theme = getDefaultThemeByAppearance();
-                    if (themes.length) {
-                        theme = setThemeDefaults(JSON.parse(themes[0].value) as Theme);
-                    }
-                    updateThemeIfNeeded(theme, true);
-                }
-
                 if (isTabletDevice) {
                     dismissAllModalsAndPopToRoot();
                     DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME, Screens.CHANNEL);
@@ -105,14 +92,13 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                     dismissAllModalsAndPopToScreen(Screens.CHANNEL, '', undefined, {topBar: {visible: false}});
                 }
 
-                console.log('channel switch to', channel?.displayName, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
+                logInfo('channel switch to', channel?.displayName, channelId, (Date.now() - dt), 'ms');
             }
         }
 
         return {models};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed to switch to channelId', channelId, 'teamId', teamId, 'error', error);
+        logError('Failed to switch to channelId', channelId, 'teamId', teamId, 'error', error);
         return {error};
     }
 }
@@ -143,8 +129,7 @@ export async function removeCurrentUserFromChannel(serverUrl: string, channelId:
         }
         return {models};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('failed to removeCurrentUserFromChannel', error);
+        logError('failed to removeCurrentUserFromChannel', error);
         return {error};
     }
 }
@@ -162,8 +147,7 @@ export async function setChannelDeleteAt(serverUrl: string, channelId: string, d
         });
         await operator.batchRecords([model]);
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('FAILED TO BATCH CHANGES FOR CHANNEL DELETE AT', error);
+        logError('FAILED TO BATCH CHANGES FOR CHANNEL DELETE AT', error);
     }
 }
 
@@ -198,8 +182,7 @@ export async function markChannelAsViewed(serverUrl: string, channelId: string, 
 
         return {member};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed markChannelAsViewed', error);
+        logError('Failed markChannelAsViewed', error);
         return {error};
     }
 }
@@ -226,8 +209,7 @@ export async function markChannelAsUnread(serverUrl: string, channelId: string, 
 
         return {member};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed markChannelAsUnread', error);
+        logError('Failed markChannelAsUnread', error);
         return {error};
     }
 }
@@ -246,8 +228,7 @@ export async function resetMessageCount(serverUrl: string, channelId: string) {
 
         return member;
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed resetMessageCount', error);
+        logError('Failed resetMessageCount', error);
         return {error};
     }
 }
@@ -276,8 +257,7 @@ export async function storeMyChannelsForTeam(serverUrl: string, teamId: string, 
 
         return {models: flattenedModels};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed storeMyChannelsForTeam', error);
+        logError('Failed storeMyChannelsForTeam', error);
         return {error};
     }
 }
@@ -296,8 +276,7 @@ export async function updateMyChannelFromWebsocket(serverUrl: string, channelMem
         }
         return {model: member};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed updateMyChannelFromWebsocket', error);
+        logError('Failed updateMyChannelFromWebsocket', error);
         return {error};
     }
 }
@@ -316,8 +295,7 @@ export async function updateChannelInfoFromChannel(serverUrl: string, channel: C
         }
         return {model: newInfo};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed updateChannelInfoFromChannel', error);
+        logError('Failed updateChannelInfoFromChannel', error);
         return {error};
     }
 }
@@ -344,8 +322,7 @@ export async function updateLastPostAt(serverUrl: string, channelId: string, las
 
         return {member: undefined};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed updateLastPostAt', error);
+        logError('Failed updateLastPostAt', error);
         return {error};
     }
 }
@@ -399,8 +376,7 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
 
         return {models};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed updateChannelsDisplayName', error);
+        logError('Failed updateChannelsDisplayName', error);
         return {error};
     }
 }
@@ -416,8 +392,7 @@ export async function showUnreadChannelsOnly(serverUrl: string, onlyUnreads: boo
             prepareRecordsOnly: false,
         });
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed showUnreadChannelsOnly', error);
+        logError('Failed showUnreadChannelsOnly', error);
         return {error};
     }
 }
@@ -446,9 +421,7 @@ export const updateDmGmDisplayName = async (serverUrl: string) => {
 
         return {channels};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed updateDmGmDisplayName', error);
+        logError('Failed updateDmGmDisplayName', error);
         return {error};
     }
 };
-

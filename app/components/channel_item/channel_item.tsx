@@ -179,7 +179,7 @@ const ChannelListItem = ({
             <>
                 <View
                     style={containerStyle}
-                    testID={`${testID}.${channel.name}.collapsed.${!isActive}`}
+                    testID={`${testID}.${channel.name}`}
                 >
                     <View style={styles.wrapper}>
                         <ChannelIcon

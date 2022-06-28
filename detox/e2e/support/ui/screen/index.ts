@@ -10,11 +10,14 @@ import CreateDirectMessageScreen from './create_direct_message';
 import CreateOrEditChannelScreen from './create_or_edit_channel';
 import EditPostScreen from './edit_post';
 import EditServerScreen from './edit_server';
+import EmojiPickerScreen from './emoji_picker';
+import FindChannelsScreen from './find_channels';
 import GlobalThreadsScreen from './global_threads';
 import HomeScreen from './home';
 import LoginScreen from './login';
 import PermalinkScreen from './permalink';
 import PostOptionsScreen from './post_options';
+import ReactionsScreen from './reactions';
 import ServerScreen from './server';
 import ServerListScreen from './server_list';
 import ThreadScreen from './thread';
@@ -30,11 +33,14 @@ export {
     CreateOrEditChannelScreen,
     EditPostScreen,
     EditServerScreen,
+    EmojiPickerScreen,
+    FindChannelsScreen,
     GlobalThreadsScreen,
     HomeScreen,
     LoginScreen,
     PermalinkScreen,
     PostOptionsScreen,
+    ReactionsScreen,
     ServerScreen,
     ServerListScreen,
     ThreadScreen,

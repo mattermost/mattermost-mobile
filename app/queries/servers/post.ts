@@ -7,10 +7,10 @@ import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
-import PostModel from '@typings/database/models/servers/post';
 
 import {queryPreferencesByCategoryAndName} from './preference';
 
+import type PostModel from '@typings/database/models/servers/post';
 import type PostInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 

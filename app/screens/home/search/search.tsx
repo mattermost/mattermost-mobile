@@ -15,7 +15,7 @@ import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {useServerUrl} from '@context/server';
 import {useCollapsibleHeader} from '@hooks/header';
-import {FileFilter, filterFiles} from '@utils/file';
+import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 
 import Modifiers from './modifiers/modifiers';
 import Results from './results';
@@ -47,7 +47,7 @@ const SearchScreen = ({teamId}: Props) => {
 
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
     const [selectedTab, setSelectedTab] = useState<SelectTab>('messages');
-    const [filter, setFilter] = useState<FileFilter>('all');
+    const [filter, setFilter] = useState<FileFilter>(FileFilters.ALL);
     const [showResults, setShowResults] = useState(false);
 
     const [loading, setLoading] = useState(false);
@@ -55,7 +55,16 @@ const SearchScreen = ({teamId}: Props) => {
 
     const [postIds, setPostIds] = useState<string[]>(emptyPostResults);
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
-    const [filteredFileInfos, setFilteredFileInfos] = useState<FileInfo[]>(emptyFileResults);
+
+    const getSearchParams = useCallback((filterValue?: FileFilter) => {
+        const terms = filterValue ? lastSearchedValue : searchValue;
+        const fileExtensions = filterFileExtensions(filterValue || filter);
+        const extensionTerms = fileExtensions ? ' ' + fileExtensions : '';
+        return {
+            terms: terms + extensionTerms,
+            is_or_search: true,
+        };
+    }, [filter, lastSearchedValue, searchValue]);
 
     const handleSearch = useCallback((debounce(async () => {
         // execute the search for the text in the navigation text box
@@ -64,13 +73,9 @@ const SearchScreen = ({teamId}: Props) => {
         // - updated recent createdAt if exists??
 
         setLoading(true);
+        setFilter(FileFilters.ALL);
         setLastSearchedValue(searchValue);
-
-        const searchParams: PostSearchParams | FileSearchParams = {
-            terms: searchValue,
-            is_or_search: true,
-        };
-
+        const searchParams = getSearchParams();
         const [postResults, fileResults] = await Promise.all([
             searchPosts(serverUrl, searchParams),
             searchFiles(serverUrl, teamId, searchParams),
@@ -88,9 +93,20 @@ const SearchScreen = ({teamId}: Props) => {
         scrollRef.current?.scrollToOffset({offset, animated: true});
     };
 
+    const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
+        setLoading(true);
+        setFilter(filterValue);
+        const searchParams = getSearchParams(filterValue);
+        const fileResults = await searchFiles(serverUrl, teamId, searchParams);
+        const fileInfosResult = fileResults?.file_infos && Object.values(fileResults?.file_infos);
+        setFileInfos(fileInfosResult?.length ? fileInfosResult : emptyFileResults);
+
+        setLoading(false);
+    }, [lastSearchedValue]);
+
     useEffect(() => {
-        setFilteredFileInfos(filterFiles(fileInfos, filter));
-    }, [filter, fileInfos]);
+        setSearchValue(searchTerm);
+    }, [searchTerm]);
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight, hideHeader} = useCollapsibleHeader<FlatList>(true, onSnap);
 
@@ -120,7 +136,7 @@ const SearchScreen = ({teamId}: Props) => {
     const handleClearSearch = useCallback(() => {
         setSearchValue('');
         setLastSearchedValue('');
-        setFilter('all');
+        setFilter(FileFilters.ALL);
         setShowResults(false);
     }, [filter, searchValue, lastSearchedValue]);
 
@@ -129,10 +145,10 @@ const SearchScreen = ({teamId}: Props) => {
         header = (
             <Header
                 onTabSelect={setSelectedTab}
-                onFilterChanged={setFilter}
+                onFilterChanged={handleFilterChange}
                 numberMessages={postIds.length}
                 selectedTab={selectedTab}
-                numberFiles={Object.keys(filteredFileInfos).length}
+                numberFiles={fileInfos.length}
                 selectedFilter={filter}
             />
         );
@@ -142,10 +158,6 @@ const SearchScreen = ({teamId}: Props) => {
         <FreezeScreen freeze={!isFocused}>
             <NavigationHeader
                 isLargeTitle={true}
-                onBackPress={() => {
-                    // eslint-disable-next-line no-console
-                    console.log('BACK');
-                }}
                 showBackButton={false}
                 title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
                 hasSearch={true}

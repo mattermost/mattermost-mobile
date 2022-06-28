@@ -5,6 +5,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getRecentReactions} from '@queries/servers/system';
 import {getEmojiFirstAlias} from '@utils/emoji/helpers';
+import {logError} from '@utils/log';
 
 const MAXIMUM_RECENT_EMOJI = 27;
 
@@ -37,8 +38,7 @@ export const addRecentReaction = async (serverUrl: string, emojiNames: string[],
             prepareRecordsOnly,
         });
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed addRecentReaction', error);
+        logError('Failed addRecentReaction', error);
         return {error};
     }
 };

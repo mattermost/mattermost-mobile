@@ -4,6 +4,7 @@
 import {MM_TABLES} from '@constants/database';
 import {transformReactionRecord} from '@database/operator/server_data_operator/transformers/reaction';
 import {sanitizeReactions} from '@database/operator/utils/reaction';
+import {logWarning} from '@utils/log';
 
 import type {HandleReactionsArgs} from '@typings/database/database';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
@@ -29,8 +30,7 @@ const ReactionHandler = (superclass: any) => class extends superclass {
         const batchRecords: ReactionModel[] = [];
 
         if (!postsReactions?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "postsReactions" array has been passed to the handleReactions method',
             );
             return [];

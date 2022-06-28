@@ -42,9 +42,9 @@ const enhanced = withObservables([], ({database, channelId}: WithDatabaseArgs & 
             switchMap((c) => of$(Boolean(c?.isGroupConstrained))),
         );
 
-        useChannelMentions = combineLatest([currentUser, currentChannel]).pipe(switchMap(([u, c]) => (u && c ? observePermissionForChannel(c, u, Permissions.USE_CHANNEL_MENTIONS, false) : of$(false))));
+        useChannelMentions = combineLatest([currentUser, currentChannel]).pipe(switchMap(([u, c]) => (u && c ? observePermissionForChannel(database, c, u, Permissions.USE_CHANNEL_MENTIONS, false) : of$(false))));
         useGroupMentions = combineLatest([currentUser, currentChannel, hasLicense]).pipe(
-            switchMap(([u, c, lcs]) => (lcs && u && c ? observePermissionForChannel(c, u, Permissions.USE_GROUP_MENTIONS, false) : of$(false))),
+            switchMap(([u, c, lcs]) => (lcs && u && c ? observePermissionForChannel(database, c, u, Permissions.USE_GROUP_MENTIONS, false) : of$(false))),
         );
     } else {
         useChannelMentions = of$(false);

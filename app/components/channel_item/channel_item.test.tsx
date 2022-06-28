@@ -37,7 +37,7 @@ describe('components/channel_list/categories/body/channel_item', () => {
                 membersCount={0}
                 isMuted={false}
                 currentUserId={'id'}
-                testID='channel_list_item'
+                testID='channel_item'
                 onPress={() => undefined}
                 isUnread={myChannel.isUnread}
                 mentionsCount={myChannel.mentionsCount}
@@ -57,7 +57,7 @@ describe('components/channel_list/categories/body/channel_item', () => {
                 membersCount={3}
                 isMuted={false}
                 currentUserId={'id'}
-                testID='channel_list_item'
+                testID='channel_item'
                 onPress={() => undefined}
                 isUnread={myChannel.isUnread}
                 mentionsCount={myChannel.mentionsCount}
