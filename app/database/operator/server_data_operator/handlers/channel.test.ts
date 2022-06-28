@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {updateMyChannelLastFetchedAt} from '@actions/local/channel';
 import DatabaseManager from '@database/manager';
 import {
     buildChannelMembershipKey,
@@ -18,9 +19,10 @@ import ServerDataOperator from '..';
 
 describe('*** Operator: Channel Handlers tests ***', () => {
     let operator: ServerDataOperator;
+    const serverUrl = 'baseHandler.test.com';
     beforeAll(async () => {
-        await DatabaseManager.init(['baseHandler.test.com']);
-        operator = DatabaseManager.serverDatabases['baseHandler.test.com']!.operator;
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
     });
 
     it('=> HandleChannel: should write to the CHANNEL table', async () => {
@@ -194,6 +196,64 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             buildKeyRecordBy: buildMyChannelKey,
             transformer: transformMyChannelRecord,
         });
+    });
+
+    it('=> HandleMyChannel: should keep the previous lastFetchedAt for MY_CHANNEL', async () => {
+        const channels: Channel[] = [{
+            id: 'c',
+            name: 'channel',
+            display_name: 'Channel',
+            type: 'O',
+            create_at: 1,
+            update_at: 1,
+            delete_at: 0,
+            team_id: '123',
+            header: '',
+            purpose: '',
+            last_post_at: 2,
+            creator_id: 'me',
+            total_msg_count: 20,
+            extra_update_at: 0,
+            shared: false,
+            scheme_id: null,
+            group_constrained: false,
+        }];
+        const myChannels: ChannelMembership[] = [
+            {
+                id: 'c',
+                user_id: 'me',
+                channel_id: 'c',
+                last_post_at: 1617311494451,
+                last_viewed_at: 1617311494451,
+                last_update_at: 1617311494451,
+                mention_count: 3,
+                msg_count: 10,
+                roles: 'guest',
+                notify_props: {
+                    desktop: 'default',
+                    email: 'default',
+                    mark_unread: 'mention',
+                    push: 'mention',
+                    ignore_channel_mentions: 'default',
+                },
+            },
+        ];
+
+        await operator.handleMyChannel({
+            channels,
+            myChannels,
+            prepareRecordsOnly: false,
+        });
+
+        await updateMyChannelLastFetchedAt(serverUrl, 'c', 123456789, false);
+        myChannels[0].last_viewed_at = 1617311494452;
+        const updated = await operator.handleMyChannel({
+            channels,
+            myChannels,
+            prepareRecordsOnly: false,
+        });
+
+        expect(updated[0].lastFetchedAt).toBe(123456789);
     });
 
     it('=> HandleChannelMembership: should write to the CHANNEL_MEMBERSHIP table', async () => {

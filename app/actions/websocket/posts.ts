@@ -20,16 +20,6 @@ import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
 
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
-
-function preparedMyChannelHack(myChannel: MyChannelModel) {
-    // @ts-expect-error hack accessing _preparedState
-    if (!myChannel._preparedState) {
-        // @ts-expect-error hack setting _preparedState
-        myChannel._preparedState = null;
-    }
-}
-
 export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessage) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -154,14 +144,14 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         if (markAsRead) {
             markChannelAsRead(serverUrl, post.channel_id);
         } else if (markAsViewed) {
-            preparedMyChannelHack(myChannel);
+            myChannel.resetPreparedState();
             const {member: viewedAt} = await markChannelAsViewed(serverUrl, post.channel_id, true);
             if (viewedAt) {
                 models.push(viewedAt);
             }
         } else if (!isCRTEnabled || !post.root_id) {
             const hasMentions = msg.data.mentions?.includes(currentUserId);
-            preparedMyChannelHack(myChannel);
+            myChannel.resetPreparedState();
             const {member: unreadAt} = await markChannelAsUnread(
                 serverUrl,
                 post.channel_id,

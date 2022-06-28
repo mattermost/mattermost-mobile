@@ -46,4 +46,6 @@ export default class MyChannelModel extends Model {
 
     /** settings: User specific settings/preferences for this channel */
     settings: Relation<MyChannelSettingsModel>;
+
+    resetPreparedState: () => void;
 }
