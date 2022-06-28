@@ -136,10 +136,6 @@ const SearchScreen = ({teamId}: Props) => {
         <FreezeScreen freeze={!isFocused}>
             <NavigationHeader
                 isLargeTitle={true}
-                onBackPress={() => {
-                    // eslint-disable-next-line no-console
-                    console.log('BACK');
-                }}
                 showBackButton={false}
                 title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
                 hasSearch={true}

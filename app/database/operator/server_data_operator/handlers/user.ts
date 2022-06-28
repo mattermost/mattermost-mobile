@@ -8,6 +8,7 @@ import {
     transformUserRecord,
 } from '@database/operator/server_data_operator/transformers/user';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
+import {logWarning} from '@utils/log';
 
 import type {
     HandlePreferencesArgs,
@@ -34,8 +35,7 @@ const UserHandler = (superclass: any) => class extends superclass {
      */
     handlePreferences = async ({preferences, prepareRecordsOnly = true, sync = false}: HandlePreferencesArgs): Promise<PreferenceModel[]> => {
         if (!preferences?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "preferences" array has been passed to the handlePreferences method',
             );
             return [];
@@ -106,8 +106,7 @@ const UserHandler = (superclass: any) => class extends superclass {
      */
     handleUsers = async ({users, prepareRecordsOnly = true}: HandleUsersArgs): Promise<UserModel[]> => {
         if (!users?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "users" array has been passed to the handleUsers method',
             );
             return [];

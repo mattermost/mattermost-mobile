@@ -19,7 +19,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
 
     beforeAll(async () => {
         await DatabaseManager.init(['baseHandler.test.com']);
-        operator = DatabaseManager.serverDatabases['baseHandler.test.com'].operator;
+        operator = DatabaseManager.serverDatabases['baseHandler.test.com']!.operator;
     });
 
     it('=> HandleDraft: should write to the the Draft table', async () => {

@@ -15,6 +15,7 @@ import {queryMyTeams} from '@queries/servers/team';
 import {goToScreen, resetToHome, resetToSelectServer, resetToTeams} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkType, DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
+import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
 import {parseDeepLink} from '@utils/url';
 
@@ -153,12 +154,10 @@ const launchToHome = async (props: LaunchProps) => {
     }
 
     if (nTeams) {
-        // eslint-disable-next-line no-console
-        console.log('Launch app in Home screen');
+        logInfo('Launch app in Home screen');
         resetToHome(props);
     } else {
-        // eslint-disable-next-line no-console
-        console.log('Launch app in Select Teams screen');
+        logInfo('Launch app in Select Teams screen');
         resetToTeams();
     }
 };

@@ -9,6 +9,7 @@ import FormattedText from '@components/formatted_text';
 import MenuItem from '@components/menu_item';
 import Screens from '@constants/screens';
 import {showModal} from '@screens/navigation';
+import {logInfo} from '@utils/log';
 import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
@@ -23,8 +24,7 @@ const Settings = ({isTablet, style, theme}: Props) => {
     const openSettings = useCallback(preventDoubleTap(() => {
         if (isTablet) {
             //todo: https://mattermost.atlassian.net/browse/MM-39711
-            // eslint-disable-next-line no-console
-            console.log('Settings on tablets need to be figured out and implemented - @Avinash');
+            logInfo('Settings on tablets need to be figured out and implemented - @Avinash');
         }
         showModal(
             Screens.SETTINGS,

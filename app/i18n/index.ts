@@ -5,10 +5,12 @@ import moment from 'moment';
 import {getLocales} from 'react-native-localize';
 
 import en from '@assets/i18n/en.json';
+import {logError} from '@utils/log';
 
 import availableLanguages from './languages';
 
 const deviceLocale = getLocales()[0].languageTag;
+const PRIMARY_LOCALE = 'en';
 export const DEFAULT_LOCALE = getLocaleFromLanguage(deviceLocale);
 
 function loadTranslation(locale?: string) {
@@ -188,7 +190,7 @@ function loadTranslation(locale?: string) {
         }
         return translations;
     } catch (e) {
-        console.error('NO Translation found', e); //eslint-disable-line no-console
+        logError('NO Translation found', e);
         return en;
     }
 }
@@ -201,7 +203,7 @@ function loadChinesePolyfills() {
 
 export function getLocaleFromLanguage(lang: string) {
     const languageCode = lang.split('-')[0];
-    const locale = availableLanguages[lang] || languageCode;
+    const locale = availableLanguages[lang] || availableLanguages[languageCode] || PRIMARY_LOCALE;
     return locale;
 }
 

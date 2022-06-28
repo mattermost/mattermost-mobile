@@ -28,7 +28,7 @@ type OwnProps = {
 
 const observeFirst = (v: DraftModel[]) => v[0]?.observe() || of$(undefined);
 
-const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => {
+const enhanced = withObservables(['channelId', 'rootId', 'channelIsArchived'], (ownProps: WithDatabaseArgs & OwnProps) => {
     const {database, rootId = ''} = ownProps;
     let channelId = of$(ownProps.channelId);
     if (!ownProps.channelId) {
@@ -50,7 +50,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         switchMap((id) => observeChannel(database, id!)),
     );
 
-    const canPost = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => (c && u ? observePermissionForChannel(c, u, Permissions.CREATE_POST, true) : of$(true))));
+    const canPost = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => (c && u ? observePermissionForChannel(database, c, u, Permissions.CREATE_POST, true) : of$(true))));
     const channelIsArchived = channel.pipe(switchMap((c) => (ownProps.channelIsArchived ? of$(true) : of$(c?.deleteAt !== 0))));
 
     const experimentalTownSquareIsReadOnly = observeConfigBooleanValue(database, 'ExperimentalTownSquareIsReadOnly');

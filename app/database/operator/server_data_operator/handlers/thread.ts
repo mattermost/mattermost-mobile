@@ -11,6 +11,7 @@ import {
 } from '@database/operator/server_data_operator/transformers/thread';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {sanitizeThreadParticipants} from '@database/operator/utils/thread';
+import {logWarning} from '@utils/log';
 
 import type Database from '@nozbe/watermelondb/Database';
 import type {HandleThreadsArgs, HandleThreadParticipantsArgs} from '@typings/database/database';
@@ -38,8 +39,7 @@ const ThreadHandler = (superclass: any) => class extends superclass {
      */
     handleThreads = async ({threads, teamId, loadedInGlobalThreads, prepareRecordsOnly = false}: HandleThreadsArgs): Promise<Model[]> => {
         if (!threads?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "threads" array has been passed to the handleThreads method',
             );
             return [];

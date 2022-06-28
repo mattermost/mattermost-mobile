@@ -4,6 +4,7 @@
 import {fetchFilteredChannelGroups, fetchFilteredTeamGroups, fetchGroupsForAutocomplete} from '@actions/remote/groups';
 import DatabaseManager from '@database/manager';
 import {prepareGroups, queryGroupsByName, queryGroupsByNameInChannel, queryGroupsByNameInTeam} from '@queries/servers/group';
+import {logError} from '@utils/log';
 
 import type GroupModel from '@typings/database/models/servers/group';
 
@@ -13,8 +14,7 @@ export const searchGroupsByName = async (serverUrl: string, name: string): Promi
     try {
         database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log('searchGroupsByName - DB Error', e);
+        logError('searchGroupsByName - DB Error', e);
         return [];
     }
 
@@ -26,8 +26,7 @@ export const searchGroupsByName = async (serverUrl: string, name: string): Promi
         }
         throw groups.error;
     } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log('searchGroupsByName - ERROR', e);
+        logError('searchGroupsByName - ERROR', e);
         return queryGroupsByName(database, name).fetch();
     }
 };
@@ -51,8 +50,7 @@ export const searchGroupsByNameInTeam = async (serverUrl: string, name: string, 
         }
         throw groups.error;
     } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log('searchGroupsByNameInTeam - ERROR', e);
+        logError('searchGroupsByNameInTeam - ERROR', e);
         return queryGroupsByNameInTeam(database, name, teamId).fetch();
     }
 };
@@ -76,8 +74,7 @@ export const searchGroupsByNameInChannel = async (serverUrl: string, name: strin
         }
         throw groups.error;
     } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log('searchGroupsByNameInChannel - ERROR', e);
+        logError('searchGroupsByNameInChannel - ERROR', e);
         return queryGroupsByNameInChannel(database, name, channelId).fetch();
     }
 };
