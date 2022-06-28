@@ -9,9 +9,13 @@ import {logError} from '@utils/log';
 import type GroupModel from '@typings/database/models/servers/group';
 
 export const searchGroupsByName = async (serverUrl: string, name: string): Promise<GroupModel[]> => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        throw new Error(`${serverUrl} operator not found`);
+    let database;
+
+    try {
+        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+    } catch (e) {
+        logError('searchGroupsByName - DB Error', e);
+        return [];
     }
 
     try {
@@ -23,14 +27,19 @@ export const searchGroupsByName = async (serverUrl: string, name: string): Promi
         throw groups.error;
     } catch (e) {
         logError('searchGroupsByName - ERROR', e);
-        return queryGroupsByName(operator.database, name).fetch();
+        return queryGroupsByName(database, name).fetch();
     }
 };
 
 export const searchGroupsByNameInTeam = async (serverUrl: string, name: string, teamId: string): Promise<GroupModel[]> => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        throw new Error(`${serverUrl} operator not found`);
+    let database;
+
+    try {
+        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+    } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log('searchGroupsByNameInTeam - DB Error', e);
+        return [];
     }
 
     try {
@@ -42,14 +51,19 @@ export const searchGroupsByNameInTeam = async (serverUrl: string, name: string, 
         throw groups.error;
     } catch (e) {
         logError('searchGroupsByNameInTeam - ERROR', e);
-        return queryGroupsByNameInTeam(operator.database, name, teamId).fetch();
+        return queryGroupsByNameInTeam(database, name, teamId).fetch();
     }
 };
 
 export const searchGroupsByNameInChannel = async (serverUrl: string, name: string, channelId: string): Promise<GroupModel[]> => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        throw new Error(`${serverUrl} operator not found`);
+    let database;
+
+    try {
+        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+    } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log('searchGroupsByNameInChannel - DB Error', e);
+        return [];
     }
 
     try {
@@ -61,7 +75,7 @@ export const searchGroupsByNameInChannel = async (serverUrl: string, name: strin
         throw groups.error;
     } catch (e) {
         logError('searchGroupsByNameInChannel - ERROR', e);
-        return queryGroupsByNameInChannel(operator.database, name, channelId).fetch();
+        return queryGroupsByNameInChannel(database, name, channelId).fetch();
     }
 };
 
@@ -70,15 +84,11 @@ export const searchGroupsByNameInChannel = async (serverUrl: string, name: strin
  *
  * @param serverUrl string - The Server URL
  * @param groups Group[] - The groups fetched from the API
- * @param prepareRecordsOnly boolean - Wether to only prepare records without saving
  */
 export const storeGroups = async (serverUrl: string, groups: Group[]) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        throw new Error(`${serverUrl} operator not found`);
-    }
-
     try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         const preparedGroups = await prepareGroups(operator, groups);
 
         if (preparedGroups.length) {
