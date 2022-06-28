@@ -17,7 +17,7 @@ import {useServerUrl} from '@context/server';
 import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 
-import Modifiers from './modifiers/modifiers';
+import Modifiers from './modifiers';
 import Results from './results';
 import Header, {SelectTab} from './results/header';
 
