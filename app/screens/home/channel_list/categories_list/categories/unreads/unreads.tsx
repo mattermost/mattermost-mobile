@@ -35,7 +35,7 @@ type UnreadCategoriesProps = {
     onChannelSwitch: (channelId: string) => void;
     onlyUnreads: boolean;
     unreadChannels: ChannelModel[];
-    unreadThreads: {unreads: number; mentions: number};
+    unreadThreads: {unreads: boolean; mentions: number};
 }
 
 const extractKey = (item: ChannelModel) => item.id;
@@ -62,7 +62,7 @@ const UnreadCategories = ({onChannelSwitch, onlyUnreads, unreadChannels, unreadT
         <Empty onlyUnreads={onlyUnreads}/>
     ) : undefined;
 
-    if (!unreadChannels.length && !unreadThreads.mentions && !unreadThreads.mentions && !onlyUnreads) {
+    if (!unreadChannels.length && !unreadThreads.mentions && !unreadThreads.unreads && !onlyUnreads) {
         return null;
     }
 
