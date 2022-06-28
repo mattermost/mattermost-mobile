@@ -82,33 +82,35 @@ const Results = ({
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
 
-    const orderedFileInfos = useMemo(() => (
-        fileInfos.sort((a: FileInfo, b: FileInfo) => {
-            return b.create_at! - a.create_at!;
-        })
-    ), [fileInfos]);
-
     const isTablet = useIsTablet();
     const galleryIdentifier = 'search-files-location';
-
-    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(orderedFileInfos, publicLinkEnabled);
 
     const getContainerStyle = useMemo(() => {
         let padding = 0;
         if (selectedTab === TabTypes.MESSAGES) {
             padding = posts.length ? 4 : 8;
         } else {
-            padding = orderedFileInfos.length ? 8 : 0;
+            padding = fileInfos.length ? 8 : 0;
         }
         return {top: padding};
-    }, [selectedTab, posts, orderedFileInfos]);
+    }, [selectedTab, posts, fileInfos]);
 
     const getChannelName = useCallback((id: string) => {
         return fileChannels.find((c) => c.id === id)?.displayName;
     }, [fileChannels]);
 
+    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
+    const filesForGallery = useDerivedValue(() => imageAttachments.concat(nonImageAttachments),
+        [imageAttachments, nonImageAttachments]);
+
+    const orderedFilesForGallery = useDerivedValue(() => (
+        filesForGallery.value.sort((a: FileInfo, b: FileInfo) => {
+            return b.create_at! - a.create_at!;
+        })
+    ), [filesForGallery]);
+
     const handlePreviewPress = preventDoubleTap((idx: number) => {
-        const items = filesForGallery.value.map((f) => fileToGalleryItem(f, f.user_id));
+        const items = orderedFilesForGallery.value.map((f) => fileToGalleryItem(f, f.user_id));
         openGalleryAtIndex(galleryIdentifier, idx, items);
     });
 
@@ -116,11 +118,9 @@ const Results = ({
         // hook up in another PR
     });
 
-    const filesForGallery = useDerivedValue(() => imageAttachments.concat(nonImageAttachments),
-        [imageAttachments, nonImageAttachments]);
 
     const attachmentIndex = (fileId: string) => {
-        return filesForGallery.value.findIndex((file) => file.id === fileId) || 0;
+        return orderedFilesForGallery.value.findIndex((file) => file.id === fileId) || 0;
     };
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<string|FileInfo | Post>) => {
@@ -146,15 +146,16 @@ const Results = ({
             );
         }
 
-        if (!orderedFileInfos.length) {
+        if (!fileInfos.length) {
             return noResults;
         }
         const updateFileForGallery = (idx: number, file: FileInfo) => {
             'worklet';
-            filesForGallery.value[idx] = file;
+            orderedFilesForGallery.value[idx] = file;
         };
-        const container: StyleProp<ViewStyle> = orderedFileInfos.length > 1 ? styles.container : undefined;
-        const isSingleImage = orderedFileInfos.length === 1 && (isImage(orderedFileInfos[0]) || isVideo(orderedFileInfos[0]));
+
+        const container: StyleProp<ViewStyle> = fileInfos.length > 1 ? styles.container : undefined;
+        const isSingleImage = orderedFilesForGallery.value.length === 1 && (isImage(orderedFilesForGallery.value[0]) || isVideo(orderedFilesForGallery.value[0]));
         const isReplyPost = false;
 
         return (
@@ -183,7 +184,7 @@ const Results = ({
                 />
             </View>
         );
-    }, [theme, orderedFileInfos, fileChannels]);
+    }, [theme, orderedFilesForGallery, fileChannels, handleOptionsPress]);
 
     const noResults = useMemo(() => {
         if (searchValue) {
@@ -207,7 +208,7 @@ const Results = ({
     } else if (selectedTab === TabTypes.MESSAGES) {
         data = orderedPosts;
     } else {
-        data = orderedFileInfos;
+        data = orderedFilesForGallery.value;
     }
 
     return (
