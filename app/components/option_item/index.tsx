@@ -12,6 +12,7 @@ import {typography} from '@utils/typography';
 type Props = {
     action: (value: string | boolean) => void;
     description?: string;
+    inline?: boolean;
     destructive?: boolean;
     icon?: string;
     info?: string;
@@ -58,6 +59,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.56),
             ...typography('Body', 100),
         },
+        inlineLabel: {
+            flexDirection: 'row',
+            flexShrink: 1,
+            justifyContent: 'center',
+        },
+        inlineDescription: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 200),
+        },
         label: {
             flexShrink: 1,
             justifyContent: 'center',
@@ -79,7 +89,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const OptionItem = ({
     action, description, destructive, icon,
-    info, label, selected,
+    info, inline = false, label, selected,
     testID = 'optionItem', type, value, containerStyle,
 }: Props) => {
     const theme = useTheme();
@@ -142,7 +152,7 @@ const OptionItem = ({
                             />
                         </View>
                     )}
-                    <View style={styles.label}>
+                    <View style={inline ? styles.inlineLabel : styles.label}>
                         <Text
                             style={[styles.labelText, destructive && styles.destructive]}
                             testID={`${testID}.label`}
@@ -151,7 +161,7 @@ const OptionItem = ({
                         </Text>
                         {Boolean(description) &&
                         <Text
-                            style={[styles.description, destructive && styles.destructive]}
+                            style={[inline ? styles.inlineDescription : styles.description, destructive && styles.destructive]}
                             testID={`${testID}.description`}
                         >
                             {description}

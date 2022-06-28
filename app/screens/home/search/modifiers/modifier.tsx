@@ -2,43 +2,17 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {Text, View} from 'react-native';
+import {StyleSheet} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
-import MenuItem from '@components/menu_item';
-import {useTheme} from '@context/theme';
+import OptionItem from '@components/option_item';
 import {preventDoubleTap} from '@utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 
 export const MODIFIER_LABEL_HEIGHT = 48;
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            flext: 1,
-            height: MODIFIER_LABEL_HEIGHT,
-            marginLeft: 20,
-            justifyContent: 'center',
-        },
-        modifierItemLabelContainer: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginTop: -4,
-        },
-        icon: {
-            marginTop: 3,
-        },
-        modifierLabelValue: {
-            marginLeft: 16,
-            color: theme.centerChannelColor,
-            ...typography('Body', 200, 'SemiBold'),
-        },
-        modifierItemDescription: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 200, 'Regular'),
-        },
-    };
+const styles = StyleSheet.create({
+    container: {
+        marginLeft: 20,
+    },
 });
 
 export type ModifierItem = {
@@ -54,13 +28,9 @@ type Props = {
 }
 
 const Modifier = ({item, searchValue, setSearchValue}: Props) => {
-    const theme = useTheme();
-
     const handlePress = useCallback(() => {
         addModifierTerm(item.term);
     }, [item.term, searchValue]);
-
-    const style = getStyleFromTheme(theme);
 
     const addModifierTerm = preventDoubleTap((modifierTerm) => {
         let newValue = '';
@@ -76,24 +46,15 @@ const Modifier = ({item, searchValue, setSearchValue}: Props) => {
     });
 
     return (
-        <MenuItem
-            containerStyle={style.container}
+        <OptionItem
+            action={handlePress}
+            icon={'plus-box-outline'}
+            inline={true}
+            label={item.term}
             testID={item.testID}
-            onPress={handlePress}
-            labelComponent={
-                <View style={style.modifierItemLabelContainer}>
-                    <CompassIcon
-                        name='plus-box-outline'
-                        size={24}
-                        color={changeOpacity(theme.centerChannelColor, 0.6)}
-                        style={style.icon}
-                    />
-                    <Text style={style.modifierLabelValue}>{item.term}</Text>
-                    <Text style={style.modifierItemDescription}>{' ' + item.description}</Text>
-                </View>
-            }
-            separator={false}
-            theme={theme}
+            description={' ' + item.description}
+            type='default'
+            containerStyle={styles.container}
         />
     );
 };
