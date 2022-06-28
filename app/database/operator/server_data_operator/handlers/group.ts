@@ -47,7 +47,7 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
     };
 
     /**
-     * handleGroupMembershipsForGroup: Handler responsible for the Create/Update operations occurring on the GroupMembership table from the 'Server' schema
+     * handleGroupMembershipsForMember: Handler responsible for the Create/Update operations occurring on the GroupMembership table from the 'Server' schema
      * @param {string} userId
      * @param {HandleGroupMembershipForMemberArgs} groupMembershipsArgs
      * @param {GroupMembership[]} groupMembershipsArgs.groupMemberships
