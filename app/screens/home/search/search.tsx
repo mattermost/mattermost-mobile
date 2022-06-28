@@ -144,7 +144,7 @@ const SearchScreen = ({teamId}: Props) => {
                 onFilterChanged={handleFilterChange}
                 numberMessages={postIds.length}
                 selectedTab={selectedTab}
-                numberFiles={Object.keys(fileInfos).length}
+                numberFiles={fileInfos.length}
                 selectedFilter={filter}
             />
         );
