@@ -96,8 +96,6 @@ public class CustomPushNotification extends PushNotification {
                 Bundle bundle = status.getNotification().extras;
                 if (isThreadNotification) {
                     hasMore = bundle.getString("root_id").equals(rootId);
-                } else if (isCRTEnabled) {
-                    hasMore = !bundle.getString("root_id").equals(rootId);
                 } else {
                     hasMore = bundle.getString("channel_id").equals(channelId);
                 }
