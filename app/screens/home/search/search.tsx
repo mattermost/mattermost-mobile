@@ -191,7 +191,7 @@ const SearchScreen = ({teamId}: Props) => {
                             selectedTab={selectedTab}
                             searchValue={lastSearchedValue}
                             postIds={postIds}
-                            fileInfos={filteredFileInfos}
+                            fileInfos={fileInfos}
                             scrollRef={scrollRef}
                             onScroll={onScroll}
                             scrollPaddingTop={scrollPaddingTop}
