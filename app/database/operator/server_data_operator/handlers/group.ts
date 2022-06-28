@@ -77,19 +77,26 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
             rawValues = groups.map((g) => ({id: `${g.id}-${userId}`, user_id: userId, group_id: g.id}));
         }
 
+        // If both, we only want to save new ones and delete one's no longer in groups
         if (groups?.length && existingGroupMemberships.length) {
+            const groupsSet: {[key: string]: GroupMembership} = {};
+
+            for (const g of groups) {
+                groupsSet[`${g.id}`] = {id: `${g.id}-${userId}`, user_id: userId, group_id: g.id};
+            }
+
             for (const gm of existingGroupMemberships) {
                 // Check if existingGroups overlaps with groups
-                const index = rawValues.findIndex((g) => g.id === gm.groupId);
-
-                if (index > -1) {
+                if (groupsSet[gm.groupId]) {
                     // If there is an existing group already, we don't need to add it
-                    rawValues.splice(index, 1);
+                    delete groupsSet[gm.groupId];
                 } else {
                     // No group? Remove existing one
                     records.push(gm.prepareDestroyPermanently());
                 }
             }
+
+            rawValues.push(...Object.values(groupsSet));
         }
 
         records.push(...(await this.handleRecords({

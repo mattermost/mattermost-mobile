@@ -53,11 +53,11 @@ export const transformGroupRecord = ({action, database, value}: TransformerArgs)
    * @returns {Promise<GroupMembershipModel>}
    */
 export const transformGroupMembershipRecord = ({action, database, value}: TransformerArgs): Promise<GroupMembershipModel> => {
-    const raw = value.raw as {group_id: string; user_id: string};
+    const raw = value.raw as GroupMembership;
 
     // id of group comes from server response
     const fieldsMapper = (model: GroupMembershipModel) => {
-        model._raw.id = `${raw.group_id}-${raw.user_id}`;
+        model._raw.id = raw.id || `${raw.group_id}-${raw.user_id}`;
         model.groupId = raw.group_id;
         model.userId = raw.user_id;
     };
