@@ -5,6 +5,7 @@
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
 import {OperationType} from '@typings/database/enums';
+import {generateGroupAssociationId} from '@utils/groups';
 
 import type {TransformerArgs} from '@typings/database/database';
 import type GroupModel from '@typings/database/models/servers/group';
@@ -57,7 +58,7 @@ export const transformGroupMembershipRecord = ({action, database, value}: Transf
 
     // id of group comes from server response
     const fieldsMapper = (model: GroupMembershipModel) => {
-        model._raw.id = raw.id || `${raw.group_id}-${raw.user_id}`;
+        model._raw.id = raw.id || generateGroupAssociationId(raw.group_id, raw.user_id);
         model.groupId = raw.group_id;
         model.userId = raw.user_id;
     };

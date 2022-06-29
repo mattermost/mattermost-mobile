@@ -5,6 +5,7 @@ import {MM_TABLES} from '@constants/database';
 import {transformGroupMembershipRecord, transformGroupRecord} from '@database/operator/server_data_operator/transformers/group';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {queryGroupMembershipForMember} from '@queries/servers/group';
+import {generateGroupAssociationId} from '@utils/groups';
 import {logWarning} from '@utils/log';
 
 import type {HandleGroupArgs, HandleGroupMembershipForMemberArgs} from '@typings/database/database';
@@ -68,12 +69,12 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
         } else if (!groups?.length && existingGroupMemberships.length) { // No groups - remove all existing ones
             records = existingGroupMemberships.map((gm) => gm.prepareDestroyPermanently());
         } else if (groups?.length && !existingGroupMemberships.length) { // No existing groups - add all new ones
-            rawValues = groups.map((g) => ({id: `${g.id}-${userId}`, user_id: userId, group_id: g.id}));
+            rawValues = groups.map((g) => ({id: generateGroupAssociationId(g.id, userId), user_id: userId, group_id: g.id}));
         } else if (groups?.length && existingGroupMemberships.length) { // If both, we only want to save new ones and delete one's no longer in groups
             const groupsSet: {[key: string]: GroupMembership} = {};
 
             for (const g of groups) {
-                groupsSet[`${g.id}`] = {id: `${g.id}-${userId}`, user_id: userId, group_id: g.id};
+                groupsSet[`${g.id}`] = {id: generateGroupAssociationId(g.id, userId), user_id: userId, group_id: g.id};
             }
 
             for (const gm of existingGroupMemberships) {
