@@ -150,7 +150,7 @@ class DatabaseHelper {
                 cursor1.moveToFirst()
                 val lastFetchedAt = cursor1.getDouble(0)
                 cursor1.close()
-                if (lastFetchedAt == 0) {
+                if (lastFetchedAt == 0.0) {
                     return queryLastPostCreateAt(db, channelId)
                 }
                 return lastFetchedAt
