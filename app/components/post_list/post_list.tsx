@@ -6,7 +6,7 @@ import React, {ReactElement, useCallback, useEffect, useMemo, useRef, useState} 
 import {DeviceEventEmitter, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleProp, StyleSheet, ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import {fetchPostThread, refreshPosts} from '@actions/remote/post';
+import {fetchPosts, fetchPostThread} from '@actions/remote/post';
 import CombinedUserActivity from '@components/post_list/combined_user_activity';
 import DateSeparator from '@components/post_list/date_separator';
 import NewMessagesLine from '@components/post_list/new_message_line';
@@ -143,7 +143,7 @@ const PostList = ({
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
         if (location === Screens.CHANNEL && channelId) {
-            await refreshPosts(serverUrl, channelId);
+            await fetchPosts(serverUrl, channelId);
         } else if (location === Screens.THREAD && rootId) {
             await fetchPostThread(serverUrl, rootId);
         }

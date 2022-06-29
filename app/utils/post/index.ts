@@ -82,6 +82,6 @@ export const processPostsFetched = (data: PostResponse) => {
 export const getLastFetchedAtFromPosts = (posts?: Post[]) => {
     return posts?.reduce((timestamp: number, p) => {
         const maxTimestamp = Math.max(p.create_at, p.update_at, p.delete_at);
-        return (maxTimestamp > timestamp) ? maxTimestamp : timestamp;
+        return Math.max(maxTimestamp, timestamp);
     }, 0) || 0;
 };

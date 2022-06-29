@@ -436,26 +436,6 @@ export async function fetchPosts(serverUrl: string, channelId: string, page = 0,
     }
 }
 
-export async function refreshPosts(serverUrl: string, channelId: string) {
-    try {
-        const fetched = await fetchPosts(serverUrl, channelId);
-        if (fetched.error) {
-            throw fetched.error;
-        }
-
-        const lastFetchedAt = getLastFetchedAtFromPosts(fetched.posts);
-        const {error} = await updateMyChannelLastFetchedAt(serverUrl, channelId, lastFetchedAt);
-        if (error) {
-            throw error;
-        }
-
-        return fetched;
-    } catch (error) {
-        logError('refreshPosts', error);
-        return {error};
-    }
-}
-
 export async function fetchPostsBefore(serverUrl: string, channelId: string, postId: string, perPage = General.POST_CHUNK_SIZE, fetchOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
