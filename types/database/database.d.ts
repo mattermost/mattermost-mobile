@@ -89,7 +89,7 @@ export type HandlePostsArgs = {
 };
 
 export type HandleThreadsArgs = {
-  threads?: Thread[];
+  threads?: ThreadWithLastFetchedAt[];
   prepareRecordsOnly?: boolean;
   teamId?: string;
   loadedInGlobalThreads?: boolean;

@@ -188,7 +188,7 @@ export async function createThreadFromNewPost(serverUrl: string, post: Post, pre
             });
             models.push(...threadParticipantModels);
         } else { // If the post is a root post, then we need to add it to the thread table
-            const threadModels = await prepareThreadsFromReceivedPosts(operator, [post]);
+            const threadModels = await prepareThreadsFromReceivedPosts(operator, [post], false);
             models.push(...threadModels);
         }
 
@@ -211,6 +211,7 @@ export async function processReceivedThreads(serverUrl: string, threads: Thread[
 
         const posts: Post[] = [];
         const users: UserProfile[] = [];
+        const threadsToHandle: ThreadWithLastFetchedAt[] = [];
 
         // Extract posts & users from the received threads
         for (let i = 0; i < threads.length; i++) {
@@ -221,6 +222,7 @@ export async function processReceivedThreads(serverUrl: string, threads: Thread[
                     users.push(participant);
                 }
             });
+            threadsToHandle.push({...threads[i], lastFetchedAt: post.create_at});
         }
 
         const postModels = await operator.handlePosts({
@@ -231,7 +233,7 @@ export async function processReceivedThreads(serverUrl: string, threads: Thread[
         });
 
         const threadModels = await operator.handleThreads({
-            threads,
+            threads: threadsToHandle,
             teamId,
             prepareRecordsOnly: true,
             loadedInGlobalThreads,

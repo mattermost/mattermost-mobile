@@ -104,7 +104,7 @@ struct ThreadSetters {
 }
 
 extension Database {
-    public func queryPostsSinceForChannel(withId channelId: String, withServerUrl serverUrl: String) throws -> Int64? {
+    public func queryLastPostCreateAt(withId channelId: String, withServerUrl serverUrl: String) throws -> Int64? {
         let db = try getDatabaseForServer(serverUrl)
         
         let earliestCol = Expression<Int64>("earliest")
@@ -116,7 +116,6 @@ extension Database {
             .order(latestCol.desc)
             .limit(1)
         
-
         var earliest: Int64?
         var latest: Int64?
         if let result = try? db.pluck(earliestLatestQuery) {
@@ -144,24 +143,39 @@ extension Database {
         return nil
     }
     
-    private func queryPostsInChannelEarliestAndLatest(_ serverUrl: String, _ channelId: String) throws -> (Int64, Int64) {
+    public func queryPostsSinceForChannel(withId channelId: String, withServerUrl serverUrl: String) throws -> Int64? {
         let db = try getDatabaseForServer(serverUrl)
-        let earliest = Expression<Int64>("earliest")
-        let latest = Expression<Int64>("latest")
-        let id = Expression<String>("channel_id")
-        let query = postsInChannelTable
-            .select(earliest, latest)
-            .where(id == channelId)
-            .order(latest.desc)
-            .limit(1)
-        
 
-        for result in try db.prepare(query) {
-            return (try result.get(earliest),
-                    try result.get(latest))
+        let idCol = Expression<String>("id")
+        let lastFetchedAtColAsDouble = Expression<Double?>("last_fetched_at")
+        let lastFetchedAtColAsInt64 = Expression<Int64?>("last_fetched_at")
+        let query = myChannelTable.where(idCol == channelId)
+
+        if let result = try? db.pluck(query) {
+            let lastFetchAtInt64 = result[lastFetchedAtColAsInt64]
+            if lastFetchAtInt64 != nil,
+               lastFetchAtInt64 > 0 {
+                return lastFetchAtInt64
+            }
+            if let last = result[lastFetchedAtColAsDouble],
+               last > 0 {
+                return Int64(last)
+            }
         }
+
+        return try queryLastPostCreateAt(withId: channelId, withServerUrl: serverUrl)
+    }
+    
+    private func updateMyChannelLastFetchedAt(_ db: Connection, _ channelId: String, _ latest: Int64) throws {
+        let idCol = Expression<String>("id")
+        let lastFetchedAtCol = Expression<Int64>("last_fetched_at")
+        let statusCol = Expression<String>("_status")
         
-        return (0, 0)
+        let query = myChannelTable
+            .where(idCol == channelId)
+            .update(lastFetchedAtCol <- latest, statusCol <- "updated")
+
+        try db.run(query)
     }
 
     public func handlePostData(_ db: Connection, _ postData: PostData, _ channelId: String, _ usedSince: Bool = false, _ receivingThreads: Bool = false) throws {
@@ -171,6 +185,9 @@ extension Database {
         let latest = sortedChainedPosts.last!.create_at
         if (!receivingThreads) {
             try handlePostsInChannel(db, channelId, earliest, latest, usedSince)
+
+            let lastFetchedAt = postData.posts.map({max($0.create_at, $0.update_at, $0.delete_at)}).max()
+            try updateMyChannelLastFetchedAt(db, channelId, lastFetchedAt ?? 0)
         }
         try handlePostsInThread(db, postData.posts)
     }
@@ -276,9 +293,9 @@ extension Database {
         
         let deleteQuery = postsInChannelTable
             .where(idCol != id &&
-                    channelIdCol == channelId &&
-                    earliestCol >= earliest &&
-                    latestCol <= latest)
+                   channelIdCol == channelId &&
+                   earliestCol >= earliest &&
+                   latestCol <= latest)
             .delete()
         
         try db.run(deleteQuery)
@@ -452,11 +469,11 @@ extension Database {
                 for emoji in emojis {
                     if let e = emoji as? [String: Any] {
                         var emojiSetter = [Setter]()
-                       emojiSetter.append(id <- e["id"] as! String)
-                       emojiSetter.append(name <- e["name"] as! String)
+                        emojiSetter.append(id <- e["id"] as! String)
+                        emojiSetter.append(name <- e["name"] as! String)
                         emojiSetter.append(statusCol <- "created")
 
-                       emojiSetters.append(emojiSetter)
+                        emojiSetters.append(emojiSetter)
                     }
                 }
                 
@@ -481,6 +498,7 @@ extension Database {
         let replyCount = Expression<Int>("reply_count")
         let isFollowing = Expression<Bool>("is_following")
         let statusCol = Expression<String>("_status")
+        let lastFetchAtCol = Expression<Int64>("last_fetched_at")
         
         var threadsSetters: [ThreadSetters] = []
         
@@ -505,6 +523,7 @@ extension Database {
                 setter.append(lastReplyAt <- post.last_reply_at)
                 setter.append(replyCount <- post.reply_count)
                 setter.append(isFollowing <- post.is_following)
+                setter.append(lastFetchAtCol <- 0)
                 setter.append(statusCol <- "created")
 
                 let threadSetter = ThreadSetters(

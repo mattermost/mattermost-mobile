@@ -138,6 +138,7 @@ export const transformMyChannelRecord = async ({action, database, value}: Transf
         myChannel.isUnread = Boolean(raw.is_unread);
         myChannel.lastViewedAt = raw.last_viewed_at;
         myChannel.viewedAt = record?.viewedAt || 0;
+        myChannel.lastFetchedAt = record?.lastFetchedAt || 0;
     };
 
     return prepareBaseRecord({

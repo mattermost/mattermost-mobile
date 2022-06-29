@@ -120,7 +120,7 @@ class DatabaseHelper {
         return result.getString("value")
     }
 
-    fun queryPostSinceForChannel(db: Database?, channelId: String): Double? {
+    fun queryLastPostCreateAt(db: Database?, channelId: String): Double? {
         if (db != null) {
             val postsInChannelQuery = "SELECT earliest, latest FROM PostsInChannel WHERE channel_id=? ORDER BY latest DESC LIMIT 1"
             val cursor1 = db.rawQuery(postsInChannelQuery, arrayOf(channelId))
@@ -142,6 +142,23 @@ class DatabaseHelper {
         return null
     }
 
+    fun queryPostSinceForChannel(db: Database?, channelId: String): Double? {
+        if (db != null) {
+            val postsInChannelQuery = "SELECT last_fetched_at FROM MyChannel WHERE id=? LIMIT 1"
+            val cursor1 = db.rawQuery(postsInChannelQuery, arrayOf(channelId))
+            if (cursor1.count == 1) {
+                cursor1.moveToFirst()
+                val lastFetchedAt = cursor1.getDouble(0)
+                cursor1.close()
+                if (lastFetchedAt == 0) {
+                    return queryLastPostCreateAt(db, channelId)
+                }
+                return lastFetchedAt
+            }
+        }
+        return null
+    }
+
     fun handlePosts(db: Database, postsData: ReadableMap?, channelId: String, receivingThreads: Boolean) {
         // Posts, PostInChannel, PostInThread, Reactions, Files, CustomEmojis, Users
         if (postsData != null) {
@@ -149,15 +166,26 @@ class DatabaseHelper {
             val posts = ReadableMapUtils.toJSONObject(postsData.getMap("posts")).toMap()
             val previousPostId = postsData.getString("prev_post_id")
             val postsInThread = hashMapOf<String, List<JSONObject>>()
+            val postList = posts.toList()
             var earliest = 0.0
             var latest = 0.0
+            var lastFetchedAt = 0.0
 
             if (ordered != null && posts.isNotEmpty()) {
                 val firstId = ordered.first()
                 val lastId = ordered.last()
+                lastFetchedAt = postList.fold(0.0) { acc, next ->
+                    val post = next.second as Map<String, Any?>
+                    val createAt = post["create_at"] as Double
+                    val updateAt = post["update_at"] as Double
+                    val deleteAt = post["delete_at"] as Double
+                    val value = maxOf(createAt, updateAt, deleteAt)
+
+                    maxOf(value, acc)
+                }
                 var prevPostId = ""
 
-                val sortedPosts = posts.toList().sortedBy { (_, value) ->
+                val sortedPosts = postList.sortedBy { (_, value) ->
                     ((value as Map<*, *>).get("create_at") as Double)
                 }
 
@@ -207,6 +235,7 @@ class DatabaseHelper {
 
             if (!receivingThreads) {
                 handlePostsInChannel(db, channelId, earliest, latest)
+                updateMyChannelLastFetchedAt(db, channelId, lastFetchedAt)
             }
             handlePostsInThread(db, postsInThread)
         }
@@ -419,8 +448,8 @@ class DatabaseHelper {
 
         db.execute(
                 "insert into Thread " +
-                        "(id, last_reply_at, last_viewed_at, reply_count, is_following, unread_replies, unread_mentions, _status)" +
-                        " values (?, ?, ?, ?, ?, ?, ?, 'created')",
+                        "(id, last_reply_at, last_fetched_at, last_viewed_at, reply_count, is_following, unread_replies, unread_mentions, _status)" +
+                        " values (?, ?, 0, ?, ?, ?, ?, ?, 'created')",
                 arrayOf(
                         thread.getString("id"),
                         thread.getDouble("last_reply_at") ?: 0,
@@ -559,6 +588,16 @@ class DatabaseHelper {
             val newChunk = insertPostInChannel(db, channelId, earliest, latest)
             mergePostsInChannel(db, resultArray, newChunk)
         }
+    }
+
+    private fun updateMyChannelLastFetchedAt(db: Database, channelId: String, lastFetchedAt: Double) {
+        db.execute(
+                "UPDATE MyChannel SET last_fetched_at = ?, _status = 'updated' WHERE id = ?",
+                arrayOf(
+                        lastFetchedAt,
+                        channelId
+                )
+        )
     }
 
     private fun findPostInChannel(chunks: ReadableArray, earliest: Double, latest: Double): ReadableMap? {
