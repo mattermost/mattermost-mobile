@@ -154,7 +154,7 @@ extension Database {
         if let result = try? db.pluck(query) {
             let lastFetchAtInt64 = result[lastFetchedAtColAsInt64]
             if lastFetchAtInt64 != nil,
-               lastFetchAtInt64 > 0 {
+               lastFetchAtInt64! > 0 {
                 return lastFetchAtInt64
             }
             if let last = result[lastFetchedAtColAsDouble],
