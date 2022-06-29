@@ -35,7 +35,7 @@ const Files: Record<string, string[]> = {
     PATCH_TYPES: ['patch'],
     PDF_TYPES: ['pdf'],
     PRESENTATION_TYPES: ['ppt', 'pptx', 'odp'],
-    SPREADSHEET_TYPES: ['xls, xlsx', 'csv', 'ods'],
+    SPREADSHEET_TYPES: ['xls', 'xlsx', 'csv', 'ods'],
     TEXT_TYPES: ['txt', 'rtf'],
     VIDEO_TYPES: ['mp4', 'avi', 'webm', 'mkv', 'wmv', 'mpg', 'mov', 'flv', 'ogm', 'mpeg'],
     WORD_TYPES: ['doc', 'docx', 'odt'],

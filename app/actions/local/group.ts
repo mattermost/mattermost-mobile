@@ -77,3 +77,4 @@ export const searchGroupsByNameInChannel = async (serverUrl: string, name: strin
         return queryGroupsByNameInChannel(database, name, channelId).fetch();
     }
 };
+

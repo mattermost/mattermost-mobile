@@ -35,6 +35,7 @@ export const fetchGroupsByNames = async (serverUrl: string, names: string[], fet
 
         // Save locally
         return operator.handleGroups({groups, prepareRecordsOnly: fetchOnly});
+
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
