@@ -63,4 +63,9 @@ export default class MyChannelModel extends Model implements MyChannelModelInter
         settings?.destroyPermanently();
         super.destroyPermanently();
     }
+
+    resetPreparedState() {
+        // @ts-expect-error hack setting _preparedState
+        this._preparedState = null;
+    }
 }
