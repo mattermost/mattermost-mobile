@@ -116,7 +116,6 @@ extension Database {
             .order(latestCol.desc)
             .limit(1)
         
-        
         var earliest: Int64?
         var latest: Int64?
         if let result = try? db.pluck(earliestLatestQuery) {
@@ -146,13 +145,13 @@ extension Database {
     
     public func queryPostsSinceForChannel(withId channelId: String, withServerUrl serverUrl: String) throws -> Int64? {
         let db = try getDatabaseForServer(serverUrl)
-        
+
         let idCol = Expression<String>("id")
         let lastFetchedAtColAsDouble = Expression<Double?>("last_fetched_at")
         let lastFetchedAtColAsInt64 = Expression<Int64?>("last_fetched_at")
         let query = myChannelTable.where(idCol == channelId)
-        
-        if let result = try db.pluck(query) {
+
+        if let result = try? db.pluck(query) {
             let lastFetchAtInt64 = result[lastFetchedAtColAsInt64]
             if lastFetchAtInt64 != nil,
                lastFetchAtInt64 > 0 {
@@ -163,8 +162,8 @@ extension Database {
                 return Int64(last)
             }
         }
-        
-        return queryLastPostCreateAt(withId: channelId, withServerUrl: serverUrl)
+
+        return try queryLastPostCreateAt(withId: channelId, withServerUrl: serverUrl)
     }
     
     private func updateMyChannelLastFetchedAt(_ db: Connection, _ channelId: String, _ latest: Int64) throws {
@@ -175,10 +174,10 @@ extension Database {
         let query = myChannelTable
             .where(idCol == channelId)
             .update(lastFetchedAtCol <- latest, statusCol <- "updated")
-        
+
         try db.run(query)
     }
-    
+
     public func handlePostData(_ db: Connection, _ postData: PostData, _ channelId: String, _ usedSince: Bool = false, _ receivingThreads: Bool = false) throws {
         let sortedChainedPosts = chainAndSortPosts(postData)
         try insertOrUpdatePosts(db, sortedChainedPosts, channelId)
@@ -186,7 +185,7 @@ extension Database {
         let latest = sortedChainedPosts.last!.create_at
         if (!receivingThreads) {
             try handlePostsInChannel(db, channelId, earliest, latest, usedSince)
-            
+
             let lastFetchedAt = postData.posts.map({max($0.create_at, $0.update_at, $0.delete_at)}).max()
             try updateMyChannelLastFetchedAt(db, channelId, lastFetchedAt ?? 0)
         }
@@ -333,11 +332,11 @@ extension Database {
         for setter in setters {
             let insertThread = threadTable.insert(or: .replace, setter.threadSetters)
             try db.run(insertThread)
-            
+
             let threadIdCol = Expression<String>("thread_id")
             let deletePreviousThreadParticipants = threadParticipantTable.where(threadIdCol == setter.id).delete()
             try db.run(deletePreviousThreadParticipants)
-            
+
             if !setter.threadParticipantSetters.isEmpty {
                 let insertThreadParticipants = threadParticipantTable.insertMany(setter.threadParticipantSetters)
                 try db.run(insertThreadParticipants)
@@ -386,7 +385,7 @@ extension Database {
             setter.append(prevPostId <- post.prev_post_id)
             setter.append(props <- post.props)
             setter.append(statusCol <- "created")
-            
+
             let postSetter = PostSetters(
                 id: post.id,
                 postSetters: setter,
@@ -434,13 +433,13 @@ extension Database {
                         reactionSetter.append(emojiName <- r["emoji_name"] as! String)
                         reactionSetter.append(createAt <- r["create_at"] as! Int64)
                         reactionSetter.append(statusCol <- "created")
-                        
+
                         reactionSetters.append(reactionSetter)
                     }
                 }
                 metadata.removeValue(forKey: "reactions")
             }
-            
+
             // File setters
             if let files = metadata["files"] as? [Any] {
                 for file in files {
@@ -457,14 +456,14 @@ extension Database {
                         fileSetter.append(localPath <- "")
                         fileSetter.append(imageThumbnail <- (f["mini_preview"] as? String ?? ""))
                         fileSetter.append(statusCol <- "created")
-                        
+
                         fileSetters.append(fileSetter)
                     }
                 }
                 
                 metadata.removeValue(forKey: "files")
             }
-            
+
             // Emoji setters
             if let emojis = metadata["emojis"] as? [Any] {
                 for emoji in emojis {
@@ -473,20 +472,20 @@ extension Database {
                         emojiSetter.append(id <- e["id"] as! String)
                         emojiSetter.append(name <- e["name"] as! String)
                         emojiSetter.append(statusCol <- "created")
-                        
+
                         emojiSetters.append(emojiSetter)
                     }
                 }
                 
                 metadata.removeValue(forKey: "emojis")
             }
-            
+
             // Remaining Metadata
             
             let dataJSON = try! JSONSerialization.data(withJSONObject: metadata, options: [])
             metadataString = String(data: dataJSON, encoding: String.Encoding.utf8)!
         }
-        
+
         return MetadataSetters(metadata: metadataString,
                                reactionSetters: reactionSetters,
                                fileSetters: fileSetters,
@@ -508,7 +507,7 @@ extension Database {
             let query = threadTable
                 .select(id)
                 .where(id == post.id)
-            
+
             if let _ = try? db.pluck(query) {
                 let updateQuery = threadTable
                     .where(id == post.id)
@@ -526,7 +525,7 @@ extension Database {
                 setter.append(isFollowing <- post.is_following)
                 setter.append(lastFetchAtCol <- 0)
                 setter.append(statusCol <- "created")
-                
+
                 let threadSetter = ThreadSetters(
                     id: post.id,
                     threadSetters: setter,
@@ -542,7 +541,7 @@ extension Database {
     private func createThreadParticipantSetters(from post: Post) -> [[Setter]] {
         
         var participantSetters = [[Setter]]()
-        
+
         let id = Expression<String>("id")
         let userId = Expression<String>("user_id")
         let threadId = Expression<String>("thread_id")
