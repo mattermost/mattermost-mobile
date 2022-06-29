@@ -166,30 +166,28 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
     return (
         <View style={style.container}>
             {header}
-            <View>
-                {canDownloadFiles &&
+            {canDownloadFiles &&
                 <OptionItem
                     action={handleDownload}
                     label={intl.formatMessage({id: 'screen.search.results.file_options.download', defaultMessage: 'Download'})}
                     icon={'download-outline'}
                     type='default'
                 />
-                }
-                <OptionItem
-                    action={handleGotoChannel}
-                    label={intl.formatMessage({id: 'screen.search.results.file_options.open_in_channel', defaultMessage: 'Open in channel'})}
-                    icon={'globe'}
-                    type='default'
-                />
-                {enablePublicLink &&
+            }
+            <OptionItem
+                action={handleGotoChannel}
+                label={intl.formatMessage({id: 'screen.search.results.file_options.open_in_channel', defaultMessage: 'Open in channel'})}
+                icon={'globe'}
+                type='default'
+            />
+            {enablePublicLink &&
                 <OptionItem
                     action={handleCopyLink}
                     label={intl.formatMessage({id: 'screen.search.results.file_options.copy_link', defaultMessage: 'Copy link'})}
                     icon={'link-variant'}
                     type='default'
                 />
-                }
-            </View>
+            }
             <View style={style.toast} >
                 {action === 'downloading' &&
                 <DownloadWithAction
