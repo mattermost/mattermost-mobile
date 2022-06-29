@@ -373,7 +373,7 @@ export async function fetchPosts(serverUrl: string, channelId: string, page = 0,
             }
 
             if (isCRTEnabled) {
-                const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts, false);
                 if (threadModels?.length) {
                     models.push(...threadModels);
                 }
@@ -431,7 +431,7 @@ export async function fetchPostsBefore(serverUrl: string, channelId: string, pos
                 }
 
                 if (isCRTEnabled) {
-                    const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
+                    const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts, false);
                     if (threadModels?.length) {
                         models.push(...threadModels);
                     }
@@ -487,7 +487,7 @@ export async function fetchPostsSince(serverUrl: string, channelId: string, sinc
             }
 
             if (isCRTEnabled) {
-                const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts, false);
                 if (threadModels?.length) {
                     models.push(...threadModels);
                 }
@@ -602,7 +602,7 @@ export async function fetchPostThread(serverUrl: string, postId: string, fetchOn
             }
 
             if (isCRTEnabled) {
-                const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts);
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, result.posts, true);
                 if (threadModels?.length) {
                     models.push(...threadModels);
                 }
@@ -672,7 +672,7 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
             models.push(...posts);
 
             if (isCRTEnabled) {
-                const threadModels = await prepareThreadsFromReceivedPosts(operator, data.posts);
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, data.posts, false);
                 if (threadModels?.length) {
                     models.push(...threadModels);
                 }
@@ -783,7 +783,7 @@ export async function fetchPostById(serverUrl: string, postId: string, fetchOnly
 
             const isCRTEnabled = await getIsCRTEnabled(operator.database);
             if (isCRTEnabled) {
-                const threadModels = await prepareThreadsFromReceivedPosts(operator, [post]);
+                const threadModels = await prepareThreadsFromReceivedPosts(operator, [post], false);
                 if (threadModels?.length) {
                     models.push(...threadModels);
                 }
@@ -1005,7 +1005,7 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
 
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
         if (isCRTEnabled) {
-            promises.push(prepareThreadsFromReceivedPosts(operator, postsArray));
+            promises.push(prepareThreadsFromReceivedPosts(operator, postsArray, false));
         }
 
         const modelArrays = await Promise.all(promises);
@@ -1087,7 +1087,7 @@ export async function fetchPinnedPosts(serverUrl: string, channelId: string) {
         );
 
         if (isCRTEnabled) {
-            promises.push(prepareThreadsFromReceivedPosts(operator, postsArray));
+            promises.push(prepareThreadsFromReceivedPosts(operator, postsArray, false));
         }
 
         const modelArrays = await Promise.all(promises);

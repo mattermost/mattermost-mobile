@@ -217,7 +217,7 @@ export async function storePostsForChannel(
         }
 
         if (isCRTEnabled) {
-            const threadModels = await prepareThreadsFromReceivedPosts(operator, posts);
+            const threadModels = await prepareThreadsFromReceivedPosts(operator, posts, false);
             if (threadModels?.length) {
                 models.push(...threadModels);
             }

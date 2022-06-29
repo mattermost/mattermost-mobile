@@ -69,11 +69,11 @@ const Servers = React.forwardRef<ServersRef>((props, ref) => {
         setTotal({mentions, unread});
     };
 
-    const unreadsSubscription = (serverUrl: string, {myChannels, settings, threadMentionCount}: UnreadObserverArgs) => {
+    const unreadsSubscription = (serverUrl: string, {myChannels, settings, threadMentionCount, threadUnreads}: UnreadObserverArgs) => {
         const unreads = subscriptions.get(serverUrl);
         if (unreads) {
             let mentions = 0;
-            let unread = false;
+            let unread = Boolean(threadUnreads);
             for (const myChannel of myChannels) {
                 const isMuted = settings?.[myChannel.id]?.mark_unread === 'mention';
                 mentions += myChannel.mentionsCount;
@@ -101,14 +101,14 @@ const Servers = React.forwardRef<ServersRef>((props, ref) => {
 
         for (const server of servers) {
             const {lastActiveAt, url} = server;
-            if (lastActiveAt && url !== currentServerUrl && !subscriptions.has(url)) {
+            if (lastActiveAt && (url !== currentServerUrl) && !subscriptions.has(url)) {
                 const unreads: UnreadSubscription = {
                     mentions: 0,
                     unread: false,
                 };
                 subscriptions.set(url, unreads);
                 unreads.subscription = subscribeUnreadAndMentionsByServer(url, unreadsSubscription);
-            } else if ((!lastActiveAt || url === currentServerUrl) && subscriptions.has(url)) {
+            } else if ((!lastActiveAt || (url === currentServerUrl)) && subscriptions.has(url)) {
                 subscriptions.get(url)?.subscription?.unsubscribe();
                 subscriptions.delete(url);
                 updateTotal();
