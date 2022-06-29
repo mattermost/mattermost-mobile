@@ -129,8 +129,8 @@ export default class FilePickerUtil {
                 const uri = (await MattermostManaged.getFilePath(file.uri)).filePath;
                 const type = file.type || lookupMimeType(uri);
                 let fileName = file.fileName;
-                if (type.includes('video/')) {
-                    fileName = uri.split('\\').pop().split('/').pop();
+                if (type.includes('video/') && uri) {
+                    fileName = decodeURIComponent(uri.split('\\').pop().split('/').pop());
                 }
 
                 if (uri) {
@@ -229,10 +229,10 @@ export default class FilePickerUtil {
             if (uri === undefined) {
                 return {doc: undefined};
             }
+
+            doc.uri = uri;
         }
 
-        // Decode file uri to get the actual path
-        doc.uri = decodeURIComponent(uri);
         return {doc};
     };
 

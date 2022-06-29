@@ -55,7 +55,7 @@ const ClientFiles = (superclass: any) => class extends superclass {
         );
     };
 
-    uploadPostAttachment = async (
+    uploadPostAttachment = (
         file: FileInfo,
         channelId: string,
         onProgress: (fractionCompleted: number, bytesRead?: number | null | undefined) => void,
