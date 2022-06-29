@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {StyleSheet, FlatList, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Text, StyleProp, View, ViewStyle} from 'react-native';
 import Animated, {useDerivedValue} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -16,7 +16,7 @@ import {useTheme} from '@context/theme';
 import {PostModel, ChannelModel} from '@database/models/server';
 import {useIsTablet} from '@hooks/device';
 import {useImageAttachments} from '@hooks/files';
-import {bottomSheet} from '@screens/navigation';
+import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {isImage, isVideo} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -89,6 +89,7 @@ const Results = ({
     const insets = useSafeAreaInsets();
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
+    const [lastViewedIndex, setLastViewedIndex] = useState(0);
 
     const isTablet = useIsTablet();
     const galleryIdentifier = 'search-files-location';
@@ -122,22 +123,27 @@ const Results = ({
         openGalleryAtIndex(galleryIdentifier, idx, items);
     });
 
-    const numberOptions = useMemo(() => {
-        let number = 1;
-        if (canDownloadFiles) {
-            number += 1;
-        }
-        if (publicLinkEnabled) {
-            number += 1;
-        }
-        return number;
+    useEffect(() => {
+        const dismissBottom = async () => {
+            await dismissBottomSheet();
+        };
+        dismissBottom();
+        handleOptionsPress(lastViewedIndex);
     }, [canDownloadFiles, publicLinkEnabled]);
 
     const snapPoints = useMemo(() => {
+        let numberOptions = 1;
+        if (canDownloadFiles) {
+            numberOptions += 1;
+        }
+        if (publicLinkEnabled) {
+            numberOptions += 1;
+        }
         return [bottomSheetSnapPoint(numberOptions, ITEM_HEIGHT, insets.bottom) + HEADER_HEIGHT, 10];
-    }, [numberOptions]);
+    }, [canDownloadFiles, publicLinkEnabled]);
 
     const handleOptionsPress = useCallback((item: number) => {
+        setLastViewedIndex(item);
         const renderContent = () => {
             return (
                 <FileOptions
