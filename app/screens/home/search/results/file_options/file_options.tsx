@@ -47,6 +47,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 72,
             width: 72,
         },
+        optionContainer: {
+            marginHorizontal: -20,
+            paddingHorizontal: 20,
+        },
         infoContainer: {
             marginVertical: 8,
             alignItems: 'center',
@@ -172,6 +176,7 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
                     label={intl.formatMessage({id: 'screen.search.results.file_options.download', defaultMessage: 'Download'})}
                     icon={'download-outline'}
                     type='default'
+                    containerStyle={style.optionContainer}
                 />
             }
             <OptionItem
@@ -179,6 +184,7 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
                 label={intl.formatMessage({id: 'screen.search.results.file_options.open_in_channel', defaultMessage: 'Open in channel'})}
                 icon={'globe'}
                 type='default'
+                containerStyle={style.optionContainer}
             />
             {enablePublicLink &&
                 <OptionItem
@@ -186,6 +192,7 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
                     label={intl.formatMessage({id: 'screen.search.results.file_options.copy_link', defaultMessage: 'Copy link'})}
                     icon={'link-variant'}
                     type='default'
+                    containerStyle={style.optionContainer}
                 />
             }
             <View style={style.toast} >
