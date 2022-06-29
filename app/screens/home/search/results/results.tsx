@@ -89,7 +89,7 @@ const Results = ({
     const insets = useSafeAreaInsets();
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
-    const [lastViewedIndex, setLastViewedIndex] = useState(0);
+    const [lastViewedIndex, setLastViewedIndex] = useState<number | undefined>(undefined);
 
     const isTablet = useIsTablet();
     const galleryIdentifier = 'search-files-location';
@@ -124,6 +124,9 @@ const Results = ({
     });
 
     useEffect(() => {
+        if (!lastViewedIndex) {
+            return;
+        }
         const dismissBottom = async () => {
             await dismissBottomSheet();
         };
