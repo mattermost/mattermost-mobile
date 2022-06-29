@@ -65,20 +65,11 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
         // Nothing to add or remove
         if (!groups?.length && !existingGroupMemberships.length) {
             return records;
-        }
-
-        // No groups - remove all existing ones
-        if (!groups?.length && existingGroupMemberships.length) {
+        } else if (!groups?.length && existingGroupMemberships.length) { // No groups - remove all existing ones
             records = existingGroupMemberships.map((gm) => gm.prepareDestroyPermanently());
-        }
-
-        // No existing groups - add all new ones
-        if (groups?.length && !existingGroupMemberships.length) {
+        } else if (groups?.length && !existingGroupMemberships.length) { // No existing groups - add all new ones
             rawValues = groups.map((g) => ({id: `${g.id}-${userId}`, user_id: userId, group_id: g.id}));
-        }
-
-        // If both, we only want to save new ones and delete one's no longer in groups
-        if (groups?.length && existingGroupMemberships.length) {
+        } else if (groups?.length && existingGroupMemberships.length) { // If both, we only want to save new ones and delete one's no longer in groups
             const groupsSet: {[key: string]: GroupMembership} = {};
 
             for (const g of groups) {

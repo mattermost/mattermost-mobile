@@ -5,7 +5,6 @@ import {Database, Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
-import type ServerDataOperator from '@database/operator/server_data_operator';
 import type GroupModel from '@typings/database/models/servers/group';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 
@@ -41,12 +40,4 @@ export const queryGroupMembershipForMember = (database: Database, userId: string
     return database.collections.get<GroupMembershipModel>(GROUP_MEMBERSHIP).query(
         Q.where('user_id', userId),
     );
-};
-
-export const prepareGroups = (operator: ServerDataOperator, groups: Group[]) => {
-    return operator.handleGroups({groups, prepareRecordsOnly: true});
-};
-
-export const prepareGroupMembershipsForMember = (operator: ServerDataOperator, userId: string, groups: Group[]) => {
-    return operator.handleGroupMembershipsForMember({userId, groups, prepareRecordsOnly: true});
 };
