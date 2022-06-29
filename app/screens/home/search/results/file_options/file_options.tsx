@@ -72,9 +72,8 @@ type Props = {
     canDownloadFiles: boolean;
     enablePublicLink: boolean;
     fileInfo: FileInfo;
-    toastMarginBottom: number;
 }
-const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink, toastMarginBottom}: Props) => {
+const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const intl = useIntl();
@@ -189,7 +188,7 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink, toastMarginB
                     type='default'
                 />
             }
-            <View style={[style.toast, {marginBottom: toastMarginBottom}]} >
+            <View style={style.toast} >
                 {action === 'downloading' &&
                 <DownloadWithAction
                     action={action}

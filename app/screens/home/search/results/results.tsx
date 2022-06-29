@@ -26,7 +26,6 @@ import {TabTypes, TabType} from '@utils/search';
 import {preventDoubleTap} from '@utils/tap';
 
 import FileOptions from './file_options';
-import {TOAST_MARGIN_BOTTOM} from './file_options/file_options';
 import Loader from './loader';
 
 const styles = StyleSheet.create({
@@ -69,7 +68,7 @@ type Props = {
 
 const emptyList: FileInfo[] | Array<string | PostModel> = [];
 const ITEM_HEIGHT = MIN_HEIGHT;
-const HEADER_HEIGHT = 145 + TOAST_MARGIN_BOTTOM;
+const HEADER_HEIGHT = 185;
 
 const Results = ({
     currentTimezone,
@@ -143,7 +142,6 @@ const Results = ({
             return (
                 <FileOptions
                     fileInfo={orderedFilesForGallery.value[item]}
-                    toastMarginBottom={numberOptions}
                 />
             );
         };
