@@ -4,7 +4,9 @@
 import React, {useCallback, useMemo} from 'react';
 import {StyleSheet, FlatList, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Text, StyleProp, View, ViewStyle} from 'react-native';
 import Animated, {useDerivedValue} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {MIN_HEIGHT} from '@app/components/option_item';
 import File from '@components/files/file';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import DateSeparator from '@components/post_list/date_separator';
@@ -17,12 +19,14 @@ import {useImageAttachments} from '@hooks/files';
 import {bottomSheet} from '@screens/navigation';
 import {isImage, isVideo} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {getViewPortWidth} from '@utils/images';
 import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
 import {TabTypes, TabType} from '@utils/search';
 import {preventDoubleTap} from '@utils/tap';
 
 import FileOptions from './file_options';
+import {TOAST_MARGIN_BOTTOM} from './file_options/file_options';
 import Loader from './loader';
 
 const styles = StyleSheet.create({
@@ -64,6 +68,8 @@ type Props = {
 }
 
 const emptyList: FileInfo[] | Array<string | PostModel> = [];
+const ITEM_HEIGHT = MIN_HEIGHT;
+const HEADER_HEIGHT = 145 + TOAST_MARGIN_BOTTOM;
 
 const Results = ({
     currentTimezone,
@@ -81,6 +87,7 @@ const Results = ({
     publicLinkEnabled,
 }: Props) => {
     const theme = useTheme();
+    const insets = useSafeAreaInsets();
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
 
@@ -116,22 +123,38 @@ const Results = ({
         openGalleryAtIndex(galleryIdentifier, idx, items);
     });
 
+    const numberOptions = useMemo(() => {
+        let number = 1;
+        if (canDownloadFiles) {
+            number += 1;
+        }
+        if (publicLinkEnabled) {
+            number += 1;
+        }
+        return number;
+    }, [canDownloadFiles, publicLinkEnabled]);
+
+    const snapPoints = useMemo(() => {
+        return [bottomSheetSnapPoint(numberOptions, ITEM_HEIGHT, insets.bottom) + HEADER_HEIGHT, 10];
+    }, [numberOptions]);
+
     const handleOptionsPress = useCallback((item: number) => {
         const renderContent = () => {
             return (
                 <FileOptions
                     fileInfo={orderedFilesForGallery.value[item]}
+                    toastMarginBottom={numberOptions}
                 />
             );
         };
         bottomSheet({
             closeButtonId: 'close-search-file-options',
             renderContent,
-            snapPoints: [400, 10],
+            snapPoints,
             theme,
             title: '',
         });
-    }, [orderedFilesForGallery]);
+    }, [orderedFilesForGallery, insets, snapPoints]);
 
     const attachmentIndex = (fileId: string) => {
         return orderedFilesForGallery.value.findIndex((file) => file.id === fileId) || 0;

@@ -13,7 +13,6 @@ import FormattedDate from '@components/formatted_date';
 import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
 import CopyPublicLink from '@screens/gallery/footer/copy_public_link';
 import DownloadWithAction from '@screens/gallery/footer/download_with_action';
 import {getFormattedFileSize, isImage, isVideo} from '@utils/file';
@@ -21,6 +20,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 const format = 'MMM DD YYYY HH:MM A';
+
+export const TOAST_MARGIN_BOTTOM = 40;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -71,12 +72,12 @@ type Props = {
     canDownloadFiles: boolean;
     enablePublicLink: boolean;
     fileInfo: FileInfo;
+    toastMarginBottom: number;
 }
-const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
+const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink, toastMarginBottom}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const intl = useIntl();
-    const isTablet = useIsTablet();
     const ref = useRef<any>();
     const serverUrl = useServerUrl();
     const [action, setAction] = useState<GalleryAction>('none');
@@ -188,7 +189,7 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
                     type='default'
                 />
             }
-            <View style={style.toast} >
+            <View style={[style.toast, {marginBottom: toastMarginBottom}]} >
                 {action === 'downloading' &&
                 <DownloadWithAction
                     action={action}

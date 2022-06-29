@@ -31,6 +31,7 @@ const OptionType = {
 } as const;
 
 type OptionType = typeof OptionType[keyof typeof OptionType];
+export const MIN_HEIGHT = 48;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -42,7 +43,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             flexDirection: 'row',
             alignItems: 'center',
-            minHeight: 48,
+            minHeight: MIN_HEIGHT,
         },
         destructive: {
             color: theme.dndIndicator,
