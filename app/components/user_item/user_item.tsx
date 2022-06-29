@@ -14,7 +14,7 @@ import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {getUserCustomStatus, isBot, isGuest, isShared} from '@utils/user';
+import {getUserCustomStatus, isBot, isCustomStatusExpired, isGuest, isShared} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -107,6 +107,7 @@ const UserItem = ({
     const isCurrentUser = currentUserId === user?.id;
     const name = getName(user, showFullName, isCurrentUser, intl);
     const customStatus = getUserCustomStatus(user);
+    const customStatusExpired = isCustomStatusExpired(user);
 
     const userItemTestId = `${testID}.${user?.id}`;
 
@@ -154,7 +155,7 @@ const UserItem = ({
                 </Text>
                 }
             </View>
-            {Boolean(isCustomStatusEnabled && !bot && customStatus?.emoji) && (
+            {Boolean(isCustomStatusEnabled && !bot && customStatus?.emoji && !customStatusExpired) && (
                 <CustomStatusEmoji
                     customStatus={customStatus!}
                     style={style.icon}
