@@ -9,9 +9,10 @@ import {
     observeCurrentTeamId,
     observeCurrentUserId,
 } from '@queries/servers/system';
-import {WithDatabaseArgs} from '@typings/database/database';
 
 import DisplayTheme from './display_theme';
+
+import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentTeamId = observeCurrentTeamId(database);

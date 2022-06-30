@@ -72,6 +72,7 @@ const ClientFiles = (superclass: any) => class extends superclass {
                     channel_id: channelId,
                 },
             },
+            timeoutInterval: 3 * 60 * 1000, // 3 minutes
         };
         const promise = this.apiClient.upload(url, file.localPath, options) as ProgressPromise<ClientResponse>;
         promise.progress!(onProgress).then(onComplete).catch(onError);

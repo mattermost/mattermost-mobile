@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
-import {StyleProp, Switch, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
+import React, {useCallback, useMemo} from 'react';
+import {Platform, StyleProp, Switch, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
@@ -12,6 +12,7 @@ import {typography} from '@utils/typography';
 type Props = {
     action: (value: string | boolean) => void;
     description?: string;
+    inline?: boolean;
     destructive?: boolean;
     icon?: string;
     info?: string;
@@ -58,6 +59,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.56),
             ...typography('Body', 100),
         },
+        inlineLabel: {
+            flexDirection: 'row',
+            flexShrink: 1,
+            justifyContent: 'center',
+        },
+        inlineLabelText: {
+            color: theme.centerChannelColor,
+            ...typography('Body', 200, 'SemiBold'),
+        },
+        inlineDescription: {
+            color: theme.centerChannelColor,
+            ...typography('Body', 200),
+        },
         label: {
             flexShrink: 1,
             justifyContent: 'center',
@@ -79,11 +93,31 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const OptionItem = ({
     action, description, destructive, icon,
-    info, label, selected,
+    info, inline = false, label, selected,
     testID = 'optionItem', type, value, containerStyle,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+
+    const isInLine = inline && Boolean(description);
+
+    const labelStyle = useMemo(() => {
+        return isInLine ? styles.inlineLabel : styles.label;
+    }, [inline, styles, isInLine]);
+
+    const labelTextStyle = useMemo(() => {
+        return [
+            isInLine ? styles.inlineLabelText : styles.labelText,
+            destructive && styles.destructive,
+        ];
+    }, [destructive, styles, isInLine]);
+
+    const descriptionTextStyle = useMemo(() => {
+        return [
+            isInLine ? styles.inlineDescription : styles.description,
+            destructive && styles.destructive,
+        ];
+    }, [destructive, styles, isInLine]);
 
     let actionComponent;
     if (type === OptionType.SELECT && selected) {
@@ -96,10 +130,19 @@ const OptionItem = ({
             />
         );
     } else if (type === OptionType.TOGGLE) {
+        const trackColor = Platform.select({
+            ios: {true: theme.buttonBg, false: changeOpacity(theme.centerChannelColor, 0.16)},
+            default: {true: changeOpacity(theme.buttonBg, 0.32), false: changeOpacity(theme.centerChannelColor, 0.24)},
+        });
+        const thumbColor = Platform.select({
+            android: selected ? theme.buttonBg : '#F3F3F3', // Hardcoded color specified in ticket MM-45143
+        });
         actionComponent = (
             <Switch
                 onValueChange={action}
                 value={selected}
+                trackColor={trackColor}
+                thumbColor={thumbColor}
                 testID={`${testID}.toggled.${selected}`}
             />
         );
@@ -133,16 +176,16 @@ const OptionItem = ({
                             />
                         </View>
                     )}
-                    <View style={styles.label}>
+                    <View style={labelStyle}>
                         <Text
-                            style={[styles.labelText, destructive && styles.destructive]}
+                            style={labelTextStyle}
                             testID={`${testID}.label`}
                         >
                             {label}
                         </Text>
                         {Boolean(description) &&
                         <Text
-                            style={[styles.description, destructive && styles.destructive]}
+                            style={descriptionTextStyle}
                             testID={`${testID}.description`}
                         >
                             {description}

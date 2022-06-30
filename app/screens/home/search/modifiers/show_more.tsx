@@ -5,6 +5,7 @@ import React from 'react';
 import FormattedText from '@components/formatted_text';
 import MenuItem from '@components/menu_item';
 import {useTheme} from '@context/theme';
+import {t} from '@i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -27,14 +28,21 @@ const ShowMoreButton = ({onPress, showMore}: ShowMoreButtonProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
+    let id = t('mobile.search.show_more');
+    let defaultMessage = 'Show more';
+    if (showMore) {
+        id = t('mobile.search.show_less');
+        defaultMessage = 'Show less';
+    }
+
     return (
         <MenuItem
             testID={'mobile.search.show_more'}
             onPress={onPress}
             labelComponent={
                 <FormattedText
-                    id={showMore ? 'mobile.search.show_less' : 'mobile.search.show_more'}
-                    defaultMessage={showMore ? 'Show less' : 'Show more'}
+                    id={id}
+                    defaultMessage={defaultMessage}
                     style={style.showMore}
                 />
             }

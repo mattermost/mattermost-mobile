@@ -23,7 +23,7 @@ describe('*** Operator: Thread Handlers tests ***', () => {
 
     beforeAll(async () => {
         await DatabaseManager.init(['baseHandler.test.com']);
-        operator = DatabaseManager.serverDatabases['baseHandler.test.com'].operator;
+        operator = DatabaseManager.serverDatabases['baseHandler.test.com']!.operator;
     });
 
     it('=> HandleThreads: should write to the the Thread & ThreadParticipant & ThreadsInTeam tables', async () => {
@@ -46,8 +46,9 @@ describe('*** Operator: Thread Handlers tests ***', () => {
                 is_following: true,
                 unread_replies: 0,
                 unread_mentions: 0,
+                lastFetchedAt: 0,
             },
-        ] as Thread[];
+        ] as ThreadWithLastFetchedAt[];
 
         const threadsMap = {team_id_1: threads};
         await operator.handleThreads({threads, loadedInGlobalThreads: false, prepareRecordsOnly: false, teamId: 'team_id_1'});

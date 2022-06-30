@@ -23,6 +23,7 @@ describe('components/channel_list/categories/body', () => {
                 unreadChannels={[]}
                 onChannelSwitch={() => undefined}
                 onlyUnreads={false}
+                unreadThreads={{unreads: false, mentions: 0}}
             />,
             {database},
         );

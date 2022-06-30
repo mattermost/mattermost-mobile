@@ -41,6 +41,7 @@ export const observeIsCRTEnabled = (database: Database) => {
         map(
             ([cfg, prefs]) => processIsCRTEnabled(prefs, cfg),
         ),
+        distinctUntilChanged(),
     );
 };
 
@@ -65,15 +66,15 @@ export const observeTeamIdByThread = (thread: ThreadModel) => {
     );
 };
 
-export const observeUnreadsAndMentionsInTeam = (database: Database, teamId?: string, includeDmGm?: boolean): Observable<{unreads: number; mentions: number}> => {
+export const observeUnreadsAndMentionsInTeam = (database: Database, teamId?: string, includeDmGm?: boolean): Observable<{unreads: boolean; mentions: number}> => {
     const observeThreads = () => queryThreads(database, teamId, true, includeDmGm).
         observeWithColumns(['unread_replies', 'unread_mentions']).
         pipe(
             switchMap((threads) => {
-                let unreads = 0;
+                let unreads = false;
                 let mentions = 0;
                 for (const thread of threads) {
-                    unreads += thread.unreadReplies;
+                    unreads = unreads || Boolean(thread.unreadReplies);
                     mentions += thread.unreadMentions;
                 }
 
@@ -82,14 +83,18 @@ export const observeUnreadsAndMentionsInTeam = (database: Database, teamId?: str
         );
 
     return observeIsCRTEnabled(database).pipe(
-        switchMap((hasCRT) => (hasCRT ? observeThreads() : of$({unreads: 0, mentions: 0}))),
+        switchMap((hasCRT) => (hasCRT ? observeThreads() : of$({unreads: false, mentions: 0}))),
+        distinctUntilChanged((x, y) => x.mentions === y.mentions && x.unreads === y.unreads),
     );
 };
 
 // On receiving "posts", Save the "root posts" as "threads"
-export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperator, posts: Post[]) => {
+export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperator, posts: Post[], updateLastFetchAt: boolean) => {
     const models: Model[] = [];
-    const threads: Thread[] = [];
+    const threads: ThreadWithLastFetchedAt[] = [];
+    const toUpdate: {[rootId: string]: number | undefined} = {};
+    let processedThreads: Set<string> | undefined;
+
     posts.forEach((post: Post) => {
         if (!post.root_id && post.type === '') {
             threads.push({
@@ -98,12 +103,30 @@ export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperat
                 reply_count: post.reply_count,
                 last_reply_at: post.last_reply_at,
                 is_following: post.is_following,
-            } as Thread);
+                lastFetchedAt: post.create_at,
+            } as ThreadWithLastFetchedAt);
+        } else if (post.root_id && updateLastFetchAt) {
+            toUpdate[post.root_id] = Math.max(toUpdate[post.root_id] || 0, post.create_at, post.update_at, post.delete_at);
         }
     });
+
     if (threads.length) {
-        const threadModels = await operator.handleThreads({threads, prepareRecordsOnly: true});
+        const threadModels = await operator.handleThreads({threads, prepareRecordsOnly: true}) as ThreadModel[];
+        processedThreads = new Set<string>(threadModels.map((t) => t.id));
         models.push(...threadModels);
+    }
+
+    const toUpdateKeys = Object.keys(toUpdate);
+    if (toUpdateKeys.length) {
+        const toUpdateThreads = await Promise.all(toUpdateKeys.map((key) => getThreadById(operator.database, key)));
+        for (const thread of toUpdateThreads) {
+            if (thread && !processedThreads?.has(thread.id)) {
+                const model = thread.prepareUpdate((record) => {
+                    record.lastFetchedAt = Math.max(record.lastFetchedAt, toUpdate[thread.id] || 0);
+                });
+                models.push(model);
+            }
+        }
     }
 
     return models;

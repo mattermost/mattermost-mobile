@@ -11,23 +11,26 @@ export const getNeededAtMentionedUsernames = (usernames: Set<string>, posts: Pos
     posts.forEach((p) => {
         let match;
         while ((match = pattern.exec(p.message)) !== null) {
+            const lowercaseMatch1 = match[1].toLowerCase();
+            const lowercaseMatch2 = match[2].toLowerCase();
+
             // match[1] is the matched mention including trailing punctuation
             // match[2] is the matched mention without trailing punctuation
-            if (General.SPECIAL_MENTIONS.has(match[2])) {
+            if (General.SPECIAL_MENTIONS.has(lowercaseMatch2)) {
                 continue;
             }
 
-            if (match[1] === excludeUsername || match[2] === excludeUsername) {
+            if (lowercaseMatch1 === excludeUsername || lowercaseMatch2 === excludeUsername) {
                 continue;
             }
 
-            if (usernames.has(match[1]) || usernames.has(match[2])) {
+            if (usernames.has(lowercaseMatch1) || usernames.has(lowercaseMatch2)) {
                 continue;
             }
 
             // If there's no trailing punctuation, this will only add 1 item to the set
-            usernamesToLoad.add(match[1]);
-            usernamesToLoad.add(match[2]);
+            usernamesToLoad.add(lowercaseMatch1);
+            usernamesToLoad.add(lowercaseMatch2);
         }
     });
 

@@ -3,14 +3,14 @@
 
 import DatabaseManager from '@database/manager';
 import {getFileById} from '@queries/servers/file';
+import {logError} from '@utils/log';
 
 export const updateLocalFile = async (serverUrl: string, file: FileInfo) => {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         return operator.handleFiles({files: [file], prepareRecordsOnly: false});
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed updateLocalFile', error);
+        logError('Failed updateLocalFile', error);
         return {error};
     }
 };
@@ -29,8 +29,7 @@ export const updateLocalFilePath = async (serverUrl: string, fileId: string, loc
 
         return {error: undefined};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed updateLocalFilePath', error);
+        logError('Failed updateLocalFilePath', error);
         return {error};
     }
 };

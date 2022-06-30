@@ -227,6 +227,7 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
                 sections={sections}
                 contentContainerStyle={{paddingBottom: 50}}
                 windowSize={100}
+                testID='emoji_picker.emoji_sections.section_list'
             />
             <EmojiSectionBar
                 currentIndex={sectionIndex}

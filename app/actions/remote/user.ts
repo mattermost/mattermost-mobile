@@ -14,10 +14,13 @@ import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
 import NetworkManager from '@managers/network_manager';
 import {getMembersCountByChannelsId, queryChannelsByTypes} from '@queries/servers/channel';
+import {queryGroupsByNames} from '@queries/servers/group';
 import {getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
-import {getCurrentUser, getUserById, prepareUsers, queryAllUsers, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
+import {getCurrentUser, getUserById, prepareUsers, queryAllUsers, queryUsersById, queryUsersByIdsOrUsernames, queryUsersByUsername} from '@queries/servers/user';
+import {logError} from '@utils/log';
 import {getUserTimezoneProps, removeUserFromList} from '@utils/user';
 
+import {fetchGroupsByNames} from './groups';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
@@ -277,6 +280,53 @@ export const fetchStatusInBatch = (serverUrl: string, id: string) => {
     return debouncedFetchStatusesByIds.apply(null, [serverUrl]);
 };
 
+const mentionNames = new Set<string>();
+export const fetchUserOrGroupsByMentionsInBatch = (serverUrl: string, mentionName: string) => {
+    mentionNames.add(mentionName);
+    return debouncedFetchUserOrGroupsByMentionNames.apply(null, [serverUrl]);
+};
+const debouncedFetchUserOrGroupsByMentionNames = debounce(
+    (serverUrl: string) => {
+        fetchUserOrGroupsByMentionNames(serverUrl, Array.from(mentionNames));
+    },
+    200,
+    false,
+    () => {
+        mentionNames.clear();
+    },
+);
+
+const fetchUserOrGroupsByMentionNames = async (serverUrl: string, mentions: string[]) => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        // Get any missing users
+        const usersInDb = await queryUsersByIdsOrUsernames(database, [], mentions).fetch();
+        const usersMap = new Set(usersInDb.map((u) => u.username));
+        const usernamesToFetch = mentions.filter((m) => !usersMap.has(m));
+
+        let fetchedUsers;
+        if (usernamesToFetch.length) {
+            const {users} = await fetchUsersByUsernames(serverUrl, usernamesToFetch, false);
+            fetchedUsers = users;
+        }
+
+        // Get any missing groups
+        const fetchedUserMentions = new Set(fetchedUsers?.map((u) => u.username));
+        const groupsToCheck = usernamesToFetch.filter((m) => !fetchedUserMentions.has(m));
+        const groupsInDb = await queryGroupsByNames(database, groupsToCheck).fetch();
+        const groupsMap = new Set(groupsInDb.map((g) => g.name));
+        const groupsToFetch = groupsToCheck.filter((g) => !groupsMap.has(g));
+
+        if (groupsToFetch.length) {
+            await fetchGroupsByNames(serverUrl, groupsToFetch, false);
+        }
+        return {data: true};
+    } catch (e) {
+        return {error: e};
+    }
+};
+
 export async function fetchStatusByIds(serverUrl: string, userIds: string[], fetchOnly = false) {
     let client: Client;
     try {
@@ -288,11 +338,20 @@ export async function fetchStatusByIds(serverUrl: string, userIds: string[], fet
         return {statuses: []};
     }
 
+    let database;
+    let operator;
+    try {
+        const result = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        database = result.database;
+        operator = result.operator;
+    } catch (e) {
+        return {error: `${serverUrl} database not found`};
+    }
+
     try {
         const statuses = await client.getStatusesByIds(userIds);
 
         if (!fetchOnly && DatabaseManager.serverDatabases[serverUrl]) {
-            const {database, operator} = DatabaseManager.serverDatabases[serverUrl];
             if (operator) {
                 const users = await queryUsersById(database, userIds).fetch();
                 const userStatuses = statuses.reduce((result: Record<string, UserStatus>, s) => {
@@ -792,9 +851,12 @@ export const buildProfileImageUrl = (serverUrl: string, userId: string, timestam
 };
 
 export const autoUpdateTimezone = async (serverUrl: string, {deviceTimezone, userId}: {deviceTimezone: string; userId: string}) => {
-    const database = DatabaseManager.serverDatabases[serverUrl].database;
-    if (!database) {
-        return {error: `No database present for ${serverUrl}`};
+    let database;
+    try {
+        const result = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        database = result.database;
+    } catch (e) {
+        return {error: `${serverUrl} database not found`};
     }
 
     const currentUser = await getUserById(database, userId);
@@ -814,9 +876,12 @@ export const autoUpdateTimezone = async (serverUrl: string, {deviceTimezone, use
 };
 
 export const fetchTeamAndChannelMembership = async (serverUrl: string, userId: string, teamId: string, channelId?: string) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl].operator;
-    if (!operator) {
-        return {error: `No database present for ${serverUrl}`};
+    let operator;
+    try {
+        const result = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        operator = result.operator;
+    } catch (e) {
+        return {error: `${serverUrl} database not found`};
     }
 
     let client: Client;
@@ -850,5 +915,16 @@ export const fetchTeamAndChannelMembership = async (serverUrl: string, userId: s
         return {error: undefined};
     } catch (error) {
         return {error};
+    }
+};
+
+export const getAllSupportedTimezones = async (serverUrl: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const allTzs = await client.getTimezones();
+        return allTzs;
+    } catch (error) {
+        logError('FAILED TO GET ALL TIMEZONES', error);
+        return [];
     }
 };

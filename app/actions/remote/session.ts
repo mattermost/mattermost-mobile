@@ -12,6 +12,7 @@ import WebsocketManager from '@managers/websocket_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getCurrentUserId, getCommonSystemValues} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
+import {logWarning} from '@utils/log';
 import {getCSRFFromCookie} from '@utils/security';
 import {getDeviceTimezone, isTimezoneEnabled} from '@utils/timezone';
 
@@ -172,8 +173,7 @@ export const logout = async (serverUrl: string, skipServerLogout = false, remove
             await client.logout();
         } catch (error) {
             // We want to log the user even if logging out from the server failed
-            // eslint-disable-next-line no-console
-            console.warn('An error ocurred loging out from the server', serverUrl, error);
+            logWarning('An error ocurred loging out from the server', serverUrl, error);
         }
     }
 

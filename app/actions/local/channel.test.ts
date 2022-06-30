@@ -64,7 +64,7 @@ describe('switchToChannel', () => {
     } as ChannelMembership;
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
-        operator = DatabaseManager.serverDatabases[serverUrl].operator;
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
         spyNow = jest.spyOn(Date, 'now').mockImplementation(() => now);
     });
 

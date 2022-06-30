@@ -1,14 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import moment from 'moment-timezone';
+import moment from 'moment';
+import mtz from 'moment-timezone';
 import React, {useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchTeamAndChannelMembership} from '@actions/remote/user';
-import {useServerUrl} from '@app/context/server';
 import {Screens} from '@constants';
+import {useServerUrl} from '@context/server';
 import {getLocaleFromLanguage} from '@i18n';
 import BottomSheet from '@screens/bottom_sheet';
 import {getUserTimezone} from '@utils/user';
@@ -64,7 +65,7 @@ const UserProfile = ({
             const localeFormat = moment.localeData().longDateFormat('LT');
             format = localeFormat?.includes('A') ? localeFormat : 'h:mm A';
         }
-        localTime = moment.tz(Date.now(), timezone).format(format);
+        localTime = mtz.tz(Date.now(), timezone).format(format);
     }
 
     const snapPoints = useMemo(() => {

@@ -42,7 +42,7 @@ export type ServerDatabase = {
 }
 
 export type ServerDatabases = {
-  [x: string]: ServerDatabase;
+  [x: string]: ServerDatabase | undefined;
 };
 
 export type TransformerArgs = {
@@ -89,7 +89,7 @@ export type HandlePostsArgs = {
 };
 
 export type HandleThreadsArgs = {
-  threads?: Thread[];
+  threads?: ThreadWithLastFetchedAt[];
   prepareRecordsOnly?: boolean;
   teamId?: string;
   loadedInGlobalThreads?: boolean;

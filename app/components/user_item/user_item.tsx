@@ -108,14 +108,19 @@ const UserItem = ({
     const name = getName(user, showFullName, isCurrentUser, intl);
     const customStatus = getUserCustomStatus(user);
 
+    const userItemTestId = `${testID}.${user?.id}`;
+
     return (
-        <View style={[style.row, containerStyle]}>
+        <View
+            style={[style.row, containerStyle]}
+            testID={userItemTestId}
+        >
             <View style={style.rowPicture}>
                 <ProfilePicture
                     author={user}
                     size={24}
                     showStatus={false}
-                    testID={`${testID}.profile_picture`}
+                    testID={`${userItemTestId}.profile_picture`}
                 />
             </View>
             <View
@@ -127,7 +132,7 @@ const UserItem = ({
                     <Text
                         style={style.rowFullname}
                         numberOfLines={1}
-                        testID={`${testID}.name`}
+                        testID={`${userItemTestId}.display_name`}
                     >
                         {name}
                     </Text>
@@ -143,7 +148,7 @@ const UserItem = ({
                 <Text
                     style={style.rowUsername}
                     numberOfLines={1}
-                    testID='at_mention_item.username'
+                    testID={`${userItemTestId}.username`}
                 >
                     {` @${user!.username}`}
                 </Text>
@@ -153,6 +158,7 @@ const UserItem = ({
                 <CustomStatusEmoji
                     customStatus={customStatus!}
                     style={style.icon}
+                    testID={testID}
                 />
             )}
             {shared && (

@@ -14,6 +14,7 @@ import {Screens, Sso} from '@constants';
 import NetworkManager from '@managers/network_manager';
 import Background from '@screens/background';
 import {dismissModal, resetToHome, resetToTeams} from '@screens/navigation';
+import {logWarning} from '@utils/log';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
 import SSOWithWebView from './sso_with_webview';
@@ -82,7 +83,7 @@ const SSO = ({
     }
 
     const onLoadEndError = (e: ClientErrorProps | Error | string) => {
-        console.warn('Failed to set store from local data', e); // eslint-disable-line no-console
+        logWarning('Failed to set store from local data', e);
         if (typeof e === 'string') {
             setLoginError(e);
             return;
