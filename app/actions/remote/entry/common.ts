@@ -324,13 +324,13 @@ export const syncOtherServers = async (serverUrl: string) => {
         for (const server of servers) {
             if (server.url !== serverUrl && server.lastActiveAt > 0) {
                 registerDeviceToken(server.url);
-                syncAllChannelMembers(server.url);
+                syncAllChannelMembersAndThreads(server.url);
             }
         }
     }
 };
 
-const syncAllChannelMembers = async (serverUrl: string) => {
+const syncAllChannelMembersAndThreads = async (serverUrl: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return;
@@ -345,10 +345,16 @@ const syncAllChannelMembers = async (serverUrl: string) => {
 
     try {
         const myTeams = await client.getMyTeams();
+        const preferences = await client.getMyPreferences();
+        const config = await client.getClientConfigOld();
+
         let excludeDirect = false;
         for (const myTeam of myTeams) {
             fetchMyChannelsForTeam(serverUrl, myTeam.id, false, 0, false, excludeDirect);
             excludeDirect = true;
+            if (preferences && processIsCRTEnabled(preferences, config)) {
+                fetchNewThreads(serverUrl, myTeam.id, false);
+            }
         }
     } catch {
         // Do nothing

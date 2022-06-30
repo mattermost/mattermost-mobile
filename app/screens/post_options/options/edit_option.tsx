@@ -29,7 +29,6 @@ const EditOption = ({post, canDelete}: Props) => {
         const closeButtonId = 'close-edit-post';
         const passProps = {post, closeButtonId, canDelete};
         const options = {
-            modal: {swipeToDismiss: false},
             topBar: {
                 leftButtons: [{
                     id: closeButtonId,

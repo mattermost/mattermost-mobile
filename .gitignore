@@ -107,7 +107,7 @@ detox/detox_pixel_4_xl_api_30
 #editor-settings
 .vscode
 .scannerwork
+launch.json
 
 # Notice.txt generation
 !build/notice-file
-

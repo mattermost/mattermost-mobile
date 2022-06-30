@@ -9,6 +9,7 @@ import {
     markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt,
     storeMyChannelsForTeam, updateChannelInfoFromChannel, updateMyChannelFromWebsocket,
 } from '@actions/local/channel';
+import {storePostsForChannel} from '@actions/local/post';
 import {switchToGlobalThreads} from '@actions/local/thread';
 import {fetchMissingDirectChannelsInfo, fetchMyChannel, fetchChannelStats, fetchChannelById, switchToChannelById} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
@@ -281,18 +282,16 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
             }
 
             const {posts, order, authors, actionType, previousPostId} = await fetchPostsForChannel(serverUrl, channelId, true);
-            if (actionType) {
-                models.push(...await operator.handlePosts({
-                    actionType,
-                    order,
-                    posts,
-                    previousPostId,
-                    prepareRecordsOnly: true,
-                }));
-            }
+            if (posts?.length && order?.length) {
+                const {models: prepared} = await storePostsForChannel(
+                    serverUrl, channelId,
+                    posts, order, previousPostId ?? '',
+                    actionType, authors,
+                );
 
-            if (authors?.length) {
-                models.push(...await operator.handleUsers({users: authors, prepareRecordsOnly: true}));
+                if (prepared?.length) {
+                    models.push(...prepared);
+                }
             }
         } else {
             const addedUser = getUserById(database, userId);

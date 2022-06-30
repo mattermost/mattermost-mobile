@@ -12,6 +12,7 @@ import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type ThreadModel from '@typings/database/models/servers/thread';
 
 type Props = {
     isCRTEnabled: boolean;
@@ -20,6 +21,7 @@ type Props = {
     posts: PostModel[];
     rootPost: PostModel;
     teamId: string;
+    thread?: ThreadModel;
 }
 
 const edges: Edge[] = ['bottom'];
@@ -32,7 +34,7 @@ const styles = StyleSheet.create({
 
 const ThreadPostList = ({
     isCRTEnabled, lastViewedAt,
-    nativeID, posts, rootPost, teamId,
+    nativeID, posts, rootPost, teamId, thread,
 }: Props) => {
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
@@ -44,11 +46,11 @@ const ThreadPostList = ({
     // If CRT is enabled, When new post arrives and thread modal is open, mark thread as read
     const oldPostsCount = useRef<number>(posts.length);
     useEffect(() => {
-        if (isCRTEnabled && oldPostsCount.current < posts.length) {
+        if (isCRTEnabled && thread?.isFollowing && oldPostsCount.current < posts.length) {
             oldPostsCount.current = posts.length;
             markThreadAsRead(serverUrl, teamId, rootPost.id);
         }
-    }, [isCRTEnabled, posts, rootPost, serverUrl, teamId]);
+    }, [isCRTEnabled, posts, rootPost, serverUrl, teamId, thread]);
 
     const postList = (
         <PostList

@@ -126,6 +126,8 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
   UIApplicationState state = [UIApplication sharedApplication].applicationState;
   NSString* action = [userInfo objectForKey:@"type"];
   NSString* channelId = [userInfo objectForKey:@"channel_id"];
+  NSString* rootId = [userInfo objectForKey:@"root_id"];
+  BOOL isCRTEnabled = [userInfo objectForKey:@"is_crt_enabled"];
   BOOL isClearAction = (action && [action isEqualToString: NOTIFICATION_CLEAR_ACTION]);
   BOOL isTestAction = (action && [action isEqualToString: NOTIFICATION_TEST_ACTION]);
   
@@ -135,8 +137,11 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
   }
 
   if (isClearAction) {
+    // When CRT is OFF:
     // If received a notification that a channel was read, remove all notifications from that channel (only with app in foreground/background)
-    [self cleanNotificationsFromChannel:channelId];
+    // When CRT is ON:
+    // When rootId is nil, clear channel's root post notifications or else clear all thread notifications
+    [self cleanNotificationsFromChannel:channelId :rootId :isCRTEnabled];
     [[GekidouWrapper default] postNotificationReceipt:userInfo];
   }
   
@@ -197,7 +202,7 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
   return extraModules;
 }
 
--(void)cleanNotificationsFromChannel:(NSString *)channelId {
+-(void)cleanNotificationsFromChannel:(NSString *)channelId :(NSString *)rootId :(BOOL)isCRTEnabled {
   if ([UNUserNotificationCenter class]) {
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     [center getDeliveredNotificationsWithCompletionHandler:^(NSArray<UNNotification *> * _Nonnull notifications) {
@@ -208,9 +213,23 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
         UNNotificationContent *notificationContent = [notificationRequest content];
         NSString *identifier = [notificationRequest identifier];
         NSString* cId = [[notificationContent userInfo] objectForKey:@"channel_id"];
+        NSString* pId = [[notificationContent userInfo] objectForKey:@"post_id"];
+        NSString* rId = [[notificationContent userInfo] objectForKey:@"root_id"];
 
         if ([cId isEqualToString: channelId]) {
-          [notificationIds addObject:identifier];
+          BOOL doesNotificationMatch = true;
+          if (isCRTEnabled) {
+            // Check if it is a thread notification
+            if (rootId != nil) {
+              doesNotificationMatch = [pId isEqualToString: rootId] || [rId isEqualToString: rootId];
+            } else {
+              // With CRT ON, remove notifications without rootId
+              doesNotificationMatch = rId == nil;
+            }
+          }
+          if (doesNotificationMatch) {
+            [notificationIds addObject:identifier];
+          }
         }
       }
 

@@ -17,6 +17,7 @@ import {
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, removeChannelFromTeamHistory} from '@queries/servers/team';
+import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser, queryUsersById} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -175,7 +176,8 @@ export async function markChannelAsViewed(serverUrl: string, channelId: string, 
             m.viewedAt = member.lastViewedAt;
             m.lastViewedAt = Date.now();
         });
-        PushNotifications.cancelChannelNotifications(channelId);
+        const isCRTEnabled = await getIsCRTEnabled(database);
+        PushNotifications.cancelChannelNotifications(channelId, undefined, isCRTEnabled);
         if (!prepareRecordsOnly) {
             await operator.batchRecords([member]);
         }
@@ -303,26 +305,55 @@ export async function updateChannelInfoFromChannel(serverUrl: string, channel: C
 export async function updateLastPostAt(serverUrl: string, channelId: string, lastPostAt: number, prepareRecordsOnly = false) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const member = await getMyChannel(database, channelId);
-        if (!member) {
+        const myChannel = await getMyChannel(database, channelId);
+        if (!myChannel) {
             return {error: 'not a member'};
         }
 
-        if (lastPostAt > member.lastPostAt) {
-            member.prepareUpdate((m) => {
+        if (lastPostAt > myChannel.lastPostAt) {
+            myChannel.resetPreparedState();
+            myChannel.prepareUpdate((m) => {
                 m.lastPostAt = lastPostAt;
             });
 
             if (!prepareRecordsOnly) {
-                await operator.batchRecords([member]);
+                await operator.batchRecords([myChannel]);
             }
 
-            return {member};
+            return {member: myChannel};
         }
 
         return {member: undefined};
     } catch (error) {
         logError('Failed updateLastPostAt', error);
+        return {error};
+    }
+}
+
+export async function updateMyChannelLastFetchedAt(serverUrl: string, channelId: string, lastFetchedAt: number, prepareRecordsOnly = false) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const myChannel = await getMyChannel(database, channelId);
+        if (!myChannel) {
+            return {error: 'not a member'};
+        }
+
+        if (lastFetchedAt > myChannel.lastFetchedAt) {
+            myChannel.resetPreparedState();
+            myChannel.prepareUpdate((m) => {
+                m.lastFetchedAt = lastFetchedAt;
+            });
+
+            if (!prepareRecordsOnly) {
+                await operator.batchRecords([myChannel]);
+            }
+
+            return {member: myChannel};
+        }
+
+        return {member: undefined};
+    } catch (error) {
+        logError('Failed updateLastFetchedAt', error);
         return {error};
     }
 }

@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect} from 'react';
+import React from 'react';
 import {ScrollView, View} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import ChannelActions from '@components/channel_actions';
 import {useTheme} from '@context/theme';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -44,19 +44,11 @@ const ChannelInfo = ({channelId, closeButtonId, componentId, type}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    useEffect(() => {
-        const update = Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({buttonId}: {buttonId: string}) => {
-                if (buttonId === closeButtonId) {
-                    dismissModal({componentId});
-                }
-            },
-        }, componentId);
+    const onPressed = () => {
+        dismissModal({componentId});
+    };
 
-        return () => {
-            update.remove();
-        };
-    }, []);
+    useNavButtonPressed(closeButtonId, componentId, onPressed, []);
 
     return (
         <SafeAreaView

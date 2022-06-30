@@ -57,6 +57,7 @@ const RemoveMarkdown = ({enableEmoji, enableHardBreak, enableSoftBreak, textStyl
                 channelLink: Renderer.forwardChildren,
                 emoji: enableEmoji ? renderEmoji : renderNull,
                 hashtag: Renderer.forwardChildren,
+                latexinline: Renderer.forwardChildren,
 
                 paragraph: Renderer.forwardChildren,
                 heading: Renderer.forwardChildren,
