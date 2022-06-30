@@ -74,7 +74,7 @@ public class RealPathUtil {
                 };
 
                 String name = getDataColumn(context, contentUri, selection, selectionArgs);
-                if (!TextUtils.isEmpty(name)) {
+                if (TextUtils.isEmpty(name)) {
                     return name;
                 }
 
