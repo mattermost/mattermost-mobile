@@ -48,7 +48,7 @@ describe('Messaging - Markdown Code', () => {
         await HomeScreen.logout();
     });
 
-    it('should be able to display markdown code block', async () => {
+    it('MM-T4895_1 - should be able to display markdown code block', async () => {
         // # Open a channel screen and post a markdown code block
         const line1 = 'let x = 10;';
         const line2 = 'let y = 20;';
@@ -69,7 +69,7 @@ describe('Messaging - Markdown Code', () => {
         await ChannelScreen.back();
     });
 
-    it('should be able to display markdown html', async () => {
+    it('MM-T4895_2- should be able to display markdown html', async () => {
         // # Open a channel screen and post a html
         const message = '<html>\n<body>\n<span>This is html block</span>\n</body>\n</html>';
         const markdownHtml = `\`\`\`html\n${message}\n\`\`\``;

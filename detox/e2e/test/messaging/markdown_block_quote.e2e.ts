@@ -48,7 +48,7 @@ describe('Messaging - Markdown Block Quote', () => {
         await HomeScreen.logout();
     });
 
-    it('should be able to display markdown block quote', async () => {
+    it('MM-T4898_1 - should be able to display markdown block quote', async () => {
         // # Open a channel screen and post a markdown block quote
         const message = 'this is a quote that i am making long so it wraps on mobile this is a quote that i am making long so it wraps on mobile this is a quote that i am making long so it wraps on mobile this is a quote that i am making long so it wraps on mobile';
         const markdownBlockQuote = `>${message}`;

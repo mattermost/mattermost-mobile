@@ -48,7 +48,7 @@ describe('Messaging - Markdown List', () => {
         await HomeScreen.logout();
     });
 
-    it('should be able to display markdown bullet list', async () => {
+    it('MM-T4894_1 - should be able to display markdown bullet list', async () => {
         // # Open a channel screen and post a markdown bullet list
         const item1 = 'item one';
         const item2 = 'item two';
@@ -74,7 +74,7 @@ describe('Messaging - Markdown List', () => {
         await ChannelScreen.back();
     });
 
-    it('should be able to display markdown ordered list', async () => {
+    it('MM-T4894_2 - should be able to display markdown ordered list', async () => {
         // # Open a channel screen and post a markdown ordered list
         const item1 = 'Item one';
         const item2 = 'Item two';

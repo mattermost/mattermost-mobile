@@ -49,7 +49,7 @@ describe('Messaging - Markdown Table', () => {
         await HomeScreen.logout();
     });
 
-    it('should be able to display markdown table', async () => {
+    it('MM-T4899_1 - should be able to display markdown table', async () => {
         // # Open a channel screen and post a markdown table
         const markdownTable =
             '| A | B | C |\n' +
@@ -71,7 +71,7 @@ describe('Messaging - Markdown Table', () => {
         await ChannelScreen.back();
     });
 
-    it('should be able to display markdown table with long text wrapped poperly', async () => {
+    it('MM-T4899_2 - should be able to display markdown table with long text wrapped properly', async () => {
         // # Open a channel screen and post a markdown table with long text
         const markdownTable =
             '| Left header that wraps | Center header that wraps | Right header that wraps |\n' +
@@ -97,6 +97,8 @@ describe('Messaging - Markdown Table', () => {
         // # Expand to full view
         await ChannelScreen.flatPostList.scrollTo('bottom');
         await postListPostItemTableExpandButton.tap();
+
+        // * Verify on table screen with the markdown table
         await TableScreen.toBeVisible();
         await expect(element(by.text('Left header that wraps'))).toBeVisible();
         await expect(element(by.text('Center header that wraps'))).toBeVisible();
@@ -110,7 +112,7 @@ describe('Messaging - Markdown Table', () => {
         await ChannelScreen.back();
     });
 
-    it('should be able to open markdown table in full view and allow horizontal scroll', async () => {
+    it('MM-T4899_3 - should be able to open markdown table in full view and allow horizontal scroll', async () => {
         // # Open a channel screen and post a markdown table with more columns past horizontal view
         const markdownTable =
             '| Header | Header | Header | Header | Header | Header | Header | Header HS last |\n' +
@@ -137,7 +139,7 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Header HS last'))).not.toBeVisible();
         await expect(element(by.text('Right HS last'))).not.toBeVisible();
 
-        // * Verify scrollable to the right
+        // * Verify table screen is scrollable to the right
         await TableScreen.tableScrollView.scrollTo('right');
         await expect(element(by.text('Header HS last'))).toBeVisible();
         await expect(element(by.text('Right HS last'))).toBeVisible();
@@ -147,7 +149,7 @@ describe('Messaging - Markdown Table', () => {
         await ChannelScreen.back();
     });
 
-    it('should be able to open markdown table in full view and allow vertical scroll', async () => {
+    it('MM-T4899_4 - should be able to open markdown table in full view and allow vertical scroll', async () => {
         // # Open a channel screen and post a markdown table with more rows past vertical view
         const markdownTable =
             '| Header | Header | Header VS last |\n' +
@@ -174,7 +176,7 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Header VS last'))).toBeVisible();
         await expect(element(by.text('Right VS last'))).not.toBeVisible();
 
-        // * Verify scrollable to the bottom
+        // * Verify table screen is scrollable to the bottom
         await TableScreen.tableScrollView.scrollTo('bottom');
         await expect(element(by.text('Header VS last'))).not.toBeVisible();
         await expect(element(by.text('Right VS last'))).toBeVisible();
@@ -184,7 +186,7 @@ describe('Messaging - Markdown Table', () => {
         await ChannelScreen.back();
     });
 
-    it('should be able to open markdown table in full view and allow both horizontal and vertical scrolls', async () => {
+    it('MM-T4899_5 - should be able to open markdown table in full view and allow both horizontal and vertical scrolls', async () => {
         // # Open a channel screen and post a markdown table with more columns and rows past horizontal and vertical views
         const markdownTable =
             '| Header | Header | Header | Header | Header | Header | Header | Header last |\n' +
@@ -211,12 +213,10 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Header last'))).not.toBeVisible();
         await expect(element(by.text('Right last'))).not.toBeVisible();
 
-        // * Verify scrollable to the right
+        // * Verify table screen is scrollable to the right and scrollable to the bottom
         await TableScreen.tableScrollView.scrollTo('right');
         await expect(element(by.text('Header last'))).toBeVisible();
         await expect(element(by.text('Right last'))).not.toBeVisible();
-
-        // * Verify scrollable to the bottom
         await TableScreen.tableScrollView.scrollTo('bottom');
         await expect(element(by.text('Header last'))).not.toBeVisible();
         await expect(element(by.text('Right last'))).toBeVisible();

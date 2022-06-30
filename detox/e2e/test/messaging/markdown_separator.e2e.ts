@@ -48,7 +48,7 @@ describe('Messaging - Markdown Separator', () => {
         await HomeScreen.logout();
     });
 
-    it('should be able to display markdown separator', async () => {
+    it('MM-T4897_1 - should be able to display markdown separator', async () => {
         // # Open a channel screen and post a markdown separator
         const markdownSeparator = '---';
         await ChannelScreen.open(channelsCategory, testChannel.name);

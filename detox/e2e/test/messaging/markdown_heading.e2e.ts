@@ -48,7 +48,7 @@ describe('Messaging - Markdown Heading', () => {
         await HomeScreen.logout();
     });
 
-    it('should be able to display markdown heading', async () => {
+    it('MM-T4893_1 - should be able to display markdown heading', async () => {
         // # Open a channel screen and post a markdown heading
         const message = 'Heading';
         const markdownHeading = `## ${message}`;
