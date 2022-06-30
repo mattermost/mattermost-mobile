@@ -116,11 +116,11 @@ export const getUserTimezoneProps = (currentUser: UserModel) => {
     };
 };
 
-export const getUserTimezone = (user: UserModel) => {
+export const getUserTimezone = (user: UserModel | UserProfile) => {
     return getTimezone(user.timezone);
 };
 
-export const getTimezone = (timezone: UserTimezone | null) => {
+export const getTimezone = (timezone?: UserTimezone | null) => {
     if (!timezone) {
         return '';
     }
@@ -161,7 +161,7 @@ export const getUserCustomStatus = (user?: UserModel | UserProfile): UserCustomS
     }
 };
 
-export function isCustomStatusExpired(user?: UserModel) {
+export function isCustomStatusExpired(user?: UserModel | UserProfile) {
     if (!user) {
         return true;
     }
