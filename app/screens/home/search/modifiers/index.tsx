@@ -120,8 +120,9 @@ const SearchModifiers = ({scrollPaddingTop, searchValue, setSearchValue}: Props)
     ));
 
     const handleShowMore = useCallback(() => {
-        setShowMore(!showMore);
-        show.value = (showMore ? 3 : data.length) * MODIFIER_LABEL_HEIGHT;
+        const nextShowMore = !showMore;
+        setShowMore(nextShowMore);
+        show.value = (nextShowMore ? data.length : 3) * MODIFIER_LABEL_HEIGHT;
     }, [showMore]);
 
     const renderModifier = (item: ModifierItem) => {
