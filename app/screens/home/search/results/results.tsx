@@ -118,7 +118,6 @@ const Results = ({
         // hook up in another PR
     });
 
-
     const attachmentIndex = (fileId: string) => {
         return orderedFilesForGallery.value.findIndex((file) => file.id === fileId) || 0;
     };
