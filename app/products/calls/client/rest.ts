@@ -59,6 +59,13 @@ const ClientCalls = (superclass: any) => class extends superclass {
             {method: 'post'},
         );
     };
+
+    genTURNCredentials = async () => {
+        return this.doFetch(
+            `${this.getCallsRoute()}/turn-credentials`,
+            {method: 'get'},
+        );
+    };
 };
 
 export default ClientCalls;

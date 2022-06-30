@@ -202,7 +202,13 @@ export function joinCall(channelId: string, intl: typeof intlShape): ActionFunc 
         dispatch(setSpeakerphoneOn(false));
 
         try {
-            ws = await newClient(channelId, getICEServersConfigs(getState()), () => {
+            const state = getState();
+            const iceConfigs = [...getICEServersConfigs(state)];
+            if (getConfig(state).NeedsTURNCredentials) {
+                iceConfigs.push(...await Client4.genTURNCredentials());
+            }
+
+            ws = await newClient(channelId, iceConfigs, () => {
                 dispatch(setSpeakerphoneOn(false));
                 dispatch({type: CallsTypes.RECEIVED_MYSELF_LEFT_CALL});
             }, setScreenShareURL);
