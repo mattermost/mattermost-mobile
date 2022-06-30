@@ -84,9 +84,6 @@ export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string) =>
         const closeButtonTestId = `${closeButtonId.replace('close-', 'close.').replace(/-/g, '_')}.button`;
         return {
             modalPresentationStyle: OptionsModalPresentationStyle.formSheet,
-            modal: {
-                swipeToDismiss: true,
-            },
             topBar: {
                 leftButtons: [{
                     id: closeButtonId,
@@ -117,7 +114,6 @@ export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string) =>
             ios: OptionsModalPresentationStyle.overFullScreen,
             default: OptionsModalPresentationStyle.overCurrentContext,
         }),
-        modal: {swipeToDismiss: true},
         statusBar: {
             backgroundColor: null,
             drawBehind: true,
@@ -465,6 +461,7 @@ export function showModal(name: string, title: string, passProps = {}, options =
             leftButtonColor: theme.sidebarHeaderTextColor,
             rightButtonColor: theme.sidebarHeaderTextColor,
         },
+        modal: {swipeToDismiss: false},
     };
 
     NavigationStore.addNavigationModal(name);
@@ -542,25 +539,6 @@ export function showModalOverCurrentContext(name: string, passProps = {}, option
     };
     const mergeOptions = merge(defaultOptions, options);
     showModal(name, title, passProps, mergeOptions);
-}
-
-export function showSearchModal(initialValue = '') {
-    const name = 'Search';
-    const title = '';
-    const passProps = {initialValue};
-    const options = {
-        topBar: {
-            visible: false,
-            height: 0,
-        },
-        ...Platform.select({
-            ios: {
-                modalPresentationStyle: 'pageSheet',
-            },
-        }),
-    };
-
-    showModal(name, title, passProps, options);
 }
 
 export async function dismissModal(options?: Options & { componentId: string}) {
@@ -717,7 +695,7 @@ export const showAppForm = async (form: AppForm, call: AppCallRequest) => {
 };
 
 export async function findChannels(title: string, theme: Theme) {
-    const options: Options = {modal: {swipeToDismiss: false}};
+    const options: Options = {};
     const closeButtonId = 'close-find-channels';
     const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
     options.topBar = {
