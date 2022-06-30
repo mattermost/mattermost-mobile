@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {ReactNode, useCallback, useEffect, useRef} from 'react';
-import {BackHandler, DeviceEventEmitter, Keyboard, StyleSheet, useWindowDimensions, View} from 'react-native';
+import {DeviceEventEmitter, Keyboard, StyleSheet, useWindowDimensions, View} from 'react-native';
 import {State, TapGestureHandler} from 'react-native-gesture-handler';
 import {Navigation as RNN} from 'react-native-navigation';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -10,9 +10,9 @@ import RNBottomSheet from 'reanimated-bottom-sheet';
 
 import {Events} from '@constants';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {dismissModal} from '@screens/navigation';
-import NavigationStore from '@store/navigation_store';
 import {hapticFeedback} from '@utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -54,21 +54,15 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
         return () => listener.remove();
     }, [close]);
 
-    useEffect(() => {
-        const listener = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (NavigationStore.getNavigationTopComponentId() === componentId) {
-                if (sheetRef.current) {
-                    sheetRef.current.snapTo(1);
-                } else {
-                    close();
-                }
-                return true;
-            }
-            return false;
-        });
+    const handleClose = useCallback(() => {
+        if (sheetRef.current) {
+            sheetRef.current.snapTo(1);
+        } else {
+            close();
+        }
+    }, []);
 
-        return () => listener.remove();
-    }, [close]);
+    useAndroidHardwareBackHandler(componentId, handleClose);
 
     useEffect(() => {
         hapticFeedback();

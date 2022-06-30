@@ -1,18 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo} from 'react';
+import React, {useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, BackHandler, Platform, ScrollView, View} from 'react-native';
-import {Navigation} from 'react-native-navigation';
+import {Alert, Platform, ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
 import {useServerDisplayName} from '@context/server';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
-import NavigationStore from '@store/navigation_store';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -83,9 +83,9 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
         };
     }, [theme.centerChannelColor]);
 
-    const close = useCallback(() => {
+    const close = () => {
         dismissModal({componentId});
-    }, []);
+    };
 
     useEffect(() => {
         setButtons(componentId, {
@@ -93,33 +93,9 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
         });
     }, []);
 
-    useEffect(() => {
-        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (NavigationStore.getNavigationTopComponentId() === componentId) {
-                close();
-                return true;
-            }
+    useAndroidHardwareBackHandler(componentId, close);
 
-            return false;
-        });
-        return () => {
-            backHandler.remove();
-        };
-    }, []);
-
-    useEffect(() => {
-        const unsubscribe = Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
-                if (buttonId === CLOSE_BUTTON_ID) {
-                    close();
-                }
-            },
-        }, componentId);
-
-        return () => {
-            unsubscribe.remove();
-        };
-    }, []);
+    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, []);
 
     const onPressHandler = () => {
         return Alert.alert(
