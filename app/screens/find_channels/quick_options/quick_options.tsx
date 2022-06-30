@@ -43,14 +43,14 @@ const QuickOptions = ({canCreateChannels, canJoinChannels, close}: Props) => {
         await close();
         showModal(Screens.BROWSE_CHANNELS, title, {
             closeButton,
-        }, {modal: {swipeToDismiss: false}});
+        });
     }, [intl, theme]);
 
     const createNewChannel = useCallback(async () => {
         const title = intl.formatMessage({id: 'mobile.create_channel.title', defaultMessage: 'New channel'});
 
         await close();
-        showModal(Screens.CREATE_OR_EDIT_CHANNEL, title, undefined, {modal: {swipeToDismiss: false}});
+        showModal(Screens.CREATE_OR_EDIT_CHANNEL, title);
     }, [intl]);
 
     const openDirectMessage = useCallback(async () => {
@@ -60,7 +60,7 @@ const QuickOptions = ({canCreateChannels, canJoinChannels, close}: Props) => {
         await close();
         showModal(Screens.CREATE_DIRECT_MESSAGE, title, {
             closeButton,
-        }, {modal: {swipeToDismiss: false}});
+        });
     }, [intl, theme]);
 
     return (
