@@ -40,10 +40,7 @@ const LoadingUnreads = () => {
     useEffect(() => {
         if (loading) {
             opacity.value = 1;
-            rotation.value = withRepeat(
-                withTiming(360, {duration: 750, easing: Easing.ease}),
-                -1,
-            );
+            rotation.value = withRepeat(withTiming(360, {duration: 750, easing: Easing.ease}), -1);
         } else {
             opacity.value = withTiming(0, {duration: 300, easing: Easing.ease});
             cancelAnimation(rotation);
@@ -58,11 +55,12 @@ const LoadingUnreads = () => {
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.FETCHING_POSTS, (value: boolean) => {
             cancelAnimation(opacity);
+            cancelAnimation(rotation);
             setLoading(value);
         });
 
         return () => listener.remove();
-    }, [loading]);
+    }, []);
 
     if (!loading) {
         return null;
