@@ -49,7 +49,14 @@ const MarkdownTableRow = ({isFirstRow, isLastRow, children}: MarkdownTableRowPro
         isLastCell: true,
     });
 
-    return <View style={rowStyle}>{renderChildren}</View>;
+    return (
+        <View
+            style={rowStyle}
+            testID='markdown_table_row'
+        >
+            {renderChildren}
+        </View>
+    );
 };
 
 export default MarkdownTableRow;
