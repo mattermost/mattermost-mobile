@@ -37,6 +37,9 @@ export default class ThreadModel extends Model implements ThreadModelInterface {
     /** last_reply_at : The timestamp of when user last replied to the thread. */
     @field('last_reply_at') lastReplyAt!: number;
 
+    /** last_last_fetched_at_at : The timestamp when we successfully last fetched post on this thread */
+    @field('last_fetched_at') lastFetchedAt!: number;
+
     /** last_viewed_at : The timestamp of when user last viewed the thread. */
     @field('last_viewed_at') lastViewedAt!: number;
 

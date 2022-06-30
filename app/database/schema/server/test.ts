@@ -43,7 +43,7 @@ const {
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 1,
+            version: 2,
             tables: {
                 [CATEGORY]: {
                     name: CATEGORY,
@@ -165,6 +165,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         message_count: {name: 'message_count', type: 'number'},
                         roles: {name: 'roles', type: 'string'},
                         viewed_at: {name: 'viewed_at', type: 'number'},
+                        last_fetched_at: {name: 'last_fetched_at', type: 'number', isIndexed: true},
                     },
                     columnArray: [
                         {name: 'is_unread', type: 'boolean'},
@@ -175,6 +176,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'message_count', type: 'number'},
                         {name: 'roles', type: 'string'},
                         {name: 'viewed_at', type: 'number'},
+                        {name: 'last_fetched_at', type: 'number', isIndexed: true},
                     ],
                 },
                 [MY_CHANNEL_SETTINGS]: {
@@ -523,6 +525,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         unread_mentions: {name: 'unread_mentions', type: 'number'},
                         unread_replies: {name: 'unread_replies', type: 'number'},
                         viewed_at: {name: 'viewed_at', type: 'number'},
+                        last_fetched_at: {name: 'last_fetched_at', type: 'number', isIndexed: true},
                     },
                     columnArray: [
                         {name: 'is_following', type: 'boolean'},
@@ -532,6 +535,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'unread_mentions', type: 'number'},
                         {name: 'unread_replies', type: 'number'},
                         {name: 'viewed_at', type: 'number'},
+                        {name: 'last_fetched_at', type: 'number', isIndexed: true},
                     ],
                 },
                 [THREAD_PARTICIPANT]: {
