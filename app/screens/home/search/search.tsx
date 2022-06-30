@@ -138,7 +138,7 @@ const SearchScreen = ({teamId}: Props) => {
         setLastSearchedValue('');
         setFilter(FileFilters.ALL);
         setShowResults(false);
-    }, [filter, searchValue, lastSearchedValue]);
+    }, []);
 
     let header = null;
     if (lastSearchedValue) {
