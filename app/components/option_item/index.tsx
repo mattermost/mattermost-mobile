@@ -99,27 +99,25 @@ const OptionItem = ({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const useInLine = useMemo(() => {
-        return inline && Boolean(description);
-    }, [inline, description]);
+    const isInLine = inline && Boolean(description);
 
     const labelStyle = useMemo(() => {
-        return useInLine ? styles.inlineLabel : styles.label;
-    }, [inline, styles, useInLine]);
+        return isInLine ? styles.inlineLabel : styles.label;
+    }, [inline, styles, isInLine]);
 
     const labelTextStyle = useMemo(() => {
         return [
-            useInLine ? styles.inlineLabelText : styles.labelText,
+            isInLine ? styles.inlineLabelText : styles.labelText,
             destructive && styles.destructive,
         ];
-    }, [inline, destructive, styles, useInLine]);
+    }, [destructive, styles, isInLine]);
 
     const descriptionTextStyle = useMemo(() => {
         return [
-            useInLine ? styles.inlineDescription : styles.description,
+            isInLine ? styles.inlineDescription : styles.description,
             destructive && styles.destructive,
         ];
-    }, [inline, destructive, styles, useInLine]);
+    }, [destructive, styles, isInLine]);
 
     let actionComponent;
     if (type === OptionType.SELECT && selected) {
