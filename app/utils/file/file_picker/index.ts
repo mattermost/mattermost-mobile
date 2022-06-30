@@ -117,6 +117,7 @@ export default class FilePickerUtil {
 
     private getFilesFromResponse = async (response: ImagePickerResponse): Promise<Asset[]> => {
         if (!response?.assets?.length) {
+            logError('no assets in response');
             return [];
         }
 
@@ -127,6 +128,7 @@ export default class FilePickerUtil {
                 files.push(file);
             } else {
                 // For android we need to retrieve the realPath in case the file being imported is from the cloud
+                logDebug('tryin to get the file path for', file.uri);
                 const uri = (await MattermostManaged.getFilePath(file.uri)).filePath;
                 logDebug('Android File path', uri);
                 const type = file.type || lookupMimeType(uri);
@@ -299,7 +301,9 @@ export default class FilePickerUtil {
         };
 
         const hasPermission = await this.hasPhotoPermission('photo');
+        logDebug('Has permission', hasPermission);
         if (hasPermission) {
+            logDebug('launching image library');
             launchImageLibrary(options, async (response: ImagePickerResponse) => {
                 StatusBar.setHidden(false);
                 if (response.errorMessage || response.didCancel) {
@@ -307,6 +311,7 @@ export default class FilePickerUtil {
                     return;
                 }
 
+                logDebug('get frils from response');
                 const files = await this.getFilesFromResponse(response);
                 logDebug('PREPARE TO UPLOAD');
                 await this.prepareFileUpload(files);
