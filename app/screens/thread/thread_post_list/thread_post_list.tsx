@@ -21,7 +21,7 @@ type Props = {
     posts: PostModel[];
     rootPost: PostModel;
     teamId: string;
-    thread: ThreadModel;
+    thread?: ThreadModel;
 }
 
 const edges: Edge[] = ['bottom'];
@@ -46,7 +46,7 @@ const ThreadPostList = ({
     // If CRT is enabled, When new post arrives and thread modal is open, mark thread as read
     const oldPostsCount = useRef<number>(posts.length);
     useEffect(() => {
-        if (isCRTEnabled && thread.isFollowing && oldPostsCount.current < posts.length) {
+        if (isCRTEnabled && thread?.isFollowing && oldPostsCount.current < posts.length) {
             oldPostsCount.current = posts.length;
             markThreadAsRead(serverUrl, teamId, rootPost.id);
         }
