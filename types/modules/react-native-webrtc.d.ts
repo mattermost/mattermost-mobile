@@ -168,7 +168,7 @@ declare module 'react-native-webrtc' {
     }
 
     export interface RTCPeerConnectionConfiguration {
-        iceServers: ConfigurationParamWithUrls[] | ConfigurationParamWithUrl[];
+        iceServers: Array<ConfigurationParamWithUrls | ConfigurationParamWithUrl>;
         iceTransportPolicy?: 'all' | 'relay' | 'nohost' | 'none' | undefined;
         bundlePolicy?: 'balanced' | 'max-compat' | 'max-bundle' | undefined;
         rtcpMuxPolicy?: 'negotiate' | 'require' | undefined;

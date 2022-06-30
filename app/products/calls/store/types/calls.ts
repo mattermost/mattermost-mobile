@@ -66,6 +66,7 @@ export type ServerConfig = {
     AllowEnableCalls: boolean;
     DefaultEnabled: boolean;
     MaxCallParticipants: number;
+    NeedsTURNCredentials: boolean;
     sku_short_name: string;
     last_retrieved_at: number;
 }
@@ -76,8 +77,9 @@ export const DefaultServerConfig = {
     AllowEnableCalls: false,
     DefaultEnabled: false,
     MaxCallParticipants: 0,
+    NeedsTURNCredentials: false,
     sku_short_name: '',
     last_retrieved_at: 0,
 } as ServerConfig;
 
-export type ICEServersConfigs = ConfigurationParamWithUrls[] | ConfigurationParamWithUrl[];
+export type ICEServersConfigs = Array<ConfigurationParamWithUrls | ConfigurationParamWithUrl>;
