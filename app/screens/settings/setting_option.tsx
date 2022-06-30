@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Platform} from 'react-native';
+import {useIntl} from 'react-intl';
 
-import MenuItem, {MenuItemProps} from '@components/menu_item';
+import {MenuItemProps} from '@components/menu_item';
+import OptionItem from '@components/option_item';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -28,17 +29,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const SettingOption = ({onPress, optionName, ...rest}: SettingOptionProps) => {
     const theme = useTheme();
+    const intl = useIntl();
     const styles = getStyleSheet(theme);
     const props = {...rest, ...Options[optionName]} as unknown as Omit<MenuItemProps, 'onPress'| 'theme'>;
 
     return (
-        <MenuItem
-            labelStyle={styles.menuLabel}
-            onPress={onPress}
-            separator={true}
-            showArrow={Platform.select({ios: true, default: false})}
-            theme={theme}
-            {...props}
+        <OptionItem
+            action={onPress}
+            containerStyle={styles.containerStyle}
+            label={intl.formatMessage({id: props.i18nId, defaultMessage: props.defaultMessage})}
+            testID={props.testID}
+            type='select'
+            icon={props.iconName}
         />
     );
 };
