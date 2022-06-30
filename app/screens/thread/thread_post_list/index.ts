@@ -40,6 +40,7 @@ const enhanced = withObservables(['forceQueryAfterAppState', 'rootPost'], ({data
         teamId: rootPost.channel.observe().pipe(
             switchMap((channel) => of$(channel?.teamId)),
         ),
+        thread: rootPost.thread.observe(),
     };
 });
 
