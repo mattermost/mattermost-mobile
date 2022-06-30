@@ -93,6 +93,8 @@ export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperat
     const models: Model[] = [];
     const threads: ThreadWithLastFetchedAt[] = [];
     const toUpdate: {[rootId: string]: number | undefined} = {};
+    let processedThreads: Set<string> | undefined;
+
     posts.forEach((post: Post) => {
         if (!post.root_id && post.type === '') {
             threads.push({
@@ -107,15 +109,18 @@ export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperat
             toUpdate[post.root_id] = Math.max(toUpdate[post.root_id] || 0, post.create_at, post.update_at, post.delete_at);
         }
     });
+
     if (threads.length) {
-        const threadModels = await operator.handleThreads({threads, prepareRecordsOnly: true});
+        const threadModels = await operator.handleThreads({threads, prepareRecordsOnly: true}) as ThreadModel[];
+        processedThreads = new Set<string>(threadModels.map((t) => t.id));
         models.push(...threadModels);
     }
+
     const toUpdateKeys = Object.keys(toUpdate);
     if (toUpdateKeys.length) {
         const toUpdateThreads = await Promise.all(toUpdateKeys.map((key) => getThreadById(operator.database, key)));
         for (const thread of toUpdateThreads) {
-            if (thread) {
+            if (thread && !processedThreads?.has(thread.id)) {
                 const model = thread.prepareUpdate((record) => {
                     record.lastFetchedAt = Math.max(record.lastFetchedAt, toUpdate[thread.id] || 0);
                 });
