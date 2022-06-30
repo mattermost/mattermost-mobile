@@ -16,6 +16,7 @@ import Permissions, {PERMISSIONS} from 'react-native-permissions';
 import {Files} from '@constants';
 import {generateId} from '@utils/general';
 import keyMirror from '@utils/key_mirror';
+import {logError} from '@utils/log';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
 
@@ -374,7 +375,8 @@ export async function extractFileInfo(files: Array<Asset | DocumentPickerRespons
     const out: ExtractedFileInfo[] = [];
 
     await Promise.all(files.map(async (file) => {
-        if (!file) {
+        if (!file || !file.uri) {
+            logError('extractFileInfo no file or url');
             return;
         }
 
@@ -389,16 +391,16 @@ export async function extractFileInfo(files: Array<Asset | DocumentPickerRespons
             outFile.size = file.fileSize || 0;
             outFile.name = file.fileName || '';
         } else {
-            const path = Platform.select({
+            const localPath = Platform.select({
                 ios: (file.uri || '').replace('file://', ''),
                 default: file.uri || '',
             });
-            let fileInfo;
             try {
-                fileInfo = await FileSystem.stat(path);
+                const fileInfo = await FileSystem.stat(decodeURIComponent(localPath));
                 outFile.size = fileInfo.size || 0;
-                outFile.name = path.substring(path.lastIndexOf('/') + 1);
+                outFile.name = localPath.substring(localPath.lastIndexOf('/') + 1);
             } catch (e) {
+                logError('extractFileInfo', e);
                 return;
             }
         }

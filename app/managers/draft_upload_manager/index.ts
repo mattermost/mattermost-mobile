@@ -69,9 +69,10 @@ class DraftUploadManager {
     };
 
     public cancel = (clientId: string) => {
-        const h = this.handlers[clientId];
-        delete this.handlers[clientId];
-        h?.cancel?.();
+        if (this.handlers[clientId]?.cancel) {
+            this.handlers[clientId].cancel?.();
+            delete this.handlers[clientId];
+        }
     };
 
     public isUploading = (clientId: string) => {
