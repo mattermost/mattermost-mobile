@@ -16,14 +16,17 @@ import RecentItem, {RECENT_LABEL_HEIGHT, RecentItemType} from './recent_item';
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
-const SECTION_HEIGHT = 20;
+import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
 const RECENT_SEPARATOR_HEIGHT = 3;
 
 type Props = {
     setSearchValue: (value: string) => void;
+    teamId: string;
+    recentSearches: TeamSearchHistoryModel[];
+    handleSearch: () => void;
 }
 
-const RecentSearches = ({setSearchValue}: Props) => {
+const RecentSearches = ({setSearchValue, recentSearches, teamId, handleSearch}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
     const formatMessage = intl.formatMessage;
@@ -35,6 +38,7 @@ const RecentSearches = ({setSearchValue}: Props) => {
         return (
             <RecentItem
                 item={item}
+                teamId={teamId}
                 setSearchValue={setSearchValue}
             />
         );
@@ -61,14 +65,7 @@ const RecentSearches = ({setSearchValue}: Props) => {
         );
     };
 
-    const data = [
-        {terms: 'Welcome in:town-square'},
-        {terms: 'Figma'},
-        {terms: 'RC Test from:amy.blais'},
-        {terms: 'Recent Search 4'},
-        {terms: 'Recent Search 5'},
-    ];
-
+    const data = recentSearches.map((c) => ({terms: c.term}));
     return (
         <AnimatedFlatList
             data={data}

@@ -18,7 +18,7 @@ import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 
 import Modifiers from './modifiers';
-import RecentSearches from './recent_searches/recent_searches';
+import RecentSearches from './recent_searches';
 import Results from './results';
 import Header, {SelectTab} from './results/header';
 
@@ -189,6 +189,8 @@ const SearchScreen = ({teamId}: Props) => {
                             />
                             <RecentSearches
                                 setSearchValue={setSearchValue}
+                                teamId={teamId}
+                                handleSearch={handleSearch}
 
                                 //searchValue={searchValue}
                                 //scrollPaddingTop={scrollPaddingTop}

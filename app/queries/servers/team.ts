@@ -22,12 +22,14 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
 import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
+import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
 
 const {
     MY_CHANNEL,
     MY_TEAM,
     TEAM,
     TEAM_CHANNEL_HISTORY,
+    TEAM_SEARCH_HISTORY,
 } = DatabaseConstants.MM_TABLES.SERVER;
 
 export const getCurrentTeam = async (database: Database) => {
@@ -354,6 +356,14 @@ export const getTeamByName = async (database: Database, teamName: string) => {
         return teams[0];
     }
     return undefined;
+};
+
+export const queryTeamSearchHistoryByTeamId = (database: Database, teamId: string) => {
+    return database.get<TeamSearchHistoryModel>(TEAM_SEARCH_HISTORY).query(Q.where('team_id', teamId));
+};
+
+export const getTeamSearchHistoryByTeamId = (database: Database, teamId: string) => {
+    return database.get<TeamSearchHistoryModel>(TEAM_SEARCH_HISTORY).query(Q.where('team_id', teamId)).fetch();
 };
 
 export const queryMyTeams = (database: Database) => {
