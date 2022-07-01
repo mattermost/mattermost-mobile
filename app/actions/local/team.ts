@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Model} from '@nozbe/watermelondb';
+
 import DatabaseManager from '@database/manager';
-import {prepareDeleteTeam, getMyTeamById, removeTeamFromTeamHistory} from '@queries/servers/team';
+import {prepareDeleteTeam, getMyTeamById, removeTeamFromTeamHistory, getTeamSearchHistoryById, getTeamSearchHistoryByTeamId} from '@queries/servers/team';
 import {logError} from '@utils/log';
 
 export async function removeUserFromTeam(serverUrl: string, teamId: string) {
@@ -30,6 +32,7 @@ export async function removeUserFromTeam(serverUrl: string, teamId: string) {
         return {error};
     }
 }
+
 export async function addRecentTeamSearch(serverUrl: string, teamId: string, terms: string) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -56,16 +59,23 @@ export async function addRecentTeamSearch(serverUrl: string, teamId: string, ter
         return {error: undefined};
     } catch (error) {
         // eslint-disable-next-line no-console
-        console.log('Failed removeUserFromTeam', error);
+        console.log('Failed addRecentTeamSearch', error);
         return {error};
     }
 }
 
-        return {error: undefined};
+export async function deleteRecentTeamSearchById(serverUrl: string, id: string) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const teamSearch = await getTeamSearchHistoryById(database, id);
+        if (!teamSearch) {
+            return;
+        }
+        const preparedModels: Model[] = [teamSearch!.prepareDestroyPermanently()];
+        await operator.batchRecords(preparedModels);
+        return;
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed removeUserFromTeam', error);
-        return {error};
+        throw new Error('Failed deleteRecentTeamSearchById');
     }
 }
 

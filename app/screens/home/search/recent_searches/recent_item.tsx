@@ -4,12 +4,16 @@
 import React, {useCallback} from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 
+import {deleteRecentTeamSearchById} from '@actions/local/team';
 import CompassIcon from '@components/compass_icon';
 import MenuItem from '@components/menu_item';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
 export const RECENT_LABEL_HEIGHT = 48;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -43,21 +47,10 @@ type Props = {
 
 const RecentItem = ({item, removeSearchTerms, setSearchValue}: Props) => {
     const theme = useTheme();
+    const style = getStyleFromTheme(theme);
+    const testID = 'search.recent_item';
+    const serverUrl = useServerUrl();
 
-    // TODO add useCallback
-    // const removeSearchTerms = preventDoubleTap((item) => {
-    //     // const {actions} = this.props;
-    //     const newRecent = [...recentValues];
-    //     const index = recentValues.indexOf(item);
-    //
-    //     if (index !== -1) {
-    //         recentValues.splice(index, 1);
-    //         setRecent({newRecent});
-    //     }
-    //
-    //     actions.removeSearchTerms(currentTeamId, item.terms);
-    // });
-    //
     const handlePress = useCallback(() => {
         setSearchValue(item.terms);
         console.log('pressed recent value : ', item.terms);
@@ -65,17 +58,13 @@ const RecentItem = ({item, removeSearchTerms, setSearchValue}: Props) => {
         //        setRecentValue(item);
     }, [item]);
 
-    const handleRemove = useCallback(() => {
-        removeSearchTerms(item);
+    const handleRemove = useCallback(async () => {
+        await deleteRecentTeamSearchById(serverUrl, item.id);
     }, [item]);
-
-    const style = getStyleFromTheme(theme);
-    const testID = `search.recent_item.${item.terms}`;
 
     return (
         <MenuItem
-
-            // testID={item.testID}
+            testID={testID}
             onPress={handlePress}
             labelComponent={
                 <View style={style.recentItemLabelContainer}>
@@ -84,7 +73,7 @@ const RecentItem = ({item, removeSearchTerms, setSearchValue}: Props) => {
                         size={24}
                         color={changeOpacity(theme.centerChannelColor, 0.6)}
                     />
-                    <Text style={style.recentItemLabel}>{item.terms}</Text>
+                    <Text style={style.recentItemLabel}>{item.term}</Text>
                     <TouchableOpacity
                         onPress={handleRemove}
                         style={style.recentRemove}

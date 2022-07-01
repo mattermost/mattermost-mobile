@@ -324,6 +324,15 @@ export const getTeamById = async (database: Database, teamId: string) => {
     }
 };
 
+export const getTeamSearchHistoryById = async (database: Database, id: string) => {
+    try {
+        const teamSearchHistory = (await database.get<TeamSearchHistoryModel>(TEAM_SEARCH_HISTORY).find(id));
+        return teamSearchHistory;
+    } catch {
+        return undefined;
+    }
+};
+
 export const observeTeam = (database: Database, teamId: string) => {
     return database.get<TeamModel>(TEAM).query(Q.where('id', teamId), Q.take(1)).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
