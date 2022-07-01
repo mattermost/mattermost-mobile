@@ -4,7 +4,7 @@
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, StyleSheet, ScrollView} from 'react-native';
+import {FlatList, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -25,7 +25,7 @@ import Results from './results';
 import Header, {SelectTab} from './results/header';
 
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
-const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 const emptyFileResults: FileInfo[] = [];
 const emptyPostResults: string[] = [];
@@ -80,10 +80,8 @@ const SearchScreen = ({teamId}: Props) => {
     }, [searchValue]);
 
     const handleSearch = async (term: string) => {
-        console.log('handleSearch <><> searchValue', term);
-
-        await addRecentTeamSearch(serverUrl, teamId, term);
         setLoading(true);
+        addRecentTeamSearch(serverUrl, teamId, term);
         setFilter(FileFilters.ALL);
         setLastSearchedValue(term);
         const searchParams = getSearchParams(term);
@@ -105,10 +103,6 @@ const SearchScreen = ({teamId}: Props) => {
         handleSearch(text);
     }, [handleSearch]);
 
-    const onSnap = (offset: number) => {
-        scrollRef.current?.scrollToOffset({offset, animated: true});
-    };
-
     const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
         setLoading(true);
         setFilter(filterValue);
@@ -119,6 +113,10 @@ const SearchScreen = ({teamId}: Props) => {
 
         setLoading(false);
     }, [getSearchParams, lastSearchedValue, searchFiles]);
+
+    const onSnap = (offset: number) => {
+        scrollRef.current?.scrollToOffset({offset, animated: true});
+    };
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight, hideHeader} = useCollapsibleHeader<FlatList>(true, onSnap);
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
@@ -193,50 +191,54 @@ const SearchScreen = ({teamId}: Props) => {
                         <RoundedHeaderContext/>
                         {header}
                     </Animated.View>
-                    <AnimatedScrollView
+                    <AnimatedFlatList
+                        data={[1]}
                         contentContainerStyle={paddingTop}
                         nestedScrollEnabled={true}
                         indicatorStyle='black'
                         onScroll={onScroll}
                         scrollEventThrottle={16}
                         removeClippedSubviews={true}
+                        scrollToOverflowEnabled={true}
                         ref={scrollRef}
-                    >
-                        {loading &&
-                        <Loading
-                            containerStyle={[styles.loading, {paddingTop: scrollPaddingTop}]}
-                            color={theme.buttonBg}
-                            size='large'
-                        />
-                        }
-                        {!showResults && !loading &&
-                        <>
-                            <Modifiers
-                                setSearchValue={setSearchValue}
-                                searchValue={searchValue}
-                                scrollPaddingTop={scrollPaddingTop}
-                            />
-                            <RecentSearches
-                                setRecentValue={handleRecentSearch}
-                                teamId={teamId}
+                        renderItem={() => {
+                            if (loading) {
+                                return (
+                                    <Loading
+                                        containerStyle={[styles.loading, {paddingTop: scrollPaddingTop}]}
+                                        color={theme.buttonBg}
+                                        size='large'
+                                    />
+                                );
+                            } else if (!showResults && !loading) {
+                                return (
+                                    <View style={{flex: 1, height: '100%', backgroundColor: 'red', paddingBottom: scrollPaddingTop}}>
+                                        <Modifiers
+                                            setSearchValue={setSearchValue}
+                                            searchValue={searchValue}
+                                        />
+                                        <RecentSearches
+                                            setRecentValue={handleRecentSearch}
+                                            teamId={teamId}
+                                        />
+                                    </View>
+                                );
+                            }
 
-                                //scrollPaddingTop={scrollPaddingTop}
-                            />
-                        </>
-                        }
-                        {showResults &&
-                        <Results
-                            selectedTab={selectedTab}
-                            searchValue={lastSearchedValue}
-                            postIds={postIds}
-                            fileInfos={fileInfos}
-                            scrollRef={scrollRef}
-                            onScroll={onScroll}
-                            scrollPaddingTop={scrollPaddingTop}
-                            loading={loading}
-                        />
-                        }
-                    </AnimatedScrollView>
+                            return (
+                                <Results
+                                    selectedTab={selectedTab}
+                                    searchValue={lastSearchedValue}
+                                    postIds={postIds}
+                                    fileInfos={fileInfos}
+                                    scrollRef={scrollRef}
+                                    onScroll={onScroll}
+                                    scrollPaddingTop={scrollPaddingTop}
+                                    loading={loading}
+                                />
+                            );
+                        }}
+                    />
                 </Animated.View>
             </SafeAreaView>
         </FreezeScreen>
