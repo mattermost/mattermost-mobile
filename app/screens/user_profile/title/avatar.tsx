@@ -6,13 +6,18 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
+import Animated from 'react-native-reanimated';
 
 import ProfilePicture from '@components/profile_picture';
 
 import type UserModel from '@typings/database/models/servers/user';
 
+// @ts-expect-error FastImage does work with Animated.createAnimatedComponent
+const AnimatedFastImage = Animated.createAnimatedComponent(FastImage);
+
 type Props = {
     enablePostIconOverride: boolean;
+    forwardRef?: React.RefObject<any>;
     user: UserModel;
     userIconOverride?: string;
 }
@@ -25,11 +30,12 @@ const styles = StyleSheet.create({
     },
 });
 
-const UserProfileAvatar = ({enablePostIconOverride, user, userIconOverride}: Props) => {
+const UserProfileAvatar = ({enablePostIconOverride, forwardRef, user, userIconOverride}: Props) => {
     if (enablePostIconOverride && userIconOverride) {
         return (
             <View style={styles.avatar}>
-                <FastImage
+                <AnimatedFastImage
+                    ref={forwardRef}
                     style={styles.avatar}
                     source={{uri: userIconOverride}}
                 />
@@ -40,6 +46,7 @@ const UserProfileAvatar = ({enablePostIconOverride, user, userIconOverride}: Pro
     return (
         <ProfilePicture
             author={user}
+            forwardRef={forwardRef}
             showStatus={true}
             size={96}
             statusSize={24}

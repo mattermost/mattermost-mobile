@@ -2,10 +2,16 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Text, View} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
+import Animated from 'react-native-reanimated';
 
+import {useServerUrl} from '@app/context/server';
+import {useGalleryItem} from '@app/hooks/gallery';
+import {openGalleryAtIndex} from '@app/utils/gallery';
+import {GalleryInit} from '@context/gallery';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import NetworkManager from '@managers/network_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
@@ -55,29 +61,74 @@ const UserProfileTitle = ({
     isChannelAdmin, isSystemAdmin, isTeamAdmin,
     teammateDisplayName, user, userIconOverride, usernameOverride,
 }: Props) => {
+    const galleryIdentifier = `${user.id}-avatarPreview`;
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
+    const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
     const override = enablePostUsernameOverride && usernameOverride;
 
-    let displayName;
+    let displayName: string;
     if (override) {
         displayName = usernameOverride;
     } else {
         displayName = displayUsername(user, intl.locale, teammateDisplayName, false);
     }
 
+    const onPress = () => {
+        let imageUrl: string|undefined;
+        if (enablePostIconOverride && userIconOverride) {
+            imageUrl = userIconOverride;
+        } else {
+            try {
+                const client = NetworkManager.getClient(serverUrl);
+                const lastPictureUpdate = user.isBot ? (user.props?.bot_last_icon_update || 0) : user.lastPictureUpdate;
+                const pictureUrl = client.getProfilePictureUrl(user.id, lastPictureUpdate);
+                imageUrl = `${serverUrl}${pictureUrl}`;
+            } catch {
+                // handle below that the client is not set
+            }
+        }
+
+        if (imageUrl) {
+            const item: GalleryItemType = {
+                id: user.id,
+                uri: imageUrl,
+                width: 400,
+                height: 400,
+                name: displayName,
+                mime_type: 'images/png',
+                authorId: user.id,
+                type: 'avatar',
+            };
+            openGalleryAtIndex(galleryIdentifier, 0, [item]);
+        }
+    };
+
+    const {ref, onGestureEvent, styles: galleryStyles} = useGalleryItem(
+        galleryIdentifier,
+        0,
+        onPress,
+    );
+
     const hideUsername = override || (displayName && displayName === user.username);
     const prefix = hideUsername ? '@' : '';
 
     return (
         <View style={[styles.container, isTablet && styles.tablet]}>
-            <UserProfileAvatar
-                enablePostIconOverride={enablePostIconOverride}
-                user={user}
-                userIconOverride={userIconOverride}
-            />
+            <GalleryInit galleryIdentifier={galleryIdentifier}>
+                <Animated.View style={galleryStyles}>
+                    <TouchableOpacity onPress={onGestureEvent}>
+                        <UserProfileAvatar
+                            forwardRef={ref}
+                            enablePostIconOverride={enablePostIconOverride}
+                            user={user}
+                            userIconOverride={userIconOverride}
+                        />
+                    </TouchableOpacity>
+                </Animated.View>
+            </GalleryInit>
             <View style={styles.details}>
                 <UserProfileTag
                     isBot={user.isBot || Boolean(userIconOverride || usernameOverride)}
