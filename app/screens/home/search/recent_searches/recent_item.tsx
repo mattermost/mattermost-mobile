@@ -41,22 +41,19 @@ export type RecentItemType = {
 }
 
 type Props = {
-    setSearchValue: (value: string) => void;
-    item: RecentItemType;
+    setRecentValue: (value: string) => void;
+    item: TeamSearchHistoryModel;
 }
 
-const RecentItem = ({item, removeSearchTerms, setSearchValue}: Props) => {
+const RecentItem = ({item, setRecentValue}: Props) => {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
     const testID = 'search.recent_item';
     const serverUrl = useServerUrl();
 
     const handlePress = useCallback(() => {
-        setSearchValue(item.terms);
-        console.log('pressed recent value : ', item.terms);
-
-        //        setRecentValue(item);
-    }, [item]);
+        setRecentValue(item.term);
+    }, [item, setRecentValue]);
 
     const handleRemove = useCallback(async () => {
         await deleteRecentTeamSearchById(serverUrl, item.id);

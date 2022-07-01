@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState} from 'react';
+import React, {useMemo, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, FlatList, View} from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -12,7 +12,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import RecentItem, {RECENT_LABEL_HEIGHT, RecentItemType} from './recent_item';
+import RecentItem, {RECENT_LABEL_HEIGHT} from './recent_item';
 
 import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
 
@@ -20,37 +20,24 @@ const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 const RECENT_SEPARATOR_HEIGHT = 3;
 
 type Props = {
-    setSearchValue: (value: string) => void;
-    teamId: string;
+    setRecentValue: (value: string) => void;
     recentSearches: TeamSearchHistoryModel[];
-    handleSearch: () => void;
 }
 
-const RecentSearches = ({setSearchValue, recentSearches, teamId, handleSearch}: Props) => {
+const RecentSearches = ({setRecentValue, recentSearches}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
     const formatMessage = intl.formatMessage;
-    const [recentValues, setRecent] = useState([]);
-
     const styles = getStyleFromTheme(theme);
 
-    const renderRecentItem = ({item}) => {
+    const renderRecentItem = useCallback(({item}) => {
         return (
             <RecentItem
                 item={item}
-                teamId={teamId}
-                setSearchValue={setSearchValue}
+                setRecentValue={setRecentValue}
             />
         );
-    };
-
-    const setRecentValue = preventDoubleTap(({recentNew}: RecentItemType) => {
-        const {terms, isOrSearch} = recentNew;
-        setSearchValue(terms);
-
-        // search(terms, isOrSearch);
-        Keyboard.dismiss();
-    });
+    }, [setRecentValue]);
 
     const renderHeader = () => {
         return (
@@ -65,7 +52,10 @@ const RecentSearches = ({setSearchValue, recentSearches, teamId, handleSearch}: 
         );
     };
 
-    const data = recentSearches.map((c) => ({terms: c.term}));
+    const data = useMemo(() => {
+        return recentSearches;
+    }, [recentSearches]);
+
     return (
         <AnimatedFlatList
             data={data}

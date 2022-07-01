@@ -2,19 +2,20 @@
 // See LICENSE.txt for license information.
 
 import {useIsFocused, useNavigation} from '@react-navigation/native';
-import {debounce} from 'lodash';
-import React, {useCallback, useState, useEffect} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, StyleSheet} from 'react-native';
+import {FlatList, StyleSheet, ScrollView} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {addRecentTeamSearch} from '@actions/local/team';
 import {searchPosts, searchFiles} from '@actions/remote/search';
 import FreezeScreen from '@components/freeze_screen';
+import Loading from '@components/loading';
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 
@@ -24,6 +25,7 @@ import Results from './results';
 import Header, {SelectTab} from './results/header';
 
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
+const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 const emptyFileResults: FileInfo[] = [];
 const emptyPostResults: string[] = [];
@@ -36,12 +38,18 @@ const styles = StyleSheet.create({
     flex: {
         flex: 1,
     },
+    loading: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
 });
 
 const SearchScreen = ({teamId}: Props) => {
     const nav = useNavigation();
     const isFocused = useIsFocused();
     const intl = useIntl();
+    const theme = useTheme();
     const searchScreenIndex = 1;
     const stateIndex = nav.getState().index;
     const serverUrl = useServerUrl();
@@ -58,27 +66,27 @@ const SearchScreen = ({teamId}: Props) => {
     const [postIds, setPostIds] = useState<string[]>(emptyPostResults);
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
 
-    const getSearchParams = useCallback((filterValue?: FileFilter) => {
-        const terms = filterValue ? lastSearchedValue : searchValue;
+    const getSearchParams = (terms: string, filterValue?: FileFilter) => {
         const fileExtensions = filterFileExtensions(filterValue || filter);
         const extensionTerms = fileExtensions ? ' ' + fileExtensions : '';
         return {
             terms: terms + extensionTerms,
             is_or_search: true,
         };
-    }, [filter, lastSearchedValue, searchValue]);
+    };
 
-    const handleSearch = useCallback((debounce(async () => {
-        // execute the search for the text in the navigation text box
-        // handle recent searches
-        // - add recent if doesn't exist
-        // - updated recent createdAt if exists??
+    const onSubmit = useCallback(() => {
+        handleSearch(searchValue);
+    }, [searchValue]);
 
-        await addRecentTeamSearch(serverUrl, teamId, searchValue);
+    const handleSearch = async (term: string) => {
+        console.log('handleSearch <><> searchValue', term);
+
+        await addRecentTeamSearch(serverUrl, teamId, term);
         setLoading(true);
         setFilter(FileFilters.ALL);
-        setLastSearchedValue(searchValue);
-        const searchParams = getSearchParams();
+        setLastSearchedValue(term);
+        const searchParams = getSearchParams(term);
         const [postResults, fileResults] = await Promise.all([
             searchPosts(serverUrl, searchParams),
             searchFiles(serverUrl, teamId, searchParams),
@@ -90,7 +98,12 @@ const SearchScreen = ({teamId}: Props) => {
 
         setLoading(false);
         setShowResults(true);
-    })), [searchValue]);
+    };
+
+    const handleRecentSearch = useCallback((text: string) => {
+        setSearchValue(text);
+        handleSearch(text);
+    }, [handleSearch]);
 
     const onSnap = (offset: number) => {
         scrollRef.current?.scrollToOffset({offset, animated: true});
@@ -99,19 +112,16 @@ const SearchScreen = ({teamId}: Props) => {
     const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
         setLoading(true);
         setFilter(filterValue);
-        const searchParams = getSearchParams(filterValue);
+        const searchParams = getSearchParams(lastSearchedValue, filterValue);
         const fileResults = await searchFiles(serverUrl, teamId, searchParams);
         const fileInfosResult = fileResults?.file_infos && Object.values(fileResults?.file_infos);
         setFileInfos(fileInfosResult?.length ? fileInfosResult : emptyFileResults);
 
         setLoading(false);
-    }, [lastSearchedValue]);
-
-    useEffect(() => {
-        setSearchValue(searchTerm);
-    }, [searchTerm]);
+    }, [getSearchParams, lastSearchedValue, searchFiles]);
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight, hideHeader} = useCollapsibleHeader<FlatList>(true, onSnap);
+    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
 
     const animated = useAnimatedStyle(() => {
         if (isFocused) {
@@ -138,13 +148,14 @@ const SearchScreen = ({teamId}: Props) => {
 
     const handleClearSearch = useCallback(() => {
         setSearchValue('');
+
         setLastSearchedValue('');
         setFilter(FileFilters.ALL);
         setShowResults(false);
     }, []);
 
     let header = null;
-    if (lastSearchedValue) {
+    if (lastSearchedValue && !loading) {
         header = (
             <Header
                 onTabSelect={setSelectedTab}
@@ -167,7 +178,7 @@ const SearchScreen = ({teamId}: Props) => {
                 scrollValue={scrollValue}
                 hideHeader={hideHeader}
                 onChangeText={setSearchValue}
-                onSubmitEditing={handleSearch}
+                onSubmitEditing={onSubmit}
                 blurOnSubmit={true}
                 placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
                 onClear={handleClearSearch}
@@ -182,7 +193,23 @@ const SearchScreen = ({teamId}: Props) => {
                         <RoundedHeaderContext/>
                         {header}
                     </Animated.View>
-                    {!showResults &&
+                    <AnimatedScrollView
+                        contentContainerStyle={paddingTop}
+                        nestedScrollEnabled={true}
+                        indicatorStyle='black'
+                        onScroll={onScroll}
+                        scrollEventThrottle={16}
+                        removeClippedSubviews={true}
+                        ref={scrollRef}
+                    >
+                        {loading &&
+                        <Loading
+                            containerStyle={[styles.loading, {paddingTop: scrollPaddingTop}]}
+                            color={theme.buttonBg}
+                            size='large'
+                        />
+                        }
+                        {!showResults && !loading &&
                         <>
                             <Modifiers
                                 setSearchValue={setSearchValue}
@@ -190,16 +217,14 @@ const SearchScreen = ({teamId}: Props) => {
                                 scrollPaddingTop={scrollPaddingTop}
                             />
                             <RecentSearches
-                                setSearchValue={setSearchValue}
+                                setRecentValue={handleRecentSearch}
                                 teamId={teamId}
-                                handleSearch={handleSearch}
 
-                                //searchValue={searchValue}
                                 //scrollPaddingTop={scrollPaddingTop}
                             />
                         </>
-                    }
-                    {showResults &&
+                        }
+                        {showResults &&
                         <Results
                             selectedTab={selectedTab}
                             searchValue={lastSearchedValue}
@@ -210,7 +235,8 @@ const SearchScreen = ({teamId}: Props) => {
                             scrollPaddingTop={scrollPaddingTop}
                             loading={loading}
                         />
-                    }
+                        }
+                    </AnimatedScrollView>
                 </Animated.View>
             </SafeAreaView>
         </FreezeScreen>

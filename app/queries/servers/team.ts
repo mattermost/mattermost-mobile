@@ -386,7 +386,6 @@ export const queryTeamSearchHistoryByTeamId = (database: Database, teamId: strin
 
 export const getTeamSearchHistoryByTeamId = async (database: Database, teamId: string) => {
     const histories = await database.get<TeamSearchHistoryModel>(TEAM_SEARCH_HISTORY).query(Q.where('team_id', teamId)).fetch();
-    console.log('histories', histories);
     return histories;
 };
 
