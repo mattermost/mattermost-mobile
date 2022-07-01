@@ -4,7 +4,7 @@
 import {Model} from '@nozbe/watermelondb';
 
 import DatabaseManager from '@database/manager';
-import {prepareDeleteTeam, getMyTeamById, removeTeamFromTeamHistory, getTeamSearchHistoryById, getTeamSearchHistoryByTeamId} from '@queries/servers/team';
+import {prepareDeleteTeam, getMyTeamById, removeTeamFromTeamHistory, getTeamSearchHistoryByTerm, getTeamSearchHistoryById, getTeamSearchHistoryByTeamId, queryTeamSearchHistoryByTeamId} from '@queries/servers/team';
 import {logError} from '@utils/log';
 
 export async function removeUserFromTeam(serverUrl: string, teamId: string) {
@@ -37,24 +37,26 @@ export async function addRecentTeamSearch(serverUrl: string, teamId: string, ter
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const myTeam = await getMyTeamById(database, teamId);
-        if (myTeam) {
-            if (!myTeam) {
-                return [];
-            }
+        if (!myTeam) {
+            return [];
+        }
 
-            // Models
-            // const teamSearchHistory = await getTeamSearchHistoryByTeamId(database, teamId);
-            // const teamSearchSet = new Set(teamSearchHistory);
+        const teamSearch = await getTeamSearchHistoryByTerm(database, teamId, terms);
+        if (teamSearch!.length) {
+            //delete before adding it back with new createAt time
+            const preparedModels: Model[] = [teamSearch![0].prepareDestroyPermanently()];
+            await operator.batchRecords(preparedModels);
+        }
 
-            const newSearch: TeamSearchHistory = {
-                created_at: 1445538153952,
-                display_term: 'displayterm2',
-                term: terms,
-                team_id: teamId,
-            };
+        const newSearch: TeamSearchHistory = {
+            created_at: Date.now(),
+            display_term: 'displayterm2',
+            term: terms,
+            team_id: teamId,
+        };
 
-            // this works
-            const newSearchModel = await operator.handleTeamSearchHistory({teamSearchHistories: [newSearch], prepareRecordsOnly: false});
+        // this works
+        const newSearchModel = await operator.handleTeamSearchHistory({teamSearchHistories: [newSearch], prepareRecordsOnly: false});
 
         return {error: undefined};
     } catch (error) {

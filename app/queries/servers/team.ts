@@ -333,6 +333,19 @@ export const getTeamSearchHistoryById = async (database: Database, id: string) =
     }
 };
 
+export const getTeamSearchHistoryByTerm = async (database: Database, teamId: string, terms: string) => {
+    try {
+        const teamSearchHistory = (await database.get<TeamSearchHistoryModel>(TEAM_SEARCH_HISTORY).query(
+            Q.and(
+                Q.where('team_id', teamId),
+                Q.where('term', terms),
+            )).fetch());
+        return teamSearchHistory;
+    } catch {
+        return undefined;
+    }
+};
+
 export const observeTeam = (database: Database, teamId: string) => {
     return database.get<TeamModel>(TEAM).query(Q.where('id', teamId), Q.take(1)).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
@@ -371,8 +384,10 @@ export const queryTeamSearchHistoryByTeamId = (database: Database, teamId: strin
     return database.get<TeamSearchHistoryModel>(TEAM_SEARCH_HISTORY).query(Q.where('team_id', teamId));
 };
 
-export const getTeamSearchHistoryByTeamId = (database: Database, teamId: string) => {
-    return database.get<TeamSearchHistoryModel>(TEAM_SEARCH_HISTORY).query(Q.where('team_id', teamId)).fetch();
+export const getTeamSearchHistoryByTeamId = async (database: Database, teamId: string) => {
+    const histories = await database.get<TeamSearchHistoryModel>(TEAM_SEARCH_HISTORY).query(Q.where('team_id', teamId)).fetch();
+    console.log('histories', histories);
+    return histories;
 };
 
 export const queryMyTeams = (database: Database) => {

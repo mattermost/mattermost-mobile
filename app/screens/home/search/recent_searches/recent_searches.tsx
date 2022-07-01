@@ -14,9 +14,9 @@ import {typography} from '@utils/typography';
 
 import RecentItem, {RECENT_LABEL_HEIGHT, RecentItemType} from './recent_item';
 
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
-
 import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
+
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 const RECENT_SEPARATOR_HEIGHT = 3;
 
 type Props = {
