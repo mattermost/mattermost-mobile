@@ -9,6 +9,7 @@ import {FlatList, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import {addRecentTeamSearch} from '@actions/local/team';
 import {searchPosts, searchFiles} from '@actions/remote/search';
 import FreezeScreen from '@components/freeze_screen';
 import NavigationHeader from '@components/navigation_header';
@@ -73,6 +74,7 @@ const SearchScreen = ({teamId}: Props) => {
         // - add recent if doesn't exist
         // - updated recent createdAt if exists??
 
+        await addRecentTeamSearch(serverUrl, teamId, searchValue);
         setLoading(true);
         setFilter(FileFilters.ALL);
         setLastSearchedValue(searchValue);

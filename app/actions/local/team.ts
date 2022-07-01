@@ -30,3 +30,42 @@ export async function removeUserFromTeam(serverUrl: string, teamId: string) {
         return {error};
     }
 }
+export async function addRecentTeamSearch(serverUrl: string, teamId: string, terms: string) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const myTeam = await getMyTeamById(database, teamId);
+        if (myTeam) {
+            if (!myTeam) {
+                return [];
+            }
+
+            // Models
+            // const teamSearchHistory = await getTeamSearchHistoryByTeamId(database, teamId);
+            // const teamSearchSet = new Set(teamSearchHistory);
+
+            const newSearch: TeamSearchHistory = {
+                created_at: 1445538153952,
+                display_term: 'displayterm2',
+                term: terms,
+                team_id: teamId,
+            };
+
+            // this works
+            const newSearchModel = await operator.handleTeamSearchHistory({teamSearchHistories: [newSearch], prepareRecordsOnly: false});
+
+        return {error: undefined};
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Failed removeUserFromTeam', error);
+        return {error};
+    }
+}
+
+        return {error: undefined};
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Failed removeUserFromTeam', error);
+        return {error};
+    }
+}
+
