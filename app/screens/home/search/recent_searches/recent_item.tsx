@@ -4,7 +4,7 @@
 import React, {useCallback} from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 
-import {deleteRecentTeamSearchById} from '@actions/local/team';
+import {removeSearchFromTeamSearchHistory} from '@actions/local/team';
 import CompassIcon from '@components/compass_icon';
 import MenuItem from '@components/menu_item';
 import {useServerUrl} from '@context/server';
@@ -56,7 +56,7 @@ const RecentItem = ({item, setRecentValue}: Props) => {
     }, [item, setRecentValue]);
 
     const handleRemove = useCallback(async () => {
-        await deleteRecentTeamSearchById(serverUrl, item.id);
+        await removeSearchFromTeamSearchHistory(serverUrl, item.id);
     }, [item]);
 
     return (

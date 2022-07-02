@@ -66,7 +66,7 @@ export async function addRecentTeamSearch(serverUrl: string, teamId: string, ter
     }
 }
 
-export async function deleteRecentTeamSearchById(serverUrl: string, id: string) {
+export async function removeSearchFromTeamSearchHistory(serverUrl: string, id: string) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const teamSearch = await getTeamSearchHistoryById(database, id);
@@ -77,7 +77,7 @@ export async function deleteRecentTeamSearchById(serverUrl: string, id: string) 
         await operator.batchRecords(preparedModels);
         return;
     } catch (error) {
-        throw new Error('Failed deleteRecentTeamSearchById');
+        throw new Error('Failed removeSearchFromTeamSearchHistory');
     }
 }
 
