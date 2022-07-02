@@ -386,11 +386,6 @@ export const queryTeamSearchHistoryByTeamId = (database: Database, teamId: strin
         Q.sortBy('created_at', Q.desc));
 };
 
-export const getTeamSearchHistoryByTeamId = async (database: Database, teamId: string) => {
-    const histories = await database.get<TeamSearchHistoryModel>(TEAM_SEARCH_HISTORY).query(Q.where('team_id', teamId)).fetch();
-    return histories;
-};
-
 export const queryMyTeams = (database: Database) => {
     return database.get<MyTeamModel>(MY_TEAM).query();
 };

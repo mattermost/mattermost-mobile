@@ -37,7 +37,11 @@ export async function addSearchToTeamSearchHistory(serverUrl: string, teamId: st
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const teamSearch = await getTeamSearchHistoryByTerm(database, teamId, terms);
-        if (teamSearch!.length) {
+        if (!teamSearch) {
+            return {error: undefined};
+        }
+
+        if (teamSearch.length) {
             await removeSearchFromTeamSearchHistory(serverUrl, teamSearch![0].id);
         } {
             const newSearch: TeamSearchHistory = {
@@ -70,7 +74,7 @@ export async function removeSearchFromTeamSearchHistory(serverUrl: string, id: s
         if (!teamSearch) {
             return;
         }
-        const preparedModels: Model[] = [teamSearch!.prepareDestroyPermanently()];
+        const preparedModels: Model[] = [teamSearch.prepareDestroyPermanently()];
         await operator.batchRecords(preparedModels);
         return;
     } catch (error) {
