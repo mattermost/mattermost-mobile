@@ -246,6 +246,7 @@ const SearchScreen = ({teamId}: Props) => {
                         scrollEventThrottle={16}
                         removeClippedSubviews={false}
                         scrollToOverflowEnabled={true}
+                        overScrollMode='always'
                         ref={scrollRef}
                         renderItem={renderItem}
                     />
