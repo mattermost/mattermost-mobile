@@ -42,7 +42,7 @@ export async function addSearchToTeamSearchHistory(serverUrl: string, teamId: st
         } {
             const newSearch: TeamSearchHistory = {
                 created_at: Date.now(),
-                display_term: 'displayterm2',
+                display_term: terms,
                 term: terms,
                 team_id: teamId,
             };
