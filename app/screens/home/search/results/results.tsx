@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {FlatList, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Text, View} from 'react-native';
+import {FlatList, ListRenderItemInfo, Text, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
@@ -37,8 +37,6 @@ type Props = {
     isTimezoneEnabled: boolean;
     posts: PostModel[];
     fileInfos: FileInfo[];
-    scrollRef: React.RefObject<FlatList>;
-    onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
     scrollPaddingTop: number;
     loading: boolean;
 }
@@ -52,8 +50,6 @@ const SearchResults = ({
     posts,
     searchValue,
     selectedTab,
-    scrollRef,
-    onScroll,
     scrollPaddingTop,
     loading,
 }: Props) => {
@@ -130,9 +126,7 @@ const SearchResults = ({
             renderItem={renderItem}
             contentContainerStyle={paddingTop}
             nestedScrollEnabled={true}
-            onScroll={onScroll}
             removeClippedSubviews={true}
-            ref={scrollRef}
         />
     );
 };

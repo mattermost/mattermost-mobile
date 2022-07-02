@@ -4,7 +4,7 @@
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, StyleSheet, View} from 'react-native';
+import {FlatList, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -29,6 +29,7 @@ const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 const emptyFileResults: FileInfo[] = [];
 const emptyPostResults: string[] = [];
+const dummyData = [1];
 
 type Props = {
     teamId: string;
@@ -75,15 +76,32 @@ const SearchScreen = ({teamId}: Props) => {
         };
     };
 
+    const onSnap = (offset: number) => {
+        scrollRef.current?.scrollToOffset({offset, animated: true});
+    };
+
+    const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight, hideHeader} = useCollapsibleHeader<FlatList>(true, onSnap);
+
     const onSubmit = useCallback(() => {
         handleSearch(searchValue);
     }, [searchValue]);
 
+    const handleClearSearch = useCallback(() => {
+        setSearchValue('');
+        setLastSearchedValue('');
+        setFilter(FileFilters.ALL);
+    }, []);
+
+    const handleCancelSearch = useCallback(() => {
+        handleClearSearch();
+        setShowResults(false);
+    }, [handleClearSearch, showResults]);
+
     const handleSearch = async (term: string) => {
         setLoading(true);
-        addSearchToTeamSearchHistory(serverUrl, teamId, term);
         setFilter(FileFilters.ALL);
         setLastSearchedValue(term);
+        addSearchToTeamSearchHistory(serverUrl, teamId, term);
         const searchParams = getSearchParams(term);
         const [postResults, fileResults] = await Promise.all([
             searchPosts(serverUrl, searchParams),
@@ -96,9 +114,11 @@ const SearchScreen = ({teamId}: Props) => {
 
         setLoading(false);
         setShowResults(true);
+        hideHeader();
     };
 
     const handleRecentSearch = useCallback((text: string) => {
+        hideHeader();
         setSearchValue(text);
         handleSearch(text);
     }, [handleSearch]);
@@ -114,11 +134,42 @@ const SearchScreen = ({teamId}: Props) => {
         setLoading(false);
     }, [getSearchParams, lastSearchedValue, searchFiles]);
 
-    const onSnap = (offset: number) => {
-        scrollRef.current?.scrollToOffset({offset, animated: true});
-    };
+    const renderItem = useCallback(() => {
+        if (loading) {
+            return (
+                <Loading
+                    containerStyle={[styles.loading, {paddingTop: scrollPaddingTop}]}
+                    color={theme.buttonBg}
+                    size='large'
+                />
+            );
+        } else if (!showResults && !loading) {
+            return (
+                <>
+                    <Modifiers
+                        setSearchValue={setSearchValue}
+                        searchValue={searchValue}
+                    />
+                    <RecentSearches
+                        setRecentValue={handleRecentSearch}
+                        teamId={teamId}
+                    />
+                </>
+            );
+        }
 
-    const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight, hideHeader} = useCollapsibleHeader<FlatList>(true, onSnap);
+        return (
+            <Results
+                selectedTab={selectedTab}
+                searchValue={lastSearchedValue}
+                postIds={postIds}
+                fileInfos={fileInfos}
+                scrollPaddingTop={scrollPaddingTop}
+                loading={loading}
+            />
+        );
+    }, [loading, showResults]);
+
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
 
     const animated = useAnimatedStyle(() => {
@@ -143,14 +194,6 @@ const SearchScreen = ({teamId}: Props) => {
             zIndex: lastSearchedValue ? 10 : 0,
         };
     }, [headerHeight, lastSearchedValue]);
-
-    const handleClearSearch = useCallback(() => {
-        setSearchValue('');
-
-        setLastSearchedValue('');
-        setFilter(FileFilters.ALL);
-        setShowResults(false);
-    }, []);
 
     let header = null;
     if (lastSearchedValue && !loading) {
@@ -180,6 +223,7 @@ const SearchScreen = ({teamId}: Props) => {
                 blurOnSubmit={true}
                 placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
                 onClear={handleClearSearch}
+                onCancel={handleCancelSearch}
                 defaultValue={searchValue}
             />
             <SafeAreaView
@@ -192,52 +236,18 @@ const SearchScreen = ({teamId}: Props) => {
                         {header}
                     </Animated.View>
                     <AnimatedFlatList
-                        data={[1]}
+                        data={dummyData}
                         contentContainerStyle={paddingTop}
+                        keyboardShouldPersistTaps='handled'
+                        keyboardDismissMode={'interactive'}
                         nestedScrollEnabled={true}
                         indicatorStyle='black'
                         onScroll={onScroll}
                         scrollEventThrottle={16}
-                        removeClippedSubviews={true}
+                        removeClippedSubviews={false}
                         scrollToOverflowEnabled={true}
                         ref={scrollRef}
-                        renderItem={() => {
-                            if (loading) {
-                                return (
-                                    <Loading
-                                        containerStyle={[styles.loading, {paddingTop: scrollPaddingTop}]}
-                                        color={theme.buttonBg}
-                                        size='large'
-                                    />
-                                );
-                            } else if (!showResults && !loading) {
-                                return (
-                                    <View style={{flex: 1, height: '100%', backgroundColor: 'red', paddingBottom: scrollPaddingTop}}>
-                                        <Modifiers
-                                            setSearchValue={setSearchValue}
-                                            searchValue={searchValue}
-                                        />
-                                        <RecentSearches
-                                            setRecentValue={handleRecentSearch}
-                                            teamId={teamId}
-                                        />
-                                    </View>
-                                );
-                            }
-
-                            return (
-                                <Results
-                                    selectedTab={selectedTab}
-                                    searchValue={lastSearchedValue}
-                                    postIds={postIds}
-                                    fileInfos={fileInfos}
-                                    scrollRef={scrollRef}
-                                    onScroll={onScroll}
-                                    scrollPaddingTop={scrollPaddingTop}
-                                    loading={loading}
-                                />
-                            );
-                        }}
+                        renderItem={renderItem}
                     />
                 </Animated.View>
             </SafeAreaView>
