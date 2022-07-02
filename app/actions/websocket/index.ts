@@ -9,7 +9,7 @@ import {fetchStatusByIds} from '@actions/remote/user';
 import {Events, Screens, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {queryActiveServer} from '@queries/app/servers';
+import {getActiveServerUrl, queryActiveServer} from '@queries/app/servers';
 import {getCurrentChannel} from '@queries/servers/channel';
 import {getCommonSystemValues, getConfig, getWebSocketLastDisconnected, resetWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {getCurrentTeam} from '@queries/servers/team';
@@ -99,12 +99,16 @@ async function doReconnect(serverUrl: string) {
     resetWebSocketLastDisconnected(operator);
     const currentTeam = await getCurrentTeam(database);
     const currentChannel = await getCurrentChannel(database);
+    const currentActiveServerUrl = await getActiveServerUrl(DatabaseManager.appDatabase!.database);
 
-    DeviceEventEmitter.emit(Events.FETCHING_POSTS, true);
-
+    if (serverUrl === currentActiveServerUrl) {
+        DeviceEventEmitter.emit(Events.FETCHING_POSTS, true);
+    }
     const entryData = await entry(serverUrl, currentTeam?.id, currentChannel?.id, lastDisconnectedAt);
     if ('error' in entryData) {
-        DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
+        if (serverUrl === currentActiveServerUrl) {
+            DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
+        }
         return;
     }
     const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
