@@ -8,7 +8,7 @@ import {FlatList, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import {addRecentTeamSearch} from '@actions/local/team';
+import {addSearchToTeamSearchHistory} from '@actions/local/team';
 import {searchPosts, searchFiles} from '@actions/remote/search';
 import FreezeScreen from '@components/freeze_screen';
 import Loading from '@components/loading';
@@ -81,7 +81,7 @@ const SearchScreen = ({teamId}: Props) => {
 
     const handleSearch = async (term: string) => {
         setLoading(true);
-        addRecentTeamSearch(serverUrl, teamId, term);
+        addSearchToTeamSearchHistory(serverUrl, teamId, term);
         setFilter(FileFilters.ALL);
         setLastSearchedValue(term);
         const searchParams = getSearchParams(term);

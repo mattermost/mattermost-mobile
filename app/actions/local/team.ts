@@ -33,7 +33,7 @@ export async function removeUserFromTeam(serverUrl: string, teamId: string) {
     }
 }
 
-export async function addRecentTeamSearch(serverUrl: string, teamId: string, terms: string) {
+export async function addSearchToTeamSearchHistory(serverUrl: string, teamId: string, terms: string) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const myTeam = await getMyTeamById(database, teamId);
@@ -61,7 +61,7 @@ export async function addRecentTeamSearch(serverUrl: string, teamId: string, ter
         return {error: undefined};
     } catch (error) {
         // eslint-disable-next-line no-console
-        console.log('Failed addRecentTeamSearch', error);
+        console.log('Failed addSearchToTeamSearchHistory', error);
         return {error};
     }
 }
