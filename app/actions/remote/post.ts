@@ -322,8 +322,6 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
 }
 
 export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: Channel[], memberships: ChannelMembership[], excludeChannelId?: string, emitEvent = false) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
     try {
         const promises = [];
         if (emitEvent) {
