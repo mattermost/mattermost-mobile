@@ -381,7 +381,9 @@ export const getTeamByName = async (database: Database, teamName: string) => {
 };
 
 export const queryTeamSearchHistoryByTeamId = (database: Database, teamId: string) => {
-    return database.get<TeamSearchHistoryModel>(TEAM_SEARCH_HISTORY).query(Q.where('team_id', teamId));
+    return database.get<TeamSearchHistoryModel>(TEAM_SEARCH_HISTORY).query(
+        Q.where('team_id', teamId),
+        Q.sortBy('created_at', Q.desc));
 };
 
 export const getTeamSearchHistoryByTeamId = async (database: Database, teamId: string) => {

@@ -4,7 +4,7 @@
 import {Model} from '@nozbe/watermelondb';
 
 import DatabaseManager from '@database/manager';
-import {prepareDeleteTeam, getMyTeamById, removeTeamFromTeamHistory, getTeamSearchHistoryByTerm, getTeamSearchHistoryById} from '@queries/servers/team';
+import {prepareDeleteTeam, getMyTeamById, queryTeamSearchHistoryByTeamId, removeTeamFromTeamHistory, getTeamSearchHistoryByTerm, getTeamSearchHistoryById} from '@queries/servers/team';
 import {logError} from '@utils/log';
 
 export async function removeUserFromTeam(serverUrl: string, teamId: string) {
@@ -36,26 +36,24 @@ export async function removeUserFromTeam(serverUrl: string, teamId: string) {
 export async function addSearchToTeamSearchHistory(serverUrl: string, teamId: string, terms: string) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const myTeam = await getMyTeamById(database, teamId);
-        if (!myTeam) {
-            return [];
-        }
-
         const teamSearch = await getTeamSearchHistoryByTerm(database, teamId, terms);
         if (teamSearch!.length) {
-            //delete before adding it back with new createAt time
-            const preparedModels: Model[] = [teamSearch![0].prepareDestroyPermanently()];
-            await operator.batchRecords(preparedModels);
+            await removeSearchFromTeamSearchHistory(serverUrl, teamSearch![0].id);
+        } {
+            const newSearch: TeamSearchHistory = {
+                created_at: Date.now(),
+                display_term: 'displayterm2',
+                term: terms,
+                team_id: teamId,
+            };
+            await operator.handleTeamSearchHistory({teamSearchHistories: [newSearch], prepareRecordsOnly: false});
         }
 
-        const newSearch: TeamSearchHistory = {
-            created_at: Date.now(),
-            display_term: 'displayterm2',
-            term: terms,
-            team_id: teamId,
-        };
-
-        await operator.handleTeamSearchHistory({teamSearchHistories: [newSearch], prepareRecordsOnly: false});
+        const teamSearchHistory = await queryTeamSearchHistoryByTeamId(database, teamId).fetch();
+        if (teamSearchHistory.length > 4) {
+            const lastSearch = teamSearchHistory.pop();
+            await removeSearchFromTeamSearchHistory(serverUrl, lastSearch!.id);
+        }
 
         return {error: undefined};
     } catch (error) {
