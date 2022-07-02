@@ -324,9 +324,6 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
 export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: Channel[], memberships: ChannelMembership[], excludeChannelId?: string, emitEvent = false) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
     try {
         const promises = [];
         if (emitEvent) {
@@ -343,6 +340,9 @@ export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: C
             DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
         }
     } catch (error) {
+        if (emitEvent) {
+            DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
+        }
         return {error};
     }
 
