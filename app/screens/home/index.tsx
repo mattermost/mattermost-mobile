@@ -20,9 +20,9 @@ import Account from './account';
 import ChannelList from './channel_list';
 import RecentMentions from './recent_mentions';
 import SavedMessages from './saved_messages';
+import TabBar from './tab_bar';
 
 // import Search from './search';
-import TabBar from './tab_bar';
 
 import type {LaunchProps} from '@typings/launch';
 
