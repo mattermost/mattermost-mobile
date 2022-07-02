@@ -3,12 +3,11 @@
 
 import React, {useMemo, useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, FlatList, View} from 'react-native';
+import {FlatList, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
