@@ -12,23 +12,23 @@ import type TeamModel from '@typings/database/models/servers/team';
 
 type Props = {
     otherTeams: TeamModel[];
-    selectedTeamId: string;
     showTitle?: boolean;
+    teamId: string;
+    setTeamId: (teamId: string) => void;
 }
 
-export default function SelectTeamSlideUp({otherTeams, showTitle = true, selectedTeamId}: Props) {
+export default function SelectTeamSlideUp({otherTeams, showTitle = true, setTeamId, teamId}: Props) {
     const intl = useIntl();
     const testID = 'team_sidebar.add_team_slide_up';
 
-    const onPress = useCallback(() => {
-        //TODO Create team screen https://mattermost.atlassian.net/browse/MM-43622
+    const onPress = useCallback((newTeamId: string) => {
+        setTeamId(newTeamId);
         dismissBottomSheet();
-    }, []);
+    }, [setTeamId]);
 
     const hasOtherTeams = otherTeams.length;
     return (
         <BottomSheetContent
-            onPress={onPress}
             showButton={false}
             showTitle={showTitle}
             testID={testID}
@@ -36,7 +36,7 @@ export default function SelectTeamSlideUp({otherTeams, showTitle = true, selecte
         >
             {hasOtherTeams &&
                 <TeamList
-                    selectedTeamId={selectedTeamId}
+                    selectedTeamId={teamId}
                     teams={otherTeams}
                     onPress={onPress}
                     testID='team_sidebar.add_team_slide_up.team_list'

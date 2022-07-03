@@ -112,12 +112,10 @@ type Props = {
     setSearchValue: (value: string) => void;
     searchValue?: string;
     teams: TeamModel[];
-    setSelectedTeamId: (id: string) => void;
+    setTeamId: (id: string) => void;
     teamId: string;
 }
-const Modifiers = ({searchValue, setSearchValue, setSelectedTeamId, teams, teamId}: Props) => {
-/* eslint-disable no-console */
-    console.log('setSelectedTeamId', setSelectedTeamId);
+const Modifiers = ({searchValue, setSearchValue, setTeamId, teams, teamId}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
 
@@ -159,8 +157,9 @@ const Modifiers = ({searchValue, setSearchValue, setSelectedTeamId, teams, teamI
         const renderContent = () => {
             return (
                 <SelectTeamSlideUp
+                    setTeamId={setTeamId}
                     otherTeams={teams}
-                    selectedTeamId={selectedTeam!.id}
+                    teamId={teamId}
                     showTitle={!isTablet && Boolean(teams.length)}
                 />
             );
@@ -178,7 +177,7 @@ const Modifiers = ({searchValue, setSearchValue, setSelectedTeamId, teams, teamI
             theme,
             title: intl.formatMessage({id: 'mobile.search.team.select', defaultMessage: 'Select a team to search'}),
         });
-    }), [teams, isTablet, theme]);
+    }), [teams, isTablet, theme, teamId]);
 
     return (
         <>

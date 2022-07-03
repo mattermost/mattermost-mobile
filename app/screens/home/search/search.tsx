@@ -57,7 +57,7 @@ const SearchScreen = ({teamId}: Props) => {
     const {searchTerm} = nav.getState().routes[stateIndex].params;
 
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
-    const [searchTeamId, setSelectedTeamId] = useState<string>(teamId);
+    const [searchTeamId, setSearchTeamId] = useState<string>(teamId);
     const [selectedTab, setSelectedTab] = useState<SelectTab>('messages');
     const [filter, setFilter] = useState<FileFilter>(FileFilters.ALL);
     const [showResults, setShowResults] = useState(false);
@@ -76,9 +76,6 @@ const SearchScreen = ({teamId}: Props) => {
             is_or_search: true,
         };
     };
-
-    /* eslint-disable no-console */
-    console.log('searchTeamId', searchTeamId);
 
     const onSnap = (offset: number) => {
         scrollRef.current?.scrollToOffset({offset, animated: true});
@@ -105,11 +102,11 @@ const SearchScreen = ({teamId}: Props) => {
         setLoading(true);
         setFilter(FileFilters.ALL);
         setLastSearchedValue(term);
-        addSearchToTeamSearchHistory(serverUrl, teamId, term);
+        addSearchToTeamSearchHistory(serverUrl, searchTeamId, term);
         const searchParams = getSearchParams(term);
         const [postResults, fileResults] = await Promise.all([
             searchPosts(serverUrl, searchParams),
-            searchFiles(serverUrl, teamId, searchParams),
+            searchFiles(serverUrl, searchTeamId, searchParams),
         ]);
 
         const fileInfosResult = fileResults?.file_infos && Object.values(fileResults?.file_infos);
@@ -153,12 +150,12 @@ const SearchScreen = ({teamId}: Props) => {
                     <Modifiers
                         setSearchValue={setSearchValue}
                         searchValue={searchValue}
-                        teamId={teamId}
-                        setSelectedTeamId={setSelectedTeamId}
+                        teamId={searchTeamId}
+                        setTeamId={setSearchTeamId}
                     />
                     <RecentSearches
                         setRecentValue={handleRecentSearch}
-                        teamId={teamId}
+                        teamId={searchTeamId}
                     />
                 </>
             );
@@ -174,7 +171,7 @@ const SearchScreen = ({teamId}: Props) => {
                 loading={loading}
             />
         );
-    }, [loading, showResults]);
+    }, [loading, showResults, searchTeamId, setSearchTeamId]);
 
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
 
