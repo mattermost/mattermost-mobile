@@ -6,6 +6,7 @@ import {IntlShape, useIntl} from 'react-intl';
 import {useWindowDimensions, View} from 'react-native';
 import Animated, {useSharedValue, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
+import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import TeamIcon from '@components/team_sidebar/team_list/team_item/team_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -30,32 +31,33 @@ const CONTAINER_HEIGHT = 392;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        flex: {
-            flex: 1,
-        },
         titleContainer: {
-            flex: 1,
-            flexGrow: 1,
-            flexDirection: 'row',
             alignItems: 'center',
-        },
-        teamIconContainer: {
-
-            // flex: 1,
-            // flex: 0,
-            // alignItems: 'flex-end',
-            height: 54,
-            width: 54,
-            padding: 3,
-            borderRadius: 10,
-            marginVertical: 3,
+            flexDirection: 'row',
+            marginTop: 20,
         },
         title: {
-            marginTop: 20,
-            paddingVertical: 12,
-            paddingHorizontal: 20,
+            flex: 1,
+            alignItems: 'center',
+            paddingLeft: 20,
             color: theme.centerChannelColor,
             ...typography('Heading', 300, 'SemiBold'),
+        },
+        teamContainer: {
+            flexDirection: 'row',
+            alignItems: 'flex-end',
+            marginRight: 20,
+        },
+        teamIcon: {
+            flexDirection: 'row',
+            borderRadius: 6,
+            height: 48,
+            width: 48,
+        },
+        compass: {
+            marginLeft: 4,
+            marginBottom: 12,
+            alignItems: 'center',
         },
         showMore: {
             padding: 0,
@@ -187,13 +189,14 @@ const Modifiers = ({searchValue, setSearchValue, setTeamId, teams, teamId}: Prop
                     id={'screen.search.modifier.header'}
                     defaultMessage='Search options'
                 />
-                <View style={styles.teamIconContainer}>
-                    {selectedTeam &&
-                        <TouchableWithFeedback
-                            onPress={() => handleTeamChange()}
-                            type='opacity'
-                            testID={selectedTeam.id}
-                        >
+                {selectedTeam &&
+                <TouchableWithFeedback
+                    onPress={handleTeamChange}
+                    type='opacity'
+                    testID={selectedTeam.id}
+                >
+                    <View style={styles.teamContainer}>
+                        <View style={styles.teamIcon}>
                             <TeamIcon
                                 displayName={selectedTeam.displayName}
                                 id={selectedTeam.id}
@@ -204,9 +207,16 @@ const Modifiers = ({searchValue, setSearchValue, setTeamId, teams, teamId}: Prop
                                 selected={false}
                                 testID={`${selectedTeam}.team_icon`}
                             />
-                        </TouchableWithFeedback>
-                    }
-                </View>
+                        </View>
+                        <CompassIcon
+                            color={changeOpacity(theme.centerChannelColor, 0.56)}
+                            style={styles.compass}
+                            name='menu-down'
+                            size={24}
+                        />
+                    </View>
+                </TouchableWithFeedback>
+                }
             </View>
             <Animated.View style={animatedStyle}>
                 {data.map((item) => renderModifier(item))}
