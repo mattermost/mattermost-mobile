@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React from 'react';
 import {Text, View} from 'react-native';
 
-import {addUserToTeam} from '@actions/remote/team';
+import CompassIcon from '@components/compass_icon';
 import TeamIcon from '@components/team_sidebar/team_list/team_item/team_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -16,11 +15,11 @@ import type TeamModel from '@typings/database/models/servers/team';
 
 type Props = {
     team: TeamModel | Team;
-    currentUserId: string;
     textColor?: string;
     iconTextColor?: string;
     iconBackgroundColor?: string;
-    onTeamAdded: (teamId: string) => void;
+    selectedTeamId?: string;
+    onPress: (teamId: string) => void;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -46,19 +45,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             width: 40,
             height: 40,
         },
+        compassContainer: {
+            flex: 1,
+            alignItems: 'flex-end',
+        },
     };
 });
 
-export default function TeamListItem({team, currentUserId, textColor, iconTextColor, iconBackgroundColor, onTeamAdded}: Props) {
+export default function TeamListItem({team, textColor, iconTextColor, iconBackgroundColor, selectedTeamId, onPress}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const serverUrl = useServerUrl();
-    const onPress = useCallback(async () => {
-        const {error} = await addUserToTeam(serverUrl, team.id, currentUserId);
-        if (!error) {
-            onTeamAdded(team.id);
-        }
-    }, [onTeamAdded]);
 
     const displayName = 'displayName' in team ? team.displayName : team.display_name;
     const lastTeamIconUpdateAt = 'lastTeamIconUpdatedAt' in team ? team.lastTeamIconUpdatedAt : team.last_team_icon_update;
@@ -88,6 +84,15 @@ export default function TeamListItem({team, currentUserId, textColor, iconTextCo
                 >
                     {displayName}
                 </Text>
+                {selectedTeamId && (team.id === selectedTeamId) &&
+                    <View style={styles.compassContainer}>
+                        <CompassIcon
+                            color={theme.buttonBg}
+                            name='check'
+                            size={24}
+                        />
+                    </View>
+                }
             </TouchableWithFeedback>
         </View>
     );

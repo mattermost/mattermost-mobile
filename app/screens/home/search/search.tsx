@@ -57,6 +57,7 @@ const SearchScreen = ({teamId}: Props) => {
     const {searchTerm} = nav.getState().routes[stateIndex].params;
 
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
+    const [searchTeamId, setSelectedTeamId] = useState<string>(teamId);
     const [selectedTab, setSelectedTab] = useState<SelectTab>('messages');
     const [filter, setFilter] = useState<FileFilter>(FileFilters.ALL);
     const [showResults, setShowResults] = useState(false);
@@ -75,6 +76,9 @@ const SearchScreen = ({teamId}: Props) => {
             is_or_search: true,
         };
     };
+
+    /* eslint-disable no-console */
+    console.log('searchTeamId', searchTeamId);
 
     const onSnap = (offset: number) => {
         scrollRef.current?.scrollToOffset({offset, animated: true});
@@ -149,6 +153,8 @@ const SearchScreen = ({teamId}: Props) => {
                     <Modifiers
                         setSearchValue={setSearchValue}
                         searchValue={searchValue}
+                        teamId={teamId}
+                        setSelectedTeamId={setSelectedTeamId}
                     />
                     <RecentSearches
                         setRecentValue={handleRecentSearch}

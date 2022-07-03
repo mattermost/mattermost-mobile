@@ -5,8 +5,6 @@ import React, {useCallback} from 'react';
 import {ListRenderItemInfo, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler'; // Keep the FlatList from gesture handler so it works well with bottom sheet
 
-import FormattedText from '@components/formatted_text';
-import Empty from '@components/illustrations/no_team';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -19,8 +17,9 @@ type Props = {
     textColor?: string;
     iconTextColor?: string;
     iconBackgroundColor?: string;
-    onTeamAdded: (id: string) => void;
+    onPress: (id: string) => void;
     testID?: string;
+    selectedTeamId?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -54,50 +53,31 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const keyExtractor = (item: TeamModel) => item.id;
 
-export default function TeamList({teams, textColor, iconTextColor, iconBackgroundColor, onTeamAdded, testID}: Props) {
+export default function TeamList({teams, textColor, iconTextColor, iconBackgroundColor, onPress, testID, selectedTeamId}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     const renderTeam = useCallback(({item: t}: ListRenderItemInfo<Team|TeamModel>) => {
         return (
             <TeamListItem
+                onPress={onPress}
                 team={t}
                 textColor={textColor}
                 iconBackgroundColor={iconBackgroundColor}
                 iconTextColor={iconTextColor}
-                onTeamAdded={onTeamAdded}
+                selectedTeamId={selectedTeamId}
             />
         );
-    }, [textColor, iconTextColor, iconBackgroundColor, onTeamAdded]);
-
-    if (teams.length) {
-        return (
-            <View style={styles.container}>
-                <FlatList
-                    data={teams}
-                    renderItem={renderTeam}
-                    keyExtractor={keyExtractor}
-                    contentContainerStyle={styles.contentContainer}
-                    testID={`${testID}.flat_list`}
-                />
-            </View>
-        );
-    }
+    }, [textColor, iconTextColor, iconBackgroundColor, onPress]);
 
     return (
-        <View style={styles.empty}>
-            <Empty theme={theme}/>
-            <FormattedText
-                id='team_list.no_other_teams.title'
-                defaultMessage='No additional teams to join'
-                style={styles.title}
-                testID={`${testID}.no_other_teams.title`}
-            />
-            <FormattedText
-                id='team_list.no_other_teams.description'
-                defaultMessage='To join another team, ask a Team Admin for an invitation, or create your own team.'
-                style={styles.description}
-                testID={`${testID}.no_other_teams.description`}
+        <View style={styles.container}>
+            <FlatList
+                data={teams}
+                renderItem={renderTeam}
+                keyExtractor={keyExtractor}
+                contentContainerStyle={styles.contentContainer}
+                testID={`${testID}.flat_list`}
             />
         </View>
     );

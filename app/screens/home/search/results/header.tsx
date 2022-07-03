@@ -92,7 +92,7 @@ const Header = ({
             renderContent,
             snapPoints: [700, 10],
             theme,
-            title: intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'}),
+            title: '',
         });
     }, [selectedFilter]);
 

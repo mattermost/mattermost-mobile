@@ -129,7 +129,7 @@ const Filter = ({initialFilter, setFilter}: FilterProps) => {
     }, [selectedFilter, setFilter]);
 
     const buttonText = intl.formatMessage({id: 'screen.search.results.filter.show_button', defaultMessage: 'Show results'});
-    const buttonTitle = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
+    const title = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
 
     return (
         <BottomSheetContent
@@ -139,7 +139,7 @@ const Filter = ({initialFilter, setFilter}: FilterProps) => {
             showButton={true}
             showTitle={!isTablet}
             testID='search.filters'
-            title={buttonTitle}
+            title={title}
             titleSeparator={true}
         >
             <View style={style.container}>
