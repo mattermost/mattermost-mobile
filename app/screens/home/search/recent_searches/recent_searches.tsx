@@ -3,74 +3,20 @@
 
 import React, {useMemo, useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, View} from 'react-native';
+import {FlatList, Text, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import RecentItem, {RECENT_LABEL_HEIGHT} from './recent_item';
 
+import type TeamModel from '@typings/database/models/servers/team';
 import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 const RECENT_SEPARATOR_HEIGHT = 3;
-
-type Props = {
-    setRecentValue: (value: string) => void;
-    recentSearches: TeamSearchHistoryModel[];
-}
-
-const RecentSearches = ({setRecentValue, recentSearches}: Props) => {
-    const theme = useTheme();
-    const intl = useIntl();
-    const formatMessage = intl.formatMessage;
-    const styles = getStyleFromTheme(theme);
-
-    const renderRecentItem = useCallback(({item}) => {
-        return (
-            <RecentItem
-                item={item}
-                setRecentValue={setRecentValue}
-            />
-        );
-    }, [setRecentValue]);
-
-    const renderHeader = () => {
-        return (
-            <>
-                <View style={styles.divider}/>
-                <FormattedText
-                    style={styles.title}
-                    id={'screen.search.recent.header'}
-                    defaultMessage={formatMessage({id: 'mobile.search.recent_title', defaultMessage: 'Recent searches'})}
-                />
-            </>
-        );
-    };
-
-    const data = useMemo(() => {
-        return recentSearches;
-    }, [recentSearches]);
-
-    return (
-        <AnimatedFlatList
-            data={data}
-            keyboardShouldPersistTaps='always'
-            keyboardDismissMode='interactive'
-            ListHeaderComponent={renderHeader}
-            renderItem={renderRecentItem}
-            scrollEventThrottle={60}
-            testID='search.recents_list'
-
-            //removeClippedSubviews={true}
-            // stickySectionHeadersEnabled={Platform.OS === 'ios'}
-            // onViewableItemsChanged={onViewableItemsChanged}
-        />
-    );
-};
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -120,5 +66,68 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+type Props = {
+    setRecentValue: (value: string) => void;
+    recentSearches: TeamSearchHistoryModel[];
+    team: TeamModel[];
+}
+
+const RecentSearches = ({setRecentValue, recentSearches, team}: Props) => {
+    const theme = useTheme();
+    const intl = useIntl();
+    const styles = getStyleFromTheme(theme);
+
+    const teamName = team[0].displayName;
+    const title = intl.formatMessage({
+        id: 'smobile.search.recent_title',
+        defaultMessage: 'Recent searches in {teamName}',
+    }, {
+        teamName,
+    });
+
+    const renderRecentItem = useCallback(({item}) => {
+        return (
+            <RecentItem
+                item={item}
+                setRecentValue={setRecentValue}
+            />
+        );
+    }, [setRecentValue]);
+
+    const renderHeader = () => {
+        return (
+            <>
+                <View style={styles.divider}/>
+                <Text
+                    style={styles.title}
+                    numberOfLines={2}
+                >
+                    {title}
+                </Text>
+            </>
+        );
+    };
+
+    const data = useMemo(() => {
+        return recentSearches;
+    }, [recentSearches]);
+
+    return (
+        <AnimatedFlatList
+            data={data}
+            keyboardShouldPersistTaps='always'
+            keyboardDismissMode='interactive'
+            ListHeaderComponent={renderHeader}
+            renderItem={renderRecentItem}
+            scrollEventThrottle={60}
+            testID='search.recents_list'
+
+            //removeClippedSubviews={true}
+            // stickySectionHeadersEnabled={Platform.OS === 'ios'}
+            // onViewableItemsChanged={onViewableItemsChanged}
+        />
+    );
+};
 
 export default RecentSearches;

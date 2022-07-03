@@ -60,7 +60,6 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
     const maxHeight = Math.round((dimensions.height * 0.9));
 
     const selectedTeam = teams.find((t) => t.id === teamId);
-    const lastTeamIconUpdateAt = 'lastTeamIconUpdatedAt' in selectedTeam ? selectedTeam.lastTeamIconUpdatedAt : selectedTeam.last_team_icon_update;
 
     const handleTeamChange = useCallback(preventDoubleTap(() => {
         const renderContent = () => {
@@ -86,34 +85,38 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
             theme,
             title: intl.formatMessage({id: 'mobile.search.team.select', defaultMessage: 'Select a team to search'}),
         });
-    }), [teams, isTablet, theme, teamId]);
+    }), [theme]);
 
     return (
-        <TouchableWithFeedback
-            onPress={handleTeamChange}
-            type='opacity'
-            testID={selectedTeam.id}
-        >
-            <View style={[styles.teamContainer, divider ? styles.border : null]}>
-                <View style={[styles.teamIcon, {width: size, height: size}]}>
-                    <TeamIcon
-                        displayName={selectedTeam.displayName}
-                        id={selectedTeam.id}
-                        lastIconUpdate={lastTeamIconUpdateAt}
-                        textColor={theme.centerChannelColor}
-                        backgroundColor={changeOpacity(theme.centerChannelColor, 0.16)}
-                        selected={false}
-                        testID={`${selectedTeam}.team_icon`}
-                    />
-                </View>
-                <CompassIcon
-                    color={changeOpacity(theme.centerChannelColor, 0.56)}
-                    style={styles.compass}
-                    name='menu-down'
-                    size={24}
-                />
-            </View>
-        </TouchableWithFeedback>
+        <View>
+            {selectedTeam &&
+                <TouchableWithFeedback
+                    onPress={handleTeamChange}
+                    type='opacity'
+                    testID={selectedTeam.id}
+                >
+                    <View style={[styles.teamContainer, divider ? styles.border : null]}>
+                        <View style={[styles.teamIcon, {width: size, height: size}]}>
+                            <TeamIcon
+                                displayName={selectedTeam.displayName}
+                                id={selectedTeam.id}
+                                lastIconUpdate={selectedTeam.lastTeamIconUpdatedAt}
+                                textColor={theme.centerChannelColor}
+                                backgroundColor={changeOpacity(theme.centerChannelColor, 0.16)}
+                                selected={false}
+                                testID={`${selectedTeam}.team_icon`}
+                            />
+                        </View>
+                        <CompassIcon
+                            color={changeOpacity(theme.centerChannelColor, 0.56)}
+                            style={styles.compass}
+                            name='menu-down'
+                            size={24}
+                        />
+                    </View>
+                </TouchableWithFeedback>
+            }
+        </View>
     );
 };
 export default TeamPickerIcon;

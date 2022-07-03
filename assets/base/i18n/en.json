@@ -516,6 +516,7 @@
   "mobile.search.modifier.in": "a specific channel",
   "mobile.search.modifier.on": "a specific date",
   "mobile.search.modifier.phrases": "messages with phrases",
+  "mobile.search.recent_title": "Recent searches in {teamName}",
   "mobile.search.show_less": "Show less",
   "mobile.search.show_more": "Show more",
   "mobile.search.team.select": "Select a team to search",
