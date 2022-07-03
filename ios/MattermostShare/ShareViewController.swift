@@ -12,7 +12,7 @@ import UIKit
 import os.log
 
 class ShareViewController: UIViewController {
-  private var fileManager = LocalFileManager.instance
+  private var fileManager: LocalFileManager?
   private var dismissKeyboardObserver: NSObjectProtocol?
   private var closeExtensionObserver: NSObjectProtocol?
   private var doPostObserver: NSObjectProtocol?
@@ -22,17 +22,17 @@ class ShareViewController: UIViewController {
     self.isModalInPresentation = true
     
     self.addObservers()
-    
-    Task {
-      if let context = try? await fileManager.extractDataFromContext(extensionContext) {
-        await MainActor.run(body: {
-          self.showUIView(
-            attachments: context.attachments,
-            linkPreviewUrl: context.linkPreviewUrl,
-            message: context.message
+    fileManager = LocalFileManager()
+    if let inputItems = extensionContext?.inputItems {
+      fileManager!.extractDataFromContext(
+        inputItems,
+        completionHander: {[weak self] attachments, linkPreviewUrl, message in
+          self?.showUIView(
+            attachments: attachments,
+            linkPreviewUrl: linkPreviewUrl,
+            message: message
           )
         })
-      }
     }
   }
   
@@ -64,6 +64,7 @@ class ShareViewController: UIViewController {
   }
   
   private func removeObservers() {
+    fileManager = nil
     NotificationCenter.default.removeObserver(dismissKeyboardObserver as Any)
     NotificationCenter.default.removeObserver(closeExtensionObserver as Any)
     NotificationCenter.default.removeObserver(doPostObserver as Any)
@@ -73,7 +74,7 @@ class ShareViewController: UIViewController {
     self.removeObservers()
     if let userInfo = notification.userInfo,
        let attachments = userInfo["attachments"] as? [AttachmentModel] {
-        fileManager.clearTempDirectory(attachments.map{ $0.fileUrl.path})
+        fileManager?.clearTempDirectory(attachments.map{ $0.fileUrl.path})
     }
     extensionContext?.completeRequest(returningItems: [])
   }
@@ -120,8 +121,8 @@ class ShareViewController: UIViewController {
           channelId: channel,
           message: message,
           files: files,
-          completionHandler: {
-            self.extensionContext!.completeRequest(returningItems: [])
+          completionHandler: { [weak self] in
+            self?.extensionContext!.completeRequest(returningItems: [])
           })
       } else {
         extensionContext!.completeRequest(returningItems: [])
@@ -133,8 +134,8 @@ class ShareViewController: UIViewController {
     let childView = UIHostingController(
       rootView: ShareUIView(
         attachments: attachments,
-        linkPreviewUrl: linkPreviewUrl,
-        message: message
+        linkPreviewUrl: linkPreviewUrl ?? "",
+        message: message ?? ""
       )
     )
     addChild(childView)

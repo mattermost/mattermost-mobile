@@ -5,7 +5,6 @@
 //  Created by Elias Nahum on 20-06-22.
 //
 
-import Gekidou
 import SwiftUI
 
 struct ServerListView: View {
@@ -17,6 +16,7 @@ struct ServerListView: View {
         server: server
       )
     }
-    .listStyle(.inset)
+    .listStyle(.plain)
+    .padding(20)
   }
 }

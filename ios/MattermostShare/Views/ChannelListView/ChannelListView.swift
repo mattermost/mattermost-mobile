@@ -5,7 +5,6 @@
 //  Created by Elias Nahum on 21-06-22.
 //
 
-import Gekidou
 import SwiftUI
 
 struct ChannelListView: View {
@@ -13,7 +12,7 @@ struct ChannelListView: View {
   @State private var search = ""
   
   var body: some View {
-    VStack {
+    VStack (spacing: 0) {
       SearchBarView()
         .padding()
       List(shareViewModel.allChannels) { channel in
@@ -21,7 +20,8 @@ struct ChannelListView: View {
           channel: channel
         )
       }
-      .listStyle(.inset)
+      .listStyle(.plain)
+      .padding(.horizontal, 20)
       .onDisappear {
         if !shareViewModel.search.isEmpty {
           shareViewModel.search = ""

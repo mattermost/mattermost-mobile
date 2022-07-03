@@ -8,6 +8,9 @@
 
 import Foundation
 import Combine
+import Gekidou
+import SwiftUI
+import UIKit
 
 class ShareViewModel: ObservableObject {
   @Published var server: ServerModel?
@@ -18,6 +21,7 @@ class ShareViewModel: ObservableObject {
   
   private let serverService: ServerService = ServerService()
   private let channelService: ChannelService = ChannelService()
+  private let fileManager = LocalFileManager()
   private var cancellables = Set<AnyCancellable>()
   
   init() {
@@ -71,5 +75,33 @@ class ShareViewModel: ObservableObject {
   
   public func selectChannel(_ channel: ChannelModel) {
     channelService.selected = channel
+  }
+  
+  func getProfileImage(serverUrl: String, userId: String, imageBinding: Binding<UIImage?>) {
+    if let image = fileManager.getProfileImage(userId: userId) {
+      imageBinding.wrappedValue = image
+    } else {
+      downloadProfileImage(serverUrl: serverUrl, userId: userId, imageBinding: imageBinding)
+    }
+  }
+
+  func downloadProfileImage(serverUrl: String, userId: String, imageBinding: Binding<UIImage?>) {
+    guard let _ = URL(string: serverUrl) else {
+        fatalError("Missing or Malformed URL")
+    }
+
+    Gekidou.Network.default.fetchUserProfilePicture(userId: userId, withServerUrl: serverUrl, completionHandler: {data, response, error in
+      guard (response as? HTTPURLResponse)?.statusCode == 200 else {
+          fatalError("Error while fetching image \(String(describing: (response as? HTTPURLResponse)?.statusCode))")
+      }
+
+      if let data = data {
+        let image = UIImage(data: data)
+        imageBinding.wrappedValue = image
+        if let img = image {
+          self.fileManager.saveProfileImage(image: img, userId: userId)
+        }
+      }
+    })
   }
 }

@@ -10,16 +10,10 @@ import Gekidou
 
 struct ContentView: View {
   @EnvironmentObject var shareViewModel: ShareViewModel
-  @State private var message: String = ""
-  
-  var attachments: [AttachmentModel] = []
-  var linkPreviewUrl: String?
-  
-  init(attachments: [AttachmentModel], linkPreviewUrl: String?, message: String = "") {
-    self.attachments = attachments
-    self.linkPreviewUrl = linkPreviewUrl
-    _message = State(initialValue: message)
-  }
+
+  @Binding var attachments: [AttachmentModel]
+  @Binding var linkPreviewUrl: String
+  @Binding var message: String
   
   var body: some View {
     let appearance = UINavigationBarAppearance()
@@ -35,42 +29,42 @@ struct ContentView: View {
     && !shareViewModel.channel!.id.isEmpty
     
     return VStack {
-      if (linkPreviewUrl != nil) {
-        LinkPreview(link: linkPreviewUrl!)
-          .padding(.top)
-          .padding(.horizontal)
+      if (!linkPreviewUrl.isEmpty) {
+        LinkPreview(
+          link: $linkPreviewUrl,
+          message: $message
+        )
       }
       
       if (!attachments.isEmpty) {
-        AttachmentsView(attachments: attachments)
-          .padding(.top)
-          .padding(.horizontal)
+        AttachmentsView(attachments: $attachments)
       }
       
-      if (linkPreviewUrl != nil || !attachments.isEmpty) {
+      if (!linkPreviewUrl.isEmpty || !attachments.isEmpty) {
         Divider()
           .padding(.top, 10)
-          .padding(.horizontal)
       }
       
       if (showOptions) {
-        VStack {
-          OptionView(navigationTitle: "Select server", label: "Server", value: shareViewModel.server!.displayName) {
-            ServerListView()
+        VStack (spacing: 0) {
+          if shareViewModel.allServers.count > 1 {
+            OptionView(navigationTitle: "Select server", label: "Server", value: shareViewModel.server!.displayName) {
+              ServerListView()
+            }
+            .frame(height: 48)
           }
           OptionView(navigationTitle: "Select channel", label: "Channel", value: "\(shareViewModel.channel!.displayName) \(shareViewModel.channel!.formattedTeamName)") {
             ChannelListView()
           }
+          .frame(height: 48)
         }
         .padding(.all, 0)
       }
       
       Divider()
         .padding(.bottom, 10)
-        .padding(.horizontal)
       
       FloatingTextField(placeholderText: "Enter a message (optional)", text: $message)
-        .padding(.horizontal)
       
       Spacer()
     }
@@ -79,11 +73,12 @@ struct ContentView: View {
     .navigationBarItems(
       leading: CancelButton(attachments: attachments),
       trailing: PostButton(
-        attachments: attachments,
+        attachments: $attachments,
         linkPreviewUrl: linkPreviewUrl ?? "",
         message: $message
       )
     )
+    .padding(20)
   }
 }
 
@@ -114,7 +109,7 @@ struct CancelButton: View {
 
 struct PostButton: View {
   @EnvironmentObject var shareViewModel: ShareViewModel
-  var attachments: [AttachmentModel]
+  @Binding var attachments: [AttachmentModel]
   var linkPreviewUrl: String
   @Binding var message: String
   @State var pressed: Bool = false

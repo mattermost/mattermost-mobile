@@ -19,6 +19,8 @@
 		7F0F4B0A24BA173900E14C60 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7F0F4B0924BA173900E14C60 /* LaunchScreen.storyboard */; };
 		7F151D3E221B062700FAD8F3 /* RuntimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F151D3D221B062700FAD8F3 /* RuntimeUtils.swift */; };
 		7F1EB88527FDE361002E7EEC /* GekidouWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F1EB88427FDE361002E7EEC /* GekidouWrapper.swift */; };
+		7F1EBFCE286F2AE200824AF1 /* MultipleAttachmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F1EBFCD286F2AE200824AF1 /* MultipleAttachmentView.swift */; };
+		7F1EBFD0286F2B2C00824AF1 /* RemoveAttachmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F1EBFCF286F2B2C00824AF1 /* RemoveAttachmentView.swift */; };
 		7F292A711E8AB73400A450A3 /* SplashScreenResource in Resources */ = {isa = PBXBuildFile; fileRef = 7F292A701E8AB73400A450A3 /* SplashScreenResource */; };
 		7F4288042865D340006B48E1 /* Gekidou in Frameworks */ = {isa = PBXBuildFile; productRef = 7F4288032865D340006B48E1 /* Gekidou */; };
 		7F42880A286672F6006B48E1 /* ServerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F428809286672F6006B48E1 /* ServerService.swift */; };
@@ -34,7 +36,6 @@
 		7F7E9F562864E74C0064BFAF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F7E9F552864E74C0064BFAF /* ContentView.swift */; };
 		7F7E9F5D2864E76D0064BFAF /* AttachmentInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F7E9F582864E76B0064BFAF /* AttachmentInfoView.swift */; };
 		7F7E9F5E2864E76D0064BFAF /* SingleAttachmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F7E9F592864E76C0064BFAF /* SingleAttachmentView.swift */; };
-		7F7E9F5F2864E76D0064BFAF /* AttachmentThumbnailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F7E9F5A2864E76C0064BFAF /* AttachmentThumbnailView.swift */; };
 		7F7E9F602864E76D0064BFAF /* AttachmentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F7E9F5B2864E76C0064BFAF /* AttachmentsView.swift */; };
 		7F7E9F612864E76D0064BFAF /* VideoThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F7E9F5C2864E76C0064BFAF /* VideoThumbnail.swift */; };
 		7F7E9F632864E77B0064BFAF /* BackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F7E9F622864E77B0064BFAF /* BackButton.swift */; };
@@ -165,6 +166,8 @@
 		7F151D3D221B062700FAD8F3 /* RuntimeUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RuntimeUtils.swift; path = Mattermost/RuntimeUtils.swift; sourceTree = "<group>"; };
 		7F151D43221B082A00FAD8F3 /* Mattermost-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Mattermost-Bridging-Header.h"; path = "Mattermost/Mattermost-Bridging-Header.h"; sourceTree = "<group>"; };
 		7F1EB88427FDE361002E7EEC /* GekidouWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GekidouWrapper.swift; sourceTree = "<group>"; };
+		7F1EBFCD286F2AE200824AF1 /* MultipleAttachmentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipleAttachmentView.swift; sourceTree = "<group>"; };
+		7F1EBFCF286F2B2C00824AF1 /* RemoveAttachmentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoveAttachmentView.swift; sourceTree = "<group>"; };
 		7F25B626270F666D00F32373 /* Metropolis-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Metropolis-Light.ttf"; path = "../assets/fonts/Metropolis-Light.ttf"; sourceTree = "<group>"; };
 		7F25B628270F666D00F32373 /* Metropolis-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Metropolis-Regular.ttf"; path = "../assets/fonts/Metropolis-Regular.ttf"; sourceTree = "<group>"; };
 		7F292A701E8AB73400A450A3 /* SplashScreenResource */ = {isa = PBXFileReference; lastKnownFileType = folder; path = SplashScreenResource; sourceTree = "<group>"; };
@@ -186,7 +189,6 @@
 		7F7E9F552864E74C0064BFAF /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7F7E9F582864E76B0064BFAF /* AttachmentInfoView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AttachmentInfoView.swift; sourceTree = "<group>"; };
 		7F7E9F592864E76C0064BFAF /* SingleAttachmentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SingleAttachmentView.swift; sourceTree = "<group>"; };
-		7F7E9F5A2864E76C0064BFAF /* AttachmentThumbnailView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AttachmentThumbnailView.swift; sourceTree = "<group>"; };
 		7F7E9F5B2864E76C0064BFAF /* AttachmentsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AttachmentsView.swift; sourceTree = "<group>"; };
 		7F7E9F5C2864E76C0064BFAF /* VideoThumbnail.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoThumbnail.swift; sourceTree = "<group>"; };
 		7F7E9F622864E77B0064BFAF /* BackButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackButton.swift; sourceTree = "<group>"; };
@@ -451,9 +453,10 @@
 			children = (
 				7F7E9F582864E76B0064BFAF /* AttachmentInfoView.swift */,
 				7F7E9F5B2864E76C0064BFAF /* AttachmentsView.swift */,
-				7F7E9F5A2864E76C0064BFAF /* AttachmentThumbnailView.swift */,
 				7F7E9F592864E76C0064BFAF /* SingleAttachmentView.swift */,
 				7F7E9F5C2864E76C0064BFAF /* VideoThumbnail.swift */,
+				7F1EBFCD286F2AE200824AF1 /* MultipleAttachmentView.swift */,
+				7F1EBFCF286F2B2C00824AF1 /* RemoveAttachmentView.swift */,
 			);
 			path = AttachmentsViews;
 			sourceTree = "<group>";
@@ -685,7 +688,7 @@
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			packageReferences = (
-				7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph" */,
+				7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph.git" */,
 			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
@@ -918,13 +921,14 @@
 				7F7E9F732864E8060064BFAF /* CompassIcons.swift in Sources */,
 				7FA9A9902868BD8800AB35A1 /* LocalFileManager.swift in Sources */,
 				7F42880A286672F6006B48E1 /* ServerService.swift in Sources */,
+				7F1EBFD0286F2B2C00824AF1 /* RemoveAttachmentView.swift in Sources */,
 				7F7E9F682864E79E0064BFAF /* ChannelItemView.swift in Sources */,
+				7F1EBFCE286F2AE200824AF1 /* MultipleAttachmentView.swift in Sources */,
 				7F7E9F792864E8160064BFAF /* SearchBarView.swift in Sources */,
 				7FB50D222856E1AB0035ACB5 /* ShareUIView.swift in Sources */,
 				7F7E9F772864E8160064BFAF /* LinkPreview.swift in Sources */,
 				7F7E9F782864E8160064BFAF /* OptionView.swift in Sources */,
 				7F7E9F612864E76D0064BFAF /* VideoThumbnail.swift in Sources */,
-				7F7E9F5F2864E76D0064BFAF /* AttachmentThumbnailView.swift in Sources */,
 				7F7E9F7E2864E83F0064BFAF /* ServerListView.swift in Sources */,
 				7F7E9F5D2864E76D0064BFAF /* AttachmentInfoView.swift in Sources */,
 				7F7E9F4C2864E6EC0064BFAF /* AttachmentModel.swift in Sources */,
@@ -1178,7 +1182,7 @@
 				INFOPLIST_FILE = MattermostShare/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MattermostShare;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2022 Facebook. All rights reserved.";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1229,7 +1233,7 @@
 				INFOPLIST_FILE = MattermostShare/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MattermostShare;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2022 Facebook. All rights reserved.";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1376,7 +1380,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph" */ = {
+		7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph.git" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/satoshi-takano/OpenGraph.git";
 			requirement = {
@@ -1401,7 +1405,7 @@
 		};
 		7FD4822B2864D73300A5B18B /* OpenGraph */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph" */;
+			package = 7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph.git" */;
 			productName = OpenGraph;
 		};
 /* End XCSwiftPackageProductDependency section */

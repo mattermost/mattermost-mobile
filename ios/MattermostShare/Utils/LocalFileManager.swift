@@ -10,11 +10,13 @@ import Foundation
 import UIKit
 import UniformTypeIdentifiers
 
+typealias ExtractContentCompletionHandler = (_ attachments: [AttachmentModel], _ linkPreviewUrl: String?, _ message: String?) -> Void
+
 class LocalFileManager {
   private var cacheURL: URL?
-  static let instance = LocalFileManager()
+  private var dispatchGroup = DispatchGroup()
   
-  private init() {
+  init() {
     let filemgr = FileManager.default
     let appGroupId = Bundle.main.infoDictionary!["AppGroupIdentifier"] as! String
     let containerUrl = filemgr.containerURL(forSecurityApplicationGroupIdentifier: appGroupId)
@@ -111,62 +113,106 @@ class LocalFileManager {
     return UIImage(contentsOfFile: url.path)
   }
   
-  public func extractDataFromContext(_ extensionContext: NSExtensionContext?) async throws ->
-  (attachments: [AttachmentModel], linkPreviewUrl: String?, message: String?) {
+  func getImagePixels(imageUrl: URL) -> UInt64 {
+    if let imageSourceRef = CGImageSourceCreateWithURL(imageUrl as CFURL, nil),
+       let props = CGImageSourceCopyPropertiesAtIndex(imageSourceRef, 0, nil) as? NSDictionary,
+       let height =  props["PixelHeight"] as? NSNumber,
+       let width = props["PixelWidth"] as? NSNumber {
+      return UInt64(width.intValue * height.intValue)
+    }
+    
+    return 0
+  }
+  
+  func getImagePixels(image: UIImage) -> UInt64 {
+      guard let cgImage = image.cgImage else {
+          return 0
+      }
+
+      return UInt64(cgImage.width * cgImage.height)
+    }
+  
+  public func extractDataFromContext(_ inputItems: [Any], completionHander: @escaping ExtractContentCompletionHandler) -> Void {
     var models: [AttachmentModel] = []
     var linkPreviewUrl: String? = nil
     var message: String? = nil
     
-    for item in extensionContext?.inputItems as! [NSExtensionItem] {
+    for item in inputItems as! [NSExtensionItem] {
       guard let attachments = item.attachments else {continue}
       for itemProvider in attachments {
         if itemProvider.hasItemConformingToTypeIdentifier(UTType.movie.identifier) {
-          if let movie = try? await itemProvider.loadItem(forTypeIdentifier: UTType.movie.identifier),
-             let url = movie as? URL,
-             let attachment = saveAttachment(url: url, type: .video) {
-            models.append(attachment)
-          }
+          dispatchGroup.enter()
+          itemProvider.loadItem(forTypeIdentifier: UTType.movie.identifier, options: nil, completionHandler: {[weak self] movie, error in
+            if error == nil,
+               let url = movie as? URL,
+               let attachment = self?.saveAttachment(url: url, type: .video) {
+              models.append(attachment)
+            }
+            self?.dispatchGroup.leave()
+          })
         }
         
         else if itemProvider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
-          if let image = try? await itemProvider.loadItem(forTypeIdentifier: UTType.image.identifier) {
-            if let url = image as? URL,
-               let attachment = saveAttachment(url: url, type: .image) {
-//              attachment.imagePixels = self.getImagePixels(imageUrl: url)
-              models.append(attachment)
-            } else if let uiImage = image as? UIImage,
-                      let data = uiImage.pngData(),
-                      let attachement = saveAttachmentImage(data) {
-//              attachment?.imagePixels = self.getImagePixels(image: image)
-              models.append(attachement)
+          dispatchGroup.enter()
+          itemProvider.loadItem(forTypeIdentifier: UTType.image.identifier, options: nil, completionHandler: {[weak self] image, error in
+            if error == nil {
+              if let url = image as? URL,
+                 var attachment = self?.saveAttachment(url: url, type: .image) {
+                attachment.imagePixels = self?.getImagePixels(imageUrl: url)
+                models.append(attachment)
+              } else if let uiImage = image as? UIImage,
+                        let data = uiImage.pngData(),
+                        var attachment = self?.saveAttachmentImage(data) {
+                attachment.imagePixels = self?.getImagePixels(image: uiImage)
+                models.append(attachment)
+              }
             }
-          }
+            self?.dispatchGroup.leave()
+          })
         }
         
         else if itemProvider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
-          if let file = try? await itemProvider.loadItem(forTypeIdentifier: UTType.fileURL.identifier),
-             let url = file as? URL,
-             let attachment = saveAttachment(url: url, type: .file) {
-            models.append(attachment)
-          }
+          dispatchGroup.enter()
+          itemProvider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil, completionHandler: {[weak self] file, error in
+            if error == nil,
+               let url = file as? URL,
+               let attachment = self?.saveAttachment(url: url, type: .file) {
+              models.append(attachment)
+            }
+            self?.dispatchGroup.leave()
+          })
         }
         
         else if itemProvider.hasItemConformingToTypeIdentifier(UTType.url.identifier) {
-          if let itemURL = try? await itemProvider.loadItem(forTypeIdentifier: UTType.url.identifier),
-             let url = itemURL as? URL {
-            linkPreviewUrl = url.absoluteString
-          }
+          dispatchGroup.enter()
+          itemProvider.loadItem(forTypeIdentifier: UTType.url.identifier, options: nil, completionHandler: {[weak self] itemURL, error in
+            if error == nil,
+               let url = itemURL as? URL {
+              linkPreviewUrl = url.absoluteString
+            }
+            self?.dispatchGroup.leave()
+          })
         }
         
         else if itemProvider.hasItemConformingToTypeIdentifier(UTType.text.identifier) {
-          if let text = try? await itemProvider.loadItem(forTypeIdentifier: UTType.text.identifier),
-             let msg = text as? String {
-            message = msg
-          }
+          dispatchGroup.enter()
+          itemProvider.loadItem(forTypeIdentifier: UTType.text.identifier, options: nil, completionHandler: {[weak self] text, error in
+            if error == nil,
+               let msg = text as? String {
+              message = msg
+            }
+            self?.dispatchGroup.leave()
+          })
         }
       }
     }
     
-    return (models, linkPreviewUrl, message)
+    dispatchGroup.notify(queue: DispatchQueue.main) {
+      completionHander(
+        models,
+        linkPreviewUrl,
+        message
+      )
+    }
   }
 }

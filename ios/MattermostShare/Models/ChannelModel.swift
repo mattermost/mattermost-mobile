@@ -9,16 +9,6 @@ import Gekidou
 import SwiftUI
 import Foundation
 
-func getUserIdFromChannelName(name: String, knownId: String) -> String? {
-  let ids = name.components(separatedBy: "__")
-  if ids.first == knownId {
-      return ids.last
-  }
-  
-  return ids.first
-}
-
-
 struct ChannelModel: Hashable, Codable, Identifiable {
   var id: String
   var name: String
@@ -55,6 +45,15 @@ struct ChannelModel: Hashable, Codable, Identifiable {
     self.displayName = displayName
     self.type = type
     self.teamName = teamName
+  }
+  
+  private func getUserIdFromChannelName(name: String, knownId: String) -> String? {
+    let ids = name.components(separatedBy: "__")
+    if ids.first == knownId {
+        return ids.last
+    }
+    
+    return ids.first
   }
 
   var formattedTeamName: String {

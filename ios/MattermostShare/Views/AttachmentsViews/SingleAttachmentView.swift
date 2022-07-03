@@ -23,6 +23,8 @@ struct SingleAttachmentView: View {
             )
         } else if (attachment.type == .video) {
             VideoThumbnail(attachment: attachment)
+        } else {
+          AttachmentInfoView(attachment: attachment)
         }
     }
 }

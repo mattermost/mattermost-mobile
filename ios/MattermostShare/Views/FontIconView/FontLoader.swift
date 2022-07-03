@@ -47,8 +47,6 @@ public extension FontCode {
     }
 }
 
-var loadedFonts = [FontCode]()
-
 class FontLoader: NSObject {
     class func loadFont(_ fontCode: FontCode) {
         let fontName = fontCode.fileName

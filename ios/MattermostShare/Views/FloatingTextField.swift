@@ -25,7 +25,7 @@ struct FloatingTextField: View {
         ZStack(alignment: .topLeading) {
             TextEditor(text: $text)
                 .accentColor(.accentColor)
-                .padding(.horizontal, 5)
+                .padding(.horizontal, 10)
                 .font(Font.custom("OpenSans", size: 16))
                 .foregroundColor(Color.theme.centerChannelColor)
                 .lineLimit(10)
@@ -55,11 +55,11 @@ struct FloatingTextField: View {
                     Font.custom("OpenSans", size: shouldPlaceholderMove ? 10 : 16))
                 .padding(
                     shouldPlaceholderMove ?
-                        EdgeInsets(top: 0, leading:2, bottom: 0, trailing: 5) :
-                        EdgeInsets(top: 8, leading: 10, bottom: 0, trailing: 0)
+                        EdgeInsets(top: 0, leading: 5, bottom: 0, trailing: 5) :
+                        EdgeInsets(top: 8, leading: 15, bottom: 0, trailing: 0)
                 )
                 .background(Color(UIColor.systemBackground).opacity(shouldPlaceholderMove ? 1.0 : 0))
-                .offset(x: shouldPlaceholderMove ? 8 : 0, y: shouldPlaceholderMove ? -8 : 0)
+                .offset(x: shouldPlaceholderMove ? 10 : 0, y: shouldPlaceholderMove ? -8 : 0)
                 .animation(.easeInOut(duration: 0.2), value: shouldPlaceholderMove)
         }
     }
