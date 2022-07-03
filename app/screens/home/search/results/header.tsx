@@ -11,6 +11,8 @@ import {bottomSheet} from '@screens/navigation';
 import {FileFilter, FileFilters} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import TeamPickerIcon from '../team_picker_icon';
+
 import Filter from './filter';
 import SelectButton from './header_button';
 
@@ -23,6 +25,8 @@ type Props = {
     selectedFilter: FileFilter;
     numberMessages: number;
     numberFiles: number;
+    setTeamId: (id: string) => void;
+    teamId: string;
 }
 
 export const HEADER_HEIGHT = 64;
@@ -42,7 +46,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
         },
         filter: {
-            marginRight: 12,
+            flexDirection: 'row',
             marginLeft: 'auto',
         },
         divider: {
@@ -53,6 +57,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Header = ({
+    teamId,
+    setTeamId,
     onTabSelect,
     onFilterChanged,
     numberMessages,
@@ -129,6 +135,12 @@ const Header = ({
                         />
                     </>
                     }
+                    <TeamPickerIcon
+                        size={24}
+                        divider={true}
+                        setTeamId={setTeamId}
+                        teamId={teamId}
+                    />
                 </View>
             </View>
             <View style={styles.divider}/>

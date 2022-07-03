@@ -24,11 +24,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             flexDirection: 'row',
             marginTop: 20,
+            marginRight: 18,
         },
         title: {
             flex: 1,
             alignItems: 'center',
-            paddingLeft: 20,
+            paddingLeft: 18,
             color: theme.centerChannelColor,
             ...typography('Heading', 300, 'SemiBold'),
         },
@@ -129,6 +130,7 @@ const Modifiers = ({searchValue, setSearchValue, setTeamId, teamId}: Props) => {
                     defaultMessage='Search options'
                 />
                 <TeamPickerIcon
+                    size={32}
                     setTeamId={setTeamId}
                     teamId={teamId}
                 />

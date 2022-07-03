@@ -25,31 +25,33 @@ const CONTAINER_HEIGHT = 392;
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         teamContainer: {
+            paddingLeft: 12,
             flexDirection: 'row',
-            alignItems: 'flex-end',
-            marginRight: 20,
+            alignItems: 'center',
+        },
+        border: {
+            marginLeft: 12,
+            borderLeftWidth: 1,
+            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.16),
         },
         teamIcon: {
             flexDirection: 'row',
-            borderRadius: 6,
-            height: 48,
-            width: 48,
         },
         compass: {
-            marginLeft: 4,
-            marginBottom: 12,
             alignItems: 'center',
+            marginLeft: 4,
         },
     };
 });
 
 type Props = {
+    size?: number;
     divider?: boolean;
     teams: TeamModel[];
     setTeamId: (id: string) => void;
     teamId: string;
 }
-const TeamPickerIcon = ({divider = false, setTeamId, teams, teamId}: Props) => {
+const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -58,6 +60,7 @@ const TeamPickerIcon = ({divider = false, setTeamId, teams, teamId}: Props) => {
     const maxHeight = Math.round((dimensions.height * 0.9));
 
     const selectedTeam = teams.find((t) => t.id === teamId);
+    const lastTeamIconUpdateAt = 'lastTeamIconUpdatedAt' in selectedTeam ? selectedTeam.lastTeamIconUpdatedAt : selectedTeam.last_team_icon_update;
 
     const handleTeamChange = useCallback(preventDoubleTap(() => {
         const renderContent = () => {
@@ -91,13 +94,12 @@ const TeamPickerIcon = ({divider = false, setTeamId, teams, teamId}: Props) => {
             type='opacity'
             testID={selectedTeam.id}
         >
-            <View style={styles.teamContainer}>
-                <View style={styles.teamIcon}>
+            <View style={[styles.teamContainer, divider ? styles.border : null]}>
+                <View style={[styles.teamIcon, {width: size, height: size}]}>
                     <TeamIcon
                         displayName={selectedTeam.displayName}
                         id={selectedTeam.id}
-
-                        // lastIconUpdate={selectedTeam.lastTeamIconUpdatedAt}
+                        lastIconUpdate={lastTeamIconUpdateAt}
                         textColor={theme.centerChannelColor}
                         backgroundColor={changeOpacity(theme.centerChannelColor, 0.16)}
                         selected={false}
