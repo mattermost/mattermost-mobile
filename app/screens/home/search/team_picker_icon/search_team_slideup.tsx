@@ -11,13 +11,13 @@ import {dismissBottomSheet} from '@screens/navigation';
 import type TeamModel from '@typings/database/models/servers/team';
 
 type Props = {
-    otherTeams: TeamModel[];
+    teams: TeamModel[];
     showTitle?: boolean;
     teamId: string;
     setTeamId: (teamId: string) => void;
 }
 
-export default function SelectTeamSlideUp({otherTeams, showTitle = true, setTeamId, teamId}: Props) {
+export default function SelectTeamSlideUp({teams, showTitle = true, setTeamId, teamId}: Props) {
     const intl = useIntl();
     const testID = 'team_sidebar.add_team_slide_up';
 
@@ -26,7 +26,6 @@ export default function SelectTeamSlideUp({otherTeams, showTitle = true, setTeam
         dismissBottomSheet();
     }, [setTeamId]);
 
-    const hasOtherTeams = otherTeams.length;
     return (
         <BottomSheetContent
             showButton={false}
@@ -34,10 +33,10 @@ export default function SelectTeamSlideUp({otherTeams, showTitle = true, setTeam
             testID={testID}
             title={intl.formatMessage({id: 'mobile.search.team.select', defaultMessage: 'Select a team to search'})}
         >
-            {hasOtherTeams &&
+            {teams.length &&
                 <TeamList
                     selectedTeamId={teamId}
-                    teams={otherTeams}
+                    teams={teams}
                     onPress={onPress}
                     testID='team_sidebar.add_team_slide_up.team_list'
                 />

@@ -66,7 +66,7 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
             return (
                 <SelectTeamSlideUp
                     setTeamId={setTeamId}
-                    otherTeams={teams}
+                    teams={teams}
                     teamId={teamId}
                     showTitle={!isTablet && Boolean(teams.length)}
                 />
