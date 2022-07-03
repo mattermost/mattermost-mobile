@@ -202,6 +202,8 @@ const SearchScreen = ({teamId}: Props) => {
     if (lastSearchedValue && !loading) {
         header = (
             <Header
+                teamId={searchTeamId}
+                setTeamId={setSearchTeamId}
                 onTabSelect={setSelectedTab}
                 onFilterChanged={handleFilterChange}
                 numberMessages={postIds.length}
