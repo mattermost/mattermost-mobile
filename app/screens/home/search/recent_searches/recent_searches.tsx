@@ -18,55 +18,6 @@ import type TeamSearchHistoryModel from '@typings/database/models/servers/team_s
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 const RECENT_SEPARATOR_HEIGHT = 3;
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        flex: {
-            flex: 1,
-        },
-        divider: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            height: 1,
-            marginHorizontal: 15,
-        },
-        title: {
-            padding: 20,
-            color: theme.centerChannelColor,
-            ...typography('Heading', 300, 'SemiBold'),
-        },
-        recentItemContainer: {
-            alignItems: 'center',
-            flex: 1,
-            flexDirection: 'row',
-            height: RECENT_LABEL_HEIGHT,
-        },
-        recentItemLabel: {
-            color: theme.centerChannelColor,
-            fontSize: 14,
-            height: 20,
-            flex: 1,
-            paddingHorizontal: 16,
-        },
-        recentRemove: {
-            alignItems: 'center',
-            height: RECENT_LABEL_HEIGHT,
-            justifyContent: 'center',
-            width: 50,
-        },
-        separatorContainer: {
-            justifyContent: 'center',
-            flex: 1,
-            height: RECENT_SEPARATOR_HEIGHT,
-        },
-        postsSeparator: {
-            height: 15,
-        },
-        separator: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 1,
-        },
-    };
-});
-
 type Props = {
     setRecentValue: (value: string) => void;
     recentSearches: TeamSearchHistoryModel[];
@@ -129,5 +80,54 @@ const RecentSearches = ({setRecentValue, recentSearches, team}: Props) => {
         />
     );
 };
+
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return {
+        flex: {
+            flex: 1,
+        },
+        divider: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            height: 1,
+            marginHorizontal: 15,
+        },
+        title: {
+            padding: 20,
+            color: theme.centerChannelColor,
+            ...typography('Heading', 300, 'SemiBold'),
+        },
+        recentItemContainer: {
+            alignItems: 'center',
+            flex: 1,
+            flexDirection: 'row',
+            height: RECENT_LABEL_HEIGHT,
+        },
+        recentItemLabel: {
+            color: theme.centerChannelColor,
+            fontSize: 14,
+            height: 20,
+            flex: 1,
+            paddingHorizontal: 16,
+        },
+        recentRemove: {
+            alignItems: 'center',
+            height: RECENT_LABEL_HEIGHT,
+            justifyContent: 'center',
+            width: 50,
+        },
+        separatorContainer: {
+            justifyContent: 'center',
+            flex: 1,
+            height: RECENT_SEPARATOR_HEIGHT,
+        },
+        postsSeparator: {
+            height: 15,
+        },
+        separator: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+            height: 1,
+        },
+    };
+});
 
 export default RecentSearches;
