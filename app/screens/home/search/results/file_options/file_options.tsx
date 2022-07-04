@@ -4,8 +4,8 @@ import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text} from 'react-native';
 
+import {showPermalink} from '@actions/remote/permalink';
 import {fetchPostById} from '@actions/remote/post';
-import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import FileIcon from '@components/files/file_icon';
 import ImageFile from '@components/files/image_file';
 import VideoFile from '@components/files/video_file';
@@ -100,7 +100,7 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
         const post = fetchedPost.post;
         const rootId = post?.root_id || post?.id;
         if (rootId) {
-            fetchAndSwitchToThread(serverUrl, rootId);
+            showPermalink(serverUrl, '', post.id, intl);
         } else {
             // what to do?
         }
