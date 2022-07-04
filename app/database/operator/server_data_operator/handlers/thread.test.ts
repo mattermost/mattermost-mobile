@@ -46,8 +46,9 @@ describe('*** Operator: Thread Handlers tests ***', () => {
                 is_following: true,
                 unread_replies: 0,
                 unread_mentions: 0,
+                lastFetchedAt: 0,
             },
-        ] as Thread[];
+        ] as ThreadWithLastFetchedAt[];
 
         const threadsMap = {team_id_1: threads};
         await operator.handleThreads({threads, loadedInGlobalThreads: false, prepareRecordsOnly: false, teamId: 'team_id_1'});

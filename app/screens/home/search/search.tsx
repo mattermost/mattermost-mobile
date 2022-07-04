@@ -18,6 +18,7 @@ import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes, TabType} from '@utils/search';
 
+import Modifiers from './modifiers';
 import Results from './results';
 import Header from './results/header';
 
@@ -48,6 +49,7 @@ const SearchScreen = ({teamId}: Props) => {
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
     const [selectedTab, setSelectedTab] = useState<TabType>(TabTypes.MESSAGES);
     const [filter, setFilter] = useState<FileFilter>(FileFilters.ALL);
+    const [showResults, setShowResults] = useState(false);
 
     const [loading, setLoading] = useState(false);
     const [lastSearchedValue, setLastSearchedValue] = useState('');
@@ -92,6 +94,7 @@ const SearchScreen = ({teamId}: Props) => {
         }
 
         setLoading(false);
+        setShowResults(true);
     })), [searchValue]);
 
     const onSnap = (offset: number) => {
@@ -138,11 +141,12 @@ const SearchScreen = ({teamId}: Props) => {
         };
     }, [headerHeight, lastSearchedValue]);
 
-    const onClear = useCallback(() => {
+    const handleClearSearch = useCallback(() => {
         setSearchValue('');
         setLastSearchedValue('');
         setFilter(FileFilters.ALL);
-    }, [filter]);
+        setShowResults(false);
+    }, []);
 
     let header = null;
     if (lastSearchedValue) {
@@ -171,8 +175,8 @@ const SearchScreen = ({teamId}: Props) => {
                 onSubmitEditing={handleSearch}
                 blurOnSubmit={true}
                 placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
+                onClear={handleClearSearch}
                 defaultValue={searchValue}
-                onClear={onClear}
             />
             <SafeAreaView
                 style={styles.flex}
@@ -183,17 +187,26 @@ const SearchScreen = ({teamId}: Props) => {
                         <RoundedHeaderContext/>
                         {header}
                     </Animated.View>
-                    <Results
-                        selectedTab={selectedTab}
-                        searchValue={lastSearchedValue}
-                        postIds={postIds}
-                        fileChannelIds={fileChannelIds}
-                        fileInfos={fileInfos}
-                        scrollRef={scrollRef}
-                        onScroll={onScroll}
-                        scrollPaddingTop={scrollPaddingTop}
-                        loading={loading}
-                    />
+                    {!showResults &&
+                        <Modifiers
+                            setSearchValue={setSearchValue}
+                            searchValue={searchValue}
+                            scrollPaddingTop={scrollPaddingTop}
+                        />
+                    }
+                    {showResults &&
+                        <Results
+                            selectedTab={selectedTab}
+                            searchValue={lastSearchedValue}
+                            postIds={postIds}
+                            fileChannelIds={fileChannelIds}
+                            fileInfos={fileInfos}
+                            scrollRef={scrollRef}
+                            onScroll={onScroll}
+                            scrollPaddingTop={scrollPaddingTop}
+                            loading={loading}
+                        />
+                    }
                 </Animated.View>
             </SafeAreaView>
         </FreezeScreen>

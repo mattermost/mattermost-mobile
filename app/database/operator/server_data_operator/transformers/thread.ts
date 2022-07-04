@@ -24,7 +24,7 @@ const {
  * @returns {Promise<ThreadModel>}
  */
 export const transformThreadRecord = ({action, database, value}: TransformerArgs): Promise<ThreadModel> => {
-    const raw = value.raw as Thread;
+    const raw = value.raw as ThreadWithLastFetchedAt;
     const record = value.record as ThreadModel;
     const isCreateAction = action === OperationType.CREATE;
 
@@ -38,6 +38,7 @@ export const transformThreadRecord = ({action, database, value}: TransformerArgs
         thread.unreadReplies = raw.unread_replies ?? record?.unreadReplies ?? 0;
         thread.unreadMentions = raw.unread_mentions ?? record?.unreadMentions ?? 0;
         thread.viewedAt = record?.viewedAt || 0;
+        thread.lastFetchedAt = Math.max(record?.lastFetchedAt || 0, raw.lastFetchedAt || 0);
     };
 
     return prepareBaseRecord({

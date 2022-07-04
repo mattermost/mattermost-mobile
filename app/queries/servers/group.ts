@@ -16,6 +16,12 @@ export const queryGroupsByName = (database: Database, name: string) => {
     );
 };
 
+export const queryGroupsByNames = (database: Database, names: string[]) => {
+    return database.collections.get<GroupModel>(GROUP).query(
+        Q.where('name', Q.oneOf(names)),
+    );
+};
+
 export const queryGroupsByNameInTeam = (database: Database, name: string, teamId: string) => {
     return database.collections.get<GroupModel>(GROUP).query(
         Q.on(GROUP_TEAM, 'team_id', teamId),

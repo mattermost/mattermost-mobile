@@ -303,26 +303,55 @@ export async function updateChannelInfoFromChannel(serverUrl: string, channel: C
 export async function updateLastPostAt(serverUrl: string, channelId: string, lastPostAt: number, prepareRecordsOnly = false) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const member = await getMyChannel(database, channelId);
-        if (!member) {
+        const myChannel = await getMyChannel(database, channelId);
+        if (!myChannel) {
             return {error: 'not a member'};
         }
 
-        if (lastPostAt > member.lastPostAt) {
-            member.prepareUpdate((m) => {
+        if (lastPostAt > myChannel.lastPostAt) {
+            myChannel.resetPreparedState();
+            myChannel.prepareUpdate((m) => {
                 m.lastPostAt = lastPostAt;
             });
 
             if (!prepareRecordsOnly) {
-                await operator.batchRecords([member]);
+                await operator.batchRecords([myChannel]);
             }
 
-            return {member};
+            return {member: myChannel};
         }
 
         return {member: undefined};
     } catch (error) {
         logError('Failed updateLastPostAt', error);
+        return {error};
+    }
+}
+
+export async function updateMyChannelLastFetchedAt(serverUrl: string, channelId: string, lastFetchedAt: number, prepareRecordsOnly = false) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const myChannel = await getMyChannel(database, channelId);
+        if (!myChannel) {
+            return {error: 'not a member'};
+        }
+
+        if (lastFetchedAt > myChannel.lastFetchedAt) {
+            myChannel.resetPreparedState();
+            myChannel.prepareUpdate((m) => {
+                m.lastFetchedAt = lastFetchedAt;
+            });
+
+            if (!prepareRecordsOnly) {
+                await operator.batchRecords([myChannel]);
+            }
+
+            return {member: myChannel};
+        }
+
+        return {member: undefined};
+    } catch (error) {
+        logError('Failed updateLastFetchedAt', error);
         return {error};
     }
 }
