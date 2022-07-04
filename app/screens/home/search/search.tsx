@@ -84,7 +84,7 @@ const SearchScreen = ({teamId}: Props) => {
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight, hideHeader} = useCollapsibleHeader<FlatList>(true, onSnap);
 
     const onSubmit = useCallback(() => {
-        handleSearch(searchValue);
+        handleSearch(searchTeamId, searchValue);
     }, [searchValue]);
 
     const handleClearSearch = useCallback(() => {
@@ -98,15 +98,15 @@ const SearchScreen = ({teamId}: Props) => {
         setShowResults(false);
     }, [handleClearSearch, showResults]);
 
-    const handleSearch = async (term: string) => {
+    const handleSearch = async (newSearchTeamId: string, term: string) => {
         setLoading(true);
         setFilter(FileFilters.ALL);
         setLastSearchedValue(term);
         addSearchToTeamSearchHistory(serverUrl, searchTeamId, term);
         const searchParams = getSearchParams(term);
         const [postResults, fileResults] = await Promise.all([
-            searchPosts(serverUrl, searchParams),
-            searchFiles(serverUrl, searchTeamId, searchParams),
+            searchPosts(serverUrl, newSearchTeamId, searchParams),
+            searchFiles(serverUrl, newSearchTeamId, searchParams),
         ]);
 
         const fileInfosResult = fileResults?.file_infos && Object.values(fileResults?.file_infos);
@@ -121,7 +121,7 @@ const SearchScreen = ({teamId}: Props) => {
     const handleRecentSearch = useCallback((text: string) => {
         hideHeader();
         setSearchValue(text);
-        handleSearch(text);
+        handleSearch(searchTeamId, text);
     }, [handleSearch]);
 
     const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
@@ -134,6 +134,11 @@ const SearchScreen = ({teamId}: Props) => {
 
         setLoading(false);
     }, [getSearchParams, lastSearchedValue, searchFiles]);
+
+    const handleResultsTeamChange = useCallback((newTeamId: string) => {
+        setSearchTeamId(newTeamId);
+        handleSearch(newTeamId, lastSearchedValue);
+    }, [setSearchTeamId, lastSearchedValue, searchValue]);
 
     const renderItem = useCallback(() => {
         if (loading) {
@@ -203,7 +208,7 @@ const SearchScreen = ({teamId}: Props) => {
         header = (
             <Header
                 teamId={searchTeamId}
-                setTeamId={setSearchTeamId}
+                setTeamId={handleResultsTeamChange}
                 onTabSelect={setSelectedTab}
                 onFilterChanged={handleFilterChange}
                 numberMessages={postIds.length}

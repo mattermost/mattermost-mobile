@@ -85,7 +85,7 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
             theme,
             title: intl.formatMessage({id: 'mobile.search.team.select', defaultMessage: 'Select a team to search'}),
         });
-    }), [theme]);
+    }), [theme, teamId]);
 
     return (
         <View>
