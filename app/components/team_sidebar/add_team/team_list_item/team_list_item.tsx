@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -60,10 +60,14 @@ export default function TeamListItem({team, textColor, iconTextColor, iconBackgr
     const lastTeamIconUpdateAt = 'lastTeamIconUpdatedAt' in team ? team.lastTeamIconUpdatedAt : team.last_team_icon_update;
     const teamListItemTestId = `team_sidebar.team_list.team_list_item.${team.id}`;
 
+    const handlePress = useCallback(() => {
+        onPress(team.id);
+    }, [team]);
+
     return (
         <View style={styles.container}>
             <TouchableWithFeedback
-                onPress={onPress}
+                onPress={handlePress}
                 type='opacity'
                 style={styles.touchable}
             >

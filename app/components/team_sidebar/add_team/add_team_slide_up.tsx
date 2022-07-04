@@ -68,10 +68,9 @@ export default function AddTeamSlideUp({currentUserId, otherTeams, showTitle = t
     const onTeamAdded = useCallback(async (teamId: string) => {
         const {error} = await addUserToTeam(serverUrl, teamId, currentUserId);
         if (!error) {
-            onTeamAdded(teamId);
+            await dismissBottomSheet();
+            handleTeamChange(serverUrl, teamId);
         }
-        await dismissBottomSheet();
-        handleTeamChange(serverUrl, teamId);
     }, [serverUrl]);
 
     const hasOtherTeams = otherTeams.length;
