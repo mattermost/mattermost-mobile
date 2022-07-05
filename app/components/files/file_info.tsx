@@ -16,7 +16,7 @@ type FileInfoProps = {
     onPress: () => void;
     theme: Theme;
 }
-const format = ' • MMM DD HH:MM A';
+const FORMAT = ' • MMM DD HH:MM A';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -94,7 +94,7 @@ const FileInfo = ({file, channelName, showDate, onPress, theme}: FileInfoProps) 
                         {showDate &&
                             <FormattedDate
                                 style={style.infoText}
-                                format={format}
+                                format={FORMAT}
                                 value={file.create_at as number}
                             />
                         }

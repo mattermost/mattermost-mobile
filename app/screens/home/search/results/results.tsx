@@ -85,7 +85,7 @@ const Results = ({
     const isTablet = useIsTablet();
     const galleryIdentifier = 'search-files-location';
 
-    const getContainerStyle = useMemo(() => {
+    const containerStyle = useMemo(() => {
         let padding = 0;
         if (selectedTab === TabTypes.MESSAGES) {
             padding = posts.length ? 4 : 8;
@@ -109,14 +109,14 @@ const Results = ({
         })
     ), [filesForGallery]);
 
-    const handlePreviewPress = preventDoubleTap((idx: number) => {
+    const handlePreviewPress = useCallback(preventDoubleTap((idx: number) => {
         const items = orderedFilesForGallery.value.map((f) => fileToGalleryItem(f, f.user_id));
         openGalleryAtIndex(galleryIdentifier, idx, items);
-    });
+    }), [orderedFilesForGallery]);
 
-    const handleOptionsPress = preventDoubleTap(() => {
+    const handleOptionsPress = useCallback(preventDoubleTap(() => {
         // hook up in another PR
-    });
+    }), []);
 
     const attachmentIndex = (fileId: string) => {
         return orderedFilesForGallery.value.findIndex((file) => file.id === fileId) || 0;
@@ -225,7 +225,7 @@ const Results = ({
             onScroll={onScroll}
             removeClippedSubviews={true}
             ref={scrollRef}
-            style={getContainerStyle}
+            style={containerStyle}
         />
     );
 };

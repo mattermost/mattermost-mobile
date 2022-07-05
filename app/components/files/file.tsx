@@ -78,12 +78,10 @@ const File = ({
     }, [index]);
 
     const handleOnOptionsPress = useCallback(() => {
-        if (onOptionsPress) {
-            onOptionsPress(index);
-        }
+        onOptionsPress?.(index);
     }, [index, onOptionsPress]);
 
-    const renderOptionsButton = useCallback(() => {
+    const renderOptionsButton = () => {
         if (onOptionsPress) {
             return (
                 <FileOptionsIcon
@@ -92,7 +90,7 @@ const File = ({
             );
         }
         return null;
-    }, [file, onOptionsPress, handleOnOptionsPress]);
+    };
 
     const fileInfo = useMemo(() => {
         return (
