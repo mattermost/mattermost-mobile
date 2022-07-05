@@ -26,7 +26,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const LoadingUnreads = () => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const opacity = useSharedValue(1);
     const rotation = useSharedValue(0);
 
