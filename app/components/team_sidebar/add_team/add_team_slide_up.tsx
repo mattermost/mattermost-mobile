@@ -65,7 +65,7 @@ export default function AddTeamSlideUp({currentUserId, otherTeams, showTitle = t
         dismissBottomSheet();
     }, []);
 
-    const onTeamAdded = useCallback(async (teamId: string) => {
+    const onPress = useCallback(async (teamId: string) => {
         const {error} = await addUserToTeam(serverUrl, teamId, currentUserId);
         if (!error) {
             await dismissBottomSheet();
@@ -88,7 +88,7 @@ export default function AddTeamSlideUp({currentUserId, otherTeams, showTitle = t
             {hasOtherTeams &&
                 <TeamList
                     teams={otherTeams}
-                    onPress={onTeamAdded}
+                    onPress={onPress}
                     testID='team_sidebar.add_team_slide_up.team_list'
                 />
             }
