@@ -6,12 +6,11 @@ import {useIntl} from 'react-intl';
 import {View, TouchableOpacity} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import {getAllFilesInCachesDirectory} from '@actions/local/file';
 import OptionItem from '@components/option_item';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {popTopScreen} from '@screens/navigation';
-import {deleteFileCache, getFormattedFileSize} from '@utils/file';
+import {deleteFileCache, getAllFilesInCachesDirectory, getFormattedFileSize} from '@utils/file';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
