@@ -88,7 +88,7 @@ export default function TeamListItem({team, textColor, iconTextColor, iconBackgr
                 >
                     {displayName}
                 </Text>
-                {selectedTeamId && (team.id === selectedTeamId) &&
+                {(team.id === selectedTeamId) &&
                     <View style={styles.compassContainer}>
                         <CompassIcon
                             color={theme.buttonBg}
