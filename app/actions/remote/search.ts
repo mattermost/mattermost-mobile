@@ -12,7 +12,6 @@ import {logError} from '@utils/log';
 import {fetchPostAuthors, fetchMissingChannelsFromPosts} from './post';
 import {forceLogoutIfNecessary} from './session';
 
-import type {Client} from '@client/rest';
 import type Model from '@nozbe/watermelondb/Model';
 
 type FileSearchRequest = {
