@@ -54,7 +54,7 @@ describe('Messaging - Channel Link', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T4877_1 - should be able to open joined channel by tapping on channel link from main channel -- KNOWN ISSUE: MM-45217', async () => {
+    it('MM-T4877_1 - should be able to open joined channel by tapping on channel link from main channel', async () => {
         // # Open a channel screen and post a channel link to target channel
         await ChannelScreen.open(channelsCategory, testChannel.name);
         const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
@@ -73,14 +73,16 @@ describe('Messaging - Channel Link', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T4877_2 - should be able to open joined channel by tapping on channel link from reply thread -- KNOWN ISSUE: MM-45217', async () => {
+    it('MM-T4877_2 - should be able to open joined channel by tapping on channel link from reply thread', async () => {
         // # Open a channel screen, post a channel link to target channel, tap on post to open reply thread, and tap on channel link
         await ChannelScreen.open(channelsCategory, testChannel.name);
         const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
         const channelLink = `${serverOneUrl}/${testTeam.name}/channels/${targetChannel.name}`;
         await ChannelScreen.postMessage(channelLink);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.openReplyThreadFor(post.id, channelLink);
+        const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id);
+        await postListPostItem.tap({x: 1, y: 1});
         await element(by.text(channelLink)).tap({x: 5, y: 10});
         await wait(timeouts.ONE_SEC);
 
