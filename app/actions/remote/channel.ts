@@ -19,7 +19,7 @@ import {getCommonSystemValues, getConfig, getCurrentTeamId, getCurrentUserId, ge
 import {prepareMyTeams, getNthLastChannelFromTeam, getMyTeamById, getTeamById, getTeamByName, queryMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
-import {generateChannelNameFromDisplayName, getDirectChannelName, isDMorGM} from '@utils/channel';
+import {generateChannelNameFromDisplayName, getDirectChannelName, isArchived, isDMorGM} from '@utils/channel';
 import {isTablet} from '@utils/helpers';
 import {logError, logInfo} from '@utils/log';
 import {showMuteChannelSnackbar} from '@utils/snack_bar';
@@ -684,20 +684,22 @@ export async function switchToChannelByName(serverUrl: string, channelName: stri
             return {error: 'Could not fetch team member'};
         }
 
-        let isArchived = false;
-        const chReq = await fetchChannelByName(serverUrl, team.id, channelName, true);
-        if (chReq.error) {
-            errorHandler(intl);
-            return {error: chReq.error};
+        let channel: Channel | ChannelModel | undefined = await getChannelByName(database, team.id, channelName);
+        if (!channel) {
+            const chReq = await fetchChannelByName(serverUrl, team.id, channelName, true);
+            if (chReq.error) {
+                errorHandler(intl);
+                return {error: chReq.error};
+            }
+            channel = chReq.channel;
         }
-        const channel = chReq.channel;
+
         if (!channel) {
             errorHandler(intl);
             return {error: 'Could not fetch channel'};
         }
 
-        isArchived = channel.delete_at > 0;
-        if (isArchived && system.config.ExperimentalViewArchivedChannels !== 'true') {
+        if (isArchived(channel) && system.config.ExperimentalViewArchivedChannels !== 'true') {
             errorHandler(intl);
             return {error: 'Channel is archived'};
         }
@@ -705,13 +707,14 @@ export async function switchToChannelByName(serverUrl: string, channelName: stri
         myChannel = await getMyChannel(database, channel.id);
 
         if (!myChannel) {
-            const req = await fetchMyChannel(serverUrl, channel.team_id || team.id, channel.id, true);
+            const channelTeamId = 'team_id' in channel ? channel.team_id : channel.teamId;
+            const req = await fetchMyChannel(serverUrl, channelTeamId || team.id, channel.id, true);
             myChannel = req.memberships?.[0];
         }
 
         if (!myChannel) {
             if (channel.type === General.PRIVATE_CHANNEL) {
-                const displayName = channel.display_name;
+                const displayName = 'display_name' in channel ? channel.display_name : channel.displayName;
                 const {join} = await privateChannelJoinPrompt(displayName, intl);
                 if (!join) {
                     if (joinedNewTeam) {
@@ -755,7 +758,8 @@ export async function switchToChannelByName(serverUrl: string, channelName: stri
             );
         }
 
-        if (!(myChannel instanceof Model)) {
+        // We are checking both, so this may become an issue
+        if (!(myChannel instanceof Model) && !(channel instanceof Model)) {
             modelPromises.push(...await prepareMyChannelsForTeam(operator, team.id, [channel], [myChannel]));
         }
 
@@ -814,7 +818,7 @@ export async function createDirectChannel(serverUrl: string, userId: string, dis
         }
 
         const channelName = getDirectChannelName(currentUser.id, userId);
-        const channel = await getChannelByName(database, channelName);
+        const channel = await getChannelByName(database, '', channelName);
         if (channel) {
             return {data: channel.toApi()};
         }
@@ -906,7 +910,7 @@ export async function makeDirectChannel(serverUrl: string, userId: string, displ
     try {
         const currentUserId = await getCurrentUserId(operator.database);
         const channelName = getDirectChannelName(userId, currentUserId);
-        let channel: Channel|ChannelModel|undefined = await getChannelByName(operator.database, channelName);
+        let channel: Channel|ChannelModel|undefined = await getChannelByName(operator.database, '', channelName);
         let result: {data?: Channel|ChannelModel; error?: any};
         if (channel) {
             result = {data: channel};

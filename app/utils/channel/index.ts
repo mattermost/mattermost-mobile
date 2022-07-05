@@ -28,6 +28,11 @@ export function isDMorGM(channel: Channel | ChannelModel): boolean {
     return directTypes.includes(channel.type);
 }
 
+export function isArchived(channel: Channel | ChannelModel): boolean {
+    const deleteAt = 'delete_at' in channel ? channel.delete_at : channel.deleteAt;
+    return deleteAt > 0;
+}
+
 export function selectDefaultChannelForTeam<T extends Channel|ChannelModel>(channels: T[], memberships: ChannelMembership[], teamId: string, roles?: Role[], locale = DEFAULT_LOCALE) {
     let channel: T|undefined;
     let canIJoinPublicChannelsInTeam = false;

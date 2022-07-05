@@ -15,7 +15,7 @@ import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import DeepLinkTypes from '@constants/deep_linking';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {bottomSheet, dismissAllModals, dismissBottomSheet, popToRoot} from '@screens/navigation';
+import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {errorBadChannel} from '@utils/draft';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
@@ -69,11 +69,7 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
 
         if (match && match.data?.teamName) {
             if (match.type === DeepLinkTypes.CHANNEL) {
-                const result = await switchToChannelByName(serverUrl, (match?.data as DeepLinkChannel).channelName, match.data?.teamName, errorBadChannel, intl);
-                if (!result.error) {
-                    await dismissAllModals();
-                    await popToRoot();
-                }
+                await switchToChannelByName(serverUrl, (match?.data as DeepLinkChannel).channelName, match.data?.teamName, errorBadChannel, intl);
             } else if (match.type === DeepLinkTypes.PERMALINK) {
                 showPermalink(serverUrl, match.data.teamName, (match.data as DeepLinkPermalink).postId, intl);
             }

@@ -45,16 +45,15 @@ export async function fetchRecentMentions(serverUrl: string): Promise<PostSearch
             throw results.error;
         }
 
-        const promises: Array<Promise<Model[]>> = [];
         const mentions: IdValue = {
             id: SYSTEM_IDENTIFIERS.RECENT_MENTIONS,
             value: JSON.stringify(results.order),
         };
 
-        promises.push(operator.handleSystem({
+        await operator.handleSystem({
             systems: [mentions],
-            prepareRecordsOnly: true,
-        }));
+            prepareRecordsOnly: false,
+        });
 
         return results;
     } catch (error) {
@@ -78,7 +77,7 @@ export const searchPosts = async (serverUrl: string, params: PostSearchParams): 
         if (postsArray.length) {
             const isCRTEnabled = await getIsCRTEnabled(operator.database);
             if (isCRTEnabled) {
-                promises.push(prepareThreadsFromReceivedPosts(operator, postsArray));
+                promises.push(prepareThreadsFromReceivedPosts(operator, postsArray, false));
             }
 
             const {authors} = await fetchPostAuthors(serverUrl, postsArray, true);

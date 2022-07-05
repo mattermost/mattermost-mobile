@@ -7,9 +7,9 @@ import {AppStateStatus} from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeMyChannel} from '@queries/servers/channel';
+import {observeMyChannel, observeChannel} from '@queries/servers/channel';
 import {queryPostsChunk, queryPostsInThread} from '@queries/servers/post';
-import {observeIsCRTEnabled} from '@queries/servers/thread';
+import {observeIsCRTEnabled, observeThreadById} from '@queries/servers/thread';
 
 import ThreadPostList from './thread_post_list';
 
@@ -37,9 +37,10 @@ const enhanced = withObservables(['forceQueryAfterAppState', 'rootPost'], ({data
                 return queryPostsChunk(database, rootPost.id, earliest, latest, true).observe();
             }),
         ),
-        teamId: rootPost.channel.observe().pipe(
+        teamId: observeChannel(database, rootPost.channelId).pipe(
             switchMap((channel) => of$(channel?.teamId)),
         ),
+        thread: observeThreadById(database, rootPost.id),
     };
 });
 

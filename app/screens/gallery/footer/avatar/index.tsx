@@ -19,9 +19,9 @@ type Props = {
 const styles = StyleSheet.create({
     avatarContainer: {
         backgroundColor: 'rgba(255, 255, 255, 0.4)',
-        padding: 2,
-        width: 34,
-        height: 34,
+        margin: 2,
+        width: 32,
+        height: 32,
     },
     avatar: {
         height: 32,

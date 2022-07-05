@@ -22,7 +22,7 @@ import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP, MY_CHANNEL_SETTINGS, CHANNEL_INFO, USER}} = MM_TABLES;
+const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP, MY_CHANNEL_SETTINGS, CHANNEL_INFO, USER, TEAM}} = MM_TABLES;
 
 export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, channels: Channel[], channelMembers: ChannelMembership[], isCRTEnabled?: boolean): Array<Promise<Model[]>> {
     const channelInfos: ChannelInfo[] = [];
@@ -211,8 +211,8 @@ export const observeChannel = (database: Database, channelId: string) => {
     );
 };
 
-export const getChannelByName = async (database: Database, channelName: string) => {
-    const channels = await database.get<ChannelModel>(CHANNEL).query(Q.where('name', channelName)).fetch();
+export const getChannelByName = async (database: Database, teamId: string, channelName: string) => {
+    const channels = await database.get<ChannelModel>(CHANNEL).query(Q.on(TEAM, 'id', teamId), Q.where('name', channelName)).fetch();
 
     // Check done to force types
     if (channels.length) {

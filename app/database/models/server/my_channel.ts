@@ -28,6 +28,9 @@ export default class MyChannelModel extends Model implements MyChannelModelInter
     /** last_post_at : The timestamp for any last post on this channel */
     @field('last_post_at') lastPostAt!: number;
 
+    /** last_last_fetched_at_at : The timestamp when we successfully last fetched post on this channel */
+    @field('last_fetched_at') lastFetchedAt!: number;
+
     /** last_viewed_at : The timestamp showing the user's last viewed post on this channel */
     @field('last_viewed_at') lastViewedAt!: number;
 
@@ -59,5 +62,10 @@ export default class MyChannelModel extends Model implements MyChannelModelInter
         const settings = await this.settings.fetch();
         settings?.destroyPermanently();
         super.destroyPermanently();
+    }
+
+    resetPreparedState() {
+        // @ts-expect-error hack setting _preparedState
+        this._preparedState = null;
     }
 }
