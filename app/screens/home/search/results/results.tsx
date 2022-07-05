@@ -95,9 +95,9 @@ const Results = ({
         return {top: padding};
     }, [selectedTab, posts, fileInfos]);
 
-    const getChannelName = useCallback((id: string) => {
+    const getChannelName = (id: string) => {
         return fileChannels.find((c) => c.id === id)?.displayName;
-    }, [fileChannels]);
+    };
 
     const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
     const filesForGallery = useDerivedValue(() => imageAttachments.concat(nonImageAttachments),
