@@ -92,7 +92,7 @@ const File = ({
         return null;
     };
 
-    const fileInfo = useMemo(() => {
+    const fileInfo = () => {
         return (
             <FileInfo
                 file={file}
@@ -102,11 +102,9 @@ const File = ({
                 theme={theme}
             />
         );
-    }, [file, showDate, channelName, handlePreviewPress, theme]);
+    };
 
-    const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePreviewPress);
-
-    const renderImageFileOverlay = useCallback(() => {
+    const renderImageFileOverlay = () => {
         if (nonVisibleImagesCount) {
             return (
                 <ImageFileOverlay
@@ -116,9 +114,11 @@ const File = ({
             );
         }
         return null;
-    }, [theme, nonVisibleImagesCount]);
+    };
 
-    const imageFile = useMemo(() => {
+    const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePreviewPress);
+
+    const imageFile = () => {
         return (
             <TouchableWithoutFeedback onPress={onGestureEvent}>
                 <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
@@ -134,9 +134,9 @@ const File = ({
                 </Animated.View>
             </TouchableWithoutFeedback>
         );
-    }, [file, ref, inViewPort, isSingleImage, wrapperWidth, styles, onGestureEvent, renderImageFileOverlay]);
+    };
 
-    const videoFile = useMemo(() => {
+    const videoFile = () => {
         return (
             <TouchableWithoutFeedback onPress={onGestureEvent}>
                 <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
@@ -154,9 +154,9 @@ const File = ({
                 </Animated.View>
             </TouchableWithoutFeedback>
         );
-    }, [file, ref, inViewPort, isSingleImage, wrapperWidth, styles, updateFileForGallery, index, onGestureEvent]);
+    };
 
-    const documentFile = useMemo(() => {
+    const documentFile = () => {
         return (
             <View style={style.iconWrapper}>
                 <DocumentFile
@@ -167,62 +167,48 @@ const File = ({
                 />
             </View>
         );
-    }, [document, file, canDownloadFiles, theme]);
+    };
 
-    if (isVideo(file) && publicLinkEnabled) {
-        if (asCard) {
-            return (
-                <View style={[style.fileWrapper]}>
-                    <View style={style.iconWrapper}>
-                        {videoFile}
-                    </View>
-                    {fileInfo}
-                    {renderOptionsButton()}
+    const renderCardWithImage = (fileIcon: JSX.Element) => {
+        return (
+            <View style={[style.fileWrapper]}>
+                <View style={style.iconWrapper}>
+                    {fileIcon}
                 </View>
-            );
-        }
-        return (videoFile);
-    }
-
-    if (isImage(file)) {
-        if (asCard) {
-            return (
-                <View style={[style.fileWrapper]}>
-                    <View style={style.iconWrapper}>
-                        {imageFile}
-                    </View>
-                    {fileInfo}
-                    {renderOptionsButton()}
-                </View>
-            );
-        }
-        return (imageFile);
-    }
-
-    if (isDocument(file)) {
-        <View style={[style.fileWrapper]}>
-            {documentFile}
-            {fileInfo}
-            {renderOptionsButton()}
-        </View>;
-    }
-
-    return (
-        <View style={[style.fileWrapper]}>
-            <View style={style.iconWrapper}>
-                <TouchableWithFeedback
-                    onPress={handlePreviewPress}
-                    type={'opacity'}
-                >
-                    <FileIcon
-                        file={file}
-                    />
-                </TouchableWithFeedback>
+                {fileInfo()}
+                {renderOptionsButton()}
             </View>
-            {fileInfo}
-            {renderOptionsButton()}
-        </View>
-    );
+        );
+    };
+
+    let fileComponent;
+    if (isVideo(file) && publicLinkEnabled) {
+        fileComponent = asCard ? renderCardWithImage(videoFile()) : videoFile();
+    } else if (isImage(file)) {
+        fileComponent = asCard ? renderCardWithImage(imageFile()) : imageFile();
+    } else if (isDocument(file)) {
+        fileComponent = (
+            <View style={[style.fileWrapper]}>
+                {documentFile()}
+                {fileInfo()}
+                {renderOptionsButton()}
+            </View>
+        );
+    } else {
+        const touchableWithPreview = (
+            <TouchableWithFeedback
+                onPress={handlePreviewPress}
+                type={'opacity'}
+            >
+                <FileIcon
+                    file={file}
+                />
+            </TouchableWithFeedback>
+        );
+
+        fileComponent = renderCardWithImage(touchableWithPreview);
+    }
+    return fileComponent;
 };
 
 export default File;

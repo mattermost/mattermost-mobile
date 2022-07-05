@@ -65,7 +65,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const FileInfo = ({file, channelName, showDate, onPress, theme}: FileInfoProps) => {
     const style = getStyleSheet(theme);
-
     return (
         <View style={style.attachmentContainer}>
             <TouchableOpacity onPress={onPress}>
@@ -77,16 +76,16 @@ const FileInfo = ({file, channelName, showDate, onPress, theme}: FileInfoProps) 
                     {file.name.trim()}
                 </Text>
                 <View style={style.fileDownloadContainer}>
-                    <View style={style.channelWrapper}>
-                        {channelName &&
+                    {channelName &&
+                        <View style={style.channelWrapper}>
                             <Text
                                 style={style.channelText}
                                 numberOfLines={1}
                             >
                                 {channelName}
                             </Text>
-                        }
-                    </View>
+                        </View>
+                    }
                     <View style={style.fileStatsContainer}>
                         <Text style={style.infoText}>
                             {`${getFormattedFileSize(file.size)}`}
