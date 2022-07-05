@@ -39,7 +39,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         compass: {
             alignItems: 'center',
-            marginLeft: 4,
+            marginLeft: 0,
         },
     };
 });

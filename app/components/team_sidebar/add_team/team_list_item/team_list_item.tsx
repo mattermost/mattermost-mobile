@@ -25,8 +25,8 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            height: 64,
-            marginBottom: 2,
+            height: 40,
+            marginVertical: 8,
         },
         touchable: {
             display: 'flex',

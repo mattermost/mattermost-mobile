@@ -46,6 +46,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
         },
         filter: {
+            alignItems: 'center',
             flexDirection: 'row',
             marginLeft: 'auto',
         },
@@ -136,7 +137,7 @@ const Header = ({
                     </>
                     }
                     <TeamPickerIcon
-                        size={24}
+                        size={32}
                         divider={true}
                         setTeamId={setTeamId}
                         teamId={teamId}
