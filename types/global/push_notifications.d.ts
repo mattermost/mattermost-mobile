@@ -49,4 +49,5 @@ interface NotificationWithData extends Notification {
 
 declare class NotificationWithChannel extends Notification {
     channel_id?: string;
+    root_id?: string;
 }

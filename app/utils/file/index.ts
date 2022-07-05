@@ -15,6 +15,8 @@ import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
 import {Files} from '@constants';
 import {generateId} from '@utils/general';
+import keyMirror from '@utils/key_mirror';
+import {logError} from '@utils/log';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
 
@@ -24,7 +26,17 @@ const EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
 const CONTENT_DISPOSITION_REGEXP = /inline;filename=".*\.([a-z]+)";/i;
 const DEFAULT_SERVER_MAX_FILE_SIZE = 50 * 1024 * 1024;// 50 Mb
 
-export type FileFilter = 'all' | 'documents' | 'spreadsheets'| 'presentations' | 'code' | 'images' | 'audio' | 'videos'
+export const FileFilters = keyMirror({
+    ALL: null,
+    DOCUMENTS: null,
+    SPREADSHEETS: null,
+    PRESENTATIONS: null,
+    CODE: null,
+    IMAGES: null,
+    AUDIO: null,
+    VIDEOS: null,
+});
+export type FileFilter = keyof typeof FileFilters
 
 export const GENERAL_SUPPORTED_DOCS_FORMAT = [
     'application/json',
@@ -60,20 +72,36 @@ const SUPPORTED_VIDEO_FORMAT = Platform.select({
 const types: Record<string, string> = {};
 const extensions: Record<string, readonly string[]> = {};
 
-export function filterFiles<T extends FileModel | FileInfo>(files: T[], filter: FileFilter) {
+export function filterFileExtensions(filter: FileFilter): string {
+    let searchTerms: string[] = [];
     switch (filter) {
-        case 'all':
-            return files;
-        case 'videos':
-            return files.filter((f) => isVideo(f));
-        case 'documents':
-            return files.filter((f) => isDocument(f));
-        case 'images':
-            return files.filter((f) => isImage(f));
+        case FileFilters.ALL:
+            return '';
+        case FileFilters.DOCUMENTS:
+            searchTerms = Files.DOCUMENT_TYPES;
+            break;
+        case FileFilters.SPREADSHEETS:
+            searchTerms = Files.SPREADSHEET_TYPES;
+            break;
+        case FileFilters.PRESENTATIONS:
+            searchTerms = Files.PRESENTATION_TYPES;
+            break;
+        case FileFilters.CODE:
+            searchTerms = Files.CODE_TYPES;
+            break;
+        case FileFilters.IMAGES:
+            searchTerms = Files.IMAGE_TYPES;
+            break;
+        case FileFilters.AUDIO:
+            searchTerms = Files.AUDIO_TYPES;
+            break;
+        case FileFilters.VIDEOS:
+            searchTerms = Files.VIDEO_TYPES;
+            break;
         default:
-            // TODO create the rest of the filters
-            return files.filter((f) => !isVideo(f) && !isDocument(f) && !isImage(f));
+            return '';
     }
+    return 'ext:' + searchTerms.join(' ext:');
 }
 
 /**
@@ -347,7 +375,8 @@ export async function extractFileInfo(files: Array<Asset | DocumentPickerRespons
     const out: ExtractedFileInfo[] = [];
 
     await Promise.all(files.map(async (file) => {
-        if (!file) {
+        if (!file || !file.uri) {
+            logError('extractFileInfo no file or url');
             return;
         }
 
@@ -362,16 +391,16 @@ export async function extractFileInfo(files: Array<Asset | DocumentPickerRespons
             outFile.size = file.fileSize || 0;
             outFile.name = file.fileName || '';
         } else {
-            const path = Platform.select({
+            const localPath = Platform.select({
                 ios: (file.uri || '').replace('file://', ''),
                 default: file.uri || '',
             });
-            let fileInfo;
             try {
-                fileInfo = await FileSystem.stat(path);
+                const fileInfo = await FileSystem.stat(decodeURIComponent(localPath));
                 outFile.size = fileInfo.size || 0;
-                outFile.name = path.substring(path.lastIndexOf('/') + 1);
+                outFile.name = localPath.substring(localPath.lastIndexOf('/') + 1);
             } catch (e) {
+                logError('extractFileInfo', e);
                 return;
             }
         }

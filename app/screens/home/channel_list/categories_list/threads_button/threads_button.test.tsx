@@ -14,7 +14,7 @@ describe('Thread item in the channel list', () => {
                 currentChannelId='someChannelId'
                 onlyUnreads={false}
                 unreadsAndMentions={{
-                    unreads: 0,
+                    unreads: false,
                     mentions: 0,
                 }}
             />,
@@ -29,7 +29,7 @@ describe('Thread item in the channel list', () => {
                 currentChannelId='someChannelId'
                 onlyUnreads={true}
                 unreadsAndMentions={{
-                    unreads: 0,
+                    unreads: false,
                     mentions: 0,
                 }}
             />,

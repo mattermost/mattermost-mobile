@@ -14,11 +14,13 @@ import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
 import NetworkManager from '@managers/network_manager';
 import {getMembersCountByChannelsId, queryChannelsByTypes} from '@queries/servers/channel';
+import {queryGroupsByNames} from '@queries/servers/group';
 import {getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
-import {getCurrentUser, getUserById, prepareUsers, queryAllUsers, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
+import {getCurrentUser, getUserById, prepareUsers, queryAllUsers, queryUsersById, queryUsersByIdsOrUsernames, queryUsersByUsername} from '@queries/servers/user';
 import {logError} from '@utils/log';
 import {getUserTimezoneProps, removeUserFromList} from '@utils/user';
 
+import {fetchGroupsByNames} from './groups';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
@@ -276,6 +278,53 @@ const debouncedFetchStatusesByIds = debounce((serverUrl: string) => {
 export const fetchStatusInBatch = (serverUrl: string, id: string) => {
     ids = [...ids, id];
     return debouncedFetchStatusesByIds.apply(null, [serverUrl]);
+};
+
+const mentionNames = new Set<string>();
+export const fetchUserOrGroupsByMentionsInBatch = (serverUrl: string, mentionName: string) => {
+    mentionNames.add(mentionName);
+    return debouncedFetchUserOrGroupsByMentionNames.apply(null, [serverUrl]);
+};
+const debouncedFetchUserOrGroupsByMentionNames = debounce(
+    (serverUrl: string) => {
+        fetchUserOrGroupsByMentionNames(serverUrl, Array.from(mentionNames));
+    },
+    200,
+    false,
+    () => {
+        mentionNames.clear();
+    },
+);
+
+const fetchUserOrGroupsByMentionNames = async (serverUrl: string, mentions: string[]) => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        // Get any missing users
+        const usersInDb = await queryUsersByIdsOrUsernames(database, [], mentions).fetch();
+        const usersMap = new Set(usersInDb.map((u) => u.username));
+        const usernamesToFetch = mentions.filter((m) => !usersMap.has(m));
+
+        let fetchedUsers;
+        if (usernamesToFetch.length) {
+            const {users} = await fetchUsersByUsernames(serverUrl, usernamesToFetch, false);
+            fetchedUsers = users;
+        }
+
+        // Get any missing groups
+        const fetchedUserMentions = new Set(fetchedUsers?.map((u) => u.username));
+        const groupsToCheck = usernamesToFetch.filter((m) => !fetchedUserMentions.has(m));
+        const groupsInDb = await queryGroupsByNames(database, groupsToCheck).fetch();
+        const groupsMap = new Set(groupsInDb.map((g) => g.name));
+        const groupsToFetch = groupsToCheck.filter((g) => !groupsMap.has(g));
+
+        if (groupsToFetch.length) {
+            await fetchGroupsByNames(serverUrl, groupsToFetch, false);
+        }
+        return {data: true};
+    } catch (e) {
+        return {error: e};
+    }
 };
 
 export async function fetchStatusByIds(serverUrl: string, userIds: string[], fetchOnly = false) {

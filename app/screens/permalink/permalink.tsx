@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {Alert, BackHandler, Text, TouchableOpacity, View} from 'react-native';
+import {Alert, Text, TouchableOpacity, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -17,10 +17,10 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {dismissModal} from '@screens/navigation';
-import NavigationStore from '@store/navigation_store';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {closePermalink} from '@utils/permalink';
 import {preventDoubleTap} from '@utils/tap';
@@ -251,20 +251,7 @@ function Permalink({
         closePermalink();
     }, [error]);
 
-    useEffect(() => {
-        const listener = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (NavigationStore.getNavigationTopComponentId() === Screens.PERMALINK) {
-                handleClose();
-                return true;
-            }
-
-            return false;
-        });
-
-        return () => {
-            listener.remove();
-        };
-    }, []);
+    useAndroidHardwareBackHandler(Screens.PERMALINK, handleClose);
 
     const handlePress = useCallback(preventDoubleTap(() => {
         if (channel) {

@@ -241,7 +241,6 @@ function buildServerModalOptions(theme: Theme, closeButtonId: string) {
             backgroundColor: theme.centerChannelBg,
             componentBackgroundColor: theme.centerChannelBg,
         },
-        modal: {swipeToDismiss: false},
         topBar: {
             visible: true,
             drawBehind: true,

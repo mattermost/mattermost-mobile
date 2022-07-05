@@ -77,7 +77,7 @@ export const searchPosts = async (serverUrl: string, params: PostSearchParams): 
         if (postsArray.length) {
             const isCRTEnabled = await getIsCRTEnabled(operator.database);
             if (isCRTEnabled) {
-                promises.push(prepareThreadsFromReceivedPosts(operator, postsArray));
+                promises.push(prepareThreadsFromReceivedPosts(operator, postsArray, false));
             }
 
             const {authors} = await fetchPostAuthors(serverUrl, postsArray, true);

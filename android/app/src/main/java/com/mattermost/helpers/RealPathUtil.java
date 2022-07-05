@@ -73,7 +73,12 @@ public class RealPathUtil {
                         split[1]
                 };
 
-                return getDataColumn(context, contentUri, selection, selectionArgs);
+                String name = getDataColumn(context, contentUri, selection, selectionArgs);
+                if (!TextUtils.isEmpty(name)) {
+                    return name;
+                }
+
+                return getPathFromSavingTempFile(context, uri);
             }
         }
 

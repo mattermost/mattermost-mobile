@@ -5,10 +5,15 @@ import {ActionType, Post} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPostById, prepareDeletePost} from '@queries/servers/post';
 import {getCurrentUserId} from '@queries/servers/system';
+import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {generateId} from '@utils/general';
 import {logError} from '@utils/log';
+import {getLastFetchedAtFromPosts} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
+import {updateLastPostAt, updateMyChannelLastFetchedAt} from './channel';
+
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -157,6 +162,74 @@ export async function markPostAsDeleted(serverUrl: string, post: Post, prepareRe
         return {model};
     } catch (error) {
         logError('Failed markPostAsDeleted', error);
+        return {error};
+    }
+}
+
+export async function storePostsForChannel(
+    serverUrl: string, channelId: string, posts: Post[], order: string[], previousPostId: string,
+    actionType: string, authors: UserProfile[], prepareRecordsOnly = false,
+) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const isCRTEnabled = await getIsCRTEnabled(database);
+
+        const models = [];
+        const postModels = await operator.handlePosts({
+            actionType,
+            order,
+            posts,
+            previousPostId,
+            prepareRecordsOnly: true,
+        });
+        models.push(...postModels);
+
+        if (authors.length) {
+            const userModels = await operator.handleUsers({users: authors, prepareRecordsOnly: true});
+            models.push(...userModels);
+        }
+
+        const lastFetchedAt = getLastFetchedAtFromPosts(posts);
+        let myChannelModel: MyChannelModel | undefined;
+        if (lastFetchedAt) {
+            const {member} = await updateMyChannelLastFetchedAt(serverUrl, channelId, lastFetchedAt, true);
+            myChannelModel = member;
+        }
+
+        let lastPostAt = 0;
+        for (const post of posts) {
+            const isCrtReply = isCRTEnabled && post.root_id !== '';
+            if (!isCrtReply) {
+                lastPostAt = post.create_at > lastPostAt ? post.create_at : lastPostAt;
+            }
+        }
+
+        if (lastPostAt) {
+            const {member} = await updateLastPostAt(serverUrl, channelId, lastPostAt, true);
+            if (member) {
+                myChannelModel = member;
+            }
+        }
+
+        if (myChannelModel) {
+            models.push(myChannelModel);
+        }
+
+        if (isCRTEnabled) {
+            const threadModels = await prepareThreadsFromReceivedPosts(operator, posts, false);
+            if (threadModels?.length) {
+                models.push(...threadModels);
+            }
+        }
+
+        if (models.length && !prepareRecordsOnly) {
+            await operator.batchRecords(models);
+        }
+
+        return {models};
+    } catch (error) {
+        logError('storePostsForChannel', error);
         return {error};
     }
 }

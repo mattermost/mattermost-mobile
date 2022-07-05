@@ -4,7 +4,7 @@
 import {DependencyList, EffectCallback, useEffect} from 'react';
 import {Navigation} from 'react-native-navigation';
 
-const useNavButtonPressed = (navButtonId: string, componentId: string, callback: EffectCallback, deps?: DependencyList) => {
+const useNavButtonPressed = (navButtonId: string, componentId: string, callback: EffectCallback | any, deps?: DependencyList) => {
     useEffect(() => {
         const unsubscribe = Navigation.events().registerComponentListener({
             navigationButtonPressed: ({buttonId}: { buttonId: string }) => {

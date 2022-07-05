@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
 import {Keyboard, Platform, StyleSheet, View} from 'react-native';
-import {ImageResource, Navigation, OptionsTopBarButton} from 'react-native-navigation';
+import {ImageResource, OptionsTopBarButton} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {joinChannel, switchToChannelById} from '@actions/remote/channel';
@@ -13,6 +13,7 @@ import Search from '@components/search';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
@@ -162,26 +163,14 @@ export default function BrowseChannels(props: Props) {
         searchChannels(term);
     }, [term, searchChannels]);
 
-    useEffect(() => {
-        const unsubscribe = Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
-                switch (buttonId) {
-                    case CLOSE_BUTTON_ID:
-                        close();
-                        break;
-                    case CREATE_BUTTON_ID: {
-                        const screen = Screens.CREATE_OR_EDIT_CHANNEL;
-                        const title = intl.formatMessage({id: 'mobile.create_channel.title', defaultMessage: 'New channel'});
-                        goToScreen(screen, title);
-                        break;
-                    }
-                }
-            },
-        }, componentId);
-        return () => {
-            unsubscribe.remove();
-        };
+    const handleCreate = useCallback(() => {
+        const screen = Screens.CREATE_OR_EDIT_CHANNEL;
+        const title = intl.formatMessage({id: 'mobile.create_channel.title', defaultMessage: 'New channel'});
+        goToScreen(screen, title);
     }, [intl.locale]);
+
+    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, [close]);
+    useNavButtonPressed(CREATE_BUTTON_ID, componentId, handleCreate, [handleCreate]);
 
     useEffect(() => {
         // Update header buttons in case anything related to the header changes

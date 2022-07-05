@@ -15,8 +15,9 @@ import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {useServerUrl} from '@context/server';
 import {useCollapsibleHeader} from '@hooks/header';
-import {FileFilter, filterFiles} from '@utils/file';
+import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 
+import Modifiers from './modifiers';
 import Results from './results';
 import Header, {SelectTab} from './results/header';
 
@@ -46,14 +47,24 @@ const SearchScreen = ({teamId}: Props) => {
 
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
     const [selectedTab, setSelectedTab] = useState<SelectTab>('messages');
-    const [filter, setFilter] = useState<FileFilter>('all');
+    const [filter, setFilter] = useState<FileFilter>(FileFilters.ALL);
+    const [showResults, setShowResults] = useState(false);
 
     const [loading, setLoading] = useState(false);
     const [lastSearchedValue, setLastSearchedValue] = useState('');
 
     const [postIds, setPostIds] = useState<string[]>(emptyPostResults);
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
-    const [filteredFileInfos, setFilteredFileInfos] = useState<FileInfo[]>(emptyFileResults);
+
+    const getSearchParams = useCallback((filterValue?: FileFilter) => {
+        const terms = filterValue ? lastSearchedValue : searchValue;
+        const fileExtensions = filterFileExtensions(filterValue || filter);
+        const extensionTerms = fileExtensions ? ' ' + fileExtensions : '';
+        return {
+            terms: terms + extensionTerms,
+            is_or_search: true,
+        };
+    }, [filter, lastSearchedValue, searchValue]);
 
     const handleSearch = useCallback((debounce(async () => {
         // execute the search for the text in the navigation text box
@@ -62,13 +73,9 @@ const SearchScreen = ({teamId}: Props) => {
         // - updated recent createdAt if exists??
 
         setLoading(true);
+        setFilter(FileFilters.ALL);
         setLastSearchedValue(searchValue);
-
-        const searchParams: PostSearchParams | FileSearchParams = {
-            terms: searchValue,
-            is_or_search: true,
-        };
-
+        const searchParams = getSearchParams();
         const [postResults, fileResults] = await Promise.all([
             searchPosts(serverUrl, searchParams),
             searchFiles(serverUrl, teamId, searchParams),
@@ -79,19 +86,27 @@ const SearchScreen = ({teamId}: Props) => {
         setPostIds(postResults?.order?.length ? postResults.order : emptyPostResults);
 
         setLoading(false);
+        setShowResults(true);
     })), [searchValue]);
 
     const onSnap = (offset: number) => {
         scrollRef.current?.scrollToOffset({offset, animated: true});
     };
 
+    const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
+        setLoading(true);
+        setFilter(filterValue);
+        const searchParams = getSearchParams(filterValue);
+        const fileResults = await searchFiles(serverUrl, teamId, searchParams);
+        const fileInfosResult = fileResults?.file_infos && Object.values(fileResults?.file_infos);
+        setFileInfos(fileInfosResult?.length ? fileInfosResult : emptyFileResults);
+
+        setLoading(false);
+    }, [lastSearchedValue]);
+
     useEffect(() => {
         setSearchValue(searchTerm);
     }, [searchTerm]);
-
-    useEffect(() => {
-        setFilteredFileInfos(filterFiles(fileInfos, filter));
-    }, [filter, fileInfos]);
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight, hideHeader} = useCollapsibleHeader<FlatList>(true, onSnap);
 
@@ -118,15 +133,22 @@ const SearchScreen = ({teamId}: Props) => {
         };
     }, [headerHeight, lastSearchedValue]);
 
+    const handleClearSearch = useCallback(() => {
+        setSearchValue('');
+        setLastSearchedValue('');
+        setFilter(FileFilters.ALL);
+        setShowResults(false);
+    }, []);
+
     let header = null;
     if (lastSearchedValue) {
         header = (
             <Header
                 onTabSelect={setSelectedTab}
-                onFilterChanged={setFilter}
+                onFilterChanged={handleFilterChange}
                 numberMessages={postIds.length}
                 selectedTab={selectedTab}
-                numberFiles={Object.keys(filteredFileInfos).length}
+                numberFiles={fileInfos.length}
                 selectedFilter={filter}
             />
         );
@@ -145,6 +167,7 @@ const SearchScreen = ({teamId}: Props) => {
                 onSubmitEditing={handleSearch}
                 blurOnSubmit={true}
                 placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
+                onClear={handleClearSearch}
                 defaultValue={searchValue}
             />
             <SafeAreaView
@@ -156,16 +179,25 @@ const SearchScreen = ({teamId}: Props) => {
                         <RoundedHeaderContext/>
                         {header}
                     </Animated.View>
-                    <Results
-                        selectedTab={selectedTab}
-                        searchValue={lastSearchedValue}
-                        postIds={postIds}
-                        fileInfos={filteredFileInfos}
-                        scrollRef={scrollRef}
-                        onScroll={onScroll}
-                        scrollPaddingTop={scrollPaddingTop}
-                        loading={loading}
-                    />
+                    {!showResults &&
+                        <Modifiers
+                            setSearchValue={setSearchValue}
+                            searchValue={searchValue}
+                            scrollPaddingTop={scrollPaddingTop}
+                        />
+                    }
+                    {showResults &&
+                        <Results
+                            selectedTab={selectedTab}
+                            searchValue={lastSearchedValue}
+                            postIds={postIds}
+                            fileInfos={fileInfos}
+                            scrollRef={scrollRef}
+                            onScroll={onScroll}
+                            scrollPaddingTop={scrollPaddingTop}
+                            loading={loading}
+                        />
+                    }
                 </Animated.View>
             </SafeAreaView>
         </FreezeScreen>

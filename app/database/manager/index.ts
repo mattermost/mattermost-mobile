@@ -25,6 +25,7 @@ import {serverSchema} from '@database/schema/server';
 import {queryActiveServer, queryServer, queryServerByIdentifier} from '@queries/app/servers';
 import {DatabaseType} from '@typings/database/enums';
 import {emptyFunction} from '@utils/general';
+import {logDebug, logError} from '@utils/log';
 import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
@@ -157,6 +158,8 @@ class DatabaseManager {
                 return serverDatabase;
             } catch (e) {
                 // TODO : report to sentry? Show something on the UI ?
+
+                logError('Error initializing database', e);
             }
         }
 
@@ -461,16 +464,19 @@ class DatabaseManager {
     private buildMigrationCallbacks = (dbName: string) => {
         const migrationEvents = {
             onSuccess: () => {
+                logDebug('DB Migration success', dbName);
                 return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_SUCCESS, {
                     dbName,
                 });
             },
             onStart: () => {
+                logDebug('DB Migration start', dbName);
                 return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_STARTED, {
                     dbName,
                 });
             },
             onError: (error: Error) => {
+                logDebug('DB Migration error', dbName);
                 return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_ERROR, {
                     dbName,
                     error,
