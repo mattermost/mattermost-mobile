@@ -55,11 +55,6 @@ const LoadingUnreads = () => {
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.FETCHING_POSTS, (value: boolean) => {
             cancelAnimation(opacity);
-
-            // Work-around : When the shared value alternates between two values, the cancelAnimation call is not always cancellable
-            // https://github.com/software-mansion/react-native-reanimated/issues/2733
-            opacity.value = withTiming(0, {duration: 300, easing: Easing.ease});
-
             setLoading(value);
         });
 
