@@ -220,7 +220,7 @@ describe('Smoke Test - Messaging', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T4786_6 - should be able to post laballed permalink and labeled channel link', async () => {
+    it('MM-T4786_6 - should be able to post labeled permalink and labeled channel link', async () => {
         // # Post a target message in a target channel
         const permalinkTargetMessage = `Message ${getRandomId()}`;
         const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
@@ -242,6 +242,23 @@ describe('Smoke Test - Messaging', () => {
         // * Verify permalink and channel link are posted as labeled links
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.hasPostMessage(post.id, `Message ${permalinkLabel} ${channelLinkLabel}`);
+
+        // # Go back to channel list screen
+        await ChannelScreen.back();
+    });
+
+    it('MM-T4786_7 - should be able to post a message with markdown', async () => {
+        // # Open a channel screen and post a message with markdown
+        const message = `Message ${getRandomId()}`;
+        const markdown = `#### ${message}`;
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage(markdown);
+
+        // * Verify message with markdown is posted
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItemHeading} = ChannelScreen.getPostListPostItem(post.id, message);
+        await expect(postListPostItemHeading).toBeVisible();
+        await expect(element(by.text(message))).toBeVisible();
 
         // # Go back to channel list screen
         await ChannelScreen.back();
