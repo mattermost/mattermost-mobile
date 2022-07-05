@@ -50,10 +50,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 type Props = {
     currentUserId: string;
     otherTeams: TeamModel[];
+    title: string;
     showTitle?: boolean;
 }
 
-export default function AddTeamSlideUp({currentUserId, otherTeams, showTitle = true}: Props) {
+export default function AddTeamSlideUp({currentUserId, otherTeams, title, showTitle = true}: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -83,7 +84,7 @@ export default function AddTeamSlideUp({currentUserId, otherTeams, showTitle = t
             showButton={false}
             showTitle={showTitle}
             testID={testID}
-            title={intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'})}
+            title={title}
         >
             {hasOtherTeams &&
                 <TeamList

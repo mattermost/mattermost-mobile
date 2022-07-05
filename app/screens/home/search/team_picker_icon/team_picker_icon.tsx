@@ -9,18 +9,13 @@ import CompassIcon from '@components/compass_icon';
 import TeamIcon from '@components/team_sidebar/team_list/team_item/team_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
-import {bottomSheet} from '@screens/navigation';
+import {bottomSheetWithTeamList} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import SelectTeamSlideUp from './search_team_slideup';
 
 import type TeamModel from '@typings/database/models/servers/team';
-
-const ITEM_HEIGHT = 72;
-const HEADER_HEIGHT = 66;
-const CONTAINER_HEIGHT = 392;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -54,12 +49,12 @@ type Props = {
 const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
-    const isTablet = useIsTablet();
     const dimensions = useWindowDimensions();
     const styles = getStyleFromTheme(theme);
-    const maxHeight = Math.round((dimensions.height * 0.9));
 
     const selectedTeam = teams.find((t) => t.id === teamId);
+
+    const title = intl.formatMessage({id: 'mobile.search.team.select', defaultMessage: 'Select a team to search'});
 
     const handleTeamChange = useCallback(preventDoubleTap(() => {
         const renderContent = () => {
@@ -68,22 +63,17 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
                     setTeamId={setTeamId}
                     teams={teams}
                     teamId={teamId}
-                    showTitle={!isTablet && Boolean(teams.length)}
+                    title={title}
                 />
             );
         };
 
-        let height = CONTAINER_HEIGHT;
-        if (teams.length) {
-            height = Math.min(maxHeight, HEADER_HEIGHT + ((teams.length + 1) * ITEM_HEIGHT));
-        }
-
-        bottomSheet({
-            closeButtonId: 'close-select-team',
+        bottomSheetWithTeamList({
+            dimensions,
             renderContent,
-            snapPoints: [height, 10],
             theme,
-            title: intl.formatMessage({id: 'mobile.search.team.select', defaultMessage: 'Select a team to search'}),
+            title,
+            teams,
         });
     }), [theme, setTeamId, teamId, teams]);
 

@@ -4,7 +4,7 @@
 /* eslint-disable max-lines */
 
 import merge from 'deepmerge';
-import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert} from 'react-native';
+import {Appearance, ScaledSize, useWindowDimension, sDimensions, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert} from 'react-native';
 import {ImageResource, Navigation, Options, OptionsModalPresentationStyle, OptionsTopBarButton} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
@@ -19,6 +19,7 @@ import {LaunchProps, LaunchType} from '@typings/launch';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
+import type TeamModel from '@typings/database/models/servers/team';
 import type {NavButtons} from '@typings/screens/navigation';
 
 const {MattermostManaged} = NativeModules;
@@ -682,6 +683,34 @@ export async function bottomSheet({title, renderContent, snapPoints, initialSnap
             snapPoints,
         }, bottomSheetModalOptions(theme));
     }
+}
+
+type BottomSheetWithTeamListArgs = {
+    teams: TeamModel[];
+    dimensions: ScaledSize;
+    renderContent: () => JSX.Element;
+    theme: Theme;
+    title: string;
+}
+
+export async function bottomSheetWithTeamList({title, teams, dimensions, renderContent, theme}: BottomSheetWithTeamListArgs) {
+    const ITEM_HEIGHT = 72;
+    const HEADER_HEIGHT = 66;
+    const CONTAINER_HEIGHT = 392;
+    const maxHeight = Math.round((dimensions.height * 0.9));
+
+    let height = CONTAINER_HEIGHT;
+    if (teams.length) {
+        height = Math.min(maxHeight, HEADER_HEIGHT + ((teams.length + 1) * ITEM_HEIGHT));
+    }
+
+    bottomSheet({
+        closeButtonId: 'close-team_list',
+        renderContent,
+        snapPoints: [height, 10],
+        theme,
+        title,
+    });
 }
 
 export async function dismissBottomSheet(alternativeScreen = Screens.BOTTOM_SHEET) {

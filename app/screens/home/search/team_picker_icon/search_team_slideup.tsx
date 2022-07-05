@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
 
 import TeamList from '@components/team_sidebar/add_team/team_list';
+import {useIsTablet} from '@hooks/device';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import {dismissBottomSheet} from '@screens/navigation';
 
@@ -12,14 +12,15 @@ import type TeamModel from '@typings/database/models/servers/team';
 
 type Props = {
     teams: TeamModel[];
-    showTitle?: boolean;
     teamId: string;
     setTeamId: (teamId: string) => void;
+    title: string;
 }
 
-export default function SelectTeamSlideUp({teams, showTitle = true, setTeamId, teamId}: Props) {
-    const intl = useIntl();
+export default function SelectTeamSlideUp({teams, title, setTeamId, teamId}: Props) {
     const testID = 'team_sidebar.add_team_slide_up';
+    const isTablet = useIsTablet();
+    const showTitle = !isTablet && Boolean(teams.length);
 
     const onPress = useCallback((newTeamId: string) => {
         setTeamId(newTeamId);
@@ -31,14 +32,14 @@ export default function SelectTeamSlideUp({teams, showTitle = true, setTeamId, t
             showButton={false}
             showTitle={showTitle}
             testID={testID}
-            title={intl.formatMessage({id: 'mobile.search.team.select', defaultMessage: 'Select a team to search'})}
+            title={title}
         >
             {teams.length &&
                 <TeamList
                     selectedTeamId={teamId}
                     teams={teams}
                     onPress={onPress}
-                    testID='team_sidebar.add_team_slide_up.team_list'
+                    testID='search.search_team_slide_up.team_list'
                 />
             }
         </BottomSheetContent>
