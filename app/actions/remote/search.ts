@@ -131,21 +131,11 @@ export const searchPosts = async (serverUrl: string, params: PostSearchParams): 
 };
 
 export const searchFiles = async (serverUrl: string, teamId: string, params: FileSearchParams): Promise<FileSearchRequest> => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
-    let data;
     try {
-        client = NetworkManager.getClient(serverUrl);
-        data = await client.searchFiles(teamId, params.terms);
+        const client = NetworkManager.getClient(serverUrl);
+        return await client.searchFiles(teamId, params.terms);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
-
-    return data;
 };
