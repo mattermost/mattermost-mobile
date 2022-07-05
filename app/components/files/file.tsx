@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef, useMemo} from 'react';
+import React, {useCallback, useRef} from 'react';
 import {View, TouchableWithoutFeedback} from 'react-native';
 import Animated from 'react-native-reanimated';
 
