@@ -4,7 +4,7 @@
 /* eslint-disable max-lines */
 
 import merge from 'deepmerge';
-import {Appearance, ScaledSize, useWindowDimension, sDimensions, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert} from 'react-native';
+import {Appearance, ScaledSize, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert} from 'react-native';
 import {ImageResource, Navigation, Options, OptionsModalPresentationStyle, OptionsTopBarButton} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 

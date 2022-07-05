@@ -73,6 +73,7 @@ const Header = ({
 
     const messagesText = intl.formatMessage({id: 'screen.search.header.messages', defaultMessage: 'Messages'});
     const filesText = intl.formatMessage({id: 'screen.search.header.files', defaultMessage: 'Files'});
+    const title = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
 
     const showFilterIcon = selectedTab === 'files';
     const hasFilters = selectedFilter !== FileFilters.ALL;
@@ -91,6 +92,7 @@ const Header = ({
                 <Filter
                     initialFilter={selectedFilter}
                     setFilter={onFilterChanged}
+                    title={title}
                 />
             );
         };
@@ -99,7 +101,7 @@ const Header = ({
             renderContent,
             snapPoints: [700, 10],
             theme,
-            title: '',
+            title,
         });
     }, [selectedFilter]);
 

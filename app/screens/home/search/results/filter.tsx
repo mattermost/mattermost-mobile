@@ -79,9 +79,10 @@ const data: FilterItem[] = [
 type FilterProps = {
     initialFilter: FileFilter;
     setFilter: (filter: FileFilter) => void;
+    title: string;
 }
 
-const Filter = ({initialFilter, setFilter}: FilterProps) => {
+const Filter = ({initialFilter, setFilter, title}: FilterProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -129,7 +130,6 @@ const Filter = ({initialFilter, setFilter}: FilterProps) => {
     }, [selectedFilter, setFilter]);
 
     const buttonText = intl.formatMessage({id: 'screen.search.results.filter.show_button', defaultMessage: 'Show results'});
-    const title = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
 
     return (
         <BottomSheetContent
