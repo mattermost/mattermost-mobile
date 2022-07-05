@@ -98,6 +98,13 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
         }
 
         if (targetChunk) {
+            if (
+                targetChunk.earliest <= earliest &&
+                targetChunk.latest >= latest
+            ) {
+                return [];
+            }
+
             // If the chunk was found, Update the chunk and return
             if (prepareRecordsOnly) {
                 targetChunk.prepareUpdate((record) => {
@@ -202,6 +209,10 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
 
         let targetChunk = chunks[0];
         if (targetChunk) {
+            if (targetChunk.earliest <= earliest) {
+                return [];
+            }
+
             // If the chunk was found, Update the chunk and return
             if (prepareRecordsOnly) {
                 targetChunk.prepareUpdate((record) => {
@@ -258,6 +269,10 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
 
         let targetChunk = chunks[0];
         if (targetChunk) {
+            if (targetChunk.latest >= latest) {
+                return [];
+            }
+
             // If the chunk was found, Update the chunk and return
             if (prepareRecordsOnly) {
                 targetChunk.prepareUpdate((record) => {
