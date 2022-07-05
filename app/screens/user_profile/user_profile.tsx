@@ -127,18 +127,21 @@ const UserProfile = ({
                 {Boolean(user.nickname) && !override && !user.isBot &&
                 <UserProfileLabel
                     description={user.nickname}
+                    testID='user_profile.nickname'
                     title={formatMessage({id: 'channel_info.nickname', defaultMessage: 'Nickname'})}
                 />
                 }
                 {Boolean(user.position) && !override && !user.isBot &&
                 <UserProfileLabel
                     description={user.position}
+                    testID='user_profile.position'
                     title={formatMessage({id: 'channel_info.position', defaultMessage: 'Position'})}
                 />
                 }
                 {Boolean(localTime) && !override && !user.isBot &&
                 <UserProfileLabel
                     description={localTime!}
+                    testID='user_profile.local_time'
                     title={formatMessage({id: 'channel_info.local_time', defaultMessage: 'Local Time'})}
                 />
                 }
@@ -153,7 +156,7 @@ const UserProfile = ({
             componentId={Screens.USER_PROFILE}
             initialSnapIndex={0}
             snapPoints={snapPoints}
-            testID='post_options'
+            testID='user_profile'
         />
     );
 };

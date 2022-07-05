@@ -5,6 +5,7 @@ import AccountScreen from './account';
 import BrowseChannelsScreen from './browse_channels';
 import ChannelScreen from './channel';
 import ChannelDropdownMenuScreen from './channel_dropdown_menu';
+import ChannelInfoScreen from './channel_info';
 import ChannelListScreen from './channel_list';
 import CreateDirectMessageScreen from './create_direct_message';
 import CreateOrEditChannelScreen from './create_or_edit_channel';
@@ -20,14 +21,17 @@ import PostOptionsScreen from './post_options';
 import ReactionsScreen from './reactions';
 import ServerScreen from './server';
 import ServerListScreen from './server_list';
+import TableScreen from './table';
 import ThreadScreen from './thread';
 import ThreadOptionsScreen from './thread_options';
+import UserProfileScreen from './user_profile';
 
 export {
     AccountScreen,
     BrowseChannelsScreen,
     ChannelScreen,
     ChannelDropdownMenuScreen,
+    ChannelInfoScreen,
     ChannelListScreen,
     CreateDirectMessageScreen,
     CreateOrEditChannelScreen,
@@ -43,6 +47,8 @@ export {
     ReactionsScreen,
     ServerScreen,
     ServerListScreen,
+    TableScreen,
     ThreadScreen,
     ThreadOptionsScreen,
+    UserProfileScreen,
 };

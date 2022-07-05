@@ -196,6 +196,7 @@ const LatexCodeBlock = ({content, theme}: Props) => {
             onPress={handlePress}
             onLongPress={handleLongPress}
             type={'opacity'}
+            testID='markdown_latex_code_block'
         >
             <View style={styles.container}>
                 <ErrorBoundary

@@ -39,14 +39,20 @@ const ChannelQuickAction = ({channelId}: Props) => {
     return (
         <View style={styles.container}>
             <View style={styles.wrapper}>
-                <ChannelActions channelId={channelId}/>
+                <ChannelActions
+                    channelId={channelId}
+                    testID='channel.quick_actions'
+                />
             </View>
             <InfoBox
                 channelId={channelId}
                 showAsLabel={true}
             />
             <View style={styles.line}/>
-            <LeaveChannelLabel channelId={channelId}/>
+            <LeaveChannelLabel
+                channelId={channelId}
+                testID='channel.quick_actions.leave_channel.action'
+            />
         </View>
     );
 };

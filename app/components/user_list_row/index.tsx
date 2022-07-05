@@ -198,9 +198,7 @@ export default function UserListRow({
     const teammateDisplay = displayUsername(user, intl.locale, teammateNameDisplay);
     const showTeammateDisplay = teammateDisplay !== username;
 
-    const itemTestID = `${testID}.${id}`;
-    const displayNameTestID = `${itemTestID}.display_name`;
-    const profilePictureTestID = `${itemTestID}.profile_picture`;
+    const userItemTestID = `${testID}.${id}`;
 
     return (
         <>
@@ -212,14 +210,14 @@ export default function UserListRow({
                 <View
                     ref={viewRef}
                     style={style.container}
-                    testID={itemTestID}
+                    testID={userItemTestID}
                 >
                     <View style={style.profileContainer}>
                         <ProfilePicture
                             author={user}
                             size={32}
                             iconSize={24}
-                            testID={profilePictureTestID}
+                            testID={`${userItemTestID}.profile_picture`}
                         />
                     </View>
                     <View style={style.textContainer}>
@@ -228,15 +226,17 @@ export default function UserListRow({
                                 style={style.username}
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
-                                testID={displayNameTestID}
+                                testID={`${userItemTestID}.display_name`}
                             >
                                 {usernameDisplay}
                             </Text>
                             <BotTag
                                 show={Boolean(user.is_bot)}
+                                testID={`${userItemTestID}.bot.tag`}
                             />
                             <GuestTag
                                 show={isGuest(user.roles)}
+                                testID={`${userItemTestID}.guest.tag`}
                             />
                         </View>
                         {showTeammateDisplay &&
@@ -245,6 +245,7 @@ export default function UserListRow({
                                 style={style.displayName}
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
+                                testID={`${userItemTestID}.team_display_name`}
                             >
                                 {teammateDisplay}
                             </Text>
@@ -254,6 +255,7 @@ export default function UserListRow({
                         <View>
                             <Text
                                 style={style.deactivated}
+                                testID={`${userItemTestID}.deactivated`}
                             >
                                 {formatMessage({id: 'mobile.user_list.deactivated', defaultMessage: 'Deactivated'})}
                             </Text>

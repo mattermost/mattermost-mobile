@@ -54,6 +54,7 @@ const UserItem = ({currentUserId, onPress, teammateDisplayNameSetting, testID, u
     const styles = getStyleSheet(theme);
     const isOwnDirectMessage = currentUserId === user.id;
     const displayName = displayUsername(user, locale, teammateDisplayNameSetting);
+    const userItemTestId = `${testID}.${user.id}`;
 
     const handleOnPress = useCallback(() => {
         onPress(user.id, displayName);
@@ -64,7 +65,7 @@ const UserItem = ({currentUserId, onPress, teammateDisplayNameSetting, testID, u
             <>
                 <View
                     style={styles.container}
-                    testID={`${testID}.${user.id}`}
+                    testID={userItemTestId}
                 >
                     <View style={styles.wrapper}>
                         <View style={styles.avatar}>
@@ -74,6 +75,7 @@ const UserItem = ({currentUserId, onPress, teammateDisplayNameSetting, testID, u
                                 showStatus={true}
                                 statusSize={12}
                                 statusStyle={styles.status}
+                                testID={`${userItemTestId}.profile_picture`}
                             />
                         </View>
                         <View>
@@ -81,7 +83,7 @@ const UserItem = ({currentUserId, onPress, teammateDisplayNameSetting, testID, u
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
                                 style={styles.text}
-                                testID={`${testID}.${user.id}.display_name`}
+                                testID={`${userItemTestId}.display_name`}
                             >
                                 {isOwnDirectMessage ? formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName}) : displayName}
                             </Text>

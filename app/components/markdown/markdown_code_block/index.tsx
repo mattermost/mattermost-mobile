@@ -201,6 +201,7 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
             <TouchableOpacity
                 onPress={handlePress}
                 onLongPress={handleLongPress}
+                testID='markdown_code_block'
             >
                 <View style={style.container}>
                     <View>
