@@ -9,24 +9,32 @@ import SwiftUI
 
 struct ChannelListView: View {
   @EnvironmentObject var shareViewModel: ShareViewModel
-  @State private var search = ""
   
   var body: some View {
     VStack (spacing: 0) {
       SearchBarView()
-        .padding()
+      if shareViewModel.search.isEmpty {
+          HStack {
+              Text("RECENT")
+                  .font(Font.custom("OpenSans", size: 12))
+                  .foregroundColor(Color.theme.centerChannelColor.opacity(0.64))
+              Spacer()
+          }
+          .padding(.top, 20)
+      }
       List(shareViewModel.allChannels) { channel in
         ChannelItemView(
           channel: channel
         )
       }
       .listStyle(.plain)
-      .padding(.horizontal, 20)
       .onDisappear {
         if !shareViewModel.search.isEmpty {
           shareViewModel.search = ""
         }
       }
     }
+    .padding(.top, 20)
+    .padding(.horizontal, 20)
   }
 }
