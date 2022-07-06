@@ -18,7 +18,7 @@ export const RECENT_LABEL_HEIGHT = 48;
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         recentItemLabelContainer: {
-            marginLeft: 20,
+            paddingLeft: 20,
             alignItems: 'center',
             flexDirection: 'row',
         },
@@ -29,7 +29,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             ...typography('Body', 200, 'Regular'),
         },
         recentRemove: {
-            marginRight: 12,
+            paddingRight: 12,
         },
     };
 });

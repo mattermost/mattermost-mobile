@@ -16,7 +16,6 @@ import RecentItem, {RECENT_LABEL_HEIGHT} from './recent_item';
 import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
-const RECENT_SEPARATOR_HEIGHT = 3;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -26,10 +25,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             height: 1,
+            marginVertical: 16,
             marginHorizontal: 15,
         },
         title: {
-            padding: 20,
+            paddingHorizontal: 20,
+            paddingVertical: 12,
             color: theme.centerChannelColor,
             ...typography('Heading', 300, 'SemiBold'),
         },
@@ -38,31 +39,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
             height: RECENT_LABEL_HEIGHT,
-        },
-        recentItemLabel: {
-            color: theme.centerChannelColor,
-            fontSize: 14,
-            height: 20,
-            flex: 1,
-            paddingHorizontal: 16,
-        },
-        recentRemove: {
-            alignItems: 'center',
-            height: RECENT_LABEL_HEIGHT,
-            justifyContent: 'center',
-            width: 50,
-        },
-        separatorContainer: {
-            justifyContent: 'center',
-            flex: 1,
-            height: RECENT_SEPARATOR_HEIGHT,
-        },
-        postsSeparator: {
-            height: 15,
-        },
-        separator: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 1,
         },
     };
 });
