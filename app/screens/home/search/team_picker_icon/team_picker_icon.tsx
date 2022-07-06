@@ -95,6 +95,8 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
                                 backgroundColor={changeOpacity(theme.centerChannelColor, 0.16)}
                                 selected={false}
                                 testID={`${selectedTeam}.team_icon`}
+                                smallText={true}
+
                             />
                         </View>
                         <CompassIcon

@@ -32,7 +32,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         text: {
             color: theme.sidebarText,
             textTransform: 'capitalize',
-            ...typography('Heading', 400, 'SemiBold'),
         },
         image: {
             borderRadius: 8,
@@ -55,6 +54,7 @@ type Props = {
     displayName: string;
     selected: boolean;
     backgroundColor?: string;
+    smallText?: boolean;
     textColor?: string;
     testID?: string;
 }
@@ -64,6 +64,7 @@ export default function TeamIcon({
     lastIconUpdate,
     displayName,
     selected,
+    smallText = false,
     textColor,
     backgroundColor,
     testID,
@@ -102,9 +103,10 @@ export default function TeamIcon({
 
     let teamIconContent;
     if (nameOnly) {
+        const textStyle = [styles.text, typography('Body', smallText ? 200 : 400, 'SemiBold')];
         teamIconContent = (
             <Text
-                style={textColor ? [styles.text, {color: textColor}] : styles.text}
+                style={textColor ? [textStyle, {color: textColor}] : textStyle}
                 testID={`${testID}.display_name_abbreviation`}
             >
                 {displayName.substring(0, 2)}
