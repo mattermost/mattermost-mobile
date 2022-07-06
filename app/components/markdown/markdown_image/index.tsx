@@ -235,10 +235,7 @@ const MarkdownImage = ({
                     onLongPress={handleLinkLongPress}
                     onPress={onGestureEvent}
                 >
-                    <Animated.View
-                        style={[styles, {width, height}, style.container]}
-                        testID='markdown_image'
-                    >
+                    <Animated.View style={[styles, {width, height}, style.container]}>
                         <ProgressiveImage
                             forwardRef={ref}
                             id={fileInfo.id!}

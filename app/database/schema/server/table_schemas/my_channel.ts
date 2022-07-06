@@ -18,6 +18,7 @@ export default tableSchema({
         {name: 'message_count', type: 'number'},
         {name: 'roles', type: 'string'},
         {name: 'viewed_at', type: 'number'},
+        {name: 'last_fetched_at', type: 'number', isIndexed: true},
     ],
 });
 

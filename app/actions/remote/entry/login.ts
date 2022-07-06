@@ -8,6 +8,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {isTablet} from '@utils/helpers';
+import {logWarning} from '@utils/log';
 import {scheduleExpiredNotification} from '@utils/notification';
 
 import {deferredAppEntryActions, entry} from './common';
@@ -64,8 +65,7 @@ export async function loginEntry({serverUrl, user, deviceToken}: AfterLoginArgs)
                     try {
                         sessions = await getSessions(serverUrl, 'me');
                     } catch (e) {
-                        // eslint-disable-next-line no-console
-                        console.warn('Failed to get user sessions', e);
+                        logWarning('Failed to get user sessions', e);
                         return;
                     }
 

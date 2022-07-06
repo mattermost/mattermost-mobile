@@ -18,6 +18,7 @@ import WebsocketManager from './app/managers/websocket_manager';
 import {registerScreens} from './app/screens';
 import NavigationStore from './app/store/navigation_store';
 import setFontFamily from './app/utils/font_family';
+import {logInfo} from './app/utils/log';
 import './app/utils/emoji'; // Imported to ensure it is loaded when used
 
 declare const global: { HermesInternal: null | {} };
@@ -33,8 +34,7 @@ if (__DEV__) {
 
     // Ignore all notifications if running e2e
     const isRunningE2e = RUNNING_E2E === 'true';
-    // eslint-disable-next-line no-console
-    console.log(`RUNNING_E2E: ${RUNNING_E2E}, isRunningE2e: ${isRunningE2e}`);
+    logInfo(`RUNNING_E2E: ${RUNNING_E2E}, isRunningE2e: ${isRunningE2e}`);
     if (isRunningE2e) {
         LogBox.ignoreAllLogs(true);
     }
@@ -100,10 +100,6 @@ function screenDidDisappearListener({componentId}: ComponentDidDisappearEvent) {
     if (componentId !== Screens.HOME) {
         if ([Screens.EDIT_POST, Screens.THREAD].includes(componentId)) {
             DeviceEventEmitter.emit(Events.PAUSE_KEYBOARD_TRACKING_VIEW, false);
-        }
-
-        if (NavigationStore.getNavigationTopComponentId() === componentId) {
-            NavigationStore.removeNavigationComponentId(componentId);
         }
 
         if (NavigationStore.getNavigationTopComponentId() === Screens.HOME) {

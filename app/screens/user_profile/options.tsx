@@ -77,12 +77,14 @@ const UserProfileOptions = ({location, type, userId, username}: Props) => {
                 <OptionBox
                     iconName='send'
                     onPress={openChannel}
+                    testID='user_profile_options.send_message.option'
                     text={intl.formatMessage({id: 'channel_info.send_mesasge', defaultMessage: 'Send message'})}
                 />
                 <View style={styles.divider}/>
                 <OptionBox
                     iconName='at'
                     onPress={mentionUser}
+                    testID='user_profile_options.mention.option'
                     text={intl.formatMessage({id: 'channel_info.mention', defaultMessage: 'Mention'})}
                 />
             </View>
@@ -94,6 +96,7 @@ const UserProfileOptions = ({location, type, userId, username}: Props) => {
             <TouchableOpacity
                 style={[buttonStyle, styles.singleButton]}
                 onPress={openChannel}
+                testID='user_profile_options.send_message.option'
             >
                 <CompassIcon
                     color={theme.buttonBg}

@@ -7,6 +7,7 @@ import {Database} from '@constants';
 import {getPostListEdges} from '@database//operator/utils/post';
 import {transformPostInThreadRecord} from '@database/operator/server_data_operator/transformers/post';
 import {getRawRecordPairs, getValidRecordsForUpdate} from '@database/operator/utils/general';
+import {logWarning} from '@utils/log';
 
 import type {RecordPair} from '@typings/database/database';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
@@ -20,8 +21,7 @@ const {POSTS_IN_THREAD} = Database.MM_TABLES.SERVER;
 const PostsInThreadHandler = (superclass: any) => class extends superclass {
     handleReceivedPostsInThread = async (postsMap: Record<string, Post[]>, prepareRecordsOnly = false): Promise<PostsInThreadModel[]> => {
         if (!postsMap || !Object.keys(postsMap).length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "postsMap" object has been passed to the handleReceivedPostsInThread method',
             );
             return [];

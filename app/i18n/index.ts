@@ -1,14 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import moment from 'moment-timezone';
+import moment from 'moment';
 import {getLocales} from 'react-native-localize';
 
 import en from '@assets/i18n/en.json';
+import {logError} from '@utils/log';
 
 import availableLanguages from './languages';
 
 const deviceLocale = getLocales()[0].languageTag;
+const PRIMARY_LOCALE = 'en';
 export const DEFAULT_LOCALE = getLocaleFromLanguage(deviceLocale);
 
 function loadTranslation(locale?: string) {
@@ -17,6 +19,14 @@ function loadTranslation(locale?: string) {
         let momentData;
 
         switch (locale) {
+            case 'bg':
+                require('@formatjs/intl-pluralrules/locale-data/bg');
+                require('@formatjs/intl-numberformat/locale-data/bg');
+                require('@formatjs/intl-datetimeformat/locale-data/bg');
+
+                translations = require('@assets/i18n/bg.json');
+                momentData = require('moment/locale/bg');
+                break;
             case 'de':
                 require('@formatjs/intl-pluralrules/locale-data/de');
                 require('@formatjs/intl-numberformat/locale-data/de');
@@ -41,6 +51,14 @@ function loadTranslation(locale?: string) {
                 translations = require('@assets/i18n/es.json');
                 momentData = require('moment/locale/es');
                 break;
+            case 'fa':
+                require('@formatjs/intl-pluralrules/locale-data/fa');
+                require('@formatjs/intl-numberformat/locale-data/fa');
+                require('@formatjs/intl-datetimeformat/locale-data/fa');
+
+                translations = require('@assets/i18n/fa.json');
+                momentData = require('moment/locale/fa');
+                break;
             case 'fr':
                 require('@formatjs/intl-pluralrules/locale-data/fr');
                 require('@formatjs/intl-numberformat/locale-data/fr');
@@ -48,6 +66,14 @@ function loadTranslation(locale?: string) {
 
                 translations = require('@assets/i18n/fr.json');
                 momentData = require('moment/locale/fr');
+                break;
+            case 'hu':
+                require('@formatjs/intl-pluralrules/locale-data/hu');
+                require('@formatjs/intl-numberformat/locale-data/hu');
+                require('@formatjs/intl-datetimeformat/locale-data/hu');
+
+                translations = require('@assets/i18n/hu.json');
+                momentData = require('moment/locale/hu');
                 break;
             case 'it':
                 require('@formatjs/intl-pluralrules/locale-data/it');
@@ -113,6 +139,14 @@ function loadTranslation(locale?: string) {
                 translations = require('@assets/i18n/ru.json');
                 momentData = require('moment/locale/ru');
                 break;
+            case 'sv':
+                require('@formatjs/intl-pluralrules/locale-data/sv');
+                require('@formatjs/intl-numberformat/locale-data/sv');
+                require('@formatjs/intl-datetimeformat/locale-data/sv');
+
+                translations = require('@assets/i18n/sv.json');
+                momentData = require('moment/locale/sv');
+                break;
             case 'tr':
                 require('@formatjs/intl-pluralrules/locale-data/tr');
                 require('@formatjs/intl-numberformat/locale-data/tr');
@@ -156,7 +190,7 @@ function loadTranslation(locale?: string) {
         }
         return translations;
     } catch (e) {
-        console.error('NO Translation found', e); //eslint-disable-line no-console
+        logError('NO Translation found', e);
         return en;
     }
 }
@@ -169,7 +203,7 @@ function loadChinesePolyfills() {
 
 export function getLocaleFromLanguage(lang: string) {
     const languageCode = lang.split('-')[0];
-    const locale = availableLanguages[lang] || languageCode;
+    const locale = availableLanguages[lang] || availableLanguages[languageCode] || PRIMARY_LOCALE;
     return locale;
 }
 

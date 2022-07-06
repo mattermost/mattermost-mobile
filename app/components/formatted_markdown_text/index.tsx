@@ -10,6 +10,7 @@ import {GestureResponderEvent, StyleProp, Text, TextStyle} from 'react-native';
 import AtMention from '@components/markdown/at_mention';
 import MarkdownLink from '@components/markdown/markdown_link';
 import {useTheme} from '@context/theme';
+import {logWarning} from '@utils/log';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {concatStyles, changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -106,7 +107,7 @@ const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, lo
     };
 
     const renderHTML = (props: never) => {
-        console.warn(`HTML used in FormattedMarkdownText component with id ${id}`); // eslint-disable-line no-console
+        logWarning(`HTML used in FormattedMarkdownText component with id ${id}`);
         return renderText(props);
     };
 

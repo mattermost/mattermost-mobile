@@ -3,6 +3,7 @@
 
 import DatabaseManager from '@database/manager';
 import {prepareDeleteTeam, getMyTeamById, removeTeamFromTeamHistory} from '@queries/servers/team';
+import {logError} from '@utils/log';
 
 export async function removeUserFromTeam(serverUrl: string, teamId: string) {
     try {
@@ -25,8 +26,7 @@ export async function removeUserFromTeam(serverUrl: string, teamId: string) {
 
         return {error: undefined};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed removeUserFromTeam', error);
+        logError('Failed removeUserFromTeam', error);
         return {error};
     }
 }

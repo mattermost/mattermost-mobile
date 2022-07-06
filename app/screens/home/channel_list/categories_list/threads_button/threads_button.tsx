@@ -39,7 +39,7 @@ type Props = {
     currentChannelId: string;
     onlyUnreads: boolean;
     unreadsAndMentions: {
-        unreads: number;
+        unreads: boolean;
         mentions: number;
     };
 };

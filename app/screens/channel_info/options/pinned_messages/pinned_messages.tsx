@@ -45,6 +45,7 @@ const PinnedMessages = ({channelId, count, displayName}: Props) => {
             icon='pin-outline'
             type={Platform.select({ios: 'arrow', default: 'default'})}
             info={count.toString()}
+            testID='channel_info.options.pinned_messages.option'
         />
     );
 };

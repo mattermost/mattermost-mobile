@@ -285,7 +285,7 @@ const ChannelMention = ({
             <ChannelMentionItem
                 channel={item}
                 onPress={completeMention}
-                testID={`autocomplete.channel_mention.item.${item}`}
+                testID='autocomplete.channel_mention_item'
             />
         );
     }, [completeMention]);
@@ -349,7 +349,7 @@ const ChannelMention = ({
             renderSectionHeader={renderSectionHeader}
             style={listStyle}
             sections={sections}
-            testID='channel_mention_suggestion.list'
+            testID='autocomplete.channel_mention.section_list'
         />
     );
 };

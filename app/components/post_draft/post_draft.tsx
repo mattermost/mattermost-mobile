@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {RefObject, useState} from 'react';
+import React, {RefObject, useEffect, useState} from 'react';
 import {Platform, View} from 'react-native';
 import {KeyboardTrackingView, KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 
@@ -50,6 +50,12 @@ function PostDraft({
     const [cursorPosition, setCursorPosition] = useState(message.length);
     const [postInputTop, setPostInputTop] = useState(0);
     const isTablet = useIsTablet();
+
+    // Update draft in case we switch channels or threads
+    useEffect(() => {
+        setValue(message);
+        setCursorPosition(message.length);
+    }, [channelId, rootId]);
 
     if (channelIsArchived || deactivatedChannel) {
         const archivedTestID = `${testID}.archived`;

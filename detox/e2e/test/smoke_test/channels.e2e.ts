@@ -100,6 +100,7 @@ describe('Smoke Test - Channels', () => {
         await Team.apiAddUserToTeam(siteOneUrl, newUser.id, testTeam.id);
         await ChannelScreen.back();
         await CreateDirectMessageScreen.open();
+        await CreateDirectMessageScreen.closeTutorial();
         await CreateDirectMessageScreen.searchInput.replaceText(newUserDisplayName);
         await CreateDirectMessageScreen.getUserItem(newUser.id).tap();
         await CreateDirectMessageScreen.startButton.tap();

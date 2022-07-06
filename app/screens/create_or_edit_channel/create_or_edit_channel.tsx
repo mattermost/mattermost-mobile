@@ -1,17 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, useEffect, useReducer, useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useReducer, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard} from 'react-native';
-import {ImageResource, Navigation} from 'react-native-navigation';
+import {ImageResource} from 'react-native-navigation';
 
-import {patchChannel as handlePatchChannel, createChannel, switchToChannelById} from '@actions/remote/channel';
+import {createChannel, patchChannel as handlePatchChannel, switchToChannelById} from '@actions/remote/channel';
 import CompassIcon from '@components/compass_icon';
 import {General} from '@constants';
 import {MIN_CHANNEL_NAME_LENGTH} from '@constants/channel';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {buildNavigationButton, dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {validateDisplayName} from '@utils/channel';
 
@@ -220,27 +221,13 @@ const CreateOrEditChannel = ({
         close(componentId, isModal);
     }, [channel?.id, channel?.type, displayName, header, isModal, purpose, isValidDisplayName]);
 
-    useEffect(() => {
-        const update = Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({buttonId}: {buttonId: string}) => {
-                switch (buttonId) {
-                    case CLOSE_BUTTON_ID:
-                        close(componentId, isModal);
-                        break;
-                    case CREATE_BUTTON_ID:
-                        onCreateChannel();
-                        break;
-                    case EDIT_BUTTON_ID:
-                        onUpdateChannel();
-                        break;
-                }
-            },
-        }, componentId);
+    const handleClose = useCallback(() => {
+        close(componentId, isModal);
+    }, [isModal]);
 
-        return () => {
-            update.remove();
-        };
-    }, [onCreateChannel, onUpdateChannel, isModal]);
+    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, handleClose, [handleClose]);
+    useNavButtonPressed(CREATE_BUTTON_ID, componentId, onCreateChannel, [onCreateChannel]);
+    useNavButtonPressed(EDIT_BUTTON_ID, componentId, onUpdateChannel, [onUpdateChannel]);
 
     return (
         <ChannelInfoForm

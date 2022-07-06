@@ -22,6 +22,7 @@ import {
     ChannelListScreen,
     CreateDirectMessageScreen,
     CreateOrEditChannelScreen,
+    FindChannelsScreen,
     GlobalThreadsScreen,
     HomeScreen,
     LoginScreen,
@@ -75,15 +76,15 @@ describe('Channels - Channel List', () => {
         await expect(ChannelListScreen.headerPlusButton).toBeVisible();
         await expect(ChannelListScreen.threadsButton).toBeVisible();
         await expect(ChannelListScreen.getCategoryHeaderDisplayName(channelsCategory)).toHaveText('CHANNELS');
-        await expect(ChannelListScreen.getChannelListItemDisplayName(channelsCategory, testChannel.name)).toHaveText(testChannel.display_name);
-        await expect(ChannelListScreen.getChannelListItemDisplayName(channelsCategory, offTopicChannelName)).toHaveText('Off-Topic');
-        await expect(ChannelListScreen.getChannelListItemDisplayName(channelsCategory, townSquareChannelName)).toHaveText('Town Square');
+        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).toHaveText(testChannel.display_name);
+        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, offTopicChannelName)).toHaveText('Off-Topic');
+        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, townSquareChannelName)).toHaveText('Town Square');
         await expect(ChannelListScreen.getCategoryHeaderDisplayName(directMessagesCategory)).toHaveText('DIRECT MESSAGES');
     });
 
     it('MM-T4728_2 - should be able to switch between channels', async () => {
         // # Tap on a first channel
-        await ChannelListScreen.getChannelListItemDisplayName(channelsCategory, testChannel.name).tap();
+        await ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name).tap();
 
         // * Verify on first channel
         await ChannelScreen.toBeVisible();
@@ -93,7 +94,7 @@ describe('Channels - Channel List', () => {
         // # Go back to channel list screen and tap on a second channel
         await ChannelScreen.back();
         await ChannelListScreen.toBeVisible();
-        await ChannelListScreen.getChannelListItemDisplayName(channelsCategory, offTopicChannelName).tap();
+        await ChannelListScreen.getChannelItemDisplayName(channelsCategory, offTopicChannelName).tap();
 
         // * Verify on second channel
         await ChannelScreen.toBeVisible();
@@ -115,20 +116,20 @@ describe('Channels - Channel List', () => {
         // # Toggle channels category to collapse
         await ChannelListScreen.getCategoryExpanded(channelsCategory).tap();
 
-        // * Verify category is collapsed and only currently active channel is listed
+        // * Verify category is collapsed and channels are not listed
         await expect(ChannelListScreen.getCategoryCollapsed(channelsCategory)).toBeVisible();
-        await expect(ChannelListScreen.getChannelListItemExpanded(channelsCategory, testChannel.name)).toBeVisible();
-        await expect(ChannelListScreen.getChannelListItemCollapsed(channelsCategory, offTopicChannelName)).toBeVisible();
-        await expect(ChannelListScreen.getChannelListItemCollapsed(channelsCategory, townSquareChannelName)).toBeVisible();
+        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).not.toBeVisible();
+        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, offTopicChannelName)).not.toBeVisible();
+        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, townSquareChannelName)).not.toBeVisible();
 
         // # Toggle channels category to expand
         await ChannelListScreen.getCategoryCollapsed(channelsCategory).tap();
 
         // * Verify category is expanded and all channels are listed
         await expect(ChannelListScreen.getCategoryExpanded(channelsCategory)).toBeVisible();
-        await expect(ChannelListScreen.getChannelListItemExpanded(channelsCategory, testChannel.name)).toBeVisible();
-        await expect(ChannelListScreen.getChannelListItemExpanded(channelsCategory, offTopicChannelName)).toBeVisible();
-        await expect(ChannelListScreen.getChannelListItemExpanded(channelsCategory, townSquareChannelName)).toBeVisible();
+        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).toBeVisible();
+        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, offTopicChannelName)).toBeVisible();
+        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, townSquareChannelName)).toBeVisible();
     });
 
     it('MM-T4728_4 - should be able to go to browse channels screen', async () => {
@@ -152,6 +153,7 @@ describe('Channels - Channel List', () => {
         await CreateDirectMessageScreen.toBeVisible();
 
         // # Go back to channel list screen
+        await CreateDirectMessageScreen.closeTutorial();
         await CreateDirectMessageScreen.close();
     });
 
@@ -178,8 +180,15 @@ describe('Channels - Channel List', () => {
         await GlobalThreadsScreen.back();
     });
 
-    xit('MM-T4728_8 - should be able to find channels', async () => {
-        // NOT YET IMPLEMENTED
+    it('MM-T4728_8 - should be able to go to find channels screen', async () => {
+        // # Tap on search field button
+        await ChannelListScreen.subheaderSearchFieldButton.tap();
+
+        // * Verify on find channels screen
+        await FindChannelsScreen.toBeVisible();
+
+        // # Go back to channel list screen
+        await FindChannelsScreen.close();
     });
 
     it('MM-T4728_9 - should be able to switch between teams', async () => {
@@ -191,7 +200,7 @@ describe('Channels - Channel List', () => {
         // * Verify on first team and team sidebar item is selected and has correct display name abbreviation
         await expect(ChannelListScreen.headerTeamDisplayName).toHaveText(testTeam.display_name);
         await expect(ChannelListScreen.getTeamItemSelected(testTeam.id)).toBeVisible();
-        await expect(ChannelListScreen.getTeamItemDisplayNameAbbreviation(testTeam.id)).toHaveText(testTeam.display_name.substring(0, 2).toUpperCase());
+        await expect(ChannelListScreen.getTeamItemDisplayNameAbbreviation(testTeam.id)).toHaveText(testTeam.display_name.substring(0, 2));
 
         // # Tap on second team item from team sidebar
         await ChannelListScreen.getTeamItemNotSelected(testTeamTwo.id).tap();
@@ -199,7 +208,7 @@ describe('Channels - Channel List', () => {
         // * Verify on second team and team sidebar item is selected and has correct display name abbreviation
         await expect(ChannelListScreen.headerTeamDisplayName).toHaveText(testTeamTwo.display_name);
         await expect(ChannelListScreen.getTeamItemSelected(testTeamTwo.id)).toBeVisible();
-        await expect(ChannelListScreen.getTeamItemDisplayNameAbbreviation(testTeamTwo.id)).toHaveText(testTeamTwo.display_name.substring(0, 2).toUpperCase());
+        await expect(ChannelListScreen.getTeamItemDisplayNameAbbreviation(testTeamTwo.id)).toHaveText(testTeamTwo.display_name.substring(0, 2));
 
         // # Tap back on first team item from team sidebar
         await ChannelListScreen.getTeamItemNotSelected(testTeam.id).tap();

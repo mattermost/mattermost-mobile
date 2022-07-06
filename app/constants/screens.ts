@@ -8,7 +8,6 @@ export const BOTTOM_SHEET = 'BottomSheet';
 export const BROWSE_CHANNELS = 'BrowseChannels';
 export const CHANNEL = 'Channel';
 export const CHANNEL_ADD_PEOPLE = 'ChannelAddPeople';
-export const CHANNEL_EDIT = 'ChannelEdit';
 export const CHANNEL_INFO = 'ChannelInfo';
 export const CHANNEL_MENTION = 'ChannelMention';
 export const CODE = 'Code';
@@ -45,6 +44,8 @@ export const SETTINGS = 'Settings';
 export const SETTINGS_DISPLAY = 'SettingsDisplay';
 export const SETTINGS_DISPLAY_CLOCK = 'SettingsDisplayClock';
 export const SETTINGS_DISPLAY_THEME = 'SettingsDisplayTheme';
+export const SETTINGS_DISPLAY_TIMEZONE = 'SettingsDisplayTimezone';
+export const SETTINGS_DISPLAY_TIMEZONE_SELECT = 'SettingsDisplayTimezoneSelect';
 export const SETTINGS_NOTIFICATION = 'SettingsNotification';
 export const SETTINGS_NOTIFICATION_AUTO_RESPONDER = 'SettingsNotificationAutoResponder';
 export const SETTINGS_NOTIFICATION_MENTION = 'SettingsNotificationMention';
@@ -101,6 +102,8 @@ export default {
     SETTINGS_DISPLAY,
     SETTINGS_DISPLAY_CLOCK,
     SETTINGS_DISPLAY_THEME,
+    SETTINGS_DISPLAY_TIMEZONE,
+    SETTINGS_DISPLAY_TIMEZONE_SELECT,
     SETTINGS_NOTIFICATION,
     SETTINGS_NOTIFICATION_AUTO_RESPONDER,
     SETTINGS_NOTIFICATION_MENTION,
@@ -114,7 +117,7 @@ export default {
     USER_PROFILE,
 };
 
-export const MODAL_SCREENS_WITHOUT_BACK = [
+export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
     BROWSE_CHANNELS,
     CHANNEL_INFO,
     CREATE_DIRECT_MESSAGE,
@@ -128,7 +131,17 @@ export const MODAL_SCREENS_WITHOUT_BACK = [
     GALLERY,
     PERMALINK,
     REACTIONS,
-];
+]);
+
+export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
+    BOTTOM_SHEET,
+    POST_OPTIONS,
+    THREAD_OPTIONS,
+    PERMALINK,
+    REACTIONS,
+    SNACK_BAR,
+    USER_PROFILE,
+]);
 
 export const NOT_READY = [
     CHANNEL_ADD_PEOPLE,

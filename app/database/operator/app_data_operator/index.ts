@@ -6,6 +6,7 @@ import {buildAppInfoKey} from '@database/operator/app_data_operator/comparator';
 import {transformInfoRecord, transformGlobalRecord} from '@database/operator/app_data_operator/transformers';
 import BaseDataOperator from '@database/operator/base_data_operator';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
+import {logWarning} from '@utils/log';
 
 import type {HandleInfoArgs, HandleGlobalArgs} from '@typings/database/database';
 
@@ -14,8 +15,7 @@ const {APP: {INFO, GLOBAL}} = MM_TABLES;
 export default class AppDataOperator extends BaseDataOperator {
     handleInfo = async ({info, prepareRecordsOnly = true}: HandleInfoArgs) => {
         if (!info?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "info" array has been passed to the handleInfo',
             );
             return [];
@@ -33,8 +33,7 @@ export default class AppDataOperator extends BaseDataOperator {
 
     handleGlobal = async ({globals, prepareRecordsOnly = true}: HandleGlobalArgs) => {
         if (!globals?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "globals" array has been passed to the handleGlobal',
             );
             return [];

@@ -69,7 +69,7 @@ describe('draft upload manager', () => {
 
     beforeEach(async () => {
         await DatabaseManager.init([url]);
-        operator = DatabaseManager.serverDatabases[url].operator;
+        operator = DatabaseManager.serverDatabases[url]!.operator;
         AppState.currentState = 'active';
     });
 

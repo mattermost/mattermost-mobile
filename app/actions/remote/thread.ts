@@ -5,6 +5,7 @@ import {markTeamThreadsAsRead, processReceivedThreads, switchToThread, updateThr
 import {fetchPostThread} from '@actions/remote/post';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
+import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
@@ -49,7 +50,7 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, 
         const post = await getPostById(database, rootId);
         if (post) {
             const thread = await getThreadById(database, rootId);
-            if (thread) {
+            if (thread?.isFollowing) {
                 const channel = await getChannelById(database, post.channelId);
                 if (channel) {
                     markThreadAsRead(serverUrl, channel.teamId, thread.id);
@@ -156,7 +157,7 @@ export const updateTeamThreadsAsRead = async (serverUrl: string, teamId: string)
     }
 };
 
-export const markThreadAsRead = async (serverUrl: string, teamId: string, threadId: string) => {
+export const markThreadAsRead = async (serverUrl: string, teamId: string | undefined, threadId: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
 
     if (!database) {
@@ -186,6 +187,12 @@ export const markThreadAsRead = async (serverUrl: string, teamId: string, thread
             unread_replies: 0,
             unread_mentions: 0,
         });
+
+        const isCRTEnabled = await getIsCRTEnabled(database);
+        const post = await getPostById(database, threadId);
+        if (post) {
+            PushNotifications.cancelChannelNotifications(post.channelId, threadId, isCRTEnabled);
+        }
 
         return {data};
     } catch (error) {

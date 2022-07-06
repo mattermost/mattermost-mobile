@@ -9,8 +9,13 @@ import {getPostById} from '@queries/servers/post';
 import {deletePreferences, differsFromLocalNameFormat} from '@queries/servers/preference';
 
 export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    const operator = DatabaseManager.serverDatabases[serverUrl].operator;
-    if (!operator) {
+    let database;
+    let operator;
+    try {
+        const result = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        database = result.database;
+        operator = result.operator;
+    } catch (e) {
         return;
     }
 
@@ -18,7 +23,7 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
         const preference: PreferenceType = JSON.parse(msg.data.preference);
         handleSavePostAdded(serverUrl, [preference]);
 
-        const hasDiffNameFormatPref = await differsFromLocalNameFormat(operator.database, [preference]);
+        const hasDiffNameFormatPref = await differsFromLocalNameFormat(database, [preference]);
 
         if (operator) {
             await operator.handlePreferences({

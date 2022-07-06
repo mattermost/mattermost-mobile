@@ -8,6 +8,7 @@ import {prepareCommonSystemValues, getCommonSystemValues, getCurrentTeamId, getW
 import {getCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
+import {logInfo} from '@utils/log';
 
 import {deferredAppEntryActions, entry, registerDeviceToken, syncOtherServers, verifyPushProxy} from './common';
 import {graphQLCommon} from './gql_common';
@@ -90,8 +91,7 @@ const restAppEntry = async (serverUrl: string, since = 0, isUpgrade = false) => 
 
     const dt = Date.now();
     await operator.batchRecords(models);
-    // eslint-disable-next-line no-console
-    console.log('ENTRY MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
+    logInfo('ENTRY MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
 
     const {id: currentUserId, locale: currentUserLocale} = meData?.user || (await getCurrentUser(database))!;
     const {config, license} = await getCommonSystemValues(database);

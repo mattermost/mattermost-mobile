@@ -6,7 +6,7 @@ import {StatusBar, StyleSheet} from 'react-native';
 import tinyColor from 'tinycolor2';
 
 import {Preferences} from '@constants';
-import {MODAL_SCREENS_WITHOUT_BACK} from '@constants/screens';
+import {MODAL_SCREENS_WITHOUT_BACK, SCREENS_WITH_TRANSPARENT_BACKGROUND} from '@constants/screens';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
@@ -96,12 +96,15 @@ export function setNavigatorStyles(componentId: string, theme: Theme, additional
             backgroundColor: theme.sidebarBg,
             style: isDark ? 'light' : 'dark',
         },
-        layout: {
-            componentBackgroundColor: theme.centerChannelBg,
-        },
     };
 
-    if (!MODAL_SCREENS_WITHOUT_BACK.includes(componentId) && options.topBar) {
+    if (!SCREENS_WITH_TRANSPARENT_BACKGROUND.has(componentId)) {
+        options.layout = {
+            componentBackgroundColor: theme.centerChannelBg,
+        };
+    }
+
+    if (!MODAL_SCREENS_WITHOUT_BACK.has(componentId) && options.topBar) {
         options.topBar.backButton = {
             color: theme.sidebarHeaderTextColor,
         };

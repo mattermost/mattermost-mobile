@@ -84,10 +84,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: changeOpacity(theme.mentionHighlightBg, 0.2),
         },
         pendingPost: {opacity: 0.5},
+        postContent: {paddingHorizontal: 16},
         postStyle: {
             overflow: 'hidden',
             flex: 1,
-            paddingHorizontal: 16,
         },
         profilePictureContainer: {
             marginBottom: 5,
@@ -99,7 +99,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'column',
         },
         rightColumnPadding: {paddingBottom: 3},
-        touchableContainer: {marginHorizontal: -16, paddingHorizontal: 16},
     };
 });
 
@@ -324,7 +323,7 @@ const Post = ({
                 onLongPress={showPostOptions}
                 delayLongPress={200}
                 underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
-                style={styles.touchableContainer}
+                style={styles.postContent}
             >
                 <>
                     <PreHeader

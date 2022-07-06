@@ -116,11 +116,11 @@ export const getUserTimezoneProps = (currentUser: UserModel) => {
     };
 };
 
-export const getUserTimezone = (user: UserModel) => {
+export const getUserTimezone = (user: UserModel | UserProfile) => {
     return getTimezone(user.timezone);
 };
 
-export const getTimezone = (timezone: UserTimezone | null) => {
+export const getTimezone = (timezone?: UserTimezone | null) => {
     if (!timezone) {
         return '';
     }
@@ -138,6 +138,17 @@ export const getTimezone = (timezone: UserTimezone | null) => {
     return timezone.manualTimezone;
 };
 
+export const getTimezoneRegion = (timezone: string): string => {
+    if (timezone) {
+        const split = timezone.split('/');
+        if (split.length > 1) {
+            return split.pop()!.replace(/_/g, ' ');
+        }
+    }
+
+    return timezone;
+};
+
 export const getUserCustomStatus = (user?: UserModel | UserProfile): UserCustomStatus | undefined => {
     try {
         if (typeof user?.props?.customStatus === 'string') {
@@ -150,7 +161,7 @@ export const getUserCustomStatus = (user?: UserModel | UserProfile): UserCustomS
     }
 };
 
-export function isCustomStatusExpired(user?: UserModel) {
+export function isCustomStatusExpired(user?: UserModel | UserProfile) {
     if (!user) {
         return true;
     }

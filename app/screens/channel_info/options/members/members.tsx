@@ -30,6 +30,7 @@ const Members = ({channelId, count}: Props) => {
             icon='account-multiple-outline'
             type={Platform.select({ios: 'arrow', default: 'default'})}
             info={count.toString()}
+            testID='channel_info.options.members.option'
         />
     );
 };

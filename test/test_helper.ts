@@ -54,7 +54,7 @@ class TestHelper {
     setupServerDatabase = async () => {
         const serverUrl = 'https://appv1.mattermost.com';
         await DatabaseManager.init([serverUrl]);
-        const {database, operator} = DatabaseManager.serverDatabases[serverUrl];
+        const {database, operator} = DatabaseManager.serverDatabases[serverUrl]!;
 
         this.initMockEntities();
 

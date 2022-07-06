@@ -9,6 +9,7 @@ import {
     retrieveRecords,
 } from '@database/operator/utils/general';
 import {OperationType} from '@typings/database/enums';
+import {logWarning} from '@utils/log';
 
 import type {WriterInterface} from '@nozbe/watermelondb/Database';
 import type Model from '@nozbe/watermelondb/Model';
@@ -130,8 +131,7 @@ export default class BaseDataOperator {
      */
     prepareRecords = async ({tableName, createRaws, deleteRaws, updateRaws, transformer}: OperationArgs): Promise<Model[]> => {
         if (!this.database) {
-            // eslint-disable-next-line no-console
-            console.warn('Database not defined in prepareRecords');
+            logWarning('Database not defined in prepareRecords');
             return [];
         }
 
@@ -195,8 +195,7 @@ export default class BaseDataOperator {
                 });
             }
         } catch (e) {
-            // eslint-disable-next-line no-console
-            console.warn('batchRecords error ', e as Error);
+            logWarning('batchRecords error ', e as Error);
         }
     }
 
@@ -213,8 +212,7 @@ export default class BaseDataOperator {
      */
     async handleRecords({buildKeyRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues = [], tableName, prepareRecordsOnly = true}: HandleRecordsArgs): Promise<Model[]> {
         if (!createOrUpdateRawValues.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 `An empty "rawValues" array has been passed to the handleRecords method for tableName ${tableName}`,
             );
             return [];

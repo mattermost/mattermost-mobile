@@ -20,6 +20,9 @@ export default class ThreadModel extends Model {
     /** lastReplyAt : The timestamp of when user last replied to the thread. */
     lastReplyAt: number;
 
+    /** last_last_fetched_at_at : The timestamp when we successfully last fetched post on this channel */
+    lastFetchedAt: number;
+
     /** lastViewedAt : The timestamp of when user last viewed the thread. */
     lastViewedAt: number;
 

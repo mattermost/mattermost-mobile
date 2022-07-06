@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import moment from 'moment-timezone';
+import moment from 'moment';
+import mtz from 'moment-timezone';
 import React, {useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -64,7 +65,7 @@ const UserProfile = ({
             const localeFormat = moment.localeData().longDateFormat('LT');
             format = localeFormat?.includes('A') ? localeFormat : 'h:mm A';
         }
-        localTime = moment.tz(Date.now(), timezone).format(format);
+        localTime = mtz.tz(Date.now(), timezone).format(format);
     }
 
     const snapPoints = useMemo(() => {
@@ -126,18 +127,21 @@ const UserProfile = ({
                 {Boolean(user.nickname) && !override && !user.isBot &&
                 <UserProfileLabel
                     description={user.nickname}
+                    testID='user_profile.nickname'
                     title={formatMessage({id: 'channel_info.nickname', defaultMessage: 'Nickname'})}
                 />
                 }
                 {Boolean(user.position) && !override && !user.isBot &&
                 <UserProfileLabel
                     description={user.position}
+                    testID='user_profile.position'
                     title={formatMessage({id: 'channel_info.position', defaultMessage: 'Position'})}
                 />
                 }
                 {Boolean(localTime) && !override && !user.isBot &&
                 <UserProfileLabel
                     description={localTime!}
+                    testID='user_profile.local_time'
                     title={formatMessage({id: 'channel_info.local_time', defaultMessage: 'Local Time'})}
                 />
                 }
@@ -152,7 +156,7 @@ const UserProfile = ({
             componentId={Screens.USER_PROFILE}
             initialSnapIndex={0}
             snapPoints={snapPoints}
-            testID='post_options'
+            testID='user_profile'
         />
     );
 };
