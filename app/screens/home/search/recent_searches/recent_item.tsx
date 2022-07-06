@@ -17,10 +17,18 @@ import type TeamSearchHistoryModel from '@typings/database/models/servers/team_s
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            paddingHorizontal: 20,
+            marginVertical: -16,
             paddingLeft: 20,
+            paddingRight: 6,
             alignItems: 'center',
+            height: 48,
             flexDirection: 'row',
+        },
+        remove: {
+            height: 40,
+            width: 40,
+            alignItems: 'center',
+            justifyContent: 'center',
         },
         term: {
             flex: 1,
@@ -69,6 +77,7 @@ const RecentItem = ({item, setRecentValue}: Props) => {
                     <Text style={style.term}>{item.term}</Text>
                     <TouchableOpacity
                         onPress={handleRemove}
+                        style={style.remove}
                         testID={`${testID}.remove.button`}
                     >
                         <CompassIcon
