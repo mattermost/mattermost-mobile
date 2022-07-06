@@ -19,7 +19,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: theme.sidebarBg,
-            borderRadius: 10,
+            borderRadius: 8,
         },
         containerSelected: {
             width: '100%',
@@ -35,7 +35,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Heading', 400, 'SemiBold'),
         },
         image: {
-            borderRadius: 6,
+            borderRadius: 8,
             position: 'absolute',
             top: 0,
             bottom: 0,
