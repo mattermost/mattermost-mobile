@@ -34,6 +34,7 @@ export async function removeUserFromTeam(serverUrl: string, teamId: string) {
 }
 
 export async function addSearchToTeamSearchHistory(serverUrl: string, teamId: string, terms: string) {
+    const MAX_TEAM_SEARCHES = 4;
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const teamSearch = await getTeamSearchHistoryByTerm(database, teamId, terms);
@@ -54,7 +55,7 @@ export async function addSearchToTeamSearchHistory(serverUrl: string, teamId: st
         }
 
         const teamSearchHistory = await queryTeamSearchHistoryByTeamId(database, teamId).fetch();
-        if (teamSearchHistory.length > 4) {
+        if (teamSearchHistory.length > MAX_TEAM_SEARCHES) {
             const lastSearch = teamSearchHistory.pop();
             await removeSearchFromTeamSearchHistory(serverUrl, lastSearch!.id);
         }
