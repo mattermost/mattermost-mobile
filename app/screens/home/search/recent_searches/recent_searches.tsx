@@ -20,7 +20,7 @@ const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         divider: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             height: 1,
             marginVertical: 15,
             marginHorizontal: 15,
