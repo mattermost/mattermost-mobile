@@ -10,10 +10,10 @@ import {GestureResponderEvent, Keyboard, StyleProp, StyleSheet, Text, TextStyle,
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchUserOrGroupsByMentionsInBatch} from '@actions/remote/user';
-import {useServerUrl} from '@app/context/server';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import GroupModel from '@database/models/server/group';
 import UserModel from '@database/models/server/user';

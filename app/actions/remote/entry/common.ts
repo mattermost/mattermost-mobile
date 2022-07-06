@@ -28,6 +28,7 @@ import {prepareModels} from '@queries/servers/entry';
 import {getConfig, getCurrentUserId, getPushVerificationStatus, getWebSocketLastDisconnected} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, getNthLastChannelFromTeam, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
+import {logDebug} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
 
 import type ClientError from '@client/rest/error';
@@ -343,7 +344,7 @@ const syncAllChannelMembersAndThreads = async (serverUrl: string) => {
     if (config?.FeatureFlagGraphQL === 'true') {
         const error = await graphQLSyncAllChannelMembers(serverUrl);
         if (error) {
-            console.log('failed graphQL, falling back to rest', error);
+            logDebug('failed graphQL, falling back to rest', error);
             restSyncAllChannelMembers(serverUrl);
         }
     } else {

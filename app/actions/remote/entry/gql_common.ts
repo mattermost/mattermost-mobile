@@ -86,6 +86,11 @@ export async function deferredAppEntryGraphQLActions(
         modelPromises.push(operator.handleRole({roles: filterAndTransformRoles(result.roles), prepareRecordsOnly: true}));
         const models = (await Promise.all(modelPromises)).flat();
         operator.batchRecords(models);
+
+        if (result.chData?.channels?.length && result.chData.memberships?.length) {
+            // defer fetching posts for unread channels on initial team
+            fetchPostsForUnreadChannels(serverUrl, result.chData.channels, result.chData.memberships, initialChannelId);
+        }
     }
 
     updateAllUsersSince(serverUrl, since);
@@ -118,9 +123,7 @@ const getChannelData = async (serverUrl: string, initialTeamId: string, userId: 
     let response;
     try {
         const request = exclude ? gqlOtherChannels : gqlEntryChannels;
-        const time = Date.now();
         response = await request(serverUrl, initialTeamId);
-        console.log('fetch channels', Date.now() - time);
     } catch (error) {
         return {error: (error as ClientError).message};
     }
@@ -150,7 +153,6 @@ const filterAndTransformRoles = (roles: Array<Partial<GQLRole> | undefined>) => 
 };
 
 export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, currentTeamId: string, currentChannelId: string, isUpgrade = false) => {
-    console.log('using graphQL', serverUrl);
     const dt = Date.now();
 
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -161,14 +163,12 @@ export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, cu
 
     const isTabletDevice = await isTablet();
 
-    let time = Date.now();
     let response;
     try {
         response = await gqlEntry(serverUrl);
     } catch (error) {
         return {error: (error as ClientError).message};
     }
-    console.log('fetch teams', Date.now() - time);
 
     if ('error' in response) {
         return {error: response.error};
@@ -283,17 +283,13 @@ export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, cu
     }
 
     const models = await Promise.all(modelPromises);
-    time = Date.now();
     if (models.length) {
-        console.log('models #', models.flat().length);
         await operator.batchRecords(models.flat());
     }
-    console.log('batch', Date.now() - time);
 
     const isCRTEnabled = Boolean(prefData.preferences && processIsCRTEnabled(prefData.preferences, config));
     deferredAppEntryGraphQLActions(serverUrl, 0, meData, teamData, chData, isTabletDevice, initialTeamId, initialChannelId, isCRTEnabled, syncDatabase);
 
     const timeElapsed = Date.now() - dt;
-    console.log('Time elapsed', Date.now() - dt);
     return {time: timeElapsed, hasTeams: Boolean(teamData.teams.length), userId: meData.user.id, error: undefined};
 };

@@ -37,8 +37,7 @@ export const searchGroupsByNameInTeam = async (serverUrl: string, name: string, 
     try {
         database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log('searchGroupsByNameInTeam - DB Error', e);
+        logError('searchGroupsByNameInTeam - DB Error', e);
         return [];
     }
 
@@ -61,8 +60,7 @@ export const searchGroupsByNameInChannel = async (serverUrl: string, name: strin
     try {
         database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log('searchGroupsByNameInChannel - DB Error', e);
+        logError('searchGroupsByNameInChannel - DB Error', e);
         return [];
     }
 

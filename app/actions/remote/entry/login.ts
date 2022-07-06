@@ -88,8 +88,6 @@ export async function loginEntry({serverUrl, user, deviceToken}: AfterLoginArgs)
 
 const restLoginEntry = async ({serverUrl, user, clData}: SpecificAfterLoginArgs) => {
     const dt = Date.now();
-    console.log('using rest');
-    const time = Date.now();
 
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -120,6 +118,5 @@ const restLoginEntry = async ({serverUrl, user, clData}: SpecificAfterLoginArgs)
     const license = clData.license || {} as ClientLicense;
     deferredAppEntryActions(serverUrl, 0, user.id, user.locale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchToChannel ? initialChannelId : undefined);
 
-    console.log('Time elapsed', Date.now() - time);
     return {time: Date.now() - dt, hasTeams: Boolean(teamData.teams?.length)};
 };

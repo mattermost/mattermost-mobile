@@ -8,7 +8,7 @@ import {prepareCommonSystemValues, getCommonSystemValues, getCurrentTeamId, getW
 import {getCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
-import {logInfo} from '@utils/log';
+import {logDebug, logInfo} from '@utils/log';
 
 import {deferredAppEntryActions, entry, registerDeviceToken, syncOtherServers, verifyPushProxy} from './common';
 import {graphQLCommon} from './gql_common';
@@ -37,7 +37,7 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
         const {currentTeamId, currentChannelId} = await getCommonSystemValues(database);
         result = await graphQLCommon(serverUrl, true, currentTeamId, currentChannelId, isUpgrade);
         if (result.error) {
-            console.log('Error using GraphQL, trying REST', result.error);
+            logDebug('Error using GraphQL, trying REST', result.error);
             result = restAppEntry(serverUrl, since, isUpgrade);
         }
     } else {
@@ -52,8 +52,6 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
 }
 
 const restAppEntry = async (serverUrl: string, since = 0, isUpgrade = false) => {
-    console.log('using rest');
-    const time = Date.now();
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -99,7 +97,6 @@ const restAppEntry = async (serverUrl: string, since = 0, isUpgrade = false) => 
 
     verifyPushProxy(serverUrl);
 
-    console.log('Time elapsed', Date.now() - time);
     return {userId: currentUserId};
 };
 
@@ -119,7 +116,6 @@ export async function upgradeEntry(serverUrl: string) {
 
         return {error, time: Date.now() - dt};
     } catch (e) {
-        console.log(e);
         return {error: e, time: Date.now() - dt};
     }
 }

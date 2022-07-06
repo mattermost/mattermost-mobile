@@ -15,6 +15,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
+import {logDebug} from '@utils/log';
 import {emitNotificationError} from '@utils/notification';
 import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
 
@@ -65,7 +66,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     if (config?.FeatureFlagGraphQL === 'true') {
         result = await graphQLCommon(serverUrl, true, teamId, channelId);
         if (result.error) {
-            console.log('Error using GraphQL, trying REST', result.error);
+            logDebug('Error using GraphQL, trying REST', result.error);
             result = restNotificationEntry(serverUrl, teamId, channelId, rootId, isDirectChannel);
         }
     } else {
