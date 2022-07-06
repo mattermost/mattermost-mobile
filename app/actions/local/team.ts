@@ -4,7 +4,7 @@
 import {Model} from '@nozbe/watermelondb';
 
 import DatabaseManager from '@database/manager';
-import {prepareDeleteTeam, getMyTeamById, queryTeamSearchHistoryByTeamId, removeTeamFromTeamHistory, getTeamSearchHistoryByTerm, getTeamSearchHistoryById} from '@queries/servers/team';
+import {prepareDeleteTeam, getMyTeamById, queryTeamSearchHistoryByTeamId, removeTeamFromTeamHistory, getTeamSearchHistoryById} from '@queries/servers/team';
 import {logError} from '@utils/log';
 
 export async function removeUserFromTeam(serverUrl: string, teamId: string) {
