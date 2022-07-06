@@ -11,7 +11,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import RecentItem, {RECENT_LABEL_HEIGHT} from './recent_item';
+import RecentItem from './recent_item';
 
 import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
 
@@ -19,9 +19,6 @@ const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        flex: {
-            flex: 1,
-        },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             height: 1,
@@ -33,12 +30,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingVertical: 12,
             color: theme.centerChannelColor,
             ...typography('Heading', 300, 'SemiBold'),
-        },
-        recentItemContainer: {
-            alignItems: 'center',
-            flex: 1,
-            flexDirection: 'row',
-            height: RECENT_LABEL_HEIGHT,
         },
     };
 });

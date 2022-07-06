@@ -13,22 +13,21 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
-export const RECENT_LABEL_HEIGHT = 48;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        recentItemLabelContainer: {
+        container: {
             paddingLeft: 20,
             alignItems: 'center',
             flexDirection: 'row',
         },
-        recentItemLabel: {
+        term: {
             flex: 1,
             marginLeft: 16,
             color: theme.centerChannelColor,
             ...typography('Body', 200, 'Regular'),
         },
-        recentRemove: {
+        remove: {
             paddingRight: 12,
         },
     };
@@ -63,16 +62,16 @@ const RecentItem = ({item, setRecentValue}: Props) => {
             testID={testID}
             onPress={handlePress}
             labelComponent={
-                <View style={style.recentItemLabelContainer}>
+                <View style={style.container}>
                     <CompassIcon
                         name='clock-outline'
                         size={24}
                         color={changeOpacity(theme.centerChannelColor, 0.6)}
                     />
-                    <Text style={style.recentItemLabel}>{item.term}</Text>
+                    <Text style={style.term}>{item.term}</Text>
                     <TouchableOpacity
                         onPress={handleRemove}
-                        style={style.recentRemove}
+                        style={style.remove}
                         testID={`${testID}.remove.button`}
                     >
                         <CompassIcon
