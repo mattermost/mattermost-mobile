@@ -29,21 +29,19 @@ type Props = {
     teamId: string;
 }
 
-export const HEADER_HEIGHT = 64;
+export const HEADER_ROUNDED_HEIGHT = 10;
+export const HEADER_BUTTON_HEIGHT = 40;
+export const HEADER_HEIGHT = HEADER_ROUNDED_HEIGHT + HEADER_BUTTON_HEIGHT;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
-        flex: {
-            flex: 1,
-        },
         container: {
+            height: HEADER_BUTTON_HEIGHT,
             backgroundColor: theme.centerChannelBg,
+            marginBottom: 12,
             paddingHorizontal: 12,
             flexDirection: 'row',
-            paddingVertical: 12,
-            flexGrow: 0,
-            height: HEADER_HEIGHT,
-            alignItems: 'center',
+            marginTop: 10,
         },
         filter: {
             alignItems: 'center',
