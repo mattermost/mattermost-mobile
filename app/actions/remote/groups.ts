@@ -74,8 +74,12 @@ export const fetchGroupsForMember = async (serverUrl: string, userId: string, fe
         const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToMembership(userId);
 
-        const groups = await operator.handleGroups({groups: response, prepareRecordsOnly: fetchOnly});
-        const groupMemberships = await operator.handleGroupMembershipsForMember({groups: response, userId, prepareRecordsOnly: fetchOnly});
+        const groups = await operator.handleGroups({groups: response, prepareRecordsOnly: true});
+        const groupMemberships = await operator.handleGroupMembershipsForMember({groups: response, userId, prepareRecordsOnly: true});
+
+        if (!fetchOnly) {
+            await operator.batchRecords([...groups, ...groupMemberships]);
+        }
 
         return {groups, groupMemberships};
     } catch (error) {
