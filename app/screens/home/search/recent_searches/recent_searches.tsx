@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo, useCallback} from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, View} from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -100,23 +100,16 @@ const RecentSearches = ({setRecentValue, recentSearches}: Props) => {
         );
     };
 
-    const data = useMemo(() => {
-        return recentSearches;
-    }, [recentSearches]);
-
     return (
         <AnimatedFlatList
-            data={data}
+            data={recentSearches}
             keyboardShouldPersistTaps='always'
             keyboardDismissMode='interactive'
             ListHeaderComponent={renderHeader}
             renderItem={renderRecentItem}
             scrollEventThrottle={60}
             testID='search.recents_list'
-
-            //removeClippedSubviews={true}
-            // stickySectionHeadersEnabled={Platform.OS === 'ios'}
-            // onViewableItemsChanged={onViewableItemsChanged}
+            removeClippedSubviews={true}
         />
     );
 };
