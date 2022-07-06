@@ -69,6 +69,7 @@ type Props = {
 const emptyList: FileInfo[] | Array<string | PostModel> = [];
 const ITEM_HEIGHT = MIN_HEIGHT;
 const HEADER_HEIGHT = 185;
+const galleryIdentifier = 'search-files-location';
 
 const Results = ({
     currentTimezone,
@@ -92,9 +93,8 @@ const Results = ({
     const [lastViewedIndex, setLastViewedIndex] = useState<number | undefined>(undefined);
 
     const isTablet = useIsTablet();
-    const galleryIdentifier = 'search-files-location';
 
-    const getContainerStyle = useMemo(() => {
+    const containerStyle = useMemo(() => {
         let padding = 0;
         if (selectedTab === TabTypes.MESSAGES) {
             padding = posts.length ? 4 : 8;
@@ -104,9 +104,9 @@ const Results = ({
         return {top: padding};
     }, [selectedTab, posts, fileInfos]);
 
-    const getChannelName = useCallback((id: string) => {
+    const getChannelName = (id: string) => {
         return fileChannels.find((c) => c.id === id)?.displayName;
-    }, [fileChannels]);
+    };
 
     const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
     const filesForGallery = useDerivedValue(() => imageAttachments.concat(nonImageAttachments),
@@ -114,14 +114,14 @@ const Results = ({
 
     const orderedFilesForGallery = useDerivedValue(() => (
         filesForGallery.value.sort((a: FileInfo, b: FileInfo) => {
-            return b.create_at! - a.create_at!;
+            return (b.create_at || 0) - (a.create_at || 0);
         })
     ), [filesForGallery]);
 
-    const handlePreviewPress = preventDoubleTap((idx: number) => {
+    const handlePreviewPress = useCallback(preventDoubleTap((idx: number) => {
         const items = orderedFilesForGallery.value.map((f) => fileToGalleryItem(f, f.user_id));
         openGalleryAtIndex(galleryIdentifier, idx, items);
-    });
+    }), [orderedFilesForGallery]);
 
     useEffect(() => {
         if (!lastViewedIndex) {
@@ -270,7 +270,7 @@ const Results = ({
             onScroll={onScroll}
             removeClippedSubviews={true}
             ref={scrollRef}
-            style={getContainerStyle}
+            style={containerStyle}
         />
     );
 };

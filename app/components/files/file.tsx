@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef, useMemo} from 'react';
+import React, {useCallback, useRef} from 'react';
 import {View, TouchableWithoutFeedback} from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -78,12 +78,10 @@ const File = ({
     }, [index]);
 
     const handleOnOptionsPress = useCallback(() => {
-        if (onOptionsPress) {
-            onOptionsPress(index);
-        }
+        onOptionsPress?.(index);
     }, [index, onOptionsPress]);
 
-    const renderOptionsButton = useCallback(() => {
+    const renderOptionsButton = () => {
         if (onOptionsPress) {
             return (
                 <FileOptionsIcon
@@ -92,9 +90,9 @@ const File = ({
             );
         }
         return null;
-    }, [file, onOptionsPress, handleOnOptionsPress]);
+    };
 
-    const fileInfo = useMemo(() => {
+    const fileInfo = () => {
         return (
             <FileInfo
                 file={file}
@@ -104,11 +102,9 @@ const File = ({
                 theme={theme}
             />
         );
-    }, [file, showDate, channelName, handlePreviewPress, theme]);
+    };
 
-    const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePreviewPress);
-
-    const renderImageFileOverlay = useCallback(() => {
+    const renderImageFileOverlay = () => {
         if (nonVisibleImagesCount) {
             return (
                 <ImageFileOverlay
@@ -118,9 +114,11 @@ const File = ({
             );
         }
         return null;
-    }, [theme, nonVisibleImagesCount]);
+    };
 
-    const imageFile = useMemo(() => {
+    const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePreviewPress);
+
+    const renderImageFile = () => {
         return (
             <TouchableWithoutFeedback onPress={onGestureEvent}>
                 <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
@@ -136,9 +134,9 @@ const File = ({
                 </Animated.View>
             </TouchableWithoutFeedback>
         );
-    }, [file, ref, inViewPort, isSingleImage, wrapperWidth, styles, onGestureEvent, renderImageFileOverlay]);
+    };
 
-    const videoFile = useMemo(() => {
+    const renderVideoFile = () => {
         return (
             <TouchableWithoutFeedback onPress={onGestureEvent}>
                 <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
@@ -156,9 +154,9 @@ const File = ({
                 </Animated.View>
             </TouchableWithoutFeedback>
         );
-    }, [file, ref, inViewPort, isSingleImage, wrapperWidth, styles, updateFileForGallery, index, onGestureEvent]);
+    };
 
-    const documentFile = useMemo(() => {
+    const renderDocumentFile = () => {
         return (
             <View style={style.iconWrapper}>
                 <DocumentFile
@@ -169,62 +167,48 @@ const File = ({
                 />
             </View>
         );
-    }, [document, file, canDownloadFiles, theme]);
+    };
 
-    if (isVideo(file) && publicLinkEnabled) {
-        if (asCard) {
-            return (
-                <View style={[style.fileWrapper]}>
-                    <View style={style.iconWrapper}>
-                        {videoFile}
-                    </View>
-                    {fileInfo}
-                    {renderOptionsButton()}
+    const renderCardWithImage = (fileIcon: JSX.Element) => {
+        return (
+            <View style={[style.fileWrapper]}>
+                <View style={style.iconWrapper}>
+                    {fileIcon}
                 </View>
-            );
-        }
-        return (videoFile);
-    }
-
-    if (isImage(file)) {
-        if (asCard) {
-            return (
-                <View style={[style.fileWrapper]}>
-                    <View style={style.iconWrapper}>
-                        {imageFile}
-                    </View>
-                    {fileInfo}
-                    {renderOptionsButton()}
-                </View>
-            );
-        }
-        return (imageFile);
-    }
-
-    if (isDocument(file)) {
-        <View style={[style.fileWrapper]}>
-            {documentFile}
-            {fileInfo}
-            {renderOptionsButton()}
-        </View>;
-    }
-
-    return (
-        <View style={[style.fileWrapper]}>
-            <View style={style.iconWrapper}>
-                <TouchableWithFeedback
-                    onPress={handlePreviewPress}
-                    type={'opacity'}
-                >
-                    <FileIcon
-                        file={file}
-                    />
-                </TouchableWithFeedback>
+                {fileInfo()}
+                {renderOptionsButton()}
             </View>
-            {fileInfo}
-            {renderOptionsButton()}
-        </View>
-    );
+        );
+    };
+
+    let fileComponent;
+    if (isVideo(file) && publicLinkEnabled) {
+        fileComponent = asCard ? renderCardWithImage(renderVideoFile()) : renderVideoFile();
+    } else if (isImage(file)) {
+        fileComponent = asCard ? renderCardWithImage(renderImageFile()) : renderImageFile();
+    } else if (isDocument(file)) {
+        fileComponent = (
+            <View style={[style.fileWrapper]}>
+                {renderDocumentFile()}
+                {fileInfo()}
+                {renderOptionsButton()}
+            </View>
+        );
+    } else {
+        const touchableWithPreview = (
+            <TouchableWithFeedback
+                onPress={handlePreviewPress}
+                type={'opacity'}
+            >
+                <FileIcon
+                    file={file}
+                />
+            </TouchableWithFeedback>
+        );
+
+        fileComponent = renderCardWithImage(touchableWithPreview);
+    }
+    return fileComponent;
 };
 
 export default File;
