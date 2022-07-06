@@ -105,7 +105,7 @@ const Results = ({
 
     const orderedFilesForGallery = useDerivedValue(() => (
         filesForGallery.value.sort((a: FileInfo, b: FileInfo) => {
-            return b.create_at! - a.create_at!;
+            return (b.create_at || 0) - (a.create_at || 0);
         })
     ), [filesForGallery]);
 
