@@ -37,22 +37,13 @@ export async function addSearchToTeamSearchHistory(serverUrl: string, teamId: st
     const MAX_TEAM_SEARCHES = 4;
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const teamSearch = await getTeamSearchHistoryByTerm(database, teamId, terms);
-        if (!teamSearch) {
-            return {error: undefined};
-        }
-
-        if (teamSearch.length) {
-            await removeSearchFromTeamSearchHistory(serverUrl, teamSearch![0].id);
-        } {
-            const newSearch: TeamSearchHistory = {
-                created_at: Date.now(),
-                display_term: terms,
-                term: terms,
-                team_id: teamId,
-            };
-            await operator.handleTeamSearchHistory({teamSearchHistories: [newSearch], prepareRecordsOnly: false});
-        }
+        const newSearch: TeamSearchHistory = {
+            created_at: 0,
+            display_term: terms,
+            term: terms,
+            team_id: teamId,
+        };
+        await operator.handleTeamSearchHistory({teamSearchHistories: [newSearch], prepareRecordsOnly: false});
 
         const teamSearchHistory = await queryTeamSearchHistoryByTeamId(database, teamId).fetch();
         if (teamSearchHistory.length > MAX_TEAM_SEARCHES) {

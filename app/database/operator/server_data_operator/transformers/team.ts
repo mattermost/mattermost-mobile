@@ -124,7 +124,7 @@ export const transformTeamSearchHistoryRecord = ({action, database, value}: Tran
 
     const fieldsMapper = (teamSearchHistory: TeamSearchHistoryModel) => {
         teamSearchHistory._raw.id = isCreateAction ? (teamSearchHistory.id) : record.id;
-        teamSearchHistory.createdAt = raw.created_at;
+        teamSearchHistory.createdAt = Date.now();
         teamSearchHistory.displayTerm = raw.display_term;
         teamSearchHistory.term = raw.term;
         teamSearchHistory.teamId = raw.team_id;
