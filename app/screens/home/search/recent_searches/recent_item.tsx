@@ -17,6 +17,7 @@ import type TeamSearchHistoryModel from '@typings/database/models/servers/team_s
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
+            paddingHorizontal: 20,
             paddingLeft: 20,
             alignItems: 'center',
             flexDirection: 'row',
@@ -26,9 +27,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             marginLeft: 16,
             color: theme.centerChannelColor,
             ...typography('Body', 200, 'Regular'),
-        },
-        remove: {
-            paddingRight: 12,
         },
     };
 });
@@ -71,12 +69,11 @@ const RecentItem = ({item, setRecentValue}: Props) => {
                     <Text style={style.term}>{item.term}</Text>
                     <TouchableOpacity
                         onPress={handleRemove}
-                        style={style.remove}
                         testID={`${testID}.remove.button`}
                     >
                         <CompassIcon
                             name='close'
-                            size={24}
+                            size={18}
                             color={changeOpacity(theme.centerChannelColor, 0.64)}
                         />
                     </TouchableOpacity>

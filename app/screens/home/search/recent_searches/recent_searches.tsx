@@ -23,7 +23,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             height: 1,
             marginVertical: 15,
-            marginHorizontal: 15,
+            marginHorizontal: 20,
         },
         title: {
             paddingHorizontal: 20,
