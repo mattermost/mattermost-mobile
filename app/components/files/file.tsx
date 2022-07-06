@@ -118,7 +118,7 @@ const File = ({
 
     const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePreviewPress);
 
-    const imageFile = () => {
+    const renderImageFile = () => {
         return (
             <TouchableWithoutFeedback onPress={onGestureEvent}>
                 <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
@@ -136,7 +136,7 @@ const File = ({
         );
     };
 
-    const videoFile = () => {
+    const renderVideoFile = () => {
         return (
             <TouchableWithoutFeedback onPress={onGestureEvent}>
                 <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
@@ -156,7 +156,7 @@ const File = ({
         );
     };
 
-    const documentFile = () => {
+    const renderDocumentFile = () => {
         return (
             <View style={style.iconWrapper}>
                 <DocumentFile
@@ -183,13 +183,13 @@ const File = ({
 
     let fileComponent;
     if (isVideo(file) && publicLinkEnabled) {
-        fileComponent = asCard ? renderCardWithImage(videoFile()) : videoFile();
+        fileComponent = asCard ? renderCardWithImage(renderVideoFile()) : renderVideoFile();
     } else if (isImage(file)) {
-        fileComponent = asCard ? renderCardWithImage(imageFile()) : imageFile();
+        fileComponent = asCard ? renderCardWithImage(renderImageFile()) : renderImageFile();
     } else if (isDocument(file)) {
         fileComponent = (
             <View style={[style.fileWrapper]}>
-                {documentFile()}
+                {renderDocumentFile()}
                 {fileInfo()}
                 {renderOptionsButton()}
             </View>
