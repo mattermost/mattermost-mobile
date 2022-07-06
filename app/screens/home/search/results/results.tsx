@@ -62,6 +62,7 @@ type Props = {
 }
 
 const emptyList: FileInfo[] | Array<string | PostModel> = [];
+const galleryIdentifier = 'search-files-location';
 
 const Results = ({
     currentTimezone,
@@ -83,7 +84,6 @@ const Results = ({
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
 
     const isTablet = useIsTablet();
-    const galleryIdentifier = 'search-files-location';
 
     const containerStyle = useMemo(() => {
         let padding = 0;
