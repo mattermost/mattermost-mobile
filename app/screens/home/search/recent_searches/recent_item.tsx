@@ -66,7 +66,7 @@ const RecentItem = ({item, setRecentValue}: Props) => {
                     <CompassIcon
                         name='clock-outline'
                         size={24}
-                        color={changeOpacity(theme.centerChannelColor, 0.6)}
+                        color={changeOpacity(theme.centerChannelColor, 0.56)}
                     />
                     <Text style={style.term}>{item.term}</Text>
                     <TouchableOpacity
