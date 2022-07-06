@@ -149,7 +149,13 @@ const getChannelData = async (serverUrl: string, initialTeamId: string, userId: 
 };
 
 const filterAndTransformRoles = (roles: Array<Partial<GQLRole> | undefined>) => {
-    return roles.filter((v, i, a) => a.slice(0, i).find((v2) => v?.name === v2?.name)).map((r) => gqlToClientRole(r!));
+    const byName = roles.reduce<{[name: string]: Partial<GQLRole>}>((acum, r) => {
+        if (r?.name && !acum[r.name]) {
+            acum[r.name] = r;
+        }
+        return acum;
+    }, {});
+    return Object.values(byName).map((r) => gqlToClientRole(r!));
 };
 
 export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, currentTeamId: string, currentChannelId: string, isUpgrade = false) => {

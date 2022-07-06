@@ -51,7 +51,7 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
     return result;
 }
 
-const restAppEntry = async (serverUrl: string, since = 0, isUpgrade = false) => {
+async function restAppEntry(serverUrl: string, since = 0, isUpgrade = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -98,7 +98,7 @@ const restAppEntry = async (serverUrl: string, since = 0, isUpgrade = false) => 
     verifyPushProxy(serverUrl);
 
     return {userId: currentUserId};
-};
+}
 
 export async function upgradeEntry(serverUrl: string) {
     const dt = Date.now();
