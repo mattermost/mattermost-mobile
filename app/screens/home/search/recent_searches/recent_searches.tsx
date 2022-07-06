@@ -22,7 +22,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             height: 1,
-            marginVertical: 16,
+            marginVertical: 15,
             marginHorizontal: 15,
         },
         title: {
