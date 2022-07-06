@@ -102,7 +102,7 @@ const SearchScreen = ({teamId}: Props) => {
         setLoading(true);
         setFilter(FileFilters.ALL);
         setLastSearchedValue(term);
-        addSearchToTeamSearchHistory(serverUrl, searchTeamId, term);
+        addSearchToTeamSearchHistory(serverUrl, newSearchTeamId, term);
         const searchParams = getSearchParams(term);
         const [postResults, fileResults] = await Promise.all([
             searchPosts(serverUrl, newSearchTeamId, searchParams),
@@ -176,7 +176,7 @@ const SearchScreen = ({teamId}: Props) => {
                 loading={loading}
             />
         );
-    }, [loading, showResults, searchTeamId, setSearchTeamId]);
+    }, [loading, selectedTab, showResults, searchTeamId, setSearchTeamId]);
 
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
 
