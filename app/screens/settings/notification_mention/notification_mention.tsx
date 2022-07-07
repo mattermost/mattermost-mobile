@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {ScrollView} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -35,6 +35,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
+const edges: Edge[] = ['left', 'right'];
+
 type NotificationMentionProps = {
     componentId: string;
     currentUser: UserModel;
@@ -46,7 +48,7 @@ const NotificationMention = ({componentId, currentUser, isCRTEnabled}: Notificat
 
     return (
         <SafeAreaView
-            edges={['left', 'right']}
+            edges={edges}
             testID='notification_mention.screen'
             style={styles.container}
         >

@@ -4,7 +4,7 @@
 import React from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, ScrollView, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
@@ -35,7 +35,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-
+const edges: Edge[] = ['left', 'right'];
 type DisplayProps = {
     isTimezoneEnabled: boolean;
     isThemeSwitchingEnabled: boolean;
@@ -67,7 +67,7 @@ const Display = ({isTimezoneEnabled, isThemeSwitchingEnabled}: DisplayProps) => 
 
     return (
         <SafeAreaView
-            edges={['left', 'right']}
+            edges={edges}
             testID='notification_display.screen'
             style={styles.container}
         >
