@@ -5,7 +5,6 @@ import {useIntl} from 'react-intl';
 import {View, Text} from 'react-native';
 
 import {showPermalink} from '@actions/remote/permalink';
-import {fetchPostById} from '@actions/remote/post';
 import FileIcon from '@components/files/file_icon';
 import ImageFile from '@components/files/image_file';
 import VideoFile from '@components/files/video_file';
@@ -97,12 +96,7 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
     }, []);
 
     const handlePermalink = useCallback(async () => {
-        const fetchedPost = await fetchPostById(serverUrl, fileInfo.post_id, true);
-        const post = fetchedPost.post;
-        const rootId = post?.root_id || post?.id;
-        if (rootId) {
-            showPermalink(serverUrl, '', post.id, intl);
-        }
+        showPermalink(serverUrl, '', fileInfo.post_id, intl);
     }, [fileInfo]);
 
     const renderIcon = () => {
