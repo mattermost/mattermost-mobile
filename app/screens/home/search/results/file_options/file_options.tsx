@@ -108,38 +108,39 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
     }, [fileInfo]);
 
     const renderIcon = () => {
-        if (isImage(fileInfo)) {
-            return (
-                <View style={style.imageVideo}>
-                    <ImageFile
+        switch (true) {
+            case isImage(fileInfo):
+                return (
+                    <View style={style.imageVideo}>
+                        <ImageFile
+                            file={fileInfo}
+                            forwardRef={ref}
+                            inViewPort={true}
+                            resizeMode={'cover'}
+                        />
+                    </View>
+                );
+            case isVideo(fileInfo):
+                return (
+                    <View style={style.imageVideo}>
+                        <VideoFile
+                            file={fileInfo}
+                            forwardRef={ref}
+                            resizeMode={'cover'}
+                            inViewPort={true}
+                            index={0}
+                            wrapperWidth={78}
+                        />
+                    </View>
+                );
+            default:
+                return (
+                    <FileIcon
                         file={fileInfo}
-                        forwardRef={ref}
-                        inViewPort={true}
-                        resizeMode={'cover'}
+                        iconSize={72}
                     />
-                </View>
-            );
+                );
         }
-        if (isVideo(fileInfo)) {
-            return (
-                <View style={style.imageVideo}>
-                    <VideoFile
-                        file={fileInfo}
-                        forwardRef={ref}
-                        resizeMode={'cover'}
-                        inViewPort={true}
-                        index={0}
-                        wrapperWidth={78}
-                    />
-                </View>
-            );
-        }
-        return (
-            <FileIcon
-                file={fileInfo}
-                iconSize={72}
-            />
-        );
     };
 
     const renderHeader = () => {
