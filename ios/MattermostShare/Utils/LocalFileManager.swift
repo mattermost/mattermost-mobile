@@ -2,8 +2,8 @@
 //  LocalFileManager.swift
 //  MattermostShare
 //
-//  Created by Elias Nahum on 24-06-22.
-//  Copyright © 2022 Facebook. All rights reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 //
 
 import Foundation
@@ -22,8 +22,8 @@ class LocalFileManager {
     let containerUrl = filemgr.containerURL(forSecurityApplicationGroupIdentifier: appGroupId)
     if let url = containerUrl,
        let cacheURL = url.appendingPathComponent("Library", isDirectory: true) as URL? {
-        self.cacheURL = cacheURL.appendingPathComponent("Caches", isDirectory:  true)
-        createDirectoryIfNeeded()
+      self.cacheURL = cacheURL.appendingPathComponent("Caches", isDirectory:  true)
+      createDirectoryIfNeeded()
     }
   }
   
@@ -32,7 +32,7 @@ class LocalFileManager {
     
     if let cachePath = cacheURL?.path {
       let exists = FileManager.default.fileExists(atPath: cachePath, isDirectory: &isDirectory)
-
+      
       if !exists && !isDirectory.boolValue {
         try? FileManager.default.createDirectory(atPath: cachePath, withIntermediateDirectories: true, attributes: nil)
       }
@@ -72,7 +72,7 @@ class LocalFileManager {
       let attr = try fileMgr.attributesOfItem(atPath: (tempFileURL?.path)!) as NSDictionary
       let attachment = AttachmentModel(
         fileName: fileName,
-        fileSize: attr.fileSize(),
+        fileSize: Int64(attr.fileSize()),
         fileUrl: tempFileURL!,
         type: type
       )
@@ -113,24 +113,24 @@ class LocalFileManager {
     return UIImage(contentsOfFile: url.path)
   }
   
-  func getImagePixels(imageUrl: URL) -> UInt64 {
+  func getImagePixels(imageUrl: URL) -> Int64 {
     if let imageSourceRef = CGImageSourceCreateWithURL(imageUrl as CFURL, nil),
        let props = CGImageSourceCopyPropertiesAtIndex(imageSourceRef, 0, nil) as? NSDictionary,
        let height =  props["PixelHeight"] as? NSNumber,
        let width = props["PixelWidth"] as? NSNumber {
-      return UInt64(width.intValue * height.intValue)
+      return Int64(width.intValue * height.intValue)
     }
     
     return 0
   }
   
-  func getImagePixels(image: UIImage) -> UInt64 {
-      guard let cgImage = image.cgImage else {
-          return 0
-      }
-
-      return UInt64(cgImage.width * cgImage.height)
+  func getImagePixels(image: UIImage) -> Int64 {
+    guard let cgImage = image.cgImage else {
+      return 0
     }
+    
+    return Int64(cgImage.width * cgImage.height)
+  }
   
   public func extractDataFromContext(_ inputItems: [Any], completionHander: @escaping ExtractContentCompletionHandler) -> Void {
     var models: [AttachmentModel] = []

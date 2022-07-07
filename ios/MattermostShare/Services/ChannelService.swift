@@ -1,9 +1,9 @@
 //
-//  ChannelViewModel.swift
+//  ChannelService.swift
 //  MattermostShare
 //
-//  Created by Elias Nahum on 24-06-22.
-//  Copyright © 2022 Facebook. All rights reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 //
 
 import Gekidou
@@ -20,7 +20,7 @@ class ChannelService: ObservableObject {
   }
   
   init(_ serverUrl: String) {
-    self.serverUrl = serverUrl // required by swift :'(
+    self.serverUrl = serverUrl
     setServerUrl(serverUrl)
   }
   
@@ -31,7 +31,7 @@ class ChannelService: ObservableObject {
   }
   
   func getCurrentChannel() {
-        selected = Gekidou.Database.default.getCurrentChannelWithTeam(self.serverUrl)
+    selected = Gekidou.Database.default.getCurrentChannelWithTeam(self.serverUrl)
   }
   
   func getChannels() {
@@ -57,13 +57,13 @@ class ChannelService: ObservableObject {
     let joinedChannelsMatch: [ChannelModel] = Gekidou.Database.default.searchJoinedChannels(serverUrl, term: term, matchStart: false)
     let directChannelsMatch: [ChannelModel] = Gekidou.Database.default.searchDirectChannels(serverUrl, term: term, matchStart: false)
     let channelsMatch = (joinedChannelsMatch + directChannelsMatch).sorted { ($0.lastViewedAt ?? 0) > ($1.lastViewedAt ?? 0)}
-
+    
     return (channelsMatchStart + channelsMatch)
       .filter { channel in
         if let deactivated = channel.deactivated {
           return !deactivated || (deactivated && channel.type != "D")
         }
-
+        
         return true
       }
   }

@@ -1,8 +1,9 @@
 //
-//  Channel.swift
-//  SwiftUISample
+//  ChannelModel.swift
+//  MattermostShare
 //
-//  Created by Elias Nahum on 21-06-22.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 //
 
 import Gekidou
@@ -50,15 +51,15 @@ struct ChannelModel: Hashable, Codable, Identifiable {
   private func getUserIdFromChannelName(name: String, knownId: String) -> String? {
     let ids = name.components(separatedBy: "__")
     if ids.first == knownId {
-        return ids.last
+      return ids.last
     }
     
     return ids.first
   }
-
+  
   var formattedTeamName: String {
     if (teamName == nil || teamName!.isEmpty) {
-        return ""
+      return ""
     }
     
     return "(\(teamName!))"
@@ -68,35 +69,35 @@ struct ChannelModel: Hashable, Codable, Identifiable {
   func icon(serverUrl: String) -> some View {
     switch (type) {
     case "P":
-        FontIcon.text(
-            .compassIcons(code: .lock),
-            fontsize: 24,
-            color: Color.theme.centerChannelColor.opacity(0.72)
-        )
+      FontIcon.text(
+        .compassIcons(code: .lock),
+        fontsize: 24,
+        color: Color.theme.centerChannelColor.opacity(0.72)
+      )
     case "O":
-        FontIcon.text(
-            .compassIcons(code: .globe),
-            fontsize: 24,
-            color: Color.theme.centerChannelColor.opacity(0.72)
-        )
+      FontIcon.text(
+        .compassIcons(code: .globe),
+        fontsize: 24,
+        color: Color.theme.centerChannelColor.opacity(0.72)
+      )
     default:
-        ZStack {
-            RoundedRectangle(cornerRadius: 4)
-                .fill(Color.theme.centerChannelColor.opacity(0.16))
-                .frame(width: 20, height: 20)
-            Text("\(memberCount ?? 0)")
-                .font(Font.custom("OpenSans-SemiBold", size: 12))
-                .foregroundColor(Color.theme.centerChannelColor)
-        }
+      ZStack {
+        RoundedRectangle(cornerRadius: 4)
+          .fill(Color.theme.centerChannelColor.opacity(0.16))
+          .frame(width: 20, height: 20)
+        Text("\(memberCount ?? 0)")
+          .font(Font.custom("OpenSans-SemiBold", size: 12))
+          .foregroundColor(Color.theme.centerChannelColor)
+      }
     }
   }
-    
+  
   @ViewBuilder
   func image(serverUrl: String) -> some View {
     if (type == "D") {
       if let currentUserId = try? Gekidou.Database.default.queryCurrentUserId(serverUrl),
          let otherId = getUserIdFromChannelName(name: name, knownId: currentUserId) {
-
+        
         CustomAsyncImage(serverUrl: serverUrl, userId: otherId) {image in
           image
             .resizable()
@@ -104,8 +105,8 @@ struct ChannelModel: Hashable, Codable, Identifiable {
             .frame(width: 24, height: 24)
             .clipShape(Circle())
         } placeholder: {
-            ProgressView()
-                .frame(width: 24, height: 24)
+          ProgressView()
+            .frame(width: 24, height: 24)
         }
       }
     }

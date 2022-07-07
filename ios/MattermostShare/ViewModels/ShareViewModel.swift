@@ -2,8 +2,8 @@
 //  ShareViewModel.swift
 //  MattermostShare
 //
-//  Created by Elias Nahum on 25-06-22.
-//  Copyright © 2022 Facebook. All rights reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 //
 
 import Foundation
@@ -84,17 +84,17 @@ class ShareViewModel: ObservableObject {
       downloadProfileImage(serverUrl: serverUrl, userId: userId, imageBinding: imageBinding)
     }
   }
-
+  
   func downloadProfileImage(serverUrl: String, userId: String, imageBinding: Binding<UIImage?>) {
     guard let _ = URL(string: serverUrl) else {
-        fatalError("Missing or Malformed URL")
+      fatalError("Missing or Malformed URL")
     }
-
+    
     Gekidou.Network.default.fetchUserProfilePicture(userId: userId, withServerUrl: serverUrl, completionHandler: {data, response, error in
       guard (response as? HTTPURLResponse)?.statusCode == 200 else {
-          fatalError("Error while fetching image \(String(describing: (response as? HTTPURLResponse)?.statusCode))")
+        fatalError("Error while fetching image \(String(describing: (response as? HTTPURLResponse)?.statusCode))")
       }
-
+      
       if let data = data {
         let image = UIImage(data: data)
         imageBinding.wrappedValue = image

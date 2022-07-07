@@ -1,8 +1,9 @@
 //
-//  File.swift
+//  Database+Channels.swift
+//  Gekidou
 //  
-//
-//  Created by Elias Nahum on 24-06-22.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 //
 
 import Foundation
@@ -21,6 +22,22 @@ extension Database {
         }
         
         throw DatabaseError.NoResults(query.asSQL())
+    }
+    
+    public func serverHasChannels(_ serverUrl: String) -> Bool {
+        do {
+            let db = try getDatabaseForServer(serverUrl)
+            let stmtString = """
+            SELECT COUNT(DISTINCT my.id) FROM Channel c \
+            INNER JOIN MyChannel my ON c.id=my.id \
+            INNER JOIN Team t ON c.team_id=t.id
+            """
+            let stmt = try db.prepare(stmtString)
+            let count = try stmt.scalar() as! Int64
+            return count > 0
+        } catch {
+            return false
+        }
     }
     
     public func getCurrentChannelWithTeam<T: Codable>(_ serverUrl: String) -> T? {
@@ -50,7 +67,7 @@ extension Database {
             return nil
         }
     }
-
+    
     public func getChannelsWithTeam<T: Codable>(_ serverUrl: String) -> [T] {
         do {
             let db = try getDatabaseForServer(serverUrl)
@@ -142,7 +159,7 @@ extension Database {
                 username = "u.username LIKE ? AND u.username NOT LIKE ?"
                 bindings.append("%\(searchTerm)%")
                 bindings.append("\(searchTerm)%")
-
+                
                 displayName = "c.display_name LIKE ? AND c.display_name NOT LIKE ?"
                 bindings.append("%\(searchTerm)%")
                 bindings.append("\(searchTerm)%")

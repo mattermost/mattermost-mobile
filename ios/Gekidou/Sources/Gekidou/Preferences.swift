@@ -1,10 +1,10 @@
 //
-//  File.swift
-//  
+//  Preferences.swift
+//  Gekidou
 //
-//  Created by Elias Nahum on 26-06-22.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 //
-
 import Foundation
 
 let appGroupId = Bundle.main.infoDictionary!["AppGroupIdentifier"] as? String

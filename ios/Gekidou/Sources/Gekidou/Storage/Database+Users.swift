@@ -1,8 +1,9 @@
 //
-//  File.swift
-//  
+//  Database+Users.swift
+//  Gekidou
 //
-//  Created by Elias Nahum on 16-09-21.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 //
 
 import Foundation

@@ -2,8 +2,8 @@
 //  ShareUIView.swift
 //  MattermostShare
 //
-//  Created by Elias Nahum on 12-06-22.
-//  Copyright © 2022 Facebook. All rights reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 //
 
 import SwiftUI
@@ -16,7 +16,7 @@ struct ShareUIView: View {
   
   var body: some View {
     NavigationView {
-      ContentView(
+      InitialView(
         attachments: $attachments,
         linkPreviewUrl: $linkPreviewUrl,
         message: $message
