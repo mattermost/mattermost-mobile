@@ -72,7 +72,7 @@ export default function AddTeam({otherTeams, currentUserId}: Props) {
             title,
             teams: otherTeams,
         });
-    }), [currentUserId, otherTeams, isTablet, theme]);
+    }), [currentUserId, otherTeams, isTablet, theme, title]);
 
     return (
         <View style={styles.container}>
