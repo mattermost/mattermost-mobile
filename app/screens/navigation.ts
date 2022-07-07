@@ -702,8 +702,8 @@ export async function bottomSheetWithTeamList({title, teams, dimensions, renderC
 
     let height = CONTAINER_HEIGHT;
     if (teams.length) {
-        const snapPoint = bottomSheetSnapPoint(teams.length + 1, ITEM_HEIGHT, 0);
-        const heightWithHeader = HEADER_HEIGHT + snapPoint;
+        const itemsHeight = bottomSheetSnapPoint(teams.length + 1, ITEM_HEIGHT, 0);
+        const heightWithHeader = HEADER_HEIGHT + itemsHeight;
         height = Math.min(maxHeight, heightWithHeader);
     }
 
