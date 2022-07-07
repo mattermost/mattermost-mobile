@@ -19,6 +19,8 @@ import LoginScreen from './login';
 import PermalinkScreen from './permalink';
 import PostOptionsScreen from './post_options';
 import ReactionsScreen from './reactions';
+import RecentMentionsScreen from './recent_mentions';
+import SavedMessagesScreen from './saved_messages';
 import ServerScreen from './server';
 import ServerListScreen from './server_list';
 import TableScreen from './table';
@@ -45,6 +47,8 @@ export {
     PermalinkScreen,
     PostOptionsScreen,
     ReactionsScreen,
+    RecentMentionsScreen,
+    SavedMessagesScreen,
     ServerScreen,
     ServerListScreen,
     TableScreen,
