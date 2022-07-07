@@ -85,7 +85,7 @@ const SearchScreen = ({teamId}: Props) => {
 
     const onSubmit = useCallback(() => {
         handleSearch(searchTeamId, searchValue);
-    }, [searchValue]);
+    }, [searchValue, searchTeamId]);
 
     const handleClearSearch = useCallback(() => {
         setSearchValue('');
@@ -176,7 +176,7 @@ const SearchScreen = ({teamId}: Props) => {
                 loading={loading}
             />
         );
-    }, [loading, selectedTab, showResults, searchTeamId, setSearchTeamId]);
+    }, [loading, selectedTab, showResults, searchTeamId]);
 
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
 
