@@ -17,6 +17,7 @@ import {PostModel, ChannelModel} from '@database/models/server';
 import {useIsTablet} from '@hooks/device';
 import {useImageAttachments} from '@hooks/files';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
+import NavigationStore from '@store/navigation_store';
 import {isImage, isVideo} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -123,17 +124,6 @@ const Results = ({
         openGalleryAtIndex(galleryIdentifier, idx, items);
     }), [orderedFilesForGallery]);
 
-    useEffect(() => {
-        if (!lastViewedIndex) {
-            return;
-        }
-        const dismissBottom = async () => {
-            await dismissBottomSheet();
-        };
-        dismissBottom();
-        handleOptionsPress(lastViewedIndex);
-    }, [canDownloadFiles, publicLinkEnabled]);
-
     const snapPoints = useMemo(() => {
         let numberOptions = 1;
         if (canDownloadFiles) {
@@ -161,7 +151,18 @@ const Results = ({
             theme,
             title: '',
         });
-    }, [orderedFilesForGallery, insets, snapPoints]);
+    }, [orderedFilesForGallery, snapPoints, setLastViewedIndex, theme]);
+
+    useEffect(() => {
+        if (lastViewedIndex === undefined) {
+            return;
+        }
+        if (NavigationStore.getNavigationTopComponentId() === 'BottomSheet') {
+            dismissBottomSheet().then(() => {
+                handleOptionsPress(lastViewedIndex);
+            });
+        }
+    }, [canDownloadFiles, publicLinkEnabled]);
 
     const attachmentIndex = (fileId: string) => {
         return orderedFilesForGallery.value.findIndex((file) => file.id === fileId) || 0;

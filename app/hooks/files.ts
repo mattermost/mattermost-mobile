@@ -22,12 +22,13 @@ export const useImageAttachments = (filesInfo: FileInfo[], publicLinkEnabled: bo
                 }
                 images.push({...file, uri});
             } else {
+                let uri = file.uri;
                 if (videoFile) {
-                // fallback if public links are not enabled
-                    file.uri = buildFileUrl(serverUrl, file.id!);
+                    // fallback if public links are not enabled
+                    uri = buildFileUrl(serverUrl, file.id!);
                 }
 
-                nonImages.push(file);
+                nonImages.push({...file, uri});
             }
             return {images, nonImages};
         }, {images: [], nonImages: []});
