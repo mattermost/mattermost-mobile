@@ -27,4 +27,5 @@ export default keyMirror({
     SWIPEABLE: null,
     ITEM_IN_VIEWPORT: null,
     SEND_TO_POST_DRAFT: null,
+    CRT_TOGGLED: null,
 });
