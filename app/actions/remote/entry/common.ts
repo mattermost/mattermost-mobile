@@ -29,6 +29,8 @@ import {deleteMyTeams, getAvailableTeamIds, getNthLastChannelFromTeam, queryMyTe
 import {isDMorGM} from '@utils/channel';
 import {processIsCRTEnabled} from '@utils/thread';
 
+import {fetchGroupsForMember} from '../groups';
+
 import type ClientError from '@client/rest/error';
 
 export type AppEntryData = {
@@ -305,6 +307,10 @@ export async function deferredAppEntryActions(
 
     await fetchAllTeams(serverUrl);
     await updateAllUsersSince(serverUrl, since);
+
+    // Fetch groups for current user
+    fetchGroupsForMember(serverUrl, currentUserId);
+
     setTimeout(async () => {
         if (channelsToFetchProfiles?.size) {
             const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config, license);
