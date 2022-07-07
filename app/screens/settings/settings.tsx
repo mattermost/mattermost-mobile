@@ -74,7 +74,6 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
     const styles = getStyleSheet(theme);
     const serverDisplayName = useServerDisplayName();
     const serverName = siteName || serverDisplayName;
-
     const closeButton = useMemo(() => {
         return {
             id: CLOSE_BUTTON_ID,

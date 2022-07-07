@@ -47,6 +47,7 @@ const mentionTexts = {
         defaultMessage: 'Mentions and Replies',
     },
 };
+
 type NotificationsProps = {
     isCRTEnabled: boolean;
     enableAutoResponder: boolean;
@@ -85,6 +86,13 @@ const Notifications = ({isCRTEnabled, enableAutoResponder}: NotificationsProps) 
         goToScreen(screen, title);
     }, []);
 
+    const goToEmailSettings = useCallback(() => {
+        const screen = Screens.SETTINGS_NOTIFICATION_EMAIL;
+        const title = intl.formatMessage({id: 'notification_settings.email', defaultMessage: 'Email Notifications'});
+
+        goToScreen(screen, title);
+    }, []);
+
     return (
         <SafeAreaView
             edges={edges}
@@ -105,6 +113,10 @@ const Notifications = ({isCRTEnabled, enableAutoResponder}: NotificationsProps) 
                 <SettingOption
                     optionName='push_notification'
                     onPress={goToNotificationSettingsPush}
+                />
+                <SettingOption
+                    optionName='email'
+                    onPress={goToEmailSettings}
                 />
                 {enableAutoResponder && (
                     <SettingOption

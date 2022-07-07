@@ -47,6 +47,12 @@ export const NotificationsOptionConfig = {
         iconName: 'cellphone',
         testID: 'notification_settings.push_notification',
     },
+    email: {
+        defaultMessage: 'Email',
+        i18nId: t('notification_settings.email'),
+        iconName: 'email-outline',
+        testID: 'notification_settings.email',
+    },
     automatic_dm_replies: {
         defaultMessage: 'Automatic Direct Message Replies',
         i18nId: t('notification_settings.ooo_auto_responder'),

@@ -37,7 +37,7 @@ const SettingOption = ({onPress, optionName, ...rest}: SettingOptionProps) => {
         <OptionItem
             action={onPress}
             containerStyle={styles.containerStyle}
-            label={intl.formatMessage({id: props.i18nId, defaultMessage: props.defaultMessage})}
+            label={intl.formatMessage({id: props.i18nId, defaultMessage: props.defaultMessage}, {...props.messageValues})}
             testID={props.testID}
             type='select'
             icon={props.iconName}
