@@ -326,7 +326,7 @@ export const getTeamById = async (database: Database, teamId: string) => {
 
 export const getTeamSearchHistoryById = async (database: Database, id: string) => {
     try {
-        const teamSearchHistory = (await database.get<TeamSearchHistoryModel>(TEAM_SEARCH_HISTORY).find(id));
+        const teamSearchHistory = await database.get<TeamSearchHistoryModel>(TEAM_SEARCH_HISTORY).find(id);
         return teamSearchHistory;
     } catch {
         return undefined;
