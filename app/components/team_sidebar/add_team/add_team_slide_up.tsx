@@ -13,6 +13,7 @@ import {useTheme} from '@context/theme';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import {dismissBottomSheet} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import TeamList from './team_list';
 
@@ -31,19 +32,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
     },
     title: {
-        fontFamily: 'Metropolis',
-        fontSize: 20,
         color: theme.centerChannelColor,
         lineHeight: 28,
         marginTop: 16,
+        ...typography('Heading', 400, 'Regular'),
     },
     description: {
-        fontFamily: 'Open Sans',
-        fontSize: 16,
         color: theme.centerChannelColor,
         lineHeight: 24,
         marginTop: 8,
         maxWidth: 334,
+        ...typography('Body', 200, 'Regular'),
     },
 }));
 
