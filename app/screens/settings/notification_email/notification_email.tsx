@@ -118,10 +118,10 @@ const NotificationEmail = ({
                             <OptionItem
                                 action={setEmailInterval}
                                 label={intl.formatMessage({id: 'notification_settings.email.immediately', defaultMessage: 'Immediately'})}
-                                selected={notifyInterval === Preferences.INTERVAL_IMMEDIATE.toString()}
+                                selected={notifyInterval === Preferences.INTERVAL_IMMEDIATE}
                                 testID='notification_settings.email.immediately.action'
                                 type='select'
-                                value={Preferences.INTERVAL_IMMEDIATE.toString()}
+                                value={Preferences.INTERVAL_IMMEDIATE}
                             />
                             <View style={styles.separator}/>
                             {enableEmailBatching &&
@@ -129,17 +129,17 @@ const NotificationEmail = ({
                                     <OptionItem
                                         action={setEmailInterval}
                                         label={intl.formatMessage({id: 'notification_settings.email.fifteenMinutes', defaultMessage: 'Every 15 minutes'})}
-                                        selected={notifyInterval === Preferences.INTERVAL_FIFTEEN_MINUTES.toString()}
+                                        selected={notifyInterval === Preferences.INTERVAL_FIFTEEN_MINUTES}
                                         type='select'
-                                        value={Preferences.INTERVAL_FIFTEEN_MINUTES.toString()}
+                                        value={Preferences.INTERVAL_FIFTEEN_MINUTES}
                                     />
                                     <View style={styles.separator}/>
                                     <OptionItem
                                         action={setEmailInterval}
                                         label={intl.formatMessage({id: 'notification_settings.email.everyHour', defaultMessage: 'Every hour'})}
-                                        selected={notifyInterval === Preferences.INTERVAL_HOUR.toString()}
+                                        selected={notifyInterval === Preferences.INTERVAL_HOUR}
                                         type='select'
-                                        value={Preferences.INTERVAL_HOUR.toString()}
+                                        value={Preferences.INTERVAL_HOUR}
                                     />
                                     <View style={styles.separator}/>
                                 </View>
@@ -147,10 +147,10 @@ const NotificationEmail = ({
                             <OptionItem
                                 action={setEmailInterval}
                                 label={intl.formatMessage({id: 'notification_settings.email.never', defaultMessage: 'Never'})}
-                                selected={notifyInterval === Preferences.INTERVAL_NEVER.toString()}
+                                selected={notifyInterval === Preferences.INTERVAL_NEVER}
                                 testID='notification_settings.email.never.action'
                                 type='select'
-                                value={Preferences.INTERVAL_NEVER.toString()}
+                                value={Preferences.INTERVAL_NEVER}
                             />
                         </>
                     }
