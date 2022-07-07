@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text} from 'react-native';
 
@@ -86,16 +86,17 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
     const [action, setAction] = useState<GalleryAction>('none');
 
     const galleryItem = {...fileInfo, type: 'image'} as GalleryItemType;
+    const size = getFormattedFileSize(fileInfo.size);
 
-    const handleDownload = useCallback(async () => {
+    const handleDownload = useCallback(() => {
         setAction('downloading');
     }, []);
 
-    const handleCopyLink = useCallback(async () => {
+    const handleCopyLink = useCallback(() => {
         setAction('copying');
     }, []);
 
-    const handleGotoChannel = useCallback(async () => {
+    const handlePermalink = useCallback(async () => {
         const fetchedPost = await fetchPostById(serverUrl, fileInfo.post_id, true);
         const post = fetchedPost.post;
         const rootId = post?.root_id || post?.id;
@@ -106,7 +107,7 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
         }
     }, [fileInfo]);
 
-    const icon = useMemo(() => {
+    const renderIcon = () => {
         if (isImage(fileInfo)) {
             return (
                 <View style={style.imageVideo}>
@@ -139,14 +140,13 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
                 iconSize={72}
             />
         );
-    }, [fileInfo]);
+    };
 
-    const header = useMemo(() => {
-        const size = getFormattedFileSize(fileInfo.size);
+    const renderHeader = () => {
         return (
             <View style={style.headerContainer}>
                 <View style={style.fileIconContainer}>
-                    {icon}
+                    {renderIcon()}
                 </View>
                 <Text
                     style={style.nameText}
@@ -165,11 +165,11 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
                 </View>
             </View>
         );
-    }, [fileInfo, icon]);
+    };
 
     return (
         <View style={style.container}>
-            {header}
+            {renderHeader()}
             {canDownloadFiles &&
                 <OptionItem
                     action={handleDownload}
@@ -180,7 +180,7 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
                 />
             }
             <OptionItem
-                action={handleGotoChannel}
+                action={handlePermalink}
                 label={intl.formatMessage({id: 'screen.search.results.file_options.open_in_channel', defaultMessage: 'Open in channel'})}
                 icon={'globe'}
                 type='default'
@@ -197,17 +197,17 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
             }
             <View style={style.toast} >
                 {action === 'downloading' &&
-                <DownloadWithAction
-                    action={action}
-                    item={galleryItem}
-                    setAction={setAction}
-                />
+                    <DownloadWithAction
+                        action={action}
+                        item={galleryItem}
+                        setAction={setAction}
+                    />
                 }
                 {action === 'copying' &&
-                <CopyPublicLink
-                    item={galleryItem}
-                    setAction={setAction}
-                />
+                    <CopyPublicLink
+                        item={galleryItem}
+                        setAction={setAction}
+                    />
                 }
             </View>
         </View>
