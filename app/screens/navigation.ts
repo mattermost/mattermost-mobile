@@ -16,6 +16,7 @@ import {getDefaultThemeByAppearance} from '@context/theme';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {LaunchProps, LaunchType} from '@typings/launch';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
@@ -701,7 +702,9 @@ export async function bottomSheetWithTeamList({title, teams, dimensions, renderC
 
     let height = CONTAINER_HEIGHT;
     if (teams.length) {
-        height = Math.min(maxHeight, HEADER_HEIGHT + ((teams.length + 1) * ITEM_HEIGHT));
+        const snapPoint = bottomSheetSnapPoint(teams.length + 1, ITEM_HEIGHT, 0);
+        const heightWithHeader = HEADER_HEIGHT + snapPoint;
+        height = Math.min(maxHeight, heightWithHeader);
     }
 
     bottomSheet({
