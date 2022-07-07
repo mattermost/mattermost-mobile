@@ -118,9 +118,7 @@ const VideoFile = ({
             );
             data.height = th;
             data.width = tw;
-            if (updateFileForGallery) {
-                updateFileForGallery(index, data);
-            }
+            updateFileForGallery?.(index, data);
         }
     };
 
