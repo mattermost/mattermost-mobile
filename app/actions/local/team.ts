@@ -53,8 +53,7 @@ export async function addSearchToTeamSearchHistory(serverUrl: string, teamId: st
 
         return {error: undefined};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed addSearchToTeamSearchHistory', error);
+        logError('Failed addSearchToTeamSearchHistory', error);
         return {error};
     }
 }
@@ -70,7 +69,7 @@ export async function removeSearchFromTeamSearchHistory(serverUrl: string, id: s
         await operator.batchRecords(preparedModels);
         return;
     } catch (error) {
-        throw new Error('Failed removeSearchFromTeamSearchHistory');
+        logError('Failed removeSearchFromTeamSearchHistory', error);
     }
 }
 
