@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
-
 import DatabaseManager from '@database/manager';
 import {prepareDeleteTeam, getMyTeamById, queryTeamSearchHistoryByTeamId, removeTeamFromTeamHistory, getTeamSearchHistoryById} from '@queries/servers/team';
 import {logError} from '@utils/log';
@@ -60,16 +58,17 @@ export async function addSearchToTeamSearchHistory(serverUrl: string, teamId: st
 
 export async function removeSearchFromTeamSearchHistory(serverUrl: string, id: string) {
     try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const teamSearch = await getTeamSearchHistoryById(database, id);
-        if (!teamSearch) {
-            return;
+        if (teamSearch) {
+            await database.write(async () => {
+                await teamSearch.destroyPermanently();
+            });
         }
-        const preparedModels: Model[] = [teamSearch.prepareDestroyPermanently()];
-        await operator.batchRecords(preparedModels);
-        return;
+        return {teamSearch};
     } catch (error) {
         logError('Failed removeSearchFromTeamSearchHistory', error);
+        return {error};
     }
 }
 
