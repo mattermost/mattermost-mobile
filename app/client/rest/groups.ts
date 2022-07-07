@@ -8,10 +8,10 @@ import {PER_PAGE_DEFAULT} from './constants';
 export interface ClientGroupsMix {
     getGroups: (query?: string, filterAllowReference?: boolean, page?: number, perPage?: number, since?: number) => Promise<Group[]>;
     getAllGroupsAssociatedToChannel: (channelId: string, filterAllowReference?: boolean) => Promise<{groups: Group[]; total_group_count: number}>;
-    getAllGroupsAssociatedToMembership: (userId: string, filterAllowReference?: boolean) => Promise<{groups: Group[]; total_group_count: number}>;
+    getAllGroupsAssociatedToMembership: (userId: string, filterAllowReference?: boolean) => Promise<Group[]>;
     getAllGroupsAssociatedToTeam: (teamId: string, filterAllowReference?: boolean) => Promise<{groups: Group[]; total_group_count: number}>;
     getAllChannelsAssociatedToGroup: (groupId: string, filterAllowReference?: boolean) => Promise<{groupChannels: GroupChannel[]}>;
-    getAllMembershipsAssociatedToGroup: (groupId: string, filterAllowReference?: boolean) => Promise<{groupMemberships: GroupMembership; total_member_count: number}>;
+    getAllMembershipsAssociatedToGroup: (groupId: string, filterAllowReference?: boolean) => Promise<{groupMemberships: UserProfile[]; total_member_count: number}>;
     getAllTeamsAssociatedToGroup: (groupId: string, filterAllowReference?: boolean) => Promise<{groupTeams: GroupTeam[]}>;
 }
 
