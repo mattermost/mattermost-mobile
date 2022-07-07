@@ -102,8 +102,6 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
         const rootId = post?.root_id || post?.id;
         if (rootId) {
             showPermalink(serverUrl, '', post.id, intl);
-        } else {
-            // what to do?
         }
     }, [fileInfo]);
 
