@@ -58,7 +58,6 @@ export default function AddTeamSlideUp({currentUserId, otherTeams, title, showTi
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const testID = 'team_sidebar.add_team_slide_up';
 
     const onPressCreate = useCallback(() => {
         //TODO Create team screen https://mattermost.atlassian.net/browse/MM-43622
@@ -82,7 +81,7 @@ export default function AddTeamSlideUp({currentUserId, otherTeams, title, showTi
             onPress={onPressCreate}
             showButton={false}
             showTitle={showTitle}
-            testID={testID}
+            testID={'team_sidebar.add_team_slide_up'}
             title={title}
         >
             {hasOtherTeams &&
@@ -99,13 +98,13 @@ export default function AddTeamSlideUp({currentUserId, otherTeams, title, showTi
                         id='team_list.no_other_teams.title'
                         defaultMessage='No additional teams to join'
                         style={styles.title}
-                        testID={`${testID}.no_other_teams.title`}
+                        testID={'team_sidebar.add_team_slide_up.no_other_teams.title'}
                     />
                     <FormattedText
                         id='team_list.no_other_teams.description'
                         defaultMessage='To join another team, ask a Team Admin for an invitation, or create your own team.'
                         style={styles.description}
-                        testID={`${testID}.no_other_teams.description`}
+                        testID={'team_sidebar.add_team_slide_up.no_other_teams.description'}
                     />
                 </View>
             }
