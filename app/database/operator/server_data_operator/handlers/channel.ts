@@ -48,7 +48,6 @@ const ChannelHandler = (superclass: any) => class extends superclass {
      * @param {HandleChannelArgs} channelsArgs
      * @param {RawChannel[]} channelsArgs.channels
      * @param {boolean} channelsArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<ChannelModel[]>}
      */
     handleChannel = async ({channels, prepareRecordsOnly = true}: HandleChannelArgs): Promise<ChannelModel[]> => {
@@ -98,7 +97,6 @@ const ChannelHandler = (superclass: any) => class extends superclass {
      * @param {HandleMyChannelSettingsArgs} settingsArgs
      * @param {RawMyChannelSettings[]} settingsArgs.settings
      * @param {boolean} settingsArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<MyChannelSettingsModel[]>}
      */
     handleMyChannelSettings = async ({settings, prepareRecordsOnly = true}: HandleMyChannelSettingsArgs): Promise<MyChannelSettingsModel[]> => {
@@ -156,7 +154,6 @@ const ChannelHandler = (superclass: any) => class extends superclass {
      * @param {HandleChannelInfoArgs} channelInfosArgs
      * @param {RawChannelInfo[]} channelInfosArgs.channelInfos
      * @param {boolean} channelInfosArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<ChannelInfoModel[]>}
      */
     handleChannelInfo = async ({channelInfos, prepareRecordsOnly = true}: HandleChannelInfoArgs): Promise<ChannelInfoModel[]> => {
@@ -216,7 +213,6 @@ const ChannelHandler = (superclass: any) => class extends superclass {
      * @param {HandleMyChannelArgs} myChannelsArgs
      * @param {RawMyChannel[]} myChannelsArgs.myChannels
      * @param {boolean} myChannelsArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<MyChannelModel[]>}
      */
     handleMyChannel = async ({channels, myChannels, isCRTEnabled, prepareRecordsOnly = true}: HandleMyChannelArgs): Promise<MyChannelModel[]> => {
@@ -304,7 +300,6 @@ const ChannelHandler = (superclass: any) => class extends superclass {
      * @param {HandleChannelMembershipArgs} channelMembershipsArgs
      * @param {ChannelMembership[]} channelMembershipsArgs.channelMemberships
      * @param {boolean} channelMembershipsArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<ChannelMembershipModel[]>}
      */
     handleChannelMembership = async ({channelMemberships, prepareRecordsOnly = true}: HandleChannelMembershipArgs): Promise<ChannelMembershipModel[]> => {
