@@ -25,7 +25,6 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
       * @param {HandleGroupArgs} groupsArgs
       * @param {Group[]} groupsArgs.groups
       * @param {boolean} groupsArgs.prepareRecordsOnly
-      * @throws DataOperatorException
       * @returns {Promise<GroupModel[]>}
       */
     handleGroups = async ({groups, prepareRecordsOnly = true}: HandleGroupArgs): Promise<GroupModel[]> => {
