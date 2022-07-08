@@ -32,7 +32,7 @@ export async function removeUserFromTeam(serverUrl: string, teamId: string) {
 }
 
 export async function addSearchToTeamSearchHistory(serverUrl: string, teamId: string, terms: string) {
-    const MAX_TEAM_SEARCHES = 4;
+    const MAX_TEAM_SEARCHES = 15;
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const newSearch: TeamSearchHistory = {
