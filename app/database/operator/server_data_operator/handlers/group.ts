@@ -2,21 +2,23 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import {transformGroupMembershipRecord, transformGroupRecord} from '@database/operator/server_data_operator/transformers/group';
+import {transformGroupMembershipRecord, transformGroupRecord, transformGroupTeamRecord} from '@database/operator/server_data_operator/transformers/group';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
-import {queryGroupMembershipForMember} from '@queries/servers/group';
+import {queryGroupMembershipForMember, queryGroupTeamForTeam} from '@queries/servers/group';
 import {generateGroupAssociationId} from '@utils/groups';
 import {logWarning} from '@utils/log';
 
-import type {HandleGroupArgs, HandleGroupMembershipForMemberArgs} from '@typings/database/database';
+import type {HandleGroupArgs, HandleGroupMembershipForMemberArgs, HandleGroupTeamsForTeamArgs} from '@typings/database/database';
 import type GroupModel from '@typings/database/models/servers/group';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
+import type GroupTeamModel from '@typings/database/models/servers/group_team';
 
-const {GROUP, GROUP_MEMBERSHIP} = MM_TABLES.SERVER;
+const {GROUP, GROUP_MEMBERSHIP, GROUP_TEAM} = MM_TABLES.SERVER;
 
 export interface GroupHandlerMix {
     handleGroups: ({groups, prepareRecordsOnly}: HandleGroupArgs) => Promise<GroupModel[]>;
     handleGroupMembershipsForMember: ({userId, groups, prepareRecordsOnly}: HandleGroupMembershipForMemberArgs) => Promise<GroupMembershipModel[]>;
+    handleGroupTeamsForTeam: ({teamId, groups, prepareRecordsOnly}: HandleGroupTeamsForTeamArgs) => Promise<GroupTeamModel[]>;
 }
 
 const GroupHandler = (superclass: any) => class extends superclass implements GroupHandlerMix {
@@ -74,7 +76,7 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
             const groupsSet: {[key: string]: GroupMembership} = {};
 
             for (const g of groups) {
-                groupsSet[`${g.id}`] = {id: generateGroupAssociationId(g.id, userId), user_id: userId, group_id: g.id};
+                groupsSet[g.id] = {id: generateGroupAssociationId(g.id, userId), user_id: userId, group_id: g.id};
             }
 
             for (const gm of existingGroupMemberships) {
@@ -96,6 +98,66 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
             transformer: transformGroupMembershipRecord,
             rawValues,
             tableName: GROUP_MEMBERSHIP,
+            prepareRecordsOnly: true,
+        })));
+
+        // Batch update if there are records
+        if (records.length && !prepareRecordsOnly) {
+            await this.batchRecords(records);
+        }
+
+        return records;
+    };
+
+    /**
+     * handleGroupTeamsForTeam: Handler responsible for the Create/Update operations occurring on the GroupTeam table from the 'Server' schema
+     * @param {string} teamId
+     * @param {HandleGroupTeamsForTeamArgs} groupTeamsArgs
+     * @param {GroupTeam[]} groupTeamsArgs.groupTeams
+     * @param {boolean} groupTeamsArgs.prepareRecordsOnly
+     * @throws DataOperatorException
+     * @returns {Promise<GroupTeamModel[]>}
+     */
+    handleGroupTeamsForTeam = async ({teamId, groups, prepareRecordsOnly = true}: HandleGroupTeamsForTeamArgs): Promise<GroupTeamModel[]> => {
+        // Get existing group teams
+        const existingGroupTeams = await queryGroupTeamForTeam(this.database, teamId).fetch();
+
+        let records: GroupTeamModel[] = [];
+        let rawValues: GroupTeam[] = [];
+
+        // Nothing to add or remove
+        if (!groups?.length && !existingGroupTeams.length) {
+            return records;
+        } else if (!groups?.length && existingGroupTeams.length) { // No groups - remove all existing ones
+            records = existingGroupTeams.map((gt) => gt.prepareDestroyPermanently());
+        } else if (groups?.length && !existingGroupTeams.length) { // No existing groups - add all new ones
+            rawValues = groups.map((g) => ({id: generateGroupAssociationId(g.id, teamId), team_id: teamId, group_id: g.id}));
+        } else if (groups?.length && existingGroupTeams.length) { // If both, we only want to save new ones and delete one's no longer in groups
+            const groupsSet: {[key: string]: GroupTeam} = {};
+
+            for (const g of groups) {
+                groupsSet[g.id] = {id: generateGroupAssociationId(g.id, teamId), team_id: teamId, group_id: g.id};
+            }
+
+            for (const gt of existingGroupTeams) {
+                // Check if existingGroups overlaps with groups
+                if (groupsSet[gt.groupId]) {
+                    // If there is an existing group already, we don't need to add it
+                    delete groupsSet[gt.groupId];
+                } else {
+                    // No group? Remove existing one
+                    records.push(gt.prepareDestroyPermanently());
+                }
+            }
+
+            rawValues.push(...Object.values(groupsSet));
+        }
+
+        records.push(...(await this.handleRecords({
+            fieldName: 'id',
+            transformer: transformGroupTeamRecord,
+            rawValues,
+            tableName: GROUP_TEAM,
             prepareRecordsOnly: true,
         })));
 

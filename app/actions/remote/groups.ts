@@ -4,6 +4,7 @@
 import {Client} from '@client/rest';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import {getTeamById} from '@queries/servers/team';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -57,12 +58,19 @@ export const fetchGroupsForChannel = async (serverUrl: string, channelId: string
 export const fetchGroupsForTeam = async (serverUrl: string, teamId: string, fetchOnly = false) => {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToTeam(teamId);
 
-        return operator.handleGroups({groups: response.groups, prepareRecordsOnly: fetchOnly});
+        const groups = await operator.handleGroups({groups: response.groups, prepareRecordsOnly: true});
+        const groupTeams = await operator.handleGroupTeamsForTeam({groups: response.groups, teamId, prepareRecordsOnly: true});
+
+        if (!fetchOnly) {
+            await operator.batchRecords([...groups, ...groupTeams]);
+        }
+
+        return {groups, groupTeams};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };
@@ -115,3 +123,17 @@ export const fetchFilteredChannelGroups = async (serverUrl: string, searchTerm: 
     }
 };
 
+export const fetchGroupsForTeamIfConstrained = async (serverUrl: string, teamId: string, fetchOnly = false) => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const team = await getTeamById(database, teamId);
+
+        if (team?.isGroupConstrained) {
+            return fetchGroupsForTeam(serverUrl, teamId, fetchOnly);
+        }
+
+        return {};
+    } catch (error) {
+        return {error};
+    }
+};
