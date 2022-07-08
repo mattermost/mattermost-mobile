@@ -11,9 +11,8 @@ import AddTeam from './add_team';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const currentUserId = observeCurrentUserId(database);
     return {
-        currentUserId,
+        currentUserId: observeCurrentUserId(database),
     };
 });
 
