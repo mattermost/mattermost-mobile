@@ -39,7 +39,10 @@ class PushNotificationDataRunnable {
                     var postData: ReadableMap?
                     var posts: ReadableMap? = null
                     var userIdsToLoad: ReadableArray? = null
-                    var usernamesToLoad: ReadableArray? = null
+                    var usernamesOrGroupsToLoad: ReadableArray? = null
+
+                    var fetchedUsers: ReadableArray? = null
+                    var fetchedGroups: MutableList<ReadableMap>? = null
 
                     var threads: ReadableArray? = null
                     var usersFromThreads: ReadableArray? = null
@@ -51,7 +54,7 @@ class PushNotificationDataRunnable {
 
                             posts = postData?.getMap("posts")
                             userIdsToLoad = postData?.getArray("userIdsToLoad")
-                            usernamesToLoad = postData?.getArray("usernamesToLoad")
+                            usernamesOrGroupsToLoad = postData?.getArray("usernamesOrGroupsToLoad")
                             threads = postData?.getArray("threads")
                             usersFromThreads = postData?.getArray("usersFromThreads")
 
@@ -60,9 +63,12 @@ class PushNotificationDataRunnable {
                                 userIdsToLoad = users?.getArray("data")
                             }
 
-                            if (usernamesToLoad != null && usernamesToLoad!!.size() > 0) {
-                                val users = fetchUsersByUsernames(serverUrl, usernamesToLoad!!)
-                                usernamesToLoad = users?.getArray("data")
+                            if (usernamesOrGroupsToLoad != null && usernamesOrGroupsToLoad!!.size() > 0) {
+                                val users = fetchUsersByUsernames(serverUrl, usernamesOrGroupsToLoad!!)
+                                fetchedUsers = users?.getArray("data")
+
+                                // Check for groups as well
+                                fetchedGroups = fetchGroupsByNames(serverUrl, usernamesOrGroupsToLoad!!);
                             }
                         }
                     }
@@ -80,8 +86,12 @@ class PushNotificationDataRunnable {
                             DatabaseHelper.instance!!.handleUsers(db, userIdsToLoad!!)
                         }
 
-                        if (usernamesToLoad != null && usernamesToLoad!!.size() > 0) {
-                            DatabaseHelper.instance!!.handleUsers(db, usernamesToLoad!!)
+                        if (fetchedUsers != null && fetchedUsers!!.size() > 0) {
+                            DatabaseHelper.instance!!.handleUsers(db, fetchedUsers!!)
+                        }
+
+                        if (fetchedGroups != null && fetchedGroups!!.size > 0) {
+                            DatabaseHelper.instance!!.handleGroups(db, fetchedGroups!!)
                         }
 
                         if (usersFromThreads != null) {
@@ -131,7 +141,7 @@ class PushNotificationDataRunnable {
                         val posts = ReadableMapUtils.toWritableMap(postsMap as? Map<String, Object>)
                         val iterator = posts.keySetIterator()
                         val userIds = mutableListOf<String>()
-                        val usernames = mutableListOf<String>()
+                        val usernamesOrGroups = mutableListOf<String>()
 
                         val threads = WritableNativeArray()
                         val threadParticipantUserIds = mutableListOf<String>() // Used to exclude the "userIds" present in the thread participants
@@ -149,9 +159,9 @@ class PushNotificationDataRunnable {
                             if (message != null) {
                                 val matchResults = regex.findAll(message)
                                 matchResults.iterator().forEach {
-                                    val username = it.value.removePrefix("@")
-                                    if (!usernames.contains(username) && currentUsername != username && !specialMentions.contains(username)) {
-                                        usernames.add(username)
+                                    val matchString = it.value.removePrefix("@")
+                                    if (!usernamesOrGroups.contains(matchString) && currentUsername != matchString && !specialMentions.contains(matchString)) {
+                                        usernamesOrGroups.add(matchString)
                                     }
                                 }
                             }
@@ -190,14 +200,16 @@ class PushNotificationDataRunnable {
                         }
 
                         val existingUserIds = DatabaseHelper.instance!!.queryIds(db, "User", userIds.toTypedArray())
-                        val existingUsernames = DatabaseHelper.instance!!.queryByColumn(db, "User", "username", usernames.toTypedArray())
+                        val existingUsernames = DatabaseHelper.instance!!.queryByColumn(db, "User", "username", usernamesOrGroups.toTypedArray())
+                        val existingGroups = DatabaseHelper.instance!!.queryByColumn(db, "Group", "name", usernamesOrGroups.toTypedArray())
                         userIds.removeAll { it in existingUserIds }
-                        usernames.removeAll { it in existingUsernames }
+                        usernamesOrGroups.removeAll { it in existingUsernames }
+                        usernamesOrGroups.removeAll { it in existingGroups }
 
                         if (threadParticipantUserIds.size > 0) {
                             // Do not fetch users found in thread participants as we get the user's data in the posts response already
                             userIds.removeAll { it in threadParticipantUserIds }
-                            usernames.removeAll { it in threadParticipantUsernames }
+                            usernamesOrGroups.removeAll { it in threadParticipantUsernames }
 
                             // Get users from thread participants
                             val existingThreadParticipantUserIds = DatabaseHelper.instance!!.queryIds(db, "User", threadParticipantUserIds.toTypedArray())
@@ -219,8 +231,8 @@ class PushNotificationDataRunnable {
                             results.putArray("userIdsToLoad", ReadableArrayUtils.toWritableArray(userIds.toTypedArray()))
                         }
 
-                        if (usernames.size > 0) {
-                            results.putArray("usernamesToLoad", ReadableArrayUtils.toWritableArray(usernames.toTypedArray()))
+                        if (usernamesOrGroups.size > 0) {
+                            results.putArray("usernamesOrGroupsToLoad", ReadableArrayUtils.toWritableArray(usernamesOrGroups.toTypedArray()))
                         }
 
                         if (threads.size() > 0) {
@@ -244,6 +256,26 @@ class PushNotificationDataRunnable {
             val options = Arguments.createMap()
             options.putArray("body", ReadableArrayUtils.toWritableArray(ReadableArrayUtils.toArray(usernames)))
             return fetchWithPost(serverUrl, endpoint, options);
+        }
+
+        private suspend fun fetchGroupsByNames(serverUrl: String, strings: ReadableArray): MutableList<ReadableMap> {
+            var fetchedGroups = mutableListOf<ReadableMap>()
+
+            for (s in strings.toArrayList()){
+                val endpoint = "api/v4/groups?q=${s}";
+                val response = fetch(serverUrl, endpoint)
+                val groups = response!!.getArray("data")
+
+                if(groups != null && groups.size() > 0) {
+                    groups.toArrayList().forEach {
+                        it as ReadableMap
+                        fetchedGroups.add(it)
+                    }
+                }
+            }
+
+
+            return fetchedGroups;
         }
 
         private suspend fun fetch(serverUrl: String, endpoint: String): ReadableMap? {

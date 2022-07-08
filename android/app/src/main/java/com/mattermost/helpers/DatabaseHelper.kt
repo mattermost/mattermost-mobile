@@ -308,6 +308,41 @@ class DatabaseHelper {
         }
     }
 
+    fun handleGroups(db: Database, groups: MutableList<ReadableMap>){
+        groups.forEach{ group ->
+
+            db.execute("""
+                insert into Group (
+                    id, 
+                    name, 
+                    display_name, 
+                    description, 
+                    source, 
+                    remote_id,
+                    member_count,
+                    allow_reference,
+                    created_at,
+                    updated_at,
+                    deleted_at
+                   ) values (?,?,?,?,?,?,?,?,?,?,?)
+                """.trimIndent(), arrayOf(
+                    group.getString("id"),
+                    group.getString("name"),
+                    group.getString("display_name"),
+                    group.getString("description"),
+                    group.getString("source"),
+                    group.getString("remote_id"),
+                    group.getDouble("member_count"),
+                    group.getBoolean("allow_reference"),
+                    group.getDouble("create_at"),
+                    group.getDouble("update_at"),
+                    group.getDouble("delete_at"),
+                )
+            )
+
+        }
+    }
+
     fun getServerVersion(db: Database): String? {
         val config = getSystemConfig(db)
         if (config != null) {
