@@ -17,6 +17,7 @@ import Modifier, {ModifierItem} from './modifier';
 import ShowMoreButton from './show_more';
 
 const MODIFIER_LABEL_HEIGHT = 48;
+const TEAM_PICKER_ICON_SIZE = 32;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -130,7 +131,7 @@ const Modifiers = ({searchValue, setSearchValue, setTeamId, teamId}: Props) => {
                     defaultMessage='Search options'
                 />
                 <TeamPickerIcon
-                    size={32}
+                    size={TEAM_PICKER_ICON_SIZE}
                     setTeamId={setTeamId}
                     teamId={teamId}
                 />
