@@ -78,7 +78,7 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
     }), [theme, setTeamId, teamId, teams]);
 
     return (
-        <View>
+        <>
             {selectedTeam &&
                 <TouchableWithFeedback
                     onPress={handleTeamChange}
@@ -108,7 +108,7 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
                     </View>
                 </TouchableWithFeedback>
             }
-        </View>
+        </>
     );
 };
 export default TeamPickerIcon;
