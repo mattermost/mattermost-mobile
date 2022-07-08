@@ -118,6 +118,8 @@ const Results = ({
 
     const handleOptionsPress = useCallback(preventDoubleTap(() => {
         // hook up in another PR
+        // https://github.com/mattermost/mattermost-mobile/pull/6420
+        // https://mattermost.atlassian.net/browse/MM-44939
     }), []);
 
     const attachmentIndex = (fileId: string) => {
