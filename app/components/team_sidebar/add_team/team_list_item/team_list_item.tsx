@@ -62,7 +62,7 @@ export default function TeamListItem({team, textColor, iconTextColor, iconBackgr
 
     const handlePress = useCallback(() => {
         onPress(team.id);
-    }, [team]);
+    }, [team.id, onPress]);
 
     return (
         <View style={styles.container}>
