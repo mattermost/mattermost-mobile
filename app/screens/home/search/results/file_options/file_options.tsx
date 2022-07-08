@@ -78,7 +78,7 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const intl = useIntl();
-    const ref = useRef<any>();
+    const ref = useRef<typeof ImageFile>();
     const serverUrl = useServerUrl();
     const [action, setAction] = useState<GalleryAction>('none');
 
