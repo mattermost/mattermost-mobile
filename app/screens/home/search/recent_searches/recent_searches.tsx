@@ -74,7 +74,6 @@ const RecentSearches = ({setRecentValue, recentSearches}: Props) => {
             keyboardDismissMode='interactive'
             ListHeaderComponent={renderHeader}
             renderItem={renderRecentItem}
-            scrollEventThrottle={60}
             testID='search.recents_list'
             removeClippedSubviews={true}
         />
