@@ -18,7 +18,6 @@ type Props = {
 }
 
 export default function SelectTeamSlideUp({teams, title, setTeamId, teamId}: Props) {
-    const testID = 'team_sidebar.add_team_slide_up';
     const isTablet = useIsTablet();
     const showTitle = !isTablet && Boolean(teams.length);
 
@@ -31,7 +30,7 @@ export default function SelectTeamSlideUp({teams, title, setTeamId, teamId}: Pro
         <BottomSheetContent
             showButton={false}
             showTitle={showTitle}
-            testID={testID}
+            testID={'search.search_team_slide_up'}
             title={title}
         >
             {teams.length &&
