@@ -104,12 +104,6 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
         setButtons(componentId, buttons);
     }, [componentId, saveButton, isMilitaryTimeFormat]);
 
-    useEffect(() => {
-        setButtons(componentId, {
-            rightButtons: [saveButton],
-        });
-    }, []);
-
     useAndroidHardwareBackHandler(componentId, close);
     useNavButtonPressed(SAVE_CLOCK_BUTTON_ID, componentId, saveClockDisplayPreference, [isMilitaryTimeFormat]);
 

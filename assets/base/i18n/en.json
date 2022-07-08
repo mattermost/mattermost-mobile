@@ -706,6 +706,7 @@
   "settings_display.timezone.manual": "Change timezone",
   "settings_display.timezone.select": "Select Timezone",
   "settings.about": "About {appTitle}",
+  "settings.advanced_settings": "Advanced Settings",
   "settings.display": "Display",
   "settings.display.militaryClock.save": "Save",
   "settings.notifications": "Notifications",

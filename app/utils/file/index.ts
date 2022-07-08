@@ -14,6 +14,8 @@ import {Asset} from 'react-native-image-picker';
 import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
 import {Files} from '@constants';
+import DatabaseManager from '@database/manager';
+import {queryAllServers} from '@queries/app/servers';
 import {generateId} from '@utils/general';
 import keyMirror from '@utils/key_mirror';
 import {logError} from '@utils/log';
@@ -497,5 +499,36 @@ export const hasWriteStoragePermission = async (intl: IntlShape) => {
             return false;
         }
         default: return true;
+    }
+};
+
+export const getAllFilesInCachesDirectory = async () => {
+    try {
+        const appDatabase = DatabaseManager.appDatabase;
+        const servers = await queryAllServers(appDatabase!.database);
+        if (!servers.length) {
+            return {error: 'No servers'};
+        }
+
+        const serverUrls = [];
+        const files: FileSystem.ReadDirItem[][] = [];
+
+        for await (const server of servers) {
+            const directoryFiles = await FileSystem.readDir(`${FileSystem.CachesDirectoryPath}/${hashCode(server.url)}`);
+            files.push(directoryFiles);
+            serverUrls.push(server.url);
+        }
+
+        const flattenedFiles = files.flat();
+        const totalSize = flattenedFiles.reduce((acc, file) => acc + file.size, 0);
+
+        return {
+            files: flattenedFiles,
+            totalSize,
+            serverUrls,
+        };
+    } catch (error) {
+        logError('Failed getAllFilesInCachesDirectory', error);
+        return {error};
     }
 };
