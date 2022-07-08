@@ -86,7 +86,7 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
                     type='opacity'
                     testID={selectedTeam.id}
                 >
-                    <View style={[styles.teamContainer, divider ? styles.border : null]}>
+                    <View style={[styles.teamContainer, divider && styles.border]}>
                         <View style={[styles.teamIcon, {width: size, height: size}]}>
                             <TeamIcon
                                 displayName={selectedTeam.displayName}
