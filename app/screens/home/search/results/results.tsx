@@ -156,6 +156,10 @@ const Results = ({
         });
     }, [orderedFilesForGallery, snapPoints, setLastViewedIndex, theme]);
 
+    // This effect handles the case where a user has the FileOptions Modal
+    // open and the server changes the ability to download files or copy public
+    // links. Reopen the Bottom Sheet again so the new options are added or
+    // removed.
     useEffect(() => {
         if (lastViewedIndex === undefined) {
             return;
