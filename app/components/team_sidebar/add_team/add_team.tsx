@@ -51,9 +51,8 @@ export default function AddTeam({otherTeams, currentUserId}: Props) {
     const intl = useIntl();
     const isTablet = useIsTablet();
 
-    const title = intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'});
-
     const onPress = useCallback(preventDoubleTap(() => {
+        const title = intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'});
         const renderContent = () => {
             return (
                 <AddTeamSlideUp
@@ -72,7 +71,7 @@ export default function AddTeam({otherTeams, currentUserId}: Props) {
             title,
             teams: otherTeams,
         });
-    }), [currentUserId, otherTeams, isTablet, theme, title]);
+    }), [currentUserId, otherTeams]);
 
     return (
         <View style={styles.container}>
