@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {StyleSheet, FlatList, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Text, StyleProp, View, ViewStyle} from 'react-native';
-import Animated, {useDerivedValue} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {MIN_HEIGHT} from '@app/components/option_item';
@@ -13,7 +13,6 @@ import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {PostModel, ChannelModel} from '@database/models/server';
 import {useIsTablet} from '@hooks/device';
 import {useImageAttachments} from '@hooks/files';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
@@ -28,6 +27,9 @@ import {preventDoubleTap} from '@utils/tap';
 
 import FileOptions from './file_options';
 import Loader from './loader';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type PostModel from '@typings/database/models/servers/post';
 
 const styles = StyleSheet.create({
     flex: {flex: 1},
@@ -52,19 +54,19 @@ const notImplementedComponent = (
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 type Props = {
-    searchValue: string;
-    selectedTab: TabType;
+    canDownloadFiles: boolean;
     currentTimezone: string;
-    isTimezoneEnabled: boolean;
-    posts: PostModel[];
     fileChannels: ChannelModel[];
     fileInfos: FileInfo[];
-    scrollRef: React.RefObject<FlatList>;
-    onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
-    scrollPaddingTop: number;
+    isTimezoneEnabled: boolean;
     loading: boolean;
-    canDownloadFiles: boolean;
+    onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+    posts: PostModel[];
     publicLinkEnabled: boolean;
+    scrollPaddingTop: number;
+    scrollRef: React.RefObject<FlatList>;
+    searchValue: string;
+    selectedTab: TabType;
 }
 
 const emptyList: FileInfo[] | Array<string | PostModel> = [];
@@ -73,27 +75,29 @@ const HEADER_HEIGHT = 185;
 const galleryIdentifier = 'search-files-location';
 
 const Results = ({
+    canDownloadFiles,
     currentTimezone,
+    fileChannels,
     fileInfos,
     isTimezoneEnabled,
+    loading,
+    onScroll,
     posts,
-    fileChannels,
+    publicLinkEnabled,
+    scrollPaddingTop,
+    scrollRef,
     searchValue,
     selectedTab,
-    scrollRef,
-    onScroll,
-    scrollPaddingTop,
-    loading,
-    canDownloadFiles,
-    publicLinkEnabled,
 }: Props) => {
     const theme = useTheme();
+    const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
-    const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
     const [lastViewedIndex, setLastViewedIndex] = useState<number | undefined>(undefined);
 
-    const isTablet = useIsTablet();
+    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
+    const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
+
+    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
 
     const containerStyle = useMemo(() => {
         let padding = 0;
@@ -109,18 +113,17 @@ const Results = ({
         return fileChannels.find((c) => c.id === id)?.displayName;
     };
 
-    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
-    const filesForGallery = useDerivedValue(() => imageAttachments.concat(nonImageAttachments),
+    const filesForGallery = useMemo(() => imageAttachments.concat(nonImageAttachments),
         [imageAttachments, nonImageAttachments]);
 
-    const orderedFilesForGallery = useDerivedValue(() => (
-        filesForGallery.value.sort((a: FileInfo, b: FileInfo) => {
+    const orderedFilesForGallery = useMemo(() => (
+        filesForGallery.sort((a: FileInfo, b: FileInfo) => {
             return (b.create_at || 0) - (a.create_at || 0);
         })
     ), [filesForGallery]);
 
     const handlePreviewPress = useCallback(preventDoubleTap((idx: number) => {
-        const items = orderedFilesForGallery.value.map((f) => fileToGalleryItem(f, f.user_id));
+        const items = orderedFilesForGallery.map((f) => fileToGalleryItem(f, f.user_id));
         openGalleryAtIndex(galleryIdentifier, idx, items);
     }), [orderedFilesForGallery]);
 
@@ -140,7 +143,7 @@ const Results = ({
         const renderContent = () => {
             return (
                 <FileOptions
-                    fileInfo={orderedFilesForGallery.value[item]}
+                    fileInfo={orderedFilesForGallery[item]}
                 />
             );
         };
@@ -164,9 +167,9 @@ const Results = ({
         }
     }, [canDownloadFiles, publicLinkEnabled]);
 
-    const attachmentIndex = (fileId: string) => {
-        return orderedFilesForGallery.value.findIndex((file) => file.id === fileId) || 0;
-    };
+    const attachmentIndex = useCallback((fileId: string) => {
+        return orderedFilesForGallery.findIndex((file) => file.id === fileId) || 0;
+    }, [orderedFilesForGallery]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<string|FileInfo | Post>) => {
         if (typeof item === 'string') {
@@ -196,11 +199,11 @@ const Results = ({
         }
         const updateFileForGallery = (idx: number, file: FileInfo) => {
             'worklet';
-            orderedFilesForGallery.value[idx] = file;
+            orderedFilesForGallery[idx] = file;
         };
 
         const container: StyleProp<ViewStyle> = fileInfos.length > 1 ? styles.container : undefined;
-        const isSingleImage = orderedFilesForGallery.value.length === 1 && (isImage(orderedFilesForGallery.value[0]) || isVideo(orderedFilesForGallery.value[0]));
+        const isSingleImage = orderedFilesForGallery.length === 1 && (isImage(orderedFilesForGallery[0]) || isVideo(orderedFilesForGallery[0]));
         const isReplyPost = false;
 
         return (
@@ -253,7 +256,7 @@ const Results = ({
     } else if (selectedTab === TabTypes.MESSAGES) {
         data = orderedPosts;
     } else {
-        data = orderedFilesForGallery.value;
+        data = orderedFilesForGallery;
     }
 
     return (

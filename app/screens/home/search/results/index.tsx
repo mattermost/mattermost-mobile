@@ -9,7 +9,7 @@ import {map, switchMap} from 'rxjs/operators';
 
 import {queryChannelsById} from '@queries/servers/channel';
 import {queryPostsById} from '@queries/servers/post';
-import {observeConfig, observeLicense, observeConfigBooleanValue} from '@queries/servers/system';
+import {observeLicense, observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {getTimezone} from '@utils/user';
 
@@ -26,15 +26,8 @@ const enhance = withObservables(['postIds', 'fileChannelIds'], ({database, postI
     const posts = queryPostsById(database, postIds).observe();
     const fileChannels = queryChannelsById(database, fileChannelIds).observe();
     const currentUser = observeCurrentUser(database);
-    const config = observeConfig(database);
 
-    const enableMobileFileDownload = config.pipe(
-        switchMap((cfg) => of$(cfg?.EnableMobileFileDownload !== 'false')),
-    );
-
-    const publicLinkEnabled = config.pipe(
-        switchMap((cfg) => of$(cfg?.EnablePublicLink !== 'false')),
-    );
+    const enableMobileFileDownload = observeConfigBooleanValue(database, 'EnableMobileFileDownload');
 
     const complianceDisabled = observeLicense(database).pipe(
         switchMap((lcs) => of$(lcs?.IsLicensed === 'false' || lcs?.Compliance === 'false')),
@@ -50,7 +43,7 @@ const enhance = withObservables(['postIds', 'fileChannelIds'], ({database, postI
         posts,
         fileChannels,
         canDownloadFiles,
-        publicLinkEnabled,
+        publicLinkEnabled: observeConfigBooleanValue(database, 'EnablePublicLink'),
     };
 });
 

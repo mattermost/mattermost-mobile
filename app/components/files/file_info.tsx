@@ -36,11 +36,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75, 'Regular'),
         },
-        fileInfo: {
-            fontSize: 14,
-            flexDirection: 'row',
-            color: theme.centerChannelColor,
-        },
         fileName: {
             marginTop: -4,
             flexDirection: 'column',

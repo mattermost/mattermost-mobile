@@ -46,13 +46,8 @@ const NoResultsWithTerm = ({term, type}: Props) => {
     const [defaultMessage, setDefaultMessage] = useState('No results for “{term}”');
 
     useEffect(() => {
-        if (type === TabTypes.FILES) {
-            setTitleId(t('mobile.no_results_with_term.files'));
-            setDefaultMessage('No files matching “{term}”');
-        } else if (type === TabTypes.MESSAGES) {
-            setTitleId(t('mobile.no_results_with_term.messages'));
-            setDefaultMessage('No matches found for “{term}”');
-        }
+        setTitleId(type === TabTypes.FILES ? t('mobile.no_results_with_term.files') : t('mobile.no_results_with_term.messages'));
+        setDefaultMessage(type === TabTypes.FILES ? 'No files matching “{term}”' : 'No matches found for “{term}”');
     }, [type]);
 
     return (

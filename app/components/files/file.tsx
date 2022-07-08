@@ -63,8 +63,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const File = ({
-    asCard = false, canDownloadFiles, channelName, file, galleryIdentifier, showDate = false, index, inViewPort = false, isSingleImage = false,
-    nonVisibleImagesCount = 0, onPress, onOptionsPress, publicLinkEnabled, theme, wrapperWidth = 300, updateFileForGallery,
+    asCard = false,
+    canDownloadFiles,
+    channelName,
+    file,
+    galleryIdentifier,
+    inViewPort = false,
+    index,
+    isSingleImage = false,
+    nonVisibleImagesCount = 0,
+    onOptionsPress,
+    onPress,
+    publicLinkEnabled,
+    showDate = false,
+    theme,
+    updateFileForGallery,
+    wrapperWidth = 300,
 }: FileProps) => {
     const document = useRef<DocumentFileRef>(null);
     const style = getStyleSheet(theme);
@@ -76,6 +90,8 @@ const File = ({
             onPress(index);
         }
     }, [index]);
+
+    const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePreviewPress);
 
     const handleOnOptionsPress = useCallback(() => {
         onOptionsPress?.(index);
@@ -105,18 +121,13 @@ const File = ({
     };
 
     const renderImageFileOverlay = () => {
-        if (nonVisibleImagesCount) {
-            return (
-                <ImageFileOverlay
-                    theme={theme}
-                    value={nonVisibleImagesCount}
-                />
-            );
-        }
-        return null;
+        return (
+            <ImageFileOverlay
+                theme={theme}
+                value={nonVisibleImagesCount}
+            />
+        );
     };
-
-    const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePreviewPress);
 
     const renderImageFile = () => {
         return (
@@ -130,7 +141,7 @@ const File = ({
                         resizeMode={'cover'}
                         wrapperWidth={wrapperWidth}
                     />
-                    {renderImageFileOverlay()}
+                    {Boolean(nonVisibleImagesCount) && renderImageFileOverlay()}
                 </Animated.View>
             </TouchableWithoutFeedback>
         );
@@ -150,7 +161,7 @@ const File = ({
                         updateFileForGallery={updateFileForGallery}
                         index={index}
                     />
-                    {renderImageFileOverlay()}
+                    {Boolean(nonVisibleImagesCount) && renderImageFileOverlay()}
                 </Animated.View>
             </TouchableWithoutFeedback>
         );
