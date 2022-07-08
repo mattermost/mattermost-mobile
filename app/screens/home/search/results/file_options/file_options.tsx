@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text} from 'react-native';
 
@@ -85,13 +85,13 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
     const galleryItem = {...fileInfo, type: 'image'} as GalleryItemType;
     const size = getFormattedFileSize(fileInfo.size);
 
-    const handleDownload = useCallback(() => {
+    const handleDownload = () => {
         setAction('downloading');
-    }, []);
+    };
 
-    const handleCopyLink = useCallback(() => {
+    const handleCopyLink = () => {
         setAction('copying');
-    }, []);
+    };
 
     const handlePermalink = async () => {
         showPermalink(serverUrl, '', fileInfo.post_id, intl);
