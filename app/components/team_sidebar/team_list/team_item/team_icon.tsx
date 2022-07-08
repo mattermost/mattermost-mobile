@@ -106,10 +106,15 @@ export default function TeamIcon({
 
     let teamIconContent;
     if (nameOnly) {
-        const textStyle = [styles.text, textTypography];
+        const textStyle = [
+            styles.text,
+            textTypography,
+            textColor && {color: textColor},
+        ];
+
         teamIconContent = (
             <Text
-                style={textColor ? [textStyle, {color: textColor}] : textStyle}
+                style={textStyle}
                 testID={`${testID}.display_name_abbreviation`}
             >
                 {displayName.substring(0, 2)}
