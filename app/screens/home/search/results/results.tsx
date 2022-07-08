@@ -82,10 +82,10 @@ const Results = ({
     selectedTab,
 }: Props) => {
     const theme = useTheme();
+    const isTablet = useIsTablet();
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
-
-    const isTablet = useIsTablet();
+    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
 
     const containerStyle = useMemo(() => {
         let padding = 0;
@@ -101,7 +101,6 @@ const Results = ({
         return fileChannels.find((c) => c.id === id)?.displayName;
     };
 
-    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
     const filesForGallery = useDerivedValue(() => imageAttachments.concat(nonImageAttachments),
         [imageAttachments, nonImageAttachments]);
 
