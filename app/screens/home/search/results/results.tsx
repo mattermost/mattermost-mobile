@@ -48,38 +48,38 @@ const notImplementedComponent = (
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 type Props = {
-    searchValue: string;
-    selectedTab: TabType;
+    canDownloadFiles: boolean;
     currentTimezone: string;
-    isTimezoneEnabled: boolean;
-    posts: PostModel[];
     fileChannels: ChannelModel[];
     fileInfos: FileInfo[];
-    scrollRef: React.RefObject<FlatList>;
-    onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
-    scrollPaddingTop: number;
+    isTimezoneEnabled: boolean;
     loading: boolean;
-    canDownloadFiles: boolean;
+    onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+    posts: PostModel[];
     publicLinkEnabled: boolean;
+    scrollPaddingTop: number;
+    scrollRef: React.RefObject<FlatList>;
+    searchValue: string;
+    selectedTab: TabType;
 }
 
 const emptyList: FileInfo[] | Array<string | PostModel> = [];
 const galleryIdentifier = 'search-files-location';
 
 const Results = ({
+    canDownloadFiles,
     currentTimezone,
+    fileChannels,
     fileInfos,
     isTimezoneEnabled,
+    loading,
+    onScroll,
     posts,
-    fileChannels,
+    publicLinkEnabled,
+    scrollPaddingTop,
+    scrollRef,
     searchValue,
     selectedTab,
-    scrollRef,
-    onScroll,
-    scrollPaddingTop,
-    loading,
-    canDownloadFiles,
-    publicLinkEnabled,
 }: Props) => {
     const theme = useTheme();
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
