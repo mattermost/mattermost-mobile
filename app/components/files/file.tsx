@@ -91,6 +91,8 @@ const File = ({
         }
     }, [index]);
 
+    const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePreviewPress);
+
     const handleOnOptionsPress = useCallback(() => {
         onOptionsPress?.(index);
     }, [index, onOptionsPress]);
@@ -129,8 +131,6 @@ const File = ({
         }
         return null;
     };
-
-    const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePreviewPress);
 
     const renderImageFile = () => {
         return (
