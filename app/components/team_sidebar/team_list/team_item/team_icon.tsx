@@ -101,9 +101,12 @@ export default function TeamIcon({
         return backgroundColor ? [styles.container, {backgroundColor}] : [styles.container, nameOnly && styles.nameOnly];
     }, [styles, backgroundColor, selected, nameOnly]);
 
+    const textTypography = typography('Heading', smallText ? 200 : 400, 'SemiBold');
+    textTypography.fontFamily = 'Metropolis-SemiBold';
+
     let teamIconContent;
     if (nameOnly) {
-        const textStyle = [styles.text, typography('Body', smallText ? 200 : 400, 'SemiBold')];
+        const textStyle = [styles.text, textTypography];
         teamIconContent = (
             <Text
                 style={textColor ? [textStyle, {color: textColor}] : textStyle}
