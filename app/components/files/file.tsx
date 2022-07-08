@@ -63,8 +63,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const File = ({
-    asCard = false, canDownloadFiles, channelName, file, galleryIdentifier, showDate = false, index, inViewPort = false, isSingleImage = false,
-    nonVisibleImagesCount = 0, onPress, onOptionsPress, publicLinkEnabled, theme, wrapperWidth = 300, updateFileForGallery,
+    asCard = false,
+    canDownloadFiles,
+    channelName,
+    file,
+    galleryIdentifier,
+    inViewPort = false,
+    index,
+    isSingleImage = false,
+    nonVisibleImagesCount = 0,
+    onOptionsPress,
+    onPress,
+    publicLinkEnabled,
+    showDate = false,
+    theme,
+    updateFileForGallery,
+    wrapperWidth = 300,
 }: FileProps) => {
     const document = useRef<DocumentFileRef>(null);
     const style = getStyleSheet(theme);
