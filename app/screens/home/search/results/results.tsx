@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {StyleSheet, FlatList, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Text, StyleProp, View, ViewStyle} from 'react-native';
-import Animated, {useDerivedValue} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import File from '@components/files/file';
 import NoResultsWithTerm from '@components/no_results_with_term';
@@ -101,17 +101,17 @@ const Results = ({
         return fileChannels.find((c) => c.id === id)?.displayName;
     };
 
-    const filesForGallery = useDerivedValue(() => imageAttachments.concat(nonImageAttachments),
+    const filesForGallery = useMemo(() => imageAttachments.concat(nonImageAttachments),
         [imageAttachments, nonImageAttachments]);
 
-    const orderedFilesForGallery = useDerivedValue(() => (
-        filesForGallery.value.sort((a: FileInfo, b: FileInfo) => {
+    const orderedFilesForGallery = useMemo(() => (
+        filesForGallery.sort((a: FileInfo, b: FileInfo) => {
             return (b.create_at || 0) - (a.create_at || 0);
         })
     ), [filesForGallery]);
 
     const handlePreviewPress = useCallback(preventDoubleTap((idx: number) => {
-        const items = orderedFilesForGallery.value.map((f) => fileToGalleryItem(f, f.user_id));
+        const items = orderedFilesForGallery.map((f) => fileToGalleryItem(f, f.user_id));
         openGalleryAtIndex(galleryIdentifier, idx, items);
     }), [orderedFilesForGallery]);
 
@@ -122,7 +122,7 @@ const Results = ({
     }), []);
 
     const attachmentIndex = (fileId: string) => {
-        return orderedFilesForGallery.value.findIndex((file) => file.id === fileId) || 0;
+        return orderedFilesForGallery.findIndex((file) => file.id === fileId) || 0;
     };
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<string|FileInfo | Post>) => {
@@ -153,11 +153,11 @@ const Results = ({
         }
         const updateFileForGallery = (idx: number, file: FileInfo) => {
             'worklet';
-            orderedFilesForGallery.value[idx] = file;
+            orderedFilesForGallery[idx] = file;
         };
 
         const container: StyleProp<ViewStyle> = fileInfos.length > 1 ? styles.container : undefined;
-        const isSingleImage = orderedFilesForGallery.value.length === 1 && (isImage(orderedFilesForGallery.value[0]) || isVideo(orderedFilesForGallery.value[0]));
+        const isSingleImage = orderedFilesForGallery.length === 1 && (isImage(orderedFilesForGallery[0]) || isVideo(orderedFilesForGallery[0]));
         const isReplyPost = false;
 
         return (
@@ -210,7 +210,7 @@ const Results = ({
     } else if (selectedTab === TabTypes.MESSAGES) {
         data = orderedPosts;
     } else {
-        data = orderedFilesForGallery.value;
+        data = orderedFilesForGallery;
     }
 
     return (
