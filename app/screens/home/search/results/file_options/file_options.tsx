@@ -20,8 +20,6 @@ import {typography} from '@utils/typography';
 
 const format = 'MMM DD YYYY HH:MM A';
 
-export const TOAST_MARGIN_BOTTOM = 40;
-
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
