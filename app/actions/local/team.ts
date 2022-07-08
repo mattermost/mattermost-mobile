@@ -46,7 +46,9 @@ export async function addSearchToTeamSearchHistory(serverUrl: string, teamId: st
         const teamSearchHistory = await queryTeamSearchHistoryByTeamId(database, teamId).fetch();
         if (teamSearchHistory.length > MAX_TEAM_SEARCHES) {
             const lastSearch = teamSearchHistory.pop();
-            await removeSearchFromTeamSearchHistory(serverUrl, lastSearch!.id);
+            await database.write(async () => {
+                await lastSearch?.destroyPermanently();
+            });
         }
 
         return {error: undefined};
@@ -60,11 +62,9 @@ export async function removeSearchFromTeamSearchHistory(serverUrl: string, id: s
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const teamSearch = await getTeamSearchHistoryById(database, id);
-        if (teamSearch) {
-            await database.write(async () => {
-                await teamSearch.destroyPermanently();
-            });
-        }
+        await database.write(async () => {
+            await teamSearch?.destroyPermanently();
+        });
         return {teamSearch};
     } catch (error) {
         logError('Failed removeSearchFromTeamSearchHistory', error);
