@@ -26,6 +26,7 @@ import {showMuteChannelSnackbar} from '@utils/snack_bar';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
+import {fetchGroupsForChannel} from './groups';
 import {fetchPostsForChannel} from './post';
 import {setDirectChannelVisible} from './preference';
 import {fetchRolesIfNeeded} from './role';
@@ -1106,6 +1107,12 @@ export async function switchToChannelById(serverUrl: string, channelId: string, 
     setDirectChannelVisible(serverUrl, channelId);
     markChannelAsRead(serverUrl, channelId);
     fetchChannelStats(serverUrl, channelId);
+
+    getChannelById(database, channelId).then((channel) => {
+        if (channel?.isGroupConstrained) {
+            fetchGroupsForChannel(serverUrl, channelId);
+        }
+    });
 
     return {};
 }

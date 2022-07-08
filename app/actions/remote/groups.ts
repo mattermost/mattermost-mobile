@@ -48,7 +48,14 @@ export const fetchGroupsForChannel = async (serverUrl: string, channelId: string
         const client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToChannel(channelId);
 
-        return operator.handleGroups({groups: response.groups, prepareRecordsOnly: fetchOnly});
+        const groups = await operator.handleGroups({groups: response.groups, prepareRecordsOnly: true});
+        const groupChannels = await operator.handleGroupChannelsForChannel({groups: response.groups, channelId, prepareRecordsOnly: true});
+
+        if (!fetchOnly) {
+            await operator.batchRecords([...groups, ...groupChannels]);
+        }
+
+        return {groups, groupChannels};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};

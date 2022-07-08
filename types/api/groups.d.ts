@@ -22,19 +22,9 @@ type GroupTeam = {
 }
 
 type GroupChannel = {
+    id?: string;
     channel_id: string;
-    channel_display_name: string;
-    channel_type: string;
-    team_id: string;
-    team_display_name: string;
-    team_type: string;
     group_id: string;
-    auto_add: boolean;
-    member_count?: number;
-    timezone_count?: number;
-    create_at: number;
-    delete_at: number;
-    update_at: number;
 }
 
 type GroupMembership = {
