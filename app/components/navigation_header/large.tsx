@@ -20,7 +20,9 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        backgroundColor: theme.sidebarBg,
+
+        // backgroundColor: theme.sidebarBg,
+        backgroundColor: 'green',
         paddingHorizontal: 20,
     },
     heading: {

@@ -33,7 +33,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
         },
         container: {
-            backgroundColor: theme.centerChannelBg,
+
+            // backgroundColor: theme.centerChannelBg,
+            backgroundColor: 'orange',
             marginHorizontal: 12,
             flexDirection: 'row',
             paddingVertical: 12,

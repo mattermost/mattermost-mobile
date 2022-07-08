@@ -231,7 +231,7 @@ const SearchScreen = ({teamId}: Props) => {
                 edges={EDGES}
             >
                 <Animated.View style={animated}>
-                    <Animated.View style={top}>
+                    <Animated.View style={[{backgroundColor: 'cyan'}, top]}>
                         <RoundedHeaderContext/>
                         {header}
                     </Animated.View>

@@ -136,7 +136,7 @@ const SearchModifiers = ({searchValue, setSearchValue}: Props) => {
     return (
         <>
             <FormattedText
-                style={styles.title}
+                style={[styles.title, {backgroundColor: 'cyan'}]}
                 id={'screen.search.modifier.header'}
                 defaultMessage='Search options'
             />

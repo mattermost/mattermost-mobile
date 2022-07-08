@@ -24,7 +24,9 @@ const INITIAL_TOP = -45;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        backgroundColor: theme.sidebarBg,
+
+        // backgroundColor: theme.sidebarBg,
+        backgroundColor: 'purple',
         height: HEADER_SEARCH_HEIGHT,
         justifyContent: 'center',
         paddingHorizontal: 20,

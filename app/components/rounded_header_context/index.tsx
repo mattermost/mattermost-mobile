@@ -9,13 +9,13 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        backgroundColor: theme.sidebarBg,
+        backgroundColor: 'blue',
         height: 40,
         width: '100%',
         position: 'absolute',
     },
     content: {
-        backgroundColor: theme.centerChannelBg,
+        backgroundColor: 'blue',
         borderTopLeftRadius: 12,
         borderTopRightRadius: 12,
         flex: 1,

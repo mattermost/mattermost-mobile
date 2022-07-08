@@ -95,7 +95,8 @@ export default function HomeScreen(props: HomeProps) {
                 dark: false,
                 colors: {
                     primary: theme.centerChannelColor,
-                    background: 'transparent',
+                    background: 'yellow',
+                    // background: 'transparent',
                     card: theme.centerChannelBg,
                     text: theme.centerChannelColor,
                     border: 'white',

@@ -19,6 +19,7 @@ import Loader from './loader';
 const notImplementedComponent = (
     <View
         style={{
+            backgroundColor: 'cyan',
             height: 800,
             flexGrow: 1,
             alignItems: 'center',
