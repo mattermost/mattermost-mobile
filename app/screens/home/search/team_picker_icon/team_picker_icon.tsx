@@ -17,6 +17,7 @@ import SelectTeamSlideUp from './search_team_slideup';
 
 import type TeamModel from '@typings/database/models/servers/team';
 
+const MENU_DOWN_ICON_SIZE = 24;
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         teamContainer: {
@@ -103,7 +104,7 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
                             color={changeOpacity(theme.centerChannelColor, 0.56)}
                             style={styles.compass}
                             name='menu-down'
-                            size={24}
+                            size={MENU_DOWN_ICON_SIZE}
                         />
                     </View>
                 </TouchableWithFeedback>
