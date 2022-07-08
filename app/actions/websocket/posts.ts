@@ -52,17 +52,6 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         return;
     }
 
-    const models: Model[] = [];
-
-    const postModels = await operator.handlePosts({
-        actionType: ActionType.POSTS.RECEIVED_NEW,
-        order: [post.id],
-        posts: [post],
-        prepareRecordsOnly: true,
-    });
-
-    models.push(...postModels);
-
     const isCRTEnabled = await getIsCRTEnabled(database);
     if (isCRTEnabled) {
         await createThreadFromNewPost(serverUrl, post, false);
@@ -118,6 +107,8 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         };
         DeviceEventEmitter.emit(Events.USER_STOP_TYPING, data);
     }
+
+    const models: Model[] = [];
 
     const {authors} = await fetchPostAuthors(serverUrl, [post], true);
     if (authors?.length) {
@@ -175,6 +166,15 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             }
         }
     }
+
+    const postModels = await operator.handlePosts({
+        actionType: ActionType.POSTS.RECEIVED_NEW,
+        order: [post.id],
+        posts: [post],
+        prepareRecordsOnly: true,
+    });
+
+    models.push(...postModels);
 
     operator.batchRecords(models);
 }

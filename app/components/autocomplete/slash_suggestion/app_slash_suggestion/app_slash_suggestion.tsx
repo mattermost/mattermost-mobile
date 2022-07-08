@@ -120,7 +120,7 @@ const AppSlashSuggestion = ({
                     <AtMentionItem
                         user={item.item as UserProfile | UserModel}
                         onPress={completeIgnoringSuggestion(item.Complete)}
-                        testID={`autocomplete.at_mention.item.${item.item}`}
+                        testID='autocomplete.slash_suggestion.at_mention_item'
                     />
                 );
             case COMMAND_SUGGESTION_CHANNEL:
@@ -131,7 +131,7 @@ const AppSlashSuggestion = ({
                     <ChannelMentionItem
                         channel={item.item as Channel | ChannelModel}
                         onPress={completeIgnoringSuggestion(item.Complete)}
-                        testID={`autocomplete.channel_mention.item.${item.item}`}
+                        testID='autocomplete.slash_suggestion.channel_mention_item'
                     />
                 );
             default:

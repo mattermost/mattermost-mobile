@@ -77,6 +77,7 @@ const ChannelMentionItem = ({
     let component;
 
     const isArchived = ('delete_at' in channel ? channel.delete_at : channel.deleteAt) > 0;
+    const channelMentionItemTestId = `${testID}.${channel.name}`;
 
     if (isDMorGM(channel)) {
         if (!displayName) {
@@ -88,15 +89,22 @@ const ChannelMentionItem = ({
                 key={channel.id}
                 onPress={completeMention}
                 style={rowStyle}
-                testID={testID}
+                testID={channelMentionItemTestId}
                 type={'opacity'}
             >
-                <Text style={style.rowDisplayName}>{'@' + displayName}</Text>
+                <Text
+                    style={style.rowDisplayName}
+                    testID={`${channelMentionItemTestId}.display_name`}
+                >
+                    {'@' + displayName}
+                </Text>
                 <BotTag
                     show={isBot}
+                    testID={`${channelMentionItemTestId}.bot.tag`}
                 />
                 <GuestTag
                     show={isGuest}
+                    testID={`${channelMentionItemTestId}.guest.tag`}
                 />
             </TouchableWithFeedback>
         );
@@ -107,7 +115,7 @@ const ChannelMentionItem = ({
                 onPress={completeMention}
                 style={margins}
                 underlayColor={changeOpacity(theme.buttonBg, 0.08)}
-                testID={testID}
+                testID={channelMentionItemTestId}
                 type={'native'}
             >
                 <View style={style.row}>
@@ -120,8 +128,18 @@ const ChannelMentionItem = ({
                         size={18}
                         style={style.icon}
                     />
-                    <Text style={style.rowDisplayName}>{displayName}</Text>
-                    <Text style={style.rowName}>{` ~${channel.name}`}</Text>
+                    <Text
+                        style={style.rowDisplayName}
+                        testID={`${channelMentionItemTestId}.display_name`}
+                    >
+                        {displayName}
+                    </Text>
+                    <Text
+                        style={style.rowName}
+                        testID={`${channelMentionItemTestId}.name`}
+                    >
+                        {` ~${channel.name}`}
+                    </Text>
                 </View>
             </TouchableWithFeedback>
         );

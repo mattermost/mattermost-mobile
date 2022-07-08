@@ -127,8 +127,8 @@ const UserItem = ({
             <View
                 style={[style.rowInfo, {maxWidth: shared ? '75%' : '80%'}]}
             >
-                {bot && <BotTag/>}
-                {guest && <GuestTag/>}
+                {bot && <BotTag testID={`${userItemTestId}.bot.tag`}/>}
+                {guest && <GuestTag testID={`${userItemTestId}.guest.tag`}/>}
                 {Boolean(name.length) &&
                     <Text
                         style={style.rowFullname}
@@ -143,6 +143,7 @@ const UserItem = ({
                         id='suggestion.mention.you'
                         defaultMessage=' (you)'
                         style={style.rowUsername}
+                        testID={`${userItemTestId}.current_user_indicator`}
                     />
                 }
                 {Boolean(user) &&

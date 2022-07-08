@@ -89,6 +89,7 @@ const UserProfileTitle = ({
                 <Text
                     numberOfLines={1}
                     style={styles.displayName}
+                    testID='user_profile.display_name'
                 >
                     {`${prefix}${displayName}`}
                 </Text>
@@ -96,6 +97,7 @@ const UserProfileTitle = ({
                 <Text
                     numberOfLines={1}
                     style={styles.username}
+                    testID='user_profile.username'
                 >
                     {`@${user.username}`}
                 </Text>

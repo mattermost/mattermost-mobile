@@ -43,6 +43,7 @@ const UserProfileAvatar = ({enablePostIconOverride, user, userIconOverride}: Pro
             showStatus={true}
             size={96}
             statusSize={24}
+            testID={`user_profile_avatar.${user.id}.profile_picture`}
         />
     );
 };

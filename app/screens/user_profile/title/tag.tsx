@@ -24,11 +24,19 @@ const styles = StyleSheet.create({
 
 const UserProfileTag = ({isBot, isChannelAdmin, isGuest, isSystemAdmin, isTeamAdmin}: Props) => {
     if (isBot) {
-        return (<BotTag style={styles.tag}/>);
+        return (
+            <BotTag
+                style={styles.tag}
+                testID='user_profile.bot.tag'
+            />);
     }
 
     if (isGuest) {
-        return (<GuestTag style={styles.tag}/>);
+        return (
+            <GuestTag
+                style={styles.tag}
+                testID='user_profile.guest.tag'
+            />);
     }
 
     if (isSystemAdmin) {
@@ -37,6 +45,7 @@ const UserProfileTag = ({isBot, isChannelAdmin, isGuest, isSystemAdmin, isTeamAd
                 id='user_profile.system_admin'
                 defaultMessage='System Admin'
                 style={styles.tag}
+                testID='user_profile.system_admin.tag'
             />
         );
     }
@@ -47,6 +56,7 @@ const UserProfileTag = ({isBot, isChannelAdmin, isGuest, isSystemAdmin, isTeamAd
                 id='user_profile.team_admin'
                 defaultMessage='Team Admin'
                 style={styles.tag}
+                testID='user_profile.team_admin.tag'
             />
         );
     }
@@ -57,6 +67,7 @@ const UserProfileTag = ({isBot, isChannelAdmin, isGuest, isSystemAdmin, isTeamAd
                 id='user_profile.channel_admin'
                 defaultMessage='Channel Admin'
                 style={styles.tag}
+                testID='user_profile.channel_admin.tag'
             />
         );
     }

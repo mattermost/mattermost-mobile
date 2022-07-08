@@ -220,6 +220,7 @@ const FilteredList = ({
                 <UserItem
                     onPress={onOpenDirectMessage}
                     user={item}
+                    testID='find_channels.filtered_list.user_item'
                 />
             );
         }
@@ -229,6 +230,7 @@ const FilteredList = ({
                 channel={item}
                 onPress={onJoinChannel}
                 showTeamName={showTeamName}
+                testID='find_channels.filtered_list.remote_channel_item'
             />
         );
     }, [onJoinChannel, onOpenDirectMessage, onSwitchToChannel, showTeamName, teammateDisplayNameSetting]);

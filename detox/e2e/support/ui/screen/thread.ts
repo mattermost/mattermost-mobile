@@ -74,7 +74,7 @@ class ThreadScreen {
         return this.postList.getThreadOverviewPostOptionsButton();
     };
 
-    getPostListPostItem = (postId: string, text: string, postProfileOptions: any = {}) => {
+    getPostListPostItem = (postId: string, text = '', postProfileOptions: any = {}) => {
         return this.postList.getPost(postId, text, postProfileOptions);
     };
 

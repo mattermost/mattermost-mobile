@@ -22,11 +22,14 @@ import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {queryAllServers} from '@queries/app/servers';
 import {queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
-import {prepareModels} from '@queries/servers/entry';
+import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
+import {getHasCRTChanged} from '@queries/servers/preference';
 import {getConfig, getPushVerificationStatus, getWebSocketLastDisconnected} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, getNthLastChannelFromTeam, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
 import {processIsCRTEnabled} from '@utils/thread';
+
+import {fetchGroupsForMember} from '../groups';
 
 import type ClientError from '@client/rest/error';
 
@@ -58,6 +61,7 @@ export type EntryResponse = {
 }
 
 const FETCH_MISSING_DM_TIMEOUT = 2500;
+const FETCH_UNREADS_TIMEOUT = 2500;
 
 export const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[]) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -128,18 +132,32 @@ export const entry = async (serverUrl: string, teamId?: string, channelId?: stri
     return {models: models.flat(), initialChannelId, initialTeamId, prefData, teamData, chData, meData};
 };
 
-export const fetchAppEntryData = async (serverUrl: string, since: number, initialTeamId = ''): Promise<AppEntryData | AppEntryError> => {
+export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, initialTeamId = ''): Promise<AppEntryData | AppEntryError> => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
     }
-
+    let since = sinceArg;
     const includeDeletedChannels = true;
     const fetchOnly = true;
 
     const confReq = await fetchConfigAndLicense(serverUrl);
     const prefData = await fetchMyPreferences(serverUrl, fetchOnly);
     const isCRTEnabled = Boolean(prefData.preferences && processIsCRTEnabled(prefData.preferences, confReq.config));
+    if (prefData.preferences) {
+        const crtToggled = await getHasCRTChanged(database, prefData.preferences);
+        if (crtToggled) {
+            const currentServerUrl = await DatabaseManager.getActiveServerUrl();
+            const isSameServer = currentServerUrl === serverUrl;
+            if (isSameServer) {
+                since = 0;
+            }
+            const {error} = await truncateCrtRelatedTables(serverUrl);
+            if (error) {
+                return {error: `Resetting CRT on ${serverUrl} failed`};
+            }
+        }
+    }
 
     // Fetch in parallel teams / team membership / channels for current team / user preferences / user
     const promises: [Promise<MyTeamsRequest>, Promise<MyChannelsRequest | undefined>, Promise<MyUserRequest>] = [
@@ -260,13 +278,15 @@ export async function deferredAppEntryActions(
     initialTeamId?: string, initialChannelId?: string) {
     // defer sidebar DM & GM profiles
     let channelsToFetchProfiles: Set<Channel>|undefined;
-    if (chData?.channels?.length && chData.memberships?.length) {
-        const directChannels = chData.channels.filter(isDMorGM);
-        channelsToFetchProfiles = new Set<Channel>(directChannels);
+    setTimeout(async () => {
+        if (chData?.channels?.length && chData.memberships?.length) {
+            const directChannels = chData.channels.filter(isDMorGM);
+            channelsToFetchProfiles = new Set<Channel>(directChannels);
 
-        // defer fetching posts for unread channels on initial team
-        fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId, true);
-    }
+            // defer fetching posts for unread channels on initial team
+            fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId, true);
+        }
+    }, FETCH_UNREADS_TIMEOUT);
 
     // defer fetch channels and unread posts for other teams
     if (teamData.teams?.length && teamData.memberships?.length) {
@@ -290,6 +310,10 @@ export async function deferredAppEntryActions(
 
     await fetchAllTeams(serverUrl);
     await updateAllUsersSince(serverUrl, since);
+
+    // Fetch groups for current user
+    fetchGroupsForMember(serverUrl, currentUserId);
+
     setTimeout(async () => {
         if (channelsToFetchProfiles?.size) {
             const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config, license);

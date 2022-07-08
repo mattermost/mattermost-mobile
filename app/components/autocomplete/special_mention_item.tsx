@@ -54,12 +54,14 @@ type Props = {
     defaultMessage: string;
     id: string;
     onPress: (handle: string) => void;
+    testID?: string;
 }
 const SpecialMentionItem = ({
     completeHandle,
     defaultMessage,
     id,
     onPress,
+    testID,
 }: Props) => {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
@@ -67,10 +69,13 @@ const SpecialMentionItem = ({
         onPress(completeHandle);
     }, [completeHandle, onPress]);
 
+    const specialMentionItemTestId = `${testID}.${id}`;
+
     return (
         <TouchableWithFeedback
             onPress={completeMention}
             underlayColor={changeOpacity(theme.buttonBg, 0.08)}
+            testID={specialMentionItemTestId}
             type={'native'}
         >
             <View style={style.row}>
@@ -84,11 +89,17 @@ const SpecialMentionItem = ({
                     style={style.textWrapper}
                     numberOfLines={1}
                 >
-                    <Text style={style.rowUsername}>{`@${completeHandle} - `}</Text>
+                    <Text
+                        style={style.rowUsername}
+                        testID={`${specialMentionItemTestId}.name`}
+                    >
+                        {`@${completeHandle} - `}
+                    </Text>
                     <FormattedText
                         id={id}
                         defaultMessage={defaultMessage}
                         style={style.rowFullname}
+                        testID={`${specialMentionItemTestId}.display_name`}
                     />
                 </Text>
             </View>
