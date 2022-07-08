@@ -95,7 +95,7 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
 
     const handlePermalink = useCallback(async () => {
         showPermalink(serverUrl, '', fileInfo.post_id, intl);
-    }, [fileInfo]);
+    }, [fileInfo.post_id]);
 
     const renderIcon = () => {
         switch (true) {
