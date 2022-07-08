@@ -121,9 +121,9 @@ const Results = ({
         // https://mattermost.atlassian.net/browse/MM-44939
     }), []);
 
-    const attachmentIndex = (fileId: string) => {
+    const attachmentIndex = useCallback((fileId: string) => {
         return orderedFilesForGallery.findIndex((file) => file.id === fileId) || 0;
-    };
+    }, [orderedFilesForGallery]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<string|FileInfo | Post>) => {
         if (typeof item === 'string') {
