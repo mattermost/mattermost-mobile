@@ -121,15 +121,12 @@ const File = ({
     };
 
     const renderImageFileOverlay = () => {
-        if (nonVisibleImagesCount) {
-            return (
-                <ImageFileOverlay
-                    theme={theme}
-                    value={nonVisibleImagesCount}
-                />
-            );
-        }
-        return null;
+        return (
+            <ImageFileOverlay
+                theme={theme}
+                value={nonVisibleImagesCount}
+            />
+        );
     };
 
     const renderImageFile = () => {
@@ -144,7 +141,7 @@ const File = ({
                         resizeMode={'cover'}
                         wrapperWidth={wrapperWidth}
                     />
-                    {renderImageFileOverlay()}
+                    {Boolean(nonVisibleImagesCount) && renderImageFileOverlay()}
                 </Animated.View>
             </TouchableWithoutFeedback>
         );
@@ -164,7 +161,7 @@ const File = ({
                         updateFileForGallery={updateFileForGallery}
                         index={index}
                     />
-                    {renderImageFileOverlay()}
+                    {Boolean(nonVisibleImagesCount) && renderImageFileOverlay()}
                 </Animated.View>
             </TouchableWithoutFeedback>
         );
