@@ -11,7 +11,6 @@ import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {PostModel, ChannelModel} from '@database/models/server';
 import {useIsTablet} from '@hooks/device';
 import {useImageAttachments} from '@hooks/files';
 import {isImage, isVideo} from '@utils/file';
@@ -22,6 +21,9 @@ import {TabTypes, TabType} from '@utils/search';
 import {preventDoubleTap} from '@utils/tap';
 
 import Loader from './loader';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type PostModel from '@typings/database/models/servers/post';
 
 const styles = StyleSheet.create({
     flex: {flex: 1},
