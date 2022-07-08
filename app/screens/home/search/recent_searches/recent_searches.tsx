@@ -72,7 +72,7 @@ const RecentSearches = ({setRecentValue, recentSearches}: Props) => {
             data={recentSearches}
             keyboardShouldPersistTaps='always'
             keyboardDismissMode='interactive'
-            ListHeaderComponent={renderHeader}
+            ListHeaderComponent={renderHeader()}
             renderItem={renderRecentItem}
             testID='search.recents_list'
             removeClippedSubviews={true}
