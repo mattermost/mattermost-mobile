@@ -49,12 +49,12 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
     const [serverUrls, setServerUrls] = useState<string[]>(EMPTY_SERVERS);
     const styles = getStyleSheet(theme);
 
-    const getAllCachedFiles = useCallback(async () => {
+    const getAllCachedFiles = async () => {
         const {totalSize, files: cachedFiles, serverUrls: allServerUrls} = await getAllFilesInCachesDirectory();
         setDataSize(totalSize);
         setFiles(cachedFiles || EMPTY_FILES);
         setServerUrls(allServerUrls || EMPTY_SERVERS);
-    }, []);
+    };
 
     const onPressDeleteData = preventDoubleTap(async () => {
         try {

@@ -141,6 +141,7 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
             tryOpenURL(link, onError);
         }
     });
+
     let middleDividerStyle = styles.divider;
     if (Platform.OS === 'ios') {
         middleDividerStyle = styles.middleDivider;
