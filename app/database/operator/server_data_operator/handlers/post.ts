@@ -295,7 +295,7 @@ const PostHandler = (superclass: any) => class extends superclass {
     /**
      * handlePostsInChannel: Handler responsible for the Create/Update operations occurring on the PostsInChannel table from the 'Server' schema
      * @param {Post[]} posts
-     * @param {} actionType
+     * @param {PostActionType} actionType
      * @param {boolean} prepareRecordsOnly
      * @returns {Promise<void>}
      */
