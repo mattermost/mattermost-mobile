@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
-import MenuItem from '@components/menu_item';
+import MenuItem, {ITEM_HEIGHT} from '@components/menu_item';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
@@ -17,6 +17,8 @@ import {dismissBottomSheet} from '@screens/navigation';
 import {FileFilter, FileFilters} from '@utils/file';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+const ICON_SIZE = 24;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -76,6 +78,9 @@ const data: FilterItem[] = [
     },
 ];
 
+export const NUMBER_FILTER_ITEMS = data.length;
+export const FILTER_ITEM_HEIGHT = ITEM_HEIGHT;
+
 type FilterProps = {
     initialFilter: FileFilter;
     setFilter: (filter: FileFilter) => void;
@@ -87,9 +92,6 @@ const Filter = ({initialFilter, setFilter}: FilterProps) => {
     const style = getStyleSheet(theme);
     const isTablet = useIsTablet();
 
-    const [selectedFilter, setSelectedFilter] = useState<FileFilter>(initialFilter);
-    const disableButton = selectedFilter === initialFilter;
-
     const renderLabelComponent = useCallback((item: FilterItem) => {
         return (
             <View style={style.labelContainer}>
@@ -98,23 +100,24 @@ const Filter = ({initialFilter, setFilter}: FilterProps) => {
                     id={item.id}
                     defaultMessage={item.defaultMessage}
                 />
-                {(selectedFilter === item.filterType) && (
+                {(initialFilter === item.filterType) && (
                     <CompassIcon
-                        style={style.selected}
                         name={'check'}
-                        size={24}
+                        size={ICON_SIZE}
+                        style={style.selected}
                     />
                 )}
             </View>
         );
-    }, [selectedFilter, style]);
+    }, [style]);
 
     const renderFilterItem = useCallback(({item}: {item: FilterItem}) => {
         return (
             <MenuItem
                 labelComponent={renderLabelComponent(item)}
                 onPress={() => {
-                    setSelectedFilter(item.filterType);
+                    setFilter(item.filterType);
+                    dismissBottomSheet();
                 }}
                 separator={item.separator}
                 testID={item.id}
@@ -123,20 +126,11 @@ const Filter = ({initialFilter, setFilter}: FilterProps) => {
         );
     }, [renderLabelComponent, theme]);
 
-    const handleShowResults = useCallback(() => {
-        setFilter(selectedFilter);
-        dismissBottomSheet();
-    }, [selectedFilter, setFilter]);
-
-    const buttonText = intl.formatMessage({id: 'screen.search.results.filter.show_button', defaultMessage: 'Show results'});
     const buttonTitle = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
 
     return (
         <BottomSheetContent
-            buttonText={buttonText}
-            onPress={handleShowResults}
-            disableButton={disableButton}
-            showButton={true}
+            showButton={false}
             showTitle={!isTablet}
             testID='search.filters'
             title={buttonTitle}
