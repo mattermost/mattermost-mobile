@@ -92,6 +92,8 @@ const Filter = ({initialFilter, setFilter}: FilterProps) => {
     const style = getStyleSheet(theme);
     const isTablet = useIsTablet();
 
+    const buttonTitle = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
+
     const renderLabelComponent = useCallback((item: FilterItem) => {
         return (
             <View style={style.labelContainer}>
@@ -111,22 +113,26 @@ const Filter = ({initialFilter, setFilter}: FilterProps) => {
         );
     }, [style]);
 
-    const renderFilterItem = useCallback(({item}: {item: FilterItem}) => {
+    const handleOnPress = useCallback((fileType: FileFilter) => {
+        if (fileType !== initialFilter) {
+            setFilter(fileType);
+        }
+        dismissBottomSheet();
+    }, [initialFilter]);
+
+    const renderFilterItem = useCallback(({item}) => {
         return (
             <MenuItem
                 labelComponent={renderLabelComponent(item)}
                 onPress={() => {
-                    setFilter(item.filterType);
-                    dismissBottomSheet();
+                    handleOnPress(item.filterType);
                 }}
                 separator={item.separator}
                 testID={item.id}
                 theme={theme}
             />
         );
-    }, [renderLabelComponent, theme]);
-
-    const buttonTitle = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
+    }, [handleOnPress, renderLabelComponent, theme]);
 
     return (
         <BottomSheetContent
