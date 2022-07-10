@@ -30,27 +30,24 @@ type Props = {
 }
 
 export const HEADER_ROUNDED_HEIGHT = 10;
-export const HEADER_BUTTON_HEIGHT = 40;
-export const HEADER_HEIGHT = HEADER_ROUNDED_HEIGHT + HEADER_BUTTON_HEIGHT;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            height: HEADER_BUTTON_HEIGHT,
+            marginTop: HEADER_ROUNDED_HEIGHT,
             backgroundColor: theme.centerChannelBg,
+            borderBottomWidth: 1,
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
+        },
+        buttonsContainer: {
             marginBottom: 12,
             paddingHorizontal: 12,
             flexDirection: 'row',
-            marginTop: 10,
         },
         filter: {
             alignItems: 'center',
             flexDirection: 'row',
             marginLeft: 'auto',
-        },
-        divider: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-            height: 1,
         },
     };
 });
@@ -104,8 +101,8 @@ const Header = ({
     }, [selectedFilter]);
 
     return (
-        <>
-            <View style={styles.container}>
+        <View style={styles.container}>
+            <View style={styles.buttonsContainer}>
                 <SelectButton
                     selected={selectedTab === 'messages'}
                     onPress={handleMessagesPress}
@@ -144,9 +141,7 @@ const Header = ({
                     />
                 </View>
             </View>
-            <View style={styles.divider}/>
-        </>
-
+        </View>
     );
 };
 
