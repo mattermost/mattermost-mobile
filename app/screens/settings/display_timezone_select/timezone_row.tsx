@@ -9,7 +9,7 @@ import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-const ITEM_HEIGHT = 45;
+const ITEM_HEIGHT = 48;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
