@@ -32,9 +32,7 @@ type Props = SearchProps & {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-
-        // backgroundColor: theme.sidebarBg,
-        backgroundColor: 'red',
+        backgroundColor: theme.sidebarBg,
         position: 'absolute',
         width: '100%',
         zIndex: 10,
