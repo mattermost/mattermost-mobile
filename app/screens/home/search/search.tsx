@@ -83,21 +83,52 @@ const SearchScreen = ({teamId}: Props) => {
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight, hideHeader} = useCollapsibleHeader<FlatList>(true, onSnap);
 
     const onSubmit = useCallback(() => {
+        console.log('--- onSubmit ---');
         handleSearch(searchValue);
+
+        // hideHeader();
     }, [searchValue]);
 
     const handleClearSearch = useCallback(() => {
+        console.log('--- handleClearSearch ---');
+
+        // this is the `x` in the search
+
+        // setShowResults(false);
         setSearchValue('');
-        setLastSearchedValue('');
+
+        // setLastSearchedValue('');
         setFilter(FileFilters.ALL);
+
+        // setFileInfos(emptyFileResults);
+        // setPostIds(emptyPostResults);
+
+        setShowResults(true);
+
+        // hideHeader();
     }, []);
 
+    const handleHideHeader = useCallback(() => {
+        console.log('--- handleHideHeader ---');
+        console.log('showResults', showResults);
+
+        // if (showResults) {
+        //     hideHeader();
+        // }
+    }, [showResults]);
+
     const handleCancelSearch = useCallback(() => {
-        handleClearSearch();
+        console.log('--- handleCancelSearch ---');
+
         setShowResults(false);
-    }, [handleClearSearch, showResults]);
+
+        // hideHeader();
+    }, [showResults]);
 
     const handleSearch = async (term: string) => {
+        console.log('--- handleSearch ---');
+
+        // hideHeader();
         setLoading(true);
         setFilter(FileFilters.ALL);
         setLastSearchedValue(term);
@@ -114,16 +145,20 @@ const SearchScreen = ({teamId}: Props) => {
 
         setLoading(false);
         setShowResults(true);
-        hideHeader();
+
+        // hideHeader();
     };
 
     const handleRecentSearch = useCallback((text: string) => {
-        hideHeader();
+        console.log('--- handleRecentSearch ---');
         setSearchValue(text);
         handleSearch(text);
+
+        // hideHeader();
     }, [handleSearch]);
 
     const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
+        console.log('--- handleFilterChange --- ');
         setLoading(true);
         setFilter(filterValue);
         const searchParams = getSearchParams(lastSearchedValue, filterValue);
@@ -132,6 +167,8 @@ const SearchScreen = ({teamId}: Props) => {
         setFileInfos(fileInfosResult?.length ? fileInfosResult : emptyFileResults);
 
         setLoading(false);
+
+        hideHeader();
     }, [getSearchParams, lastSearchedValue, searchFiles]);
 
     const renderItem = useCallback(() => {
@@ -168,7 +205,7 @@ const SearchScreen = ({teamId}: Props) => {
                 loading={loading}
             />
         );
-    }, [loading, showResults]);
+    }, [loading, showResults, selectedTab]);
 
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
 
@@ -195,29 +232,50 @@ const SearchScreen = ({teamId}: Props) => {
         };
     }, [headerHeight, lastSearchedValue]);
 
-    let header = null;
-    if (lastSearchedValue && !loading) {
-        header = (
-            <Header
-                onTabSelect={setSelectedTab}
-                onFilterChanged={handleFilterChange}
-                numberMessages={postIds.length}
-                selectedTab={selectedTab}
-                numberFiles={fileInfos.length}
-                selectedFilter={filter}
-            />
-        );
-    }
+    const renderResultsHeader = useCallback(() => {
+        console.log('--- renderResultsHeader ---');
 
-    return (
-        <FreezeScreen freeze={!isFocused}>
+        // if (showResults && !loading) {
+        // console.log('lastSearchedValue', lastSearchedValue);
+
+        // console.log('showResults', showResults);
+        // console.log('loading', loading);
+
+        // if (showResults && !loading) {
+        if (lastSearchedValue && !loading) {
+            return (
+                <Header
+                    onTabSelect={setSelectedTab}
+                    onFilterChanged={handleFilterChange}
+                    numberMessages={postIds.length}
+                    selectedTab={selectedTab}
+                    numberFiles={fileInfos.length}
+                    selectedFilter={filter}
+                />
+            );
+        }
+
+        // }
+    }, [loading, lastSearchedValue, selectedTab]);
+
+    const renderNavigationHeader = useMemo(() => {
+        console.log('--- RERENDER renderNavigationHeader ---');
+        const title = showResults ? undefined : intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'});
+
+        console.log('\n');
+
+        // console.log('<><>title', title);
+        // console.log('<><>scrollValue', scrollValue);
+        // console.log('<><>searchValue', searchValue);
+        // console.log('<><>onSubmit', onSubmit);
+        return (
             <NavigationHeader
                 isLargeTitle={true}
                 showBackButton={false}
-                title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
+                title={title}
                 hasSearch={true}
                 scrollValue={scrollValue}
-                hideHeader={hideHeader}
+                hideHeader={handleHideHeader}
                 onChangeText={setSearchValue}
                 onSubmitEditing={onSubmit}
                 blurOnSubmit={true}
@@ -226,14 +284,21 @@ const SearchScreen = ({teamId}: Props) => {
                 onCancel={handleCancelSearch}
                 defaultValue={searchValue}
             />
+        );
+    }, [showResults]);
+
+    return (
+        <FreezeScreen freeze={!isFocused}>
+            {renderNavigationHeader}
             <SafeAreaView
                 style={styles.flex}
                 edges={EDGES}
             >
                 <Animated.View style={animated}>
-                    <Animated.View style={[{backgroundColor: 'cyan'}, top]}>
+                    {/* <Animated.View style={[{backgroundColor: 'cyan'}, top]}> */}
+                    <Animated.View style={[top]}>
                         <RoundedHeaderContext/>
-                        {header}
+                        {showResults && renderResultsHeader()}
                     </Animated.View>
                     <AnimatedFlatList
                         data={dummyData}

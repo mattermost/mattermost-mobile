@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {FlatList, ListRenderItemInfo, Text, View} from 'react-native';
+import {FlatList, ListRenderItemInfo} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
@@ -15,19 +15,6 @@ import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_li
 
 import FileCard from './fileCard';
 import Loader from './loader';
-
-const notImplementedComponent = (
-    <View
-        style={{
-            backgroundColor: 'cyan',
-            height: 800,
-            flexGrow: 1,
-            alignItems: 'center',
-        }}
-    >
-        <Text style={{fontSize: 28, color: '#000'}}>{'Not Implemented'}</Text>
-    </View>
-);
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
@@ -91,19 +78,15 @@ const SearchResults = ({
     }, [theme]);
 
     const noResults = useMemo(() => {
-        if (searchValue) {
-            if (loading) {
-                return (<Loader/>);
-            }
-            return (
-                <NoResultsWithTerm
-                    term={searchValue}
-                    type={selectedTab}
-                />
-            );
+        if (loading) {
+            return (<Loader/>);
         }
-
-        return notImplementedComponent;
+        return (
+            <NoResultsWithTerm
+                term={searchValue}
+                type={selectedTab}
+            />
+        );
     }, [searchValue, loading, selectedTab]);
 
     let data;
@@ -125,7 +108,7 @@ const SearchResults = ({
             indicatorStyle='black'
             refreshing={false}
             renderItem={renderItem}
-            contentContainerStyle={paddingTop}
+            contentContainerStyle={[paddingTop, {backgroundColor: 'cyan'}]}
             nestedScrollEnabled={true}
             removeClippedSubviews={true}
         />

@@ -34,6 +34,26 @@ export const useDefaultHeaderHeight = () => {
 export const useLargeHeaderHeight = () => {
     const defaultHeight = useDefaultHeaderHeight();
     return defaultHeight + ViewConstants.LARGE_HEADER_TITLE + ViewConstants.HEADER_WITH_SUBTITLE;
+
+    // const defaultHeight + ViewConstants.LARGE_HEADER_TITLE + ViewConstants.HEADER_WITH_SUBTITLE;
+
+    // const defaultHeight = useDefaultHeaderHeight();
+
+    // let defaultHeight = useDefaultHeaderHeight();
+    // if (showTitle) {
+    //     defaultHeight += ViewConstants.LARGE_HEADER_TITLE;
+    // }
+    //
+    // if (hasSubTitle) {
+    //     defaultHeight += ViewConstants.HEADER_WITH_SUBTITLE;
+    // }
+    // if (hasSearch) {
+    //     defaultHeight += ViewConstants.HEADER_SEARCH_HEIGHT;
+    // }
+
+    // return defaultHeight;
+
+    // return defaultHeight + ViewConstants.LARGE_HEADER_TITLE + ViewConstants.HEADER_WITH_SUBTITLE;
 };
 
 export const useHeaderHeight = () => {
@@ -47,7 +67,11 @@ export const useHeaderHeight = () => {
     }, [defaultHeight, largeHeight]);
 };
 
-export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset: number) => void) => {
+export const useCollapsibleHeader = <T>(
+    isLargeTitle: boolean,
+    onSnap?:
+    (offset: number) => void,
+) => {
     const insets = useSafeAreaInsets();
     const animatedRef = useAnimatedRef<Animated.ScrollView>();
     const {largeHeight, defaultHeight} = useHeaderHeight();
@@ -60,8 +84,16 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
         const value = -(scrollValue?.value || 0);
         const header = (isLargeTitle ? largeHeight : defaultHeight);
         const height = header + value + insets.top;
+
+        // console.log('-- height', height);
+        // console.log('-- header', header);
         if (height > header + (insets.top * 2)) {
             return Math.min(height, largeHeight + insets.top + MAX_OVERSCROLL);
+
+            // const returnMin = Math.min(height, largeHeight + MAX_OVERSCROLL);
+            // const returnMin = Math.min(height, largeHeight + insets.top + MAX_OVERSCROLL);
+            // console.log('-- XXX returnMin', returnMin);
+            // return returnMin;
         }
         return Math.max(height, minHeight);
     });
@@ -122,6 +154,7 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
     const hideHeader = useCallback(() => {
         const offset = largeHeight - defaultHeight;
         if (animatedRef?.current && Math.abs((scrollValue?.value || 0)) <= insets.top) {
+            console.log('\n\nIN HIDE HEADER\n\n');
             autoScroll.value = true;
             if ('scrollTo' in animatedRef.current) {
                 animatedRef.current.scrollTo({y: offset, animated: true});
@@ -136,9 +169,17 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
         }
     }, [largeHeight, defaultHeight]);
 
+    // const scrollPaddingTop = (isLargeTitle ? largeHeight : defaultHeight) + insets.top;
+
+    // console.log('<><> scrollPaddingTop', scrollPaddingTop);
+    // console.log('<><> scrollValue', scrollValue);
+    // console.log('<><> headerHeight', headerHeight);
+
     return {
         defaultHeight,
         largeHeight,
+
+        // scrollPaddingTop,
         scrollPaddingTop: (isLargeTitle ? largeHeight : defaultHeight) + insets.top,
         scrollRef: animatedRef as unknown as React.RefObject<T>,
         scrollValue,

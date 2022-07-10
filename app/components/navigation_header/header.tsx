@@ -47,19 +47,23 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     container: {
         alignItems: 'center',
-        backgroundColor: theme.sidebarBg,
+        backgroundColor: 'red',
+
+        // backgroundColor: theme.sidebarBg,
         flexDirection: 'row',
         justifyContent: 'flex-start',
         paddingHorizontal: 16,
         zIndex: 10,
     },
     subtitleContainer: {
+        backgroundColor: 'purple',
         flexDirection: 'row',
         justifyContent: Platform.select({android: 'flex-start', ios: 'center'}),
         left: Platform.select({ios: undefined, default: 3}),
     },
     subtitle: {
         color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
+        backgroundColor: 'green',
         ...typography('Body', 75),
         lineHeight: 12,
         marginBottom: 8,
@@ -68,6 +72,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     titleContainer: {
         alignItems: Platform.select({android: 'flex-start', ios: 'center'}),
+        backgroundColor: 'purple',
         justifyContent: 'center',
         flex: 3,
         height: '100%',
@@ -166,6 +171,7 @@ const Header = ({
     const containerStyle = useMemo(() => {
         return [styles.container, {height: defaultHeight + top, paddingTop: top}];
     }, [defaultHeight, theme]);
+    console.log('containerStyle', containerStyle);
 
     const additionalTitleStyle = useMemo(() => ({
         marginLeft: Platform.select({android: showBackButton && !leftComponent ? 20 : 0}),
@@ -194,7 +200,7 @@ const Header = ({
                 </TouchableWithFeedback>
             </Animated.View>
             }
-            <Animated.View style={[styles.titleContainer, additionalTitleStyle]}>
+            <Animated.View style={[additionalTitleStyle]}>
                 <TouchableWithFeedback
                     disabled={!onTitlePress}
                     onPress={onTitlePress}

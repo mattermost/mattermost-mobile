@@ -9,13 +9,15 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        backgroundColor: 'blue',
+
+        // backgroundColor: 'blue',
         height: 40,
         width: '100%',
         position: 'absolute',
     },
     content: {
-        backgroundColor: 'blue',
+
+        // backgroundColor: 'blue',
         borderTopLeftRadius: 12,
         borderTopRightRadius: 12,
         flex: 1,

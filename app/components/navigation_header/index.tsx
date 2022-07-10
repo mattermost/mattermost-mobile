@@ -32,7 +32,10 @@ type Props = SearchProps & {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        backgroundColor: theme.sidebarBg,
+
+        backgroundColor: 'brown',
+
+        // backgroundColor: theme.sidebarBg,
         position: 'absolute',
         width: '100%',
         zIndex: 10,
@@ -69,6 +72,7 @@ const NavigationHeader = ({
             maxHeight: largeHeight + insets.top + MAX_OVERSCROLL,
         };
     });
+    console.log('containerHeight.value', containerHeight.value);
 
     return (
         <>

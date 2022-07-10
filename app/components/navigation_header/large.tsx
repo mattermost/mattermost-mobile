@@ -20,6 +20,8 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
+
+        // backgroundColor: 'green',
         backgroundColor: theme.sidebarBg,
         paddingHorizontal: 20,
     },
@@ -53,6 +55,10 @@ const NavigationHeaderLargeTitle = ({
 
     const containerStyle = useMemo(() => {
         return [{height: largeHeight - defaultHeight}, styles.container];
+
+        // const height = largeHeight - defaultHeight;
+        //
+        // return [{height}, styles.container];
     }, [defaultHeight, largeHeight, theme]);
 
     return (
