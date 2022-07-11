@@ -70,8 +70,10 @@ export const fetchGroupsForTeam = async (serverUrl: string, teamId: string, fetc
         const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToTeam(teamId);
 
-        const groups = await operator.handleGroups({groups: response.groups, prepareRecordsOnly: true});
-        const groupTeams = await operator.handleGroupTeamsForTeam({groups: response.groups, teamId, prepareRecordsOnly: true});
+        const [groups, groupTeams] = await Promise.all([
+            operator.handleGroups({groups: response.groups, prepareRecordsOnly: true}),
+            operator.handleGroupTeamsForTeam({groups: response.groups, teamId, prepareRecordsOnly: true}),
+        ]);
 
         if (!fetchOnly) {
             await operator.batchRecords([...groups, ...groupTeams]);
@@ -90,8 +92,10 @@ export const fetchGroupsForMember = async (serverUrl: string, userId: string, fe
         const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToMembership(userId);
 
-        const groups = await operator.handleGroups({groups: response, prepareRecordsOnly: true});
-        const groupMemberships = await operator.handleGroupMembershipsForMember({groups: response, userId, prepareRecordsOnly: true});
+        const [groups, groupMemberships] = await Promise.all([
+            operator.handleGroups({groups: response, prepareRecordsOnly: true}),
+            operator.handleGroupMembershipsForMember({groups: response, userId, prepareRecordsOnly: true}),
+        ]);
 
         if (!fetchOnly) {
             await operator.batchRecords([...groups, ...groupMemberships]);

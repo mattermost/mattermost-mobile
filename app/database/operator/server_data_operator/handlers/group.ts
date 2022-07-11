@@ -113,10 +113,11 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
 
     /**
      * handleGroupMembershipsForMember: Handler responsible for the Create/Update operations occurring on the GroupMembership table from the 'Server' schema
-     * @param {string} userId
-     * @param {HandleGroupMembershipForMemberArgs} groupMembershipsArgs
-     * @param {GroupMembership[]} groupMembershipsArgs.groupMemberships
-     * @param {boolean} groupMembershipsArgs.prepareRecordsOnly
+     *
+     * @param {HandleGroupMembershipForMemberArgs} groupTeamsArgs
+     * @param {string} groupTeamsArgs.userId
+     * @param {GroupTeam[]} groupTeamsArgs.groups
+     * @param {boolean} groupTeamsArgs.prepareRecordsOnly
      * @throws DataOperatorException
      * @returns {Promise<GroupMembershipModel[]>}
      */
@@ -173,8 +174,8 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
 
     /**
      * handleGroupTeamsForTeam: Handler responsible for the Create/Update operations occurring on the GroupTeam table from the 'Server' schema
-     * @param {string} teamId
      * @param {HandleGroupTeamsForTeamArgs} groupTeamsArgs
+     * @param {string} groupTeamsArgs.teamId
      * @param {GroupTeam[]} groupTeamsArgs.groupTeams
      * @param {boolean} groupTeamsArgs.prepareRecordsOnly
      * @throws DataOperatorException
