@@ -96,7 +96,7 @@ const withSystem = withObservables([], ({database}: WithDatabaseArgs) => ({
 
 const withPost = withObservables(
     ['currentUser', 'isCRTEnabled', 'post', 'previousPost', 'nextPost'],
-    ({appsEnabled, currentUser, database, isCRTEnabled, post, previousPost, nextPost}: PropsInput) => {
+    ({currentUser, database, isCRTEnabled, post, previousPost, nextPost}: PropsInput) => {
         let isJumboEmoji = of$(false);
         let isLastReply = of$(true);
         let isPostAddChannelMember = of$(false);
@@ -145,11 +145,20 @@ const withPost = withObservables(
             distinctUntilChanged(),
         );
 
+        const hasFiles = post.files.observe().pipe(
+            switchMap((ff) => of$(Boolean(ff.length))),
+            distinctUntilChanged(),
+        );
+
+        const hasReactions = post.reactions.observe().pipe(
+            switchMap((rr) => of$(Boolean(rr.length))),
+            distinctUntilChanged(),
+        );
+
         return {
-            appsEnabled: of$(appsEnabled),
             canDelete,
             differentThreadSequence: of$(differentThreadSequence),
-            filesCount: post.files.observeCount(),
+            hasFiles,
             hasReplies,
             highlightReplyBar,
             isConsecutivePost,
@@ -161,7 +170,7 @@ const withPost = withObservables(
             isPostAddChannelMember,
             post: post.observe(),
             thread: isCRTEnabled ? observeThreadById(database, post.id) : of$(undefined),
-            reactionsCount: post.reactions.observeCount(),
+            hasReactions,
         };
     });
 

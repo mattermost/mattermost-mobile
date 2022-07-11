@@ -7,7 +7,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {observeChannelInfo} from '@queries/servers/channel';
 
@@ -23,6 +23,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
     const channelInfo = observeChannelInfo(database, channelId);
     const isHeaderSet = channelInfo.pipe(
         switchMap((c) => of$(Boolean(c?.header))),
+        distinctUntilChanged(),
     );
 
     return {
