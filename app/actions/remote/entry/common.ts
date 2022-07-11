@@ -61,6 +61,7 @@ export type EntryResponse = {
 }
 
 const FETCH_MISSING_DM_TIMEOUT = 2500;
+const FETCH_UNREADS_TIMEOUT = 2500;
 
 export const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[]) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -277,13 +278,15 @@ export async function deferredAppEntryActions(
     initialTeamId?: string, initialChannelId?: string) {
     // defer sidebar DM & GM profiles
     let channelsToFetchProfiles: Set<Channel>|undefined;
-    if (chData?.channels?.length && chData.memberships?.length) {
-        const directChannels = chData.channels.filter(isDMorGM);
-        channelsToFetchProfiles = new Set<Channel>(directChannels);
+    setTimeout(async () => {
+        if (chData?.channels?.length && chData.memberships?.length) {
+            const directChannels = chData.channels.filter(isDMorGM);
+            channelsToFetchProfiles = new Set<Channel>(directChannels);
 
-        // defer fetching posts for unread channels on initial team
-        fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId, true);
-    }
+            // defer fetching posts for unread channels on initial team
+            fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId, true);
+        }
+    }, FETCH_UNREADS_TIMEOUT);
 
     // defer fetch channels and unread posts for other teams
     if (teamData.teams?.length && teamData.memberships?.length) {

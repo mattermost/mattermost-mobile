@@ -10,27 +10,6 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export const ITEM_HEIGHT = 50;
-
-export type MenuItemProps = {
-    centered?: boolean;
-    defaultMessage?: string;
-    i18nId?: string;
-    iconContainerStyle?: StyleProp<ViewStyle>;
-    iconName?: string;
-    containerStyle?: StyleProp<ViewStyle>;
-    isDestructor?: boolean;
-    labelComponent?: ReactNode;
-    leftComponent?: ReactNode;
-    messageValues?: Record<string, any>;
-    onPress: () => void;
-    separator?: boolean;
-    showArrow?: boolean;
-    testID: string;
-    theme: Theme;
-    labelStyle?: StyleProp<TextStyle>;
-    isLink?: boolean;
-};
-
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
@@ -83,25 +62,31 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
+export type MenuItemProps = {
+    centered?: boolean;
+    containerStyle?: StyleProp<ViewStyle>;
+    defaultMessage?: string;
+    i18nId?: string;
+    iconContainerStyle?: StyleProp<ViewStyle>;
+    iconName?: string;
+    isDestructor?: boolean;
+    isLink?: boolean;
+    labelComponent?: ReactNode;
+    labelStyle?: StyleProp<TextStyle>;
+    leftComponent?: ReactNode;
+    messageValues?: Record<string, any>;
+    onPress: () => void;
+    rightComponent?: ReactNode;
+    separator?: boolean;
+    showArrow?: boolean;
+    testID: string;
+    theme: Theme;
+};
 const MenuItem = (props: MenuItemProps) => {
     const {
-        centered,
-        defaultMessage = '',
-        i18nId,
-        iconContainerStyle,
-        iconName,
-        containerStyle,
-        isDestructor = false,
-        isLink = false,
-        labelComponent,
-        labelStyle,
-        leftComponent,
-        messageValues,
-        onPress,
-        separator = true,
-        showArrow = false,
-        testID,
-        theme,
+        centered, containerStyle, defaultMessage = '', i18nId, iconContainerStyle, iconName, isDestructor = false,
+        isLink = false, labelComponent, labelStyle, leftComponent, messageValues, onPress, rightComponent,
+        separator = true, showArrow = false, testID, theme,
     } = props;
 
     const style = getStyleSheet(theme);
@@ -165,6 +150,7 @@ const MenuItem = (props: MenuItemProps) => {
                             style={style.chevron}
                         />
                     )}
+                    {rightComponent}
                 </View>
                 {Boolean(separator) && (<View style={style.divider}/>)}
             </View>

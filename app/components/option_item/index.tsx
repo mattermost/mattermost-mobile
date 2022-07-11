@@ -10,7 +10,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
-    action: (value: string | boolean) => void;
+    action?: (value: string | boolean) => void;
     description?: string;
     inline?: boolean;
     destructive?: boolean;
@@ -29,6 +29,7 @@ const OptionType = {
     DEFAULT: 'default',
     TOGGLE: 'toggle',
     SELECT: 'select',
+    NONE: 'none',
 } as const;
 
 type OptionType = typeof OptionType[keyof typeof OptionType];
@@ -157,7 +158,7 @@ const OptionItem = ({
     }
 
     const onPress = useCallback(() => {
-        action(value || '');
+        action?.(value || '');
     }, [value, action]);
 
     const component = (
