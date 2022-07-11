@@ -23,7 +23,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         enableEmailBatching: observeConfigBooleanValue(database, 'EnableEmailBatching'),
         emailInterval: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_NOTIFICATIONS).
             observeWithColumns(['value']).pipe(
-                switchMap((preferences) => of$(getPreferenceValue(preferences, Preferences.EMAIL_INTERVAL, Preferences.INTERVAL_NOT_SET, false))),
+                switchMap((preferences) => of$(getPreferenceValue(preferences, Preferences.CATEGORY_NOTIFICATIONS, Preferences.EMAIL_INTERVAL, Preferences.INTERVAL_NOT_SET))),
             ),
         isCRTEnabled: observeIsCRTEnabled(database),
         sendEmailNotifications: observeConfigBooleanValue(database, 'SendEmailNotifications'),
