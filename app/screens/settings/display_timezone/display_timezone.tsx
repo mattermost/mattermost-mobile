@@ -41,7 +41,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginLeft: 15,
         },
         content: {
-            paddingHorizontal: 8,
+            paddingHorizontal: 20,
         },
     };
 });

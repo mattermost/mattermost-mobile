@@ -24,6 +24,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             ...typography('Body', 200),
         },
+        containerStyle: {
+            paddingHorizontal: 20,
+        },
     };
 });
 

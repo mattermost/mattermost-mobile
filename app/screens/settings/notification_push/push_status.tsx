@@ -33,7 +33,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
         },
         container: {
-            paddingHorizontal: 8,
+            paddingHorizontal: 20,
         },
     };
 });

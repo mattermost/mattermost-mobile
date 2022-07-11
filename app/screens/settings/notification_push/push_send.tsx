@@ -38,7 +38,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             ...typography('Body', 200, 'Regular'),
         },
         container: {
-            paddingHorizontal: 8,
+            paddingHorizontal: 20,
         },
     };
 });

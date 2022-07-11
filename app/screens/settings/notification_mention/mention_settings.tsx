@@ -48,7 +48,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingLeft: 8,
         },
         container: {
-            paddingHorizontal: 8,
+            paddingHorizontal: 20,
         },
         input: {
             color: theme.centerChannelColor,
@@ -163,7 +163,7 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
             headerText={mentionHeaderText}
             headerStyles={styles.upperCase}
         >
-            { Boolean(currentUser?.firstName) && (
+            {Boolean(currentUser?.firstName) && (
                 <>
                     <OptionItem
                         action={onToggleFirstName}

@@ -29,7 +29,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         itemStyle: {
             backgroundColor: theme.centerChannelBg,
-            paddingHorizontal: 8,
+            paddingHorizontal: 20,
         },
     };
 });

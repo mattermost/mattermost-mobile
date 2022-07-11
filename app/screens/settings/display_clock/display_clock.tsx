@@ -45,7 +45,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 1,
         },
         containerStyle: {
-            paddingHorizontal: 8,
+            paddingHorizontal: 20,
         },
     };
 });

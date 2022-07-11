@@ -63,6 +63,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         area: {
             paddingHorizontal: 16,
         },
+        containerStyle: {
+            paddingHorizontal: 20,
+        },
         label: {
             color: theme.centerChannelColor,
             ...typography('Body', 100, 'Regular'),
@@ -157,6 +160,7 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
                         action={onAutoResponseToggle}
                         type='toggle'
                         selected={autoResponderActive === 'true'}
+                        containerStyle={styles.containerStyle}
                     />
                 </View>
                 {autoResponderActive === 'true' && (
