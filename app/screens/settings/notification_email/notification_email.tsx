@@ -82,17 +82,13 @@ type NotificationEmailProps = {
     sendEmailNotifications: boolean;
 }
 
-const NotificationEmail = ({
-    componentId,
-    currentUser,
-    emailInterval,
-    enableEmailBatching,
-    isCRTEnabled,
-    sendEmailNotifications,
-}: NotificationEmailProps) => {
+const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmailBatching, isCRTEnabled, sendEmailNotifications}: NotificationEmailProps) => {
     const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
-
-    const initialInterval = useMemo(() => getEmailInterval(sendEmailNotifications, enableEmailBatching, parseInt(emailInterval, 10)).toString(), [sendEmailNotifications, enableEmailBatching, emailInterval]);
+    const initialInterval = useMemo(() => getEmailInterval(
+        sendEmailNotifications && notifyProps?.email === 'true',
+        enableEmailBatching,
+        parseInt(emailInterval, 10),
+    ).toString(), []);
     const initialEmailThreads = useMemo(() => Boolean(notifyProps?.email_threads === 'all'), []);
 
     const [notifyInterval, setNotifyInterval] = useState<string>(initialInterval);
