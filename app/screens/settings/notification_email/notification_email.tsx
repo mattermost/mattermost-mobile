@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {ScrollView, Text, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -10,9 +10,12 @@ import Block from '@components/block';
 import OptionItem from '@components/option_item';
 import {Preferences} from '@constants';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
+import {popTopScreen, setButtons} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {getNotificationProps} from '@utils/user';
+import {getEmailInterval, getNotificationProps} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -61,13 +64,12 @@ const emailFooterCRTText = {
     id: t('notification_settings.email.crt.emailInfo'),
     defaultMessage: "When enabled, any reply to a thread you're following will send an email notification",
 };
-
-type EmailInterval = typeof Preferences.INTERVAL_FIFTEEN_MINUTES | typeof Preferences.INTERVAL_IMMEDIATE | typeof Preferences.INTERVAL_HOUR | typeof Preferences.INTERVAL_NEVER;
-type EmailThreads = 'mention' | 'all';
+const SAVE_EMAIL_BUTTON_ID = 'settings_notification.email.save.button';
 
 type NotificationEmailProps = {
+    componentId: string;
     currentUser: UserModel;
-    emailInterval: EmailInterval;
+    emailInterval: string;
     enableEmailBatching: boolean;
     isCRTEnabled: boolean;
     sendEmailNotifications: boolean;
@@ -75,6 +77,7 @@ type NotificationEmailProps = {
 
 //fixme: need to add a save button like the others
 const NotificationEmail = ({
+    componentId,
     currentUser,
     emailInterval,
     enableEmailBatching,
@@ -82,19 +85,49 @@ const NotificationEmail = ({
     sendEmailNotifications,
 }: NotificationEmailProps) => {
     const intl = useIntl();
-    const [notifyInterval, setNotifyInterval] = useState<EmailInterval>(emailInterval);
-    const [emailThreads, setEmailThreads] = useState<EmailThreads>(emailInterval);
+    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
+
+    const [notifyInterval, setNotifyInterval] = useState<string>(getEmailInterval(sendEmailNotifications, enableEmailBatching, parseInt(emailInterval, 10)).toString());
+    const [emailThreads, setEmailThreads] = useState(Boolean(notifyProps?.email_threads === 'all'));
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const notifyProps = getNotificationProps(currentUser);
 
-    const setEmailInterval = useCallback((interval: EmailInterval) => {
+    const setEmailInterval = (interval: string) => {
         setNotifyInterval(interval);
-    }, []);
+    };
 
-    const handleEmailThreadsChanged = useCallback((thread: EmailThreads) => {
+    const handleEmailThreadsChanged = (thread: boolean) => {
         setEmailThreads(thread);
-    }, []);
+    };
+
+    const saveButton = useMemo(() => {
+        return {
+            id: SAVE_EMAIL_BUTTON_ID,
+            enabled: false,
+            showAsAction: 'always' as const,
+            testID: 'settings_display.save.button',
+            color: theme.sidebarHeaderTextColor,
+            text: intl.formatMessage({id: 'settings.display.militaryClock.save', defaultMessage: 'Save'}),
+        };
+    }, [theme.sidebarHeaderTextColor]);
+
+    const close = () => popTopScreen(componentId);
+    const saveEmail = useCallback(() => {
+        // does nothing for the time being
+    }, []);//todo: add deps
+
+    useEffect(() => {
+        const buttons = {
+            rightButtons: [{
+                ...saveButton,
+                enabled: false, //fixme
+            }],
+        };
+        setButtons(componentId, buttons);
+    }, [componentId, saveButton]);//todo: add deps
+
+    useAndroidHardwareBackHandler(componentId, close);
+    useNavButtonPressed(SAVE_EMAIL_BUTTON_ID, componentId, saveEmail, [saveEmail]); //todo: add deps
 
     return (
         <SafeAreaView
@@ -118,10 +151,10 @@ const NotificationEmail = ({
                             <OptionItem
                                 action={setEmailInterval}
                                 label={intl.formatMessage({id: 'notification_settings.email.immediately', defaultMessage: 'Immediately'})}
-                                selected={notifyInterval === Preferences.INTERVAL_IMMEDIATE}
+                                selected={notifyInterval === `${Preferences.INTERVAL_IMMEDIATE}`}
                                 testID='notification_settings.email.immediately.action'
                                 type='select'
-                                value={Preferences.INTERVAL_IMMEDIATE}
+                                value={`${Preferences.INTERVAL_IMMEDIATE}`}
                             />
                             <View style={styles.separator}/>
                             {enableEmailBatching &&
@@ -129,17 +162,17 @@ const NotificationEmail = ({
                                     <OptionItem
                                         action={setEmailInterval}
                                         label={intl.formatMessage({id: 'notification_settings.email.fifteenMinutes', defaultMessage: 'Every 15 minutes'})}
-                                        selected={notifyInterval === Preferences.INTERVAL_FIFTEEN_MINUTES}
+                                        selected={notifyInterval === `${Preferences.INTERVAL_FIFTEEN_MINUTES}`}
                                         type='select'
-                                        value={Preferences.INTERVAL_FIFTEEN_MINUTES}
+                                        value={`${Preferences.INTERVAL_FIFTEEN_MINUTES}`}
                                     />
                                     <View style={styles.separator}/>
                                     <OptionItem
                                         action={setEmailInterval}
                                         label={intl.formatMessage({id: 'notification_settings.email.everyHour', defaultMessage: 'Every hour'})}
-                                        selected={notifyInterval === Preferences.INTERVAL_HOUR}
+                                        selected={notifyInterval === `${Preferences.INTERVAL_HOUR}`}
                                         type='select'
-                                        value={Preferences.INTERVAL_HOUR}
+                                        value={`${Preferences.INTERVAL_HOUR}`}
                                     />
                                     <View style={styles.separator}/>
                                 </View>
@@ -147,10 +180,10 @@ const NotificationEmail = ({
                             <OptionItem
                                 action={setEmailInterval}
                                 label={intl.formatMessage({id: 'notification_settings.email.never', defaultMessage: 'Never'})}
-                                selected={notifyInterval === Preferences.INTERVAL_NEVER}
+                                selected={notifyInterval === `${Preferences.INTERVAL_NEVER}`}
                                 testID='notification_settings.email.never.action'
                                 type='select'
-                                value={Preferences.INTERVAL_NEVER}
+                                value={`${Preferences.INTERVAL_NEVER}`}
                             />
                         </>
                     }
@@ -174,7 +207,7 @@ const NotificationEmail = ({
                         <OptionItem
                             action={handleEmailThreadsChanged}
                             label={intl.formatMessage({id: 'user.settings.notifications.email_threads.description', defaultMessage: 'Notify me about all replies to threads I\'m following'})}
-                            selected={emailThreads === 'all'}
+                            selected={emailThreads}
                             type='toggle'
                         />
                         <View style={styles.separator}/>
