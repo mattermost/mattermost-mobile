@@ -49,8 +49,10 @@ export const fetchGroupsForChannel = async (serverUrl: string, channelId: string
         const client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToChannel(channelId);
 
-        const groups = await operator.handleGroups({groups: response.groups, prepareRecordsOnly: true});
-        const groupChannels = await operator.handleGroupChannelsForChannel({groups: response.groups, channelId, prepareRecordsOnly: true});
+        const [groups, groupChannels] = await Promise.all([
+            operator.handleGroups({groups: response.groups, prepareRecordsOnly: true}),
+            operator.handleGroupChannelsForChannel({groups: response.groups, channelId, prepareRecordsOnly: true}),
+        ]);
 
         if (!fetchOnly) {
             await operator.batchRecords([...groups, ...groupChannels]);

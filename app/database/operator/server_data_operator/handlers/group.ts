@@ -53,8 +53,8 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
 
     /**
      * handleGroupChannelsForChannel: Handler responsible for the Create/Update operations occurring on the GroupChannel table from the 'Server' schema
-     * @param {string} channelId
      * @param {HandleGroupChannelsForChannelArgs} groupChannelsArgs
+     * @param {string} groupChannelsArgs.channelId
      * @param {GroupChannel[]} groupChannelsArgs.groupChannels
      * @param {boolean} groupChannelsArgs.prepareRecordsOnly
      * @throws DataOperatorException
