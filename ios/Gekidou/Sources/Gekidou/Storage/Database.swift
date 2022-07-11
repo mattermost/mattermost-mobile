@@ -48,6 +48,7 @@ public class Database: NSObject {
     internal var channelTable = Table("Channel")
     internal var channelInfoTable = Table("ChannelInfo")
     internal var channelMembershipTable = Table("ChannelMembership")
+    internal var groupTable = Table("Group")
     internal var myChannelTable = Table("MyChannel")
     internal var myChannelSettingsTable = Table("MyChannelSettings")
     internal var postTable = Table("Post")

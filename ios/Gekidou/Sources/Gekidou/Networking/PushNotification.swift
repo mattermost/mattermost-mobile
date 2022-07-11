@@ -83,7 +83,7 @@ extension Network {
         }
     }
     
-    private func matchUsername(in message: String) -> [String] {
+    private func matchUsernameOrGroup(in message: String) -> [String] {
         let specialMentions = Set(["all", "here", "channel"])
         do {
             let regex = try NSRegularExpression(pattern: "\\B@(([a-z0-9-._]*[a-z0-9_])[.-]*)", options: [.caseInsensitive])
@@ -124,7 +124,7 @@ extension Network {
             var postData: PostData? = nil
             var threads: [Post] = []
             var userIdsToLoad: Set<String> = Set()
-            var usernamesToLoad: Set<String> = Set()
+            var usernamesOrGroupsToLoad: Set<String> = Set()
             var users: Set<User> = Set()
 
             group.enter()
@@ -144,7 +144,7 @@ extension Network {
                             if (currentUserId != nil && post.user_id != currentUserId) {
                                 authorIds.insert(post.user_id)
                             }
-                            self.matchUsername(in: post.message).forEach{
+                            self.matchUsernameOrGroup(in: post.message).forEach{
                                 if ($0 != currentUsername) {
                                     usernames.insert($0)
                                 }
