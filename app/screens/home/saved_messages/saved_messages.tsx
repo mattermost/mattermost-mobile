@@ -158,6 +158,7 @@ function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
             <PostWithChannelInfo
                 location={Screens.SAVED_MESSAGES}
                 post={item}
+                testID='saved_messages.post_list'
             />
         );
     }, [currentTimezone, isTimezoneEnabled, theme]);
@@ -175,6 +176,7 @@ function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
             <SafeAreaView
                 edges={edges}
                 style={styles.flex}
+                testID='saved_messages.screen'
             >
                 <Animated.View style={[styles.container, animated]}>
                     <Animated.View style={top}>
@@ -197,6 +199,7 @@ function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
                         removeClippedSubviews={true}
                         onViewableItemsChanged={onViewableItemsChanged}
                         style={scrollViewStyle}
+                        testID='saved_messages.post_list.flat_list'
                     />
                 </Animated.View>
             </SafeAreaView>
