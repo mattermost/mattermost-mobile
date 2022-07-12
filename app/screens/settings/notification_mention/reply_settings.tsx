@@ -3,7 +3,7 @@
 
 import React, {useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
+import {Platform, View} from 'react-native';
 
 import Block from '@components/block';
 import OptionItem from '@components/option_item';
@@ -20,19 +20,33 @@ const replyHeaderText = {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         separator: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            flex: 1,
-            height: 1,
+            ...Platform.select({
+                ios: {
+                    backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+                    width: '91%',
+                    alignSelf: 'center',
+                    height: 1,
+                    marginTop: 12,
+                },
+                default: {
+                    display: 'none',
+                },
+            }),
         },
-        upperCase: {
-            textTransform: 'uppercase',
-        },
-        label: {
+        blockHeader: {
             color: theme.centerChannelColor,
-            ...typography('Body', 200, 'Regular'),
+            ...typography('Heading', 300, 'SemiBold'),
+            marginBottom: 16,
+            marginLeft: 18,
         },
         container: {
-            paddingHorizontal: 8,
+            width: '90%',
+            alignSelf: 'center',
+        },
+        optionLabelTextStyle: {
+            color: theme.centerChannelColor,
+            ...typography('Body', 200, 'Regular'),
+            marginBottom: 4,
         },
     };
 });
@@ -50,33 +64,36 @@ const ReplySettings = () => {
     return (
         <Block
             headerText={replyHeaderText}
-            headerStyles={styles.upperCase}
+            headerStyles={styles.blockHeader}
         >
             <OptionItem
                 action={setReplyNotifications}
-                type='select'
-                value='any'
                 containerStyle={styles.container}
                 label={intl.formatMessage({id: 'notification_settings.threads_start_participate', defaultMessage: 'Threads that I start or participate in'})}
+                optionLabelTextStyle={styles.optionLabelTextStyle}
                 selected={replyNotificationType === 'any'}
+                type='select'
+                value='any'
             />
             <View style={styles.separator}/>
             <OptionItem
                 action={setReplyNotifications}
-                type='select'
-                value='root'
                 containerStyle={styles.container}
                 label={intl.formatMessage({id: 'notification_settings.threads_start', defaultMessage: 'Threads that I start'})}
+                optionLabelTextStyle={styles.optionLabelTextStyle}
                 selected={replyNotificationType === 'root'}
+                type='select'
+                value='root'
             />
             <View style={styles.separator}/>
             <OptionItem
                 action={setReplyNotifications}
-                type='select'
-                value='never'
                 containerStyle={styles.container}
                 label={intl.formatMessage({id: 'notification_settings.threads_mentions', defaultMessage: 'Mentions in threads'})}
+                optionLabelTextStyle={styles.optionLabelTextStyle}
                 selected={replyNotificationType === 'never'}
+                type='select'
+                value='never'
             />
         </Block>
     );

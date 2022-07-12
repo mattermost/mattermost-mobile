@@ -20,13 +20,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 13,
             color: changeOpacity(theme.centerChannelColor, 0.5),
         },
-        items: {
-            backgroundColor: theme.centerChannelBg,
-            borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
-        },
         footer: {
             marginTop: 10,
             marginHorizontal: 15,
@@ -76,7 +69,7 @@ const Block = ({
                     style={[styles.header, headerStyles]}
                 />
             }
-            <View style={[styles.items, containerStyles]}>
+            <View style={containerStyles}>
                 {children}
             </View>
             {(footerText && !disableFooter) &&

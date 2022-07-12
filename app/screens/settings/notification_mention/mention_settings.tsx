@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
+import {Platform, Text, View} from 'react-native';
 
 import {updateMe} from '@actions/remote/user';
 import Block from '@components/block';
@@ -23,7 +23,7 @@ import type UserModel from '@typings/database/models/servers/user';
 
 const mentionHeaderText = {
     id: t('notification_settings.mentions.wordsTrigger'),
-    defaultMessage: 'Words that trigger mentions',
+    defaultMessage: 'Keywords that trigger mentions',
 };
 
 const SAVE_MENTION_BUTTON_ID = 'SAVE_MENTION_BUTTON_ID';
@@ -31,24 +31,28 @@ const SAVE_MENTION_BUTTON_ID = 'SAVE_MENTION_BUTTON_ID';
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         separator: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            flex: 1,
-            height: 1,
+            ...Platform.select({
+                ios: {
+                    backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+                    width: '91%',
+                    alignSelf: 'center',
+                    height: 1,
+                    marginTop: 12,
+                },
+                default: {
+                    display: 'none',
+                },
+            }),
         },
-        upperCase: {
-            textTransform: 'uppercase',
-        },
-        label: {
+        blockHeader: {
             color: theme.centerChannelColor,
-            ...typography('Body', 200, 'Regular'),
-        },
-        desc: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 100, 'Regular'),
-            paddingLeft: 8,
+            ...typography('Heading', 300, 'SemiBold'),
+            marginBottom: 16,
+            marginLeft: 18,
         },
         container: {
             paddingHorizontal: 20,
+            marginTop: 16,
         },
         input: {
             color: theme.centerChannelColor,
@@ -58,6 +62,23 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         containerStyle: {
             marginTop: 30,
+            width: '90%',
+            alignSelf: 'center',
+        },
+        optionLabelTextStyle: {
+            color: theme.centerChannelColor,
+            ...typography('Body', 200, 'Regular'),
+            marginBottom: 4,
+        },
+        optionDescriptionTextStyle: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 75, 'Regular'),
+        },
+        keywordLabelStyle: {
+            marginLeft: 20,
+            marginTop: 4,
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 75, 'Regular'),
         },
     };
 });
@@ -104,6 +125,7 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
             showAsAction: 'always' as const,
             testID: 'notification_settings.mentions.save.button',
             color: theme.sidebarHeaderTextColor,
+            ...typography('Body', 100, 'SemiBold'),
             text: intl.formatMessage({id: 'settings.save', defaultMessage: 'Save'}),
         };
     }, [theme.sidebarHeaderTextColor]);
@@ -161,7 +183,7 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
     return (
         <Block
             headerText={mentionHeaderText}
-            headerStyles={styles.upperCase}
+            headerStyles={styles.blockHeader}
         >
             {Boolean(currentUser?.firstName) && (
                 <>
@@ -170,6 +192,8 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
                         containerStyle={styles.container}
                         description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveName', defaultMessage: 'Your case sensitive first name'})}
                         label={currentUser.firstName}
+                        optionDescriptionTextStyle={styles.optionDescriptionTextStyle}
+                        optionLabelTextStyle={styles.optionLabelTextStyle}
                         selected={tglFirstName}
                         type='toggle'
                     />
@@ -183,6 +207,8 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
                     containerStyle={styles.container}
                     description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveUsername', defaultMessage: 'Your non-case sensitive username'})}
                     label={currentUser.username}
+                    optionDescriptionTextStyle={styles.optionDescriptionTextStyle}
+                    optionLabelTextStyle={styles.optionLabelTextStyle}
                     selected={tglUserName}
                     type='toggle'
                 />
@@ -193,6 +219,8 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
                 containerStyle={styles.container}
                 description={intl.formatMessage({id: 'notification_settings.mentions.channelWide', defaultMessage: 'Channel-wide mentions'})}
                 label='@channel, @all, @here'
+                optionDescriptionTextStyle={styles.optionDescriptionTextStyle}
+                optionLabelTextStyle={styles.optionLabelTextStyle}
                 selected={tglChannel}
                 type='toggle'
             />
@@ -204,7 +232,7 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
                 blurOnSubmit={true}
                 containerStyle={styles.containerStyle}
                 keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                label={intl.formatMessage({id: 'notification_settings.mentions.keywords', defaultMessage: 'Keywords'})}
+                label={intl.formatMessage({id: 'notification_settings.mentions.keywords', defaultMessage: 'Enter other keywords'})}
                 multiline={true}
                 onChangeText={onChangeText}
                 placeholder={intl.formatMessage({id: 'notification_settings.mentions..keywordsDescription', defaultMessage: 'Other words that trigger a mention'})}
@@ -216,6 +244,11 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
                 underlineColorAndroid='transparent'
                 value={mentionKeys}
             />
+            <Text
+                style={styles.keywordLabelStyle}
+            >
+                {intl.formatMessage({id: 'notification_settings.mentions.keywordsLabel', defaultMessage: 'Keywords are not case-sensitive. Separate keywords with commas.'})}
+            </Text>
         </Block>
     );
 };

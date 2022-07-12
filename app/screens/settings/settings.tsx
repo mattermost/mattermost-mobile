@@ -3,7 +3,7 @@
 
 import React, {useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Platform, ScrollView, StyleSheet, View} from 'react-native';
+import {Alert, Platform, ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';

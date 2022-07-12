@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {Platform, StyleProp, Switch, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {Platform, StyleProp, Switch, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
@@ -22,6 +22,8 @@ type Props = {
     type: OptionType;
     value?: string;
     containerStyle?: StyleProp<ViewStyle>;
+    optionLabelTextStyle?: StyleProp<TextStyle>;
+    optionDescriptionTextStyle?: StyleProp<TextStyle>;
 }
 
 const OptionType = {
@@ -93,9 +95,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const OptionItem = ({
-    action, description, destructive, icon,
-    info, inline = false, label, selected,
-    testID = 'optionItem', type, value, containerStyle,
+    action,
+    containerStyle,
+    description,
+    destructive,
+    icon,
+    info,
+    inline = false,
+    label,
+    optionDescriptionTextStyle,
+    optionLabelTextStyle,
+    selected,
+    testID = 'optionItem',
+    type,
+    value,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -179,14 +192,14 @@ const OptionItem = ({
                     )}
                     <View style={labelStyle}>
                         <Text
-                            style={labelTextStyle}
+                            style={[labelTextStyle, optionLabelTextStyle]}
                             testID={`${testID}.label`}
                         >
                             {label}
                         </Text>
                         {Boolean(description) &&
                         <Text
-                            style={descriptionTextStyle}
+                            style={[descriptionTextStyle, optionDescriptionTextStyle]}
                             testID={`${testID}.description`}
                         >
                             {description}

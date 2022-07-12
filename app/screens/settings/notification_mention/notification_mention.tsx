@@ -6,7 +6,7 @@ import {ScrollView} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import MentionSettings from './mention_settings';
@@ -27,7 +27,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         scrollView: {
             flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
         },
         scrollViewContent: {
             paddingVertical: 35,
@@ -61,9 +60,7 @@ const NotificationMention = ({componentId, currentUser, isCRTEnabled}: Notificat
                     currentUser={currentUser}
                     componentId={componentId}
                 />
-                {!isCRTEnabled && (
-                    <ReplySettings/>
-                )}
+                {!isCRTEnabled && <ReplySettings/>}
             </ScrollView>
         </SafeAreaView>
     );
