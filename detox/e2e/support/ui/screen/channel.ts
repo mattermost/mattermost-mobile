@@ -28,7 +28,6 @@ class ChannelScreen {
         introSetHeaderOption: 'channel_post_list.intro_options.set_header.option',
         introFavoriteOption: 'channel_post_list.intro_options.set_header.option',
         introChannelDetailsOption: 'channel_post_list.intro_options.channel_details.option',
-        flatPostList: 'channel.post_list.flat_list',
     };
 
     channelScreen = element(by.id(this.testID.channelScreen));
@@ -37,7 +36,6 @@ class ChannelScreen {
     introSetHeaderOption = element(by.id(this.testID.introSetHeaderOption));
     introFavoriteOption = element(by.id(this.testID.introFavoriteOption));
     introChannelDetailsOption = element(by.id(this.testID.introChannelDetailsOption));
-    flatPostList = element(by.id(this.testID.flatPostList));
 
     // convenience props
     backButton = NavigationHeader.backButton;
@@ -71,6 +69,10 @@ class ChannelScreen {
 
     getNewMessagesDivider = () => {
         return this.postList.getNewMessagesDivider();
+    };
+
+    getFlatPostList = () => {
+        return this.postList.getFlatList();
     };
 
     getPostListPostItem = (postId: string, text = '', postProfileOptions: any = {}) => {

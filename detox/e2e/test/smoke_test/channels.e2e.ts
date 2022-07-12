@@ -123,7 +123,7 @@ describe('Smoke Test - Channels', () => {
         // * Verify message is posted
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toExist();
+        await expect(postListPostItem).toBeVisible();
 
         // # Go back to channel list screen
         await ChannelScreen.back();
