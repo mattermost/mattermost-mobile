@@ -9,12 +9,13 @@ import {bottomSheetSnapPoint} from '@app/utils/helpers';
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
-import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
+import {useIsTablet} from '@hooks/device';
+import {SEPARATOR_MARGIN, SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
 import {FileFilter, FileFilters} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import Filter, {FILTER_ITEM_HEIGHT, NUMBER_FILTER_ITEMS} from './filter';
+import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, NUMBER_FILTER_ITEMS} from './filter';
 import SelectButton from './header_button';
 
 export type SelectTab = 'files' | 'messages'
@@ -67,6 +68,7 @@ const Header = ({
     const styles = getStyleFromTheme(theme);
     const intl = useIntl();
     const {bottom} = useSafeAreaInsets();
+    const isTablet = useIsTablet();
 
     const messagesText = intl.formatMessage({id: 'screen.search.header.messages', defaultMessage: 'Messages'});
     const filesText = intl.formatMessage({id: 'screen.search.header.files', defaultMessage: 'Files'});
@@ -85,10 +87,10 @@ const Header = ({
     const snapPoints = useMemo(() => {
         return [
             bottomSheetSnapPoint(
-                NUMBER_FILTER_ITEMS + 1,
+                NUMBER_FILTER_ITEMS,
                 FILTER_ITEM_HEIGHT,
                 bottom,
-            ) + TITLE_HEIGHT,
+            ) + TITLE_HEIGHT + DIVIDERS_HEIGHT + (isTablet ? SEPARATOR_MARGIN_TABLET : SEPARATOR_MARGIN),
             10];
     }, []);
 
