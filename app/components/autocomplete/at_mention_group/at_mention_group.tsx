@@ -44,7 +44,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         rowDisplayName: {
             color: theme.centerChannelColor,
-            flexShrink: 5,
+            flexShrink: 2,
             ...typography('Body', 200),
         },
         rowName: {
@@ -114,17 +114,22 @@ const GroupMentionItem = ({
                 <Text
                     style={style.rowDisplayName}
                     testID={`${groupMentionItemTestId}.display_name`}
+                    numberOfLines={1}
                 >
                     {`${displayName} `}
                 </Text>
                 <Text
                     style={style.rowName}
                     testID={`${groupMentionItemTestId}.name`}
+                    numberOfLines={1}
                 >
                     {`@${name}`}
                 </Text>
             </View>
-            <Text style={style.rowTag}>{`${memberCount >= 100 ? '99+' : memberCount}`}</Text>
+            <Text
+                numberOfLines={1}
+                style={style.rowTag}
+            >{`${memberCount >= 100 ? '99+' : memberCount}`}</Text>
         </TouchableWithFeedback>
     );
 };
