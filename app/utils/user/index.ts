@@ -361,3 +361,13 @@ export function getEmailInterval(enableEmailNotification: boolean, enableEmailBa
 
     return emailIntervalPreference;
 }
+
+export const getEmailIntervalTexts = (interval: string) => {
+    const intervalTexts: Record<string, any> = {
+        [Preferences.INTERVAL_FIFTEEN_MINUTES]: {id: 'notification_settings.email.fifteenMinutes', defaultMessage: 'Every 15 minutes'},
+        [Preferences.INTERVAL_HOUR]: {id: 'notification_settings.email.everyHour', defaultMessage: 'Every hour'},
+        [Preferences.INTERVAL_IMMEDIATE]: {id: 'notification_settings.email.immediately', defaultMessage: 'Immediately'},
+        [Preferences.INTERVAL_NEVER]: {id: 'notification_settings.email.never', defaultMessage: 'Never'},
+    };
+    return intervalTexts[interval];
+};

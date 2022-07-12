@@ -156,13 +156,13 @@ const MenuItem = ({
                     <View style={style.labelContainer}>
                         {label}
                     </View>
+                    {rightComponent}
                     {Boolean(showArrow) && (
                         <CompassIcon
                             name='chevron-right'
                             style={[style.chevron, chevronStyle]}
                         />
                     )}
-                    {rightComponent}
                 </View>
                 {Boolean(separator) && (<View style={[style.divider, separatorStyle]}/>)}
             </View>
