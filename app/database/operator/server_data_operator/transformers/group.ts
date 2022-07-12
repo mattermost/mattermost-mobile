@@ -35,6 +35,7 @@ export const transformGroupRecord = ({action, database, value}: TransformerArgs)
         group.displayName = raw.display_name;
         group.source = raw.source;
         group.remoteId = raw.remote_id;
+        group.memberCount = raw.member_count || 0;
     };
 
     return prepareBaseRecord({
