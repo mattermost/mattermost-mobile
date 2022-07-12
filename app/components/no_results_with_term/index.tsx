@@ -16,7 +16,7 @@ import SearchIllustration from './search_illustration';
 
 type Props = {
     term: string;
-    type?: 'default' | TabType;
+    type?: TabType;
 };
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {

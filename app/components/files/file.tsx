@@ -108,77 +108,67 @@ const File = ({
         return null;
     };
 
-    const fileInfo = () => {
-        return (
-            <FileInfo
-                file={file}
-                showDate={showDate}
-                channelName={channelName}
-                onPress={handlePreviewPress}
-                theme={theme}
-            />
-        );
-    };
+    const fileInfo = (
+        <FileInfo
+            file={file}
+            showDate={showDate}
+            channelName={channelName}
+            onPress={handlePreviewPress}
+            theme={theme}
+        />
+    );
 
-    const renderImageFileOverlay = () => {
-        return (
-            <ImageFileOverlay
-                theme={theme}
-                value={nonVisibleImagesCount}
-            />
-        );
-    };
+    const renderImageFileOverlay = (
+        <ImageFileOverlay
+            theme={theme}
+            value={nonVisibleImagesCount}
+        />
+    );
 
-    const renderImageFile = () => {
-        return (
-            <TouchableWithoutFeedback onPress={onGestureEvent}>
-                <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
-                    <ImageFile
-                        file={file}
-                        forwardRef={ref}
-                        inViewPort={inViewPort}
-                        isSingleImage={isSingleImage}
-                        resizeMode={'cover'}
-                        wrapperWidth={wrapperWidth}
-                    />
-                    {Boolean(nonVisibleImagesCount) && renderImageFileOverlay()}
-                </Animated.View>
-            </TouchableWithoutFeedback>
-        );
-    };
-
-    const renderVideoFile = () => {
-        return (
-            <TouchableWithoutFeedback onPress={onGestureEvent}>
-                <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
-                    <VideoFile
-                        file={file}
-                        forwardRef={ref}
-                        inViewPort={inViewPort}
-                        isSingleImage={isSingleImage}
-                        resizeMode={'cover'}
-                        wrapperWidth={wrapperWidth}
-                        updateFileForGallery={updateFileForGallery}
-                        index={index}
-                    />
-                    {Boolean(nonVisibleImagesCount) && renderImageFileOverlay()}
-                </Animated.View>
-            </TouchableWithoutFeedback>
-        );
-    };
-
-    const renderDocumentFile = () => {
-        return (
-            <View style={style.iconWrapper}>
-                <DocumentFile
-                    ref={document}
-                    canDownloadFiles={canDownloadFiles}
+    const renderImageFile = (
+        <TouchableWithoutFeedback onPress={onGestureEvent}>
+            <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
+                <ImageFile
                     file={file}
-                    theme={theme}
+                    forwardRef={ref}
+                    inViewPort={inViewPort}
+                    isSingleImage={isSingleImage}
+                    resizeMode={'cover'}
+                    wrapperWidth={wrapperWidth}
                 />
-            </View>
-        );
-    };
+                {Boolean(nonVisibleImagesCount) && renderImageFileOverlay}
+            </Animated.View>
+        </TouchableWithoutFeedback>
+    );
+
+    const renderVideoFile = (
+        <TouchableWithoutFeedback onPress={onGestureEvent}>
+            <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
+                <VideoFile
+                    file={file}
+                    forwardRef={ref}
+                    inViewPort={inViewPort}
+                    isSingleImage={isSingleImage}
+                    resizeMode={'cover'}
+                    wrapperWidth={wrapperWidth}
+                    updateFileForGallery={updateFileForGallery}
+                    index={index}
+                />
+                {Boolean(nonVisibleImagesCount) && renderImageFileOverlay}
+            </Animated.View>
+        </TouchableWithoutFeedback>
+    );
+
+    const renderDocumentFile = (
+        <View style={style.iconWrapper}>
+            <DocumentFile
+                ref={document}
+                canDownloadFiles={canDownloadFiles}
+                file={file}
+                theme={theme}
+            />
+        </View>
+    );
 
     const renderCardWithImage = (fileIcon: JSX.Element) => {
         return (
@@ -186,7 +176,7 @@ const File = ({
                 <View style={style.iconWrapper}>
                     {fileIcon}
                 </View>
-                {fileInfo()}
+                {fileInfo}
                 {renderOptionsButton()}
             </View>
         );
@@ -194,14 +184,14 @@ const File = ({
 
     let fileComponent;
     if (isVideo(file) && publicLinkEnabled) {
-        fileComponent = asCard ? renderCardWithImage(renderVideoFile()) : renderVideoFile();
+        fileComponent = asCard ? renderCardWithImage(renderVideoFile) : renderVideoFile;
     } else if (isImage(file)) {
-        fileComponent = asCard ? renderCardWithImage(renderImageFile()) : renderImageFile();
+        fileComponent = asCard ? renderCardWithImage(renderImageFile) : renderImageFile;
     } else if (isDocument(file)) {
         fileComponent = (
             <View style={[style.fileWrapper]}>
-                {renderDocumentFile()}
-                {fileInfo()}
+                {renderDocumentFile}
+                {fileInfo}
                 {renderOptionsButton()}
             </View>
         );
