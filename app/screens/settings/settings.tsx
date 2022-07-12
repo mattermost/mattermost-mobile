@@ -3,7 +3,7 @@
 
 import React, {useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Platform, ScrollView, View} from 'react-native';
+import {Alert, Platform, ScrollView, StyleSheet, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
@@ -15,7 +15,6 @@ import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 import {tryOpenURL} from '@utils/url';
 
 import SettingOption from './setting_option';
@@ -27,36 +26,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg,
         },
-        wrapper: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-            ...Platform.select({
-                ios: {
-                    flex: 1,
-                    paddingTop: 35,
-                },
-            }),
+        contentContainerStyle: {
+            marginTop: 20,
         },
-        divider: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 1,
-        },
-        middleDivider: {
-            borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 35,
-        },
-        group: {
-            backgroundColor: theme.centerChannelBg,
-        },
-        innerContainerStyle: {
+        containerStyle: {
             paddingLeft: 8,
+            marginTop: 20,
         },
-        menuLabel: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 200),
+        helpGroup: {
+            width: '91%',
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            height: 1,
+            alignSelf: 'center',
+            marginTop: 20,
         },
     };
 });
@@ -73,9 +56,11 @@ type SettingsProps = {
 const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) => {
     const theme = useTheme();
     const intl = useIntl();
-    const styles = getStyleSheet(theme);
     const serverDisplayName = useServerDisplayName();
+
     const serverName = siteName || serverDisplayName;
+    const styles = getStyleSheet(theme);
+
     const closeButton = useMemo(() => {
         return {
             id: CLOSE_BUTTON_ID,
@@ -141,11 +126,6 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
         }
     });
 
-    let middleDividerStyle = styles.divider;
-    if (Platform.OS === 'ios') {
-        middleDividerStyle = styles.middleDivider;
-    }
-
     return (
         <SafeAreaView
             edges={edges}
@@ -154,44 +134,35 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
         >
             <ScrollView
                 alwaysBounceVertical={false}
-                contentContainerStyle={styles.wrapper}
+                contentContainerStyle={styles.contentContainerStyle}
             >
-                <View style={styles.divider}/>
-                <View
-                    style={styles.group}
-                >
+                <SettingOption
+                    onPress={goToNotifications}
+                    optionName='notification'
+                />
+                <SettingOption
+                    onPress={goToDisplaySettings}
+                    optionName='display'
+                />
+                <SettingOption
+                    onPress={goToAdvancedSettings}
+                    optionName='advanced_settings'
+                />
+                <SettingOption
+                    messageValues={{appTitle: serverName}}
+                    onPress={goToAbout}
+                    optionName='about'
+                />
+                {Platform.OS === 'android' && <View style={styles.helpGroup}/>}
+                {showHelp &&
                     <SettingOption
-                        optionName='notification'
-                        onPress={goToNotifications}
-                    />
-                    <SettingOption
-                        optionName='display'
-                        onPress={goToDisplaySettings}
-                    />
-                    <SettingOption
-                        optionName='advanced_settings'
-                        onPress={goToAdvancedSettings}
-                    />
-                    <SettingOption
-                        optionName='about'
-                        onPress={goToAbout}
-                        messageValues={{appTitle: serverName}}
-                        separator={Platform.OS === 'ios'}
-                    />
-                </View>
-                <View style={middleDividerStyle}/>
-                <View
-                    style={styles.group}
-                >
-                    {showHelp &&
-                    <SettingOption
-                        optionName='help'
-                        onPress={openHelp}
+                        containerStyle={styles.containerStyle}
                         isLink={true}
-                        containerStyle={styles.innerContainerStyle}
+                        onPress={openHelp}
+                        optionName='help'
+                        separator={false}
                     />
-                    }
-                </View>
+                }
             </ScrollView>
         </SafeAreaView>
     );

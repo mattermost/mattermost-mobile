@@ -118,7 +118,6 @@ const Filter = ({initialFilter, setFilter}: FilterProps) => {
                 }}
                 separator={item.separator}
                 testID={item.id}
-                theme={theme}
             />
         );
     }, [renderLabelComponent, theme]);

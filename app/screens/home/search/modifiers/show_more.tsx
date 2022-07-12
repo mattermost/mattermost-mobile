@@ -37,8 +37,6 @@ const ShowMoreButton = ({onPress, showMore}: ShowMoreButtonProps) => {
 
     return (
         <MenuItem
-            testID={'mobile.search.show_more'}
-            onPress={onPress}
             labelComponent={
                 <FormattedText
                     id={id}
@@ -46,8 +44,9 @@ const ShowMoreButton = ({onPress, showMore}: ShowMoreButtonProps) => {
                     style={style.showMore}
                 />
             }
+            onPress={onPress}
             separator={false}
-            theme={theme}
+            testID={'mobile.search.show_more'}
         />
     );
 };
