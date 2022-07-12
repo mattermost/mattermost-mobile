@@ -44,13 +44,13 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         rowDisplayName: {
             color: theme.centerChannelColor,
-            flexShrink: 2,
+            flexShrink: 1,
             ...typography('Body', 200),
         },
         rowName: {
             ...typography('Body', 200),
             color: changeOpacity(theme.centerChannelColor, 0.64),
-            flexShrink: 1,
+            flexShrink: 2,
             marginLeft: 2,
         },
         rowTag: {
