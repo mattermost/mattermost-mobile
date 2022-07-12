@@ -9,10 +9,12 @@ import {ImageResource, Navigation, Options, OptionsModalPresentationStyle, Optio
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
+import {ITEM_HEIGHT} from '@components/team_sidebar/add_team/team_list_item/team_list_item';
 import {Device, Events, Screens} from '@constants';
 import NavigationConstants from '@constants/navigation';
 import {NOT_READY} from '@constants/screens';
 import {getDefaultThemeByAppearance} from '@context/theme';
+import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {LaunchProps, LaunchType} from '@typings/launch';
@@ -695,15 +697,13 @@ type BottomSheetWithTeamListArgs = {
 }
 
 export async function bottomSheetWithTeamList({title, teams, dimensions, renderContent, theme}: BottomSheetWithTeamListArgs) {
-    const ITEM_HEIGHT = 72;
-    const HEADER_HEIGHT = 66;
     const CONTAINER_HEIGHT = 392;
     const maxHeight = Math.round((dimensions.height * 0.9));
 
     let height = CONTAINER_HEIGHT;
     if (teams.length) {
-        const itemsHeight = bottomSheetSnapPoint(teams.length + 1, ITEM_HEIGHT, 0);
-        const heightWithHeader = HEADER_HEIGHT + itemsHeight;
+        const itemsHeight = bottomSheetSnapPoint(teams.length, ITEM_HEIGHT, 0);
+        const heightWithHeader = TITLE_HEIGHT + itemsHeight;
         height = Math.min(maxHeight, heightWithHeader);
     }
 

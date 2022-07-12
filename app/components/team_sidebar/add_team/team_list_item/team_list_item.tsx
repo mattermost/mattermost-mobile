@@ -22,11 +22,15 @@ type Props = {
     onPress: (teamId: string) => void;
 }
 
+const CONTAINER_HEIGHT = 40;
+const CONTAINER_VERTICAL_MARGIN = 8;
+export const ITEM_HEIGHT = CONTAINER_HEIGHT + (CONTAINER_VERTICAL_MARGIN * 2);
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            height: 40,
-            marginVertical: 8,
+            height: CONTAINER_HEIGHT,
+            marginVertical: CONTAINER_VERTICAL_MARGIN,
         },
         touchable: {
             display: 'flex',

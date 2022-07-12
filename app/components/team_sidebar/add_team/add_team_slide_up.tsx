@@ -20,12 +20,6 @@ import TeamList from './team_list';
 import type TeamModel from '@typings/database/models/servers/team';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    container: {
-        flexShrink: 1,
-    },
-    contentContainer: {
-        marginBottom: 4,
-    },
     empty: {
         flex: 1,
         alignItems: 'center',
@@ -39,7 +33,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     description: {
         color: theme.centerChannelColor,
-        lineHeight: 24,
         marginTop: 8,
         maxWidth: 334,
         ...typography('Body', 200, 'Regular'),
