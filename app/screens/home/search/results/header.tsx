@@ -87,7 +87,8 @@ const Header = ({
             bottomSheetSnapPoint(
                 NUMBER_FILTER_ITEMS + 1,
                 FILTER_ITEM_HEIGHT,
-                bottom) + TITLE_HEIGHT,
+                bottom,
+            ) + TITLE_HEIGHT,
             10];
     }, []);
 
