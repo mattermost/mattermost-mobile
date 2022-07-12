@@ -53,12 +53,25 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flexShrink: 1,
             marginLeft: 2,
         },
+        rowTag: {
+            ...typography('Heading', 25),
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            marginLeft: 'auto',
+            width: 20,
+            borderRadius: 4,
+            overflow: 'hidden',
+            marginTop: 2,
+            paddingHorizontal: 4,
+            textAlign: 'center',
+        },
     };
 });
 
 type Props = {
     name: string;
     displayName: string;
+    memberCount: number;
     onPress: (handle: string) => void;
     testID?: string;
 }
@@ -67,6 +80,7 @@ const GroupMentionItem = ({
     onPress,
     name,
     displayName,
+    memberCount,
     testID,
 }: Props) => {
     const insets = useSafeAreaInsets();
@@ -110,6 +124,7 @@ const GroupMentionItem = ({
                     {`@${name}`}
                 </Text>
             </View>
+            <Text style={style.rowTag}>{`${memberCount >= 100 ? '99+' : memberCount}`}</Text>
         </TouchableWithFeedback>
     );
 };
