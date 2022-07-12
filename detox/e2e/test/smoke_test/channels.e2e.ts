@@ -21,9 +21,11 @@ import {
 import {
     BrowseChannelsScreen,
     ChannelScreen,
+    ChannelInfoScreen,
     ChannelListScreen,
     CreateDirectMessageScreen,
     CreateOrEditChannelScreen,
+    FindChannelsScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
@@ -126,6 +128,34 @@ describe('Smoke Test - Channels', () => {
         await expect(postListPostItem).toBeVisible();
 
         // # Go back to channel list screen
+        await ChannelScreen.back();
+    });
+
+    it('MM-T4774_4 - should be able to find and edit a channel', async () => {
+        // # Open find channels screen, search for the channel to navigate to, and tap on the target channel item
+        await FindChannelsScreen.open();
+        await FindChannelsScreen.searchInput.replaceText(testChannel.name);
+        await FindChannelsScreen.getFilteredChannelItem(testChannel.name).tap();
+
+        // * Verify on target channel screen
+        await ChannelScreen.toBeVisible();
+        await expect(ChannelScreen.headerTitle).toHaveText(testChannel.display_name);
+
+        // # Open channel info screen, open edit channel screen, edit channel info, and save changes
+        await ChannelInfoScreen.open();
+        await CreateOrEditChannelScreen.openEditChannel();
+        await CreateOrEditChannelScreen.headerInput.tapReturnKey();
+        await CreateOrEditChannelScreen.headerInput.typeText('header1');
+        await CreateOrEditChannelScreen.headerInput.tapReturnKey();
+        await CreateOrEditChannelScreen.headerInput.typeText('header2');
+        await CreateOrEditChannelScreen.saveButton.tap();
+
+        // * Verify on channel info screen and changes have been saved
+        await ChannelInfoScreen.toBeVisible();
+        await expect(element(by.text(`Channel header: ${testChannel.display_name.toLowerCase()}\nheader1\nheader2`))).toBeVisible();
+
+        // # Go back to channel list screen
+        await ChannelInfoScreen.close();
         await ChannelScreen.back();
     });
 });
