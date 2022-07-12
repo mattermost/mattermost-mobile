@@ -232,7 +232,6 @@ const SlashSuggestion = ({
 
     return (
         <FlatList
-            testID='slash_suggestion.list'
             keyboardShouldPersistTaps='always'
             style={listStyle}
             data={dataSource}
@@ -240,6 +239,7 @@ const SlashSuggestion = ({
             removeClippedSubviews={true}
             renderItem={renderItem}
             nestedScrollEnabled={nestedScrollEnabled}
+            testID='autocomplete.slash_suggestion.flat_list'
         />
     );
 };

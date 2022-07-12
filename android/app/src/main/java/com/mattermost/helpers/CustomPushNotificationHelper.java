@@ -101,6 +101,16 @@ public class CustomPushNotificationHelper {
             userInfoBundle.putString("channel_id", channelId);
         }
 
+        String postId = bundle.getString("post_id");
+        if (postId != null) {
+            userInfoBundle.putString("post_id", postId);
+        }
+
+        String rootId = bundle.getString("root_id");
+        if (rootId != null) {
+            userInfoBundle.putString("root_id", rootId);
+        }
+
         notification.addExtras(userInfoBundle);
     }
 
@@ -145,12 +155,16 @@ public class CustomPushNotificationHelper {
 
         String channelId = bundle.getString("channel_id");
         String postId = bundle.getString("post_id");
+        String rootId = bundle.getString("root_id");
         int notificationId = postId != null ? postId.hashCode() : MESSAGE_NOTIFICATION_ID;
+
+        Boolean is_crt_enabled = bundle.getString("is_crt_enabled") != null && bundle.getString("is_crt_enabled").equals("true");
+        String groupId = is_crt_enabled && !android.text.TextUtils.isEmpty(rootId) ? rootId : channelId;
 
         addNotificationExtras(notification, bundle);
         setNotificationIcons(context, notification, bundle);
         setNotificationMessagingStyle(context, notification, bundle);
-        setNotificationGroup(notification, channelId, createSummary);
+        setNotificationGroup(notification, groupId, createSummary);
         setNotificationBadgeType(notification);
 
         setNotificationChannel(notification, bundle);

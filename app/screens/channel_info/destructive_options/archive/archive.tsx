@@ -130,6 +130,7 @@ const Archive = ({
             icon='archive-outline'
             destructive={true}
             type='default'
+            testID='channel_info.options.archive_channel.option'
         />
     );
 };

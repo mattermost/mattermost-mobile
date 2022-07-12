@@ -271,7 +271,7 @@ ThreadsInTeam
 id PK string # auto-generated
 loaded_in_global_threads boolean
 team_id string INDEX FK >- Team.id
-thread_id string INDEX
+thread_id string INDEX FK >- Thread.id
 
 
 ThreadParticipant # who is participating in this conversation

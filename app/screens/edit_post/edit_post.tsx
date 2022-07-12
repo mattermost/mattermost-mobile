@@ -4,7 +4,6 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Keyboard, KeyboardType, LayoutChangeEvent, Platform, SafeAreaView, useWindowDimensions, View} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {deletePost, editPost} from '@actions/remote/post';
@@ -14,6 +13,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import PostError from '@screens/edit_post/post_error';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {switchKeyboardForCodeBlocks} from '@utils/markdown';
@@ -114,26 +114,6 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             clearTimeout(t);
         };
     }, []);
-
-    useEffect(() => {
-        const unsubscribe = Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
-                switch (buttonId) {
-                    case closeButtonId: {
-                        onClose();
-                        break;
-                    }
-                    case RIGHT_BUTTON.id:
-                        onSavePostMessage();
-                        break;
-                }
-            },
-        }, componentId);
-
-        return () => {
-            unsubscribe.remove();
-        };
-    }, [postMessage]);
 
     useDidUpdate(() => {
         // Workaround to avoid iOS emdash autocorrect in Code Blocks
@@ -253,6 +233,9 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             bottom: withTiming(bottom, {duration: 250}),
         };
     });
+
+    useNavButtonPressed(RIGHT_BUTTON.id, componentId, onSavePostMessage, [postMessage]);
+    useNavButtonPressed(closeButtonId, componentId, onClose, []);
 
     if (isUpdating) {
         return (

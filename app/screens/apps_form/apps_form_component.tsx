@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} fr
 import {useIntl} from 'react-intl';
 import {Keyboard, ScrollView, Text, View} from 'react-native';
 import Button from 'react-native-button';
-import {ImageResource, Navigation} from 'react-native-navigation';
+import {ImageResource} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {handleGotoLocation} from '@actions/remote/command';
@@ -15,6 +15,7 @@ import {AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {filterEmptyOptions} from '@utils/apps';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
@@ -125,26 +126,14 @@ function AppsFormComponent({
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
-    useEffect(() => {
-        const unsubscribe = Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
-                switch (buttonId) {
-                    case CLOSE_BUTTON_ID:
-                        close();
-                        break;
-                    case SUBMIT_BUTTON_ID: {
-                        if (!submitting) {
-                            handleSubmit();
-                        }
-                        break;
-                    }
-                }
-            },
-        }, componentId);
-        return () => {
-            unsubscribe.remove();
-        };
+    const onHandleSubmit = useCallback(() => {
+        if (!submitting) {
+            handleSubmit();
+        }
     }, [serverUrl, componentId, submitting]);
+
+    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, [close]);
+    useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, onHandleSubmit, [onHandleSubmit]);
 
     useDidUpdate(() => {
         dispatchValues({elements: form.fields});

@@ -1320,7 +1320,7 @@ export class AppCommandParser {
                 }
                 case AppFieldTypes.CHANNEL: {
                     const getFieldChannel = async (channelName: string) => {
-                        let channel: ChannelModel | Channel | undefined = await getChannelByName(this.database, channelName);
+                        let channel: ChannelModel | Channel | undefined = await getChannelByName(this.database, this.teamID, channelName);
                         if (!channel) {
                             const res = await fetchChannelByName(this.serverUrl, this.teamID, channelName);
                             if ('error' in res) {

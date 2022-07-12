@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import withObservables from '@nozbe/with-observables';
-import React, {ComponentType, createContext, useEffect} from 'react';
+import React, {ComponentType, createContext, useEffect, useState} from 'react';
 import {Appearance} from 'react-native';
 
 import {Preferences} from '@constants';
@@ -33,35 +33,43 @@ export function getDefaultThemeByAppearance(): Theme {
 export const ThemeContext = createContext(getDefaultThemeByAppearance());
 const {Consumer, Provider} = ThemeContext;
 
-const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
-    const getTheme = (): Theme => {
-        if (currentTeamId) {
-            const teamTheme = themes.find((t) => t.name === currentTeamId) || themes[0];
-            if (teamTheme?.value) {
-                try {
-                    const theme = setThemeDefaults(JSON.parse(teamTheme.value));
-                    updateThemeIfNeeded(theme);
-
-                    return theme;
-                } catch {
-                    // no theme change
-                }
+const getTheme = (teamId: string | undefined, themes: PreferenceModel[]): Theme => {
+    if (teamId) {
+        const teamTheme = themes.find((t) => t.name === teamId) || themes[0];
+        if (teamTheme?.value) {
+            try {
+                const theme = setThemeDefaults(JSON.parse(teamTheme.value));
+                return theme;
+            } catch {
+                // no theme change
             }
         }
+    }
 
-        const defaultTheme = getDefaultThemeByAppearance();
-        updateThemeIfNeeded(defaultTheme);
+    const defaultTheme = getDefaultThemeByAppearance();
 
-        return defaultTheme;
-    };
+    return defaultTheme;
+};
+
+const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
+    const [theme, setTheme] = useState(() => getTheme(currentTeamId, themes));
 
     useEffect(() => {
-        const listener = Appearance.addChangeListener(getTheme);
+        const listener = Appearance.addChangeListener(() => {
+            const newTheme = getTheme(currentTeamId, themes);
+            if (theme !== newTheme) {
+                setTheme(newTheme);
+            }
+        });
 
         return () => listener.remove();
-    }, []);
+    }, [currentTeamId, themes, theme]);
 
-    return (<Provider value={getTheme()}>{children}</Provider>);
+    useEffect(() => {
+        updateThemeIfNeeded(theme);
+    }, [theme]);
+
+    return (<Provider value={theme}>{children}</Provider>);
 };
 
 export function withTheme<T extends WithThemeProps>(Component: ComponentType<T>): ComponentType<T> {

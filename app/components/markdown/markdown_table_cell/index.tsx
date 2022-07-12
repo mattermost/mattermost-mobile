@@ -53,7 +53,10 @@ const MarkdownTableCell = ({isLastCell, align, children}: MarkdownTableCellProps
     }
 
     return (
-        <View style={[cellStyle, textStyle]}>
+        <View
+            style={[cellStyle, textStyle]}
+            testID='markdown_table_cell'
+        >
             {children}
         </View>
     );

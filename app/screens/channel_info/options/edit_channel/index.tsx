@@ -28,6 +28,7 @@ const EditChannel = ({channelId}: Props) => {
             label={title}
             icon='pencil-outline'
             type={Platform.select({ios: 'arrow', default: 'default'})}
+            testID='channel_info.options.edit_channel.option'
         />
     );
 };

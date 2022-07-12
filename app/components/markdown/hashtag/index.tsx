@@ -4,7 +4,7 @@
 import React from 'react';
 import {Text, TextStyle} from 'react-native';
 
-import {popToRoot, showSearchModal, dismissAllModals} from '@screens/navigation';
+import {popToRoot, dismissAllModals} from '@screens/navigation';
 
 type HashtagProps = {
     hashtag: string;
@@ -17,7 +17,7 @@ const Hashtag = ({hashtag, linkStyle}: HashtagProps) => {
         await dismissAllModals();
         await popToRoot();
 
-        showSearchModal('#' + hashtag);
+        // showSearchModal('#' + hashtag);
     };
 
     return (

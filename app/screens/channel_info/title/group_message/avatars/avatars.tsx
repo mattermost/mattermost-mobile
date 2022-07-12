@@ -57,7 +57,10 @@ const GroupAvatars = ({users}: Props) => {
     });
 
     return (
-        <View style={[styles.container]}>
+        <View
+            style={[styles.container]}
+            testID='channel_info.title.group_message.group_avatars'
+        >
             {group}
         </View>
     );

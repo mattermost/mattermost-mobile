@@ -1,21 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo} from 'react';
+import React, {useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, BackHandler, Platform, ScrollView, View} from 'react-native';
-import {Navigation} from 'react-native-navigation';
+import {Alert, Platform, ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
 import {useServerDisplayName} from '@context/server';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
-import NavigationStore from '@store/navigation_store';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+import {tryOpenURL} from '@utils/url';
 
 import SettingOption from './setting_option';
 
@@ -62,13 +63,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 type SettingsProps = {
     componentId: string;
-    siteName: string;
+    helpLink: string;
     showHelp: boolean;
+    siteName: string;
 }
 
 //todo: handle display on tablet and Profile the whole feature - https://mattermost.atlassian.net/browse/MM-39711
 
-const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
+const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) => {
     const theme = useTheme();
     const intl = useIntl();
     const styles = getStyleSheet(theme);
@@ -83,9 +85,9 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
         };
     }, [theme.centerChannelColor]);
 
-    const close = useCallback(() => {
+    const close = () => {
         dismissModal({componentId});
-    }, []);
+    };
 
     useEffect(() => {
         setButtons(componentId, {
@@ -93,39 +95,9 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
         });
     }, []);
 
-    useEffect(() => {
-        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (NavigationStore.getNavigationTopComponentId() === componentId) {
-                close();
-                return true;
-            }
+    useAndroidHardwareBackHandler(componentId, close);
 
-            return false;
-        });
-        return () => {
-            backHandler.remove();
-        };
-    }, []);
-
-    useEffect(() => {
-        const unsubscribe = Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
-                if (buttonId === CLOSE_BUTTON_ID) {
-                    close();
-                }
-            },
-        }, componentId);
-
-        return () => {
-            unsubscribe.remove();
-        };
-    }, []);
-
-    const onPressHandler = () => {
-        return Alert.alert(
-            'The functionality you are trying to use has not yet been implemented.',
-        );
-    };
+    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, []);
 
     const goToNotifications = preventDoubleTap(() => {
         const screen = Screens.SETTINGS_NOTIFICATION;
@@ -146,6 +118,28 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
         const title = intl.formatMessage({id: 'settings.about', defaultMessage: 'About {appTitle}'}, {appTitle: serverName});
 
         goToScreen(screen, title);
+    });
+
+    const goToAdvancedSettings = preventDoubleTap(() => {
+        const screen = Screens.SETTINGS_ADVANCED;
+        const title = intl.formatMessage({id: 'settings.advanced_settings', defaultMessage: 'Advanced Settings'});
+
+        goToScreen(screen, title);
+    });
+
+    const openHelp = preventDoubleTap(() => {
+        const link = helpLink ? helpLink.toLowerCase() : '';
+
+        if (link) {
+            const onError = () => {
+                Alert.alert(
+                    intl.formatMessage({id: 'mobile.link.error.title', defaultMessage: 'Error'}),
+                    intl.formatMessage({id: 'mobile.link.error.text', defaultMessage: 'Unable to open the link.'}),
+                );
+            };
+
+            tryOpenURL(link, onError);
+        }
     });
 
     let middleDividerStyle = styles.divider;
@@ -177,7 +171,7 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
                     />
                     <SettingOption
                         optionName='advanced_settings'
-                        onPress={onPressHandler}
+                        onPress={goToAdvancedSettings}
                     />
                     <SettingOption
                         optionName='about'
@@ -193,7 +187,7 @@ const Settings = ({componentId, showHelp, siteName}: SettingsProps) => {
                     {showHelp &&
                     <SettingOption
                         optionName='help'
-                        onPress={onPressHandler}
+                        onPress={openHelp}
                         isLink={true}
                         containerStyle={styles.innerContainerStyle}
                     />

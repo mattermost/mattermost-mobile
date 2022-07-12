@@ -144,6 +144,7 @@ const Results = ({
                 <PostWithChannelInfo
                     location={Screens.SEARCH}
                     post={item}
+                    testID='search_results.post_list'
                 />
             );
         }
@@ -229,6 +230,7 @@ const Results = ({
             removeClippedSubviews={true}
             ref={scrollRef}
             style={containerStyle}
+            testID='search_results.post_list.flat_list'
         />
     );
 };

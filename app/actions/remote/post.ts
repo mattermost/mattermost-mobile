@@ -130,30 +130,9 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
 
     const isCRTEnabled = await getIsCRTEnabled(database);
 
+    let created;
     try {
-        const created = await client.createPost(newPost);
-        const models = await operator.handlePosts({
-            actionType: ActionType.POSTS.RECEIVED_NEW,
-            order: [created.id],
-            posts: [created],
-            prepareRecordsOnly: true,
-        });
-        const isCrtReply = isCRTEnabled && created.root_id !== '';
-        if (!isCrtReply) {
-            const {member} = await updateLastPostAt(serverUrl, created.channel_id, created.create_at, true);
-            if (member) {
-                models.push(member);
-            }
-        }
-        if (isCRTEnabled) {
-            const {models: threadModels} = await createThreadFromNewPost(serverUrl, created, true);
-            if (threadModels?.length) {
-                models.push(...threadModels);
-            }
-        }
-        await operator.batchRecords(models);
-
-        newPost = created;
+        created = await client.createPost(newPost);
     } catch (error: any) {
         const errorPost = {
             ...newPost,
@@ -187,7 +166,32 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
             }
             await operator.batchRecords(models);
         }
+
+        return {data: true};
     }
+
+    const models = await operator.handlePosts({
+        actionType: ActionType.POSTS.RECEIVED_NEW,
+        order: [created.id],
+        posts: [created],
+        prepareRecordsOnly: true,
+    });
+    const isCrtReply = isCRTEnabled && created.root_id !== '';
+    if (!isCrtReply) {
+        const {member} = await updateLastPostAt(serverUrl, created.channel_id, created.create_at, true);
+        if (member) {
+            models.push(member);
+        }
+    }
+    if (isCRTEnabled) {
+        const {models: threadModels} = await createThreadFromNewPost(serverUrl, created, true);
+        if (threadModels?.length) {
+            models.push(...threadModels);
+        }
+    }
+    await operator.batchRecords(models);
+
+    newPost = created;
 
     return {data: true};
 }
@@ -322,11 +326,6 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
 }
 
 export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: Channel[], memberships: ChannelMembership[], excludeChannelId?: string, emitEvent = false) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
     try {
         const promises = [];
         if (emitEvent) {
@@ -343,6 +342,9 @@ export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: C
             DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
         }
     } catch (error) {
+        if (emitEvent) {
+            DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
+        }
         return {error};
     }
 

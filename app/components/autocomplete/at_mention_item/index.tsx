@@ -31,7 +31,6 @@ const AtMentionItem = ({
 
     return (
         <TouchableWithFeedback
-            testID={testID}
             key={user.id}
             onPress={completeMention}
             underlayColor={changeOpacity(theme.buttonBg, 0.08)}
@@ -40,7 +39,7 @@ const AtMentionItem = ({
         >
             <UserItem
                 user={user}
-                testID='at_mention.user_item'
+                testID={testID}
             />
         </TouchableWithFeedback>
     );

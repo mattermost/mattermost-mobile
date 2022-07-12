@@ -3,9 +3,9 @@
 
 import React, {useCallback, useEffect} from 'react';
 import {Keyboard} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 
 import EmojiPicker from '@components/emoji_picker';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal, setButtons} from '@screens/navigation';
 
 type Props = {
@@ -14,36 +14,28 @@ type Props = {
     closeButton: never;
 };
 
+const EMOJI_PICKER_BUTTON = 'close-add-reaction';
+
 const EmojiPickerScreen = ({closeButton, componentId, onEmojiPress}: Props) => {
     useEffect(() => {
         setButtons(componentId, {
             leftButtons: [
                 {
                     icon: closeButton,
-                    id: 'close-add-reaction',
+                    id: EMOJI_PICKER_BUTTON,
                     testID: 'close.emoji_picker.button',
                 },
             ],
             rightButtons: [],
         });
-
-        const unsubscribe = Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
-                if (buttonId === 'close-add-reaction') {
-                    close();
-                }
-            },
-        }, componentId);
-
-        return () => {
-            unsubscribe.remove();
-        };
     }, []);
 
-    const close = useCallback(() => {
+    const close = () => {
         Keyboard.dismiss();
-        dismissModal();
-    }, []);
+        dismissModal({componentId});
+    };
+
+    useNavButtonPressed(EMOJI_PICKER_BUTTON, componentId, close, []);
 
     const handleEmojiPress = useCallback((emoji: string) => {
         onEmojiPress(emoji);

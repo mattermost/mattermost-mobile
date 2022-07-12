@@ -332,7 +332,6 @@ jest.mock('@screens/navigation', () => ({
     popTopScreen: jest.fn(),
     showModal: jest.fn(),
     showModalOverCurrentContext: jest.fn(),
-    showSearchModal: jest.fn(),
     setButtons: jest.fn(),
     showOverlay: jest.fn(),
     mergeNavigationOptions: jest.fn(),
