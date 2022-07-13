@@ -9,7 +9,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-type Props = {
+export type OptionItemProps = {
     action?: (value: string | boolean) => void;
     description?: string;
     inline?: boolean;
@@ -109,7 +109,7 @@ const OptionItem = ({
     testID = 'optionItem',
     type,
     value,
-}: Props) => {
+}: OptionItemProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 

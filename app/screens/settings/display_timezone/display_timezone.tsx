@@ -7,7 +7,6 @@ import {View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateMe} from '@actions/remote/user';
-import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -20,6 +19,7 @@ import {getDeviceTimezone} from '@utils/timezone';
 import {getTimezoneRegion, getUserTimezoneProps} from '@utils/user';
 
 import {getSaveButton} from '../config';
+import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -33,9 +33,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
             flex: 1,
             paddingTop: 35,
-        },
-        content: {
-            paddingHorizontal: 20,
         },
     };
 });
@@ -119,9 +116,8 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
         >
             <View style={styles.wrapper}>
                 <SettingSeparator/>
-                <OptionItem
+                <SettingOption
                     action={updateAutomaticTimezone}
-                    containerStyle={styles.content}
                     description={getTimezoneRegion(userTimezone.automaticTimezone)}
                     label={intl.formatMessage({id: 'settings_display.timezone.automatically', defaultMessage: 'Set automatically'})}
                     selected={userTimezone.useAutomaticTimezone}
@@ -130,9 +126,8 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
                 {!userTimezone.useAutomaticTimezone && (
                     <View>
                         <SettingSeparator/>
-                        <OptionItem
+                        <SettingOption
                             action={goToSelectTimezone}
-                            containerStyle={styles.content}
                             description={getTimezoneRegion(userTimezone.manualTimezone)}
                             label={intl.formatMessage({id: 'settings_display.timezone.manual', defaultMessage: 'Change timezone'})}
                             type='arrow'

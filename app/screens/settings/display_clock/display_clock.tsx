@@ -3,11 +3,10 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
+import {StyleSheet} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {savePreference} from '@actions/remote/preference';
-import OptionItem from '@components/option_item';
 import {Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -15,10 +14,11 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import {popTopScreen, setButtons} from '@screens/navigation';
-import {getSaveButton} from '@screens/settings/config';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import SettingSeparator from '@screens/settings/settings_separator';
 
+import {getSaveButton} from '../config';
 import SettingBlock from '../setting_block';
+import SettingOption from '../setting_option';
 
 const footer = {
     id: t('settings_display.clock.preferTime'),
@@ -31,19 +31,10 @@ const CLOCK_TYPE = {
     MILITARY: 'MILITARY',
 } as const;
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            flex: 1,
-        },
-        divider: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 1,
-        },
-        containerStyle: {
-            paddingHorizontal: 20,
-        },
-    };
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
 });
 
 const SAVE_CLOCK_BUTTON_ID = 'settings_display.clock.save.button';
@@ -58,8 +49,6 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
     const [isMilitaryTimeFormat, setIsMilitaryTimeFormat] = useState(hasMilitaryTimeFormat);
     const serverUrl = useServerUrl();
     const intl = useIntl();
-
-    const styles = getStyleSheet(theme);
 
     const saveButton = useMemo(() => getSaveButton(SAVE_CLOCK_BUTTON_ID, intl, theme), [theme.sidebarHeaderTextColor]);
 
@@ -104,19 +93,17 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
                 disableHeader={true}
                 footerText={footer}
             >
-                <OptionItem
+                <SettingOption
                     action={onSelectClockPreference}
-                    containerStyle={styles.containerStyle}
                     label={intl.formatMessage({id: 'settings_display.clock.normal', defaultMessage: '12-hour clock (example: 4:00 PM)'})}
                     selected={!isMilitaryTimeFormat}
                     testID='clock_display_settings.normal_clock.action'
                     type='select'
                     value={CLOCK_TYPE.NORMAL}
                 />
-                <View style={styles.divider}/>
-                <OptionItem
+                <SettingSeparator/>
+                <SettingOption
                     action={onSelectClockPreference}
-                    containerStyle={styles.containerStyle}
                     label={intl.formatMessage({id: 'settings_display.clock.military', defaultMessage: '24-hour clock (example: 16:00)'})}
                     selected={isMilitaryTimeFormat}
                     testID='clock_display_settings.military_clock.action'

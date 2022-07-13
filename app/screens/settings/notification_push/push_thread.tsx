@@ -5,10 +5,10 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet} from 'react-native';
 
-import OptionItem from '@components/option_item';
 import {t} from '@i18n';
 
 import SettingBlock from '../setting_block';
+import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
 
 const styles = StyleSheet.create({
@@ -40,7 +40,7 @@ const MobilePushThread = ({pushThread, onMobilePushThreadChanged}: MobilePushThr
             footerText={footerText}
             containerStyles={styles.area}
         >
-            <OptionItem
+            <SettingOption
                 action={onMobilePushThreadChanged}
                 label={intl.formatMessage({id: 'notification_settings.push_threads.description', defaultMessage: 'Notify me about all replies to threads I\'m following'})}
                 selected={pushThread === 'all'}

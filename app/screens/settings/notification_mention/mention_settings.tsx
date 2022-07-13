@@ -7,7 +7,6 @@ import {Text} from 'react-native';
 
 import {updateMe} from '@actions/remote/user';
 import FloatingTextInput from '@components/floating_text_input_label';
-import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -20,6 +19,7 @@ import {getNotificationProps} from '@utils/user';
 
 import {getSaveButton} from '../config';
 import SettingBlock from '../setting_block';
+import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -33,10 +33,6 @@ const SAVE_MENTION_BUTTON_ID = 'SAVE_MENTION_BUTTON_ID';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        container: {
-            paddingHorizontal: 20,
-            marginTop: 16,
-        },
         input: {
             color: theme.centerChannelColor,
             height: 150,
@@ -47,15 +43,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginTop: 30,
             width: '90%',
             alignSelf: 'center',
-        },
-        optionLabelTextStyle: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 200, 'Regular'),
-            marginBottom: 4,
-        },
-        optionDescriptionTextStyle: {
-            color: changeOpacity(theme.centerChannelColor, 0.64),
-            ...typography('Body', 75, 'Regular'),
         },
         keywordLabelStyle: {
             marginLeft: 20,
@@ -160,13 +147,10 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
         >
             {Boolean(currentUser?.firstName) && (
                 <>
-                    <OptionItem
+                    <SettingOption
                         action={onToggleFirstName}
-                        containerStyle={styles.container}
                         description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveName', defaultMessage: 'Your case sensitive first name'})}
                         label={currentUser.firstName}
-                        optionDescriptionTextStyle={styles.optionDescriptionTextStyle}
-                        optionLabelTextStyle={styles.optionLabelTextStyle}
                         selected={tglFirstName}
                         type='toggle'
                     />
@@ -175,25 +159,19 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
             )
             }
             {Boolean(currentUser?.username) && (
-                <OptionItem
+                <SettingOption
                     action={onToggleUserName}
-                    containerStyle={styles.container}
                     description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveUsername', defaultMessage: 'Your non-case sensitive username'})}
                     label={currentUser.username}
-                    optionDescriptionTextStyle={styles.optionDescriptionTextStyle}
-                    optionLabelTextStyle={styles.optionLabelTextStyle}
                     selected={tglUserName}
                     type='toggle'
                 />
             )}
             <SettingSeparator/>
-            <OptionItem
+            <SettingOption
                 action={onToggleChannel}
-                containerStyle={styles.container}
                 description={intl.formatMessage({id: 'notification_settings.mentions.channelWide', defaultMessage: 'Channel-wide mentions'})}
                 label='@channel, @all, @here'
-                optionDescriptionTextStyle={styles.optionDescriptionTextStyle}
-                optionLabelTextStyle={styles.optionLabelTextStyle}
                 selected={tglChannel}
                 type='toggle'
             />

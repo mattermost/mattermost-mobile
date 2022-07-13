@@ -8,7 +8,6 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {savePreference} from '@actions/remote/preference';
 import {updateMe} from '@actions/remote/user';
-import OptionItem from '@components/option_item';
 import {Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -22,6 +21,7 @@ import {getEmailInterval, getNotificationProps} from '@utils/user';
 
 import {getSaveButton} from '../config';
 import SettingBlock from '../setting_block';
+import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -40,9 +40,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         scrollViewContent: {
             paddingVertical: 35,
-        },
-        containerStyle: {
-            paddingHorizontal: 20,
         },
         disabled: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
@@ -164,9 +161,8 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
                 >
                     {sendEmailNotifications &&
                         <>
-                            <OptionItem
+                            <SettingOption
                                 action={setEmailInterval}
-                                containerStyle={styles.containerStyle}
                                 label={intl.formatMessage({id: 'notification_settings.email.immediately', defaultMessage: 'Immediately'})}
                                 selected={notifyInterval === `${Preferences.INTERVAL_IMMEDIATE}`}
                                 testID='notification_settings.email.immediately.action'
@@ -176,18 +172,16 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
                             <SettingSeparator/>
                             {enableEmailBatching &&
                                 <View>
-                                    <OptionItem
+                                    <SettingOption
                                         action={setEmailInterval}
-                                        containerStyle={styles.containerStyle}
                                         label={intl.formatMessage({id: 'notification_settings.email.fifteenMinutes', defaultMessage: 'Every 15 minutes'})}
                                         selected={notifyInterval === `${Preferences.INTERVAL_FIFTEEN_MINUTES}`}
                                         type='select'
                                         value={`${Preferences.INTERVAL_FIFTEEN_MINUTES}`}
                                     />
                                     <SettingSeparator/>
-                                    <OptionItem
+                                    <SettingOption
                                         action={setEmailInterval}
-                                        containerStyle={styles.containerStyle}
                                         label={intl.formatMessage({id: 'notification_settings.email.everyHour', defaultMessage: 'Every hour'})}
                                         selected={notifyInterval === `${Preferences.INTERVAL_HOUR}`}
                                         type='select'
@@ -196,9 +190,8 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
                                     <SettingSeparator/>
                                 </View>
                             }
-                            <OptionItem
+                            <SettingOption
                                 action={setEmailInterval}
-                                containerStyle={styles.containerStyle}
                                 label={intl.formatMessage({id: 'notification_settings.email.never', defaultMessage: 'Never'})}
                                 selected={notifyInterval === `${Preferences.INTERVAL_NEVER}`}
                                 testID='notification_settings.email.never.action'
@@ -223,9 +216,8 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
                         footerText={emailFooterCRTText}
                         headerText={emailHeaderCRTText}
                     >
-                        <OptionItem
+                        <SettingOption
                             action={handleEmailThreadsChanged}
-                            containerStyle={styles.containerStyle}
                             label={intl.formatMessage({id: 'user.settings.notifications.email_threads.description', defaultMessage: 'Notify me about all replies to threads I\'m following'})}
                             selected={emailThreads}
                             type='toggle'

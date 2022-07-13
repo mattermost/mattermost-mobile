@@ -5,13 +5,13 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 
 import FormattedText from '@components/formatted_text';
-import OptionItem from '@components/option_item';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import SettingBlock from '../setting_block';
+import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
 
 const headerText = {
@@ -26,24 +26,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingVertical: 10,
             ...typography('Body', 200, 'Regular'),
         },
-        container: {
-            paddingHorizontal: 20,
-        },
-        optionLabelTextStyle: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 200, 'Regular'),
-            marginBottom: 4,
-        },
-        optionDescriptionTextStyle: {
-            color: changeOpacity(theme.centerChannelColor, 0.64),
-            ...typography('Body', 75, 'Regular'),
-        },
     };
 });
 
 type MobileSendPushProps = {
-    sendPushNotifications: boolean;
     pushStatus: PushStatus;
+    sendPushNotifications: boolean;
     setMobilePushPref: (status: PushStatus) => void;
 }
 const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: MobileSendPushProps) => {
@@ -57,40 +45,31 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
         >
             {sendPushNotifications &&
                 <>
-                    <OptionItem
+                    <SettingOption
                         action={setMobilePushPref}
-                        containerStyle={styles.container}
                         label={intl.formatMessage({id: 'notification_settings.pushNotification.allActivity', defaultMessage: 'For all activity'})}
                         selected={pushStatus === 'all'}
                         testID='notification_settings.pushNotification.allActivity'
                         type='select'
                         value='all'
-                        optionDescriptionTextStyle={styles.optionDescriptionTextStyle}
-                        optionLabelTextStyle={styles.optionLabelTextStyle}
                     />
                     <SettingSeparator/>
-                    <OptionItem
+                    <SettingOption
                         action={setMobilePushPref}
-                        containerStyle={styles.container}
                         label={intl.formatMessage({id: 'notification_settings.pushNotification.onlyMentions', defaultMessage: 'Only for mentions and direct messages'})}
                         selected={pushStatus === 'mention'}
                         testID='notification_settings.pushNotification.onlyMentions'
                         type='select'
                         value='mention'
-                        optionDescriptionTextStyle={styles.optionDescriptionTextStyle}
-                        optionLabelTextStyle={styles.optionLabelTextStyle}
                     />
                     <SettingSeparator/>
-                    <OptionItem
+                    <SettingOption
                         action={setMobilePushPref}
-                        containerStyle={styles.container}
                         label={intl.formatMessage({id: 'notification_settings.pushNotification.never', defaultMessage: 'Never'})}
                         selected={pushStatus === 'none'}
                         testID='notification_settings.pushNotification.never'
                         type='select'
                         value='none'
-                        optionDescriptionTextStyle={styles.optionDescriptionTextStyle}
-                        optionLabelTextStyle={styles.optionLabelTextStyle}
                     />
                 </>
             }

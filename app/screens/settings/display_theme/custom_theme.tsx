@@ -5,10 +5,10 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet} from 'react-native';
 
-import OptionItem from '@components/option_item';
 import {useTheme} from '@context/theme';
 
 import SettingBlock from '../setting_block';
+import SettingOption from '../setting_option';
 
 const styles = StyleSheet.create({
     containerStyles: {
@@ -29,7 +29,7 @@ const CustomTheme = ({customTheme, setTheme}: CustomThemeProps) => {
             containerStyles={styles.containerStyles}
             disableHeader={true}
         >
-            <OptionItem
+            <SettingOption
                 action={setTheme}
                 type='select'
                 value={customTheme.type}

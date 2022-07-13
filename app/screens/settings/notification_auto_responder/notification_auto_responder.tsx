@@ -9,7 +9,6 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 import {updateMe} from '@actions/remote/user';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
-import OptionItem from '@components/option_item';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -21,6 +20,8 @@ import {getSaveButton} from '@screens/settings/config';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
+
+import SettingOption from '../setting_option';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -41,10 +42,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg,
         },
         wrapper: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
             flex: 1,
             paddingTop: 35,
         },
@@ -60,21 +59,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             textAlign: 'justify',
             ...typography('Body', 75),
-        },
-        area: {
-            paddingHorizontal: 16,
-        },
-        containerStyle: {
-            paddingHorizontal: 20,
-        },
-        label: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 100, 'Regular'),
-        },
-        enabled: {
-            paddingHorizontal: 8,
-            backgroundColor: theme.centerChannelBg,
-            marginBottom: 16,
         },
     };
 });
@@ -147,12 +131,11 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
                 <View
                     style={styles.enabled}
                 >
-                    <OptionItem
+                    <SettingOption
                         label={intl.formatMessage({id: 'notification_settings.auto_responder.enabled', defaultMessage: 'Enabled'})}
                         action={onAutoResponseToggle}
                         type='toggle'
                         selected={autoResponderActive === 'true'}
-                        containerStyle={styles.containerStyle}
                     />
                 </View>
                 {autoResponderActive === 'true' && (

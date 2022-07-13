@@ -4,13 +4,10 @@
 import React, {useState} from 'react';
 import {useIntl} from 'react-intl';
 
-import OptionItem from '@components/option_item';
-import {useTheme} from '@context/theme';
 import {t} from '@i18n';
-import {makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 
 import SettingBlock from '../setting_block';
+import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
 
 const replyHeaderText = {
@@ -18,24 +15,8 @@ const replyHeaderText = {
     defaultMessage: 'Send reply notifications for',
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            width: '90%',
-            alignSelf: 'center',
-        },
-        optionLabelTextStyle: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 200, 'Regular'),
-            marginBottom: 4,
-        },
-    };
-});
-
 const ReplySettings = () => {
     const [replyNotificationType, setReplyNotificationType] = useState('any'); //todo: initialize with value from db/api
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
     const intl = useIntl();
 
     const setReplyNotifications = (notifType: string) => {
@@ -46,31 +27,25 @@ const ReplySettings = () => {
         <SettingBlock
             headerText={replyHeaderText}
         >
-            <OptionItem
+            <SettingOption
                 action={setReplyNotifications}
-                containerStyle={styles.container}
                 label={intl.formatMessage({id: 'notification_settings.threads_start_participate', defaultMessage: 'Threads that I start or participate in'})}
-                optionLabelTextStyle={styles.optionLabelTextStyle}
                 selected={replyNotificationType === 'any'}
                 type='select'
                 value='any'
             />
             <SettingSeparator/>
-            <OptionItem
+            <SettingOption
                 action={setReplyNotifications}
-                containerStyle={styles.container}
                 label={intl.formatMessage({id: 'notification_settings.threads_start', defaultMessage: 'Threads that I start'})}
-                optionLabelTextStyle={styles.optionLabelTextStyle}
                 selected={replyNotificationType === 'root'}
                 type='select'
                 value='root'
             />
             <SettingSeparator/>
-            <OptionItem
+            <SettingOption
                 action={setReplyNotifications}
-                containerStyle={styles.container}
                 label={intl.formatMessage({id: 'notification_settings.threads_mentions', defaultMessage: 'Mentions in threads'})}
-                optionLabelTextStyle={styles.optionLabelTextStyle}
                 selected={replyNotificationType === 'never'}
                 type='select'
                 value='never'

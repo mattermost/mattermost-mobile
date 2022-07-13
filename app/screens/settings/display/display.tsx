@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, ScrollView, View} from 'react-native';
+import {Platform, ScrollView} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
@@ -13,6 +13,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import SettingItem from '../setting_item';
+import SettingSeparator from '../settings_separator';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -28,11 +29,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                     paddingTop: 35,
                 },
             }),
-        },
-        divider: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 1,
-            width: '100%',
         },
     };
 });
@@ -76,7 +72,7 @@ const Display = ({isTimezoneEnabled, isThemeSwitchingEnabled}: DisplayProps) => 
                 contentContainerStyle={styles.wrapper}
                 alwaysBounceVertical={false}
             >
-                <View style={styles.divider}/>
+                <SettingSeparator/>
                 {isThemeSwitchingEnabled && (
                     <SettingItem
                         optionName='theme'
@@ -93,7 +89,7 @@ const Display = ({isTimezoneEnabled, isThemeSwitchingEnabled}: DisplayProps) => 
                         onPress={goToTimezoneSettings}
                     />
                 )}
-                <View style={styles.divider}/>
+                <SettingSeparator/>
             </ScrollView>
         </SafeAreaView>
     );
