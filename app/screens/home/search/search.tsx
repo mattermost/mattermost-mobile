@@ -63,7 +63,7 @@ const SearchScreen = ({teamId}: Props) => {
     const searchScreenIndex = 1;
     const stateIndex = nav.getState().index;
     const serverUrl = useServerUrl();
-    const {searchTerm} = nav.getState().routes[stateIndex].params;
+    const searchTerm = (nav.getState().routes[stateIndex].params as any)?.searchTerm;
 
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
     const [selectedTab, setSelectedTab] = useState<SelectTab>('messages');
