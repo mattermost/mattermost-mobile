@@ -47,7 +47,7 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
                 <>
                     <SettingOption
                         action={setMobilePushPref}
-                        label={intl.formatMessage({id: 'notification_settings.pushNotification.allActivity', defaultMessage: 'For all activity'})}
+                        label={intl.formatMessage({id: 'notification_settings.pushNotification.allNewMessages', defaultMessage: 'All new messages'})}
                         selected={pushStatus === 'all'}
                         testID='notification_settings.pushNotification.allActivity'
                         type='select'
@@ -56,7 +56,7 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
                     <SettingSeparator/>
                     <SettingOption
                         action={setMobilePushPref}
-                        label={intl.formatMessage({id: 'notification_settings.pushNotification.onlyMentions', defaultMessage: 'Only for mentions and direct messages'})}
+                        label={intl.formatMessage({id: 'notification_settings.pushNotification.mentionsOnly', defaultMessage: 'Mentions, direct messages only(default)'})}
                         selected={pushStatus === 'mention'}
                         testID='notification_settings.pushNotification.onlyMentions'
                         type='select'
@@ -65,7 +65,7 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
                     <SettingSeparator/>
                     <SettingOption
                         action={setMobilePushPref}
-                        label={intl.formatMessage({id: 'notification_settings.pushNotification.never', defaultMessage: 'Never'})}
+                        label={intl.formatMessage({id: 'notification_settings.pushNotification.never', defaultMessage: 'Nothing'})}
                         selected={pushStatus === 'none'}
                         testID='notification_settings.pushNotification.never'
                         type='select'

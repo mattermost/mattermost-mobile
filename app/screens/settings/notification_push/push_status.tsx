@@ -11,8 +11,8 @@ import SettingBlock from '../setting_block';
 import SettingSeparator from '../settings_separator';
 
 const headerText = {
-    id: t('notification_settings.mobile.push_status'),
-    defaultMessage: 'Trigger push notifications when',
+    id: t('notification_settings.mobile.trigger_push'),
+    defaultMessage: 'Trigger push notifications when...',
 };
 
 type MobilePushStatusProps = {
