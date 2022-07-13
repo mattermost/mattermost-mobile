@@ -50,21 +50,27 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const DirectMessage = ({displayName, user}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const directMessageUserTestId = `channel_info.title.direct_message.${user?.id}`;
 
     return (
-        <View style={styles.container}>
+        <View
+            style={styles.container}
+            testID={directMessageUserTestId}
+        >
             <ProfilePicture
                 author={user}
                 size={64}
                 iconSize={64}
                 showStatus={true}
                 statusSize={24}
+                testID={`${directMessageUserTestId}.profile_picture`}
             />
             <View style={styles.titleContainer}>
                 <View style={styles.displayName}>
                     <Text
                         numberOfLines={1}
                         style={styles.title}
+                        testID={`${directMessageUserTestId}.display_name`}
                     >
                         {displayName}
                     </Text>
@@ -72,22 +78,30 @@ const DirectMessage = ({displayName, user}: Props) => {
                     <GuestTag
                         textStyle={styles.tag}
                         style={styles.tagContainer}
+                        testID={`${directMessageUserTestId}.guest.tag`}
                     />
                     }
                     {user?.isBot &&
                     <BotTag
                         textStyle={styles.tag}
                         style={styles.tagContainer}
+                        testID={`${directMessageUserTestId}.bot.tag`}
                     />
                     }
                 </View>
                 {Boolean(user?.position) &&
-                <Text style={styles.position}>
+                <Text
+                    style={styles.position}
+                    testID={`${directMessageUserTestId}.position`}
+                >
                     {user?.position}
                 </Text>
                 }
                 {Boolean(user?.isBot && user.props?.bot_description) &&
-                <Text style={styles.position}>
+                <Text
+                    style={styles.position}
+                    testID={`${directMessageUserTestId}.bot_description`}
+                >
                     {user?.props?.bot_description}
                 </Text>
                 }

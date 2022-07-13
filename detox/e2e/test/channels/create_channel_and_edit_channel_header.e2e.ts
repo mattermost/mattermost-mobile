@@ -82,7 +82,7 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         await expect(ChannelScreen.introDisplayName).toHaveText(displayName);
 
         // # Tap on set header option to edit the channel header
-        await ChannelScreen.introOptionSetHeaderItem.tap();
+        await ChannelScreen.introSetHeaderOption.tap();
 
         // * Verify channel header is correct
         await expect(CreateOrEditChannelScreen.headerInput).toHaveValue(header);
@@ -90,7 +90,7 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         // # Edit the channel header, save, and re-open edit channel header screen
         await CreateOrEditChannelScreen.headerInput.replaceText(`${header} edit`);
         await CreateOrEditChannelScreen.saveButton.tap();
-        await CreateOrEditChannelScreen.openEditChannel();
+        await CreateOrEditChannelScreen.openEditChannelHeader();
 
         // * Verify channel header has new value
         await expect(CreateOrEditChannelScreen.headerInput).toHaveValue(`${header} edit`);
@@ -119,7 +119,7 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         await expect(ChannelScreen.introDisplayName).toHaveText(displayName);
 
         // # Tap on set header option to edit the channel header
-        await ChannelScreen.introOptionSetHeaderItem.tap();
+        await ChannelScreen.introSetHeaderOption.tap();
 
         // * Verify channel header is correct
         await expect(CreateOrEditChannelScreen.headerInput).toHaveValue(header);
@@ -127,7 +127,7 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         // # Edit the channel header, save, and re-open edit channel header screen
         await CreateOrEditChannelScreen.headerInput.replaceText(`${header} edit`);
         await CreateOrEditChannelScreen.saveButton.tap();
-        await CreateOrEditChannelScreen.openEditChannel();
+        await CreateOrEditChannelScreen.openEditChannelHeader();
 
         // * Verify channel header has new value
         await expect(CreateOrEditChannelScreen.headerInput).toHaveValue(`${header} edit`);

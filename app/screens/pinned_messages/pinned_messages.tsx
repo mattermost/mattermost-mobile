@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {BackHandler, DeviceEventEmitter, FlatList, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, FlatList, StyleSheet, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchPinnedPosts} from '@actions/remote/post';
@@ -12,9 +12,9 @@ import Post from '@components/post_list/post';
 import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {popTopScreen} from '@screens/navigation';
-import NavigationStore from '@store/navigation_store';
-import {isDateLine, getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
+import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import EmptyState from './empty';
 
@@ -23,7 +23,7 @@ import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
     channelId: string;
-    componentId?: string;
+    componentId: string;
     currentTimezone: string | null;
     isCRTEnabled: boolean;
     isTimezoneEnabled: boolean;
@@ -78,18 +78,7 @@ function SavedMessages({
         });
     }, []);
 
-    useEffect(() => {
-        const listener = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (NavigationStore.getNavigationTopComponentId() === componentId) {
-                close();
-                return true;
-            }
-
-            return false;
-        });
-
-        return () => listener.remove();
-    }, [componentId]);
+    useAndroidHardwareBackHandler(componentId, close);
 
     const onViewableItemsChanged = useCallback(({viewableItems}: ViewableItemsChanged) => {
         if (!viewableItems.length) {

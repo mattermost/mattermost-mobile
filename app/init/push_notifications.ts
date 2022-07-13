@@ -17,6 +17,7 @@ import {
 import {storeDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
 import {backgroundNotification, openNotification} from '@actions/remote/notifications';
+import {markThreadAsRead} from '@actions/remote/thread';
 import {Device, Events, Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getTotalMentionsForServer} from '@database/subscription/unreads';
@@ -55,9 +56,9 @@ class PushNotifications {
         Notifications.cancelAllLocalNotifications();
     };
 
-    cancelChannelNotifications = async (channelId: string) => {
+    cancelChannelNotifications = async (channelId: string, rootId?: string, isCRTEnabled?: boolean) => {
         const notifications = await NativeNotifications.getDeliveredNotifications();
-        this.cancelNotificationsForChannel(notifications, channelId);
+        this.cancelNotificationsForChannel(notifications, channelId, rootId, isCRTEnabled);
     };
 
     cancelChannelsNotifications = async (channelIds: string[]) => {
@@ -67,15 +68,25 @@ class PushNotifications {
         }
     };
 
-    cancelNotificationsForChannel = (notifications: NotificationWithChannel[], channelId: string) => {
+    cancelNotificationsForChannel = (notifications: NotificationWithChannel[], channelId: string, rootId?: string, isCRTEnabled?: boolean) => {
         if (Platform.OS === 'android') {
-            NativeNotifications.removeDeliveredNotifications(channelId);
+            NativeNotifications.removeDeliveredNotifications(channelId, rootId, isCRTEnabled);
         } else {
             const ids: string[] = [];
+            const clearThreads = Boolean(rootId);
 
             for (const notification of notifications) {
                 if (notification.channel_id === channelId) {
-                    ids.push(notification.identifier);
+                    let doesNotificationMatch = true;
+                    if (clearThreads) {
+                        doesNotificationMatch = notification.thread === rootId;
+                    } else if (isCRTEnabled) {
+                        // Do not match when CRT is enabled BUT post is not a root post
+                        doesNotificationMatch = !notification.root_id;
+                    }
+                    if (doesNotificationMatch) {
+                        ids.push(notification.identifier);
+                    }
                 }
             }
 
@@ -128,9 +139,10 @@ class PushNotifications {
             if (database) {
                 const isCRTEnabled = await getIsCRTEnabled(database);
                 if (isCRTEnabled && payload.root_id) {
-                    return;
+                    markThreadAsRead(serverUrl, payload.team_id, payload.post_id);
+                } else {
+                    markChannelAsViewed(serverUrl, payload.channel_id, false);
                 }
-                markChannelAsViewed(serverUrl, payload.channel_id, false);
             }
         }
     };

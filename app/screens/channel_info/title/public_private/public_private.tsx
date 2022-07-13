@@ -28,14 +28,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const PublicPrivate = ({displayName, purpose}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const publicPrivateTestId = 'channel_info.title.public_private';
 
     return (
         <>
-            <Text style={styles.title}>
+            <Text
+                style={styles.title}
+                testID={`${publicPrivateTestId}.display_name`}
+            >
                 {displayName}
             </Text>
             {Boolean(purpose) &&
-            <Text style={styles.purpose}>
+            <Text
+                style={styles.purpose}
+                testID={`${publicPrivateTestId}.purpose`}
+            >
                 {purpose}
             </Text>
             }

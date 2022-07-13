@@ -22,6 +22,7 @@ import {bottomSheetSnapPoint} from '@utils/helpers';
 import {displayUsername, getUsersByUsername} from '@utils/user';
 
 import type GroupModelType from '@typings/database/models/servers/group';
+import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type UserModelType from '@typings/database/models/servers/user';
 
 type AtMentionProps = {
@@ -39,6 +40,7 @@ type AtMentionProps = {
     textStyle?: StyleProp<TextStyle>;
     users: UserModelType[];
     groups: GroupModel[];
+    groupMemberships: GroupMembershipModel[];
 }
 
 const {SERVER: {GROUP, USER}} = MM_TABLES;
@@ -62,6 +64,7 @@ const AtMention = ({
     textStyle,
     users,
     groups,
+    groupMemberships,
 }: AtMentionProps) => {
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
@@ -223,6 +226,7 @@ const AtMention = ({
         canPress = true;
     } else if (group?.name) {
         mention = group.name;
+        highlighted = groupMemberships.some((gm) => gm.groupId === group.id);
         isMention = true;
         canPress = false;
     } else {

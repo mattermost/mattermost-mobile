@@ -1,11 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {MM_TABLES} from '@constants/database';
+import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
 
 import {prepareCategories, prepareCategoryChannels} from './categories';
 import {prepareDeleteChannel, prepareMyChannelsForTeam} from './channel';
 import {prepareMyPreferences} from './preference';
+import {resetWebSocketLastDisconnected} from './system';
 import {prepareDeleteTeam, prepareMyTeams} from './team';
 import {prepareUsers} from './user';
 
@@ -28,6 +31,16 @@ type PrepareModelsArgs = {
     meData?: MyUserRequest;
     isCRTEnabled?: boolean;
 }
+
+const {
+    POST,
+    POSTS_IN_CHANNEL,
+    POSTS_IN_THREAD,
+    THREAD,
+    THREADS_IN_TEAM,
+    THREAD_PARTICIPANT,
+    MY_CHANNEL,
+} = MM_TABLES.SERVER;
 
 export async function prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData, isCRTEnabled}: PrepareModelsArgs): Promise<Array<Promise<Model[]>>> {
     const modelPromises: Array<Promise<Model[]>> = [];
@@ -66,4 +79,34 @@ export async function prepareModels({operator, initialTeamId, removeTeams, remov
     }
 
     return modelPromises;
+}
+
+export async function truncateCrtRelatedTables(serverUrl: string): Promise<{error: any}> {
+    const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+    try {
+        await database.write(() => {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            return database.adapter.unsafeExecute({
+                sqls: [
+                    [`DELETE FROM ${POST}`, []],
+                    [`DELETE FROM ${POSTS_IN_CHANNEL}`, []],
+                    [`DELETE FROM ${POSTS_IN_THREAD}`, []],
+                    [`DELETE FROM ${THREAD}`, []],
+                    [`DELETE FROM ${THREADS_IN_TEAM}`, []],
+                    [`DELETE FROM ${THREAD_PARTICIPANT}`, []],
+                    [`DELETE FROM ${MY_CHANNEL}`, []],
+                ],
+            });
+        });
+        await resetWebSocketLastDisconnected(operator);
+    } catch (error) {
+        if (__DEV__) {
+            throw error;
+        }
+        return {error};
+    }
+
+    return {error: false};
 }

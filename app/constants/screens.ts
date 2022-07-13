@@ -41,6 +41,7 @@ export const SEARCH = 'Search';
 export const SELECT_TEAM = 'SelectTeam';
 export const SERVER = 'Server';
 export const SETTINGS = 'Settings';
+export const SETTINGS_ADVANCED = 'SettingsAdvanced';
 export const SETTINGS_DISPLAY = 'SettingsDisplay';
 export const SETTINGS_DISPLAY_CLOCK = 'SettingsDisplayClock';
 export const SETTINGS_DISPLAY_THEME = 'SettingsDisplayTheme';
@@ -99,6 +100,7 @@ export default {
     SELECT_TEAM,
     SERVER,
     SETTINGS,
+    SETTINGS_ADVANCED,
     SETTINGS_DISPLAY,
     SETTINGS_DISPLAY_CLOCK,
     SETTINGS_DISPLAY_THEME,
@@ -117,7 +119,7 @@ export default {
     USER_PROFILE,
 };
 
-export const MODAL_SCREENS_WITHOUT_BACK = [
+export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
     BROWSE_CHANNELS,
     CHANNEL_INFO,
     CREATE_DIRECT_MESSAGE,
@@ -131,7 +133,17 @@ export const MODAL_SCREENS_WITHOUT_BACK = [
     GALLERY,
     PERMALINK,
     REACTIONS,
-];
+]);
+
+export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
+    BOTTOM_SHEET,
+    POST_OPTIONS,
+    THREAD_OPTIONS,
+    PERMALINK,
+    REACTIONS,
+    SNACK_BAR,
+    USER_PROFILE,
+]);
 
 export const NOT_READY = [
     CHANNEL_ADD_PEOPLE,

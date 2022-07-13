@@ -103,6 +103,23 @@ export const apiCreateGroupChannel = async (baseUrl: string, userIds: string[] =
 };
 
 /**
+ * Delete a channel.
+ * See https://api.mattermost.com/#operation/DeleteChannel
+ * @param {string} baseUrl - the base server URL
+ * @param {string} channelId - The channel ID to be deleted
+ * @return {Object} returns {deleted} on success or {error, status} on error
+ */
+export const apiDeleteChannel = async (baseUrl: string, channelId: string): Promise<any> => {
+    try {
+        const response = await client.delete(`${baseUrl}/api/v4/channels/${channelId}`);
+
+        return {deleted: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Get a channel by name.
  * See https://api.mattermost.com/#operation/GetChannelByName
  * @param {string} baseUrl - the base server URL
@@ -173,6 +190,23 @@ export const apiGetUnreadMessages = async (baseUrl: string, userId: string, chan
 };
 
 /**
+ * Restore a channel.
+ * See https://api.mattermost.com/#operation/RestoreChannel
+ * @param {string} baseUrl - the base server URL
+ * @param {string} channelId - The channel ID to be restored
+ * @return {Object} returns {restored} on success or {error, status} on error
+ */
+export const apiRestoreChannel = async (baseUrl: string, channelId: string): Promise<any> => {
+    try {
+        const response = await client.post(`${baseUrl}/api/v4/channels/${channelId}/restore`);
+
+        return {restored: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Remove user from channel.
  * See https://api.mattermost.com/#operation/RemoveUserFromChannel
  * @param {string} baseUrl - the base server URL
@@ -231,9 +265,11 @@ export const Channel = {
     apiCreateChannel,
     apiCreateDirectChannel,
     apiCreateGroupChannel,
+    apiDeleteChannel,
     apiGetChannelByName,
     apiGetChannelsForUser,
     apiGetUnreadMessages,
+    apiRestoreChannel,
     apiRemoveUserFromChannel,
     apiViewChannel,
     generateRandomChannel,

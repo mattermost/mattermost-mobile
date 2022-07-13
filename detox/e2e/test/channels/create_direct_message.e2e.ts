@@ -40,7 +40,7 @@ describe('Channels - Create Direct Message', () => {
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await LoginScreen.login(user);
+        await LoginScreen.login(testUser);
     });
 
     beforeEach(async () => {

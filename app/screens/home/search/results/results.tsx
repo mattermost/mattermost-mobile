@@ -77,6 +77,7 @@ const SearchResults = ({
                 <PostWithChannelInfo
                     location={Screens.SEARCH}
                     post={item}
+                    testID='search_results.post_list'
                 />
             );
         }
@@ -127,6 +128,7 @@ const SearchResults = ({
             contentContainerStyle={paddingTop}
             nestedScrollEnabled={true}
             removeClippedSubviews={true}
+            testID='search_results.post_list.flat_list'
         />
     );
 };

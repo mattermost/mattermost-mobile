@@ -41,9 +41,15 @@ const MarkdownListItem = ({index, level, bulletWidth, bulletStyle, children, con
     }
 
     return (
-        <View style={style.container}>
+        <View
+            style={style.container}
+            testID='markdown_list_item'
+        >
             <View style={[{width: bulletWidth}, style.bullet]}>
-                <Text style={bulletStyle}>
+                <Text
+                    style={bulletStyle}
+                    testID='markdown_list_item.bullet'
+                >
                     {bullet}
                 </Text>
             </View>

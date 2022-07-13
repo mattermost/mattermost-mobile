@@ -169,6 +169,7 @@ const EmojiSuggestion = ({
 
     const renderItem = useCallback(({item}: {item: string}) => {
         const completeItemSuggestion = () => completeSuggestion(item);
+        const emojiSuggestionItemTestId = `autocomplete.emoji_suggestion_item.${item}`;
 
         return (
             <TouchableWithFeedback
@@ -182,9 +183,15 @@ const EmojiSuggestion = ({
                             emojiName={item}
                             textStyle={style.emojiText}
                             size={EMOJI_SIZE}
+                            testID={emojiSuggestionItemTestId}
                         />
                     </View>
-                    <Text style={style.emojiName}>{`:${item}:`}</Text>
+                    <Text
+                        style={style.emojiName}
+                        testID={`${emojiSuggestionItemTestId}.name`}
+                    >
+                        {`:${item}:`}
+                    </Text>
                 </View>
             </TouchableWithFeedback>
         );
@@ -211,7 +218,6 @@ const EmojiSuggestion = ({
 
     return (
         <FlatList
-            testID='emoji_suggestion.list'
             keyboardShouldPersistTaps='always'
             style={flatListStyle}
             data={data}
@@ -220,6 +226,7 @@ const EmojiSuggestion = ({
             renderItem={renderItem}
             nestedScrollEnabled={nestedScrollEnabled}
             contentContainerStyle={containerStyle}
+            testID='autocomplete.emoji_suggestion.flat_list'
         />
     );
 };

@@ -30,7 +30,6 @@ const UserHandler = (superclass: any) => class extends superclass {
      * @param {HandlePreferencesArgs} preferencesArgs
      * @param {PreferenceType[]} preferencesArgs.preferences
      * @param {boolean} preferencesArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<PreferenceModel[]>}
      */
     handlePreferences = async ({preferences, prepareRecordsOnly = true, sync = false}: HandlePreferencesArgs): Promise<PreferenceModel[]> => {
@@ -101,7 +100,6 @@ const UserHandler = (superclass: any) => class extends superclass {
      * @param {HandleUsersArgs} usersArgs
      * @param {UserProfile[]} usersArgs.users
      * @param {boolean} usersArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<UserModel[]>}
      */
     handleUsers = async ({users, prepareRecordsOnly = true}: HandleUsersArgs): Promise<UserModel[]> => {

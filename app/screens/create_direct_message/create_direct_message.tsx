@@ -4,7 +4,6 @@
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, View} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {makeDirectChannel, makeGroupChannel} from '@actions/remote/channel';
@@ -16,14 +15,11 @@ import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import {dismissModal, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
-import {
-    changeOpacity,
-    makeStyleSheetFromTheme,
-    getKeyboardAppearanceFromTheme,
-} from '@utils/theme';
+import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
 
 import SelectedUsers from './selected_users';
@@ -303,18 +299,8 @@ export default function CreateDirectMessage({
         });
     }, [intl.locale, theme]);
 
-    useEffect(() => {
-        const unsubscribe = Navigation.events().registerComponentListener({navigationButtonPressed: ({buttonId}) => {
-            if (buttonId === START_BUTTON) {
-                startConversation();
-            } else if (buttonId === CLOSE_BUTTON) {
-                close();
-            }
-        }}, componentId);
-        return () => {
-            unsubscribe.remove();
-        };
-    }, [startConversation]);
+    useNavButtonPressed(START_BUTTON, componentId, startConversation, [startConversation]);
+    useNavButtonPressed(CLOSE_BUTTON, componentId, close, [close]);
 
     useEffect(() => {
         mounted.current = true;

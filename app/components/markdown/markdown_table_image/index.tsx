@@ -113,10 +113,7 @@ const MarkTableImage = ({disabled, imagesMetadata, location, postId, serverURL, 
                 disabled={disabled}
                 onPress={onGestureEvent}
             >
-                <Animated.View
-                    style={[styles, {width, height}]}
-                    testID='markdown_table_image'
-                >
+                <Animated.View style={[styles, {width, height}]}>
                     <ProgressiveImage
                         id={fileId}
                         defaultSource={{uri: source}}
@@ -131,7 +128,10 @@ const MarkTableImage = ({disabled, imagesMetadata, location, postId, serverURL, 
     }
 
     return (
-        <View style={style.container}>
+        <View
+            style={style.container}
+            testID='markdown_table_image'
+        >
             {image}
         </View>
     );

@@ -10,7 +10,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
-    action: (value: string | boolean) => void;
+    action?: (value: string | boolean) => void;
     description?: string;
     inline?: boolean;
     destructive?: boolean;
@@ -29,9 +29,12 @@ const OptionType = {
     DEFAULT: 'default',
     TOGGLE: 'toggle',
     SELECT: 'select',
+    NONE: 'none',
 } as const;
 
 type OptionType = typeof OptionType[keyof typeof OptionType];
+
+export const ITEM_HEIGHT = 48;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -43,7 +46,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             flexDirection: 'row',
             alignItems: 'center',
-            minHeight: 48,
+            minHeight: ITEM_HEIGHT,
         },
         destructive: {
             color: theme.dndIndicator,
@@ -157,7 +160,7 @@ const OptionItem = ({
     }
 
     const onPress = useCallback(() => {
-        action(value || '');
+        action?.(value || '');
     }, [value, action]);
 
     const component = (

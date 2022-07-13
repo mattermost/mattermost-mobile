@@ -137,7 +137,6 @@ const ThreadHandler = (superclass: any) => class extends superclass {
      * @param {ParticipantsPerThread[]} handleThreadParticipants.threadsParticipants
      * @param {boolean} handleThreadParticipants.prepareRecordsOnly
      * @param {boolean} handleThreadParticipants.skipSync
-     * @throws DataOperatorException
      * @returns {Promise<Array<ThreadParticipantModel>>}
      */
     handleThreadParticipants = async ({threadsParticipants, prepareRecordsOnly, skipSync = false}: HandleThreadParticipantsArgs): Promise<ThreadParticipantModel[]> => {

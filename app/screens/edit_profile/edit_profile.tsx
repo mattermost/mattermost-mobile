@@ -3,9 +3,8 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {BackHandler, DeviceEventEmitter, Keyboard, Platform, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, Keyboard, Platform, StyleSheet, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalUser} from '@actions/local/user';
@@ -15,8 +14,9 @@ import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
-import NavigationStore from '@store/navigation_store';
 import {preventDoubleTap} from '@utils/tap';
 
 import ProfileForm from './components/form';
@@ -86,39 +86,6 @@ const EditProfile = ({
     }, [isTablet, theme.centerChannelColor]);
 
     useEffect(() => {
-        const unsubscribe = Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
-                switch (buttonId) {
-                    case UPDATE_BUTTON_ID:
-                        submitUser();
-                        break;
-                    case CLOSE_BUTTON_ID:
-                        close();
-                        break;
-                }
-            },
-        }, componentId);
-
-        return () => {
-            unsubscribe.remove();
-        };
-    }, [userInfo]);
-
-    useEffect(() => {
-        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (NavigationStore.getNavigationTopComponentId() === componentId) {
-                close();
-                return true;
-            }
-
-            return false;
-        });
-        return () => {
-            backHandler.remove();
-        };
-    }, []);
-
-    useEffect(() => {
         if (!isTablet) {
             setButtons(componentId, {
                 rightButtons: [rightButton!],
@@ -136,7 +103,6 @@ const EditProfile = ({
             popTopScreen(componentId);
         }
     }, []);
-
     const enableSaveButton = useCallback((value: boolean) => {
         if (!isTablet) {
             const buttons = {
@@ -149,24 +115,6 @@ const EditProfile = ({
         }
         setCanSave(value);
     }, [componentId, rightButton]);
-
-    const onUpdateProfilePicture = useCallback((newProfileImage: NewProfileImage) => {
-        changedProfilePicture.current = newProfileImage;
-        enableSaveButton(true);
-    }, [enableSaveButton]);
-
-    const onUpdateField = useCallback((fieldKey: string, name: string) => {
-        const update = {...userInfo};
-        update[fieldKey] = name;
-        setUserInfo(update);
-
-        // @ts-expect-error access object property by string key
-        const currentValue = currentUser[fieldKey];
-        const didChange = currentValue !== name;
-        hasUpdateUserInfo.current = currentValue !== name;
-        enableSaveButton(didChange);
-    }, [userInfo, currentUser, enableSaveButton]);
-
     const submitUser = useCallback(preventDoubleTap(async () => {
         enableSaveButton(false);
         setError(undefined);
@@ -208,6 +156,27 @@ const EditProfile = ({
             resetScreen(e as Error);
         }
     }), [userInfo, enableSaveButton]);
+
+    useAndroidHardwareBackHandler(componentId, close);
+    useNavButtonPressed(UPDATE_BUTTON_ID, componentId, submitUser, [userInfo]);
+    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, []);
+
+    const onUpdateProfilePicture = useCallback((newProfileImage: NewProfileImage) => {
+        changedProfilePicture.current = newProfileImage;
+        enableSaveButton(true);
+    }, [enableSaveButton]);
+
+    const onUpdateField = useCallback((fieldKey: string, name: string) => {
+        const update = {...userInfo};
+        update[fieldKey] = name;
+        setUserInfo(update);
+
+        // @ts-expect-error access object property by string key
+        const currentValue = currentUser[fieldKey];
+        const didChange = currentValue !== name;
+        hasUpdateUserInfo.current = currentValue !== name;
+        enableSaveButton(didChange);
+    }, [userInfo, currentUser, enableSaveButton]);
 
     const resetScreen = useCallback((resetError: Error) => {
         setError(resetError?.message);

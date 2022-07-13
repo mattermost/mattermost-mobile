@@ -285,7 +285,7 @@ const ChannelMention = ({
             <ChannelMentionItem
                 channel={item}
                 onPress={completeMention}
-                testID={`autocomplete.channel_mention.item.${item}`}
+                testID='autocomplete.channel_mention_item'
             />
         );
     }, [completeMention]);
