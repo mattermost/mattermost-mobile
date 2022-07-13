@@ -1,33 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
-import CompassIcon from '@components/compass_icon';
-import FormattedText from '@components/formatted_text';
-import MenuItem from '@components/menu_item';
+import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import {dismissBottomSheet} from '@screens/navigation';
 import {FileFilter, FileFilters} from '@utils/file';
-import {makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        labelContainer: {
-            alignItems: 'center',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-        },
-        menuText: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 200, 'Regular'),
+        divider: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            height: 1,
         },
     };
 });
@@ -76,6 +68,10 @@ const data: FilterItem[] = [
     },
 ];
 
+export const NUMBER_FILTER_ITEMS = data.length;
+export const FILTER_ITEM_HEIGHT = ITEM_HEIGHT;
+export const DIVIDERS_HEIGHT = data.length - 1;
+
 type FilterProps = {
     initialFilter: FileFilter;
     setFilter: (filter: FileFilter) => void;
@@ -87,56 +83,31 @@ const Filter = ({initialFilter, setFilter}: FilterProps) => {
     const style = getStyleSheet(theme);
     const isTablet = useIsTablet();
 
-    const [selectedFilter, setSelectedFilter] = useState<FileFilter>(initialFilter);
-    const disableButton = selectedFilter === initialFilter;
+    const buttonTitle = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
 
-    const renderLabelComponent = useCallback((item: FilterItem) => {
-        return (
-            <View style={style.labelContainer}>
-                <FormattedText
-                    style={style.menuText}
-                    id={item.id}
-                    defaultMessage={item.defaultMessage}
-                />
-                {(selectedFilter === item.filterType) && (
-                    <CompassIcon
-                        style={style.selected}
-                        name={'check'}
-                        size={24}
-                    />
-                )}
-            </View>
-        );
-    }, [selectedFilter, style]);
+    const handleOnPress = useCallback((fileType: FileFilter) => {
+        if (fileType !== initialFilter) {
+            setFilter(fileType);
+        }
+        dismissBottomSheet();
+    }, [initialFilter]);
 
-    const renderFilterItem = useCallback(({item}: {item: FilterItem}) => {
+    const separator = useCallback(() => <View style={style.divider}/>, [style]);
+
+    const renderFilterItem = useCallback(({item}) => {
         return (
-            <MenuItem
-                labelComponent={renderLabelComponent(item)}
-                onPress={() => {
-                    setSelectedFilter(item.filterType);
-                }}
-                separator={item.separator}
-                testID={item.id}
-                theme={theme}
+            <OptionItem
+                label={intl.formatMessage({id: item.id, defaultMessage: item.defaultMessage})}
+                type={'select'}
+                action={() => handleOnPress(item.filterType)}
+                selected={initialFilter === item.filterType}
             />
         );
-    }, [renderLabelComponent, theme]);
-
-    const handleShowResults = useCallback(() => {
-        setFilter(selectedFilter);
-        dismissBottomSheet();
-    }, [selectedFilter, setFilter]);
-
-    const buttonText = intl.formatMessage({id: 'screen.search.results.filter.show_button', defaultMessage: 'Show results'});
-    const buttonTitle = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
+    }, [handleOnPress, initialFilter, theme]);
 
     return (
         <BottomSheetContent
-            buttonText={buttonText}
-            onPress={handleShowResults}
-            disableButton={disableButton}
-            showButton={true}
+            showButton={false}
             showTitle={!isTablet}
             testID='search.filters'
             title={buttonTitle}
@@ -147,6 +118,7 @@ const Filter = ({initialFilter, setFilter}: FilterProps) => {
                     data={data}
                     renderItem={renderFilterItem}
                     contentContainerStyle={style.contentContainer}
+                    ItemSeparatorComponent={separator}
                 />
             </View>
         </BottomSheetContent>

@@ -80,7 +80,7 @@ const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, un
                 isInfo={true}
                 onPress={onPress}
                 showTeamName={showTeamName}
-                testID='find_channels.unfiltered_list.channel_item'
+                testID={`${testID}.channel_item`}
             />
         );
     }, [onPress, showTeamName]);
