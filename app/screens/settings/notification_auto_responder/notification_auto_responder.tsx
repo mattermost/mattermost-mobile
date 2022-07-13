@@ -38,28 +38,22 @@ const SAVE_OOO_BUTTON_ID = 'notification_settings.auto_responder.save.button';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
-        container: {
-            flex: 1,
-        },
-        enabled: {
-            marginTop: 32,
-        },
         input: {
             color: theme.centerChannelColor,
-            height: 150,
-            paddingHorizontal: 15,
-            paddingVertical: 10,
             ...typography('Body', 200, 'Regular'),
+            flex: 1,
+        },
+        textInputContainer: {
+            width: '91%',
+            marginTop: 20,
+            alignSelf: 'center',
+            height: 154,
         },
         footer: {
             paddingHorizontal: 20,
             color: changeOpacity(theme.centerChannelColor, 0.5),
             textAlign: 'justify',
             ...typography('Body', 75, 'Regular'),
-            marginTop: 20,
-        },
-        textInputContainer: {
-            paddingHorizontal: 20,
             marginTop: 20,
         },
     };
