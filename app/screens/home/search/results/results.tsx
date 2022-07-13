@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {FlatList, ListRenderItemInfo, Text, View} from 'react-native';
+import {FlatList, ListRenderItemInfo} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
@@ -14,19 +14,6 @@ import {PostModel} from '@database/models/server';
 import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import FileCard from './fileCard';
-import Loader from './loader';
-
-const notImplementedComponent = (
-    <View
-        style={{
-            height: 800,
-            flexGrow: 1,
-            alignItems: 'center',
-        }}
-    >
-        <Text style={{fontSize: 28, color: '#000'}}>{'Not Implemented'}</Text>
-    </View>
-);
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
@@ -38,10 +25,7 @@ type Props = {
     posts: PostModel[];
     fileInfos: FileInfo[];
     scrollPaddingTop: number;
-    loading: boolean;
 }
-
-const emptyList: FileInfo[] | Array<string | PostModel> = [];
 
 const SearchResults = ({
     currentTimezone,
@@ -51,7 +35,6 @@ const SearchResults = ({
     searchValue,
     selectedTab,
     scrollPaddingTop,
-    loading,
 }: Props) => {
     const theme = useTheme();
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
@@ -91,25 +74,16 @@ const SearchResults = ({
     }, [theme]);
 
     const noResults = useMemo(() => {
-        if (searchValue) {
-            if (loading) {
-                return (<Loader/>);
-            }
-            return (
-                <NoResultsWithTerm
-                    term={searchValue}
-                    type={selectedTab}
-                />
-            );
-        }
-
-        return notImplementedComponent;
-    }, [searchValue, loading, selectedTab]);
+        return (
+            <NoResultsWithTerm
+                term={searchValue}
+                type={selectedTab}
+            />
+        );
+    }, [searchValue, selectedTab]);
 
     let data;
-    if (loading || !searchValue) {
-        data = emptyList;
-    } else if (selectedTab === 'messages') {
+    if (selectedTab === 'messages') {
         data = orderedPosts;
     } else {
         data = fileInfos;

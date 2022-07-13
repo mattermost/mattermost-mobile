@@ -41,8 +41,7 @@ type Props = {
 
 const RecentSearches = ({setRecentValue, recentSearches}: Props) => {
     const theme = useTheme();
-    const intl = useIntl();
-    const formatMessage = intl.formatMessage;
+    const {formatMessage} = useIntl();
     const styles = getStyleFromTheme(theme);
 
     const renderRecentItem = useCallback(({item}) => {
@@ -54,25 +53,23 @@ const RecentSearches = ({setRecentValue, recentSearches}: Props) => {
         );
     }, [setRecentValue]);
 
-    const renderHeader = () => {
-        return (
-            <>
-                <View style={styles.divider}/>
-                <FormattedText
-                    style={styles.title}
-                    id={'screen.search.recent.header'}
-                    defaultMessage={formatMessage({id: 'mobile.search.recent_title', defaultMessage: 'Recent searches'})}
-                />
-            </>
-        );
-    };
+    const header = (
+        <>
+            <View style={styles.divider}/>
+            <FormattedText
+                style={styles.title}
+                id={'screen.search.recent.header'}
+                defaultMessage={formatMessage({id: 'mobile.search.recent_title', defaultMessage: 'Recent searches'})}
+            />
+        </>
+    );
 
     return (
         <AnimatedFlatList
             data={recentSearches}
             keyboardShouldPersistTaps='always'
             keyboardDismissMode='interactive'
-            ListHeaderComponent={renderHeader()}
+            ListHeaderComponent={header}
             renderItem={renderRecentItem}
             testID='search.recents_list'
             removeClippedSubviews={true}

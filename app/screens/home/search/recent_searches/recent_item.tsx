@@ -40,8 +40,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 });
 
 export type RecentItemType = {
-        terms: string;
-        isOrSearch: boolean;
+    terms: string;
+    isOrSearch: boolean;
 }
 
 type Props = {
@@ -59,9 +59,9 @@ const RecentItem = ({item, setRecentValue}: Props) => {
         setRecentValue(item.term);
     }, [item, setRecentValue]);
 
-    const handleRemove = async () => {
+    const handleRemove = useCallback(async () => {
         await removeSearchFromTeamSearchHistory(serverUrl, item.id);
-    };
+    }, [item.id]);
 
     return (
         <MenuItem

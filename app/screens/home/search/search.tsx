@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useIsFocused, useNavigation} from '@react-navigation/native';
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
@@ -46,6 +46,15 @@ const styles = StyleSheet.create({
     },
 });
 
+const getSearchParams = (terms: string, filterValue?: FileFilter) => {
+    const fileExtensions = filterFileExtensions(filterValue);
+    const extensionTerms = fileExtensions ? ' ' + fileExtensions : '';
+    return {
+        terms: terms + extensionTerms,
+        is_or_search: true,
+    };
+};
+
 const SearchScreen = ({teamId}: Props) => {
     const nav = useNavigation();
     const isFocused = useIsFocused();
@@ -67,14 +76,7 @@ const SearchScreen = ({teamId}: Props) => {
     const [postIds, setPostIds] = useState<string[]>(emptyPostResults);
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
 
-    const getSearchParams = (terms: string, filterValue?: FileFilter) => {
-        const fileExtensions = filterFileExtensions(filterValue || filter);
-        const extensionTerms = fileExtensions ? ' ' + fileExtensions : '';
-        return {
-            terms: terms + extensionTerms,
-            is_or_search: true,
-        };
-    };
+    const handleSearch = useRef<(term: string) => void>();
 
     const onSnap = (offset: number) => {
         scrollRef.current?.scrollToOffset({offset, animated: true});
@@ -83,7 +85,7 @@ const SearchScreen = ({teamId}: Props) => {
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight, hideHeader} = useCollapsibleHeader<FlatList>(true, onSnap);
 
     const onSubmit = useCallback(() => {
-        handleSearch(searchValue);
+        handleSearch.current?.(searchValue);
     }, [searchValue]);
 
     const handleClearSearch = useCallback(() => {
@@ -97,31 +99,31 @@ const SearchScreen = ({teamId}: Props) => {
         setShowResults(false);
     }, [handleClearSearch, showResults]);
 
-    const handleSearch = async (term: string) => {
-        setLoading(true);
-        setFilter(FileFilters.ALL);
-        setLastSearchedValue(term);
-        addSearchToTeamSearchHistory(serverUrl, teamId, term);
-        const searchParams = getSearchParams(term);
-        const [postResults, fileResults] = await Promise.all([
-            searchPosts(serverUrl, searchParams),
-            searchFiles(serverUrl, teamId, searchParams),
-        ]);
+    useEffect(() => {
+        handleSearch.current = async (term: string) => {
+            setLoading(true);
+            setFilter(FileFilters.ALL);
+            setLastSearchedValue(term);
+            addSearchToTeamSearchHistory(serverUrl, teamId, term);
+            const searchParams = getSearchParams(term);
+            const [postResults, fileResults] = await Promise.all([
+                searchPosts(serverUrl, searchParams),
+                searchFiles(serverUrl, teamId, searchParams),
+            ]);
 
-        const fileInfosResult = fileResults?.file_infos && Object.values(fileResults?.file_infos);
-        setFileInfos(fileInfosResult?.length ? fileInfosResult : emptyFileResults);
-        setPostIds(postResults?.order?.length ? postResults.order : emptyPostResults);
+            const fileInfosResult = fileResults?.file_infos && Object.values(fileResults?.file_infos);
+            setFileInfos(fileInfosResult?.length ? fileInfosResult : emptyFileResults);
+            setPostIds(postResults?.order?.length ? postResults.order : emptyPostResults);
 
-        setLoading(false);
-        setShowResults(true);
-        hideHeader();
-    };
+            setShowResults(true);
+            setLoading(false);
+        };
+    }, [teamId]);
 
     const handleRecentSearch = useCallback((text: string) => {
-        hideHeader();
         setSearchValue(text);
-        handleSearch(text);
-    }, [handleSearch]);
+        handleSearch.current?.(text);
+    }, []);
 
     const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
         setLoading(true);
@@ -134,41 +136,50 @@ const SearchScreen = ({teamId}: Props) => {
         setLoading(false);
     }, [getSearchParams, lastSearchedValue, searchFiles]);
 
+    const loadingComponent = useMemo(() => (
+        <Loading
+            containerStyle={[styles.loading, {paddingTop: scrollPaddingTop}]}
+            color={theme.buttonBg}
+            size='large'
+        />
+    ), [theme, scrollPaddingTop]);
+
+    const modifiersComponent = useMemo(() => (
+        <>
+            <Modifiers
+                setSearchValue={setSearchValue}
+                searchValue={searchValue}
+            />
+            <RecentSearches
+                setRecentValue={handleRecentSearch}
+                teamId={teamId}
+            />
+        </>
+    ), [searchValue, teamId, handleRecentSearch]);
+
+    const resultsComponent = useMemo(() => (
+        <Results
+            selectedTab={selectedTab}
+            searchValue={lastSearchedValue}
+            postIds={postIds}
+            fileInfos={fileInfos}
+            scrollPaddingTop={scrollPaddingTop}
+        />
+    ), [selectedTab, lastSearchedValue, postIds, fileInfos, scrollPaddingTop]);
+
     const renderItem = useCallback(() => {
         if (loading) {
-            return (
-                <Loading
-                    containerStyle={[styles.loading, {paddingTop: scrollPaddingTop}]}
-                    color={theme.buttonBg}
-                    size='large'
-                />
-            );
-        } else if (!showResults && !loading) {
-            return (
-                <>
-                    <Modifiers
-                        setSearchValue={setSearchValue}
-                        searchValue={searchValue}
-                    />
-                    <RecentSearches
-                        setRecentValue={handleRecentSearch}
-                        teamId={teamId}
-                    />
-                </>
-            );
+            return loadingComponent;
         }
-
-        return (
-            <Results
-                selectedTab={selectedTab}
-                searchValue={lastSearchedValue}
-                postIds={postIds}
-                fileInfos={fileInfos}
-                scrollPaddingTop={scrollPaddingTop}
-                loading={loading}
-            />
-        );
-    }, [loading, showResults]);
+        if (!showResults) {
+            return modifiersComponent;
+        }
+        return resultsComponent;
+    }, [
+        loading && loadingComponent,
+        !loading && !showResults && modifiersComponent,
+        !loading && showResults && resultsComponent,
+    ]);
 
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
 

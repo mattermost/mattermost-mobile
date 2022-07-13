@@ -53,9 +53,9 @@ export async function addSearchToTeamSearchHistory(serverUrl: string, teamId: st
         // determine if need to delete the oldest entry
         if (searchModel._raw._changed !== 'created_at') {
             const teamSearchHistory = await queryTeamSearchHistoryByTeamId(database, teamId).fetch();
-            if (teamSearchHistory.length >= MAX_TEAM_SEARCHES) {
-                const lastSearch = teamSearchHistory.pop();
-                if (lastSearch) {
+            if (teamSearchHistory.length > MAX_TEAM_SEARCHES) {
+                const lastSearches = teamSearchHistory.slice(MAX_TEAM_SEARCHES);
+                for (const lastSearch of lastSearches) {
                     models.push(lastSearch.prepareDestroyPermanently());
                 }
             }
@@ -73,9 +73,11 @@ export async function removeSearchFromTeamSearchHistory(serverUrl: string, id: s
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const teamSearch = await getTeamSearchHistoryById(database, id);
-        await database.write(async () => {
-            await teamSearch?.destroyPermanently();
-        });
+        if (teamSearch) {
+            await database.write(async () => {
+                await teamSearch.destroyPermanently();
+            });
+        }
         return {teamSearch};
     } catch (error) {
         logError('Failed removeSearchFromTeamSearchHistory', error);
