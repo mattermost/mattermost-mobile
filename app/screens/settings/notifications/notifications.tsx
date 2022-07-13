@@ -71,11 +71,13 @@ const Notifications = ({
     const intl = useIntl();
     const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
 
-    const emailIntervalPref = useMemo(() => getEmailInterval(
-        sendEmailNotifications && notifyProps?.email === 'true',
-        enableEmailBatching,
-        parseInt(emailInterval, 10),
-    ).toString(), []);
+    const emailIntervalPref = useMemo(() =>
+        getEmailInterval(
+            sendEmailNotifications && notifyProps?.email === 'true',
+            enableEmailBatching,
+            parseInt(emailInterval, 10),
+        ).toString(),
+    [emailInterval, enableEmailBatching, notifyProps, sendEmailNotifications]);
 
     const goToNotificationSettingsMentions = useCallback(() => {
         const screen = Screens.SETTINGS_NOTIFICATION_MENTION;
