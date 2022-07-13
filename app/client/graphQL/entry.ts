@@ -5,9 +5,10 @@ import NetworkManager from '@managers/network_manager';
 
 import {Client} from '../rest';
 
+import QueryNames from './constants';
 import {GQLResponse} from './types';
 
-const doGQLQuery = async (serverUrl: string, query: string, operationName: string) => {
+const doGQLQuery = async (serverUrl: string, query: string, variables: {[name: string]: any}, operationName: string) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -16,7 +17,7 @@ const doGQLQuery = async (serverUrl: string, query: string, operationName: strin
     }
 
     try {
-        const response = await client.doFetch('/api/v5/graphql', {method: 'post', body: JSON.stringify({query, operationName})}) as GQLResponse;
+        const response = await client.doFetch('/api/v5/graphql', {method: 'post', body: JSON.stringify({query, variables, operationName})}) as GQLResponse;
         return response;
     } catch (error) {
         return {error};
@@ -24,11 +25,16 @@ const doGQLQuery = async (serverUrl: string, query: string, operationName: strin
 };
 
 export const gqlEntry = async (serverUrl: string) => {
-    return doGQLQuery(serverUrl, entryQuery, 'entry');
+    return doGQLQuery(serverUrl, entryQuery, {}, QueryNames.QUERY_ENTRY);
 };
 
 export const gqlEntryChannels = async (serverUrl: string, teamId: string) => {
-    const response = await doGQLQuery(serverUrl, channelsQuery(teamId, false), 'channels');
+    const variables = {
+        teamId,
+        exclude: false,
+        perPage: MEMBERS_PER_PAGE,
+    };
+    const response = await doGQLQuery(serverUrl, channelsQuery, variables, QueryNames.QUERY_CHANNELS);
     if ('error' in response || response.errors) {
         return response;
     }
@@ -55,11 +61,22 @@ export const gqlEntryChannels = async (serverUrl: string, teamId: string) => {
     return response;
 };
 const gqlEntryChannelsNextPage = async (serverUrl: string, teamId: string, cursor: string, exclude: boolean) => {
-    return doGQLQuery(serverUrl, nextPageChannelsQuery(teamId, cursor, exclude), 'channelsNextPage');
+    const variables = {
+        teamId,
+        exclude,
+        perPage: MEMBERS_PER_PAGE,
+        cursor,
+    };
+    return doGQLQuery(serverUrl, nextPageChannelsQuery, variables, QueryNames.QUERY_CHANNELS_NEXT);
 };
 
 export const gqlOtherChannels = async (serverUrl: string, teamId: string) => {
-    const response = await doGQLQuery(serverUrl, channelsQuery(teamId, true), 'channels');
+    const variables = {
+        teamId,
+        exclude: true,
+        perPage: MEMBERS_PER_PAGE,
+    };
+    const response = await doGQLQuery(serverUrl, channelsQuery, variables, QueryNames.QUERY_CHANNELS);
     if ('error' in response || response.errors) {
         return response;
     }
@@ -87,7 +104,10 @@ export const gqlOtherChannels = async (serverUrl: string, teamId: string) => {
 };
 
 export const gqlAllChannels = async (serverUrl: string) => {
-    const response = await doGQLQuery(serverUrl, allChannelsQuery, 'all_channels');
+    const variables = {
+        perPage: MEMBERS_PER_PAGE,
+    };
+    const response = await doGQLQuery(serverUrl, allChannelsQuery, variables, QueryNames.QUERY_ALL_CHANNELS);
     if ('error' in response || response.errors) {
         return response;
     }
@@ -115,11 +135,15 @@ export const gqlAllChannels = async (serverUrl: string) => {
 };
 
 const gqlAllChannelsNextPage = async (serverUrl: string, cursor: string) => {
-    return doGQLQuery(serverUrl, nextPageAllChannelsQuery(cursor), 'channelsNextPage');
+    const variables = {
+        perPage: MEMBERS_PER_PAGE,
+        cursor,
+    };
+    return doGQLQuery(serverUrl, nextPageAllChannelsQuery, variables, QueryNames.QUERY_ALL_CHANNELS_NEXT);
 };
 
 const entryQuery = `
-query entry {
+query ${QueryNames.QUERY_ENTRY} {
     config
     license
     user(id:"me") {
@@ -175,18 +199,23 @@ query entry {
             lastTeamIconUpdate
             groupConstrained
             allowOpenInvite
+            createAt
             updateAt
+            deleteAt
+            schemeId
+            policyId
+            cloudLimitsArchived
         }
     }
 }
 `;
 
-const channelsQuery = (teamId: string, exclude: boolean) => {
-    return `
-query channels {
-    channelMembers(userId:"me", first:PER_PAGE, teamId:"TEAM_ID", excludeTeam:EXCLUDE) {
+const channelsQuery = `
+query ${QueryNames.QUERY_CHANNELS}($teamId: String!, $perPage: Int!, $exclude: Boolean!) {
+    channelMembers(userId:"me", first:$perPage, teamId:$teamId, excludeTeam:$exclude) {
         cursor
         msgCount
+        msgCountRoot
         mentionCount
         lastViewedAt
         notifyProps
@@ -210,12 +239,14 @@ query channels {
             shared
             lastPostAt
             totalMsgCount
+            totalMsgCountRoot
+            lastRootPostAt
             team {
                 id
             }
         }
     }
-    sidebarCategories(userId:"me", teamId:"TEAM_ID", excludeTeam:EXCLUDE) {
+    sidebarCategories(userId:"me", teamId:$teamId, excludeTeam:$exclude) {
         displayName
         id
         sorting
@@ -226,17 +257,14 @@ query channels {
         teamId
     }
 }
-`.replace('PER_PAGE', `${MEMBERS_PER_PAGE}`).
-        replace('TEAM_ID', teamId).replace('TEAM_ID', teamId).
-        replace('EXCLUDE', String(exclude)).replace('EXCLUDE', String(exclude));
-};
+`;
 
-const nextPageChannelsQuery = (teamId: string, cursor: string, exclude: boolean) => {
-    return `
-query channelsNextPage {
-    channelMembers(userId:"me", first:PER_PAGE, after:"CURSOR", teamId:"TEAM_ID", excludeTeam:EXCLUDE) {
+const nextPageChannelsQuery = `
+query ${QueryNames.QUERY_CHANNELS_NEXT}($teamId: String!, $perPage: Int!, $exclude: Boolean!, $cursor: String!) {
+    channelMembers(userId:"me", first:$perPage, after:$cursor, teamId:$teamId, excludeTeam:$exclude) {
         cursor
         msgCount
+        msgCountRoot
         mentionCount
         lastViewedAt
         notifyProps
@@ -260,23 +288,22 @@ query channelsNextPage {
             shared
             lastPostAt
             totalMsgCount
+            totalMsgCountRoot
+            lastRootPostAt
             team {
                 id
             }
         }
     }
 }
-`.replace('PER_PAGE', `${MEMBERS_PER_PAGE}`).
-        replace('CURSOR', cursor).
-        replace('TEAM_ID', teamId).
-        replace('EXCLUDE', String(exclude));
-};
+`;
 
 const allChannelsQuery = `
-query all_channels {
-    channelMembers(userId:"me", first:PER_PAGE) {
+query ${QueryNames.QUERY_ALL_CHANNELS}($perPage: Int!){
+    channelMembers(userId:"me", first:$perPage) {
         cursor
         msgCount
+        msgCountRoot
         mentionCount
         lastViewedAt
         notifyProps
@@ -295,20 +322,22 @@ query all_channels {
             shared
             lastPostAt
             totalMsgCount
+            totalMsgCountRoot
+            lastRootPostAt
             team {
                 id
             }
         }
     }
 }
-`.replace('PER_PAGE', `${MEMBERS_PER_PAGE}`);
+`;
 
-const nextPageAllChannelsQuery = (cursor: string) => {
-    return `
-query loginNextPage {
-    channelMembers(userId:"me", first:PER_PAGE, after:"CURSOR") {
+const nextPageAllChannelsQuery = `
+query ${QueryNames.QUERY_ALL_CHANNELS_NEXT}($perPage: Int!, $cursor: String!) {
+    channelMembers(userId:"me", first:$perPage, after:$cursor) {
         cursor
         msgCount
+        msgCountRoot
         mentionCount
         lastViewedAt
         notifyProps
@@ -327,12 +356,12 @@ query loginNextPage {
             shared
             lastPostAt
             totalMsgCount
+            totalMsgCountRoot
+            lastRootPostAt
             team {
                 id
             }
         }
     }
 }
-`.replace('PER_PAGE', `${MEMBERS_PER_PAGE}`).
-        replace('CURSOR', cursor);
-};
+`;

@@ -154,6 +154,11 @@ export type GQLTeam = {
     groupConstrained: boolean;
     allowOpenInvite: boolean;
     updateAt: number;
+    createAt: number;
+    deleteAt: number;
+    schemeId: string;
+    policyId: string;
+    cloudLimitsArchived: boolean;
 }
 
 export const gqlToClientTeam = (m: Partial<GQLTeam>): Team => {
@@ -161,8 +166,8 @@ export const gqlToClientTeam = (m: Partial<GQLTeam>): Team => {
         allow_open_invite: m.allowOpenInvite || false,
         allowed_domains: m.allowedDomains || '',
         company_name: m.companyName || '',
-        create_at: 0,
-        delete_at: 0,
+        create_at: m.createAt || 0,
+        delete_at: m.deleteAt || 0,
         description: m.description || '',
         display_name: m.displayName || '',
         email: m.email || '',
@@ -171,9 +176,11 @@ export const gqlToClientTeam = (m: Partial<GQLTeam>): Team => {
         invite_id: m.inviteId || '',
         last_team_icon_update: m.lastTeamIconUpdate || 0,
         name: m.name || '',
-        scheme_id: '',
+        scheme_id: m.schemeId || '',
         type: m.type || 'I',
         update_at: m.updateAt || 0,
+
+        // cloudLimitsArchived and policyId not used
     };
 };
 
@@ -214,6 +221,7 @@ export type GQLChannelMembership = {
 	roles: Array<Partial<GQLRole>>;
 	lastViewedAt: number;
 	msgCount: number;
+    msgCountRoot: number;
 	mentionCount: number;
 	mentionCountRoot: number;
 	notifyProps: ChannelNotifyProps;
@@ -232,6 +240,7 @@ export const gqlToClientChannelMembership = (m: Partial<GQLChannelMembership>, u
         last_viewed_at: m.lastViewedAt || 0,
         mention_count: m.mentionCount || 0,
         msg_count: m.msgCount || 0,
+        msg_count_root: m.msgCountRoot || 0,
         notify_props: m.notifyProps || {},
         roles: m.roles?.map((r) => r.name).join(',') || '',
         user_id: m.user?.id || userId || '',
@@ -261,7 +270,9 @@ export type GQLChannel = {
     groupConstrained: boolean;
     shared: boolean;
     lastPostAt: number;
+    lastRootPostAt: number;
     totalMsgCount: number;
+    totalMsgCountRoot: number;
     stats: Partial<GQLStats>;
 }
 
@@ -282,12 +293,14 @@ export const gqlToClientChannel = (m: Partial<GQLChannel>, teamId?: string): Cha
         header: m.header || '',
         id: m.id || '',
         last_post_at: m.lastPostAt || 0,
+        last_root_post_at: m.lastRootPostAt || 0,
         name: m.name || '',
         purpose: m.purpose || '',
         scheme_id: m.schemeId || '',
         shared: m.shared || false,
         team_id: m.team?.id || teamId || '',
         total_msg_count: m.totalMsgCount || 0,
+        total_msg_count_root: m.totalMsgCountRoot || 0,
         type: m.type || 'O',
         update_at: m.updateAt || 0,
         fake: false,

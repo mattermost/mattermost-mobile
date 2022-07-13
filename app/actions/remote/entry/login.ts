@@ -8,7 +8,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {isTablet} from '@utils/helpers';
-import {logWarning} from '@utils/log';
+import {logDebug, logWarning} from '@utils/log';
 import {scheduleExpiredNotification} from '@utils/notification';
 
 import {deferredAppEntryActions, entry} from './common';
@@ -77,7 +77,11 @@ export async function loginEntry({serverUrl, user, deviceToken}: AfterLoginArgs)
         }
 
         if (clData.config?.FeatureFlagGraphQL === 'true') {
-            return graphQLCommon(serverUrl, false, '', '');
+            const result = await graphQLCommon(serverUrl, false, '', '');
+            if (!result.error) {
+                return result;
+            }
+            logDebug('Error using GraphQL, trying REST', result.error);
         }
 
         return restLoginEntry({serverUrl, user, clData});
