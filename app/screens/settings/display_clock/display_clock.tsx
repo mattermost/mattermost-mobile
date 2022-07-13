@@ -7,7 +7,6 @@ import {View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {savePreference} from '@actions/remote/preference';
-import Block from '@components/block';
 import OptionItem from '@components/option_item';
 import {Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -16,7 +15,10 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import {popTopScreen, setButtons} from '@screens/navigation';
+import {getSaveButton} from '@screens/settings/config';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import SettingBlock from '../setting_block';
 
 const footer = {
     id: t('settings_display.clock.preferTime'),
@@ -33,12 +35,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg,
-        },
-        wrapper: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-            flex: 1,
-            paddingTop: 35,
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
@@ -65,16 +61,7 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
 
     const styles = getStyleSheet(theme);
 
-    const saveButton = useMemo(() => {
-        return {
-            id: SAVE_CLOCK_BUTTON_ID,
-            enabled: false,
-            showAsAction: 'always' as const,
-            testID: 'settings_display.save.button',
-            color: theme.sidebarHeaderTextColor,
-            text: intl.formatMessage({id: 'settings.display.militaryClock.save', defaultMessage: 'Save'}),
-        };
-    }, [theme.sidebarHeaderTextColor]);
+    const saveButton = useMemo(() => getSaveButton(SAVE_CLOCK_BUTTON_ID, intl, theme), [theme.sidebarHeaderTextColor]);
 
     const onSelectClockPreference = useCallback((clockType: keyof typeof CLOCK_TYPE) => {
         setIsMilitaryTimeFormat(clockType === CLOCK_TYPE.MILITARY);
@@ -113,32 +100,30 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
             style={styles.container}
             testID='settings_display.screen'
         >
-            <View style={styles.wrapper}>
-                <Block
-                    disableHeader={true}
-                    footerText={footer}
-                >
-                    <OptionItem
-                        action={onSelectClockPreference}
-                        containerStyle={styles.containerStyle}
-                        label={intl.formatMessage({id: 'settings_display.clock.normal', defaultMessage: '12-hour clock (example: 4:00 PM)'})}
-                        selected={!isMilitaryTimeFormat}
-                        testID='clock_display_settings.normal_clock.action'
-                        type='select'
-                        value={CLOCK_TYPE.NORMAL}
-                    />
-                    <View style={styles.divider}/>
-                    <OptionItem
-                        action={onSelectClockPreference}
-                        containerStyle={styles.containerStyle}
-                        label={intl.formatMessage({id: 'settings_display.clock.military', defaultMessage: '24-hour clock (example: 16:00)'})}
-                        selected={isMilitaryTimeFormat}
-                        testID='clock_display_settings.military_clock.action'
-                        type='select'
-                        value={CLOCK_TYPE.MILITARY}
-                    />
-                </Block>
-            </View>
+            <SettingBlock
+                disableHeader={true}
+                footerText={footer}
+            >
+                <OptionItem
+                    action={onSelectClockPreference}
+                    containerStyle={styles.containerStyle}
+                    label={intl.formatMessage({id: 'settings_display.clock.normal', defaultMessage: '12-hour clock (example: 4:00 PM)'})}
+                    selected={!isMilitaryTimeFormat}
+                    testID='clock_display_settings.normal_clock.action'
+                    type='select'
+                    value={CLOCK_TYPE.NORMAL}
+                />
+                <View style={styles.divider}/>
+                <OptionItem
+                    action={onSelectClockPreference}
+                    containerStyle={styles.containerStyle}
+                    label={intl.formatMessage({id: 'settings_display.clock.military', defaultMessage: '24-hour clock (example: 16:00)'})}
+                    selected={isMilitaryTimeFormat}
+                    testID='clock_display_settings.military_clock.action'
+                    type='select'
+                    value={CLOCK_TYPE.MILITARY}
+                />
+            </SettingBlock>
         </SafeAreaView>
     );
 };

@@ -8,7 +8,6 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {savePreference} from '@actions/remote/preference';
 import {updateMe} from '@actions/remote/user';
-import Block from '@components/block';
 import OptionItem from '@components/option_item';
 import {Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -18,7 +17,12 @@ import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import {popTopScreen, setButtons} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {getEmailInterval, getNotificationProps} from '@utils/user';
+
+import {getSaveButton} from '../config';
+import SettingBlock from '../setting_block';
+import SettingSeparator from '../settings_separator';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -30,25 +34,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg,
         },
         scrollView: {
             flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
         },
         scrollViewContent: {
             paddingVertical: 35,
         },
-        separator: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            flex: 1,
-            height: 1,
-        },
-        upperCase: {
-            textTransform: 'uppercase',
-        },
         containerStyle: {
             paddingHorizontal: 20,
+        },
+        disabled: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 75, 'Regular'),
         },
     };
 });
@@ -106,17 +104,7 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
     const handleEmailThreadsChanged = (thread: boolean) => {
         setEmailThreads(thread);
     };
-
-    const saveButton = useMemo(() => {
-        return {
-            id: SAVE_EMAIL_BUTTON_ID,
-            enabled: false,
-            showAsAction: 'always' as const,
-            testID: 'settings_display.save.button',
-            color: theme.sidebarHeaderTextColor,
-            text: intl.formatMessage({id: 'settings.display.militaryClock.save', defaultMessage: 'Save'}),
-        };
-    }, [theme.sidebarHeaderTextColor]);
+    const saveButton = useMemo(() => getSaveButton(SAVE_EMAIL_BUTTON_ID, intl, theme), [theme.sidebarHeaderTextColor]);
 
     const close = () => popTopScreen(componentId);
 
@@ -169,10 +157,9 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
                 contentContainerStyle={styles.scrollViewContent}
                 style={styles.scrollView}
             >
-                <Block
+                <SettingBlock
                     disableFooter={!sendEmailNotifications}
                     footerText={emailFooterText}
-                    headerStyles={styles.upperCase}
                     headerText={emailHeaderText}
                 >
                     {sendEmailNotifications &&
@@ -186,7 +173,7 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
                                 type='select'
                                 value={`${Preferences.INTERVAL_IMMEDIATE}`}
                             />
-                            <View style={styles.separator}/>
+                            <SettingSeparator/>
                             {enableEmailBatching &&
                                 <View>
                                     <OptionItem
@@ -197,7 +184,7 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
                                         type='select'
                                         value={`${Preferences.INTERVAL_FIFTEEN_MINUTES}`}
                                     />
-                                    <View style={styles.separator}/>
+                                    <SettingSeparator/>
                                     <OptionItem
                                         action={setEmailInterval}
                                         containerStyle={styles.containerStyle}
@@ -206,7 +193,7 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
                                         type='select'
                                         value={`${Preferences.INTERVAL_HOUR}`}
                                     />
-                                    <View style={styles.separator}/>
+                                    <SettingSeparator/>
                                 </View>
                             }
                             <OptionItem
@@ -230,11 +217,10 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
                             })}
                         </Text>
                     }
-                </Block>
+                </SettingBlock>
                 {isCRTEnabled && notifyProps.email === 'true' && (
-                    <Block
+                    <SettingBlock
                         footerText={emailFooterCRTText}
-                        headerStyles={styles.upperCase}
                         headerText={emailHeaderCRTText}
                     >
                         <OptionItem
@@ -244,8 +230,8 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
                             selected={emailThreads}
                             type='toggle'
                         />
-                        <View style={styles.separator}/>
-                    </Block>
+                        <SettingSeparator/>
+                    </SettingBlock>
                 )}
             </ScrollView>
         </SafeAreaView>

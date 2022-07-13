@@ -29,13 +29,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-type SectionText = {
+export type SectionText = {
     id: string;
     defaultMessage: string;
     values?: MessageDescriptor;
 }
 
-type SectionProps = {
+export type BlockProps = {
     children: React.ReactNode;
     disableFooter?: boolean;
     disableHeader?: boolean;
@@ -55,7 +55,7 @@ const Block = ({
     headerStyles,
     headerText,
     footerStyles,
-}: SectionProps) => {
+}: BlockProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 

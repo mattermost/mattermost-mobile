@@ -17,7 +17,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
-import SettingOption from './setting_option';
+import SettingItem from './setting_item';
 
 const edges: Edge[] = ['left', 'right'];
 const CLOSE_BUTTON_ID = 'close-settings';
@@ -136,26 +136,26 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
                 alwaysBounceVertical={false}
                 contentContainerStyle={styles.contentContainerStyle}
             >
-                <SettingOption
+                <SettingItem
                     onPress={goToNotifications}
                     optionName='notification'
                 />
-                <SettingOption
+                <SettingItem
                     onPress={goToDisplaySettings}
                     optionName='display'
                 />
-                <SettingOption
+                <SettingItem
                     onPress={goToAdvancedSettings}
                     optionName='advanced_settings'
                 />
-                <SettingOption
+                <SettingItem
                     messageValues={{appTitle: serverName}}
                     onPress={goToAbout}
                     optionName='about'
                 />
                 {Platform.OS === 'android' && <View style={styles.helpGroup}/>}
                 {showHelp &&
-                    <SettingOption
+                    <SettingItem
                         containerStyle={styles.containerStyle}
                         isLink={true}
                         onPress={openHelp}

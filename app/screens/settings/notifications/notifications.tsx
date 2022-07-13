@@ -10,10 +10,11 @@ import {General, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {goToScreen} from '@screens/navigation';
-import SettingOption from '@screens/settings/setting_option';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getEmailInterval, getEmailIntervalTexts, getNotificationProps} from '@utils/user';
+
+import SettingItem from '../setting_item';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -123,17 +124,17 @@ const Notifications = ({
                 contentContainerStyle={styles.contentContainerStyle}
                 alwaysBounceVertical={false}
             >
-                <SettingOption
+                <SettingItem
                     defaultMessage={isCRTEnabled ? mentionTexts.crtOn.defaultMessage : mentionTexts.crtOff.defaultMessage}
                     i18nId={isCRTEnabled ? mentionTexts.crtOn.id : mentionTexts.crtOff.id}
                     onPress={goToNotificationSettingsMentions}
                     optionName='mentions'
                 />
-                <SettingOption
+                <SettingItem
                     optionName='push_notification'
                     onPress={goToNotificationSettingsPush}
                 />
-                <SettingOption
+                <SettingItem
                     optionName='email'
                     onPress={goToEmailSettings}
                     rightComponent={(
@@ -145,7 +146,7 @@ const Notifications = ({
                     )}
                 />
                 {enableAutoResponder && (
-                    <SettingOption
+                    <SettingItem
                         onPress={goToNotificationAutoResponder}
                         optionName='automatic_dm_replies'
                         rightComponent={(

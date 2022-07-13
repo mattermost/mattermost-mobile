@@ -12,6 +12,7 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {popTopScreen, setButtons} from '@screens/navigation';
+import {getSaveButton} from '@screens/settings/config';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getNotificationProps} from '@utils/user';
 
@@ -64,16 +65,7 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
         setPushThreadPref(pushThread === 'all' ? 'mention' : 'all');
     }, [pushThread]);
 
-    const saveButton = useMemo(() => {
-        return {
-            id: SAVE_NOTIF_BUTTON_ID,
-            enabled: false,
-            showAsAction: 'always' as const,
-            testID: 'notification_settings.save.button',
-            color: theme.sidebarHeaderTextColor,
-            text: intl.formatMessage({id: 'settings.save', defaultMessage: 'Save'}),
-        };
-    }, [theme.sidebarHeaderTextColor]);
+    const saveButton = useMemo(() => getSaveButton(SAVE_NOTIF_BUTTON_ID, intl, theme), [theme.sidebarHeaderTextColor]);
 
     const close = useCallback(() => popTopScreen(componentId), [componentId]);
 

@@ -3,10 +3,9 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, Text, View} from 'react-native';
+import {Text} from 'react-native';
 
 import {updateMe} from '@actions/remote/user';
-import Block from '@components/block';
 import FloatingTextInput from '@components/floating_text_input_label';
 import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
@@ -19,10 +18,14 @@ import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} 
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
 
+import {getSaveButton} from '../config';
+import SettingBlock from '../setting_block';
+import SettingSeparator from '../settings_separator';
+
 import type UserModel from '@typings/database/models/servers/user';
 
 const mentionHeaderText = {
-    id: t('notification_settings.mentions.wordsTrigger'),
+    id: t('notification_settings.mentions.keywords_mention'),
     defaultMessage: 'Keywords that trigger mentions',
 };
 
@@ -30,26 +33,6 @@ const SAVE_MENTION_BUTTON_ID = 'SAVE_MENTION_BUTTON_ID';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        separator: {
-            ...Platform.select({
-                ios: {
-                    backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-                    width: '91%',
-                    alignSelf: 'center',
-                    height: 1,
-                    marginTop: 12,
-                },
-                default: {
-                    display: 'none',
-                },
-            }),
-        },
-        blockHeader: {
-            color: theme.centerChannelColor,
-            ...typography('Heading', 300, 'SemiBold'),
-            marginBottom: 16,
-            marginLeft: 18,
-        },
         container: {
             paddingHorizontal: 20,
             marginTop: 16,
@@ -118,17 +101,7 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
     const styles = getStyleSheet(theme);
     const intl = useIntl();
 
-    const saveButton = useMemo(() => {
-        return {
-            id: SAVE_MENTION_BUTTON_ID,
-            enabled: false,
-            showAsAction: 'always' as const,
-            testID: 'notification_settings.mentions.save.button',
-            color: theme.sidebarHeaderTextColor,
-            ...typography('Body', 100, 'SemiBold'),
-            text: intl.formatMessage({id: 'settings.save', defaultMessage: 'Save'}),
-        };
-    }, [theme.sidebarHeaderTextColor]);
+    const saveButton = useMemo(() => getSaveButton(SAVE_MENTION_BUTTON_ID, intl, theme), [theme.sidebarHeaderTextColor]);
 
     const close = () => popTopScreen(componentId);
 
@@ -181,7 +154,7 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
     useAndroidHardwareBackHandler(componentId, close);
 
     return (
-        <Block
+        <SettingBlock
             headerText={mentionHeaderText}
             headerStyles={styles.blockHeader}
         >
@@ -197,7 +170,7 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
                         selected={tglFirstName}
                         type='toggle'
                     />
-                    <View style={styles.separator}/>
+                    <SettingSeparator/>
                 </>
             )
             }
@@ -213,7 +186,7 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
                     type='toggle'
                 />
             )}
-            <View style={styles.separator}/>
+            <SettingSeparator/>
             <OptionItem
                 action={onToggleChannel}
                 containerStyle={styles.container}
@@ -224,7 +197,7 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
                 selected={tglChannel}
                 type='toggle'
             />
-            <View style={styles.separator}/>
+            <SettingSeparator/>
             <FloatingTextInput
                 allowFontScaling={true}
                 autoCapitalize='none'
@@ -249,7 +222,7 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
             >
                 {intl.formatMessage({id: 'notification_settings.mentions.keywordsLabel', defaultMessage: 'Keywords are not case-sensitive. Separate keywords with commas.'})}
             </Text>
-        </Block>
+        </SettingBlock>
     );
 };
 

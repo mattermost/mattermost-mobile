@@ -3,14 +3,15 @@
 
 import React, {useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, View} from 'react-native';
 
-import Block from '@components/block';
 import OptionItem from '@components/option_item';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import SettingBlock from '../setting_block';
+import SettingSeparator from '../settings_separator';
 
 const replyHeaderText = {
     id: t('notification_settings.mention.reply'),
@@ -19,26 +20,6 @@ const replyHeaderText = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        separator: {
-            ...Platform.select({
-                ios: {
-                    backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-                    width: '91%',
-                    alignSelf: 'center',
-                    height: 1,
-                    marginTop: 12,
-                },
-                default: {
-                    display: 'none',
-                },
-            }),
-        },
-        blockHeader: {
-            color: theme.centerChannelColor,
-            ...typography('Heading', 300, 'SemiBold'),
-            marginBottom: 16,
-            marginLeft: 18,
-        },
         container: {
             width: '90%',
             alignSelf: 'center',
@@ -62,9 +43,8 @@ const ReplySettings = () => {
     };
 
     return (
-        <Block
+        <SettingBlock
             headerText={replyHeaderText}
-            headerStyles={styles.blockHeader}
         >
             <OptionItem
                 action={setReplyNotifications}
@@ -75,7 +55,7 @@ const ReplySettings = () => {
                 type='select'
                 value='any'
             />
-            <View style={styles.separator}/>
+            <SettingSeparator/>
             <OptionItem
                 action={setReplyNotifications}
                 containerStyle={styles.container}
@@ -85,7 +65,7 @@ const ReplySettings = () => {
                 type='select'
                 value='root'
             />
-            <View style={styles.separator}/>
+            <SettingSeparator/>
             <OptionItem
                 action={setReplyNotifications}
                 containerStyle={styles.container}
@@ -95,7 +75,7 @@ const ReplySettings = () => {
                 type='select'
                 value='never'
             />
-        </Block>
+        </SettingBlock>
     );
 };
 

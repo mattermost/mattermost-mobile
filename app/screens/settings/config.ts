@@ -2,6 +2,19 @@
 // See LICENSE.txt for license information.
 
 import {t} from '@i18n';
+import {typography} from '@utils/typography';
+
+import type {IntlShape} from 'react-intl';
+
+export const getSaveButton = (buttonId: string, intl: IntlShape, theme: Theme) => ({
+    color: theme.sidebarHeaderTextColor,
+    enabled: false,
+    id: buttonId,
+    showAsAction: 'always' as const,
+    testID: 'notification_settings.mentions.save.button',
+    text: intl.formatMessage({id: 'settings.save', defaultMessage: 'Save'}),
+    ...typography('Body', 100, 'SemiBold'),
+});
 
 export const SettingOptionConfig = {
     notification: {

@@ -9,7 +9,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import Options, {DisplayOptionConfig, NotificationsOptionConfig, SettingOptionConfig} from './constant';
+import Options, {DisplayOptionConfig, NotificationsOptionConfig, SettingOptionConfig} from './config';
 
 type SettingsConfig = keyof typeof SettingOptionConfig | keyof typeof NotificationsOptionConfig| keyof typeof DisplayOptionConfig
 type SettingOptionProps = {
@@ -37,7 +37,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const SettingOption = ({onPress, optionName, ...rest}: SettingOptionProps) => {
+const SettingItem = ({onPress, optionName, ...rest}: SettingOptionProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const props = {...rest, ...Options[optionName]} as unknown as Omit<MenuItemProps, 'onPress'| 'theme'>;
@@ -55,4 +55,4 @@ const SettingOption = ({onPress, optionName, ...rest}: SettingOptionProps) => {
     );
 };
 
-export default SettingOption;
+export default SettingItem;

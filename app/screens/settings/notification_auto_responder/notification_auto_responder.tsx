@@ -17,6 +17,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import {popTopScreen, setButtons} from '@screens/navigation';
+import {getSaveButton} from '@screens/settings/config';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
@@ -24,7 +25,7 @@ import {getNotificationProps} from '@utils/user';
 import type UserModel from '@typings/database/models/servers/user';
 
 const headerText = {
-    id: t('notification_settings.auto_responder'),
+    id: t('notification_settings.auto_responder.custom_message'),
     defaultMessage: 'Custom message',
 };
 
@@ -94,16 +95,7 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
 
     const close = () => popTopScreen(componentId);
 
-    const saveButton = useMemo(() => {
-        return {
-            id: SAVE_OOO_BUTTON_ID,
-            enabled: false,
-            showAsAction: 'always' as const,
-            testID: 'notification_settings.auto_res.save.button',
-            color: theme.sidebarHeaderTextColor,
-            text: intl.formatMessage({id: 'settings.save', defaultMessage: 'Save'}),
-        };
-    }, [theme.sidebarHeaderTextColor]);
+    const saveButton = useMemo(() => getSaveButton(SAVE_OOO_BUTTON_ID, intl, theme), [theme.sidebarHeaderTextColor]);
 
     const onAutoResponseToggle = useCallback((active: boolean) => {
         setAutoResponderActive(`${active}`);

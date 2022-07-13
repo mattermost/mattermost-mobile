@@ -3,9 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
 
-import Block from '@components/block';
 import FormattedText from '@components/formatted_text';
 import OptionItem from '@components/option_item';
 import {useTheme} from '@context/theme';
@@ -13,24 +11,15 @@ import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import SettingBlock from '../setting_block';
+import SettingSeparator from '../settings_separator';
+
 const headerText = {
     id: t('notification_settings.send_notification'),
-    defaultMessage: 'Send notifications',
+    defaultMessage: 'Notify me about...',
 };
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        upperCase: {
-            textTransform: 'uppercase',
-        },
-        separator: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            flex: 1,
-            height: 1,
-        },
-        label: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 100, 'Regular'),
-        },
         disabled: {
             color: theme.centerChannelColor,
             paddingHorizontal: 15,
@@ -39,6 +28,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         container: {
             paddingHorizontal: 20,
+        },
+        optionLabelTextStyle: {
+            color: theme.centerChannelColor,
+            ...typography('Body', 200, 'Regular'),
+            marginBottom: 4,
+        },
+        optionDescriptionTextStyle: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 75, 'Regular'),
         },
     };
 });
@@ -54,9 +52,8 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
     const intl = useIntl();
 
     return (
-        <Block
+        <SettingBlock
             headerText={headerText}
-            headerStyles={styles.upperCase}
         >
             {sendPushNotifications &&
                 <>
@@ -68,8 +65,10 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
                         testID='notification_settings.pushNotification.allActivity'
                         type='select'
                         value='all'
+                        optionDescriptionTextStyle={styles.optionDescriptionTextStyle}
+                        optionLabelTextStyle={styles.optionLabelTextStyle}
                     />
-                    <View style={styles.separator}/>
+                    <SettingSeparator/>
                     <OptionItem
                         action={setMobilePushPref}
                         containerStyle={styles.container}
@@ -78,8 +77,10 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
                         testID='notification_settings.pushNotification.onlyMentions'
                         type='select'
                         value='mention'
+                        optionDescriptionTextStyle={styles.optionDescriptionTextStyle}
+                        optionLabelTextStyle={styles.optionLabelTextStyle}
                     />
-                    <View style={styles.separator}/>
+                    <SettingSeparator/>
                     <OptionItem
                         action={setMobilePushPref}
                         containerStyle={styles.container}
@@ -88,6 +89,8 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
                         testID='notification_settings.pushNotification.never'
                         type='select'
                         value='none'
+                        optionDescriptionTextStyle={styles.optionDescriptionTextStyle}
+                        optionLabelTextStyle={styles.optionLabelTextStyle}
                     />
                 </>
             }
@@ -98,7 +101,7 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
                     style={styles.disabled}
                 />
             }
-        </Block>
+        </SettingBlock>
     );
 };
 

@@ -19,6 +19,9 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getDeviceTimezone} from '@utils/timezone';
 import {getTimezoneRegion, getUserTimezoneProps} from '@utils/user';
 
+import {getSaveButton} from '../config';
+import SettingSeparator from '../settings_separator';
+
 import type UserModel from '@typings/database/models/servers/user';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -30,15 +33,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
             flex: 1,
             paddingTop: 35,
-        },
-        divider: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 1,
-        },
-        separator: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 1,
-            marginLeft: 15,
         },
         content: {
             paddingHorizontal: 20,
@@ -102,16 +96,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
         close();
     }, [userTimezone, currentUser.timezone, serverUrl]);
 
-    const saveButton = useMemo(() => {
-        return {
-            id: SAVE_TIMEZONE_BUTTON_ID,
-            enabled: false,
-            showAsAction: 'always' as const,
-            testID: 'notification_settings.auto_res.save.button',
-            color: theme.sidebarHeaderTextColor,
-            text: intl.formatMessage({id: 'settings.save', defaultMessage: 'Save'}),
-        };
-    }, [theme.sidebarHeaderTextColor]);
+    const saveButton = useMemo(() => getSaveButton(SAVE_TIMEZONE_BUTTON_ID, intl, theme), [theme.sidebarHeaderTextColor]);
 
     useEffect(() => {
         const buttons = {
@@ -133,7 +118,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
             style={styles.container}
         >
             <View style={styles.wrapper}>
-                <View style={styles.divider}/>
+                <SettingSeparator/>
                 <OptionItem
                     action={updateAutomaticTimezone}
                     containerStyle={styles.content}
@@ -144,7 +129,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
                 />
                 {!userTimezone.useAutomaticTimezone && (
                     <View>
-                        <View style={styles.separator}/>
+                        <SettingSeparator/>
                         <OptionItem
                             action={goToSelectTimezone}
                             containerStyle={styles.content}
@@ -154,7 +139,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
                         />
                     </View>
                 )}
-                <View style={styles.divider}/>
+                <SettingSeparator/>
             </View>
         </SafeAreaView>
     );

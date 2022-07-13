@@ -9,9 +9,10 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {goToScreen} from '@screens/navigation';
-import SettingOption from '@screens/settings/setting_option';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import SettingItem from '../setting_item';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -77,17 +78,17 @@ const Display = ({isTimezoneEnabled, isThemeSwitchingEnabled}: DisplayProps) => 
             >
                 <View style={styles.divider}/>
                 {isThemeSwitchingEnabled && (
-                    <SettingOption
+                    <SettingItem
                         optionName='theme'
                         onPress={goToThemeSettings}
                     />
                 )}
-                <SettingOption
+                <SettingItem
                     optionName='clock'
                     onPress={goToClockDisplaySettings}
                 />
                 {isTimezoneEnabled && (
-                    <SettingOption
+                    <SettingItem
                         optionName='timezone'
                         onPress={goToTimezoneSettings}
                     />

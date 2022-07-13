@@ -3,14 +3,14 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
 
-import Block from '@components/block';
 import OptionItem from '@components/option_item';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
+
+import SettingBlock from '../setting_block';
+import SettingSeparator from '../settings_separator';
 
 const headerText = {
     id: t('notification_settings.mobile.push_status'),
@@ -19,18 +19,10 @@ const headerText = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        upperCase: {
-            textTransform: 'uppercase',
-        },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             flex: 1,
             height: 1,
-        },
-        label: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 100, 'Regular'),
-
         },
         container: {
             paddingHorizontal: 20,
@@ -48,9 +40,8 @@ const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusPro
     const intl = useIntl();
 
     return (
-        <Block
+        <SettingBlock
             headerText={headerText}
-            headerStyles={styles.upperCase}
         >
             <OptionItem
                 action={setMobilePushStatus}
@@ -60,7 +51,7 @@ const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusPro
                 type='select'
                 value='online'
             />
-            <View style={styles.separator}/>
+            <SettingSeparator/>
             <OptionItem
                 action={setMobilePushStatus}
                 containerStyle={styles.container}
@@ -69,7 +60,7 @@ const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusPro
                 type='select'
                 value='away'
             />
-            <View style={styles.separator}/>
+            <SettingSeparator/>
             <OptionItem
                 action={setMobilePushStatus}
                 containerStyle={styles.container}
@@ -78,7 +69,7 @@ const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusPro
                 type='select'
                 value='offline'
             />
-        </Block>
+        </SettingBlock>
     );
 };
 
