@@ -3,8 +3,7 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, ScrollView, Text} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {Platform, Text} from 'react-native';
 
 import {General, Screens} from '@constants';
 import {useTheme} from '@context/theme';
@@ -14,6 +13,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getEmailInterval, getEmailIntervalTexts, getNotificationProps} from '@utils/user';
 
+import SettingContainer from '../setting_container';
 import SettingItem from '../setting_item';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -38,8 +38,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-
-const edges: Edge[] = ['left', 'right'];
 
 const mentionTexts = {
     crtOn: {
@@ -115,51 +113,42 @@ const Notifications = ({
     }, []);
 
     return (
-        <SafeAreaView
-            edges={edges}
-            testID='notification_settings.screen'
-            style={styles.container}
-        >
-            <ScrollView
-                contentContainerStyle={styles.contentContainerStyle}
-                alwaysBounceVertical={false}
-            >
+        <SettingContainer>
+            <SettingItem
+                defaultMessage={isCRTEnabled ? mentionTexts.crtOn.defaultMessage : mentionTexts.crtOff.defaultMessage}
+                i18nId={isCRTEnabled ? mentionTexts.crtOn.id : mentionTexts.crtOff.id}
+                onPress={goToNotificationSettingsMentions}
+                optionName='mentions'
+            />
+            <SettingItem
+                optionName='push_notification'
+                onPress={goToNotificationSettingsPush}
+            />
+            <SettingItem
+                optionName='email'
+                onPress={goToEmailSettings}
+                rightComponent={(
+                    <Text
+                        style={styles.rightLabel}
+                    >
+                        {intl.formatMessage(getEmailIntervalTexts(emailIntervalPref))}
+                    </Text>
+                )}
+            />
+            {enableAutoResponder && (
                 <SettingItem
-                    defaultMessage={isCRTEnabled ? mentionTexts.crtOn.defaultMessage : mentionTexts.crtOff.defaultMessage}
-                    i18nId={isCRTEnabled ? mentionTexts.crtOn.id : mentionTexts.crtOff.id}
-                    onPress={goToNotificationSettingsMentions}
-                    optionName='mentions'
-                />
-                <SettingItem
-                    optionName='push_notification'
-                    onPress={goToNotificationSettingsPush}
-                />
-                <SettingItem
-                    optionName='email'
-                    onPress={goToEmailSettings}
+                    onPress={goToNotificationAutoResponder}
+                    optionName='automatic_dm_replies'
                     rightComponent={(
                         <Text
                             style={styles.rightLabel}
                         >
-                            {intl.formatMessage(getEmailIntervalTexts(emailIntervalPref))}
+                            {currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active ? 'On' : 'Off'}
                         </Text>
                     )}
                 />
-                {enableAutoResponder && (
-                    <SettingItem
-                        onPress={goToNotificationAutoResponder}
-                        optionName='automatic_dm_replies'
-                        rightComponent={(
-                            <Text
-                                style={styles.rightLabel}
-                            >
-                                {currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active ? 'On' : 'Off'}
-                            </Text>
-                        )}
-                    />
-                )}
-            </ScrollView>
-        </SafeAreaView>
+            )}
+        </SettingContainer>
     );
 };
 

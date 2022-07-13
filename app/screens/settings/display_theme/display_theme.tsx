@@ -2,15 +2,17 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {ScrollView, View} from 'react-native';
+import {View} from 'react-native';
 
 import {savePreference} from '@actions/remote/preference';
 import {Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import CustomTheme from '@screens/settings/display_theme/custom_theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import SettingContainer from '../setting_container';
+
+import CustomTheme from './custom_theme';
 import {ThemeTiles} from './theme_tiles';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -60,7 +62,7 @@ const DisplayTheme = ({allowedThemeKeys, currentTeamId, currentUserId}: DisplayT
     }, [serverUrl, allowedThemeKeys, currentTeamId]);
 
     return (
-        <ScrollView style={styles.container}>
+        <SettingContainer>
             <View style={styles.wrapper}>
                 <ThemeTiles
                     allowedThemeKeys={allowedThemeKeys}
@@ -73,7 +75,7 @@ const DisplayTheme = ({allowedThemeKeys, currentTeamId, currentUserId}: DisplayT
                     />
                 )}
             </View>
-        </ScrollView>
+        </SettingContainer>
     );
 };
 

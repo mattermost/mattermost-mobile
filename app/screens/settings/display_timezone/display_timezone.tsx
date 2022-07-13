@@ -4,7 +4,6 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateMe} from '@actions/remote/user';
 import {Screens} from '@constants';
@@ -19,6 +18,7 @@ import {getDeviceTimezone} from '@utils/timezone';
 import {getTimezoneRegion, getUserTimezoneProps} from '@utils/user';
 
 import {getSaveButton} from '../config';
+import SettingContainer from '../setting_container';
 import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
 
@@ -37,7 +37,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const edges: Edge[] = ['left', 'right'];
 const SAVE_TIMEZONE_BUTTON_ID = 'save_timezone';
 
 type DisplayTimezoneProps = {
@@ -110,10 +109,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
     useAndroidHardwareBackHandler(componentId, close);
 
     return (
-        <SafeAreaView
-            edges={edges}
-            style={styles.container}
-        >
+        <SettingContainer>
             <View style={styles.wrapper}>
                 <SettingSeparator/>
                 <SettingOption
@@ -136,7 +132,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
                 )}
                 <SettingSeparator/>
             </View>
-        </SafeAreaView>
+        </SettingContainer>
     );
 };
 

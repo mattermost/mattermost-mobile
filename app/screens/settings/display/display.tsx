@@ -3,43 +3,19 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, ScrollView} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
-import {useTheme} from '@context/theme';
 import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import SettingContainer from '../setting_container';
 import SettingItem from '../setting_item';
-import SettingSeparator from '../settings_separator';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg,
-        },
-        wrapper: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-            ...Platform.select({
-                ios: {
-                    flex: 1,
-                    paddingTop: 35,
-                },
-            }),
-        },
-    };
-});
-const edges: Edge[] = ['left', 'right'];
 type DisplayProps = {
     isTimezoneEnabled: boolean;
     isThemeSwitchingEnabled: boolean;
 }
 const Display = ({isTimezoneEnabled, isThemeSwitchingEnabled}: DisplayProps) => {
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
     const intl = useIntl();
 
     const goToThemeSettings = preventDoubleTap(() => {
@@ -63,35 +39,24 @@ const Display = ({isTimezoneEnabled, isThemeSwitchingEnabled}: DisplayProps) => 
     });
 
     return (
-        <SafeAreaView
-            edges={edges}
-            testID='notification_display.screen'
-            style={styles.container}
-        >
-            <ScrollView
-                contentContainerStyle={styles.wrapper}
-                alwaysBounceVertical={false}
-            >
-                <SettingSeparator/>
-                {isThemeSwitchingEnabled && (
-                    <SettingItem
-                        optionName='theme'
-                        onPress={goToThemeSettings}
-                    />
-                )}
+        <SettingContainer>
+            {isThemeSwitchingEnabled && (
                 <SettingItem
-                    optionName='clock'
-                    onPress={goToClockDisplaySettings}
+                    optionName='theme'
+                    onPress={goToThemeSettings}
                 />
-                {isTimezoneEnabled && (
-                    <SettingItem
-                        optionName='timezone'
-                        onPress={goToTimezoneSettings}
-                    />
-                )}
-                <SettingSeparator/>
-            </ScrollView>
-        </SafeAreaView>
+            )}
+            <SettingItem
+                optionName='clock'
+                onPress={goToClockDisplaySettings}
+            />
+            {isTimezoneEnabled && (
+                <SettingItem
+                    optionName='timezone'
+                    onPress={goToTimezoneSettings}
+                />
+            )}
+        </SettingContainer>
     );
 };
 

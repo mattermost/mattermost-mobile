@@ -5,9 +5,9 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 
 import {t} from '@i18n';
-import SettingOption from '@screens/settings/setting_option';
 
 import SettingBlock from '../setting_block';
+import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
 
 const headerText = {

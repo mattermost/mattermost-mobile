@@ -192,14 +192,14 @@ const OptionItem = ({
                     )}
                     <View style={labelStyle}>
                         <Text
-                            style={[labelTextStyle, optionLabelTextStyle]}
+                            style={[optionLabelTextStyle, labelTextStyle]}
                             testID={`${testID}.label`}
                         >
                             {label}
                         </Text>
                         {Boolean(description) &&
                         <Text
-                            style={[descriptionTextStyle, optionDescriptionTextStyle]}
+                            style={[optionDescriptionTextStyle, descriptionTextStyle]}
                             testID={`${testID}.description`}
                         >
                             {description}
@@ -210,10 +210,11 @@ const OptionItem = ({
             </View>
             {Boolean(actionComponent || info) &&
             <View style={styles.actionContainer}>
-                {Boolean(info) &&
-                <View style={styles.infoContainer}>
-                    <Text style={styles.info}>{info}</Text>
-                </View>
+                {
+                    Boolean(info) &&
+                    <View style={styles.infoContainer}>
+                        <Text style={[styles.info, destructive && {color: theme.dndIndicator}]}>{info}</Text>
+                    </View>
                 }
                 {actionComponent}
             </View>

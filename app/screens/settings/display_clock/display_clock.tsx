@@ -3,8 +3,6 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {savePreference} from '@actions/remote/preference';
 import {Preferences} from '@constants';
@@ -14,28 +12,22 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import {popTopScreen, setButtons} from '@screens/navigation';
-import SettingSeparator from '@screens/settings/settings_separator';
 
 import {getSaveButton} from '../config';
 import SettingBlock from '../setting_block';
+import SettingContainer from '../setting_container';
 import SettingOption from '../setting_option';
+import SettingSeparator from '../settings_separator';
 
 const footer = {
     id: t('settings_display.clock.preferTime'),
     defaultMessage: 'Select how you prefer time displayed.',
 };
 
-const edges: Edge[] = ['left', 'right'];
 const CLOCK_TYPE = {
     NORMAL: 'NORMAL',
     MILITARY: 'MILITARY',
 } as const;
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-});
 
 const SAVE_CLOCK_BUTTON_ID = 'settings_display.clock.save.button';
 
@@ -84,11 +76,7 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
     useNavButtonPressed(SAVE_CLOCK_BUTTON_ID, componentId, saveClockDisplayPreference, [isMilitaryTimeFormat]);
 
     return (
-        <SafeAreaView
-            edges={edges}
-            style={styles.container}
-            testID='settings_display.screen'
-        >
+        <SettingContainer>
             <SettingBlock
                 disableHeader={true}
                 footerText={footer}
@@ -111,7 +99,7 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
                     value={CLOCK_TYPE.MILITARY}
                 />
             </SettingBlock>
-        </SafeAreaView>
+        </SettingContainer>
     );
 };
 

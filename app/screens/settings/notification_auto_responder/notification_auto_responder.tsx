@@ -3,8 +3,6 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateMe} from '@actions/remote/user';
 import FloatingTextInput from '@components/floating_text_input_label';
@@ -16,13 +14,14 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import {popTopScreen, setButtons} from '@screens/navigation';
-import {getSaveButton} from '@screens/settings/config';
-import SettingSeparator from '@screens/settings/settings_separator';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
 
+import {getSaveButton} from '../config';
+import SettingContainer from '../setting_container';
 import SettingOption from '../setting_option';
+import SettingSeparator from '../settings_separator';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -36,8 +35,6 @@ const OOO = {
     defaultMessage: 'Hello, I am out of office and unable to respond to messages.',
 };
 const SAVE_OOO_BUTTON_ID = 'notification_settings.auto_responder.save.button';
-
-const edges: Edge[] = ['left', 'right'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -128,20 +125,13 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
     useAndroidHardwareBackHandler(componentId, close);
 
     return (
-        <SafeAreaView
-            edges={edges}
-            style={styles.container}
-        >
-            <View
-                style={styles.enabled}
-            >
-                <SettingOption
-                    label={intl.formatMessage({id: 'notification_settings.auto_responder.to.enable', defaultMessage: 'Enable automatic replies'})}
-                    action={onAutoResponseToggle}
-                    type='toggle'
-                    selected={autoResponderActive === 'true'}
-                />
-            </View>
+        <SettingContainer>
+            <SettingOption
+                label={intl.formatMessage({id: 'notification_settings.auto_responder.to.enable', defaultMessage: 'Enable automatic replies'})}
+                action={onAutoResponseToggle}
+                type='toggle'
+                selected={autoResponderActive === 'true'}
+            />
             <SettingSeparator/>
             {autoResponderActive === 'true' && (
                 <FloatingTextInput
@@ -169,7 +159,7 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
                 defaultMessage={'Set a custom message that is automatically sent in response to direct messages, such as an out of office or vacation reply. Enabling this setting changes your status to Out of Office and disables notifications.'}
                 style={styles.footer}
             />
-        </SafeAreaView>
+        </SettingContainer>
     );
 };
 

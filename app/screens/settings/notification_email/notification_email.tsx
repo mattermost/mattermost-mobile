@@ -3,8 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {ScrollView, Text, View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {Text} from 'react-native';
 
 import {savePreference} from '@actions/remote/preference';
 import {updateMe} from '@actions/remote/user';
@@ -21,14 +20,11 @@ import {getEmailInterval, getNotificationProps} from '@utils/user';
 
 import {getSaveButton} from '../config';
 import SettingBlock from '../setting_block';
+import SettingContainer from '../setting_container';
 import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
 
 import type UserModel from '@typings/database/models/servers/user';
-
-const edges: Edge[] = ['left', 'right'];
-
-//todo: if all the background will be of same color - perhaps create a re-usable component to act as container
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -144,89 +140,79 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
     useNavButtonPressed(SAVE_EMAIL_BUTTON_ID, componentId, saveEmail, [saveEmail]);
 
     return (
-        <SafeAreaView
-            edges={edges}
-            style={styles.container}
-            testID='notification_mention.screen'
-        >
-            <ScrollView
-                alwaysBounceVertical={false}
-                contentContainerStyle={styles.scrollViewContent}
-                style={styles.scrollView}
+        <SettingContainer >
+            <SettingBlock
+                disableFooter={!sendEmailNotifications}
+                footerText={emailFooterText}
+                headerText={emailHeaderText}
             >
-                <SettingBlock
-                    disableFooter={!sendEmailNotifications}
-                    footerText={emailFooterText}
-                    headerText={emailHeaderText}
-                >
-                    {sendEmailNotifications &&
-                        <>
-                            <SettingOption
-                                action={setEmailInterval}
-                                label={intl.formatMessage({id: 'notification_settings.email.immediately', defaultMessage: 'Immediately'})}
-                                selected={notifyInterval === `${Preferences.INTERVAL_IMMEDIATE}`}
-                                testID='notification_settings.email.immediately.action'
-                                type='select'
-                                value={`${Preferences.INTERVAL_IMMEDIATE}`}
-                            />
-                            <SettingSeparator/>
-                            {enableEmailBatching &&
-                                <View>
-                                    <SettingOption
-                                        action={setEmailInterval}
-                                        label={intl.formatMessage({id: 'notification_settings.email.fifteenMinutes', defaultMessage: 'Every 15 minutes'})}
-                                        selected={notifyInterval === `${Preferences.INTERVAL_FIFTEEN_MINUTES}`}
-                                        type='select'
-                                        value={`${Preferences.INTERVAL_FIFTEEN_MINUTES}`}
-                                    />
-                                    <SettingSeparator/>
-                                    <SettingOption
-                                        action={setEmailInterval}
-                                        label={intl.formatMessage({id: 'notification_settings.email.everyHour', defaultMessage: 'Every hour'})}
-                                        selected={notifyInterval === `${Preferences.INTERVAL_HOUR}`}
-                                        type='select'
-                                        value={`${Preferences.INTERVAL_HOUR}`}
-                                    />
-                                    <SettingSeparator/>
-                                </View>
-                            }
-                            <SettingOption
-                                action={setEmailInterval}
-                                label={intl.formatMessage({id: 'notification_settings.email.never', defaultMessage: 'Never'})}
-                                selected={notifyInterval === `${Preferences.INTERVAL_NEVER}`}
-                                testID='notification_settings.email.never.action'
-                                type='select'
-                                value={`${Preferences.INTERVAL_NEVER}`}
-                            />
-                        </>
-                    }
-                    {!sendEmailNotifications &&
-                        <Text
-                            style={styles.disabled}
-                        >
-                            {intl.formatMessage({
-                                id: 'notification_settings.email.emailHelp2',
-                                defaultMessage: 'Email has been disabled by your System Administrator. No notification emails will be sent until it is enabled.',
-                            })}
-                        </Text>
-                    }
-                </SettingBlock>
-                {isCRTEnabled && notifyProps.email === 'true' && (
-                    <SettingBlock
-                        footerText={emailFooterCRTText}
-                        headerText={emailHeaderCRTText}
-                    >
+                {sendEmailNotifications &&
+                <>
+                    <SettingOption
+                        action={setEmailInterval}
+                        label={intl.formatMessage({id: 'notification_settings.email.immediately', defaultMessage: 'Immediately'})}
+                        selected={notifyInterval === `${Preferences.INTERVAL_IMMEDIATE}`}
+                        testID='notification_settings.email.immediately.action'
+                        type='select'
+                        value={`${Preferences.INTERVAL_IMMEDIATE}`}
+                    />
+                    <SettingSeparator/>
+                    {enableEmailBatching &&
+                    <>
                         <SettingOption
-                            action={handleEmailThreadsChanged}
-                            label={intl.formatMessage({id: 'user.settings.notifications.email_threads.description', defaultMessage: 'Notify me about all replies to threads I\'m following'})}
-                            selected={emailThreads}
-                            type='toggle'
+                            action={setEmailInterval}
+                            label={intl.formatMessage({id: 'notification_settings.email.fifteenMinutes', defaultMessage: 'Every 15 minutes'})}
+                            selected={notifyInterval === `${Preferences.INTERVAL_FIFTEEN_MINUTES}`}
+                            type='select'
+                            value={`${Preferences.INTERVAL_FIFTEEN_MINUTES}`}
                         />
                         <SettingSeparator/>
-                    </SettingBlock>
-                )}
-            </ScrollView>
-        </SafeAreaView>
+                        <SettingOption
+                            action={setEmailInterval}
+                            label={intl.formatMessage({id: 'notification_settings.email.everyHour', defaultMessage: 'Every hour'})}
+                            selected={notifyInterval === `${Preferences.INTERVAL_HOUR}`}
+                            type='select'
+                            value={`${Preferences.INTERVAL_HOUR}`}
+                        />
+                        <SettingSeparator/>
+                    </>
+                    }
+                    <SettingOption
+                        action={setEmailInterval}
+                        label={intl.formatMessage({id: 'notification_settings.email.never', defaultMessage: 'Never'})}
+                        selected={notifyInterval === `${Preferences.INTERVAL_NEVER}`}
+                        testID='notification_settings.email.never.action'
+                        type='select'
+                        value={`${Preferences.INTERVAL_NEVER}`}
+                    />
+                </>
+                }
+                {!sendEmailNotifications &&
+                <Text
+                    style={styles.disabled}
+                >
+                    {intl.formatMessage({
+                        id: 'notification_settings.email.emailHelp2',
+                        defaultMessage: 'Email has been disabled by your System Administrator. No notification emails will be sent until it is enabled.',
+                    })}
+                </Text>
+                }
+            </SettingBlock>
+            {isCRTEnabled && notifyProps.email === 'true' && (
+                <SettingBlock
+                    footerText={emailFooterCRTText}
+                    headerText={emailHeaderCRTText}
+                >
+                    <SettingOption
+                        action={handleEmailThreadsChanged}
+                        label={intl.formatMessage({id: 'user.settings.notifications.email_threads.description', defaultMessage: 'Notify me about all replies to threads I\'m following'})}
+                        selected={emailThreads}
+                        type='toggle'
+                    />
+                    <SettingSeparator/>
+                </SettingBlock>
+            )}
+        </SettingContainer>
     );
 };
 
