@@ -4,8 +4,10 @@
 import {Database} from '@nozbe/watermelondb';
 
 import {markChannelAsRead, MyChannelsRequest} from '@actions/remote/channel';
+import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForChannel, fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyTeamsRequest} from '@actions/remote/team';
+import {fetchNewThreads} from '@actions/remote/thread';
 import {MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
 import {gqlEntry, gqlEntryChannels, gqlOtherChannels} from '@client/graphQL/entry';
 import {GQLRole, gqlToClientChannel, gqlToClientChannelMembership, gqlToClientPreference, gqlToClientRole, gqlToClientSidebarCategory, gqlToClientTeam, gqlToClientTeamMembership, gqlToClientUser} from '@client/graphQL/types';
@@ -14,14 +16,13 @@ import DatabaseManager from '@database/manager';
 import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
 import {queryAllChannels, queryAllChannelsForTeam} from '@queries/servers/channel';
-import {prepareModels} from '@queries/servers/entry';
+import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
+import {getHasCRTChanged} from '@queries/servers/preference';
 import {prepareCommonSystemValues} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, queryMyTeams} from '@queries/servers/team';
 import {selectDefaultChannelForTeam} from '@utils/channel';
 import {isTablet} from '@utils/helpers';
 import {processIsCRTEnabled} from '@utils/thread';
-
-import {fetchNewThreads} from '../thread';
 
 import {teamsToRemove} from './common';
 
@@ -91,6 +92,11 @@ export async function deferredAppEntryGraphQLActions(
             // defer fetching posts for unread channels on initial team
             fetchPostsForUnreadChannels(serverUrl, result.chData.channels, result.chData.memberships, initialChannelId);
         }
+    }
+
+    if (meData.user?.id) {
+        // Fetch groups for current user
+        fetchGroupsForMember(serverUrl, meData.user?.id);
     }
 
     updateAllUsersSince(serverUrl, since);
@@ -201,6 +207,16 @@ export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, cu
     const prefData = {
         preferences: fetchedData.user?.preferences?.map((p) => gqlToClientPreference(p)),
     };
+
+    if (prefData.preferences) {
+        const crtToggled = await getHasCRTChanged(database, prefData.preferences);
+        if (crtToggled) {
+            const {error} = await truncateCrtRelatedTables(serverUrl);
+            if (error) {
+                return {error: `Resetting CRT on ${serverUrl} failed`};
+            }
+        }
+    }
 
     if (isUpgrade && meData?.user) {
         const me = await prepareCommonSystemValues(operator, {currentUserId: meData.user.id});

@@ -10,6 +10,7 @@ import InputQuickAction from './input_quick_action';
 import NavigationHeader from './navigation_header';
 import PlusMenu from './plus_menu';
 import Post from './post';
+import PostChannelInfo from './post_channel_info';
 import PostDraft from './post_draft';
 import PostList from './post_list';
 import ProfilePicture from './profile_picture';
@@ -27,6 +28,7 @@ export {
     NavigationHeader,
     PlusMenu,
     Post,
+    PostChannelInfo,
     PostDraft,
     PostList,
     ProfilePicture,

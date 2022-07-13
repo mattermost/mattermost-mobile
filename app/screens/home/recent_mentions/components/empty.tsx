@@ -44,13 +44,13 @@ function EmptyMentions() {
                 defaultMessage='No Mentions yet'
                 id='mentions.empty.title'
                 style={styles.title}
-                testID='empty.mentions.title'
+                testID='recent_mentions.empty.title'
             />
             <FormattedText
                 defaultMessage={'You\'ll see messages here when someone mentions you or uses terms you\'re monitoring.'}
                 id='mentions.empty.paragraph'
                 style={styles.paragraph}
-                testID='mentions.empty.paragraph'
+                testID='recent_mentions.empty.paragraph'
             />
         </View>
     );

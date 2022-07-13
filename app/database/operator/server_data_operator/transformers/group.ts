@@ -5,12 +5,15 @@
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
 import {OperationType} from '@typings/database/enums';
+import {generateGroupAssociationId} from '@utils/groups';
 
 import type {TransformerArgs} from '@typings/database/database';
 import type GroupModel from '@typings/database/models/servers/group';
+import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 
 const {
     GROUP,
+    GROUP_MEMBERSHIP,
 } = MM_TABLES.SERVER;
 
 /**
@@ -41,4 +44,30 @@ export const transformGroupRecord = ({action, database, value}: TransformerArgs)
         value,
         fieldsMapper,
     }) as Promise<GroupModel>;
+};
+
+/**
+   * transformGroupMembershipRecord: Prepares a record of the SERVER database 'GroupMembership' table for update or create actions.
+   * @param {TransformerArgs} operator
+   * @param {Database} operator.database
+   * @param {RecordPair} operator.value
+   * @returns {Promise<GroupMembershipModel>}
+   */
+export const transformGroupMembershipRecord = ({action, database, value}: TransformerArgs): Promise<GroupMembershipModel> => {
+    const raw = value.raw as GroupMembership;
+
+    // id of group comes from server response
+    const fieldsMapper = (model: GroupMembershipModel) => {
+        model._raw.id = raw.id || generateGroupAssociationId(raw.group_id, raw.user_id);
+        model.groupId = raw.group_id;
+        model.userId = raw.user_id;
+    };
+
+    return prepareBaseRecord({
+        action,
+        database,
+        tableName: GROUP_MEMBERSHIP,
+        value,
+        fieldsMapper,
+    }) as Promise<GroupMembershipModel>;
 };
