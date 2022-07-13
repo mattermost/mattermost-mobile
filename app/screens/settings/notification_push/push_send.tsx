@@ -15,7 +15,7 @@ import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
 
 const headerText = {
-    id: t('notification_settings.send_notification'),
+    id: t('notification_settings.send_notification.about'),
     defaultMessage: 'Notify me about...',
 };
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -47,7 +47,7 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
                 <>
                     <SettingOption
                         action={setMobilePushPref}
-                        label={intl.formatMessage({id: 'notification_settings.pushNotification.allNewMessages', defaultMessage: 'All new messages'})}
+                        label={intl.formatMessage({id: 'notification_settings.pushNotification.all_new_messages', defaultMessage: 'All new messages'})}
                         selected={pushStatus === 'all'}
                         testID='notification_settings.pushNotification.allActivity'
                         type='select'
@@ -56,7 +56,7 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
                     <SettingSeparator/>
                     <SettingOption
                         action={setMobilePushPref}
-                        label={intl.formatMessage({id: 'notification_settings.pushNotification.mentionsOnly', defaultMessage: 'Mentions, direct messages only(default)'})}
+                        label={intl.formatMessage({id: 'notification_settings.pushNotification.mentions.only', defaultMessage: 'Mentions, direct messages only(default)'})}
                         selected={pushStatus === 'mention'}
                         testID='notification_settings.pushNotification.onlyMentions'
                         type='select'
@@ -65,7 +65,7 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
                     <SettingSeparator/>
                     <SettingOption
                         action={setMobilePushPref}
-                        label={intl.formatMessage({id: 'notification_settings.pushNotification.never', defaultMessage: 'Nothing'})}
+                        label={intl.formatMessage({id: 'notification_settings.pushNotification.nothing', defaultMessage: 'Nothing'})}
                         selected={pushStatus === 'none'}
                         testID='notification_settings.pushNotification.never'
                         type='select'

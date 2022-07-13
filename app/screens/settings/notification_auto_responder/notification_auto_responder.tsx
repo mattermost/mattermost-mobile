@@ -17,6 +17,7 @@ import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import {popTopScreen, setButtons} from '@screens/navigation';
 import {getSaveButton} from '@screens/settings/config';
+import SettingSeparator from '@screens/settings/settings_separator';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
@@ -25,9 +26,9 @@ import SettingOption from '../setting_option';
 
 import type UserModel from '@typings/database/models/servers/user';
 
-const headerText = {
-    id: t('notification_settings.auto_responder.custom_message'),
-    defaultMessage: 'Custom message',
+const label = {
+    id: t('notification_settings.auto_responder.message'),
+    defaultMessage: 'Message',
 };
 
 const OOO = {
@@ -43,9 +44,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             flex: 1,
         },
-        wrapper: {
-            flex: 1,
-            paddingTop: 35,
+        enabled: {
+            marginTop: 32,
         },
         input: {
             color: theme.centerChannelColor,
@@ -55,10 +55,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Body', 200, 'Regular'),
         },
         footer: {
-            paddingHorizontal: 15,
+            paddingHorizontal: 20,
             color: changeOpacity(theme.centerChannelColor, 0.5),
             textAlign: 'justify',
-            ...typography('Body', 75),
+            ...typography('Body', 75, 'Regular'),
+            marginTop: 20,
+        },
+        textInputContainer: {
+            paddingHorizontal: 20,
+            marginTop: 20,
         },
     };
 });
@@ -127,43 +132,43 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
             edges={edges}
             style={styles.container}
         >
-            <View style={styles.wrapper}>
-                <View
-                    style={styles.enabled}
-                >
-                    <SettingOption
-                        label={intl.formatMessage({id: 'notification_settings.auto_responder.enabled', defaultMessage: 'Enabled'})}
-                        action={onAutoResponseToggle}
-                        type='toggle'
-                        selected={autoResponderActive === 'true'}
-                    />
-                </View>
-                {autoResponderActive === 'true' && (
-                    <FloatingTextInput
-                        allowFontScaling={true}
-                        autoCapitalize='none'
-                        autoCorrect={false}
-                        blurOnSubmit={true}
-                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                        label={intl.formatMessage(headerText)}
-                        multiline={true}
-                        onChangeText={onAutoResponseChangeText}
-                        placeholder={intl.formatMessage(headerText)}
-                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
-                        returnKeyType='done'
-                        textInputStyle={styles.input}
-                        textAlignVertical='top'
-                        theme={theme}
-                        underlineColorAndroid='transparent'
-                        value={autoResponderMessage || ''}
-                    />
-                )}
-                <FormattedText
-                    id={'notification_settings.auto_responder.footer_message'}
-                    defaultMessage={'Set a custom message that will be automatically sent in response to Direct Messages. Mentions in Public and Private Channels will not trigger the automated reply. Enabling Automatic Replies sets your status to Out of Office and disables email and push notifications.'}
-                    style={styles.footer}
+            <View
+                style={styles.enabled}
+            >
+                <SettingOption
+                    label={intl.formatMessage({id: 'notification_settings.auto_responder.to.enable', defaultMessage: 'Enable automatic replies'})}
+                    action={onAutoResponseToggle}
+                    type='toggle'
+                    selected={autoResponderActive === 'true'}
                 />
             </View>
+            <SettingSeparator/>
+            {autoResponderActive === 'true' && (
+                <FloatingTextInput
+                    allowFontScaling={true}
+                    autoCapitalize='none'
+                    autoCorrect={false}
+                    blurOnSubmit={true}
+                    containerStyle={styles.textInputContainer}
+                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                    label={intl.formatMessage(label)}
+                    multiline={true}
+                    onChangeText={onAutoResponseChangeText}
+                    placeholder={intl.formatMessage(label)}
+                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
+                    returnKeyType='done'
+                    textAlignVertical='top'
+                    textInputStyle={styles.input}
+                    theme={theme}
+                    underlineColorAndroid='transparent'
+                    value={autoResponderMessage || ''}
+                />
+            )}
+            <FormattedText
+                id={'notification_settings.auto_responder.footer.message'}
+                defaultMessage={'Set a custom message that is automatically sent in response to direct messages, such as an out of office or vacation reply. Enabling this setting changes your status to Out of Office and disables notifications.'}
+                style={styles.footer}
+            />
         </SafeAreaView>
     );
 };
