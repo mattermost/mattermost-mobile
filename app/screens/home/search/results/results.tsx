@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {StyleSheet, FlatList, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Text, StyleProp, View, ViewStyle} from 'react-native';
+import {StyleSheet, FlatList, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, StyleProp, View, ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {MIN_HEIGHT} from '@app/components/option_item';
+import {ITEM_HEIGHT} from '@app/components/option_item';
 import File from '@components/files/file';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import DateSeparator from '@components/post_list/date_separator';
@@ -32,24 +32,11 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 
 const styles = StyleSheet.create({
-    flex: {flex: 1},
     container: {
         flex: 1,
         marginHorizontal: 20,
     },
 });
-
-const notImplementedComponent = (
-    <View
-        style={{
-            height: 800,
-            flexGrow: 1,
-            alignItems: 'center',
-        }}
-    >
-        <Text style={{fontSize: 28, color: '#000'}}>{'Not Implemented'}</Text>
-    </View>
-);
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
@@ -70,7 +57,6 @@ type Props = {
 }
 
 const emptyList: FileInfo[] | Array<string | PostModel> = [];
-const ITEM_HEIGHT = MIN_HEIGHT;
 const HEADER_HEIGHT = 185;
 const galleryIdentifier = 'search-files-location';
 
@@ -96,8 +82,11 @@ const Results = ({
 
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
-
     const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
+    const channelNames = useMemo(() => fileChannels.reduce<{[id: string]: string | undefined}>((acc, v) => {
+        acc[v.id] = v.displayName;
+        return acc;
+    }, {}), [fileChannels]);
 
     const containerStyle = useMemo(() => {
         let padding = 0;
@@ -109,10 +98,6 @@ const Results = ({
         return {top: padding};
     }, [selectedTab, posts, fileInfos]);
 
-    const getChannelName = (id: string) => {
-        return fileChannels.find((c) => c.id === id)?.displayName;
-    };
-
     const filesForGallery = useMemo(() => imageAttachments.concat(nonImageAttachments),
         [imageAttachments, nonImageAttachments]);
 
@@ -121,6 +106,13 @@ const Results = ({
             return (b.create_at || 0) - (a.create_at || 0);
         })
     ), [filesForGallery]);
+
+    const filesForGalleryIndexes = useMemo(() => orderedFilesForGallery.reduce<{[id: string]: number | undefined}>((acc, v, idx) => {
+        if (v.id) {
+            acc[v.id] = idx;
+        }
+        return acc;
+    }, {}), [orderedFilesForGallery]);
 
     const handlePreviewPress = useCallback(preventDoubleTap((idx: number) => {
         const items = orderedFilesForGallery.map((f) => fileToGalleryItem(f, f.user_id));
@@ -171,10 +163,6 @@ const Results = ({
         }
     }, [canDownloadFiles, publicLinkEnabled]);
 
-    const attachmentIndex = useCallback((fileId: string) => {
-        return orderedFilesForGallery.findIndex((file) => file.id === fileId) || 0;
-    }, [orderedFilesForGallery]);
-
     const renderItem = useCallback(({item}: ListRenderItemInfo<string|FileInfo | Post>) => {
         if (typeof item === 'string') {
             if (isDateLine(item)) {
@@ -194,13 +182,11 @@ const Results = ({
                 <PostWithChannelInfo
                     location={Screens.SEARCH}
                     post={item}
+                    testID='search_results.post_list'
                 />
             );
         }
 
-        if (!fileInfos.length) {
-            return noResults;
-        }
         const updateFileForGallery = (idx: number, file: FileInfo) => {
             'worklet';
             orderedFilesForGallery[idx] = file;
@@ -216,12 +202,12 @@ const Results = ({
                 key={item.id}
             >
                 <File
-                    channelName={getChannelName(item.channel_id!)}
+                    channelName={channelNames[item.channel_id!]}
                     galleryIdentifier={galleryIdentifier}
                     key={item.id}
                     canDownloadFiles={canDownloadFiles}
                     file={item}
-                    index={attachmentIndex(item.id!)}
+                    index={filesForGalleryIndexes[item.id!] || 0}
                     onPress={handlePreviewPress}
                     onOptionsPress={handleOptionsPress}
                     theme={theme}
@@ -236,22 +222,29 @@ const Results = ({
                 />
             </View>
         );
-    }, [theme, orderedFilesForGallery, fileChannels, handleOptionsPress]);
+    }, [
+        theme,
+        (orderedFilesForGallery.length === 1) && orderedFilesForGallery[0].mime_type,
+        handleOptionsPress,
+        channelNames,
+        filesForGalleryIndexes,
+        canDownloadFiles,
+        handlePreviewPress,
+        publicLinkEnabled,
+        isTablet,
+        fileInfos.length > 1,
+    ]);
 
     const noResults = useMemo(() => {
-        if (searchValue) {
-            if (loading) {
-                return (<Loader/>);
-            }
-            return (
-                <NoResultsWithTerm
-                    term={searchValue}
-                    type={selectedTab}
-                />
-            );
+        if (loading) {
+            return (<Loader/>);
         }
-
-        return notImplementedComponent;
+        return (
+            <NoResultsWithTerm
+                term={searchValue}
+                type={selectedTab}
+            />
+        );
     }, [searchValue, loading, selectedTab]);
 
     let data;
@@ -279,6 +272,7 @@ const Results = ({
             removeClippedSubviews={true}
             ref={scrollRef}
             style={containerStyle}
+            testID='search_results.post_list.flat_list'
         />
     );
 };

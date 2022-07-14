@@ -18,7 +18,7 @@ class PermalinkScreen {
 
     postList = new PostList(this.testID.permalinkScreenPrefix);
 
-    getPostListPostItem = (postId: string, text: string, postProfileOptions = {}) => {
+    getPostListPostItem = (postId: string, text = '', postProfileOptions = {}) => {
         return this.postList.getPost(postId, text, postProfileOptions);
     };
 

@@ -9,7 +9,6 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type PostModel from '@typings/database/models/servers/post';
 import type TeamModel from '@typings/database/models/servers/team';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -37,20 +36,33 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 type Props = {
     channelName: ChannelModel['displayName'];
-    post: PostModel;
     teamName: TeamModel['displayName'];
+    testID?: string;
 }
 
-function ChannelInfo({channelName, teamName}: Props) {
+function ChannelInfo({channelName, teamName, testID}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.channel}>{channelName}</Text>
+        <View
+            style={styles.container}
+            testID={testID}
+        >
+            <Text
+                style={styles.channel}
+                testID='channel_display_name'
+            >
+                {channelName}
+            </Text>
             {Boolean(teamName) && (
                 <View style={styles.teamContainer}>
-                    <Text style={styles.team}>{teamName}</Text>
+                    <Text
+                        style={styles.team}
+                        testID='team_display_name'
+                    >
+                        {teamName}
+                    </Text>
                 </View>
             )}
         </View>

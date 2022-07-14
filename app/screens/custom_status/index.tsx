@@ -284,7 +284,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
             const title = intl.formatMessage({id: 'mobile.custom_status.choose_emoji', defaultMessage: 'Choose an emoji'});
             const passProps = {closeButton: source, onEmojiPress: this.handleEmojiClick};
 
-            showModal(screen, title, passProps, {modal: {swipeToDismiss: false}});
+            showModal(screen, title, passProps);
         });
     });
 

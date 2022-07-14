@@ -2,9 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import React, {useEffect} from 'react';
+import React from 'react';
 import {View} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import FormattedText from '@components/formatted_text';
@@ -12,6 +11,7 @@ import {ITEM_HEIGHT} from '@components/menu_item';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissModal} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -45,6 +45,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+const THREAD_OPTIONS_BUTTON = 'close-thread-options';
+
 const ThreadOptions = ({
     componentId,
     isSaved,
@@ -57,19 +59,11 @@ const ThreadOptions = ({
 
     const style = getStyleSheet(theme);
 
-    useEffect(() => {
-        const unsubscribe = Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
-                if (buttonId === 'close-thread-options') {
-                    dismissModal({componentId});
-                }
-            },
-        }, componentId);
+    const close = () => {
+        dismissModal({componentId});
+    };
 
-        return () => {
-            unsubscribe.remove();
-        };
-    }, []);
+    useNavButtonPressed(THREAD_OPTIONS_BUTTON, componentId, close, []);
 
     const options = [
         <ReplyOption
@@ -127,7 +121,7 @@ const ThreadOptions = ({
     return (
         <BottomSheet
             renderContent={renderContent}
-            closeButtonId='close-thread-options'
+            closeButtonId={THREAD_OPTIONS_BUTTON}
             componentId={Screens.THREAD_OPTIONS}
             initialSnapIndex={0}
             snapPoints={[((options.length + 2) * ITEM_HEIGHT), 10]}

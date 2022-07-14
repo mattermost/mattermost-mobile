@@ -14,20 +14,6 @@ import {forceLogoutIfNecessary} from './session';
 
 import type Model from '@nozbe/watermelondb/Model';
 
-type FileSearchRequest = {
-    error?: unknown;
-    file_infos?: {[id: string]: FileInfo};
-    next_file_info_id?: string;
-    order?: string[];
-    prev_file_info_id?: string;
-}
-
-type PostSearchRequest = {
-    error?: unknown;
-    order?: string[];
-    posts?: Post[];
-}
-
 export async function fetchRecentMentions(serverUrl: string): Promise<PostSearchRequest> {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -129,10 +115,19 @@ export const searchPosts = async (serverUrl: string, params: PostSearchParams): 
     }
 };
 
-export const searchFiles = async (serverUrl: string, teamId: string, params: FileSearchParams): Promise<FileSearchRequest> => {
+export const searchFiles = async (serverUrl: string, teamId: string, params: FileSearchParams): Promise<{files?: FileInfo[]; channels?: string[]; error?: unknown}> => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        return await client.searchFiles(teamId, params.terms);
+        const result = await client.searchFiles(teamId, params.terms);
+        const files = result?.file_infos ? Object.values(result.file_infos) : [];
+        const allChannelIds = files.reduce<string[]>((acc, f) => {
+            if (f.channel_id) {
+                acc.push(f.channel_id);
+            }
+            return acc;
+        }, []);
+        const channels = [...new Set(allChannelIds)];
+        return {files, channels};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};

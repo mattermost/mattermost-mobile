@@ -9,6 +9,7 @@ class BrowseChannelsScreen {
     testID = {
         browseChannelsScreen: 'browse_channels.screen',
         closeButton: 'close.browse_channels.button',
+        createButton: 'browse_channels.create.button',
         searchInput: 'browse_channels.search_bar.search.input',
         searchClearButton: 'browse_channels.search_bar.search.clear.button',
         searchCancelButton: 'browse_channels.search_bar.search.cancel.button',
@@ -21,6 +22,7 @@ class BrowseChannelsScreen {
 
     browseChannelsScreen = element(by.id(this.testID.browseChannelsScreen));
     closeButton = element(by.id(this.testID.closeButton));
+    createButton = element(by.id(this.testID.createButton));
     searchInput = element(by.id(this.testID.searchInput));
     searchClearButton = element(by.id(this.testID.searchClearButton));
     searchCancelButton = element(by.id(this.testID.searchCancelButton));

@@ -11,6 +11,7 @@ import {typography} from '@utils/typography';
 type Props = {
     title: string;
     description: string;
+    testID?: string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -28,14 +29,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const UserProfileLabel = ({title, description}: Props) => {
+const UserProfileLabel = ({title, description, testID}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>{title}</Text>
-            <Text style={styles.description}>{description}</Text>
+            <Text
+                style={styles.title}
+                testID={`${testID}.title`}
+            >
+                {title}
+            </Text>
+            <Text
+                style={styles.description}
+                testID={`${testID}.description`}
+            >
+                {description}
+            </Text>
         </View>
     );
 };
