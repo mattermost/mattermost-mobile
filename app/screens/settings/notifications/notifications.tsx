@@ -3,41 +3,17 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, Text} from 'react-native';
 
 import {General, Screens} from '@constants';
-import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {goToScreen} from '@screens/navigation';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
+import SettingRowLabel from '@screens/settings/setting_row_label';
 import {getEmailInterval, getEmailIntervalTexts, getNotificationProps} from '@utils/user';
 
 import SettingContainer from '../setting_container';
 import SettingItem from '../setting_item';
 
 import type UserModel from '@typings/database/models/servers/user';
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            flex: 1,
-        },
-        contentContainerStyle: {
-            marginTop: 20,
-        },
-        rightLabel: {
-            color: changeOpacity(theme.centerChannelColor, 0.56),
-            ...typography('Body', 100, 'Regular'),
-            alignSelf: 'center',
-            ...Platform.select({
-                android: {
-                    marginRight: 20,
-                },
-            }),
-        },
-    };
-});
 
 const mentionTexts = {
     crtOn: {
@@ -66,8 +42,6 @@ const Notifications = ({
     isCRTEnabled,
     sendEmailNotifications,
 }: NotificationsProps) => {
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
     const intl = useIntl();
     const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
 
@@ -129,25 +103,21 @@ const Notifications = ({
             <SettingItem
                 optionName='email'
                 onPress={goToEmailSettings}
-                rightComponent={(
-                    <Text
-                        style={styles.rightLabel}
-                    >
-                        {intl.formatMessage(getEmailIntervalTexts(emailIntervalPref))}
-                    </Text>
-                )}
+                rightComponent={
+                    <SettingRowLabel
+                        text={intl.formatMessage(getEmailIntervalTexts(emailIntervalPref))}
+                    />
+                }
             />
             {enableAutoResponder && (
                 <SettingItem
                     onPress={goToNotificationAutoResponder}
                     optionName='automatic_dm_replies'
-                    rightComponent={(
-                        <Text
-                            style={styles.rightLabel}
-                        >
-                            {currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active === 'true' ? 'On' : 'Off'}
-                        </Text>
-                    )}
+                    rightComponent={
+                        <SettingRowLabel
+                            text={currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active === 'true' ? 'On' : 'Off'}
+                        />
+                    }
                 />
             )}
         </SettingContainer>
