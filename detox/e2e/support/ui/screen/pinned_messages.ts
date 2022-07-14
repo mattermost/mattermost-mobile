@@ -1,34 +1,29 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {PostList} from '@support/ui/component';
 import {
-    NavigationHeader,
-    PostList,
-} from '@support/ui/component';
-import {
-    HomeScreen,
+    ChannelInfoScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
-class RecentMentionsScreen {
+class PinnedMessagesScreen {
     testID = {
-        recentMentionsScreenPrefix: 'recent_mentions.',
-        recentMentionsScreen: 'recent_mentions.screen',
-        emptyTitle: 'recent_mentions.empty.title',
-        emptyParagraph: 'recent_mentions.empty.paragraph',
+        pinnedMessagesScreenPrefix: 'pinned_messages.',
+        pinnedMessagesScreen: 'pinned_messages.screen',
+        backButton: 'screen.back.button',
+        emptyTitle: 'pinned_messages.empty.title',
+        emptyParagraph: 'pinned_messages.empty.paragraph',
     };
 
-    recentMentionsScreen = element(by.id(this.testID.recentMentionsScreen));
+    pinnedMessagesScreen = element(by.id(this.testID.pinnedMessagesScreen));
+    backButton = element(by.id(this.testID.backButton));
     emptyTitle = element(by.id(this.testID.emptyTitle));
     emptyParagraph = element(by.id(this.testID.emptyParagraph));
 
-    // convenience props
-    largeHeaderTitle = NavigationHeader.largeHeaderTitle;
-    largeHeaderSubtitle = NavigationHeader.largeHeaderSubtitle;
-
-    postList = new PostList(this.testID.recentMentionsScreenPrefix);
+    postList = new PostList(this.testID.pinnedMessagesScreenPrefix);
 
     getFlatPostList = () => {
         return this.postList.getFlatList();
@@ -43,16 +38,21 @@ class RecentMentionsScreen {
     };
 
     toBeVisible = async () => {
-        await waitFor(this.recentMentionsScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.pinnedMessagesScreen).toExist().withTimeout(timeouts.TEN_SEC);
 
-        return this.recentMentionsScreen;
+        return this.pinnedMessagesScreen;
     };
 
     open = async () => {
-        // # Open recent mentions screen
-        await HomeScreen.mentionsTab.tap();
+        // # Open pinned messages screen
+        await ChannelInfoScreen.pinnedMessagesOption.tap();
 
         return this.toBeVisible();
+    };
+
+    back = async () => {
+        await this.backButton.tap();
+        await expect(this.pinnedMessagesScreen).not.toBeVisible();
     };
 
     openPostOptionsFor = async (postId: string, text: string) => {
@@ -77,5 +77,5 @@ class RecentMentionsScreen {
     };
 }
 
-const recentMentionsScreen = new RecentMentionsScreen();
-export default recentMentionsScreen;
+const pinnedMessagesScreen = new PinnedMessagesScreen();
+export default pinnedMessagesScreen;

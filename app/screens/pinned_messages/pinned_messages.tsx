@@ -140,6 +140,7 @@ function SavedMessages({
                 shouldRenderReplyButton={false}
                 skipSavedHeader={true}
                 skipPinnedHeader={true}
+                testID='pinned_messages.post_list.post'
             />
         );
     }, [currentTimezone, isTimezoneEnabled, theme]);
@@ -148,6 +149,7 @@ function SavedMessages({
         <SafeAreaView
             edges={edges}
             style={styles.flex}
+            testID='pinned_messages.screen'
         >
             <FlatList
                 contentContainerStyle={data.length ? styles.list : [styles.empty]}
@@ -158,6 +160,7 @@ function SavedMessages({
                 renderItem={renderItem}
                 scrollToOverflowEnabled={true}
                 onViewableItemsChanged={onViewableItemsChanged}
+                testID='pinned_messages.post_list.flat_list'
             />
         </SafeAreaView>
     );

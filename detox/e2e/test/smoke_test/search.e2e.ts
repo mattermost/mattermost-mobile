@@ -16,10 +16,12 @@ import {
     siteOneUrl,
 } from '@support/test_config';
 import {
+    ChannelInfoScreen,
     ChannelListScreen,
     ChannelScreen,
     HomeScreen,
     LoginScreen,
+    PinnedMessagesScreen,
     PostOptionsScreen,
     RecentMentionsScreen,
     SavedMessagesScreen,
@@ -90,5 +92,27 @@ describe('Smoke Test - Search', () => {
 
         // # Go back to channel list screen
         await ChannelListScreen.open();
+    });
+
+    it('MM-T4911_3 - should be able to display a pinned message on pinned messages screen', async () => {
+        // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
+        const message = `Message ${getRandomId()}`;
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage(message);
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        await ChannelScreen.openPostOptionsFor(post.id, message);
+        await PostOptionsScreen.pinPostOption.tap();
+        await ChannelInfoScreen.open();
+        await PinnedMessagesScreen.open();
+
+        // * Verify on pinned messages screen and pinned message is displayed
+        await PinnedMessagesScreen.toBeVisible();
+        const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(post.id, message);
+        await expect(postListPostItem).toBeVisible();
+
+        // # Go back to channel list screen
+        await PinnedMessagesScreen.back();
+        await ChannelInfoScreen.close();
+        await ChannelScreen.back();
     });
 });
