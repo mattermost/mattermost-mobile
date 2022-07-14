@@ -24,9 +24,8 @@ export interface GroupHandlerMix {
 const GroupHandler = (superclass: any) => class extends superclass implements GroupHandlerMix {
     /**
       * handleGroups: Handler responsible for the Create/Update operations occurring on the Group table from the 'Server' schema
-      * @param {HandleGroupArgs} groupsArgs
-      * @param {Group[]} groupsArgs.groups
-      * @param {boolean} groupsArgs.prepareRecordsOnly
+      *
+      * @param {HandleGroupArgs}
       * @throws DataOperatorException
       * @returns {Promise<GroupModel[]>}
       */
@@ -52,10 +51,7 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
     /**
      * handleGroupMembershipsForMember: Handler responsible for the Create/Update operations occurring on the GroupMembership table from the 'Server' schema
      *
-     * @param {HandleGroupMembershipForMemberArgs} groupTeamsArgs
-     * @param {string} groupTeamsArgs.userId
-     * @param {GroupTeam[]} groupTeamsArgs.groups
-     * @param {boolean} groupTeamsArgs.prepareRecordsOnly
+     * @param {HandleGroupMembershipForMemberArgs}
      * @throws DataOperatorException
      * @returns {Promise<GroupMembershipModel[]>}
      */
@@ -112,10 +108,8 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
 
     /**
      * handleGroupTeamsForTeam: Handler responsible for the Create/Update operations occurring on the GroupTeam table from the 'Server' schema
-     * @param {HandleGroupTeamsForTeamArgs} groupTeamsArgs
-     * @param {string} groupTeamsArgs.teamId
-     * @param {GroupTeam[]} groupTeamsArgs.groupTeams
-     * @param {boolean} groupTeamsArgs.prepareRecordsOnly
+     *
+     * @param {HandleGroupTeamsForTeamArgs}
      * @throws DataOperatorException
      * @returns {Promise<GroupTeamModel[]>}
      */
