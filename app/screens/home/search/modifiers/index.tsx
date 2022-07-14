@@ -3,7 +3,6 @@
 
 import React, {useCallback, useMemo, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
-import {View} from 'react-native';
 import Animated, {useSharedValue, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import FormattedText from '@components/formatted_text';
@@ -97,14 +96,12 @@ const getModifiersSectionsData = (intl: IntlShape): ModifierItem[] => {
 };
 
 type Props = {
-    scrollPaddingTop: number;
     setSearchValue: (value: string) => void;
     searchValue?: string;
 }
-const SearchModifiers = ({scrollPaddingTop, searchValue, setSearchValue}: Props) => {
+const SearchModifiers = ({searchValue, setSearchValue}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
 
     const [showMore, setShowMore] = useState(false);
     const show = useSharedValue(3 * MODIFIER_LABEL_HEIGHT);
@@ -137,7 +134,7 @@ const SearchModifiers = ({scrollPaddingTop, searchValue, setSearchValue}: Props)
     };
 
     return (
-        <View style={paddingTop}>
+        <>
             <FormattedText
                 style={styles.title}
                 id={'screen.search.modifier.header'}
@@ -150,7 +147,7 @@ const SearchModifiers = ({scrollPaddingTop, searchValue, setSearchValue}: Props)
                 onPress={handleShowMore}
                 showMore={showMore}
             />
-        </View>
+        </>
     );
 };
 

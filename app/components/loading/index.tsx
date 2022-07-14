@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {ActivityIndicator, View, ViewStyle} from 'react-native';
+import {ActivityIndicator, StyleProp, View, ViewStyle} from 'react-native';
 
 import {useTheme} from '@context/theme';
 
 type LoadingProps = {
-    containerStyle?: ViewStyle;
+    containerStyle?: StyleProp<ViewStyle>;
     size?: number | 'small' | 'large';
     color?: string;
     themeColor?: keyof Theme;
