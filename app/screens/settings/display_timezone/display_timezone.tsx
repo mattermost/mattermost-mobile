@@ -35,7 +35,6 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
     const timezone = useMemo(() => getUserTimezoneProps(currentUser), [currentUser.timezone]);
     const [userTimezone, setUserTimezone] = useState(timezone);
     const theme = useTheme();
-
     const updateAutomaticTimezone = (useAutomaticTimezone: boolean) => {
         const automaticTimezone = getDeviceTimezone();
         setUserTimezone((prev) => ({
@@ -80,10 +79,15 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
     const saveButton = useMemo(() => getSaveButton(SAVE_TIMEZONE_BUTTON_ID, intl, theme), [theme.sidebarHeaderTextColor]);
 
     useEffect(() => {
+        const enabled =
+            timezone.useAutomaticTimezone !== userTimezone.useAutomaticTimezone ||
+            timezone.automaticTimezone !== userTimezone.automaticTimezone ||
+            timezone.manualTimezone !== userTimezone.manualTimezone;
+
         const buttons = {
             rightButtons: [{
                 ...saveButton,
-                enabled: timezone.useAutomaticTimezone !== userTimezone.useAutomaticTimezone,
+                enabled,
             }],
         };
         setButtons(componentId, buttons);

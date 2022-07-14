@@ -234,7 +234,7 @@
   "display_settings.theme": "Theme",
   "display_settings.timezone": "Timezone",
   "display_settings.tz.auto": "Auto",
-  "display_settings.tz.military": "Manual",
+  "display_settings.tz.manual": "Manual",
   "download.error": "Unable to download the file. Try again later",
   "edit_post.editPost": "Edit the post...",
   "edit_post.save": "Save",

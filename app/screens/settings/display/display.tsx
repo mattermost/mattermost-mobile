@@ -34,7 +34,7 @@ const TIMEZONE_FORMAT = [
         defaultMessage: 'Auto',
     },
     {
-        id: t('display_settings.tz.military'),
+        id: t('display_settings.tz.manual'),
         defaultMessage: 'Manual',
     },
 ];
@@ -98,7 +98,7 @@ const Display = ({currentUser, hasMilitaryTimeFormat, isThemeSwitchingEnabled, i
                     onPress={goToTimezoneSettings}
                     rightComponent={
                         <SettingRowLabel
-                            text={intl.formatMessage(timezone.manualTimezone ? TIMEZONE_FORMAT[0] : TIMEZONE_FORMAT[1])}
+                            text={intl.formatMessage(timezone.useAutomaticTimezone ? TIMEZONE_FORMAT[0] : TIMEZONE_FORMAT[1])}
                         />
                     }
                 />
