@@ -22,10 +22,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         ...typography('Body', 75, 'SemiBold'),
         color: theme.centerChannelColor,
         marginRight: 5,
+        flexShrink: 1,
     },
     teamContainer: {
         borderColor: theme.centerChannelColor,
         borderLeftWidth: StyleSheet.hairlineWidth,
+        flexShrink: 1,
     },
     team: {
         ...typography('Body', 75, 'Light'),
@@ -52,6 +54,7 @@ function ChannelInfo({channelName, teamName, testID}: Props) {
             <Text
                 style={styles.channel}
                 testID='channel_display_name'
+                numberOfLines={1}
             >
                 {channelName}
             </Text>
@@ -60,6 +63,7 @@ function ChannelInfo({channelName, teamName, testID}: Props) {
                     <Text
                         style={styles.team}
                         testID='team_display_name'
+                        numberOfLines={1}
                     >
                         {teamName}
                     </Text>
