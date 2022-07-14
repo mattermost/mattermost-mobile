@@ -74,7 +74,10 @@ const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, un
     ), [intl.locale]);
 
     const renderSectionItem = useCallback(({item}: SectionListRenderItemInfo<ChannelModel>) => {
+        // TODO: ts error about "Property 'serverUrl' is missing in type"
         return (
+            // eslint-disable-next-line
+            // @ts-ignore
             <ChannelItem
                 channel={item}
                 isInfo={true}

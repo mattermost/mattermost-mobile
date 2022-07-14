@@ -29,6 +29,7 @@ type ProfilePictureProps = {
     statusStyle?: StyleProp<ViewProps>;
     testID?: string;
     source?: Source | string;
+    url?: string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -67,9 +68,11 @@ const ProfilePicture = ({
     statusStyle,
     testID,
     source,
+    url,
 }: ProfilePictureProps) => {
     const theme = useTheme();
-    const serverUrl = useServerUrl();
+    let serverUrl = useServerUrl();
+    serverUrl = url || serverUrl;
 
     const style = getStyleSheet(theme);
     const buffer = showStatus ? STATUS_BUFFER || 0 : 0;
@@ -108,6 +111,7 @@ const ProfilePicture = ({
                 iconSize={iconSize}
                 size={size}
                 source={source}
+                url={serverUrl}
             />
             {showStatus && !isBot &&
             <Status

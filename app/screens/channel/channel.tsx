@@ -6,6 +6,9 @@ import {BackHandler, DeviceEventEmitter, NativeEventSubscription, StyleSheet, Vi
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import CurrentCallBar from '@app/products/calls/components/current_call_bar';
+import FloatingCallContainer from '@app/products/calls/components/floating_call_container';
+import JoinCallBanner from '@app/products/calls/components/join_call_banner';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import {Events} from '@constants';
@@ -21,8 +24,12 @@ import ChannelPostList from './channel_post_list';
 import ChannelHeader from './header';
 
 type ChannelProps = {
+    serverUrl: string;
     channelId: string;
     componentId?: string;
+    isCallsPluginEnabled: boolean;
+    isCallInCurrentChannel: boolean;
+    isInCall: boolean;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -33,7 +40,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const Channel = ({channelId, componentId}: ChannelProps) => {
+const Channel = ({serverUrl, channelId, componentId, isCallsPluginEnabled, isCallInCurrentChannel, isInCall}: ChannelProps) => {
     const appState = useAppState();
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
@@ -91,6 +98,21 @@ const Channel = ({channelId, componentId}: ChannelProps) => {
         };
     }, [channelId]);
 
+    let callsComponents: JSX.Element | null = null;
+    if (isCallsPluginEnabled && (isCallInCurrentChannel || isInCall)) {
+        callsComponents = (
+            <FloatingCallContainer>
+                {isCallInCurrentChannel &&
+                    <JoinCallBanner
+                        serverUrl={serverUrl}
+                        channelId={channelId}
+                    />
+                }
+                {isInCall && <CurrentCallBar/>}
+            </FloatingCallContainer>
+        );
+    }
+
     return (
         <FreezeScreen>
             <SafeAreaView
@@ -118,6 +140,7 @@ const Channel = ({channelId, componentId}: ChannelProps) => {
                     />
                 </>
                 }
+                {callsComponents}
             </SafeAreaView>
         </FreezeScreen>
     );

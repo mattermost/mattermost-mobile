@@ -206,7 +206,10 @@ const FilteredList = ({
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<ChannelModel|Channel|UserModel>) => {
         if ('teamId' in item) {
+            // TODO: ts error about "Property 'serverUrl' is missing in type"
             return (
+                // eslint-disable-next-line
+                // @ts-ignore
                 <ChannelItem
                     channel={item}
                     isInfo={true}
