@@ -1,20 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {bottomSheetSnapPoint} from '@app/utils/helpers';
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
+import {SEPARATOR_MARGIN, SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
 import {FileFilter, FileFilters} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import Filter from './filter';
+import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, NUMBER_FILTER_ITEMS} from './filter';
 import SelectButton from './header_button';
 
 export type SelectTab = 'files' | 'messages'
+
+export const HEADER_HEIGHT = 64;
 
 type Props = {
     onTabSelect: (tab: SelectTab) => void;
@@ -24,8 +30,6 @@ type Props = {
     numberMessages: number;
     numberFiles: number;
 }
-
-export const HEADER_HEIGHT = 64;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -63,6 +67,8 @@ const Header = ({
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
     const intl = useIntl();
+    const {bottom} = useSafeAreaInsets();
+    const isTablet = useIsTablet();
 
     const messagesText = intl.formatMessage({id: 'screen.search.header.messages', defaultMessage: 'Messages'});
     const filesText = intl.formatMessage({id: 'screen.search.header.files', defaultMessage: 'Files'});
@@ -78,6 +84,16 @@ const Header = ({
         onTabSelect('files');
     }, [onTabSelect]);
 
+    const snapPoints = useMemo(() => {
+        return [
+            bottomSheetSnapPoint(
+                NUMBER_FILTER_ITEMS,
+                FILTER_ITEM_HEIGHT,
+                bottom,
+            ) + TITLE_HEIGHT + DIVIDERS_HEIGHT + (isTablet ? SEPARATOR_MARGIN_TABLET : SEPARATOR_MARGIN),
+            10];
+    }, []);
+
     const handleFilterPress = useCallback(() => {
         const renderContent = () => {
             return (
@@ -90,7 +106,7 @@ const Header = ({
         bottomSheet({
             closeButtonId: 'close-search-filters',
             renderContent,
-            snapPoints: [700, 10],
+            snapPoints,
             theme,
             title: intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'}),
         });

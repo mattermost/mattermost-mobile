@@ -193,6 +193,7 @@ export function resetToHome(passProps: LaunchProps = {launchType: LaunchType.Nor
         dismissModal({componentId: Screens.LOGIN});
         dismissModal({componentId: Screens.SSO});
         dismissModal({componentId: Screens.BOTTOM_SHEET});
+        DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
         return;
     }
 

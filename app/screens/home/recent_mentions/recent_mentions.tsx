@@ -157,6 +157,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
             <PostWithChannelInfo
                 location={Screens.MENTIONS}
                 post={item}
+                testID='recent_mentions.post_list'
             />
         );
     }, []);
@@ -174,6 +175,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
             <SafeAreaView
                 style={styles.flex}
                 edges={EDGES}
+                testID='recent_mentions.screen'
             >
                 <Animated.View style={[styles.container, animated]}>
                     <Animated.View style={top}>
@@ -196,6 +198,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
                         removeClippedSubviews={true}
                         onViewableItemsChanged={onViewableItemsChanged}
                         style={scrollViewStyle}
+                        testID='recent_mentions.post_list.flat_list'
                     />
                 </Animated.View>
             </SafeAreaView>
