@@ -18,17 +18,20 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
+import {TabTypes, TabType} from '@utils/search';
 
 import Modifiers from './modifiers';
 import RecentSearches from './recent_searches';
 import Results from './results';
-import Header, {SelectTab} from './results/header';
+import Header from './results/header';
 
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 const emptyFileResults: FileInfo[] = [];
 const emptyPostResults: string[] = [];
+const emptyChannelIds: string[] = [];
+
 const dummyData = [1];
 
 type Props = {
@@ -66,7 +69,7 @@ const SearchScreen = ({teamId}: Props) => {
     const searchTerm = (nav.getState().routes[stateIndex].params as any)?.searchTerm;
 
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
-    const [selectedTab, setSelectedTab] = useState<SelectTab>('messages');
+    const [selectedTab, setSelectedTab] = useState<TabType>(TabTypes.MESSAGES);
     const [filter, setFilter] = useState<FileFilter>(FileFilters.ALL);
     const [showResults, setShowResults] = useState(false);
 
@@ -75,6 +78,7 @@ const SearchScreen = ({teamId}: Props) => {
 
     const [postIds, setPostIds] = useState<string[]>(emptyPostResults);
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
+    const [fileChannelIds, setFileChannelIds] = useState<string[]>([]);
 
     const handleSearch = useRef<(term: string) => void>();
 
@@ -101,19 +105,23 @@ const SearchScreen = ({teamId}: Props) => {
 
     useEffect(() => {
         handleSearch.current = async (term: string) => {
+            const searchParams = getSearchParams(term);
+            if (!searchParams.terms) {
+                handleClearSearch();
+                return;
+            }
             setLoading(true);
             setFilter(FileFilters.ALL);
             setLastSearchedValue(term);
             addSearchToTeamSearchHistory(serverUrl, teamId, term);
-            const searchParams = getSearchParams(term);
-            const [postResults, fileResults] = await Promise.all([
+            const [postResults, {files, channels}] = await Promise.all([
                 searchPosts(serverUrl, searchParams),
                 searchFiles(serverUrl, teamId, searchParams),
             ]);
 
-            const fileInfosResult = fileResults?.file_infos && Object.values(fileResults?.file_infos);
-            setFileInfos(fileInfosResult?.length ? fileInfosResult : emptyFileResults);
+            setFileInfos(files?.length ? files : emptyFileResults);
             setPostIds(postResults?.order?.length ? postResults.order : emptyPostResults);
+            setFileChannelIds(channels?.length ? channels : emptyChannelIds);
 
             setShowResults(true);
             setLoading(false);
@@ -129,9 +137,9 @@ const SearchScreen = ({teamId}: Props) => {
         setLoading(true);
         setFilter(filterValue);
         const searchParams = getSearchParams(lastSearchedValue, filterValue);
-        const fileResults = await searchFiles(serverUrl, teamId, searchParams);
-        const fileInfosResult = fileResults?.file_infos && Object.values(fileResults?.file_infos);
-        setFileInfos(fileInfosResult?.length ? fileInfosResult : emptyFileResults);
+        const {files, channels} = await searchFiles(serverUrl, teamId, searchParams);
+        setFileInfos(files?.length ? files : emptyFileResults);
+        setFileChannelIds(channels?.length ? channels : emptyChannelIds);
 
         setLoading(false);
     }, [getSearchParams, lastSearchedValue, searchFiles]);
@@ -164,6 +172,7 @@ const SearchScreen = ({teamId}: Props) => {
             postIds={postIds}
             fileInfos={fileInfos}
             scrollPaddingTop={scrollPaddingTop}
+            fileChannelIds={fileChannelIds}
         />
     ), [selectedTab, lastSearchedValue, postIds, fileInfos, scrollPaddingTop]);
 

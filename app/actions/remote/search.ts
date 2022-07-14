@@ -12,22 +12,7 @@ import {logError} from '@utils/log';
 import {fetchPostAuthors, fetchMissingChannelsFromPosts} from './post';
 import {forceLogoutIfNecessary} from './session';
 
-import type {Client} from '@client/rest';
 import type Model from '@nozbe/watermelondb/Model';
-
-type FileSearchRequest = {
-    error?: unknown;
-    file_infos?: {[id: string]: FileInfo};
-    next_file_info_id?: string;
-    order?: string[];
-    prev_file_info_id?: string;
-}
-
-type PostSearchRequest = {
-    error?: unknown;
-    order?: string[];
-    posts?: Post[];
-}
 
 export async function fetchRecentMentions(serverUrl: string): Promise<PostSearchRequest> {
     try {
@@ -130,27 +115,21 @@ export const searchPosts = async (serverUrl: string, params: PostSearchParams): 
     }
 };
 
-export const searchFiles = async (serverUrl: string, teamId: string, params: FileSearchParams): Promise<FileSearchRequest> => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
+export const searchFiles = async (serverUrl: string, teamId: string, params: FileSearchParams): Promise<{files?: FileInfo[]; channels?: string[]; error?: unknown}> => {
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    let data;
-    try {
-        data = await client.searchFiles(teamId, params.terms);
+        const client = NetworkManager.getClient(serverUrl);
+        const result = await client.searchFiles(teamId, params.terms);
+        const files = result?.file_infos ? Object.values(result.file_infos) : [];
+        const allChannelIds = files.reduce<string[]>((acc, f) => {
+            if (f.channel_id) {
+                acc.push(f.channel_id);
+            }
+            return acc;
+        }, []);
+        const channels = [...new Set(allChannelIds)];
+        return {files, channels};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
-
-    return data;
 };
