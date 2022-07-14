@@ -22,7 +22,7 @@ import type {ResizeMode} from 'react-native-fast-image';
 type Props = {
     index: number;
     file: FileInfo;
-    forwardRef: React.RefObject<unknown>;
+    forwardRef?: React.RefObject<unknown>;
     inViewPort?: boolean;
     isSingleImage?: boolean;
     resizeMode?: ResizeMode;

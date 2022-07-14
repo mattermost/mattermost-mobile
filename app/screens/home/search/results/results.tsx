@@ -26,6 +26,7 @@ import {TabTypes, TabType} from '@utils/search';
 import {preventDoubleTap} from '@utils/tap';
 
 import FileOptions from './file_options';
+import {HEADER_HEIGHT} from './file_options/header';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
@@ -52,7 +53,6 @@ type Props = {
     selectedTab: TabType;
 }
 
-const HEADER_HEIGHT = 185;
 const galleryIdentifier = 'search-files-location';
 
 const SearchResults = ({
@@ -138,7 +138,7 @@ const SearchResults = ({
             theme,
             title: '',
         });
-    }, [orderedFilesForGallery, snapPoints, setLastViewedIndex, theme]);
+    }, [orderedFilesForGallery, snapPoints, theme]);
 
     // This effect handles the case where a user has the FileOptions Modal
     // open and the server changes the ability to download files or copy public

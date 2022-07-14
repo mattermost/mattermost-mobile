@@ -6,4 +6,5 @@ export const TabTypes = keyMirror({
     MESSAGES: null,
     FILES: null,
 });
+
 export type TabType = keyof typeof TabTypes;
