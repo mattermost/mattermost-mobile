@@ -110,10 +110,13 @@ exports[`DrawerItem should match snapshot 1`] = `
       </View>
       <View
         style={
-          Object {
-            "backgroundColor": "rgba(63,67,80,0.2)",
-            "height": 1,
-          }
+          Array [
+            Object {
+              "backgroundColor": "rgba(63,67,80,0.2)",
+              "height": 1,
+            },
+            undefined,
+          ]
         }
       />
     </View>
