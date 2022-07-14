@@ -49,9 +49,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderRadius: 4,
         },
         iconWrapper: {
-            marginTop: 7.8,
+            marginTop: 8,
             marginRight: 7,
-            marginBottom: 8.2,
+            marginBottom: 8,
             marginLeft: 6,
         },
         imageVideo: {
