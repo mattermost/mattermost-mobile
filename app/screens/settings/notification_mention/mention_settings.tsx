@@ -143,7 +143,6 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
     return (
         <SettingBlock
             headerText={mentionHeaderText}
-            headerStyles={styles.blockHeader}
         >
             {Boolean(currentUser?.firstName) && (
                 <>

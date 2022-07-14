@@ -16,9 +16,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
         },
-        scrollView: {
-            flex: 1,
-        },
         contentContainerStyle: {
             marginTop: 20,
         },

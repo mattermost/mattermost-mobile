@@ -3,8 +3,7 @@
 
 import React, {useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Platform, ScrollView, View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {Alert, Platform, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
@@ -13,23 +12,17 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
+import SettingContainer from '@screens/settings/setting_container';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
 import SettingItem from './setting_item';
 
-const edges: Edge[] = ['left', 'right'];
 const CLOSE_BUTTON_ID = 'close-settings';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
-        container: {
-            flex: 1,
-        },
-        contentContainerStyle: {
-            marginTop: 20,
-        },
         containerStyle: {
             paddingLeft: 8,
             marginTop: 20,
@@ -51,7 +44,7 @@ type SettingsProps = {
     siteName: string;
 }
 
-//todo: handle display on tablet and Profile the whole feature - https://mattermost.atlassian.net/browse/MM-39711
+//todo: Profile the whole feature - https://mattermost.atlassian.net/browse/MM-39711
 
 const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) => {
     const theme = useTheme();
@@ -127,44 +120,35 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
     });
 
     return (
-        <SafeAreaView
-            edges={edges}
-            style={styles.container}
-            testID='account.screen'
-        >
-            <ScrollView
-                alwaysBounceVertical={false}
-                contentContainerStyle={styles.contentContainerStyle}
-            >
-                <SettingItem
-                    onPress={goToNotifications}
-                    optionName='notification'
-                />
-                <SettingItem
-                    onPress={goToDisplaySettings}
-                    optionName='display'
-                />
-                <SettingItem
-                    onPress={goToAdvancedSettings}
-                    optionName='advanced_settings'
-                />
-                <SettingItem
-                    messageValues={{appTitle: serverName}}
-                    onPress={goToAbout}
-                    optionName='about'
-                />
-                {Platform.OS === 'android' && <View style={styles.helpGroup}/>}
-                {showHelp &&
-                    <SettingItem
-                        containerStyle={styles.containerStyle}
-                        isLink={true}
-                        onPress={openHelp}
-                        optionName='help'
-                        separator={false}
-                    />
-                }
-            </ScrollView>
-        </SafeAreaView>
+        <SettingContainer >
+            <SettingItem
+                onPress={goToNotifications}
+                optionName='notification'
+            />
+            <SettingItem
+                onPress={goToDisplaySettings}
+                optionName='display'
+            />
+            <SettingItem
+                onPress={goToAdvancedSettings}
+                optionName='advanced_settings'
+            />
+            <SettingItem
+                messageValues={{appTitle: serverName}}
+                onPress={goToAbout}
+                optionName='about'
+            />
+            {Platform.OS === 'android' && <View style={styles.helpGroup}/>}
+            {showHelp &&
+            <SettingItem
+                containerStyle={styles.containerStyle}
+                isLink={true}
+                onPress={openHelp}
+                optionName='help'
+                separator={false}
+            />
+            }
+        </SettingContainer>
     );
 };
 

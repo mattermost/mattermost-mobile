@@ -2,31 +2,16 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {View} from 'react-native';
 
 import {savePreference} from '@actions/remote/preference';
 import {Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import SettingContainer from '../setting_container';
 
 import CustomTheme from './custom_theme';
 import {ThemeTiles} from './theme_tiles';
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            flex: 1,
-        },
-        wrapper: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-            flex: 1,
-            paddingTop: 35,
-        },
-    };
-});
 
 type DisplayThemeProps = {
     allowedThemeKeys: string[];
@@ -38,8 +23,6 @@ const DisplayTheme = ({allowedThemeKeys, currentTeamId, currentUserId}: DisplayT
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const [customTheme, setCustomTheme] = useState<Theme|null>();
-
-    const styles = getStyleSheet(theme);
 
     useEffect(() => {
         if (theme.type === 'custom') {
@@ -63,18 +46,16 @@ const DisplayTheme = ({allowedThemeKeys, currentTeamId, currentUserId}: DisplayT
 
     return (
         <SettingContainer>
-            <View style={styles.wrapper}>
-                <ThemeTiles
-                    allowedThemeKeys={allowedThemeKeys}
-                    onThemeChange={updateTheme}
+            <ThemeTiles
+                allowedThemeKeys={allowedThemeKeys}
+                onThemeChange={updateTheme}
+            />
+            {customTheme && (
+                <CustomTheme
+                    customTheme={customTheme}
+                    setTheme={updateTheme}
                 />
-                {customTheme && (
-                    <CustomTheme
-                        customTheme={customTheme}
-                        setTheme={updateTheme}
-                    />
-                )}
-            </View>
+            )}
         </SettingContainer>
     );
 };

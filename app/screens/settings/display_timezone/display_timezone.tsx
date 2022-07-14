@@ -13,7 +13,6 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {goToScreen, popTopScreen, setButtons} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getDeviceTimezone} from '@utils/timezone';
 import {getTimezoneRegion, getUserTimezoneProps} from '@utils/user';
 
@@ -23,19 +22,6 @@ import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
 
 import type UserModel from '@typings/database/models/servers/user';
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            flex: 1,
-        },
-        wrapper: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-            flex: 1,
-            paddingTop: 35,
-        },
-    };
-});
 
 const SAVE_TIMEZONE_BUTTON_ID = 'save_timezone';
 
@@ -49,7 +35,6 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
     const timezone = useMemo(() => getUserTimezoneProps(currentUser), [currentUser.timezone]);
     const [userTimezone, setUserTimezone] = useState(timezone);
     const theme = useTheme();
-    const styles = getStyleSheet(theme);
 
     const updateAutomaticTimezone = (useAutomaticTimezone: boolean) => {
         const automaticTimezone = getDeviceTimezone();
@@ -110,28 +95,26 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
 
     return (
         <SettingContainer>
-            <View style={styles.wrapper}>
-                <SettingSeparator/>
-                <SettingOption
-                    action={updateAutomaticTimezone}
-                    description={getTimezoneRegion(userTimezone.automaticTimezone)}
-                    label={intl.formatMessage({id: 'settings_display.timezone.automatically', defaultMessage: 'Set automatically'})}
-                    selected={userTimezone.useAutomaticTimezone}
-                    type='toggle'
-                />
-                {!userTimezone.useAutomaticTimezone && (
-                    <View>
-                        <SettingSeparator/>
-                        <SettingOption
-                            action={goToSelectTimezone}
-                            description={getTimezoneRegion(userTimezone.manualTimezone)}
-                            label={intl.formatMessage({id: 'settings_display.timezone.manual', defaultMessage: 'Change timezone'})}
-                            type='arrow'
-                        />
-                    </View>
-                )}
-                <SettingSeparator/>
-            </View>
+            <SettingSeparator/>
+            <SettingOption
+                action={updateAutomaticTimezone}
+                description={getTimezoneRegion(userTimezone.automaticTimezone)}
+                label={intl.formatMessage({id: 'settings_display.timezone.automatically', defaultMessage: 'Set automatically'})}
+                selected={userTimezone.useAutomaticTimezone}
+                type='toggle'
+            />
+            {!userTimezone.useAutomaticTimezone && (
+                <View>
+                    <SettingSeparator/>
+                    <SettingOption
+                        action={goToSelectTimezone}
+                        description={getTimezoneRegion(userTimezone.manualTimezone)}
+                        label={intl.formatMessage({id: 'settings_display.timezone.manual', defaultMessage: 'Change timezone'})}
+                        type='arrow'
+                    />
+                </View>
+            )}
+            <SettingSeparator/>
         </SettingContainer>
     );
 };

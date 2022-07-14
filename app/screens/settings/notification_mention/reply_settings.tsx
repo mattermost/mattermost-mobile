@@ -16,7 +16,7 @@ const replyHeaderText = {
 };
 
 const ReplySettings = () => {
-    const [replyNotificationType, setReplyNotificationType] = useState('any'); //todo: initialize with value from db/api
+    const [replyNotificationType, setReplyNotificationType] = useState('any');
     const intl = useIntl();
 
     const setReplyNotifications = (notifType: string) => {

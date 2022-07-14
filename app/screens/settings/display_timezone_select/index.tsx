@@ -113,7 +113,6 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
             <View style={styles.searchBar}>
                 <Search
                     autoCapitalize='none'
-                    containerStyle={styles.searchBarContainer}
                     inputStyle={styles.searchBarInput}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     onChangeText={setValue}

@@ -28,15 +28,6 @@ import type UserModel from '@typings/database/models/servers/user';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        container: {
-            flex: 1,
-        },
-        scrollView: {
-            flex: 1,
-        },
-        scrollViewContent: {
-            paddingVertical: 35,
-        },
         disabled: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75, 'Regular'),

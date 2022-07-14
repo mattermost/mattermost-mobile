@@ -23,9 +23,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             ...typography('Body', 200, 'Regular'),
         },
-        containerStyle: {
-            paddingHorizontal: 20,
-        },
         separatorStyle: {
             width: '91%',
             alignSelf: 'center',
