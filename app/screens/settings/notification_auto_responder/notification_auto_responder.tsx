@@ -67,9 +67,13 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const intl = useIntl();
-    const userNotifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
-    const [autoResponderActive, setAutoResponderActive] = useState((currentUser.status === General.OUT_OF_OFFICE && userNotifyProps.auto_responder_active) ? 'true' : 'false');
-    const [autoResponderMessage, setAutoResponderMessage] = useState(userNotifyProps.auto_responder_message || intl.formatMessage(OOO));
+    const notifyProps = useMemo(() => getNotificationProps(currentUser), []);
+
+    const initialAutoResponderActive = useMemo(() => Boolean(currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active === 'true'), []);
+    const [autoResponderActive, setAutoResponderActive] = useState<boolean>(initialAutoResponderActive);
+
+    const initialOOOMsg = useMemo(() => notifyProps.auto_responder_message || intl.formatMessage(OOO), []);
+    const [autoResponderMessage, setAutoResponderMessage] = useState<string>(initialOOOMsg);
 
     const styles = getStyleSheet(theme);
 
@@ -77,34 +81,27 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
 
     const saveButton = useMemo(() => getSaveButton(SAVE_OOO_BUTTON_ID, intl, theme), [theme.sidebarHeaderTextColor]);
 
-    const onAutoResponseToggle = useCallback((active: boolean) => {
-        setAutoResponderActive(`${active}`);
-    }, []);
+    const onAutoResponseToggle = (active: boolean) => {
+        setAutoResponderActive(active);
+    };
 
-    const onAutoResponseChangeText = useCallback((message: string) => {
+    const onAutoResponseChangeText = (message: string) => {
         setAutoResponderMessage(message);
-    }, []);
+    };
 
     const saveAutoResponder = useCallback(() => {
-        const notifyProps = {
-            ...userNotifyProps,
-            auto_responder_active: autoResponderActive,
-            auto_responder_message: autoResponderMessage,
-        } as unknown as UserNotifyProps;
-
         updateMe(serverUrl, {
-            notify_props: notifyProps,
+            notify_props: {
+                ...notifyProps,
+                auto_responder_active: `${autoResponderActive}`,
+                auto_responder_message: autoResponderMessage,
+            },
         });
         close();
-    }, [serverUrl, autoResponderActive, autoResponderMessage, userNotifyProps]);
+    }, [serverUrl, autoResponderActive, autoResponderMessage, notifyProps]);
 
     useEffect(() => {
-        const updatedMsg = userNotifyProps?.auto_responder_message !== autoResponderMessage;
-        const enabling = currentUser.status !== General.OUT_OF_OFFICE && autoResponderActive === 'true';
-        const disabling = currentUser.status === General.OUT_OF_OFFICE && autoResponderActive === 'false';
-
-        const enabled = enabling || disabling || updatedMsg;
-
+        const enabled = initialAutoResponderActive !== autoResponderActive || initialOOOMsg !== autoResponderMessage;
         const buttons = {
             rightButtons: [{
                 ...saveButton,
@@ -112,7 +109,7 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
             }],
         };
         setButtons(componentId, buttons);
-    }, [autoResponderActive, autoResponderMessage, componentId, currentUser.status, userNotifyProps.auto_responder_message]);
+    }, [autoResponderActive, autoResponderMessage, componentId, currentUser.status, notifyProps.auto_responder_message]);
 
     useNavButtonPressed(SAVE_OOO_BUTTON_ID, componentId, saveAutoResponder, [saveAutoResponder]);
 
@@ -124,10 +121,10 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
                 label={intl.formatMessage({id: 'notification_settings.auto_responder.to.enable', defaultMessage: 'Enable automatic replies'})}
                 action={onAutoResponseToggle}
                 type='toggle'
-                selected={autoResponderActive === 'true'}
+                selected={autoResponderActive}
             />
             <SettingSeparator/>
-            {autoResponderActive === 'true' && (
+            {autoResponderActive && (
                 <FloatingTextInput
                     allowFontScaling={true}
                     autoCapitalize='none'
