@@ -11,6 +11,7 @@ import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {useTheme} from '@context/theme';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -72,7 +73,7 @@ export default function ChannelDropdown({
             items += 1;
         }
 
-        const itemsSnap = ((items + 1) * ITEM_HEIGHT) + (insets.bottom * 3) + TITLE_HEIGHT;
+        const itemsSnap = bottomSheetSnapPoint(items, ITEM_HEIGHT, insets.bottom) + TITLE_HEIGHT;
         bottomSheet({
             title: intl.formatMessage({id: 'browse_channels.dropdownTitle', defaultMessage: 'Show'}),
             renderContent,

@@ -30,6 +30,7 @@ class EditPostScreen {
     };
 
     open = async () => {
+        // # Open edit post screen
         await PostOptionsScreen.editPostOption.tap();
 
         return this.toBeVisible();

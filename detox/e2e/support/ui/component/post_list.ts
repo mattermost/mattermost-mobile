@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Post from './post';
+import PostChannelInfo from './post_channel_info';
 
 class PostList {
     testID: any;
@@ -18,6 +19,7 @@ class PostList {
             threadOverviewUnsaveButton: `${screenPrefix}post_list.thread_overview.unsave.button`,
             threadOverviewPostOptionsButton: `${screenPrefix}post_list.thread_overview.post_options.button`,
             postListPostItem: `${screenPrefix}post_list.post`,
+            postListPostItemChannelInfo: `${screenPrefix}post_list.post_channel_info`,
         };
     }
 
@@ -101,11 +103,17 @@ class PostList {
             postItemThematicBreak,
             postItemUnreadDotBadge,
         } = Post.getPost(this.testID.postListPostItem, postId, postMessage, postProfileOptions);
+        const {
+            postItemChannelInfoChannelDisplayName,
+            postItemChannelInfoTeamDisplayName,
+        } = PostChannelInfo.getPostChannelInfo(this.testID.postListPostItemChannelInfo, postId);
 
         return {
             postListPostItem: postItem,
             postListPostItemBlockQuote: postItemBlockQuote,
             postListPostItemBreak: postItemBreak,
+            postListPostItemChannelInfoChannelDisplayName: postItemChannelInfoChannelDisplayName,
+            postListPostItemChannelInfoTeamDisplayName: postItemChannelInfoTeamDisplayName,
             postListPostItemCheckbox: postItemCheckbox,
             postListPostItemCodeBlock: postItemCodeBlock,
             postListPostItemCodeSpan: postItemCodeSpan,
