@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, DeviceEventEmitter, Platform, StyleSheet, useWindowDimensions} from 'react-native';
 import Animated, {Easing, useAnimatedRef, useAnimatedStyle, useSharedValue, withTiming, WithTimingConfig} from 'react-native-reanimated';
@@ -57,6 +57,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
     const {formatMessage} = useIntl();
     const serverUrl = useServerUrl();
     const videoRef = useAnimatedRef<Video>();
+    const showControls = useRef(!(initialIndex === index));
     const [paused, setPaused] = useState(!(initialIndex === index));
     const [videoReady, setVideoReady] = useState(false);
     const [videoUri, setVideoUri] = useState(item.uri);
@@ -75,6 +76,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
     const onEnd = useCallback(() => {
         setFullscreen(false);
         onShouldHideControls(true);
+        showControls.current = true;
         setPaused(true);
         videoRef.current?.dismissFullscreenPlayer();
     }, [onShouldHideControls]);
@@ -96,12 +98,14 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
 
     const onFullscreenPlayerWillDismiss = useCallback(() => {
         setFullscreen(false);
-        onShouldHideControls(!paused);
+        showControls.current = !paused;
+        onShouldHideControls(showControls.current);
     }, [paused, onShouldHideControls]);
 
     const onFullscreenPlayerWillPresent = useCallback(() => {
         setFullscreen(true);
         onShouldHideControls(true);
+        showControls.current = true;
     }, [onShouldHideControls]);
 
     const onPlay = useCallback(() => {
@@ -111,6 +115,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
     const onPlaybackRateChange = useCallback(({playbackRate}: OnPlaybackRateData) => {
         if (isPageActive.value) {
             const isPlaying = Boolean(playbackRate);
+            showControls.current = isPlaying;
             onShouldHideControls(isPlaying);
             setPaused(!isPlaying);
         }
@@ -119,6 +124,11 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
     const onReadyForDisplay = useCallback(() => {
         setVideoReady(true);
     }, []);
+
+    const handleTouchStart = useCallback(() => {
+        showControls.current = !showControls.current;
+        onShouldHideControls(showControls.current);
+    }, [onShouldHideControls]);
 
     const setGalleryAction = useCallback((action: GalleryAction) => {
         DeviceEventEmitter.emit(Events.GALLERY_ACTIONS, action);
@@ -157,7 +167,10 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
     }, [isPageActive.value, paused]);
 
     return (
-        <>
+        <Animated.View
+            onTouchStart={handleTouchStart}
+            style={styles.video}
+        >
             <AnimatedVideo
                 ref={videoRef}
                 source={source}
@@ -191,7 +204,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
                 item={item}
             />
             }
-        </>
+        </Animated.View>
     );
 };
 
