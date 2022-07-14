@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Platform, View} from 'react-native';
+import {Platform, StyleProp, View, ViewStyle} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -25,11 +25,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-const SettingSeparator = () => {
+type SettingSeparatorProps = {
+    lineStyles?: StyleProp<ViewStyle>;
+}
+
+const SettingSeparator = ({lineStyles}: SettingSeparatorProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    return (<View style={styles.separator}/>);
+    return (<View style={[styles.separator, lineStyles]}/>);
 };
 
 export default SettingSeparator;
