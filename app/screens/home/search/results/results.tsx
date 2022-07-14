@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {StyleSheet, FlatList, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, StyleProp, View, ViewStyle} from 'react-native';
+import {StyleSheet, FlatList, ListRenderItemInfo, StyleProp, View, ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -26,7 +26,6 @@ import {TabTypes, TabType} from '@utils/search';
 import {preventDoubleTap} from '@utils/tap';
 
 import FileOptions from './file_options';
-import Loader from './loader';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
@@ -46,32 +45,25 @@ type Props = {
     fileChannels: ChannelModel[];
     fileInfos: FileInfo[];
     isTimezoneEnabled: boolean;
-    loading: boolean;
-    onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
     posts: PostModel[];
     publicLinkEnabled: boolean;
     scrollPaddingTop: number;
-    scrollRef: React.RefObject<FlatList>;
     searchValue: string;
     selectedTab: TabType;
 }
 
-const emptyList: FileInfo[] | Array<string | PostModel> = [];
 const HEADER_HEIGHT = 185;
 const galleryIdentifier = 'search-files-location';
 
-const Results = ({
+const SearchResults = ({
     canDownloadFiles,
     currentTimezone,
     fileChannels,
     fileInfos,
     isTimezoneEnabled,
-    loading,
-    onScroll,
     posts,
     publicLinkEnabled,
     scrollPaddingTop,
-    scrollRef,
     searchValue,
     selectedTab,
 }: Props) => {
@@ -236,21 +228,16 @@ const Results = ({
     ]);
 
     const noResults = useMemo(() => {
-        if (loading) {
-            return (<Loader/>);
-        }
         return (
             <NoResultsWithTerm
                 term={searchValue}
                 type={selectedTab}
             />
         );
-    }, [searchValue, loading, selectedTab]);
+    }, [searchValue, selectedTab]);
 
     let data;
-    if (loading || !searchValue) {
-        data = emptyList;
-    } else if (selectedTab === TabTypes.MESSAGES) {
+    if (selectedTab === TabTypes.MESSAGES) {
         data = orderedPosts;
     } else {
         data = orderedFilesForGallery;
@@ -268,13 +255,11 @@ const Results = ({
             renderItem={renderItem}
             contentContainerStyle={paddingTop}
             nestedScrollEnabled={true}
-            onScroll={onScroll}
             removeClippedSubviews={true}
-            ref={scrollRef}
             style={containerStyle}
             testID='search_results.post_list.flat_list'
         />
     );
 };
 
-export default Results;
+export default SearchResults;

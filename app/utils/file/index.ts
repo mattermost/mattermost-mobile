@@ -74,7 +74,7 @@ const SUPPORTED_VIDEO_FORMAT = Platform.select({
 const types: Record<string, string> = {};
 const extensions: Record<string, readonly string[]> = {};
 
-export function filterFileExtensions(filter: FileFilter): string {
+export function filterFileExtensions(filter?: FileFilter): string {
     let searchTerms: string[] = [];
     switch (filter) {
         case FileFilters.ALL:
