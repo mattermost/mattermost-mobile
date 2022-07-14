@@ -1,5 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import Calls from '@constants/calls';
+
 const WebsocketEvents = {
     POSTED: 'posted',
     POST_EDITED: 'post_edited',
@@ -49,5 +52,19 @@ const WebsocketEvents = {
     THREAD_FOLLOW_CHANGED: 'thread_follow_changed',
     THREAD_READ_CHANGED: 'thread_read_changed',
     APPS_FRAMEWORK_REFRESH_BINDINGS: 'custom_com.mattermost.apps_refresh_bindings',
+    CALLS_CHANNEL_ENABLED: `custom_${Calls.PluginId}_channel_enable_voice`,
+    CALLS_CHANNEL_DISABLED: `custom_${Calls.PluginId}_channel_disable_voice`,
+    CALLS_USER_CONNECTED: `custom_${Calls.PluginId}_user_connected`,
+    CALLS_USER_DISCONNECTED: `custom_${Calls.PluginId}_user_disconnected`,
+    CALLS_USER_MUTED: `custom_${Calls.PluginId}_user_muted`,
+    CALLS_USER_UNMUTED: `custom_${Calls.PluginId}_user_unmuted`,
+    CALLS_USER_VOICE_ON: `custom_${Calls.PluginId}_user_voice_on`,
+    CALLS_USER_VOICE_OFF: `custom_${Calls.PluginId}_user_voice_off`,
+    CALLS_CALL_START: `custom_${Calls.PluginId}_call_start`,
+    CALLS_CALL_END: `custom_${Calls.PluginId}_call_end`,
+    CALLS_SCREEN_ON: `custom_${Calls.PluginId}_user_screen_on`,
+    CALLS_SCREEN_OFF: `custom_${Calls.PluginId}_user_screen_off`,
+    CALLS_USER_RAISE_HAND: `custom_${Calls.PluginId}_user_raise_hand`,
+    CALLS_USER_UNRAISE_HAND: `custom_${Calls.PluginId}_user_unraise_hand`,
 };
 export default WebsocketEvents;
