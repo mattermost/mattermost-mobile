@@ -16,15 +16,17 @@ import RoundedHeaderContext from '@components/rounded_header_context';
 import {useServerUrl} from '@context/server';
 import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
+import {TabTypes, TabType} from '@utils/search';
 
 import Modifiers from './modifiers';
 import Results from './results';
-import Header, {SelectTab} from './results/header';
+import Header from './results/header';
 
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
 
 const emptyFileResults: FileInfo[] = [];
 const emptyPostResults: string[] = [];
+const emptyChannelIds: string[] = [];
 
 type Props = {
     teamId: string;
@@ -46,7 +48,7 @@ const SearchScreen = ({teamId}: Props) => {
     const {searchTerm} = nav.getState().routes[stateIndex].params;
 
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
-    const [selectedTab, setSelectedTab] = useState<SelectTab>('messages');
+    const [selectedTab, setSelectedTab] = useState<TabType>(TabTypes.MESSAGES);
     const [filter, setFilter] = useState<FileFilter>(FileFilters.ALL);
     const [showResults, setShowResults] = useState(false);
 
@@ -55,6 +57,7 @@ const SearchScreen = ({teamId}: Props) => {
 
     const [postIds, setPostIds] = useState<string[]>(emptyPostResults);
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
+    const [fileChannelIds, setFileChannelIds] = useState<string[]>([]);
 
     const getSearchParams = useCallback((filterValue?: FileFilter) => {
         const terms = filterValue ? lastSearchedValue : searchValue;
@@ -72,21 +75,24 @@ const SearchScreen = ({teamId}: Props) => {
         // - add recent if doesn't exist
         // - updated recent createdAt if exists??
 
+        const searchParams = getSearchParams();
+        if (!searchParams.terms) {
+            handleClearSearch();
+            return;
+        }
         setLoading(true);
+        setShowResults(true);
         setFilter(FileFilters.ALL);
         setLastSearchedValue(searchValue);
-        const searchParams = getSearchParams();
-        const [postResults, fileResults] = await Promise.all([
+        const [postResults, {files, channels}] = await Promise.all([
             searchPosts(serverUrl, searchParams),
             searchFiles(serverUrl, teamId, searchParams),
         ]);
 
-        const fileInfosResult = fileResults?.file_infos && Object.values(fileResults?.file_infos);
-        setFileInfos(fileInfosResult?.length ? fileInfosResult : emptyFileResults);
+        setFileInfos(files?.length ? files : emptyFileResults);
         setPostIds(postResults?.order?.length ? postResults.order : emptyPostResults);
-
+        setFileChannelIds(channels?.length ? channels : emptyChannelIds);
         setLoading(false);
-        setShowResults(true);
     })), [searchValue]);
 
     const onSnap = (offset: number) => {
@@ -97,9 +103,9 @@ const SearchScreen = ({teamId}: Props) => {
         setLoading(true);
         setFilter(filterValue);
         const searchParams = getSearchParams(filterValue);
-        const fileResults = await searchFiles(serverUrl, teamId, searchParams);
-        const fileInfosResult = fileResults?.file_infos && Object.values(fileResults?.file_infos);
-        setFileInfos(fileInfosResult?.length ? fileInfosResult : emptyFileResults);
+        const {files, channels} = await searchFiles(serverUrl, teamId, searchParams);
+        setFileInfos(files?.length ? files : emptyFileResults);
+        setFileChannelIds(channels?.length ? channels : emptyChannelIds);
 
         setLoading(false);
     }, [lastSearchedValue]);
@@ -191,6 +197,7 @@ const SearchScreen = ({teamId}: Props) => {
                             selectedTab={selectedTab}
                             searchValue={lastSearchedValue}
                             postIds={postIds}
+                            fileChannelIds={fileChannelIds}
                             fileInfos={fileInfos}
                             scrollRef={scrollRef}
                             onScroll={onScroll}

@@ -7,6 +7,7 @@ import {View} from 'react-native';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
+import {TabTypes, TabType} from '@utils/search';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -15,7 +16,7 @@ import SearchIllustration from './search_illustration';
 
 type Props = {
     term: string;
-    type?: 'default' | 'messages' | 'files';
+    type?: TabType;
 };
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -45,18 +46,13 @@ const NoResultsWithTerm = ({term, type}: Props) => {
     const [defaultMessage, setDefaultMessage] = useState('No results for “{term}”');
 
     useEffect(() => {
-        if (type === 'files') {
-            setTitleId(t('mobile.no_results_with_term.files'));
-            setDefaultMessage('No files matching “{term}”');
-        } else if (type === 'messages') {
-            setTitleId(t('mobile.no_results_with_term.messages'));
-            setDefaultMessage('No matches found for “{term}”');
-        }
+        setTitleId(type === TabTypes.FILES ? t('mobile.no_results_with_term.files') : t('mobile.no_results_with_term.messages'));
+        setDefaultMessage(type === TabTypes.FILES ? 'No files matching “{term}”' : 'No matches found for “{term}”');
     }, [type]);
 
     return (
         <View style={style.container}>
-            {type === 'files' ? <SearchFilesIllustration/> : <SearchIllustration/>}
+            {type === TabTypes.FILES ? <SearchFilesIllustration/> : <SearchIllustration/>}
             <FormattedText
                 id={titleId}
                 defaultMessage={defaultMessage}

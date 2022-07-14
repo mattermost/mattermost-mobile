@@ -1,16 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {DeviceEventEmitter, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
 import Animated, {useDerivedValue} from 'react-native-reanimated';
 
-import {buildFilePreviewUrl, buildFileUrl} from '@actions/remote/file';
 import {Events} from '@constants';
 import {GalleryInit} from '@context/gallery';
-import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
-import {isGif, isImage, isVideo} from '@utils/file';
+import {useImageAttachments} from '@hooks/files';
+import {isImage, isVideo} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {getViewPortWidth} from '@utils/images';
 import {preventDoubleTap} from '@utils/tap';
@@ -50,32 +49,9 @@ const styles = StyleSheet.create({
 const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, location, postId, publicLinkEnabled, theme}: FilesProps) => {
     const galleryIdentifier = `${postId}-fileAttachments-${location}`;
     const [inViewPort, setInViewPort] = useState(false);
-    const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
 
-    const {images: imageAttachments, nonImages: nonImageAttachments} = useMemo(() => {
-        return filesInfo.reduce(({images, nonImages}: {images: FileInfo[]; nonImages: FileInfo[]}, file) => {
-            const imageFile = isImage(file);
-            const videoFile = isVideo(file);
-            if (imageFile || (videoFile && publicLinkEnabled)) {
-                let uri;
-                if (file.localPath) {
-                    uri = file.localPath;
-                } else {
-                    uri = (isGif(file) || videoFile) ? buildFileUrl(serverUrl, file.id!) : buildFilePreviewUrl(serverUrl, file.id!);
-                }
-                images.push({...file, uri});
-            } else {
-                if (videoFile) {
-                    // fallback if public links are not enabled
-                    file.uri = buildFileUrl(serverUrl, file.id!);
-                }
-
-                nonImages.push(file);
-            }
-            return {images, nonImages};
-        }, {images: [], nonImages: []});
-    }, [filesInfo, publicLinkEnabled, serverUrl]);
+    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(filesInfo, publicLinkEnabled);
 
     const filesForGallery = useDerivedValue(() => imageAttachments.concat(nonImageAttachments),
         [imageAttachments, nonImageAttachments]);

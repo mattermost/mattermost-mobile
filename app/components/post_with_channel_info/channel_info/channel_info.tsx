@@ -9,7 +9,6 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type PostModel from '@typings/database/models/servers/post';
 import type TeamModel from '@typings/database/models/servers/team';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -37,7 +36,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 type Props = {
     channelName: ChannelModel['displayName'];
-    post: PostModel;
     teamName: TeamModel['displayName'];
     testID?: string;
 }

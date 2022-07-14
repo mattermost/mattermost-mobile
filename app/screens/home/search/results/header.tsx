@@ -13,19 +13,18 @@ import {useIsTablet} from '@hooks/device';
 import {SEPARATOR_MARGIN, SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
 import {FileFilter, FileFilters} from '@utils/file';
+import {TabTypes, TabType} from '@utils/search';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, NUMBER_FILTER_ITEMS} from './filter';
 import SelectButton from './header_button';
 
-export type SelectTab = 'files' | 'messages'
-
-export const HEADER_HEIGHT = 64;
+const HEADER_HEIGHT = 64;
 
 type Props = {
-    onTabSelect: (tab: SelectTab) => void;
+    onTabSelect: (tab: TabType) => void;
     onFilterChanged: (filter: FileFilter) => void;
-    selectedTab: SelectTab;
+    selectedTab: TabType;
     selectedFilter: FileFilter;
     numberMessages: number;
     numberFiles: number;
@@ -73,15 +72,15 @@ const Header = ({
     const messagesText = intl.formatMessage({id: 'screen.search.header.messages', defaultMessage: 'Messages'});
     const filesText = intl.formatMessage({id: 'screen.search.header.files', defaultMessage: 'Files'});
 
-    const showFilterIcon = selectedTab === 'files';
+    const showFilterIcon = selectedTab === TabTypes.FILES;
     const hasFilters = selectedFilter !== FileFilters.ALL;
 
     const handleMessagesPress = useCallback(() => {
-        onTabSelect('messages');
+        onTabSelect(TabTypes.MESSAGES);
     }, [onTabSelect]);
 
     const handleFilesPress = useCallback(() => {
-        onTabSelect('files');
+        onTabSelect(TabTypes.FILES);
     }, [onTabSelect]);
 
     const snapPoints = useMemo(() => {
@@ -116,12 +115,12 @@ const Header = ({
         <>
             <View style={styles.container}>
                 <SelectButton
-                    selected={selectedTab === 'messages'}
+                    selected={selectedTab === TabTypes.MESSAGES}
                     onPress={handleMessagesPress}
                     text={`${messagesText} (${numberMessages})`}
                 />
                 <SelectButton
-                    selected={selectedTab === 'files'}
+                    selected={selectedTab === TabTypes.FILES}
                     onPress={handleFilesPress}
                     text={`${filesText} (${numberFiles})`}
                 />
