@@ -145,7 +145,7 @@ const Notifications = ({
                         <Text
                             style={styles.rightLabel}
                         >
-                            {currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active ? 'On' : 'Off'}
+                            {currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active === 'true' ? 'On' : 'Off'}
                         </Text>
                     )}
                 />
