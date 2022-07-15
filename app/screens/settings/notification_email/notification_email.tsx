@@ -131,7 +131,7 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
     useNavButtonPressed(SAVE_EMAIL_BUTTON_ID, componentId, saveEmail, [saveEmail]);
 
     return (
-        <SettingContainer >
+        <SettingContainer>
             <SettingBlock
                 disableFooter={!sendEmailNotifications}
                 footerText={emailFooterText}
