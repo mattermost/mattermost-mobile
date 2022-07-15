@@ -5,9 +5,9 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import CallScreen from '@app/products/calls/screens/call_screen/call_screen';
-import {observeCurrentCall} from '@app/products/calls/state';
-import {CallParticipant} from '@app/products/calls/types/calls';
+import CallScreen from '@calls/screens/call_screen/call_screen';
+import {observeCurrentCall} from '@calls/state';
+import {CallParticipant} from '@calls/types/calls';
 import DatabaseManager from '@database/manager';
 import {observeTeammateNameDisplay, observeUsersById} from '@queries/servers/user';
 

@@ -6,8 +6,8 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, View} from 'react-native';
 
-import {joinCall} from '@app/products/calls/actions';
-import leaveAndJoinWithAlert from '@app/products/calls/components/leave_and_join_alert';
+import {joinCall} from '@calls/actions';
+import leaveAndJoinWithAlert from '@calls/components/leave_and_join_alert';
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
 import FormattedTime from '@components/formatted_time';

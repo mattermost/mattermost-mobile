@@ -10,7 +10,7 @@ import {
     setUserMuted,
     userJoinedCall,
     userLeftCall,
-} from '@app/products/calls/state';
+} from '@calls/state';
 import {WebsocketEvents} from '@constants';
 import DatabaseManager from '@database/manager';
 

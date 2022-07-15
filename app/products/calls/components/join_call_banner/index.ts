@@ -6,8 +6,8 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import JoinCallBanner from '@app/products/calls/components/join_call_banner/join_call_banner';
-import {observeCallsState, observeChannelsWithCalls, observeCurrentCall} from '@app/products/calls/state';
+import JoinCallBanner from '@calls/components/join_call_banner/join_call_banner';
+import {observeCallsState, observeChannelsWithCalls, observeCurrentCall} from '@calls/state';
 import {observeChannel} from '@queries/servers/channel';
 import {observeUsersById} from '@queries/servers/user';
 import {WithDatabaseArgs} from '@typings/database/database';

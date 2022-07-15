@@ -7,7 +7,7 @@ import React from 'react';
 import {of as of$} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {observeChannelsWithCalls} from '@app/products/calls/state';
+import {observeChannelsWithCalls} from '@calls/state';
 import {General} from '@constants';
 import {withServerUrl} from '@context/server';
 import {observeMyChannel} from '@queries/servers/channel';

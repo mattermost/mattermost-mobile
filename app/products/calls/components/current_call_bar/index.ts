@@ -5,7 +5,7 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeCurrentCall} from '@app/products/calls/state';
+import {observeCurrentCall} from '@calls/state';
 import DatabaseManager from '@database/manager';
 import {observeChannel} from '@queries/servers/channel';
 import {observeTeammateNameDisplay, observeUsersById} from '@queries/servers/user';

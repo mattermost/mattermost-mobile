@@ -20,10 +20,10 @@ import {
     setChannelEnabled,
     setScreenShareURL,
     setSpeakerPhone, setConfig, setPluginEnabled,
-} from '@app/products/calls/state/actions';
-import {useCallsConfig} from '@app/products/calls/state/calls_config';
-import {setChannelsWithCalls, useChannelsWithCalls} from '@app/products/calls/state/channels_with_calls';
-import {setCurrentCall, useCurrentCall} from '@app/products/calls/state/current_call';
+} from '@calls/state/actions';
+import {useCallsConfig} from '@calls/state/calls_config';
+import {setChannelsWithCalls, useChannelsWithCalls} from '@calls/state/channels_with_calls';
+import {setCurrentCall, useCurrentCall} from '@calls/state/current_call';
 
 import {CallsState, CurrentCall, DefaultCallsConfig, DefaultCallsState} from '../types/calls';
 

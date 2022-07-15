@@ -8,8 +8,8 @@ import {Keyboard, Platform, StyleProp, View, ViewStyle, TouchableHighlight} from
 import {removePost} from '@actions/local/post';
 import {showPermalink} from '@actions/remote/permalink';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
-import CallsCustomMessage from '@app/products/calls/components/calls_custom_message';
-import {isCallsCustomMessage} from '@app/products/calls/utils';
+import CallsCustomMessage from '@calls/components/calls_custom_message';
+import {isCallsCustomMessage} from '@calls/utils';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import {POST_TIME_TO_FAIL} from '@constants/post';

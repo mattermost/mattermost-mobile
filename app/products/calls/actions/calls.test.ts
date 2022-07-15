@@ -6,13 +6,13 @@ import assert from 'assert';
 import {act, renderHook} from '@testing-library/react-hooks';
 import InCallManager from 'react-native-incall-manager';
 
-import * as CallsActions from '@app/products/calls/actions';
-import {connection} from '@app/products/calls/actions/calls';
-import * as Permissions from '@app/products/calls/actions/permissions';
-import * as State from '@app/products/calls/state';
-import {setCallsConfig, useCallsConfig} from '@app/products/calls/state/calls_config';
-import {setChannelsWithCalls, useChannelsWithCalls} from '@app/products/calls/state/channels_with_calls';
-import {useCurrentCall, setCurrentCall} from '@app/products/calls/state/current_call';
+import * as CallsActions from '@calls/actions';
+import {connection} from '@calls/actions/calls';
+import * as Permissions from '@calls/actions/permissions';
+import * as State from '@calls/state';
+import {setCallsConfig, useCallsConfig} from '@calls/state/calls_config';
+import {setChannelsWithCalls, useChannelsWithCalls} from '@calls/state/channels_with_calls';
+import {useCurrentCall, setCurrentCall} from '@calls/state/current_call';
 import {
     Call,
     CallsState,
@@ -20,7 +20,7 @@ import {
     CurrentCall,
     DefaultCallsConfig,
     DefaultCallsState,
-} from '@app/products/calls/types/calls';
+} from '@calls/types/calls';
 import NetworkManager from '@managers/network_manager';
 import {getIntlShape} from '@test/intl-test-helper';
 
@@ -59,7 +59,7 @@ const mockClient = {
     disableChannelCalls: jest.fn(),
 };
 
-jest.mock('@app/products/calls/connection/connection', () => ({
+jest.mock('@calls/connection/connection', () => ({
     newConnection: jest.fn(() => Promise.resolve({
         disconnect: jest.fn(),
         mute: jest.fn(),
@@ -89,7 +89,7 @@ const addFakeCall = (serverUrl: string, channelId: string) => {
 };
 
 describe('Actions.Calls', () => {
-    const {newConnection} = require('@app/products/calls/connection/connection');
+    const {newConnection} = require('@calls/connection/connection');
     InCallManager.setSpeakerphoneOn = jest.fn();
     // eslint-disable-next-line
     // @ts-ignore

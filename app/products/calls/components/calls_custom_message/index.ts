@@ -6,8 +6,8 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {CallsCustomMessage} from '@app/products/calls/components/calls_custom_message/calls_custom_message';
-import {observeCurrentCall} from '@app/products/calls/state';
+import {CallsCustomMessage} from '@calls/components/calls_custom_message/calls_custom_message';
+import {observeCurrentCall} from '@calls/state';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceAsBool} from '@helpers/api/preference';

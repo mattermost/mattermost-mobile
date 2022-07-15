@@ -5,9 +5,9 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {View, Text, TouchableOpacity, Pressable, Platform, DeviceEventEmitter} from 'react-native';
 import {Options} from 'react-native-navigation';
 
-import {muteMyself, unmuteMyself} from '@app/products/calls/actions';
-import CallAvatar from '@app/products/calls/components/call_avatar';
-import {CurrentCall, VoiceEventData} from '@app/products/calls/types/calls';
+import {muteMyself, unmuteMyself} from '@calls/actions';
+import CallAvatar from '@calls/components/call_avatar';
+import {CurrentCall, VoiceEventData} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
 import {Events, WebsocketEvents} from '@constants';
 import {CURRENT_CALL_BAR_HEIGHT} from '@constants/view';

@@ -6,7 +6,7 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeCallsConfig, observeChannelsWithCalls, observeCurrentCall} from '@app/products/calls/state';
+import {observeCallsConfig, observeChannelsWithCalls, observeCurrentCall} from '@calls/state';
 import {withServerUrl} from '@context/server';
 import {observeCurrentChannelId} from '@queries/servers/system';
 

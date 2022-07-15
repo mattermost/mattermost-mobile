@@ -25,13 +25,13 @@ import {
     setSpeakerphoneOn,
     unmuteMyself,
     unraiseHand,
-} from '@app/products/calls/actions';
-import CallAvatar from '@app/products/calls/components/call_avatar';
-import CallDuration from '@app/products/calls/components/call_duration';
-import RaisedHandIcon from '@app/products/calls/icons/raised_hand_icon';
-import UnraisedHandIcon from '@app/products/calls/icons/unraised_hand_icon';
-import {CallParticipant, CurrentCall, VoiceEventData} from '@app/products/calls/types/calls';
-import {sortParticipants} from '@app/products/calls/utils';
+} from '@calls/actions';
+import CallAvatar from '@calls/components/call_avatar';
+import CallDuration from '@calls/components/call_duration';
+import RaisedHandIcon from '@calls/icons/raised_hand_icon';
+import UnraisedHandIcon from '@calls/icons/unraised_hand_icon';
+import {CallParticipant, CurrentCall, VoiceEventData} from '@calls/types/calls';
+import {sortParticipants} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {WebsocketEvents} from '@constants';

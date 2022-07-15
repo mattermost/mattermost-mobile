@@ -6,9 +6,9 @@ import {BackHandler, DeviceEventEmitter, NativeEventSubscription, StyleSheet, Vi
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import CurrentCallBar from '@app/products/calls/components/current_call_bar';
-import FloatingCallContainer from '@app/products/calls/components/floating_call_container';
-import JoinCallBanner from '@app/products/calls/components/join_call_banner';
+import CurrentCallBar from '@calls/components/current_call_bar';
+import FloatingCallContainer from '@calls/components/floating_call_container';
+import JoinCallBanner from '@calls/components/join_call_banner';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import {Events} from '@constants';

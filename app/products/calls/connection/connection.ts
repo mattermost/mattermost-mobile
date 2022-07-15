@@ -11,7 +11,7 @@ import {
     mediaDevices,
 } from 'react-native-webrtc';
 
-import {CallsConnection} from '@app/products/calls/types/calls';
+import {CallsConnection} from '@calls/types/calls';
 import NetworkManager from '@managers/network_manager';
 
 import Peer from './simple-peer';

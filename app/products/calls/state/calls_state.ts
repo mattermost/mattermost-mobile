@@ -4,7 +4,7 @@
 import {useEffect, useState} from 'react';
 import {BehaviorSubject} from 'rxjs';
 
-import {CallsState, DefaultCallsState} from '@app/products/calls/types/calls';
+import {CallsState, DefaultCallsState} from '@calls/types/calls';
 
 const callsStateSubjects = {} as Dictionary<BehaviorSubject<CallsState>>;
 

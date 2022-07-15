@@ -5,7 +5,7 @@ import InCallManager from 'react-native-incall-manager';
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {fetchUsersByIds} from '@actions/remote/user';
-import {hasMicrophonePermission} from '@app/products/calls/actions/permissions';
+import {hasMicrophonePermission} from '@calls/actions/permissions';
 import {
     getCallsConfig,
     myselfJoinedCall,
@@ -16,14 +16,14 @@ import {
     setPluginEnabled,
     setScreenShareURL,
     setSpeakerPhone,
-} from '@app/products/calls/state';
+} from '@calls/state';
 import {
     Call,
     CallParticipant,
     CallsConnection,
     DefaultCallsConfig,
     ServerChannelState,
-} from '@app/products/calls/types/calls';
+} from '@calls/types/calls';
 import Calls from '@constants/calls';
 import NetworkManager from '@managers/network_manager';
 

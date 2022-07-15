@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getCallsConfig, setCallsConfig} from '@app/products/calls/state/calls_config';
-import {getChannelsWithCalls, setChannelsWithCalls} from '@app/products/calls/state/channels_with_calls';
-import {getCurrentCall, setCurrentCall} from '@app/products/calls/state/current_call';
-import {Call, ChannelsWithCalls, ServerConfig} from '@app/products/calls/types/calls';
+import {getCallsConfig, setCallsConfig} from '@calls/state/calls_config';
+import {getChannelsWithCalls, setChannelsWithCalls} from '@calls/state/channels_with_calls';
+import {getCurrentCall, setCurrentCall} from '@calls/state/current_call';
+import {Call, ChannelsWithCalls, ServerConfig} from '@calls/types/calls';
 
 import {getCallsState, setCallsState} from './calls_state';
 

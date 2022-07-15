@@ -6,7 +6,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {switchToChannelById} from '@actions/remote/channel';
 import {deferredAppEntryActions, entry} from '@actions/remote/entry/common';
 import {fetchStatusByIds} from '@actions/remote/user';
-import {loadConfigAndCalls} from '@app/products/calls/actions/calls';
+import {loadConfigAndCalls} from '@calls/actions/calls';
 import {
     handleCallChannelDisabled,
     handleCallChannelEnabled, handleCallScreenOff, handleCallScreenOn, handleCallStarted,
@@ -14,8 +14,8 @@ import {
     handleCallUserDisconnected,
     handleCallUserMuted, handleCallUserRaiseHand,
     handleCallUserUnmuted, handleCallUserUnraiseHand, handleCallUserVoiceOff, handleCallUserVoiceOn,
-} from '@app/products/calls/connection/websocket_event_handlers';
-import {isSupportedServerCalls} from '@app/products/calls/utils';
+} from '@calls/connection/websocket_event_handlers';
+import {isSupportedServerCalls} from '@calls/utils';
 import {Events, Screens, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';

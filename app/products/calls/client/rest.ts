@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ServerChannelState, ServerConfig} from '@app/products/calls/types/calls';
+import {ServerChannelState, ServerConfig} from '@calls/types/calls';
 
 export interface ClientCallsMix {
     getEnabled: () => Promise<Boolean>;

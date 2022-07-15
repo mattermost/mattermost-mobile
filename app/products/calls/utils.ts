@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {CallParticipant} from '@app/products/calls/types/calls';
+import {CallParticipant} from '@calls/types/calls';
 import {Post} from '@constants';
 import Calls from '@constants/calls';
 import PostModel from '@typings/database/models/servers/post';
