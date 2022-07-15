@@ -6,8 +6,8 @@ import {typography} from '@utils/typography';
 
 import type {IntlShape} from 'react-intl';
 
-export const getSaveButton = (buttonId: string, intl: IntlShape, theme: Theme) => ({
-    color: theme.sidebarHeaderTextColor,
+export const getSaveButton = (buttonId: string, intl: IntlShape, color: string) => ({
+    color,
     enabled: false,
     id: buttonId,
     showAsAction: 'always' as const,

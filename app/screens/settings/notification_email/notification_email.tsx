@@ -70,8 +70,8 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
         sendEmailNotifications && notifyProps?.email === 'true',
         enableEmailBatching,
         parseInt(emailInterval, 10),
-    ).toString(), []);
-    const initialEmailThreads = useMemo(() => Boolean(notifyProps?.email_threads === 'all'), []);
+    ).toString(), []); // dependency array should remain empty
+    const initialEmailThreads = useMemo(() => Boolean(notifyProps?.email_threads === 'all'), []); // dependency array should remain empty
 
     const [notifyInterval, setNotifyInterval] = useState<string>(initialInterval);
     const [emailThreads, setEmailThreads] = useState(initialEmailThreads);
@@ -88,7 +88,7 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
     const handleEmailThreadsChanged = (thread: boolean) => {
         setEmailThreads(thread);
     };
-    const saveButton = useMemo(() => getSaveButton(SAVE_EMAIL_BUTTON_ID, intl, theme), [theme.sidebarHeaderTextColor]);
+    const saveButton = useMemo(() => getSaveButton(SAVE_EMAIL_BUTTON_ID, intl, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
 
     const close = () => popTopScreen(componentId);
 

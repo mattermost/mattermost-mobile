@@ -76,7 +76,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
         close();
     }, [userTimezone, currentUser.timezone, serverUrl]);
 
-    const saveButton = useMemo(() => getSaveButton(SAVE_TIMEZONE_BUTTON_ID, intl, theme), [theme.sidebarHeaderTextColor]);
+    const saveButton = useMemo(() => getSaveButton(SAVE_TIMEZONE_BUTTON_ID, intl, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
 
     useEffect(() => {
         const enabled =

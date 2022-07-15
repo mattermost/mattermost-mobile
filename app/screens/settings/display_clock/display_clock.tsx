@@ -42,7 +42,7 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
     const serverUrl = useServerUrl();
     const intl = useIntl();
 
-    const saveButton = useMemo(() => getSaveButton(SAVE_CLOCK_BUTTON_ID, intl, theme), [theme.sidebarHeaderTextColor]);
+    const saveButton = useMemo(() => getSaveButton(SAVE_CLOCK_BUTTON_ID, intl, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
 
     const onSelectClockPreference = useCallback((clockType: keyof typeof CLOCK_TYPE) => {
         setIsMilitaryTimeFormat(clockType === CLOCK_TYPE.MILITARY);

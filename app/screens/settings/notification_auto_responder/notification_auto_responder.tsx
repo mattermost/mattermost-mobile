@@ -67,26 +67,22 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const intl = useIntl();
-    const notifyProps = useMemo(() => getNotificationProps(currentUser), []);
+    const notifyProps = useMemo(() => getNotificationProps(currentUser), []); // dependency array should remain empty
 
-    const initialAutoResponderActive = useMemo(() => Boolean(currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active === 'true'), []);
+    const initialAutoResponderActive = useMemo(() => Boolean(currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active === 'true'), []); // dependency array should remain empty
     const [autoResponderActive, setAutoResponderActive] = useState<boolean>(initialAutoResponderActive);
 
-    const initialOOOMsg = useMemo(() => notifyProps.auto_responder_message || intl.formatMessage(OOO), []);
+    const initialOOOMsg = useMemo(() => notifyProps.auto_responder_message || intl.formatMessage(OOO), []); // dependency array should remain empty
     const [autoResponderMessage, setAutoResponderMessage] = useState<string>(initialOOOMsg);
 
     const styles = getStyleSheet(theme);
 
     const close = () => popTopScreen(componentId);
 
-    const saveButton = useMemo(() => getSaveButton(SAVE_OOO_BUTTON_ID, intl, theme), [theme.sidebarHeaderTextColor]);
+    const saveButton = useMemo(() => getSaveButton(SAVE_OOO_BUTTON_ID, intl, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
 
     const onAutoResponseToggle = (active: boolean) => {
         setAutoResponderActive(active);
-    };
-
-    const onAutoResponseChangeText = (message: string) => {
-        setAutoResponderMessage(message);
     };
 
     const saveAutoResponder = useCallback(() => {
@@ -134,7 +130,7 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     label={intl.formatMessage(label)}
                     multiline={true}
-                    onChangeText={onAutoResponseChangeText}
+                    onChangeText={setAutoResponderMessage}
                     placeholder={intl.formatMessage(label)}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
                     returnKeyType='done'

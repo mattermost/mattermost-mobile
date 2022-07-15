@@ -45,7 +45,7 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
         setPushThreadPref(pushThread === 'all' ? 'mention' : 'all');
     }, [pushThread]);
 
-    const saveButton = useMemo(() => getSaveButton(SAVE_NOTIF_BUTTON_ID, intl, theme), [theme.sidebarHeaderTextColor]);
+    const saveButton = useMemo(() => getSaveButton(SAVE_NOTIF_BUTTON_ID, intl, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
 
     const close = useCallback(() => popTopScreen(componentId), [componentId]);
 

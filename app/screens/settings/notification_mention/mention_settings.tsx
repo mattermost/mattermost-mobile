@@ -88,7 +88,7 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
     const styles = getStyleSheet(theme);
     const intl = useIntl();
 
-    const saveButton = useMemo(() => getSaveButton(SAVE_MENTION_BUTTON_ID, intl, theme), [theme.sidebarHeaderTextColor]);
+    const saveButton = useMemo(() => getSaveButton(SAVE_MENTION_BUTTON_ID, intl, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
 
     const close = () => popTopScreen(componentId);
 
