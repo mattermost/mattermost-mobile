@@ -10,7 +10,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam, getDefaultChannelForTeam} from '@queries/servers/channel';
-import {prepareCommonSystemValues, getCurrentTeamId} from '@queries/servers/system';
+import {prepareCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, syncTeamTable} from '@queries/servers/team';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
@@ -27,6 +27,22 @@ export type MyTeamsRequest = {
     teams?: Team[];
     memberships?: TeamMembership[];
     error?: unknown;
+}
+
+export async function addCurrentUserToTeam(serverUrl: string, teamId: string, fetchOnly = false) {
+    let database;
+    try {
+        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+    } catch (error) {
+        return {error};
+    }
+
+    const currentUserId = await getCurrentUserId(database);
+
+    if (!currentUserId) {
+        return {error: 'no current user'};
+    }
+    return addUserToTeam(serverUrl, teamId, currentUserId, fetchOnly);
 }
 
 export async function addUserToTeam(serverUrl: string, teamId: string, userId: string, fetchOnly = false) {

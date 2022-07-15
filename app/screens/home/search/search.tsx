@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useIsFocused, useNavigation} from '@react-navigation/native';
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
@@ -58,17 +58,20 @@ const getSearchParams = (terms: string, filterValue?: FileFilter) => {
     };
 };
 
+const searchScreenIndex = 1;
+
 const SearchScreen = ({teamId}: Props) => {
     const nav = useNavigation();
     const isFocused = useIsFocused();
     const intl = useIntl();
     const theme = useTheme();
-    const searchScreenIndex = 1;
+
     const stateIndex = nav.getState().index;
     const serverUrl = useServerUrl();
     const searchTerm = (nav.getState().routes[stateIndex].params as any)?.searchTerm;
 
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
+    const [searchTeamId, setSearchTeamId] = useState<string>(teamId);
     const [selectedTab, setSelectedTab] = useState<TabType>(TabTypes.MESSAGES);
     const [filter, setFilter] = useState<FileFilter>(FileFilters.ALL);
     const [showResults, setShowResults] = useState(false);
@@ -80,17 +83,11 @@ const SearchScreen = ({teamId}: Props) => {
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
     const [fileChannelIds, setFileChannelIds] = useState<string[]>([]);
 
-    const handleSearch = useRef<(term: string) => void>();
-
     const onSnap = (offset: number) => {
         scrollRef.current?.scrollToOffset({offset, animated: true});
     };
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight, hideHeader} = useCollapsibleHeader<FlatList>(true, onSnap);
-
-    const onSubmit = useCallback(() => {
-        handleSearch.current?.(searchValue);
-    }, [searchValue]);
 
     const handleClearSearch = useCallback(() => {
         setSearchValue('');
@@ -101,48 +98,55 @@ const SearchScreen = ({teamId}: Props) => {
     const handleCancelSearch = useCallback(() => {
         handleClearSearch();
         setShowResults(false);
-    }, [handleClearSearch, showResults]);
+    }, [handleClearSearch]);
 
-    useEffect(() => {
-        handleSearch.current = async (term: string) => {
-            const searchParams = getSearchParams(term);
-            if (!searchParams.terms) {
-                handleClearSearch();
-                return;
-            }
-            setLoading(true);
-            setFilter(FileFilters.ALL);
-            setLastSearchedValue(term);
-            addSearchToTeamSearchHistory(serverUrl, teamId, term);
-            const [postResults, {files, channels}] = await Promise.all([
-                searchPosts(serverUrl, searchParams),
-                searchFiles(serverUrl, teamId, searchParams),
-            ]);
+    const handleSearch = useCallback(async (newSearchTeamId: string, term: string) => {
+        const searchParams = getSearchParams(term);
+        if (!searchParams.terms) {
+            handleClearSearch();
+            return;
+        }
+        setLoading(true);
+        setFilter(FileFilters.ALL);
+        setLastSearchedValue(term);
+        addSearchToTeamSearchHistory(serverUrl, newSearchTeamId, term);
+        const [postResults, {files, channels}] = await Promise.all([
+            searchPosts(serverUrl, newSearchTeamId, searchParams),
+            searchFiles(serverUrl, newSearchTeamId, searchParams),
+        ]);
 
-            setFileInfos(files?.length ? files : emptyFileResults);
-            setPostIds(postResults?.order?.length ? postResults.order : emptyPostResults);
-            setFileChannelIds(channels?.length ? channels : emptyChannelIds);
+        setFileInfos(files?.length ? files : emptyFileResults);
+        setPostIds(postResults?.order?.length ? postResults.order : emptyPostResults);
+        setFileChannelIds(channels?.length ? channels : emptyChannelIds);
 
-            setShowResults(true);
-            setLoading(false);
-        };
-    }, [teamId]);
+        setShowResults(true);
+        setLoading(false);
+    }, [handleClearSearch]);
+
+    const onSubmit = useCallback(() => {
+        handleSearch(searchTeamId, searchValue);
+    }, [handleSearch, searchTeamId, searchValue]);
 
     const handleRecentSearch = useCallback((text: string) => {
         setSearchValue(text);
-        handleSearch.current?.(text);
-    }, []);
+        handleSearch(searchTeamId, text);
+    }, [handleSearch, searchTeamId]);
 
     const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
         setLoading(true);
         setFilter(filterValue);
         const searchParams = getSearchParams(lastSearchedValue, filterValue);
-        const {files, channels} = await searchFiles(serverUrl, teamId, searchParams);
+        const {files, channels} = await searchFiles(serverUrl, searchTeamId, searchParams);
         setFileInfos(files?.length ? files : emptyFileResults);
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
 
         setLoading(false);
-    }, [getSearchParams, lastSearchedValue, searchFiles]);
+    }, [lastSearchedValue, searchTeamId]);
+
+    const handleResultsTeamChange = useCallback((newTeamId: string) => {
+        setSearchTeamId(newTeamId);
+        handleSearch(newTeamId, lastSearchedValue);
+    }, [lastSearchedValue]);
 
     const loadingComponent = useMemo(() => (
         <Loading
@@ -157,13 +161,15 @@ const SearchScreen = ({teamId}: Props) => {
             <Modifiers
                 setSearchValue={setSearchValue}
                 searchValue={searchValue}
+                teamId={searchTeamId}
+                setTeamId={setSearchTeamId}
             />
             <RecentSearches
                 setRecentValue={handleRecentSearch}
-                teamId={teamId}
+                teamId={searchTeamId}
             />
         </>
-    ), [searchValue, teamId, handleRecentSearch]);
+    ), [searchValue, searchTeamId, handleRecentSearch]);
 
     const resultsComponent = useMemo(() => (
         <Results
@@ -174,7 +180,7 @@ const SearchScreen = ({teamId}: Props) => {
             scrollPaddingTop={scrollPaddingTop}
             fileChannelIds={fileChannelIds}
         />
-    ), [selectedTab, lastSearchedValue, postIds, fileInfos, scrollPaddingTop]);
+    ), [selectedTab, lastSearchedValue, postIds, fileInfos, scrollPaddingTop, fileChannelIds]);
 
     const renderItem = useCallback(() => {
         if (loading) {
@@ -204,7 +210,6 @@ const SearchScreen = ({teamId}: Props) => {
         return {
             opacity: withTiming(0, {duration: 150}),
             transform: [{translateX: withTiming(stateIndex < searchScreenIndex ? 25 : -25, {duration: 150})}],
-
         };
     }, [isFocused, stateIndex]);
 
@@ -219,6 +224,8 @@ const SearchScreen = ({teamId}: Props) => {
     if (lastSearchedValue && !loading) {
         header = (
             <Header
+                teamId={searchTeamId}
+                setTeamId={handleResultsTeamChange}
                 onTabSelect={setSelectedTab}
                 onFilterChanged={handleFilterChange}
                 numberMessages={postIds.length}

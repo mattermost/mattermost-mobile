@@ -11,13 +11,9 @@ import {typography} from '@utils/typography';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        flex: {
-            flex: 1,
-        },
         button: {
             alignItems: 'center',
             borderRadius: 4,
-            height: 40,
         },
         text: {
             paddingHorizontal: 16,

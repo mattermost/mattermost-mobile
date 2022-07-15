@@ -5,13 +5,13 @@ import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import {useServerUrl} from '@app/context/server';
-import {useGalleryItem} from '@app/hooks/gallery';
-import {openGalleryAtIndex} from '@app/utils/gallery';
 import {GalleryInit} from '@context/gallery';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {useGalleryItem} from '@hooks/gallery';
 import NetworkManager from '@managers/network_manager';
+import {openGalleryAtIndex} from '@utils/gallery';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
