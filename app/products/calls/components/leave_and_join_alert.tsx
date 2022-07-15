@@ -14,15 +14,28 @@ export default function leaveAndJoinWithAlert(
     joinCall: (serverUrl: string, channelId: string, intl: IntlShape) => void,
 ) {
     if (confirmToJoin) {
+        const {formatMessage} = intl;
         Alert.alert(
-            'Are you sure you want to switch to a different call?',
-            `You are already on a channel call in ~${leaveChannelName}. Do you want to leave your current call and join the call in ~${joinChannelName}?`,
+            formatMessage({
+                id: 'mobile.leave_and_join_title',
+                defaultMessage: 'Are you sure you want to switch to a different call?',
+            }),
+            formatMessage({
+                id: 'mobile.leave_and_join_message',
+                defaultMessage: 'You are already on a channel call in ~{leaveChannelName}. Do you want to leave your current call and join the call in ~{joinChannelName}?',
+            }, {leaveChannelName, joinChannelName}),
             [
                 {
-                    text: 'Cancel',
+                    text: formatMessage({
+                        id: 'mobile.post.cancel',
+                        defaultMessage: 'Cancel',
+                    }),
                 },
                 {
-                    text: 'Leave & Join',
+                    text: formatMessage({
+                        id: 'mobile.leave_and_join_confirmation',
+                        defaultMessage: 'Leave & Join',
+                    }),
                     onPress: () => joinCall(serverUrl, channelId, intl),
                     style: 'cancel',
                 },

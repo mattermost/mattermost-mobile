@@ -14,8 +14,9 @@ import UserAvatarsStack from '@components/user_avatars_stack';
 import Screens from '@constants/screens';
 import {JOIN_CALL_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
-import UserModel from '@typings/database/models/servers/user';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     channelId: string;

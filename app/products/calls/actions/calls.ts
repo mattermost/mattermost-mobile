@@ -20,7 +20,8 @@ import {
 import {
     Call,
     CallParticipant,
-    CallsConnection, DefaultCallsConfig,
+    CallsConnection,
+    DefaultCallsConfig,
     ServerChannelState,
 } from '@app/products/calls/types/calls';
 import Calls from '@constants/calls';

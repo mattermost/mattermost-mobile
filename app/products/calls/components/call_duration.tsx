@@ -31,7 +31,7 @@ const CallDuration = ({value, style, updateIntervalInSeconds}: CallDurationProps
         return `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
     };
 
-    const [formattedTime, setFormattedTime] = useState(getCallDuration());
+    const [formattedTime, setFormattedTime] = useState(() => getCallDuration());
     useEffect(() => {
         if (updateIntervalInSeconds) {
             const interval = setInterval(() => setFormattedTime(getCallDuration()), updateIntervalInSeconds * 1000);

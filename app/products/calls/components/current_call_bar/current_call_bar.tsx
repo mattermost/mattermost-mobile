@@ -13,9 +13,10 @@ import {Events, WebsocketEvents} from '@constants';
 import {CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {goToScreen} from '@screens/navigation';
-import UserModel from '@typings/database/models/servers/user';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
+
+import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     displayName: string;

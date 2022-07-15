@@ -79,7 +79,7 @@ const enhance = withObservables(['channel', 'showTeamName'], ({channel, database
         distinctUntilChanged(),
     );
 
-    const hasCall = observeChannelsWithCalls(serverUrl || '').pipe(
+    const hasCall = observeChannelsWithCalls(serverUrl).pipe(
         switchMap((calls) => of$(Boolean(calls[channel.id]))));
 
     return {

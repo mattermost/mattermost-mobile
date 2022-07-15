@@ -9,9 +9,10 @@ import {observeCurrentCall} from '@app/products/calls/state';
 import DatabaseManager from '@database/manager';
 import {observeChannel} from '@queries/servers/channel';
 import {observeTeammateNameDisplay, observeUsersById} from '@queries/servers/user';
-import UserModel from '@typings/database/models/servers/user';
 
 import CurrentCallBar from './current_call_bar';
+
+import type UserModel from '@typings/database/models/servers/user';
 
 const enhanced = withObservables([], () => {
     const currentCall = observeCurrentCall();

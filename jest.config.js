@@ -9,7 +9,7 @@ module.exports = {
             tsConfigFile: 'tsconfig.test.json',
         },
     },
-    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node', 'd.ts'],
     clearMocks: true,
     setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
     collectCoverageFrom: ['app/**/*.{js,jsx,ts,tsx}'],

@@ -6,7 +6,8 @@ import {View, StyleSheet, Text, Platform} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
-import UserModel from '@typings/database/models/servers/user';
+
+import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     userModel?: UserModel;
@@ -18,7 +19,7 @@ type Props = {
     size?: 'm' | 'l';
 }
 
-const getStyleSheet = ({volume, muted, size}: {volume: number; muted?: boolean; size?: 'm' | 'l'}) => {
+const getStyleSheet = ({volume, muted, size}: { volume: number; muted?: boolean; size?: 'm' | 'l' }) => {
     const baseSize = size === 'm' || !size ? 40 : 72;
     const smallIcon = size === 'm' || !size;
     const widthHeight = smallIcon ? 20 : 24;
@@ -142,21 +143,23 @@ const CallAvatar = ({userModel, volume, serverUrl, sharingScreen, size, muted, r
         );
     }
 
+    const profile = userModel ? (
+        <ProfilePicture
+            author={userModel}
+            size={profileSize}
+            showStatus={false}
+            url={serverUrl}
+        />
+    ) : (
+        <CompassIcon
+            name='account-outline'
+            size={profileSize}
+        />
+    );
+
     const view = (
         <View style={[style.picture, styleShadow]}>
-            {
-                userModel ?
-                    <ProfilePicture
-                        author={userModel}
-                        size={profileSize}
-                        showStatus={false}
-                        url={serverUrl}
-                    /> :
-                    <CompassIcon
-                        name='account-outline'
-                        size={profileSize}
-                    />
-            }
+            {profile}
             {
                 muted !== undefined &&
                 <CompassIcon

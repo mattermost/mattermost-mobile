@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import UserModel from '@typings/database/models/servers/user';
+import type UserModel from '@typings/database/models/servers/user';
 
 export type CallsState = {
     serverUrl: string;
