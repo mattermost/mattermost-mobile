@@ -39,11 +39,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export type RecentItemType = {
-    terms: string;
-    isOrSearch: boolean;
-}
-
 type Props = {
     setRecentValue: (value: string) => void;
     item: TeamSearchHistoryModel;
@@ -89,7 +84,6 @@ const RecentItem = ({item, setRecentValue}: Props) => {
                 </View>
             }
             separator={false}
-            theme={theme}
         />
     );
 };
