@@ -23,6 +23,10 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
     const channelInfo = observeChannelInfo(database, channelId);
     const isHeaderSet = channelInfo.pipe(
         switchMap((c) => of$(Boolean(c?.header))),
+
+        // Channel info is fetched when we switch to the channel, and should update
+        // the member count whenever a user joins or leaves the channel, so this should
+        // save us a few renders.
         distinctUntilChanged(),
     );
 
