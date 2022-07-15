@@ -19,6 +19,9 @@ import TimezoneRow from './timezone_row';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        flexGrow: {
+            flexGrow: 1,
+        },
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
@@ -140,7 +143,7 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
                 keyboardShouldPersistTaps='always'
                 removeClippedSubviews={true}
                 renderItem={renderItem}
-                contentContainerStyle={{flexGrow: 1}}
+                contentContainerStyle={styles.flexGrow}
             />
         </SafeAreaView>
     );
