@@ -81,10 +81,6 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
 
     const saveButton = useMemo(() => getSaveButton(SAVE_OOO_BUTTON_ID, intl, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
 
-    const onAutoResponseToggle = (active: boolean) => {
-        setAutoResponderActive(active);
-    };
-
     const saveAutoResponder = useCallback(() => {
         updateMe(serverUrl, {
             notify_props: {
@@ -115,7 +111,7 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
         <SettingContainer>
             <SettingOption
                 label={intl.formatMessage({id: 'notification_settings.auto_responder.to.enable', defaultMessage: 'Enable automatic replies'})}
-                action={onAutoResponseToggle}
+                action={setAutoResponderActive}
                 type='toggle'
                 selected={autoResponderActive}
             />

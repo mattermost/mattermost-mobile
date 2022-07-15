@@ -10,7 +10,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 export type OptionItemProps = {
-    action?: (value: string | boolean) => void;
+    action?: (React.Dispatch<React.SetStateAction<string | boolean>>)|((value: string | boolean) => void) ;
     description?: string;
     inline?: boolean;
     destructive?: boolean;

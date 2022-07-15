@@ -19,16 +19,12 @@ const ReplySettings = () => {
     const [replyNotificationType, setReplyNotificationType] = useState('any');
     const intl = useIntl();
 
-    const setReplyNotifications = (notifType: string) => {
-        setReplyNotificationType(notifType);
-    };
-
     return (
         <SettingBlock
             headerText={replyHeaderText}
         >
             <SettingOption
-                action={setReplyNotifications}
+                action={setReplyNotificationType}
                 label={intl.formatMessage({id: 'notification_settings.threads_start_participate', defaultMessage: 'Threads that I start or participate in'})}
                 selected={replyNotificationType === 'any'}
                 type='select'
@@ -36,7 +32,7 @@ const ReplySettings = () => {
             />
             <SettingSeparator/>
             <SettingOption
-                action={setReplyNotifications}
+                action={setReplyNotificationType}
                 label={intl.formatMessage({id: 'notification_settings.threads_start', defaultMessage: 'Threads that I start'})}
                 selected={replyNotificationType === 'root'}
                 type='select'
@@ -44,7 +40,7 @@ const ReplySettings = () => {
             />
             <SettingSeparator/>
             <SettingOption
-                action={setReplyNotifications}
+                action={setReplyNotificationType}
                 label={intl.formatMessage({id: 'notification_settings.threads_mentions', defaultMessage: 'Mentions in threads'})}
                 selected={replyNotificationType === 'never'}
                 type='select'
