@@ -7,7 +7,7 @@ import {act, renderHook} from '@testing-library/react-hooks';
 import InCallManager from 'react-native-incall-manager';
 
 import * as CallsActions from '@calls/actions';
-import {connection} from '@calls/actions/calls';
+import {getConnectionForTesting} from '@calls/actions/calls';
 import * as Permissions from '@calls/actions/permissions';
 import * as State from '@calls/state';
 import {setCallsConfig, useCallsConfig} from '@calls/state/calls_config';
@@ -142,7 +142,10 @@ describe('Actions.Calls', () => {
         assert.equal((result.current[1] as CurrentCall).channelId, 'channel-id');
         expect(newConnection).toBeCalled();
         expect(newConnection.mock.calls[0][1]).toBe('channel-id');
-        CallsActions.leaveCall();
+
+        await act(async () => {
+            CallsActions.leaveCall();
+        });
     });
 
     it('leaveCall', async () => {
@@ -151,7 +154,7 @@ describe('Actions.Calls', () => {
             return [useCallsState('server1'), useCurrentCall()];
         });
         addFakeCall('server1', 'channel-id');
-        expect(connection).toBe(null);
+        expect(getConnectionForTesting()).toBe(null);
 
         let response: { data?: string };
         await act(async () => {
@@ -160,11 +163,15 @@ describe('Actions.Calls', () => {
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall | null)?.channelId, 'channel-id');
 
-        expect(connection!.disconnect).not.toBeCalled();
-        const disconnectMock = connection!.disconnect;
-        CallsActions.leaveCall();
+        expect(getConnectionForTesting()!.disconnect).not.toBeCalled();
+        const disconnectMock = getConnectionForTesting()!.disconnect;
+
+        await act(async () => {
+            CallsActions.leaveCall();
+        });
+
         expect(disconnectMock).toBeCalled();
-        expect(connection).toBe(null);
+        expect(getConnectionForTesting()).toBe(null);
         assert.equal((result.current[1] as CurrentCall | null), null);
     });
 
@@ -174,7 +181,7 @@ describe('Actions.Calls', () => {
             return [useCallsState('server1'), useCurrentCall()];
         });
         addFakeCall('server1', 'channel-id');
-        expect(connection).toBe(null);
+        expect(getConnectionForTesting()).toBe(null);
 
         let response: { data?: string };
         await act(async () => {
@@ -183,9 +190,15 @@ describe('Actions.Calls', () => {
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall | null)?.channelId, 'channel-id');
 
-        CallsActions.muteMyself();
-        expect(connection!.mute).toBeCalled();
-        CallsActions.leaveCall();
+        await act(async () => {
+            CallsActions.muteMyself();
+        });
+
+        expect(getConnectionForTesting()!.mute).toBeCalled();
+
+        await act(async () => {
+            CallsActions.leaveCall();
+        });
     });
 
     it('unmuteMyself', async () => {
@@ -194,7 +207,7 @@ describe('Actions.Calls', () => {
             return [useCallsState('server1'), useCurrentCall()];
         });
         addFakeCall('server1', 'channel-id');
-        expect(connection).toBe(null);
+        expect(getConnectionForTesting()).toBe(null);
 
         let response: { data?: string };
         await act(async () => {
@@ -203,9 +216,15 @@ describe('Actions.Calls', () => {
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall | null)?.channelId, 'channel-id');
 
-        CallsActions.unmuteMyself();
-        expect(connection!.unmute).toBeCalled();
-        CallsActions.leaveCall();
+        await act(async () => {
+            CallsActions.unmuteMyself();
+        });
+
+        expect(getConnectionForTesting()!.unmute).toBeCalled();
+
+        await act(async () => {
+            CallsActions.leaveCall();
+        });
     });
 
     it('loadCalls', async () => {

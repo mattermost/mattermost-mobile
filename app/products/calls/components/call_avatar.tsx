@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import {View, StyleSheet, Text, Platform} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -120,10 +120,10 @@ const getStyleSheet = ({volume, muted, size}: { volume: number; muted?: boolean;
 };
 
 const CallAvatar = ({userModel, volume, serverUrl, sharingScreen, size, muted, raisedHand}: Props) => {
-    const style = getStyleSheet({volume, muted, size});
+    const style = useMemo(() => getStyleSheet({volume, muted, size}), [volume, muted, size]);
     const profileSize = size === 'm' || !size ? 40 : 72;
     const iconSize = size === 'm' || !size ? 12 : 16;
-    const styleShadow = volume > 0 ? style.voiceShadow : {};
+    const styleShadow = volume > 0 ? style.voiceShadow : undefined;
 
     // Only show one or the other.
     let topRightIcon: JSX.Element | null = null;

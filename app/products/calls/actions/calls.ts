@@ -33,8 +33,8 @@ import type {Client} from '@client/rest';
 import type ClientError from '@client/rest/error';
 import type {IntlShape} from 'react-intl';
 
-// Only exported for tests, not exported from the module index.
-export let connection: CallsConnection | null = null;
+let connection: CallsConnection | null = null;
+export const getConnectionForTesting = () => connection;
 
 export const loadConfig = async (serverUrl: string, force = false) => {
     const now = Date.now();
@@ -192,7 +192,10 @@ export const disableChannelCalls = async (serverUrl: string, channelId: string) 
 export const joinCall = async (serverUrl: string, channelId: string, intl: IntlShape) => {
     // Edge case: calls was disabled when app loaded, and then enabled, but app hasn't
     // reconnected its websocket since then (i.e., hasn't called batchLoadCalls yet)
-    checkIsCallsPluginEnabled(serverUrl);
+    const {data: enabled} = await checkIsCallsPluginEnabled(serverUrl);
+    if (!enabled) {
+        return {error: 'calls plugin not enabled'};
+    }
 
     const hasPermission = await hasMicrophonePermission(intl);
     if (!hasPermission) {

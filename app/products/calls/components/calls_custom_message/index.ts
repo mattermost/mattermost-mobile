@@ -21,7 +21,7 @@ import type PostModel from '@typings/database/models/servers/post';
 const enhanced = withObservables(['post'], ({post, database}: { post: PostModel } & WithDatabaseArgs) => {
     const currentUser = observeCurrentUser(database);
     const author = observeUser(database, post.userId);
-    const isMilitaryTime = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observe().pipe(
+    const isMilitaryTime = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observeWithColumns(['value']).pipe(
         switchMap(
             (preferences) => of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)),
         ),
