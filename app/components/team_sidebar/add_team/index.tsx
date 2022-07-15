@@ -69,7 +69,7 @@ export default function AddTeam({otherTeams}: Props) {
             title,
             teams: otherTeams,
         });
-    }), [otherTeams]);
+    }), [otherTeams, intl, isTablet, dimensions, theme]);
 
     return (
         <View style={styles.container}>

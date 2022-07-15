@@ -676,10 +676,10 @@ type BottomSheetWithTeamListArgs = {
 }
 
 export async function bottomSheetWithTeamList({title, teams, dimensions, renderContent, theme}: BottomSheetWithTeamListArgs) {
-    const CONTAINER_HEIGHT = 392;
+    const NO_TEAMS_HEIGHT = 392;
     const maxHeight = Math.round((dimensions.height * 0.9));
 
-    let height = CONTAINER_HEIGHT;
+    let height = NO_TEAMS_HEIGHT;
     if (teams.length) {
         const itemsHeight = bottomSheetSnapPoint(teams.length, ITEM_HEIGHT, 0);
         const heightWithHeader = TITLE_HEIGHT + itemsHeight;

@@ -97,7 +97,6 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
                                 selected={false}
                                 testID={`${selectedTeam}.team_icon`}
                                 smallText={true}
-
                             />
                         </View>
                         <CompassIcon

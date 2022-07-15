@@ -8,7 +8,7 @@ import Animated, {useSharedValue, useAnimatedStyle, withTiming} from 'react-nati
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import TeamPickerIcon from '../team_picker_icon';
@@ -33,15 +33,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingLeft: 18,
             color: theme.centerChannelColor,
             ...typography('Heading', 300, 'SemiBold'),
-        },
-        showMore: {
-            padding: 0,
-            color: theme.buttonBg,
-            ...typography('Body', 200, 'SemiBold'),
-        },
-        separator: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 1,
         },
     };
 });

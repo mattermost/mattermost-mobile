@@ -33,14 +33,12 @@ export default function SelectTeamSlideUp({teams, title, setTeamId, teamId}: Pro
             testID={'search.search_team_slide_up'}
             title={title}
         >
-            {teams.length &&
-                <TeamList
-                    selectedTeamId={teamId}
-                    teams={teams}
-                    onPress={onPress}
-                    testID='search.search_team_slide_up.team_list'
-                />
-            }
+            <TeamList
+                selectedTeamId={teamId}
+                teams={teams}
+                onPress={onPress}
+                testID='search.search_team_slide_up.team_list'
+            />
         </BottomSheetContent>
     );
 }
