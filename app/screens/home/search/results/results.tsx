@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {StyleSheet, FlatList, ListRenderItemInfo, StyleProp, View, ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {ITEM_HEIGHT} from '@app/components/option_item';
 import File from '@components/files/file';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import DateSeparator from '@components/post_list/date_separator';
@@ -13,12 +15,18 @@ import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useImageAttachments} from '@hooks/files';
+import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
+import NavigationStore from '@store/navigation_store';
 import {isImage, isVideo} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {getViewPortWidth} from '@utils/images';
 import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
 import {TabTypes, TabType} from '@utils/search';
 import {preventDoubleTap} from '@utils/tap';
+
+import FileOptions from './file_options';
+import {HEADER_HEIGHT} from './file_options/header';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
@@ -61,6 +69,9 @@ const SearchResults = ({
 }: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
+    const insets = useSafeAreaInsets();
+    const [lastViewedIndex, setLastViewedIndex] = useState<number | undefined>(undefined);
+
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
     const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
@@ -100,11 +111,49 @@ const SearchResults = ({
         openGalleryAtIndex(galleryIdentifier, idx, items);
     }), [orderedFilesForGallery]);
 
-    const handleOptionsPress = useCallback(preventDoubleTap(() => {
-        // hook up in another PR
-        // https://github.com/mattermost/mattermost-mobile/pull/6420
-        // https://mattermost.atlassian.net/browse/MM-44939
-    }), []);
+    const snapPoints = useMemo(() => {
+        let numberOptions = 1;
+        if (canDownloadFiles) {
+            numberOptions += 1;
+        }
+        if (publicLinkEnabled) {
+            numberOptions += 1;
+        }
+        return [bottomSheetSnapPoint(numberOptions, ITEM_HEIGHT, insets.bottom) + HEADER_HEIGHT, 10];
+    }, [canDownloadFiles, publicLinkEnabled]);
+
+    const handleOptionsPress = useCallback((item: number) => {
+        setLastViewedIndex(item);
+        const renderContent = () => {
+            return (
+                <FileOptions
+                    fileInfo={orderedFilesForGallery[item]}
+                />
+            );
+        };
+        bottomSheet({
+            closeButtonId: 'close-search-file-options',
+            renderContent,
+            snapPoints,
+            theme,
+            title: '',
+        });
+    }, [orderedFilesForGallery, snapPoints, theme]);
+
+    // This effect handles the case where a user has the FileOptions Modal
+    // open and the server changes the ability to download files or copy public
+    // links. Reopen the Bottom Sheet again so the new options are added or
+    // removed.
+    useEffect(() => {
+        if (lastViewedIndex === undefined) {
+            return;
+        }
+        if (NavigationStore.getNavigationTopComponentId() === 'BottomSheet') {
+            dismissBottomSheet().then(() => {
+                handleOptionsPress(lastViewedIndex);
+            });
+        }
+    }, [canDownloadFiles, publicLinkEnabled]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<string|FileInfo | Post>) => {
         if (typeof item === 'string') {
