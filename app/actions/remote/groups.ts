@@ -4,6 +4,7 @@
 import {Client} from '@client/rest';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import {getTeamById} from '@queries/servers/team';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -57,12 +58,21 @@ export const fetchGroupsForChannel = async (serverUrl: string, channelId: string
 export const fetchGroupsForTeam = async (serverUrl: string, teamId: string, fetchOnly = false) => {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToTeam(teamId);
 
-        return operator.handleGroups({groups: response.groups, prepareRecordsOnly: fetchOnly});
+        const [groups, groupTeams] = await Promise.all([
+            operator.handleGroups({groups: response.groups, prepareRecordsOnly: true}),
+            operator.handleGroupTeamsForTeam({groups: response.groups, teamId, prepareRecordsOnly: true}),
+        ]);
+
+        if (!fetchOnly) {
+            await operator.batchRecords([...groups, ...groupTeams]);
+        }
+
+        return {groups, groupTeams};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };
@@ -74,8 +84,10 @@ export const fetchGroupsForMember = async (serverUrl: string, userId: string, fe
         const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToMembership(userId);
 
-        const groups = await operator.handleGroups({groups: response, prepareRecordsOnly: true});
-        const groupMemberships = await operator.handleGroupMembershipsForMember({groups: response, userId, prepareRecordsOnly: true});
+        const [groups, groupMemberships] = await Promise.all([
+            operator.handleGroups({groups: response, prepareRecordsOnly: true}),
+            operator.handleGroupMembershipsForMember({groups: response, userId, prepareRecordsOnly: true}),
+        ]);
 
         if (!fetchOnly) {
             await operator.batchRecords([...groups, ...groupMemberships]);
@@ -115,3 +127,17 @@ export const fetchFilteredChannelGroups = async (serverUrl: string, searchTerm: 
     }
 };
 
+export const fetchGroupsForTeamIfConstrained = async (serverUrl: string, teamId: string, fetchOnly = false) => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const team = await getTeamById(database, teamId);
+
+        if (team?.isGroupConstrained) {
+            return fetchGroupsForTeam(serverUrl, teamId, fetchOnly);
+        }
+
+        return {};
+    } catch (error) {
+        return {error};
+    }
+};
