@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -31,6 +31,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         searchBar: {
             height: 38,
             marginVertical: 5,
+            marginBottom: 32,
+        },
+        inputContainerStyle: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            paddingHorizontal: 12,
+            marginLeft: 12,
+            marginTop: 12,
         },
     };
 });
@@ -56,6 +63,16 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+
+    const cancelButtonProps = useMemo(() => ({
+        buttonTextStyle: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 100),
+        },
+        buttonStyle: {
+            marginTop: 12,
+        },
+    }), [theme.centerChannelColor]);
 
     const [timezones, setTimezones] = useState<string[]>(EMPTY_TIMEZONES);
     const [initialScrollIndex, setInitialScrollIndex] = useState<number>(0);
@@ -113,11 +130,12 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
             <View style={styles.searchBar}>
                 <Search
                     autoCapitalize='none'
-                    containerStyle={styles.searchBarContainer}
+                    cancelButtonProps={cancelButtonProps}
+                    inputContainerStyle={styles.inputContainerStyle}
                     inputStyle={styles.searchBarInput}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     onChangeText={setValue}
-                    placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                    placeholder={intl.formatMessage({id: 'search_bar.search.placeholder', defaultMessage: 'Search timezone'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     selectionColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     testID='settings.select_timezone.search_bar'

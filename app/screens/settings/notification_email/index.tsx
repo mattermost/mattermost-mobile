@@ -13,22 +13,21 @@ import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 
-import NotificationSettings from './notifications';
+import NotificationEmail from './notification_email';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         currentUser: observeCurrentUser(database),
-        isCRTEnabled: observeIsCRTEnabled(database),
-        enableAutoResponder: observeConfigBooleanValue(database, 'ExperimentalEnableAutomaticReplies'),
         enableEmailBatching: observeConfigBooleanValue(database, 'EnableEmailBatching'),
         emailInterval: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_NOTIFICATIONS).
             observeWithColumns(['value']).pipe(
                 switchMap((preferences) => of$(getPreferenceValue(preferences, Preferences.CATEGORY_NOTIFICATIONS, Preferences.EMAIL_INTERVAL, Preferences.INTERVAL_NOT_SET))),
             ),
+        isCRTEnabled: observeIsCRTEnabled(database),
         sendEmailNotifications: observeConfigBooleanValue(database, 'SendEmailNotifications'),
     };
 });
 
-export default withDatabase(enhanced(NotificationSettings));
+export default withDatabase(enhanced(NotificationEmail));

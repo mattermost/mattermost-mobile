@@ -1,49 +1,54 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, ScrollView, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {t} from '@i18n';
 import {goToScreen} from '@screens/navigation';
-import SettingOption from '@screens/settings/setting_option';
 import {preventDoubleTap} from '@utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {getUserTimezoneProps} from '@utils/user';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg,
-        },
-        wrapper: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-            ...Platform.select({
-                ios: {
-                    flex: 1,
-                    paddingTop: 35,
-                },
-            }),
-        },
-        divider: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 1,
-            width: '100%',
-        },
-    };
-});
+import SettingContainer from '../setting_container';
+import SettingItem from '../setting_item';
+import SettingRowLabel from '../setting_row_label';
+
+import type UserModel from '@typings/database/models/servers/user';
+
+const TIME_FORMAT = [
+    {
+        id: t('display_settings.clock.standard'),
+        defaultMessage: '12-hour',
+    },
+    {
+        id: t('display_settings.clock.military'),
+        defaultMessage: '24-hour',
+    },
+];
+
+const TIMEZONE_FORMAT = [
+    {
+        id: t('display_settings.tz.auto'),
+        defaultMessage: 'Auto',
+    },
+    {
+        id: t('display_settings.tz.manual'),
+        defaultMessage: 'Manual',
+    },
+];
 
 type DisplayProps = {
-    isTimezoneEnabled: boolean;
+    currentUser: UserModel;
+    hasMilitaryTimeFormat: boolean;
     isThemeSwitchingEnabled: boolean;
+    isTimezoneEnabled: boolean;
 }
-const Display = ({isTimezoneEnabled, isThemeSwitchingEnabled}: DisplayProps) => {
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
+const Display = ({currentUser, hasMilitaryTimeFormat, isThemeSwitchingEnabled, isTimezoneEnabled}: DisplayProps) => {
     const intl = useIntl();
+    const theme = useTheme();
+    const timezone = useMemo(() => getUserTimezoneProps(currentUser), [currentUser.timezone]);
 
     const goToThemeSettings = preventDoubleTap(() => {
         const screen = Screens.SETTINGS_DISPLAY_THEME;
@@ -66,35 +71,39 @@ const Display = ({isTimezoneEnabled, isThemeSwitchingEnabled}: DisplayProps) => 
     });
 
     return (
-        <SafeAreaView
-            edges={['left', 'right']}
-            testID='notification_display.screen'
-            style={styles.container}
-        >
-            <ScrollView
-                contentContainerStyle={styles.wrapper}
-                alwaysBounceVertical={false}
-            >
-                <View style={styles.divider}/>
-                {isThemeSwitchingEnabled && (
-                    <SettingOption
-                        optionName='theme'
-                        onPress={goToThemeSettings}
-                    />
-                )}
-                <SettingOption
-                    optionName='clock'
-                    onPress={goToClockDisplaySettings}
+        <SettingContainer>
+            {isThemeSwitchingEnabled && (
+                <SettingItem
+                    optionName='theme'
+                    onPress={goToThemeSettings}
+                    rightComponent={
+                        <SettingRowLabel
+                            text={theme.type || ''}
+                        />
+                    }
                 />
-                {isTimezoneEnabled && (
-                    <SettingOption
-                        optionName='timezone'
-                        onPress={goToTimezoneSettings}
+            )}
+            <SettingItem
+                optionName='clock'
+                onPress={goToClockDisplaySettings}
+                rightComponent={
+                    <SettingRowLabel
+                        text={intl.formatMessage(hasMilitaryTimeFormat ? TIME_FORMAT[1] : TIME_FORMAT[0])}
                     />
-                )}
-                <View style={styles.divider}/>
-            </ScrollView>
-        </SafeAreaView>
+                }
+            />
+            {isTimezoneEnabled && (
+                <SettingItem
+                    optionName='timezone'
+                    onPress={goToTimezoneSettings}
+                    rightComponent={
+                        <SettingRowLabel
+                            text={intl.formatMessage(timezone.useAutomaticTimezone ? TIMEZONE_FORMAT[0] : TIMEZONE_FORMAT[1])}
+                        />
+                    }
+                />
+            )}
+        </SettingContainer>
     );
 };
 

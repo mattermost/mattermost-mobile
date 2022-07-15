@@ -3,49 +3,35 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
 
-import Block from '@components/block';
 import FormattedText from '@components/formatted_text';
-import OptionItem from '@components/option_item';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import SettingBlock from '../setting_block';
+import SettingOption from '../setting_option';
+import SettingSeparator from '../settings_separator';
+
 const headerText = {
-    id: t('notification_settings.send_notification'),
-    defaultMessage: 'Send notifications',
+    id: t('notification_settings.send_notification.about'),
+    defaultMessage: 'Notify me about...',
 };
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        upperCase: {
-            textTransform: 'uppercase',
-        },
-        separator: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            flex: 1,
-            height: 1,
-        },
-        label: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 100, 'Regular'),
-        },
         disabled: {
             color: theme.centerChannelColor,
             paddingHorizontal: 15,
             paddingVertical: 10,
             ...typography('Body', 200, 'Regular'),
         },
-        container: {
-            paddingHorizontal: 8,
-        },
     };
 });
 
 type MobileSendPushProps = {
-    sendPushNotifications: boolean;
     pushStatus: PushStatus;
+    sendPushNotifications: boolean;
     setMobilePushPref: (status: PushStatus) => void;
 }
 const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: MobileSendPushProps) => {
@@ -54,36 +40,32 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
     const intl = useIntl();
 
     return (
-        <Block
+        <SettingBlock
             headerText={headerText}
-            headerStyles={styles.upperCase}
         >
             {sendPushNotifications &&
                 <>
-                    <OptionItem
+                    <SettingOption
                         action={setMobilePushPref}
-                        containerStyle={styles.container}
-                        label={intl.formatMessage({id: 'notification_settings.pushNotification.allActivity', defaultMessage: 'For all activity'})}
+                        label={intl.formatMessage({id: 'notification_settings.pushNotification.all_new_messages', defaultMessage: 'All new messages'})}
                         selected={pushStatus === 'all'}
                         testID='notification_settings.pushNotification.allActivity'
                         type='select'
                         value='all'
                     />
-                    <View style={styles.separator}/>
-                    <OptionItem
+                    <SettingSeparator/>
+                    <SettingOption
                         action={setMobilePushPref}
-                        containerStyle={styles.container}
-                        label={intl.formatMessage({id: 'notification_settings.pushNotification.onlyMentions', defaultMessage: 'Only for mentions and direct messages'})}
+                        label={intl.formatMessage({id: 'notification_settings.pushNotification.mentions.only', defaultMessage: 'Mentions, direct messages only(default)'})}
                         selected={pushStatus === 'mention'}
                         testID='notification_settings.pushNotification.onlyMentions'
                         type='select'
                         value='mention'
                     />
-                    <View style={styles.separator}/>
-                    <OptionItem
+                    <SettingSeparator/>
+                    <SettingOption
                         action={setMobilePushPref}
-                        containerStyle={styles.container}
-                        label={intl.formatMessage({id: 'notification_settings.pushNotification.never', defaultMessage: 'Never'})}
+                        label={intl.formatMessage({id: 'notification_settings.pushNotification.nothing', defaultMessage: 'Nothing'})}
                         selected={pushStatus === 'none'}
                         testID='notification_settings.pushNotification.never'
                         type='select'
@@ -98,7 +80,7 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
                     style={styles.disabled}
                 />
             }
-        </Block>
+        </SettingBlock>
     );
 };
 

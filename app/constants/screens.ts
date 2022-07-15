@@ -49,6 +49,7 @@ export const SETTINGS_DISPLAY_TIMEZONE = 'SettingsDisplayTimezone';
 export const SETTINGS_DISPLAY_TIMEZONE_SELECT = 'SettingsDisplayTimezoneSelect';
 export const SETTINGS_NOTIFICATION = 'SettingsNotification';
 export const SETTINGS_NOTIFICATION_AUTO_RESPONDER = 'SettingsNotificationAutoResponder';
+export const SETTINGS_NOTIFICATION_EMAIL = 'SettingsNotificationEmail';
 export const SETTINGS_NOTIFICATION_MENTION = 'SettingsNotificationMention';
 export const SETTINGS_NOTIFICATION_PUSH = 'SettingsNotificationPush';
 export const SNACK_BAR = 'SnackBar';
@@ -108,6 +109,7 @@ export default {
     SETTINGS_DISPLAY_TIMEZONE_SELECT,
     SETTINGS_NOTIFICATION,
     SETTINGS_NOTIFICATION_AUTO_RESPONDER,
+    SETTINGS_NOTIFICATION_EMAIL,
     SETTINGS_NOTIFICATION_MENTION,
     SETTINGS_NOTIFICATION_PUSH,
     SNACK_BAR,

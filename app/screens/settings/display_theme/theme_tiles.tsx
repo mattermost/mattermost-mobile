@@ -71,7 +71,7 @@ export const ThemeTile = ({
     theme,
 }: ThemeTileProps) => {
     const isTablet = useIsTablet();
-    const style = getStyleSheet(activeTheme);
+    const styles = getStyleSheet(activeTheme);
     const {width: deviceWidth} = useWindowDimensions();
 
     const layoutStyle = useMemo(() => {
@@ -95,9 +95,9 @@ export const ThemeTile = ({
     return (
         <TouchableOpacity
             onPress={onPressHandler}
-            style={[style.container, layoutStyle.container]}
+            style={[styles.container, layoutStyle.container]}
         >
-            <View style={[style.imageWrapper, layoutStyle.thumbnail]}>
+            <View style={[styles.imageWrapper, layoutStyle.thumbnail]}>
                 <ThemeThumbnail
                     borderColorBase={selected ? activeTheme.sidebarTextActiveBorder : activeTheme.centerChannelBg}
                     borderColorMix={selected ? activeTheme.sidebarTextActiveBorder : changeOpacity(activeTheme.centerChannelColor, 0.16)}
@@ -108,7 +108,7 @@ export const ThemeTile = ({
                     <CompassIcon
                         name='check-circle'
                         size={31.2}
-                        style={style.check}
+                        style={styles.check}
                     />
                 )}
             </View>

@@ -120,7 +120,6 @@ const UserStatus = ({currentUser, style, theme}: Props) => {
 
     return (
         <MenuItem
-            testID='account.status.action'
             labelComponent={
                 <StatusLabel
                     labelStyle={style}
@@ -133,9 +132,9 @@ const UserStatus = ({currentUser, style, theme}: Props) => {
                     status={currentUser.status}
                 />
             }
-            separator={false}
             onPress={handleSetStatus}
-            theme={theme}
+            separator={false}
+            testID='account.status.action'
         />
     );
 };
