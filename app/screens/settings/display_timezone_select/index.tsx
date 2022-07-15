@@ -8,7 +8,6 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {getAllSupportedTimezones} from '@actions/remote/user';
 import Search from '@components/search';
-import {List} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {popTopScreen} from '@screens/navigation';
@@ -20,6 +19,9 @@ import TimezoneRow from './timezone_row';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        flexGrow: {
+            flexGrow: 1,
+        },
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
@@ -44,8 +46,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 const EDGES: Edge[] = ['left', 'right'];
 const EMPTY_TIMEZONES: string[] = [];
-const ITEM_HEIGHT = 45;
-const VIEWABILITY_CONFIG = List.VISIBILITY_CONFIG_DEFAULTS;
+const ITEM_HEIGHT = 48;
 
 const keyExtractor = (item: string) => item;
 const getItemLayout = (_data: string[], index: number) => ({
@@ -75,7 +76,7 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
     }), [theme.centerChannelColor]);
 
     const [timezones, setTimezones] = useState<string[]>(EMPTY_TIMEZONES);
-    const [initialScrollIndex, setInitialScrollIndex] = useState<number>(0);
+    const [initialScrollIndex, setInitialScrollIndex] = useState<number|undefined>();
     const [value, setValue] = useState('');
 
     const filteredTimezones = (timezonePrefix: string) => {
@@ -84,6 +85,15 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
         }
 
         const lowerCasePrefix = timezonePrefix.toLowerCase();
+
+        // if initial scroll index is set when the items change
+        // and the index is grater than the amount of items
+        // the list starts to render partial results until there is
+        // and interaction, so setting the index as undefined corrects
+        // the rendering
+        if (initialScrollIndex) {
+            setInitialScrollIndex(undefined);
+        }
 
         return timezones.filter((t) => (
             getTimezoneRegion(t).toLowerCase().indexOf(lowerCasePrefix) >= 0 ||
@@ -149,10 +159,9 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
                 keyExtractor={keyExtractor}
                 keyboardDismissMode='on-drag'
                 keyboardShouldPersistTaps='always'
-                maxToRenderPerBatch={15}
                 removeClippedSubviews={true}
                 renderItem={renderItem}
-                viewabilityConfig={VIEWABILITY_CONFIG}
+                contentContainerStyle={styles.flexGrow}
             />
         </SafeAreaView>
     );

@@ -128,7 +128,7 @@ export default function PostInput({
     const maxHeight = isTablet ? 150 : 88;
     const pasteInputStyle = useMemo(() => {
         return {...style.input, maxHeight};
-    }, [maxHeight]);
+    }, [maxHeight, style.input]);
 
     const blur = () => {
         input.current?.blur();

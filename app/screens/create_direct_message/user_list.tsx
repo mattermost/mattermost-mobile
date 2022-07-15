@@ -142,6 +142,13 @@ export default function UserList({
         {paddingBottom: keyboardHeight},
     ], [style, keyboardHeight]);
 
+    const data = useMemo(() => {
+        if (term) {
+            return profiles;
+        }
+        return createProfilesSections(profiles);
+    }, [term, profiles]);
+
     const openUserProfile = useCallback(async (profile: UserProfile) => {
         const {user} = await storeProfile(serverUrl, profile);
         if (user) {
@@ -159,7 +166,7 @@ export default function UserList({
         }
     }, []);
 
-    const renderItem = useCallback(({item, index}: ListRenderItemInfo<UserProfile>) => {
+    const renderItem = useCallback(({item, index, section}: ListRenderItemInfo<UserProfile> & {section?: SectionListData<UserProfile>}) => {
         // The list will re-render when the selection changes because it's passed into the list as extraData
         const selected = Boolean(selectedIds[item.id]);
         const canAdd = Object.keys(selectedIds).length < General.MAX_USERS_IN_GM;
@@ -167,7 +174,7 @@ export default function UserList({
         return (
             <UserListRow
                 key={item.id}
-                highlight={index === 0}
+                highlight={section?.id === data?.[0].id && index === 0}
                 id={item.id}
                 isMyUser={currentUserId === item.id}
                 onPress={handleSelectProfile}
@@ -181,7 +188,7 @@ export default function UserList({
                 user={item}
             />
         );
-    }, [selectedIds, currentUserId, handleSelectProfile, teammateNameDisplay, tutorialWatched]);
+    }, [selectedIds, currentUserId, handleSelectProfile, teammateNameDisplay, tutorialWatched, data]);
 
     const renderLoading = useCallback(() => {
         if (!loading) {
@@ -219,11 +226,11 @@ export default function UserList({
         );
     }, [style]);
 
-    const renderFlatList = (data: UserProfile[]) => {
+    const renderFlatList = (items: UserProfile[]) => {
         return (
             <FlatList
                 contentContainerStyle={style.container}
-                data={data}
+                data={items}
                 extraData={selectedIds}
                 keyboardShouldPersistTaps='always'
                 {...keyboardDismissProp}
@@ -241,7 +248,7 @@ export default function UserList({
         );
     };
 
-    const renderSectionList = (data: Array<SectionListData<UserProfile>>) => {
+    const renderSectionList = (sections: Array<SectionListData<UserProfile>>) => {
         return (
             <SectionList
                 contentContainerStyle={style.container}
@@ -257,7 +264,7 @@ export default function UserList({
                 renderItem={renderItem}
                 renderSectionHeader={renderSectionHeader}
                 scrollEventThrottle={SCROLL_EVENT_THROTTLE}
-                sections={data}
+                sections={sections}
                 style={style.list}
                 stickySectionHeadersEnabled={false}
                 testID={`${testID}.section_list`}
@@ -265,13 +272,6 @@ export default function UserList({
             />
         );
     };
-
-    const data = useMemo(() => {
-        if (term) {
-            return profiles;
-        }
-        return createProfilesSections(profiles);
-    }, [term, profiles]);
 
     if (term) {
         return renderFlatList(data as UserProfile[]);

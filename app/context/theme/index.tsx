@@ -69,6 +69,10 @@ const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
         updateThemeIfNeeded(theme);
     }, [theme]);
 
+    useEffect(() => {
+        setTheme(getTheme(currentTeamId, themes));
+    }, [currentTeamId, themes]);
+
     return (<Provider value={theme}>{children}</Provider>);
 };
 

@@ -56,7 +56,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
         const screen = Screens.SETTINGS_DISPLAY_TIMEZONE_SELECT;
         const title = intl.formatMessage({id: 'settings_display.timezone.select', defaultMessage: 'Select Timezone'});
         const passProps = {
-            selectedTimezone: timezone.manualTimezone,
+            selectedTimezone: userTimezone.manualTimezone || timezone.manualTimezone || timezone.automaticTimezone,
             onBack: updateManualTimezone,
         };
 
