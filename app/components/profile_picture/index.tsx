@@ -22,6 +22,7 @@ const STATUS_BUFFER = Platform.select({
 
 type ProfilePictureProps = {
     author?: UserModel | UserProfile;
+    forwardRef?: React.RefObject<any>;
     iconSize?: number;
     showStatus?: boolean;
     size: number;
@@ -60,6 +61,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const ProfilePicture = ({
     author,
+    forwardRef,
     iconSize,
     showStatus = true,
     size = 64,
@@ -105,6 +107,7 @@ const ProfilePicture = ({
         >
             <Image
                 author={author}
+                forwardRef={forwardRef}
                 iconSize={iconSize}
                 size={size}
                 source={source}

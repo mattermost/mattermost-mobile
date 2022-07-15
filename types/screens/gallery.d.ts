@@ -55,7 +55,7 @@ type OnGestureEvent<T extends GestureHandlerGestureEvent> = (
 ) => void;
 
 type GalleryItemType = {
-    type: 'image' | 'video' | 'file';
+    type: 'image' | 'video' | 'file' | 'avatar';
     id: string;
     width: number;
     height: number;
