@@ -18,5 +18,6 @@ export default tableSchema({
         {name: 'created_at', type: 'number'},
         {name: 'updated_at', type: 'number'},
         {name: 'deleted_at', type: 'number'},
+        {name: 'member_count', type: 'number'},
     ],
 });
