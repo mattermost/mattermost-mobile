@@ -5,7 +5,7 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
-import {addUserToTeam, handleTeamChange} from '@actions/remote/team';
+import {addCurrentUserToTeam, handleTeamChange} from '@actions/remote/team';
 import FormattedText from '@components/formatted_text';
 import Empty from '@components/illustrations/no_team';
 import {useServerUrl} from '@context/server';
@@ -40,13 +40,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type Props = {
-    currentUserId: string;
     otherTeams: TeamModel[];
     title: string;
     showTitle?: boolean;
 }
 
-export default function AddTeamSlideUp({currentUserId, otherTeams, title, showTitle = true}: Props) {
+export default function AddTeamSlideUp({otherTeams, title, showTitle = true}: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -58,7 +57,7 @@ export default function AddTeamSlideUp({currentUserId, otherTeams, title, showTi
     }, []);
 
     const onPress = useCallback(async (teamId: string) => {
-        const {error} = await addUserToTeam(serverUrl, teamId, currentUserId);
+        const {error} = await addCurrentUserToTeam(serverUrl, teamId);
         if (!error) {
             await dismissBottomSheet();
             handleTeamChange(serverUrl, teamId);
