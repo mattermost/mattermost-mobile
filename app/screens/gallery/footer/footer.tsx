@@ -77,7 +77,9 @@ const Footer = ({
     }
 
     let userDisplayName;
-    if (enablePostUsernameOverride && post?.props?.override_username) {
+    if (item.type === 'avatar') {
+        userDisplayName = item.name;
+    } else if (enablePostUsernameOverride && post?.props?.override_username) {
         userDisplayName = post.props.override_username as string;
     } else {
         userDisplayName = displayUsername(author, undefined, teammateNameDisplay);
@@ -124,12 +126,14 @@ const Footer = ({
             }
             <View style={styles.container}>
                 <View style={styles.details}>
+                    {item.type !== 'avatar' &&
                     <Avatar
                         authorId={author?.id}
                         overrideIconUrl={overrideIconUrl}
                     />
+                    }
                     <Details
-                        channelName={channelName}
+                        channelName={item.type === 'avatar' ? '' : channelName}
                         isDirectChannel={isDirectChannel}
                         ownPost={author?.id === currentUserId}
                         userDisplayName={userDisplayName}
@@ -139,7 +143,7 @@ const Footer = ({
                 <Actions
                     disabled={action !== 'none'}
                     canDownloadFiles={canDownloadFiles}
-                    enablePublicLinks={enablePublicLink}
+                    enablePublicLinks={enablePublicLink && item.type !== 'avatar'}
                     fileId={item.id!}
                     onCopyPublicLink={handleCopyLink}
                     onDownload={handleDownload}

@@ -14,8 +14,11 @@ import {Asset} from 'react-native-image-picker';
 import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
 import {Files} from '@constants';
+import DatabaseManager from '@database/manager';
+import {queryAllServers} from '@queries/app/servers';
 import {generateId} from '@utils/general';
 import keyMirror from '@utils/key_mirror';
+import {logError} from '@utils/log';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
 
@@ -71,7 +74,7 @@ const SUPPORTED_VIDEO_FORMAT = Platform.select({
 const types: Record<string, string> = {};
 const extensions: Record<string, readonly string[]> = {};
 
-export function filterFileExtensions(filter: FileFilter): string {
+export function filterFileExtensions(filter?: FileFilter): string {
     let searchTerms: string[] = [];
     switch (filter) {
         case FileFilters.ALL:
@@ -374,7 +377,8 @@ export async function extractFileInfo(files: Array<Asset | DocumentPickerRespons
     const out: ExtractedFileInfo[] = [];
 
     await Promise.all(files.map(async (file) => {
-        if (!file) {
+        if (!file || !file.uri) {
+            logError('extractFileInfo no file or url');
             return;
         }
 
@@ -389,16 +393,16 @@ export async function extractFileInfo(files: Array<Asset | DocumentPickerRespons
             outFile.size = file.fileSize || 0;
             outFile.name = file.fileName || '';
         } else {
-            const path = Platform.select({
+            const localPath = Platform.select({
                 ios: (file.uri || '').replace('file://', ''),
                 default: file.uri || '',
             });
-            let fileInfo;
             try {
-                fileInfo = await FileSystem.stat(path);
+                const fileInfo = await FileSystem.stat(decodeURIComponent(localPath));
                 outFile.size = fileInfo.size || 0;
-                outFile.name = path.substring(path.lastIndexOf('/') + 1);
+                outFile.name = localPath.substring(localPath.lastIndexOf('/') + 1);
             } catch (e) {
+                logError('extractFileInfo', e);
                 return;
             }
         }
@@ -495,5 +499,36 @@ export const hasWriteStoragePermission = async (intl: IntlShape) => {
             return false;
         }
         default: return true;
+    }
+};
+
+export const getAllFilesInCachesDirectory = async () => {
+    try {
+        const appDatabase = DatabaseManager.appDatabase;
+        const servers = await queryAllServers(appDatabase!.database);
+        if (!servers.length) {
+            return {error: 'No servers'};
+        }
+
+        const serverUrls = [];
+        const files: FileSystem.ReadDirItem[][] = [];
+
+        for await (const server of servers) {
+            const directoryFiles = await FileSystem.readDir(`${FileSystem.CachesDirectoryPath}/${hashCode(server.url)}`);
+            files.push(directoryFiles);
+            serverUrls.push(server.url);
+        }
+
+        const flattenedFiles = files.flat();
+        const totalSize = flattenedFiles.reduce((acc, file) => acc + file.size, 0);
+
+        return {
+            files: flattenedFiles,
+            totalSize,
+            serverUrls,
+        };
+    } catch (error) {
+        logError('Failed getAllFilesInCachesDirectory', error);
+        return {error};
     }
 };

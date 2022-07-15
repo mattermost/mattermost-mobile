@@ -11,7 +11,7 @@ import {enableFreeze, enableScreens} from 'react-native-screens';
 
 import {Events, Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {findChannels} from '@screens/navigation';
+import {findChannels, popToRoot} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {alertChannelArchived, alertChannelRemove, alertTeamRemove} from '@utils/navigation';
 import {notificationError} from '@utils/notification';
@@ -67,10 +67,17 @@ export default function HomeScreen(props: HomeProps) {
             alertChannelArchived(displayName, intl);
         });
 
+        const crtToggledListener = DeviceEventEmitter.addListener(Events.CRT_TOGGLED, (isSameServer: boolean) => {
+            if (isSameServer) {
+                popToRoot();
+            }
+        });
+
         return () => {
             leaveTeamListener.remove();
             leaveChannelListener.remove();
             archivedChannelListener.remove();
+            crtToggledListener.remove();
         };
     }, [intl.locale]);
 

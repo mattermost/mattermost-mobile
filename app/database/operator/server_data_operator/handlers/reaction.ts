@@ -23,7 +23,6 @@ const ReactionHandler = (superclass: any) => class extends superclass {
      * @param {ReactionsPerPost[]} handleReactions.postsReactions
      * @param {boolean} handleReactions.prepareRecordsOnly
      * @param {boolean} handleReactions.skipSync
-     * @throws DataOperatorException
      * @returns {Promise<Array<(ReactionModel | CustomEmojiModel)>>}
      */
     handleReactions = async ({postsReactions, prepareRecordsOnly, skipSync}: HandleReactionsArgs): Promise<ReactionModel[]> => {

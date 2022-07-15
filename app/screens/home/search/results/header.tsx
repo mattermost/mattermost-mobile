@@ -1,27 +1,30 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {bottomSheetSnapPoint} from '@app/utils/helpers';
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
+import {SEPARATOR_MARGIN, SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
 import {FileFilter, FileFilters} from '@utils/file';
+import {TabTypes, TabType} from '@utils/search';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import TeamPickerIcon from '../team_picker_icon';
 
-import Filter from './filter';
+import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, NUMBER_FILTER_ITEMS} from './filter';
 import SelectButton from './header_button';
 
-export type SelectTab = 'files' | 'messages'
-
 type Props = {
-    onTabSelect: (tab: SelectTab) => void;
+    onTabSelect: (tab: TabType) => void;
     onFilterChanged: (filter: FileFilter) => void;
-    selectedTab: SelectTab;
+    selectedTab: TabType;
     selectedFilter: FileFilter;
     numberMessages: number;
     numberFiles: number;
@@ -29,12 +32,10 @@ type Props = {
     teamId: string;
 }
 
-export const HEADER_ROUNDED_HEIGHT = 10;
-
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            marginTop: HEADER_ROUNDED_HEIGHT,
+            marginTop: 10,
             backgroundColor: theme.centerChannelBg,
             borderBottomWidth: 1,
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
@@ -65,21 +66,33 @@ const Header = ({
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
     const intl = useIntl();
+    const {bottom} = useSafeAreaInsets();
+    const isTablet = useIsTablet();
 
     const messagesText = intl.formatMessage({id: 'screen.search.header.messages', defaultMessage: 'Messages'});
     const filesText = intl.formatMessage({id: 'screen.search.header.files', defaultMessage: 'Files'});
     const title = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
 
-    const showFilterIcon = selectedTab === 'files';
+    const showFilterIcon = selectedTab === TabTypes.FILES;
     const hasFilters = selectedFilter !== FileFilters.ALL;
 
     const handleMessagesPress = useCallback(() => {
-        onTabSelect('messages');
+        onTabSelect(TabTypes.MESSAGES);
     }, [onTabSelect]);
 
     const handleFilesPress = useCallback(() => {
-        onTabSelect('files');
+        onTabSelect(TabTypes.FILES);
     }, [onTabSelect]);
+
+    const snapPoints = useMemo(() => {
+        return [
+            bottomSheetSnapPoint(
+                NUMBER_FILTER_ITEMS,
+                FILTER_ITEM_HEIGHT,
+                bottom,
+            ) + TITLE_HEIGHT + DIVIDERS_HEIGHT + (isTablet ? SEPARATOR_MARGIN_TABLET : SEPARATOR_MARGIN),
+            10];
+    }, []);
 
     const handleFilterPress = useCallback(() => {
         const renderContent = () => {
@@ -94,7 +107,7 @@ const Header = ({
         bottomSheet({
             closeButtonId: 'close-search-filters',
             renderContent,
-            snapPoints: [700, 10],
+            snapPoints,
             theme,
             title,
         });
@@ -104,12 +117,12 @@ const Header = ({
         <View style={styles.container}>
             <View style={styles.buttonsContainer}>
                 <SelectButton
-                    selected={selectedTab === 'messages'}
+                    selected={selectedTab === TabTypes.MESSAGES}
                     onPress={handleMessagesPress}
                     text={`${messagesText} (${numberMessages})`}
                 />
                 <SelectButton
-                    selected={selectedTab === 'files'}
+                    selected={selectedTab === TabTypes.FILES}
                     onPress={handleFilesPress}
                     text={`${filesText} (${numberFiles})`}
                 />

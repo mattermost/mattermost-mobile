@@ -308,6 +308,7 @@ const AtMention = ({
                 defaultMessage={item.defaultMessage}
                 id={item.id}
                 onPress={completeMention}
+                testID='autocomplete.special_mention_item'
             />
         );
     }, [completeMention]);
@@ -319,6 +320,7 @@ const AtMention = ({
                 name={item.name}
                 displayName={item.displayName}
                 onPress={completeMention}
+                testID='autocomplete.group_mention_item'
             />
         );
     }, [completeMention]);
@@ -326,9 +328,9 @@ const AtMention = ({
     const renderAtMentions = useCallback((item: UserProfile | UserModel) => {
         return (
             <AtMentionItem
-                testID={`autocomplete.at_mention.item.${item}`}
-                onPress={completeMention}
                 user={item}
+                onPress={completeMention}
+                testID='autocomplete.at_mention_item'
             />
         );
     }, [completeMention]);

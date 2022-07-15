@@ -66,7 +66,7 @@ const ReactorsList = ({location, reactions}: Props) => {
             scrollEnabled={enabled}
             scrollEventThrottle={60}
             {...panResponder.panHandlers}
-            testID='reactors_list.flat_list'
+            testID='reactions.reactors_list.flat_list'
         />
     );
 };

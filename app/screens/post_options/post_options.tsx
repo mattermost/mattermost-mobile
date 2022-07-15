@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import React, {useEffect} from 'react';
-import {Navigation} from 'react-native-navigation';
+import React from 'react';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import {ITEM_HEIGHT} from '@components/menu_item';
 import {Screens} from '@constants';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissModal} from '@screens/navigation';
 import {isSystemMessage} from '@utils/post';
@@ -21,6 +21,8 @@ import ReactionBar from './reaction_bar';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
+
+const POST_OPTIONS_BUTTON = 'close-post-options';
 
 type PostOptionsProps = {
     canAddReaction: boolean;
@@ -36,7 +38,6 @@ type PostOptionsProps = {
     thread?: ThreadModel;
     componentId: string;
 };
-
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
     canMarkAsUnread, canPin, canReply,
@@ -45,22 +46,11 @@ const PostOptions = ({
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
 
-    useEffect(() => {
-        const unsubscribe = Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
-                switch (buttonId) {
-                    case 'close-post-options': {
-                        dismissModal({componentId});
-                        break;
-                    }
-                }
-            },
-        }, componentId);
+    const close = () => {
+        dismissModal({componentId});
+    };
 
-        return () => {
-            unsubscribe.remove();
-        };
-    }, []);
+    useNavButtonPressed(POST_OPTIONS_BUTTON, componentId, close, []);
 
     const isSystemPost = isSystemMessage(post);
 
@@ -134,7 +124,7 @@ const PostOptions = ({
     return (
         <BottomSheet
             renderContent={renderContent}
-            closeButtonId='close-post-options'
+            closeButtonId={POST_OPTIONS_BUTTON}
             componentId={Screens.POST_OPTIONS}
             initialSnapIndex={0}
             snapPoints={[((snapPoints + additionalSnapPoints) * ITEM_HEIGHT), 10]}

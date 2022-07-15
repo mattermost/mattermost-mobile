@@ -21,14 +21,12 @@ class ThreadScreen {
         backButton: 'screen.back.button',
         followButton: 'thread.follow_thread.button',
         followingButton: 'thread.following_thread.button',
-        flatPostList: 'thread.post_list.flat_list',
     };
 
     threadScreen = element(by.id(this.testID.threadScreen));
     backButton = element(by.id(this.testID.backButton));
     followButton = element(by.id(this.testID.followButton));
     followingButton = element(by.id(this.testID.followingButton));
-    flatPostList = element(by.id(this.testID.flatPostList));
 
     // convenience props
     atInputQuickAction = InputQuickAction.getAtInputQuickAction(this.testID.threadScreenPrefix);
@@ -74,7 +72,11 @@ class ThreadScreen {
         return this.postList.getThreadOverviewPostOptionsButton();
     };
 
-    getPostListPostItem = (postId: string, text: string, postProfileOptions: any = {}) => {
+    getFlatPostList = () => {
+        return this.postList.getFlatList();
+    };
+
+    getPostListPostItem = (postId: string, text = '', postProfileOptions: any = {}) => {
         return this.postList.getPost(postId, text, postProfileOptions);
     };
 

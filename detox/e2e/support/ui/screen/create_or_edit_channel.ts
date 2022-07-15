@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {
+    ChannelInfoScreen,
     ChannelScreen,
     ChannelListScreen,
 } from '@support/ui/screen';
@@ -12,6 +13,7 @@ class CreateOrEditChannelScreen {
     testID = {
         createOrEditChannelScreen: 'create_or_edit_channel.screen',
         closeButton: 'close.create_or_edit_channel.button',
+        backButton: 'screen.back.button',
         createButton: 'create_or_edit_channel.create.button',
         saveButton: 'create_or_edit_channel.save.button',
         scrollView: 'create_or_edit_channel.scrollview',
@@ -27,6 +29,7 @@ class CreateOrEditChannelScreen {
 
     createOrEditChannelScreen = element(by.id(this.testID.createOrEditChannelScreen));
     closeButton = element(by.id(this.testID.closeButton));
+    backButton = element(by.id(this.testID.backButton));
     createButton = element(by.id(this.testID.createButton));
     saveButton = element(by.id(this.testID.saveButton));
     scrollView = element(by.id(this.testID.scrollView));
@@ -55,9 +58,25 @@ class CreateOrEditChannelScreen {
 
     openEditChannel = async () => {
         // # Open edit channel screen
-        await ChannelScreen.introOptionSetHeaderItem.tap();
+        await ChannelInfoScreen.editChannelOption.tap();
 
         return this.toBeVisible();
+    };
+
+    openEditChannelHeader = async ({fromChannelInfo = false} = {}) => {
+        // # Open edit channel header screen
+        if (fromChannelInfo) {
+            await ChannelInfoScreen.setHeaderAction.tap();
+        } else {
+            await ChannelScreen.introSetHeaderOption.tap();
+        }
+
+        return this.toBeVisible();
+    };
+
+    back = async () => {
+        await this.backButton.tap();
+        await expect(this.createOrEditChannelScreen).not.toBeVisible();
     };
 
     close = async () => {

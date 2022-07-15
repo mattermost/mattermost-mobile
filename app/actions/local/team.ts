@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
-
 import DatabaseManager from '@database/manager';
-import {prepareDeleteTeam, getMyTeamById, queryTeamSearchHistoryByTeamId, removeTeamFromTeamHistory, getTeamSearchHistoryByTerm, getTeamSearchHistoryById} from '@queries/servers/team';
+import {prepareDeleteTeam, getMyTeamById, queryTeamSearchHistoryByTeamId, removeTeamFromTeamHistory, getTeamSearchHistoryById} from '@queries/servers/team';
 import {logError} from '@utils/log';
+
+import type Model from '@nozbe/watermelondb/Model';
 
 export async function removeUserFromTeam(serverUrl: string, teamId: string) {
     try {
@@ -34,51 +34,54 @@ export async function removeUserFromTeam(serverUrl: string, teamId: string) {
 }
 
 export async function addSearchToTeamSearchHistory(serverUrl: string, teamId: string, terms: string) {
+    const MAX_TEAM_SEARCHES = 15;
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const teamSearch = await getTeamSearchHistoryByTerm(database, teamId, terms);
-        if (!teamSearch) {
-            return {error: undefined};
+        const newSearch: TeamSearchHistory = {
+            created_at: Date.now(),
+            display_term: terms,
+            term: terms,
+            team_id: teamId,
+        };
+
+        const models: Model[] = [];
+        const searchModels = await operator.handleTeamSearchHistory({teamSearchHistories: [newSearch], prepareRecordsOnly: true});
+        const searchModel = searchModels[0];
+
+        models.push(searchModel);
+
+        // determine if need to delete the oldest entry
+        if (searchModel._raw._changed !== 'created_at') {
+            const teamSearchHistory = await queryTeamSearchHistoryByTeamId(database, teamId).fetch();
+            if (teamSearchHistory.length > MAX_TEAM_SEARCHES) {
+                const lastSearches = teamSearchHistory.slice(MAX_TEAM_SEARCHES);
+                for (const lastSearch of lastSearches) {
+                    models.push(lastSearch.prepareDestroyPermanently());
+                }
+            }
         }
 
-        if (teamSearch.length) {
-            await removeSearchFromTeamSearchHistory(serverUrl, teamSearch![0].id);
-        } {
-            const newSearch: TeamSearchHistory = {
-                created_at: Date.now(),
-                display_term: terms,
-                term: terms,
-                team_id: teamId,
-            };
-            await operator.handleTeamSearchHistory({teamSearchHistories: [newSearch], prepareRecordsOnly: false});
-        }
-
-        const teamSearchHistory = await queryTeamSearchHistoryByTeamId(database, teamId).fetch();
-        if (teamSearchHistory.length > 4) {
-            const lastSearch = teamSearchHistory.pop();
-            await removeSearchFromTeamSearchHistory(serverUrl, lastSearch!.id);
-        }
-
-        return {error: undefined};
+        await operator.batchRecords(models);
+        return {searchModel};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed addSearchToTeamSearchHistory', error);
+        logError('Failed addSearchToTeamSearchHistory', error);
         return {error};
     }
 }
 
 export async function removeSearchFromTeamSearchHistory(serverUrl: string, id: string) {
     try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const teamSearch = await getTeamSearchHistoryById(database, id);
-        if (!teamSearch) {
-            return;
+        if (teamSearch) {
+            await database.write(async () => {
+                await teamSearch.destroyPermanently();
+            });
         }
-        const preparedModels: Model[] = [teamSearch.prepareDestroyPermanently()];
-        await operator.batchRecords(preparedModels);
-        return;
+        return {teamSearch};
     } catch (error) {
-        throw new Error('Failed removeSearchFromTeamSearchHistory');
+        logError('Failed removeSearchFromTeamSearchHistory', error);
+        return {error};
     }
 }
 

@@ -6,8 +6,8 @@ import {StyleSheet, TouchableWithoutFeedback, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {updateDraftFile} from '@actions/local/draft';
-import FileIcon from '@components/post_list/post/body/files/file_icon';
-import ImageFile from '@components/post_list/post/body/files/image_file';
+import FileIcon from '@components/files/file_icon';
+import ImageFile from '@components/files/image_file';
 import ProgressBar from '@components/progress_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';

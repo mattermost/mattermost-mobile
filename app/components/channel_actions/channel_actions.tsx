@@ -16,6 +16,7 @@ type Props = {
     channelId: string;
     channelType?: string;
     inModal?: boolean;
+    testID?: string;
 }
 
 const OPTIONS_HEIGHT = 62;
@@ -31,7 +32,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const ChannelActions = ({channelId, channelType, inModal = false}: Props) => {
+const ChannelActions = ({channelId, channelType, inModal = false, testID}: Props) => {
     const onCopyLinkAnimationEnd = useCallback(() => {
         if (!inModal) {
             requestAnimationFrame(async () => {
@@ -45,17 +46,20 @@ const ChannelActions = ({channelId, channelType, inModal = false}: Props) => {
             <FavoriteBox
                 channelId={channelId}
                 showSnackBar={!inModal}
+                testID={`${testID}.favorite.action`}
             />
             <View style={styles.separator}/>
             <MutedBox
                 channelId={channelId}
                 showSnackBar={!inModal}
+                testID={`${testID}.mute.action`}
             />
             <View style={styles.separator}/>
             {channelType && DIRECT_CHANNELS.includes(channelType) &&
                 <SetHeaderBox
                     channelId={channelId}
                     inModal={inModal}
+                    testID={`${testID}.set_header.action`}
                 />
             }
             {channelType && !DIRECT_CHANNELS.includes(channelType) &&
@@ -63,11 +67,13 @@ const ChannelActions = ({channelId, channelType, inModal = false}: Props) => {
                     <AddPeopleBox
                         channelId={channelId}
                         inModal={inModal}
+                        testID={`${testID}.add_people.action`}
                     />
                     <View style={styles.separator}/>
                     <CopyChannelLinkBox
                         channelId={channelId}
                         onAnimationEnd={onCopyLinkAnimationEnd}
+                        testID={`${testID}.copy_channel_link.action`}
                     />
                 </>
             }

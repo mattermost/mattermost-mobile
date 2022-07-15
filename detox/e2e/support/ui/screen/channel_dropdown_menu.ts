@@ -9,8 +9,8 @@ class ChannelDropdownMenuScreen {
     testID = {
         channelDropdownMenuScreen: 'browse_channels.dropdown_slideup.screen',
         publicChannelsItem: 'browse_channels.dropdown_slideup_item.public_channels',
-        archivedChannelsItem: 'browse_channels.dropdown_slideup_item.public_channels',
-        sharedChannelsItem: 'browse_channels.dropdown_slideup_item.public_channels',
+        archivedChannelsItem: 'browse_channels.dropdown_slideup_item.archived_channels',
+        sharedChannelsItem: 'browse_channels.dropdown_slideup_item.shared_channels',
     };
 
     channelDropdownMenuScreen = element(by.id(this.testID.channelDropdownMenuScreen));

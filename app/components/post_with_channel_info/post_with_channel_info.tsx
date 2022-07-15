@@ -14,6 +14,7 @@ type Props = {
     isCRTEnabled: boolean;
     post: PostModel;
     location: string;
+    testID?: string;
 }
 
 const styles = StyleSheet.create({
@@ -27,10 +28,13 @@ const styles = StyleSheet.create({
     },
 });
 
-function PostWithChannelInfo({isCRTEnabled, post, location}: Props) {
+function PostWithChannelInfo({isCRTEnabled, post, location, testID}: Props) {
     return (
         <View style={styles.container}>
-            <ChannelInfo post={post}/>
+            <ChannelInfo
+                post={post}
+                testID={`${testID}.post_channel_info.${post.id}`}
+            />
             <View style={styles.content}>
                 <Post
                     isCRTEnabled={isCRTEnabled}
@@ -43,6 +47,7 @@ function PostWithChannelInfo({isCRTEnabled, post, location}: Props) {
                     showAddReaction={false}
                     previousPost={undefined}
                     nextPost={undefined}
+                    testID={`${testID}.post`}
                 />
             </View>
         </View>

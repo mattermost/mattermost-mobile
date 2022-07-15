@@ -326,20 +326,7 @@ export const getTeamById = async (database: Database, teamId: string) => {
 
 export const getTeamSearchHistoryById = async (database: Database, id: string) => {
     try {
-        const teamSearchHistory = (await database.get<TeamSearchHistoryModel>(TEAM_SEARCH_HISTORY).find(id));
-        return teamSearchHistory;
-    } catch {
-        return undefined;
-    }
-};
-
-export const getTeamSearchHistoryByTerm = async (database: Database, teamId: string, terms: string) => {
-    try {
-        const teamSearchHistory = (await database.get<TeamSearchHistoryModel>(TEAM_SEARCH_HISTORY).query(
-            Q.and(
-                Q.where('team_id', teamId),
-                Q.where('term', terms),
-            )).fetch());
+        const teamSearchHistory = await database.get<TeamSearchHistoryModel>(TEAM_SEARCH_HISTORY).find(id);
         return teamSearchHistory;
     } catch {
         return undefined;

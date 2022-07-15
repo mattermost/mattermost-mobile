@@ -10,15 +10,17 @@ import {expect} from 'detox';
 
 class HomeScreen {
     testID = {
-        channelListTab: 'tab_bar.channel_list.tab',
+        channelListTab: 'tab_bar.home.tab',
         searchTab: 'tab_bar.search.tab',
         mentionsTab: 'tab_bar.mentions.tab',
+        savedMessagesTab: 'tab_bar.saved_messages.tab',
         accountTab: 'tab_bar.account.tab',
     };
 
     channelListTab = element(by.id(this.testID.channelListTab));
     searchTab = element(by.id(this.testID.searchTab));
     mentionsTab = element(by.id(this.testID.mentionsTab));
+    savedMessagesTab = element(by.id(this.testID.savedMessagesTab));
     accountTab = element(by.id(this.testID.accountTab));
 
     toBeVisible = async () => {

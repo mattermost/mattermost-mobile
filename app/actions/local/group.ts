@@ -3,7 +3,7 @@
 
 import {fetchFilteredChannelGroups, fetchFilteredTeamGroups, fetchGroupsForAutocomplete} from '@actions/remote/groups';
 import DatabaseManager from '@database/manager';
-import {prepareGroups, queryGroupsByName, queryGroupsByNameInChannel, queryGroupsByNameInTeam} from '@queries/servers/group';
+import {queryGroupsByName, queryGroupsByNameInChannel, queryGroupsByNameInTeam} from '@queries/servers/group';
 import {logError} from '@utils/log';
 
 import type GroupModel from '@typings/database/models/servers/group';
@@ -61,8 +61,7 @@ export const searchGroupsByNameInChannel = async (serverUrl: string, name: strin
     try {
         database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log('searchGroupsByNameInChannel - DB Error', e);
+        logError('searchGroupsByNameInChannel - DB Error', e);
         return [];
     }
 
@@ -76,28 +75,6 @@ export const searchGroupsByNameInChannel = async (serverUrl: string, name: strin
     } catch (e) {
         logError('searchGroupsByNameInChannel - ERROR', e);
         return queryGroupsByNameInChannel(database, name, channelId).fetch();
-    }
-};
-
-/**
- * Store fetched groups locally
- *
- * @param serverUrl string - The Server URL
- * @param groups Group[] - The groups fetched from the API
- */
-export const storeGroups = async (serverUrl: string, groups: Group[]) => {
-    try {
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-
-        const preparedGroups = await prepareGroups(operator, groups);
-
-        if (preparedGroups.length) {
-            operator.batchRecords(preparedGroups);
-        }
-
-        return preparedGroups;
-    } catch (e) {
-        return {error: e};
     }
 };
 

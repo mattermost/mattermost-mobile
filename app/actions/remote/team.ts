@@ -16,6 +16,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
 
 import {fetchMyChannelsForTeam, switchToChannelById} from './channel';
+import {fetchGroupsForTeamIfConstrained} from './groups';
 import {fetchPostsForChannel, fetchPostsForUnreadChannels} from './post';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
@@ -292,4 +293,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
         await operator.batchRecords(models);
     }
     DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);
+
+    // Fetch Groups + GroupTeams
+    fetchGroupsForTeamIfConstrained(serverUrl, teamId);
 }

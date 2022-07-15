@@ -13,30 +13,35 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
-export const RECENT_LABEL_HEIGHT = 48;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        recentItemLabelContainer: {
-            marginLeft: 20,
+        container: {
+            marginVertical: -16,
+            paddingLeft: 20,
+            paddingRight: 6,
             alignItems: 'center',
+            height: 48,
             flexDirection: 'row',
         },
-        recentItemLabel: {
+        remove: {
+            height: 40,
+            width: 40,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        term: {
             flex: 1,
             marginLeft: 16,
             color: theme.centerChannelColor,
             ...typography('Body', 200, 'Regular'),
         },
-        recentRemove: {
-            marginRight: 12,
-        },
     };
 });
 
 export type RecentItemType = {
-        terms: string;
-        isOrSearch: boolean;
+    terms: string;
+    isOrSearch: boolean;
 }
 
 type Props = {
@@ -56,28 +61,28 @@ const RecentItem = ({item, setRecentValue}: Props) => {
 
     const handleRemove = useCallback(async () => {
         await removeSearchFromTeamSearchHistory(serverUrl, item.id);
-    }, [item]);
+    }, [item.id]);
 
     return (
         <MenuItem
             testID={testID}
             onPress={handlePress}
             labelComponent={
-                <View style={style.recentItemLabelContainer}>
+                <View style={style.container}>
                     <CompassIcon
                         name='clock-outline'
                         size={24}
-                        color={changeOpacity(theme.centerChannelColor, 0.6)}
+                        color={changeOpacity(theme.centerChannelColor, 0.56)}
                     />
-                    <Text style={style.recentItemLabel}>{item.term}</Text>
+                    <Text style={style.term}>{item.term}</Text>
                     <TouchableOpacity
                         onPress={handleRemove}
-                        style={style.recentRemove}
+                        style={style.remove}
                         testID={`${testID}.remove.button`}
                     >
                         <CompassIcon
                             name='close'
-                            size={24}
+                            size={18}
                             color={changeOpacity(theme.centerChannelColor, 0.64)}
                         />
                     </TouchableOpacity>

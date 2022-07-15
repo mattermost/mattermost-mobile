@@ -18,6 +18,7 @@ exports[`renderSystemMessage uses renderer for Channel Display Name update 1`] =
         },
       ]
     }
+    testID="markdown_paragraph"
   >
     <Text>
       <Text
@@ -79,6 +80,7 @@ exports[`renderSystemMessage uses renderer for Channel Header update 1`] = `
         },
       ]
     }
+    testID="markdown_paragraph"
   >
     <Text>
       <Text
@@ -156,6 +158,7 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 1
         },
       ]
     }
+    testID="markdown_paragraph"
   >
     <Text>
       <Text
@@ -217,6 +220,7 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 2
         },
       ]
     }
+    testID="markdown_paragraph"
   >
     <Text>
       <Text
@@ -300,6 +304,7 @@ exports[`renderSystemMessage uses renderer for OLD archived channel without a us
         },
       ]
     }
+    testID="markdown_paragraph"
   >
     <Text>
       <Text
@@ -339,6 +344,7 @@ exports[`renderSystemMessage uses renderer for archived channel 1`] = `
         },
       ]
     }
+    testID="markdown_paragraph"
   >
     <Text>
       <Text
@@ -400,6 +406,7 @@ exports[`renderSystemMessage uses renderer for unarchived channel 1`] = `
         },
       ]
     }
+    testID="markdown_paragraph"
   >
     <Text>
       <Text

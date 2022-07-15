@@ -4,17 +4,17 @@
 import React, {useCallback, useState} from 'react';
 import {LayoutChangeEvent, StyleProp, View, ViewStyle} from 'react-native';
 
+import Files from '@components/files';
 import FormattedText from '@components/formatted_text';
 import JumboEmoji from '@components/jumbo_emoji';
 import {Screens} from '@constants';
 import {THREAD} from '@constants/screens';
-import {isEdited as postEdited} from '@utils/post';
+import {isEdited as postEdited, isPostFailed} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import AddMembers from './add_members';
 import Content from './content';
 import Failed from './failed';
-import Files from './files';
 import Message from './message';
 import Reactions from './reactions';
 
@@ -80,6 +80,7 @@ const Body = ({
 }: BodyProps) => {
     const style = getStyleSheet(theme);
     const isEdited = postEdited(post);
+    const isFailed = isPostFailed(post);
     const [layoutWidth, setLayoutWidth] = useState(0);
     const hasBeenDeleted = Boolean(post.deleteAt);
     let body;
@@ -171,7 +172,7 @@ const Body = ({
                 }
                 {filesCount > 0 &&
                 <Files
-                    failed={post.props?.failed}
+                    failed={isFailed}
                     layoutWidth={layoutWidth}
                     location={location}
                     post={post}
@@ -197,7 +198,7 @@ const Body = ({
         >
             <View style={replyBarStyle()}/>
             {body}
-            {post.props?.failed &&
+            {isFailed &&
             <Failed
                 post={post}
                 theme={theme}
