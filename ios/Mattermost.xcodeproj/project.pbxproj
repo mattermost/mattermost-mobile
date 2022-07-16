@@ -464,15 +464,15 @@
 		7F7E9F572864E7570064BFAF /* AttachmentsViews */ = {
 			isa = PBXGroup;
 			children = (
-				7F7E9F582864E76B0064BFAF /* AttachmentInfoView.swift */,
 				7F7E9F5B2864E76C0064BFAF /* AttachmentsView.swift */,
-				7F7E9F592864E76C0064BFAF /* SingleAttachmentView.swift */,
-				7F7E9F5C2864E76C0064BFAF /* VideoThumbnail.swift */,
+				7F7E9F582864E76B0064BFAF /* AttachmentInfoView.swift */,
+				7F93AAB1287750690047B89F /* AttachmentWrapperView.swift */,
+				7F93AAB52877547A0047B89F /* FileThumbnail.swift */,
+				7F93AAB3287753FC0047B89F /* ImageThumbnail.swift */,
 				7F1EBFCD286F2AE200824AF1 /* MultipleAttachmentView.swift */,
 				7F1EBFCF286F2B2C00824AF1 /* RemoveAttachmentView.swift */,
-				7F93AAB1287750690047B89F /* AttachmentWrapperView.swift */,
-				7F93AAB3287753FC0047B89F /* ImageThumbnail.swift */,
-				7F93AAB52877547A0047B89F /* FileThumbnail.swift */,
+				7F7E9F592864E76C0064BFAF /* SingleAttachmentView.swift */,
+				7F7E9F5C2864E76C0064BFAF /* VideoThumbnail.swift */,
 			);
 			path = AttachmentsViews;
 			sourceTree = "<group>";

@@ -8,13 +8,22 @@
 
 import SwiftUI
 
+struct ViewHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat { 0 }
+    static func reduce(value: inout Value, nextValue: () -> Value) {
+        value = value + nextValue()
+    }
+}
+
 struct FloatingTextField: View {
+  @EnvironmentObject var shareViewModel: ShareViewModel
+  
   private let placeholderText: String
   
-  @EnvironmentObject var shareViewModel: ShareViewModel
+  @Binding var text: String
   @FocusState private var focusState: Bool
   @State private var isFocused: Bool = false
-  @Binding var text: String
+  @State private var textEditorHeight : CGFloat = 104
   
   public init(placeholderText: String, text: Binding<String>) {
     self._text = text
@@ -36,6 +45,13 @@ struct FloatingTextField: View {
     return isFocused ? Color.theme.linkColor : Color.theme.centerChannelColor.opacity(0.64)
   }
   
+  var focusedBorderColor: Color {
+    if error {
+      return Color.theme.errorTextColor
+    }
+    return isFocused ? Color.theme.linkColor : Color.theme.centerChannelColor.opacity(0.16)
+  }
+  
   func formatLength(_ value: Int64) -> String {
     let formatter = NumberFormatter()
     formatter.numberStyle = .decimal
@@ -52,6 +68,12 @@ struct FloatingTextField: View {
         )
       }
       ZStack(alignment: .topLeading) {
+        Text(text)
+          .font(Font.custom("OpenSans", size: 16))
+          .foregroundColor(.clear)
+          .background(GeometryReader {
+            Color.clear.preference(key: ViewHeightKey.self, value: $0.frame(in: .local).size.height + 32)
+          })
         TextEditor(text: $text)
           .focused($focusState)
           .onChange(of: focusState, perform: {value in
@@ -63,12 +85,12 @@ struct FloatingTextField: View {
           .padding(.horizontal, 10)
           .font(Font.custom("OpenSans", size: 16))
           .foregroundColor(Color.theme.centerChannelColor)
-          .lineLimit(10)
           .multilineTextAlignment(.leading)
-          .frame(minHeight: isFocused ? 104 : nil, alignment: .leading)
+          .frame(minHeight: 104)
+          .frame(maxHeight: isFocused ? 104 : max(104, textEditorHeight), alignment: .leading)
           .overlay(
             RoundedRectangle(cornerRadius: 4)
-              .stroke(focusedColor, lineWidth: 1)
+              .stroke(focusedBorderColor, lineWidth: isFocused ? 2 : 1)
           )
         Text(placeholderText)
           .foregroundColor(focusedColor)
@@ -83,6 +105,7 @@ struct FloatingTextField: View {
           .offset(x: shouldPlaceholderMove ? 10 : 0, y: shouldPlaceholderMove ? -8 : 0)
           .animation(.easeInOut(duration: 0.2), value: shouldPlaceholderMove)
       }
+      .onPreferenceChange(ViewHeightKey.self) { textEditorHeight = $0 }
     }
   }
 }

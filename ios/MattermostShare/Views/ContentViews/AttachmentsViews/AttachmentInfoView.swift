@@ -28,6 +28,7 @@ struct AttachmentInfoView: View {
     }
     .padding(.all, 12)
     .frame(height: 64, alignment: .leading)
+    .frame(minWidth: 0, maxWidth: .infinity, maxHeight: 64, alignment: .leading)
     .background(
       RoundedRectangle(cornerRadius: 4)
         .stroke(

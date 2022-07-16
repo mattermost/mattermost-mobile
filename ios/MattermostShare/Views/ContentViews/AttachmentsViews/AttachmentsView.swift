@@ -39,6 +39,7 @@ struct AttachmentsView: View {
           hasError: attachments[0].sizeError(server: shareViewModel.server) ||
           attachments[0].resolutionError(server: shareViewModel.server)
         )
+        .padding(.horizontal, 20)
         .transition(.opacity)
       } else {
         MultipleAttachmentView(attachments: $attachments)
@@ -47,6 +48,7 @@ struct AttachmentsView: View {
       
       if error != nil {
         ErrorLabelView(error: error!)
+          .padding(.horizontal, 20)
       }
     }
     .animation(.linear(duration: 0.3))

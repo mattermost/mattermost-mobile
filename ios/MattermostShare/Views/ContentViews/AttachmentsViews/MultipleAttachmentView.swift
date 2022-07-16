@@ -19,9 +19,11 @@ struct MultipleAttachmentView: View {
           ForEach(attachments.indices, id: \.self) { index in
             let attachment = attachments[index]
             let hasError = attachment.sizeError(server: shareViewModel.server) || attachment.resolutionError(server: shareViewModel.server)
+            let isFirst = index == 0
+            let isLast = index == attachments.count - 1
             VStack {
               if attachment.type == .image {
-                AttachmentWrapperView {
+                AttachmentWrapperView(isFirst: isFirst, isLast: isLast) {
                   ImageThumbnail(
                     small: true,
                     attachment: attachment,
@@ -29,7 +31,7 @@ struct MultipleAttachmentView: View {
                   )
                 }
               } else if attachment.type == .video {
-                AttachmentWrapperView {
+                AttachmentWrapperView(isFirst: isFirst, isLast: isLast) {
                   VideoThumbnail(
                     small: true,
                     attachment: attachment,
@@ -37,7 +39,7 @@ struct MultipleAttachmentView: View {
                   )
                 }
               } else if attachment.type == .file {
-                AttachmentWrapperView {
+                AttachmentWrapperView(isFirst: isFirst, isLast: isLast) {
                   FileThumbnail(
                     attachment: attachment,
                     hasError: hasError
@@ -58,6 +60,7 @@ struct MultipleAttachmentView: View {
         Text("\(attachments.count) attachments")
           .foregroundColor(Color.theme.centerChannelColor.opacity(0.64))
           .font(Font.custom("OpenSans", size: 12))
+          .padding(.leading, 20)
       }
     }
   }

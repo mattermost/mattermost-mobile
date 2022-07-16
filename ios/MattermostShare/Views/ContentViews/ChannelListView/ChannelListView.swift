@@ -17,7 +17,7 @@ struct ChannelListView: View {
       if shareViewModel.search.isEmpty {
         HStack {
           Text("RECENT")
-            .font(Font.custom("OpenSans", size: 12))
+            .font(Font.custom("OpenSans-SemiBold", size: 12))
             .foregroundColor(Color.theme.centerChannelColor.opacity(0.64))
           Spacer()
         }

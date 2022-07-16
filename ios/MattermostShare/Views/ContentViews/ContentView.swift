@@ -30,6 +30,7 @@ struct ContentView: View {
       
       if (!attachments.isEmpty) {
         AttachmentsView(attachments: $attachments)
+          .padding(.horizontal, -20)
       }
       
       if (!linkPreviewUrl.isEmpty || !attachments.isEmpty) {
@@ -74,6 +75,6 @@ struct ContentView: View {
       
       Spacer()
     }
-    .keyboardAdaptive()
+//    .keyboardAdaptive()
   }
 }
