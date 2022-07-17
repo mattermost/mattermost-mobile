@@ -8,8 +8,9 @@ import {switchMap} from 'rxjs/operators';
 
 import {General} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
+import {observeCanDownloadFiles} from '@queries/servers/file';
 import {observePost} from '@queries/servers/post';
-import {observeConfig, observeCurrentChannelId, observeCurrentUserId, observeLicense} from '@queries/servers/system';
+import {observeConfig, observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
 import {observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
 
 import Footer from './footer';
@@ -25,9 +26,9 @@ const enhanced = withObservables(['item'], ({database, item}: FooterProps) => {
     const post = item.postId ? observePost(database, item.postId) : of$(undefined);
     const currentChannelId = observeCurrentChannelId(database);
     const currentUserId = observeCurrentUserId(database);
+    const canDownloadFiles = observeCanDownloadFiles(database);
 
     const config = observeConfig(database);
-    const license = observeLicense(database);
     const teammateNameDisplay = observeTeammateNameDisplay(database);
 
     const author = post.pipe(
@@ -49,11 +50,7 @@ const enhanced = withObservables(['item'], ({database, item}: FooterProps) => {
     const enablePostUsernameOverride = config.pipe(switchMap((c) => of$(c?.EnablePostUsernameOverride === 'true')));
     const enablePostIconOverride = config.pipe(switchMap((c) => of$(c?.EnablePostIconOverride === 'true')));
     const enablePublicLink = config.pipe(switchMap((c) => of$(c?.EnablePublicLink === 'true')));
-    const enableMobileFileDownload = config.pipe(switchMap((c) => of$(c?.EnableMobileFileDownload !== 'false')));
-    const complianceDisabled = license.pipe(switchMap((l) => of$(l?.IsLicensed === 'false' || l?.Compliance === 'false')));
-    const canDownloadFiles = combineLatest([enableMobileFileDownload, complianceDisabled]).pipe(
-        switchMap(([download, compliance]) => of$(compliance || download)),
-    );
+
     const channelName = channel.pipe(switchMap((c: ChannelModel) => of$(c.displayName)));
     const isDirectChannel = channel.pipe(switchMap((c: ChannelModel) => of$(c.type === General.DM_CHANNEL)));
 

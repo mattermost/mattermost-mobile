@@ -4,12 +4,13 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import compose from 'lodash/fp/compose';
-import {combineLatest, of as of$} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import {queryChannelsById} from '@queries/servers/channel';
+import {observeCanDownloadFiles} from '@queries/servers/file';
 import {queryPostsById} from '@queries/servers/post';
-import {observeLicense, observeConfigBooleanValue} from '@queries/servers/system';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {getTimezone} from '@utils/user';
 
@@ -31,16 +32,7 @@ const enhance = withObservables(['postIds', 'fileChannelIds'], ({database, postI
     );
     const fileChannels = queryChannelsById(database, fileChannelIds).observeWithColumns(['displayName']);
     const currentUser = observeCurrentUser(database);
-
-    const enableMobileFileDownload = observeConfigBooleanValue(database, 'EnableMobileFileDownload');
-
-    const complianceDisabled = observeLicense(database).pipe(
-        switchMap((lcs) => of$(lcs?.IsLicensed === 'false' || lcs?.Compliance === 'false')),
-    );
-
-    const canDownloadFiles = combineLatest([enableMobileFileDownload, complianceDisabled]).pipe(
-        map(([download, compliance]) => compliance || download),
-    );
+    const canDownloadFiles = observeCanDownloadFiles(database);
 
     return {
         currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone))))),
