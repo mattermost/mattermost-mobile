@@ -10,7 +10,7 @@ import {General, Permissions, Post, Screens} from '@constants';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import {observePost, observePostSaved} from '@queries/servers/post';
 import {observePermissionForChannel, observePermissionForPost} from '@queries/servers/role';
-import {observeConfig, observeConfigBooleanValue, observeLicense} from '@queries/servers/system';
+import {observeConfig, observeConfigValue, observeConfigBooleanValue, observeLicense} from '@queries/servers/system';
 import {observeIsCRTEnabled, observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -75,7 +75,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
     const currentUser = observeCurrentUser(database);
     const config = observeConfig(database);
     const isLicensed = observeLicense(database).pipe(switchMap((lcs) => of$(lcs?.IsLicensed === 'true')));
-    const allowEditPost = config.pipe(switchMap((cfg) => of$(cfg?.AllowEditPost)));
+    const allowEditPost = observeConfigValue(database, 'AllowEditPost');
     const serverVersion = config.pipe(switchMap((cfg) => of$(cfg?.Version || '')));
     const postEditTimeLimit = config.pipe(switchMap((cfg) => of$(parseInt(cfg?.PostEditTimeLimit || '-1', 10))));
 
