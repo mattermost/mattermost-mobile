@@ -25,12 +25,12 @@ export function observeCanDownloadFiles(database: Database) {
     const isLicened = observeLicenseBooleanValue(database, 'IsLicensed');
     const hasCompliance = observeLicenseBooleanValue(database, 'Compliance');
 
-    const complianceDisabled = combineLatest([isLicened, hasCompliance]).pipe(
+    const complianceEnabled = combineLatest([isLicened, hasCompliance]).pipe(
         switchMap(([licensed, compliance]) => of$(licensed || compliance)),
     );
 
-    const canDownloadFiles = combineLatest([enableMobileFileDownload, complianceDisabled]).pipe(
-        switchMap(([download, compliance]) => of$(compliance || download)),
+    const canDownloadFiles = combineLatest([enableMobileFileDownload, complianceEnabled]).pipe(
+        switchMap(([download, compliance]) => of$(compliance && download)),
     );
     return canDownloadFiles;
 }
