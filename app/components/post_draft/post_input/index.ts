@@ -8,7 +8,7 @@ import {of as of$} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {observeChannel} from '@queries/servers/channel';
-import {observeConfig} from '@queries/servers/system';
+import {observeConfig, observeConfigBooleanValue} from '@queries/servers/system';
 
 import PostInput from './post_input';
 
@@ -25,9 +25,7 @@ const enhanced = withObservables(['channelId'], ({database, channelId}: WithData
         switchMap((cfg) => of$(parseInt(cfg?.TimeBetweenUserTypingUpdatesMilliseconds || '0', 10))),
     );
 
-    const enableUserTypingMessage = config.pipe(
-        switchMap((cfg) => of$(cfg?.EnableUserTypingMessages === 'true')),
-    );
+    const enableUserTypingMessage = observeConfigBooleanValue(database, 'EnableUserTypingMessages');
 
     const maxNotificationsPerChannel = config.pipe(
         switchMap((cfg) => of$(parseInt(cfg?.MaxNotificationsPerChannel || '0', 10))),

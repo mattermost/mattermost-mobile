@@ -3,23 +3,16 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
 
-import {observeConfig, observeCurrentUserId} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeCurrentUserId} from '@queries/servers/system';
 
 import UserItem from './user_item';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const config = observeConfig(database);
-    const isCustomStatusEnabled = config.pipe(
-        switchMap((cfg) => of$(cfg?.EnableCustomUserStatuses === 'true')),
-    );
-    const showFullName = config.pipe(
-        switchMap((cfg) => of$(cfg?.ShowFullName === 'true')),
-    );
+    const isCustomStatusEnabled = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');
+    const showFullName = observeConfigBooleanValue(database, 'ShowFullName');
     const currentUserId = observeCurrentUserId(database);
     return {
         isCustomStatusEnabled,

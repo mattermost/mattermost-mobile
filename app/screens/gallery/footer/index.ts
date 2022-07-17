@@ -10,7 +10,7 @@ import {General} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
 import {observeCanDownloadFiles} from '@queries/servers/file';
 import {observePost} from '@queries/servers/post';
-import {observeConfig, observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
 import {observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
 
 import Footer from './footer';
@@ -28,7 +28,6 @@ const enhanced = withObservables(['item'], ({database, item}: FooterProps) => {
     const currentUserId = observeCurrentUserId(database);
     const canDownloadFiles = observeCanDownloadFiles(database);
 
-    const config = observeConfig(database);
     const teammateNameDisplay = observeTeammateNameDisplay(database);
 
     const author = post.pipe(
@@ -47,9 +46,10 @@ const enhanced = withObservables(['item'], ({database, item}: FooterProps) => {
             return p?.channel.observe() || observeChannel(database, cId);
         }),
     );
-    const enablePostUsernameOverride = config.pipe(switchMap((c) => of$(c?.EnablePostUsernameOverride === 'true')));
-    const enablePostIconOverride = config.pipe(switchMap((c) => of$(c?.EnablePostIconOverride === 'true')));
-    const enablePublicLink = config.pipe(switchMap((c) => of$(c?.EnablePublicLink === 'true')));
+
+    const enablePostUsernameOverride = observeConfigBooleanValue(database, 'EnablePostUsernameOverride');
+    const enablePostIconOverride = observeConfigBooleanValue(database, 'EnablePostIconOverride');
+    const enablePublicLink = observeConfigBooleanValue(database, 'EnablePublicLink');
 
     const channelName = channel.pipe(switchMap((c: ChannelModel) => of$(c.displayName)));
     const isDirectChannel = channel.pipe(switchMap((c: ChannelModel) => of$(c.type === General.DM_CHANNEL)));

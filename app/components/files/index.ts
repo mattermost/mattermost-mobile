@@ -7,7 +7,7 @@ import {of as of$, from as from$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {observeCanDownloadFiles} from '@queries/servers/file';
-import {observeConfig} from '@queries/servers/system';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 import {fileExists} from '@utils/file';
 
 import Files from './files';
@@ -37,12 +37,8 @@ const filesLocalPathValidation = async (files: FileModel[], authorId: string) =>
 };
 
 const enhance = withObservables(['post'], ({database, post}: EnhanceProps) => {
-    const config = observeConfig(database);
     const canDownloadFiles = observeCanDownloadFiles(database);
-
-    const publicLinkEnabled = config.pipe(
-        switchMap((cfg) => of$(cfg?.EnablePublicLink !== 'false')),
-    );
+    const publicLinkEnabled = observeConfigBooleanValue(database, 'EnablePublicLink');
 
     const filesInfo = post.files.observeWithColumns(['local_path']).pipe(
         switchMap((fs) => from$(filesLocalPathValidation(fs, post.userId))),
