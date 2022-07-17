@@ -38,7 +38,7 @@ const RecentItem = ({item, setRecentValue}: Props) => {
             icon={'clock-outline'}
             inline={true}
             label={item.term}
-            onClose={handleRemove}
+            onRemove={handleRemove}
             testID={'search.recent_item'}
             type='remove'
             containerStyle={styles.container}

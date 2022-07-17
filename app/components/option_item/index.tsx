@@ -18,7 +18,7 @@ export type OptionItemProps = {
     icon?: string;
     info?: string;
     label: string;
-    onClose?: () => void;
+    onRemove?: () => void;
     selected?: boolean;
     testID?: string;
     type: OptionType;
@@ -116,7 +116,7 @@ const OptionItem = ({
     info,
     inline = false,
     label,
-    onClose,
+    onRemove,
     optionDescriptionTextStyle,
     optionLabelTextStyle,
     selected,
@@ -186,7 +186,7 @@ const OptionItem = ({
         actionComponent = (
             <TouchableWithFeedback
                 hitSlop={hitSlop}
-                onPress={onClose}
+                onPress={onRemove}
                 style={[styles.iconContainer]}
                 type='opacity'
             >
