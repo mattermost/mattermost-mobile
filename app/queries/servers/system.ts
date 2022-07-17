@@ -174,6 +174,12 @@ export const observeLicense = (database: Database): Observable<ClientLicense | u
     );
 };
 
+export const observeLicenseBooleanValue = (database: Database, key: keyof ClientLicense) => {
+    return observeLicense(database).pipe(
+        switchMap((license) => of$(license?.[key] === 'true')),
+    );
+};
+
 export const getLicense = async (serverDatabase: Database): Promise<ClientLicense | undefined> => {
     try {
         const license = await serverDatabase.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LICENSE);

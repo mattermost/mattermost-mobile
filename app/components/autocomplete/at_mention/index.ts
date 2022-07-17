@@ -9,7 +9,7 @@ import {switchMap} from 'rxjs/operators';
 import {Permissions} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
 import {observePermissionForChannel} from '@queries/servers/role';
-import {observeLicense} from '@queries/servers/system';
+import {observeLicenseBooleanValue} from '@queries/servers/system';
 import {observeCurrentTeam, observeTeam} from '@queries/servers/team';
 import {observeCurrentUser} from '@queries/servers/user';
 
@@ -21,10 +21,7 @@ import type TeamModel from '@typings/database/models/servers/team';
 type OwnProps = {channelId?: string}
 const enhanced = withObservables([], ({database, channelId}: WithDatabaseArgs & OwnProps) => {
     const currentUser = observeCurrentUser(database);
-
-    const hasLicense = observeLicense(database).pipe(
-        switchMap((lcs) => of$(lcs?.IsLicensed === 'true')),
-    );
+    const hasLicense = observeLicenseBooleanValue(database, 'IsLicensed');
 
     let useChannelMentions: Observable<boolean>;
     let useGroupMentions: Observable<boolean>;

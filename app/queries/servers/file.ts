@@ -4,7 +4,7 @@ import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {MM_TABLES} from '@constants/database';
-import {observeConfigBooleanValue, observeLicense} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeLicenseBooleanValue} from '@queries/servers/system';
 
 import type {Database} from '@nozbe/watermelondb';
 import type FileModel from '@typings/database/models/servers/file';
@@ -21,9 +21,14 @@ export const getFileById = async (database: Database, fileId: string) => {
 };
 
 export function observeCanDownloadFiles(database: Database) {
-    const license = observeLicense(database);
     const enableMobileFileDownload = observeConfigBooleanValue(database, 'EnableMobileFileDownload');
-    const complianceDisabled = license.pipe(switchMap((l) => of$(l?.IsLicensed === 'false' || l?.Compliance === 'false')));
+    const isLicened = observeLicenseBooleanValue(database, 'IsLicensed');
+    const hasCompliance = observeLicenseBooleanValue(database, 'Compliance');
+
+    const complianceDisabled = combineLatest([isLicened, hasCompliance]).pipe(
+        switchMap(([licensed, compliance]) => of$(licensed || compliance)),
+    );
+
     const canDownloadFiles = combineLatest([enableMobileFileDownload, complianceDisabled]).pipe(
         switchMap(([download, compliance]) => of$(compliance || download)),
     );
