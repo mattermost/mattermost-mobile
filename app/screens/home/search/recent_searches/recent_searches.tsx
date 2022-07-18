@@ -72,6 +72,10 @@ const RecentSearches = ({setRecentValue, recentSearches, teamName}: Props) => {
         </>
     );
 
+    if (!recentSearches.length) {
+        return null;
+    }
+
     return (
         <AnimatedFlatList
             data={recentSearches}
