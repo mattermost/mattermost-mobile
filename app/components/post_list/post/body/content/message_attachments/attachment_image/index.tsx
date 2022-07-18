@@ -5,7 +5,7 @@ import React, {useCallback, useRef, useState} from 'react';
 import {TouchableWithoutFeedback, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import FileIcon from '@components/files/file_icon';
+import FileIcon from '@components/file/file_icon';
 import ProgressiveImage from '@components/progressive_image';
 import {GalleryInit} from '@context/gallery';
 import {useIsTablet} from '@hooks/device';

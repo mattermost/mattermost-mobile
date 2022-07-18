@@ -5,6 +5,7 @@ import React, {useEffect, useState} from 'react';
 import {DeviceEventEmitter, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
 import Animated, {useDerivedValue} from 'react-native-reanimated';
 
+import File from '@components/file';
 import {Events} from '@constants';
 import {GalleryInit} from '@context/gallery';
 import {useIsTablet} from '@hooks/device';
@@ -13,8 +14,6 @@ import {isImage, isVideo} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {getViewPortWidth} from '@utils/images';
 import {preventDoubleTap} from '@utils/tap';
-
-import File from './file';
 
 type FilesProps = {
     canDownloadFiles: boolean;

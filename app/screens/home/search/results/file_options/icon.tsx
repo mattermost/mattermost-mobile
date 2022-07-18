@@ -3,9 +3,9 @@
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
 
-import FileIcon from '@components/files/file_icon';
-import ImageFile from '@components/files/image_file';
-import VideoFile from '@components/files/video_file';
+import FileIcon from '@components/file/file_icon';
+import ImageFile from '@components/file/image_file';
+import VideoFile from '@components/file/video_file';
 import {isImage, isVideo} from '@utils/file';
 
 export const ICON_SIZE = 72;
