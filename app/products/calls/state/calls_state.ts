@@ -20,8 +20,7 @@ export const getCallsState = (serverUrl: string) => {
     return getCallsStateSubject(serverUrl).value;
 };
 
-// Used internally, only exported for tests (not exported from the module index).
-export const setCallsState = (serverUrl: string, state: CallsState) => {
+const setCallsState = (serverUrl: string, state: CallsState) => {
     getCallsStateSubject(serverUrl).next(state);
 };
 
@@ -29,8 +28,7 @@ export const observeCallsState = (serverUrl: string) => {
     return getCallsStateSubject(serverUrl).asObservable();
 };
 
-// Used internally (for now). Only exported for tests (not exported from the module index).
-export const useCallsState = (serverUrl: string) => {
+const useCallsState = (serverUrl: string) => {
     const [state, setState] = useState(DefaultCallsState);
 
     const callsStateSubject = getCallsStateSubject(serverUrl);
@@ -46,4 +44,9 @@ export const useCallsState = (serverUrl: string) => {
     }, []);
 
     return state;
+};
+
+export const exportedForInternalUse = {
+    setCallsState,
+    useCallsState,
 };

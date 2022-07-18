@@ -10,9 +10,10 @@ import * as CallsActions from '@calls/actions';
 import {getConnectionForTesting} from '@calls/actions/calls';
 import * as Permissions from '@calls/actions/permissions';
 import * as State from '@calls/state';
-import {setCallsConfig, useCallsConfig} from '@calls/state/calls_config';
-import {setChannelsWithCalls, useChannelsWithCalls} from '@calls/state/channels_with_calls';
-import {useCurrentCall, setCurrentCall} from '@calls/state/current_call';
+import {exportedForInternalUse as callsConfigTesting} from '@calls/state/calls_config';
+import {exportedForInternalUse as callsStateTesting} from '@calls/state/calls_state';
+import {exportedForInternalUse as channelsWithCallsTesting} from '@calls/state/channels_with_calls';
+import {exportedForInternalUse as currentCallTesting} from '@calls/state/current_call';
 import {
     Call,
     CallsState,
@@ -24,7 +25,10 @@ import {
 import NetworkManager from '@managers/network_manager';
 import {getIntlShape} from '@test/intl-test-helper';
 
-import {setCallsState, useCallsState} from '../state/calls_state';
+const {setCallsConfig, useCallsConfig} = callsConfigTesting;
+const {setCallsState, useCallsState} = callsStateTesting;
+const {setChannelsWithCalls, useChannelsWithCalls} = channelsWithCallsTesting;
+const {useCurrentCall, setCurrentCall} = currentCallTesting;
 
 const mockClient = {
     getCalls: jest.fn(() => [
