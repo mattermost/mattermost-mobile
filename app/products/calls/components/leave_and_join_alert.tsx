@@ -4,26 +4,23 @@
 import {IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
-export default function leaveAndJoinWithAlert(intl: typeof IntlShape, channelId: string, callChannelName: string, currentChannelName: string, confirmToJoin: boolean, joinCall: (channelId: string) => void) {
+export default function leaveAndJoinWithAlert(intl: typeof IntlShape, channelId: string, callChannelName: string, currentChannelName: string, confirmToJoin: boolean, joinCall: (channelId: string, intl: typeof IntlShape) => void) {
     if (confirmToJoin) {
         Alert.alert(
-            intl.formatMessage({id: 'calls.confirm-to-join-title', defaultMessage: 'Are you sure you want to switch to a different call?'}),
-            intl.formatMessage({
-                id: 'calls.confirm-to-join-description',
-                defaultMessage: 'You are already on a channel call in ~{callChannelName}. Do you want to leave your current call and join the call in ~{currentChannelName}?',
-            }, {callChannelName, currentChannelName}),
+            'Are you sure you want to switch to a different call?',
+            `You are already on a channel call in ~${callChannelName}. Do you want to leave your current call and join the call in ~${currentChannelName}?`,
             [
                 {
-                    text: intl.formatMessage({id: 'calls.confirm-to-join-cancel', defaultMessage: 'Cancel'}),
+                    text: 'Cancel',
                 },
                 {
-                    text: intl.formatMessage({id: 'calls.confirm-to-join-leave-and-join', defaultMessage: 'Leave & Join'}),
-                    onPress: () => joinCall(channelId),
+                    text: 'Leave & Join',
+                    onPress: () => joinCall(channelId, intl),
                     style: 'cancel',
                 },
             ],
         );
     } else {
-        joinCall(channelId);
+        joinCall(channelId, intl);
     }
 }

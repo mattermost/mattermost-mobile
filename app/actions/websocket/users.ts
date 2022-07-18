@@ -31,7 +31,7 @@ export function handleUserAddedEvent(msg: WebSocketMessage) {
             const currentTeamId = getCurrentTeamId(state);
             const currentUserId = getCurrentUserId(state);
             const teamId = msg.data.team_id;
-            const actions: Array<GenericAction> = [{
+            const actions: GenericAction[] = [{
                 type: ChannelTypes.CHANNEL_MEMBER_ADDED,
                 data: {
                     channel_id: msg.broadcast.channel_id,
@@ -71,7 +71,7 @@ export function handleUserRemovedEvent(msg: WebSocketMessage) {
             const currentChannelId = getCurrentChannelId(state);
             const currentTeamId = getCurrentTeamId(state);
             const currentUser = getCurrentUser(state);
-            const actions: Array<GenericAction> = [];
+            const actions: GenericAction[] = [];
             let channelId;
             let userId;
 

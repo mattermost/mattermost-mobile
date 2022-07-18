@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import deepEqual from 'deep-equal';
 import {batchActions} from 'redux-batched-actions';
 
 import {handleCRTPreferenceChange} from '@actions/views/crt';
@@ -121,8 +122,11 @@ export function loadMe(user, deviceToken, skipDispatch = false) {
             data.teams = teams;
             data.teamMembers = teamMembers;
             data.teamUnreads = teamUnreads;
-            data.config = config;
             data.url = Client4.getUrl();
+
+            if (!deepEqual(state.entities?.general?.config, config)) {
+                data.config = config;
+            }
 
             actions.push({
                 type: UserTypes.LOGIN,

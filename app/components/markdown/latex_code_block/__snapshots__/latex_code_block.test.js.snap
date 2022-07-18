@@ -1,0 +1,278 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LatexCodeBlock should have 2 lines 1`] = `
+<TouchableWithFeedbackIOS
+  onLongPress={[Function]}
+  onPress={[Function]}
+  type="opacity"
+>
+  <View
+    style={
+      Object {
+        "borderColor": "rgba(63,67,80,0.15)",
+        "borderRadius": 3,
+        "borderWidth": 0.5,
+        "flex": 1,
+        "flexDirection": "row",
+      }
+    }
+  >
+    <View
+      style={
+        Object {
+          "flex": 1,
+          "flexDirection": "column",
+          "paddingLeft": 6,
+          "paddingVertical": 4,
+        }
+      }
+    >
+      <View
+        style={
+          Object {
+            "flexDirection": "row",
+            "justifyContent": "flex-start",
+            "marginLeft": 5,
+            "paddingVertical": 4,
+          }
+        }
+      >
+        <ForwardRef
+          color="black"
+          math="\\\\frac{2}{1} = 2"
+          onError={[Function]}
+          renderError={[Function]}
+          resizeMode="cover"
+        />
+      </View>
+      <View
+        style={
+          Object {
+            "flexDirection": "row",
+            "justifyContent": "flex-start",
+            "marginLeft": 5,
+            "paddingVertical": 4,
+          }
+        }
+      >
+        <ForwardRef
+          color="black"
+          math="2_{nd} = line"
+          onError={[Function]}
+          renderError={[Function]}
+          resizeMode="cover"
+        />
+      </View>
+    </View>
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "backgroundColor": "#192a4d",
+          "justifyContent": "center",
+          "opacity": 0.8,
+          "padding": 6,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        }
+      }
+    >
+      <Text
+        style={
+          Object {
+            "color": "#ffffff",
+            "fontSize": 12,
+          }
+        }
+      >
+        LaTeX
+      </Text>
+    </View>
+  </View>
+</TouchableWithFeedbackIOS>
+`;
+
+exports[`LatexCodeBlock should have moreLinesText 1`] = `
+<TouchableWithFeedbackIOS
+  onLongPress={[Function]}
+  onPress={[Function]}
+  type="opacity"
+>
+  <View
+    style={
+      Object {
+        "borderColor": "rgba(63,67,80,0.15)",
+        "borderRadius": 3,
+        "borderWidth": 0.5,
+        "flex": 1,
+        "flexDirection": "row",
+      }
+    }
+  >
+    <View
+      style={
+        Object {
+          "flex": 1,
+          "flexDirection": "column",
+          "paddingLeft": 6,
+          "paddingVertical": 4,
+        }
+      }
+    >
+      <View
+        style={
+          Object {
+            "flexDirection": "row",
+            "justifyContent": "flex-start",
+            "marginLeft": 5,
+            "paddingVertical": 4,
+          }
+        }
+      >
+        <ForwardRef
+          color="black"
+          math="\\\\frac{5}{2} = 2"
+          onError={[Function]}
+          renderError={[Function]}
+          resizeMode="cover"
+        />
+      </View>
+      <View
+        style={
+          Object {
+            "flexDirection": "row",
+            "justifyContent": "flex-start",
+            "marginLeft": 5,
+            "paddingVertical": 4,
+          }
+        }
+      >
+        <ForwardRef
+          color="black"
+          math="2_{nd} = line"
+          onError={[Function]}
+          renderError={[Function]}
+          resizeMode="cover"
+        />
+      </View>
+      <InjectIntl(FormattedText)
+        defaultMessage="+{count, number} more {count, plural, one {line} other {lines}}"
+        id="mobile.markdown.code.plusMoreLines"
+        style={
+          Object {
+            "color": "rgba(63,67,80,0.4)",
+            "fontSize": 11,
+            "marginTop": 2,
+          }
+        }
+        values={
+          Object {
+            "count": 1,
+          }
+        }
+      />
+    </View>
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "backgroundColor": "#192a4d",
+          "justifyContent": "center",
+          "opacity": 0.8,
+          "padding": 6,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        }
+      }
+    >
+      <Text
+        style={
+          Object {
+            "color": "#ffffff",
+            "fontSize": 12,
+          }
+        }
+      >
+        LaTeX
+      </Text>
+    </View>
+  </View>
+</TouchableWithFeedbackIOS>
+`;
+
+exports[`LatexCodeBlock should match snapshot 1`] = `
+<TouchableWithFeedbackIOS
+  onLongPress={[Function]}
+  onPress={[Function]}
+  type="opacity"
+>
+  <View
+    style={
+      Object {
+        "borderColor": "rgba(63,67,80,0.15)",
+        "borderRadius": 3,
+        "borderWidth": 0.5,
+        "flex": 1,
+        "flexDirection": "row",
+      }
+    }
+  >
+    <View
+      style={
+        Object {
+          "flex": 1,
+          "flexDirection": "column",
+          "paddingLeft": 6,
+          "paddingVertical": 4,
+        }
+      }
+    >
+      <View
+        style={
+          Object {
+            "flexDirection": "row",
+            "justifyContent": "flex-start",
+            "marginLeft": 5,
+            "paddingVertical": 4,
+          }
+        }
+      >
+        <ForwardRef
+          color="black"
+          math="\\\\frac{1}{2} == 0.5^{0*\\\\pi} - 0.5"
+          onError={[Function]}
+          renderError={[Function]}
+          resizeMode="cover"
+        />
+      </View>
+    </View>
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "backgroundColor": "#192a4d",
+          "justifyContent": "center",
+          "opacity": 0.8,
+          "padding": 6,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        }
+      }
+    >
+      <Text
+        style={
+          Object {
+            "color": "#ffffff",
+            "fontSize": 12,
+          }
+        }
+      >
+        LaTeX
+      </Text>
+    </View>
+  </View>
+</TouchableWithFeedbackIOS>
+`;

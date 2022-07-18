@@ -153,7 +153,7 @@ export default class Search extends PureComponent {
                 break;
             }
         }
-    }
+    };
 
     navigationButtonPressed({buttonId}) {
         if (buttonId === 'backPress') {
@@ -167,11 +167,11 @@ export default class Search extends PureComponent {
 
     setSearchBarRef = (ref) => {
         this.searchBarRef = ref;
-    }
+    };
 
     setListRef = (ref) => {
         this.listRef = ref;
-    }
+    };
 
     archivedIndicator = (postID, style) => {
         const channelIsArchived = this.props.archivedPostIds.includes(postID);

@@ -11,7 +11,7 @@ import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {getUser, getCurrentUser} from '@mm-redux/selectors/entities/users';
 import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
 import {joinCall} from '@mmproducts/calls/store/actions/calls';
-import {getCalls, getCurrentCall} from '@mmproducts/calls/store/selectors/calls';
+import {getCalls, getCurrentCall, isLimitRestricted} from '@mmproducts/calls/store/selectors/calls';
 
 import CallMessage from './call_message';
 
@@ -41,6 +41,7 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
         userTimezone: enableTimezone ? getUserCurrentTimezone(currentUser.timezone) : undefined,
         currentChannelName: getChannel(state, post.channel_id)?.display_name,
         callChannelName: currentCall ? getChannel(state, currentCall.channelId)?.display_name : '',
+        isLimitRestricted: isLimitRestricted(state, post.channel_id),
     };
 }
 

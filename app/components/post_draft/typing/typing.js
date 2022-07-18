@@ -52,7 +52,7 @@ export default class Typing extends PureComponent {
             duration,
             useNativeDriver: false,
         });
-    }
+    };
 
     renderTyping = () => {
         const {typing} = this.props;

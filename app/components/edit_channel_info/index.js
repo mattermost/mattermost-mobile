@@ -21,6 +21,7 @@ import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import StatusBar from '@components/status_bar';
 import TextInputWithLocalizedPlaceholder from '@components/text_input_with_localized_placeholder';
+import {ViewTypes} from '@constants';
 import DEVICE from '@constants/device';
 import {General} from '@mm-redux/constants';
 import {t} from '@utils/i18n';
@@ -130,7 +131,7 @@ export default class EditChannelInfo extends PureComponent {
             return;
         }
 
-        const displayNameExists = displayName && displayName.length >= 2;
+        const displayNameExists = displayName && displayName.length >= ViewTypes.MIN_CHANNELNAME_LENGTH;
         this.props.enableRightButton(displayNameExists);
     };
 
@@ -163,7 +164,7 @@ export default class EditChannelInfo extends PureComponent {
 
     onHeaderLayout = ({nativeEvent}) => {
         this.setState({headerPosition: nativeEvent.layout.y});
-    }
+    };
 
     onKeyboardDidShow = () => {
         this.setState({keyboardVisible: true});
@@ -172,15 +173,15 @@ export default class EditChannelInfo extends PureComponent {
             this.setState({headerHasFocus: false});
             this.scrollHeaderToTop();
         }
-    }
+    };
 
     onKeyboardDidHide = () => {
         this.setState({keyboardVisible: false});
-    }
+    };
 
     onKeyboardOffsetChanged = (keyboardPosition) => {
         this.setState({keyboardPosition});
-    }
+    };
 
     onHeaderFocus = () => {
         if (this.state.keyboardVisible) {
@@ -194,7 +195,7 @@ export default class EditChannelInfo extends PureComponent {
         if (this.scroll.current) {
             this.scroll.current.scrollTo({x: 0, y: this.state.headerPosition});
         }
-    }
+    };
 
     render() {
         const {

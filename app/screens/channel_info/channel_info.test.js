@@ -62,7 +62,7 @@ describe('channelInfo', () => {
             disableChannelCalls: jest.fn(),
         },
         isCallsEnabled: false,
-        callsFeatureEnabled: false,
+        isSupportedServerCalls: false,
         isChannelAdmin: false,
     };
 
@@ -76,8 +76,8 @@ describe('channelInfo', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot on calls features enabled, user is not admin and calls disabled for channel', async () => {
-        const props = {...baseProps, isCallsEnabled: false, callsFeatureEnabled: true, isChannelAdmin: false};
+    test('should match snapshot on calls supported, user is not admin and calls disabled for channel', async () => {
+        const props = {...baseProps, isCallsEnabled: false, isSupportedServerCalls: true, isChannelAdmin: false};
         const wrapper = shallow(
             <ChannelInfo
                 {...props}
@@ -87,8 +87,8 @@ describe('channelInfo', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot on calls features enabled and calls disabled for channel', async () => {
-        const props = {...baseProps, isCallsEnabled: false, callsFeatureEnabled: true, isChannelAdmin: true};
+    test('should match snapshot on calls supported and calls disabled for channel', async () => {
+        const props = {...baseProps, isCallsEnabled: false, isSupportedServerCalls: true, isChannelAdmin: true};
         const wrapper = shallow(
             <ChannelInfo
                 {...props}
@@ -98,8 +98,8 @@ describe('channelInfo', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot on calls features enabled and calls enabled for channel', async () => {
-        const props = {...baseProps, isCallsEnabled: true, callsFeatureEnabled: true, isChannelAdmin: true};
+    test('should match snapshot on calls supported and calls enabled for channel', async () => {
+        const props = {...baseProps, isCallsEnabled: true, isSupportedServerCalls: true, isChannelAdmin: true};
         const wrapper = shallow(
             <ChannelInfo
                 {...props}

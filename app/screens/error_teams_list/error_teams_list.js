@@ -66,7 +66,7 @@ export default class ErrorTeamsList extends PureComponent {
         } finally {
             this.setState({loading: false});
         }
-    }
+    };
 
     render() {
         const {formatMessage} = this.context.intl;

@@ -12,10 +12,10 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     baseTextStyle: StyleProp<TextStyle>;
-    blockStyles?: StyleProp<ViewStyle>[];
+    blockStyles?: Array<StyleProp<ViewStyle>>;
     fields: MessageAttachmentField[];
     metadata?: PostMetadata;
-    textStyles?: StyleProp<TextStyle>[];
+    textStyles?: Array<StyleProp<TextStyle>>;
     theme: Theme;
 }
 

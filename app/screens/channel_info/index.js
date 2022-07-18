@@ -9,13 +9,12 @@ import {getChannelStats} from '@mm-redux/actions/channels';
 import {getCustomEmojisInText} from '@mm-redux/actions/emojis';
 import {General} from '@mm-redux/constants';
 import {getCurrentChannel, getCurrentChannelStats} from '@mm-redux/selectors/entities/channels';
-import {getFeatureFlagValue} from '@mm-redux/selectors/entities/general';
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
-import {getCurrentUserRoles, getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
+import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
-import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin, displayUsername} from '@mm-redux/utils/user_utils';
+import {displayUsername} from '@mm-redux/utils/user_utils';
 import {joinCall, enableChannelCalls, disableChannelCalls} from '@mmproducts/calls/store/actions/calls';
-import {isCallsEnabled} from '@mmproducts/calls/store/selectors/calls';
+import {isSupportedServer} from '@mmproducts/calls/store/selectors/calls';
 import {makeGetCustomStatus, isCustomStatusEnabled, isCustomStatusExpired, isCustomStatusExpirySupported} from '@selectors/custom_status';
 import {isGuest} from '@utils/users';
 
@@ -39,8 +38,6 @@ function makeMapStateToProps() {
         let customStatus;
         let customStatusExpired = true;
         let customStatusExpirySupported = false;
-        const roles = getCurrentUserRoles(state) || '';
-        const isChannelAdmin = checkIsAdmin(roles) || checkIsChannelAdmin(roles);
         const isDirectMessage = currentChannel.type === General.DM_CHANNEL;
 
         if (isDirectMessage) {
@@ -56,11 +53,12 @@ function makeMapStateToProps() {
             customStatusExpirySupported = customStatusEnabled ? isCustomStatusExpirySupported(state) : false;
         }
 
-        if (currentChannel.type === General.GM_CHANNEL) {
+        const isGroupMessage = currentChannel.type === General.GM_CHANNEL;
+        if (isGroupMessage) {
             currentChannelMemberCount = currentChannel.display_name.split(',').length;
         }
 
-        const callsFeatureEnabled = getFeatureFlagValue(state, 'CallsMobile') === 'true';
+        const isSupportedServerCalls = isSupportedServer(state);
 
         return {
             currentChannel,
@@ -76,9 +74,7 @@ function makeMapStateToProps() {
             isCustomStatusEnabled: customStatusEnabled,
             isCustomStatusExpired: customStatusExpired,
             isCustomStatusExpirySupported: customStatusExpirySupported,
-            isCallsEnabled: isCallsEnabled(state),
-            callsFeatureEnabled,
-            isChannelAdmin,
+            isSupportedServerCalls,
         };
     };
 }

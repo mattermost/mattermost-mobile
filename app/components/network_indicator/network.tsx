@@ -46,14 +46,7 @@ const styles = StyleSheet.create({
         height: ViewTypes.INDICATOR_BAR_HEIGHT,
         width: '100%',
         position: 'absolute',
-        ...Platform.select({
-            android: {
-                elevation: 9,
-            },
-            ios: {
-                zIndex: 9,
-            },
-        }),
+        zIndex: 9,
     },
     wrapper: {
         alignItems: 'center',

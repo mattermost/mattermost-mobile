@@ -22,7 +22,7 @@ class PostOptions {
         markUnreadAction: 'post.options.markUnread.action',
         openAddReactionButton: 'open.add_reaction.button',
         slideUpPanel: 'slide_up_panel',
-    }
+    };
 
     postOptions = element(by.id(this.testID.postOptions));
     reactionPickerAction = element(by.id(this.testID.reactionPickerAction));
@@ -41,18 +41,18 @@ class PostOptions {
 
     getReactionButton = (emojiName) => {
         return element(by.id(`${this.testID.reactionButtonPrefix}${emojiName}`));
-    }
+    };
 
     toBeVisible = async () => {
         await expect(this.postOptions).toExist();
 
         return postOptions;
-    }
+    };
 
     close = async () => {
         await this.postOptions.tap({x: 5, y: 10});
         await expect(this.postOptions).not.toBeVisible();
-    }
+    };
 
     deletePost = async ({confirm = true} = {}) => {
         // # Swipe up panel on Android
@@ -79,7 +79,7 @@ class PostOptions {
             await expect(this.postOptions).toBeVisible();
             await this.close();
         }
-    }
+    };
 }
 
 const postOptions = new PostOptions();

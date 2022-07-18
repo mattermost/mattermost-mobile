@@ -2,13 +2,12 @@
 // See LICENSE.txt for license information.
 
 import moment from 'moment-timezone';
-import React, {useCallback} from 'react';
-import {injectIntl, IntlShape} from 'react-intl';
+import React from 'react';
+import {injectIntl, intlShape, IntlShape} from 'react-intl';
 import {View, TouchableOpacity, Text} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
-import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import leaveAndJoinWithAlert from '@mmproducts/calls/components/leave_and_join_alert';
@@ -20,7 +19,7 @@ import type {UserProfile} from '@mm-redux/types/users';
 
 type CallMessageProps = {
     actions: {
-        joinCall: (channelId: string) => void;
+        joinCall: (channelId: string, intl: typeof intlShape) => void;
     };
     post: Post;
     user: UserProfile;
@@ -33,6 +32,7 @@ type CallMessageProps = {
     currentChannelName: string;
     callChannelName: string;
     intl: typeof IntlShape;
+    isLimitRestricted: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -67,9 +67,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         joinCallButtonText: {
             color: 'white',
         },
+        joinCallButtonTextRestricted: {
+            color: changeOpacity(theme.centerChannelColor, 0.32),
+        },
         joinCallButtonIcon: {
             color: 'white',
             marginRight: 5,
+        },
+        joinCallButtonIconRestricted: {
+            color: changeOpacity(theme.centerChannelColor, 0.32),
         },
         startedText: {
             color: theme.centerChannelColor,
@@ -82,6 +88,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderRadius: 8,
             alignItems: 'center',
             alignContent: 'center',
+        },
+        joinCallButtonRestricted: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         },
         timeText: {
             color: theme.centerChannelColor,
@@ -99,14 +108,28 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, alreadyInTheCall, theme, actions, userTimezone, isMilitaryTime, currentChannelName, callChannelName, intl}: CallMessageProps) => {
+const CallMessage = ({
+    post,
+    user,
+    teammateNameDisplay,
+    confirmToJoin,
+    alreadyInTheCall,
+    theme,
+    actions,
+    userTimezone,
+    isMilitaryTime,
+    currentChannelName,
+    callChannelName,
+    intl,
+    isLimitRestricted,
+}: CallMessageProps) => {
     const style = getStyleSheet(theme);
-    const joinHandler = useCallback(() => {
-        if (alreadyInTheCall) {
+    const joinHandler = () => {
+        if (alreadyInTheCall || isLimitRestricted) {
             return;
         }
         leaveAndJoinWithAlert(intl, post.channel_id, callChannelName, currentChannelName, confirmToJoin, actions.joinCall);
-    }, [post.channel_id, callChannelName, currentChannelName, confirmToJoin, actions.joinCall]);
+    };
 
     if (post.props.end_at) {
         return (
@@ -117,42 +140,33 @@ const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, alreadyInT
                     style={style.phoneHangupIcon}
                 />
                 <View style={style.messageText}>
-                    <FormattedText
-                        id='call_message.call_ended'
-                        defaultMessage='Call ended'
+                    <Text
                         style={style.startedText}
-                    />
+                    >{'Call ended'}</Text>
                     <View
                         style={style.endCallInfo}
                     >
-                        <FormattedText
-                            id='call_message.call_ended_at'
-                            defaultMessage='Ended at {time}'
+                        <Text
                             style={style.timeText}
-                            values={{
-                                time: (
-                                    <FormattedTime
-                                        value={post.props.end_at}
-                                        isMilitaryTime={isMilitaryTime}
-                                        timezone={userTimezone}
-                                    />
-                                ),
-                            }}
-                        />
+                        >{'Ended at '}</Text>
+                        {
+                            <FormattedTime
+                                value={post.props.end_at}
+                                isMilitaryTime={isMilitaryTime}
+                                timezone={userTimezone}
+                            />
+                        }
                         <Text style={style.separator}>{'•'}</Text>
-                        <FormattedText
+                        <Text
                             style={style.timeText}
-                            id='call_message.call_lasted'
-                            defaultMessage='Lasted {duration}'
-                            values={{
-                                duration: moment.duration(post.props.end_at - post.props.start_at).humanize(false),
-                            }}
-                        />
+                        >{`Lasted ${moment.duration(post.props.end_at - post.props.start_at).humanize(false)}`}</Text>
                     </View>
                 </View>
             </View>
         );
     }
+
+    const joinCallButtonText = alreadyInTheCall ? 'Current call' : 'Join call';
 
     return (
         <View style={style.messageStyle}>
@@ -162,12 +176,9 @@ const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, alreadyInT
                 style={style.joinCallIcon}
             />
             <View style={style.messageText}>
-                <FormattedText
-                    id='call_message.started_a_call'
-                    defaultMessage='{user} started a call'
-                    values={{user: displayUsername(user, teammateNameDisplay)}}
+                <Text
                     style={style.startedText}
-                />
+                >{`${displayUsername(user, teammateNameDisplay)} started a call`}</Text>
                 <FormattedRelativeTime
                     value={post.props.start_at}
                     updateIntervalInSeconds={1}
@@ -176,26 +187,17 @@ const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, alreadyInT
             </View>
 
             <TouchableOpacity
-                style={style.joinCallButton}
+                style={[style.joinCallButton, isLimitRestricted && style.joinCallButtonRestricted]}
                 onPress={joinHandler}
             >
                 <CompassIcon
                     name='phone-outline'
                     size={16}
-                    style={style.joinCallButtonIcon}
+                    style={[style.joinCallButtonIcon, isLimitRestricted && style.joinCallButtonIconRestricted]}
                 />
-                {alreadyInTheCall &&
-                    <FormattedText
-                        id='call_message.current_call'
-                        defaultMessage='Current Call'
-                        style={style.joinCallButtonText}
-                    />}
-                {!alreadyInTheCall &&
-                    <FormattedText
-                        id='call_message.join_call'
-                        defaultMessage='Join Call'
-                        style={style.joinCallButtonText}
-                    />}
+                <Text style={[style.joinCallButtonText, isLimitRestricted && style.joinCallButtonTextRestricted]}>
+                    {joinCallButtonText}
+                </Text>
             </TouchableOpacity>
         </View>
     );

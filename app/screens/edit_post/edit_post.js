@@ -156,7 +156,7 @@ export default class EditPost extends PureComponent {
     isMessageTooLong = (message) => {
         const {maxMessageLength} = this.props;
         return (message && message.trim().length > maxMessageLength);
-    }
+    };
 
     onPostChangeText = (message) => {
         // Workaround to avoid iOS emdash autocorrect in Code Blocks
@@ -204,7 +204,7 @@ export default class EditPost extends PureComponent {
 
     onAutocompleteVisible = (autocompleteVisible) => {
         this.setState({autocompleteVisible});
-    }
+    };
 
     render() {
         const {deviceHeight, deviceWidth, theme} = this.props;

@@ -18,7 +18,7 @@ export default class EmojiPickerRow extends Component {
         emojiSize: PropTypes.number.isRequired,
         items: PropTypes.array.isRequired,
         onEmojiPress: PropTypes.func.isRequired,
-    }
+    };
 
     shouldComponentUpdate(nextProps) {
         return !shallowEqual(this.props.items, nextProps.items);

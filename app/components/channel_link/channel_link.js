@@ -83,7 +83,7 @@ export default class ChannelLink extends React.PureComponent {
                 this.props.onChannelLinkPress(channel);
             }
         }
-    }
+    };
 
     render() {
         const channel = this.state.channel;

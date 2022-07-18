@@ -6,7 +6,12 @@ interface NotificationUserInfo {
     test?: boolean;
 }
 
+interface NotificationWithAck extends Notification {
+    ack_id: string;
+}
+
 interface NotificationData {
+    ack_id: string;
     body?: string;
     channel_id: string;
     channel_name?: string;

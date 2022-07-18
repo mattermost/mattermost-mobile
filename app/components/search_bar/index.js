@@ -98,11 +98,11 @@ export default class Search extends PureComponent {
 
     setSearchContainerRef = (ref) => {
         this.searchContainerRef = ref;
-    }
+    };
 
     setInputKeywordRef = (ref) => {
         this.inputKeywordRef = ref;
-    }
+    };
 
     blur = () => {
         this.inputKeywordRef.blur();
@@ -188,7 +188,7 @@ export default class Search extends PureComponent {
                 ),
             ]).start(resolve);
         });
-    }
+    };
 
     collapseAnimation = () => {
         return new Promise((resolve) => {
@@ -209,7 +209,7 @@ export default class Search extends PureComponent {
                 ),
             ]).start(resolve);
         });
-    }
+    };
 
     render() {
         const {testID, backgroundColor, inputHeight, inputStyle, placeholderTextColor, tintColorSearch, cancelButtonStyle, tintColorDelete, titleCancelColor, searchBarRightMargin, containerHeight} = this.props;

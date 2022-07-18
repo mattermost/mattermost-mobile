@@ -19,7 +19,7 @@ class NotificationSettingsEmailScreen {
         sendModal: 'notification_settings_email.send.modal',
         sendModalCancelButton: 'notification_settings_email.send_modal_cancel.button',
         sendModalSaveButton: 'notification_settings_email.send_modal_save.button',
-    }
+    };
 
     notificationSettingsEmailScreen = element(by.id(this.testID.notificationSettingsEmailScreen));
     backButton = element(by.id(this.testID.backButton));
@@ -45,25 +45,25 @@ class NotificationSettingsEmailScreen {
         default:
             throw new Error('Not a valid send option: ' + sendKey);
         }
-    }
+    };
 
     toBeVisible = async () => {
         await expect(this.notificationSettingsEmailScreen).toBeVisible();
 
         return this.notificationSettingsEmailScreen;
-    }
+    };
 
     open = async () => {
         // # Open notification settings email screen
         await NotificationSettingsScreen.emailAction.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     back = async () => {
         await this.backButton.tap();
         await expect(this.notificationSettingsEmailScreen).not.toBeVisible();
-    }
+    };
 }
 
 const notificationSettingsEmailScreen = new NotificationSettingsEmailScreen();

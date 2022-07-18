@@ -33,7 +33,7 @@ export default class ChannelNotificationPreferenceAndroid extends ChannelNotific
             radioItems.push(e);
         });
         return radioItems;
-    }
+    };
 
     render() {
         const {theme, isCollapsedThreadsEnabled} = this.props;

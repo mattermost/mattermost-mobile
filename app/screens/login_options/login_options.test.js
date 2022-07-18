@@ -33,7 +33,7 @@ describe('Login options', () => {
         expect(configuredWrapper.find(FormattedText).find({id: 'signup.google'}).exists()).toBe(true);
     });
 
-    test('should show open id button only when enabled and from version 5.33', () => {
+    test('should show open id button only when enabled', () => {
         const basicWrapper = shallowWithIntl(<LoginOptions {...baseProps}/>);
         expect(basicWrapper.find(FormattedText).find({id: 'signup.openid'}).exists()).toBe(false);
 
@@ -42,21 +42,9 @@ describe('Login options', () => {
             config: {
                 ...baseProps.config,
                 EnableSignUpWithOpenId: 'true',
-                Version: '5.33.0',
             },
         };
         const newVersionWrapper = shallowWithIntl(<LoginOptions {...newVersionProps}/>);
         expect(newVersionWrapper.find(FormattedText).find({id: 'signup.openid'}).exists()).toBe(true);
-
-        const oldVersionProps = {
-            ...baseProps,
-            config: {
-                ...baseProps.config,
-                EnableSignUpWithOpenId: 'true',
-                Version: '5.30.0',
-            },
-        };
-        const oldVersionWrapper = shallowWithIntl(<LoginOptions {...oldVersionProps}/>);
-        expect(oldVersionWrapper.find(FormattedText).find({id: 'signup.openid'}).exists()).toBe(false);
     });
 });

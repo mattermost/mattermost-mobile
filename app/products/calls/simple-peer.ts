@@ -18,8 +18,10 @@ import {
     RTCSessionDescriptionType,
     MessageEvent,
     RTCIceCandidateType,
-} from 'react-native-webrtc2';
+} from 'react-native-webrtc';
 import stream from 'readable-stream';
+
+import {ICEServersConfigs} from '@mmproducts/calls/store/types/calls';
 
 const queueMicrotask = (callback: any) => {
     Promise.resolve().then(callback).catch((e) => setTimeout(() => {
@@ -68,7 +70,7 @@ export default class Peer extends stream.Duplex {
     isConnected = false;
     id = generateId().slice(0, 7);
     channelName = generateId();
-    streams: MediaStream[]
+    streams: MediaStream[];
 
     private pcReady = false;
     private channelReady = false;
@@ -94,7 +96,7 @@ export default class Peer extends stream.Duplex {
     private pc: RTCPeerConnection|null = null;
     private onFinishBound?: () => void;
 
-    constructor(localStream: MediaStream) {
+    constructor(localStream: MediaStream | null, iceServers: ICEServersConfigs) {
         super({allowHalfOpen: false});
 
         this.streams = localStream ? [localStream] : [];
@@ -103,18 +105,13 @@ export default class Peer extends stream.Duplex {
             this.onFinish();
         };
 
+        const connConfig = {
+            iceServers,
+            sdpSemantics: 'unified-plan',
+        };
+
         try {
-            this.pc = new RTCPeerConnection({
-                iceServers: [
-                    {
-                        urls: [
-                            'stun:stun.l.google.com:19302',
-                            'stun:global.stun.twilio.com:3478',
-                        ],
-                    },
-                ],
-                sdpSemantics: 'unified-plan',
-            });
+            this.pc = new RTCPeerConnection(connConfig);
         } catch (err) {
             this.destroy(errCode(err, 'ERR_PC_CONSTRUCTOR'));
             return;
@@ -318,11 +315,11 @@ export default class Peer extends stream.Duplex {
      * @param {MediaStreamTrack} track
      * @param {MediaStream} s
      */
-    addTrack(track: MediaStreamTrack, s: MediaStream) {
+    async addTrack(track: MediaStreamTrack, s: MediaStream) {
         if (this.destroying) {
             return;
         }
-        if (this.destroyed) {
+        if (this.destroyed || !this.pc) {
             throw errCode(
                 new Error('cannot addTrack after peer is destroyed'),
                 'ERR_DESTROYED',
@@ -330,10 +327,11 @@ export default class Peer extends stream.Duplex {
         }
 
         const submap = this.senderMap.get(track) || new Map(); // nested Maps map [track, stream] to sender
-        let sender = submap.get(s);
+        const sender = submap.get(s);
         if (!sender) {
-            sender = s.addTrack(track);
-            submap.set(s, sender);
+            const transceiver = await this.pc.addTransceiver(track, {direction: 'sendrecv'}) as any;
+            /* eslint-disable no-underscore-dangle */
+            submap.set(s, transceiver._sender);
             this.senderMap.set(track, submap);
             this.needsNegotiation();
         } else if (sender.removed) {
@@ -348,6 +346,36 @@ export default class Peer extends stream.Duplex {
                 new Error('Track has already been added to that stream.'),
                 'ERR_SENDER_ALREADY_ADDED',
             );
+        }
+    }
+
+    /**
+   * Replace a MediaStreamTrack by another in the connection.
+   * @param {MediaStreamTrack} oldTrack
+   * @param {MediaStreamTrack} newTrack
+   * @param {MediaStream} stream
+   */
+    replaceTrack(oldTrack: MediaStreamTrack, newTrack: MediaStreamTrack | null, s: MediaStream) {
+        if (this.destroying) {
+            return;
+        }
+        if (this.destroyed) {
+            throw errCode(new Error('cannot replaceTrack after peer is destroyed'), 'ERR_DESTROYED');
+        }
+
+        const submap = this.senderMap.get(oldTrack);
+        const sender = submap ? submap.get(s) : null;
+        if (!sender) {
+            throw errCode(new Error('Cannot replace track that was never added.'), 'ERR_TRACK_NOT_ADDED');
+        }
+        if (newTrack) {
+            this.senderMap.set(newTrack, submap);
+        }
+
+        if (sender.replaceTrack == null) {
+            this.destroy(errCode(new Error('replaceTrack is not supported in this browser'), 'ERR_UNSUPPORTED_REPLACETRACK'));
+        } else {
+            sender.replaceTrack(newTrack);
         }
     }
 
@@ -384,7 +412,12 @@ export default class Peer extends stream.Duplex {
         this.isNegotiating = true;
     }
 
-    _destroy(err: Error | null, cb: (error: Error | null) => void) {
+    destroy(err?: Error, cb?: (error: Error | null) => void, cbPCClose?: () => void): this {
+        this._destroy(err, cb, cbPCClose);
+        return this;
+    }
+
+    _destroy(err?: Error | null, cb?: (error: Error | null) => void, cbPcClose?: () => void) {
         if (this.destroyed || this.destroying) {
             return;
         }
@@ -431,14 +464,14 @@ export default class Peer extends stream.Duplex {
                 } catch (err) {} // eslint-disable-line
 
                 // allow events concurrent with destruction to be handled
-                this.channel.onmessage = null;
-                this.channel.onopen = null;
-                this.channel.onclose = null;
-                this.channel.onerror = null;
+                this.channel.onmessage = undefined;
+                this.channel.onopen = undefined;
+                this.channel.onclose = undefined;
+                this.channel.onerror = undefined;
             }
             if (this.pc) {
                 try {
-                    this.pc.close();
+                    this.pc.close(cbPcClose);
                 } catch (err) {} // eslint-disable-line
 
                 // allow events concurrent with destruction to be handled
@@ -454,7 +487,7 @@ export default class Peer extends stream.Duplex {
                 this.emit('error', err);
             }
             this.emit('close');
-            cb(null);
+            cb?.(null);
         }, 0);
     }
 

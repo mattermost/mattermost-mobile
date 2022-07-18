@@ -62,7 +62,7 @@ export type GlobalState = {
         apps: AppsState;
         calls: CallsState;
     };
-    errors: Array<any>;
+    errors: any[];
     requests: {
         channels: ChannelsRequestsStatuses;
         general: GeneralRequestsStatuses;

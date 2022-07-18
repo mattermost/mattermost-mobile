@@ -6,7 +6,7 @@ import {getRoles} from '@mm-redux/selectors/entities/roles_helpers';
 import {DispatchFunc, GetStateFunc, ActionFunc} from '@mm-redux/types/actions';
 
 import {bindClientFunc} from './helpers';
-export function getRolesByNames(rolesNames: Array<string>) {
+export function getRolesByNames(rolesNames: string[]) {
     return bindClientFunc({
         clientFunc: Client4.getRolesByNames,
         onSuccess: [RoleTypes.RECEIVED_ROLES, RoleTypes.ROLES_BY_NAMES_SUCCESS],

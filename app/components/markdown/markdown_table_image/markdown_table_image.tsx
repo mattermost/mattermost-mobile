@@ -16,6 +16,7 @@ import {openGalleryAtIndex} from '@utils/gallery';
 import {calculateDimensions, isGifTooLarge} from '@utils/images';
 
 import type {PostImage} from '@mm-redux/types/posts';
+import type {Theme} from '@mm-redux/types/theme';
 
 type MarkdownTableImageProps = {
     disable: boolean;
@@ -23,6 +24,7 @@ type MarkdownTableImageProps = {
     postId: string;
     serverURL?: string;
     source: string;
+    theme: Theme;
 }
 
 const styles = StyleSheet.create({
@@ -32,7 +34,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const MarkTableImage = ({disable, imagesMetadata, postId, serverURL, source}: MarkdownTableImageProps) => {
+const MarkTableImage = ({disable, imagesMetadata, postId, serverURL, source, theme}: MarkdownTableImageProps) => {
     const metadata = imagesMetadata[source] || Object.values(imagesMetadata || {})?.[0];
     const fileId = useRef(generateId()).current;
     const [failed, setFailed] = useState(isGifTooLarge(metadata));
@@ -98,6 +100,7 @@ const MarkTableImage = ({disable, imagesMetadata, postId, serverURL, source}: Ma
             <CompassIcon
                 name='file-image-broken-outline-large'
                 size={24}
+                color={theme.centerChannelColor}
             />
         );
     } else {
@@ -109,6 +112,11 @@ const MarkTableImage = ({disable, imagesMetadata, postId, serverURL, source}: Ma
                     <SvgUri
                         uri={source}
                         style={styles.container}
+                        width={width}
+                        height={height}
+
+                        //@ts-expect-error onError not defined in the types
+                        onError={onLoadFailed}
                     />
                 </View>
             );

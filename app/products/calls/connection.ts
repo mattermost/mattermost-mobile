@@ -1,105 +1,150 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import {deflate} from 'pako/lib/deflate.js';
+import {DeviceEventEmitter, EmitterSubscription} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 import {
     MediaStream,
     MediaStreamTrack,
     mediaDevices,
-} from 'react-native-webrtc2';
+} from 'react-native-webrtc';
 
 import {Client4} from '@client/rest';
+import {WebsocketEvents} from '@constants';
+import {ICEServersConfigs} from '@mmproducts/calls/store/types/calls';
 
 import Peer from './simple-peer';
+import WebSocketClient from './websocket';
 
 export let client: any = null;
 
 const websocketConnectTimeout = 3000;
 
-function getWSConnectionURL(channelID: string): string {
-    let url = Client4.getAbsoluteUrl(`/plugins/com.mattermost.calls/${channelID}/ws`);
-    url = url.replace(/^https:/, 'wss:');
-    url = url.replace(/^http:/, 'ws:');
-    return url;
-}
-
-export async function newClient(channelID: string, closeCb: () => void, setScreenShareURL: (url: string) => void) {
-    let peer: any = null;
+export async function newClient(channelID: string, iceServers: ICEServersConfigs, closeCb: () => void, setScreenShareURL: (url: string) => void) {
+    let peer: Peer | null = null;
+    let stream: MediaStream;
+    let voiceTrackAdded = false;
+    let voiceTrack: MediaStreamTrack | null = null;
+    let isClosed = false;
+    let onCallEnd: EmitterSubscription | null = null;
     const streams: MediaStream[] = [];
 
-    let stream: MediaStream;
-    let audioTrack: any;
     try {
         stream = await mediaDevices.getUserMedia({
             video: false,
             audio: true,
         }) as MediaStream;
-        audioTrack = stream.getAudioTracks()[0];
-        audioTrack.enabled = false;
+        voiceTrack = stream.getAudioTracks()[0];
+        voiceTrack.enabled = false;
         streams.push(stream);
     } catch (err) {
         console.log('Unable to get media device:', err); // eslint-disable-line no-console
     }
 
-    const ws = new WebSocket(getWSConnectionURL(channelID));
+    const ws = new WebSocketClient(Client4.getWebSocketUrl(), Client4.getToken());
 
     const disconnect = () => {
-        ws.close();
+        if (!isClosed) {
+            ws.close();
+        }
+
+        if (onCallEnd) {
+            onCallEnd.remove();
+            onCallEnd = null;
+        }
 
         streams.forEach((s) => {
             s.getTracks().forEach((track: MediaStreamTrack) => {
                 track.stop();
+                track.release();
             });
         });
 
-        if (peer) {
-            peer.destroy();
-        }
-        InCallManager.stop();
+        peer?.destroy(undefined, undefined, () => {
+            // Wait until the peer connection is closed, which avoids the following racy error that can cause problems with accessing the audio system in the future:
+            // AVAudioSession_iOS.mm:1243  Deactivating an audio session that has running I/O. All I/O should be stopped or paused prior to deactivating the audio session.
+            InCallManager.stop();
+        });
 
         if (closeCb) {
             closeCb();
         }
     };
 
+    onCallEnd = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_CALL_END, ({channelId}) => {
+        if (channelId === channelID) {
+            disconnect();
+        }
+    });
+
     const mute = () => {
-        if (audioTrack) {
-            audioTrack.enabled = false;
+        if (!peer) {
+            return;
+        }
+        if (voiceTrackAdded && voiceTrack) {
+            peer.replaceTrack(voiceTrack, null, stream);
+        }
+        if (voiceTrack) {
+            voiceTrack.enabled = false;
         }
         if (ws) {
-            ws.send(JSON.stringify({
-                type: 'mute',
-            }));
+            ws.send('mute');
         }
     };
 
     const unmute = () => {
-        if (audioTrack) {
-            audioTrack.enabled = true;
+        if (!peer || !voiceTrack) {
+            return;
         }
+        if (voiceTrackAdded) {
+            peer.replaceTrack(voiceTrack, voiceTrack, stream);
+        } else {
+            peer.addStream(stream);
+            voiceTrackAdded = true;
+        }
+        voiceTrack.enabled = true;
         if (ws) {
-            ws.send(JSON.stringify({
-                type: 'unmute',
-            }));
+            ws.send('unmute');
         }
     };
 
-    ws.onerror = (err) => console.log('WS ERROR', err); // eslint-disable-line no-console
+    const raiseHand = () => {
+        if (ws) {
+            ws.send('raise_hand');
+        }
+    };
 
-    ws.onopen = async () => {
+    const unraiseHand = () => {
+        if (ws) {
+            ws.send('unraise_hand');
+        }
+    };
+
+    ws.on('error', (err) => {
+        console.log('WS (CALLS) ERROR', err); // eslint-disable-line no-console
+        ws.close();
+    });
+
+    ws.on('close', () => {
+        isClosed = true;
+        disconnect();
+    });
+
+    ws.on('join', async () => {
         InCallManager.start({media: 'audio'});
-        peer = new Peer(stream);
+        peer = new Peer(null, iceServers);
         peer.on('signal', (data: any) => {
             if (data.type === 'offer' || data.type === 'answer') {
-                ws.send(JSON.stringify({
-                    type: 'signal',
-                    data,
-                }));
+                ws.send('sdp', {
+                    data: deflate(JSON.stringify(data)),
+                }, true);
             } else if (data.type === 'candidate') {
-                ws.send(JSON.stringify({
-                    type: 'ice',
-                    data,
-                }));
+                ws.send('ice', {
+                    data: JSON.stringify(data.candidate),
+                });
             }
         });
 
@@ -110,15 +155,23 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
             }
         });
 
-        peer.on('error', (err: any) => console.log('PEER ERROR', err)); // eslint-disable-line no-console
+        peer.on('error', (err: any) => {
+            console.log('PEER ERROR', err); // eslint-disable-line no-console
+        });
+    });
 
-        ws.onmessage = ({data}) => {
-            const msg = JSON.parse(data);
-            if (msg.type === 'answer' || msg.type === 'offer') {
-                peer.signal(data);
-            }
-        };
-    };
+    ws.on('open', async () => {
+        ws.send('join', {
+            channelID,
+        });
+    });
+
+    ws.on('message', ({data}) => {
+        const msg = JSON.parse(data);
+        if (msg.type === 'answer' || msg.type === 'offer') {
+            peer?.signal(data);
+        }
+    });
 
     const waitForReady = () => {
         const waitForReadyImpl = (callback: () => void, fail: () => void, timeout: number) => {
@@ -127,7 +180,7 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
                 return;
             }
             setTimeout(() => {
-                if (ws.readyState === WebSocket.OPEN) {
+                if (ws.state() === WebSocket.OPEN) {
                     callback();
                 } else {
                     waitForReadyImpl(callback, fail, timeout - 10);
@@ -147,6 +200,8 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
         mute,
         unmute,
         waitForReady,
+        raiseHand,
+        unraiseHand,
     };
 
     return client;

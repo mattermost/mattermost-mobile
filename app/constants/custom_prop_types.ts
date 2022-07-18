@@ -6,7 +6,7 @@ import {StyleProp, TextStyle, ViewStyle} from 'react-native';
 
 interface CustomPropTypes {
     Children: ReactNode | ReactNodeArray;
-    Style: object | number | StyleProp<TextStyle> | StyleProp<TextStyle>[] | StyleProp<ViewStyle> | StyleProp<ViewStyle>[];
+    Style: object | number | StyleProp<TextStyle> | Array<StyleProp<TextStyle>> | StyleProp<ViewStyle> | Array<StyleProp<ViewStyle>>;
 }
 
 export default CustomPropTypes;

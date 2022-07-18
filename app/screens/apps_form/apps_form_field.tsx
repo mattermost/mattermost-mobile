@@ -49,7 +49,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 export default class AppsFormField extends React.PureComponent<Props, State> {
-    constructor(props:Props) {
+    constructor(props: Props) {
         super(props);
 
         this.state = {};
@@ -100,7 +100,7 @@ export default class AppsFormField extends React.PureComponent<Props, State> {
         });
 
         this.props.onChange(field.name, selectedOptions);
-    }
+    };
 
     getDynamicOptions = async (userInput = ''): Promise<{data: DialogOption[]}> => {
         const options = await this.props.performLookup(this.props.field.name, userInput);

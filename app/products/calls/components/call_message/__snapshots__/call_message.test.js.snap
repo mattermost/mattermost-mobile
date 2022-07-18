@@ -34,21 +34,16 @@ exports[`CallMessage should match snapshot 1`] = `
       }
     }
   >
-    <InjectIntl(FormattedText)
-      defaultMessage="{user} started a call"
-      id="call_message.started_a_call"
+    <Text
       style={
         Object {
           "color": "#3f4350",
           "fontWeight": "bold",
         }
       }
-      values={
-        Object {
-          "user": "User 1",
-        }
-      }
-    />
+    >
+      User 1 started a call
+    </Text>
     <FormattedRelativeTime
       style={
         Object {
@@ -62,35 +57,44 @@ exports[`CallMessage should match snapshot 1`] = `
   <TouchableOpacity
     onPress={[Function]}
     style={
-      Object {
-        "alignContent": "center",
-        "alignItems": "center",
-        "backgroundColor": "#339970",
-        "borderRadius": 8,
-        "flexDirection": "row",
-        "padding": 12,
-      }
+      Array [
+        Object {
+          "alignContent": "center",
+          "alignItems": "center",
+          "backgroundColor": "#339970",
+          "borderRadius": 8,
+          "flexDirection": "row",
+          "padding": 12,
+        },
+        undefined,
+      ]
     }
   >
     <CompassIcon
       name="phone-outline"
       size={16}
       style={
-        Object {
-          "color": "white",
-          "marginRight": 5,
-        }
+        Array [
+          Object {
+            "color": "white",
+            "marginRight": 5,
+          },
+          undefined,
+        ]
       }
     />
-    <InjectIntl(FormattedText)
-      defaultMessage="Join Call"
-      id="call_message.join_call"
+    <Text
       style={
-        Object {
-          "color": "white",
-        }
+        Array [
+          Object {
+            "color": "white",
+          },
+          undefined,
+        ]
       }
-    />
+    >
+      Join call
+    </Text>
   </TouchableOpacity>
 </View>
 `;
@@ -129,16 +133,16 @@ exports[`CallMessage should match snapshot for ended call 1`] = `
       }
     }
   >
-    <InjectIntl(FormattedText)
-      defaultMessage="Call ended"
-      id="call_message.call_ended"
+    <Text
       style={
         Object {
           "color": "#3f4350",
           "fontWeight": "bold",
         }
       }
-    />
+    >
+      Call ended
+    </Text>
     <View
       style={
         Object {
@@ -148,23 +152,19 @@ exports[`CallMessage should match snapshot for ended call 1`] = `
         }
       }
     >
-      <InjectIntl(FormattedText)
-        defaultMessage="Ended at {time}"
-        id="call_message.call_ended_at"
+      <Text
         style={
           Object {
             "color": "#3f4350",
           }
         }
-        values={
-          Object {
-            "time": <FormattedTime
-              isMilitaryTime={false}
-              timezone="utc"
-              value={200}
-            />,
-          }
-        }
+      >
+        Ended at 
+      </Text>
+      <FormattedTime
+        isMilitaryTime={false}
+        timezone="utc"
+        value={200}
       />
       <Text
         style={
@@ -177,20 +177,15 @@ exports[`CallMessage should match snapshot for ended call 1`] = `
       >
         •
       </Text>
-      <InjectIntl(FormattedText)
-        defaultMessage="Lasted {duration}"
-        id="call_message.call_lasted"
+      <Text
         style={
           Object {
             "color": "#3f4350",
           }
         }
-        values={
-          Object {
-            "duration": "a few seconds",
-          }
-        }
-      />
+      >
+        Lasted a few seconds
+      </Text>
     </View>
   </View>
 </View>
@@ -230,21 +225,16 @@ exports[`CallMessage should match snapshot for the call already in the current c
       }
     }
   >
-    <InjectIntl(FormattedText)
-      defaultMessage="{user} started a call"
-      id="call_message.started_a_call"
+    <Text
       style={
         Object {
           "color": "#3f4350",
           "fontWeight": "bold",
         }
       }
-      values={
-        Object {
-          "user": "User 1",
-        }
-      }
-    />
+    >
+      User 1 started a call
+    </Text>
     <FormattedRelativeTime
       style={
         Object {
@@ -258,35 +248,44 @@ exports[`CallMessage should match snapshot for the call already in the current c
   <TouchableOpacity
     onPress={[Function]}
     style={
-      Object {
-        "alignContent": "center",
-        "alignItems": "center",
-        "backgroundColor": "#339970",
-        "borderRadius": 8,
-        "flexDirection": "row",
-        "padding": 12,
-      }
+      Array [
+        Object {
+          "alignContent": "center",
+          "alignItems": "center",
+          "backgroundColor": "#339970",
+          "borderRadius": 8,
+          "flexDirection": "row",
+          "padding": 12,
+        },
+        undefined,
+      ]
     }
   >
     <CompassIcon
       name="phone-outline"
       size={16}
       style={
-        Object {
-          "color": "white",
-          "marginRight": 5,
-        }
+        Array [
+          Object {
+            "color": "white",
+            "marginRight": 5,
+          },
+          undefined,
+        ]
       }
     />
-    <InjectIntl(FormattedText)
-      defaultMessage="Current Call"
-      id="call_message.current_call"
+    <Text
       style={
-        Object {
-          "color": "white",
-        }
+        Array [
+          Object {
+            "color": "white",
+          },
+          undefined,
+        ]
       }
-    />
+    >
+      Current call
+    </Text>
   </TouchableOpacity>
 </View>
 `;

@@ -3,21 +3,21 @@
 
 import {buildQueryString} from '@mm-redux/utils/helpers';
 
-import type {AppBinding, AppCallRequest, AppCallResponse, AppCallType} from '@mm-redux/types/apps';
+import type {AppBinding, AppCallRequest, AppCallResponse} from '@mm-redux/types/apps';
 
 export interface ClientAppsMix {
-    executeAppCall: (call: AppCallRequest, type: AppCallType) => Promise<AppCallResponse>;
+    executeAppCall: (call: AppCallRequest, trackAsSubmit: boolean) => Promise<AppCallResponse>;
     getAppsBindings: (userID: string, channelID: string, teamID: string) => Promise<AppBinding[]>;
 }
 
 const ClientApps = (superclass: any) => class extends superclass {
-    executeAppCall = async (call: AppCallRequest, type: AppCallType) => {
+    executeAppCall = async (call: AppCallRequest, trackAsSubmit: boolean) => {
         const callCopy = {
             ...call,
-            path: `${call.path}/${type}`,
             context: {
                 ...call.context,
                 user_agent: 'mobile',
+                track_as_submit: trackAsSubmit,
             },
         };
 
@@ -25,7 +25,7 @@ const ClientApps = (superclass: any) => class extends superclass {
             `${this.getAppsProxyRoute()}/api/v1/call`,
             {method: 'post', body: JSON.stringify(callCopy)},
         );
-    }
+    };
 
     getAppsBindings = async (userID: string, channelID: string, teamID: string) => {
         const params = {
@@ -39,7 +39,7 @@ const ClientApps = (superclass: any) => class extends superclass {
             `${this.getAppsProxyRoute()}/api/v1/bindings${buildQueryString(params)}`,
             {method: 'get'},
         );
-    }
+    };
 };
 
 export default ClientApps;

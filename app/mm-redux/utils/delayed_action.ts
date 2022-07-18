@@ -14,7 +14,7 @@ export default class DelayedAction {
         this.action();
 
         this.timer = null;
-    }
+    };
 
     fireAfter = (timeout: number): void => {
         if (this.timer !== null) {
@@ -22,11 +22,11 @@ export default class DelayedAction {
         }
 
         this.timer = setTimeout(this.fire, timeout);
-    }
+    };
 
     cancel = (): void => {
         if (this.timer !== null) {
             clearTimeout(this.timer);
         }
-    }
+    };
 }

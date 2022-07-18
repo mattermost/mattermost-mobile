@@ -45,11 +45,11 @@ export type PostImage = {
 };
 
 export type PostMetadata = {
-    embeds: Array<PostEmbed>;
-    emojis: Array<CustomEmoji>;
-    files: Array<FileInfo>;
+    embeds: PostEmbed[];
+    emojis: CustomEmoji[];
+    files: FileInfo[];
     images: Dictionary<PostImage>;
-    reactions: Array<Reaction>;
+    reactions: Reaction[];
 };
 
 export type Post = {
@@ -73,7 +73,7 @@ export type Post = {
     file_ids?: any[];
     metadata: PostMetadata;
     failed?: boolean;
-    user_activity_posts?: Array<Post>;
+    user_activity_posts?: Post[];
     state?: 'DELETED';
     ownPost?: boolean;
     last_reply_at?: number;
@@ -92,13 +92,13 @@ export type PostWithFormatData = Post & {
 };
 
 export type PostOrderBlock = {
-    order: Array<string>;
+    order: string[];
     recent?: boolean;
     oldest?: boolean;
 };
 
 export type MessageHistory = {
-    messages: Array<string>;
+    messages: string[];
     index: {
         post: number;
         comment: number;
@@ -107,11 +107,11 @@ export type MessageHistory = {
 
 export type PostsState = {
     posts: IDMappedObjects<Post>;
-    postsInChannel: Dictionary<Array<PostOrderBlock>>;
+    postsInChannel: Dictionary<PostOrderBlock[]>;
     postsInThread: RelationOneToMany<Post, Post>;
     reactions: RelationOneToOne<Post, Dictionary<Reaction>>;
     openGraph: RelationOneToOne<Post, any>;
-    pendingPostIds: Array<string>;
+    pendingPostIds: string[];
     selectedPostId: string;
     currentFocusedPostId: string;
     messagesHistory: MessageHistory;

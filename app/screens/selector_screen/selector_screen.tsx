@@ -63,7 +63,7 @@ type Props = {
 }
 
 type State = {
-    data: DataType | {id: string; data: DataType}[];
+    data: DataType | Array<{id: string; data: DataType}>;
     loading: boolean;
     searchResults: DialogOption[];
     term: string;
@@ -217,7 +217,7 @@ export default class SelectorScreen extends PureComponent<Props, State> {
             this.setState({multiselectSelected});
         }
         }
-    }
+    };
 
     getChannels = debounce(() => {
         const {actions, currentTeamId} = this.props;

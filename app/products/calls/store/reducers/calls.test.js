@@ -4,14 +4,15 @@
 import assert from 'assert';
 
 import CallsTypes from '@mmproducts/calls/store/action_types/calls';
+import {DefaultServerConfig} from '@mmproducts/calls/store/types/calls';
 
 import callsReducer from './calls';
 
 describe('Reducers.calls.calls', () => {
     const call1 = {
         participants: {
-            'user-1': {id: 'user-1', muted: false, isTalking: false},
-            'user-2': {id: 'user-2', muted: true, isTalking: true},
+            'user-1': {id: 'user-1', muted: false, raisedHand: 0, isTalking: false, profile: {id: 'user-1'}},
+            'user-2': {id: 'user-2', muted: true, raisedHand: 0, isTalking: true, profile: {id: 'user-2'}},
         },
         channelId: 'channel-1',
         startTime: 123,
@@ -21,8 +22,8 @@ describe('Reducers.calls.calls', () => {
     };
     const call2 = {
         participants: {
-            'user-3': {id: 'user-3', muted: false, isTalking: false},
-            'user-4': {id: 'user-4', muted: true, isTalking: true},
+            'user-3': {id: 'user-3', muted: false, raisedHand: 0, isTalking: false, profile: {id: 'user-3'}},
+            'user-4': {id: 'user-4', muted: true, raisedHand: 0, isTalking: true, profile: {id: 'user-4'}},
         },
         channelId: 'channel-2',
         startTime: 123,
@@ -32,8 +33,8 @@ describe('Reducers.calls.calls', () => {
     };
     const call3 = {
         participants: {
-            'user-5': {id: 'user-5', muted: false, isTalking: false},
-            'user-6': {id: 'user-6', muted: true, isTalking: true},
+            'user-5': {id: 'user-5', muted: false, raisedHand: 0, isTalking: false, profile: {id: 'user-5'}},
+            'user-6': {id: 'user-6', muted: true, raisedHand: 0, isTalking: true, profile: {id: 'user-6'}},
         },
         channelId: 'channel-3',
         startTime: 123,
@@ -71,7 +72,7 @@ describe('Reducers.calls.calls', () => {
             {
                 'channel-1': {
                     participants: {
-                        'user-2': {id: 'user-2', muted: true, isTalking: true},
+                        'user-2': {id: 'user-2', muted: true, raisedHand: 0, isTalking: true, profile: {id: 'user-2'}},
                     },
                     channelId: 'channel-1',
                     startTime: 123,
@@ -97,7 +98,7 @@ describe('Reducers.calls.calls', () => {
         const initialState = {calls: {'channel-1': call1}};
         const testAction = {
             type: CallsTypes.RECEIVED_JOINED_CALL,
-            data: {channelId: 'channel-1', userId: 'user-3'},
+            data: {channelId: 'channel-1', userId: 'user-3', profile: {id: 'user-3'}},
         };
         let state = callsReducer(initialState, testAction);
         assert.deepEqual(
@@ -105,9 +106,9 @@ describe('Reducers.calls.calls', () => {
             {
                 'channel-1': {
                     participants: {
-                        'user-1': {id: 'user-1', muted: false, isTalking: false},
-                        'user-2': {id: 'user-2', muted: true, isTalking: true},
-                        'user-3': {id: 'user-3', muted: true, isTalking: false},
+                        'user-1': {id: 'user-1', muted: false, raisedHand: 0, isTalking: false, profile: {id: 'user-1'}},
+                        'user-2': {id: 'user-2', muted: true, raisedHand: 0, isTalking: true, profile: {id: 'user-2'}},
+                        'user-3': {id: 'user-3', muted: true, raisedHand: 0, isTalking: false, profile: {id: 'user-3'}},
                     },
                     channelId: 'channel-1',
                     startTime: 123,
@@ -118,7 +119,7 @@ describe('Reducers.calls.calls', () => {
             },
         );
 
-        testAction.data = {channelId: 'invalid-channel', userId: 'user-1'};
+        testAction.data = {channelId: 'invalid-channel', userId: 'user-1', profile: {id: 'user-1'}};
 
         state = callsReducer(initialState, testAction);
         assert.deepEqual(state.calls, {'channel-1': call1});
@@ -139,6 +140,16 @@ describe('Reducers.calls.calls', () => {
         const testAction = {
             type: CallsTypes.RECEIVED_CALL_FINISHED,
             data: call1,
+        };
+        const state = callsReducer(initialState, testAction);
+        assert.deepEqual(state.calls, {'channel-2': call2});
+    });
+
+    it('RECEIVED_CALL_ENDED', async () => {
+        const initialState = {calls: {'channel-1': call1, 'channel-2': call2}};
+        const testAction = {
+            type: CallsTypes.RECEIVED_CALL_FINISHED,
+            data: {channelId: 'channel-1'},
         };
         const state = callsReducer(initialState, testAction);
         assert.deepEqual(state.calls, {'channel-2': call2});
@@ -179,44 +190,6 @@ describe('Reducers.calls.calls', () => {
         state = callsReducer(initialState, testAction);
         assert.deepEqual(state.calls, initialState.calls);
     });
-
-    it('RECEIVED_VOICE_ON_USER_CALL', async () => {
-        const initialState = {calls: {'channel-1': call1, 'channel-2': call2}};
-        const testAction = {
-            type: CallsTypes.RECEIVED_VOICE_ON_USER_CALL,
-            data: {channelId: 'channel-1', userId: 'user-1'},
-        };
-        let state = callsReducer(initialState, testAction);
-        assert.equal(state.calls['channel-1'].participants['user-1'].isTalking, true);
-        assert.deepEqual(state.calls['channel-1'].speakers, ['user-1', 'user-2']);
-
-        testAction.data = {channelId: 'channel-1', userId: 'invalidUser'};
-        state = callsReducer(initialState, testAction);
-        assert.deepEqual(state.calls, initialState.calls);
-
-        testAction.data = {channelId: 'invalid-channel', userId: 'user-2'};
-        state = callsReducer(initialState, testAction);
-        assert.deepEqual(state.calls, initialState.calls);
-    });
-
-    it('RECEIVED_VOICE_OFF_USER_CALL', async () => {
-        const initialState = {calls: {'channel-1': call1, 'channel-2': call2}};
-        const testAction = {
-            type: CallsTypes.RECEIVED_VOICE_OFF_USER_CALL,
-            data: {channelId: 'channel-1', userId: 'user-2'},
-        };
-        let state = callsReducer(initialState, testAction);
-        assert.equal(state.calls['channel-1'].participants['user-2'].isTalking, false);
-        assert.deepEqual(state.calls['channel-1'].speakers, []);
-
-        testAction.data = {channelId: 'channel-1', userId: 'invalidUser'};
-        state = callsReducer(initialState, testAction);
-        assert.deepEqual(state.calls, initialState.calls);
-
-        testAction.data = {channelId: 'invalid-channel', userId: 'user-2'};
-        state = callsReducer(initialState, testAction);
-        assert.deepEqual(state.calls, initialState.calls);
-    });
     it('RECEIVED_CHANNEL_CALL_SCREEN_ON', async () => {
         const initialState = {calls: {'channel-1': call1, 'channel-2': call2}};
         const testAction = {
@@ -247,6 +220,74 @@ describe('Reducers.calls.calls', () => {
         state = callsReducer(initialState, testAction);
         assert.deepEqual(state.calls, initialState.calls);
     });
+    it('RECEIVED_RAISE_HAND', async () => {
+        const initialState = {calls: {'channel-1': call1}};
+        const testAction = {
+            type: CallsTypes.RECEIVED_RAISE_HAND,
+            data: {channelId: 'channel-1', userId: 'user-2', ts: 345},
+        };
+        let state = callsReducer(initialState, testAction);
+        assert.deepEqual(
+            state.calls,
+            {
+                'channel-1': {
+                    participants: {
+                        'user-1': {id: 'user-1', muted: false, raisedHand: 0, isTalking: false, profile: {id: 'user-1'}},
+                        'user-2': {id: 'user-2', muted: true, raisedHand: 345, isTalking: true, profile: {id: 'user-2'}},
+                    },
+                    channelId: 'channel-1',
+                    startTime: 123,
+                    speakers: ['user-2'],
+                    screenOn: false,
+                    threadId: 'thread-1',
+                },
+            },
+        );
+
+        testAction.data = {channelId: 'invalid-channel', userId: 'user-1', ts: 345};
+
+        state = callsReducer(initialState, testAction);
+        assert.deepEqual(state.calls, {'channel-1': call1});
+    });
+    it('RECEIVED_UNRAISE_HAND', async () => {
+        const initialState = {
+            calls: {
+                'channel-1': {
+                    ...call1,
+                    participants: {
+                        ...call1.participants,
+                        'user-1': {...call1.participants['user-1'], raisedHand: 345},
+                    },
+                },
+            },
+        };
+        const testAction = {
+            type: CallsTypes.RECEIVED_UNRAISE_HAND,
+            data: {channelId: 'channel-1', userId: 'user-1', ts: 0},
+        };
+        let state = callsReducer(initialState, testAction);
+        assert.deepEqual(
+            state.calls,
+            {
+                'channel-1': {
+                    participants: {
+                        'user-1': {id: 'user-1', muted: false, raisedHand: 0, isTalking: false, profile: {id: 'user-1'}},
+                        'user-2': {id: 'user-2', muted: true, raisedHand: 0, isTalking: true, profile: {id: 'user-2'}},
+                    },
+                    channelId: 'channel-1',
+                    startTime: 123,
+                    speakers: ['user-2'],
+                    screenOn: false,
+                    threadId: 'thread-1',
+                },
+            },
+        );
+
+        testAction.data = {channelId: 'invalid-channel', userId: 'user-1', ts: 0};
+
+        state = callsReducer(initialState, testAction);
+        assert.deepEqual(state.calls, initialState.calls);
+    });
 });
 
 describe('Reducers.calls.joined', () => {
@@ -257,7 +298,7 @@ describe('Reducers.calls.joined', () => {
             data: {calls: {'channel-1': {}, 'channel-2': {}}, enabled: {'channel-1': true}},
         };
         const state = callsReducer(initialState, testAction);
-        assert.equal(state.joined, '');
+        assert.equal(state.joined, 'test');
     });
 
     it('RECEIVED_MYSELF_JOINED_CALL', async () => {
@@ -358,5 +399,22 @@ describe('Reducers.calls.screenShareURL', () => {
         };
         const state = callsReducer(initialState, testAction);
         assert.deepEqual(state.screenShareURL, 'new-url');
+    });
+});
+
+describe('Reducers.calls.config', () => {
+    it('RECEIVED_CONFIG', async () => {
+        const initialState = {config: DefaultServerConfig};
+        const testAction = {
+            type: CallsTypes.RECEIVED_CONFIG,
+            data: {
+                ICEServers: ['stun:stun.example.com'],
+                AllowEnableCalls: true,
+                DefaultEnabled: true,
+                last_retrieved_at: 123,
+            },
+        };
+        const state = callsReducer(initialState, testAction);
+        assert.deepEqual(state.config, testAction.data);
     });
 });
