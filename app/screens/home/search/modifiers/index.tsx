@@ -8,54 +8,31 @@ import Animated, {useSharedValue, useAnimatedStyle, withTiming} from 'react-nati
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import TeamPickerIcon from '../team_picker_icon';
 
 import Modifier, {ModifierItem} from './modifier';
 import ShowMoreButton from './show_more';
 
-const SECTION_HEIGHT = 20;
-const RECENT_SEPARATOR_HEIGHT = 3;
 const MODIFIER_LABEL_HEIGHT = 48;
+const TEAM_PICKER_ICON_SIZE = 32;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        flex: {
-            flex: 1,
-        },
-        sectionWrapper: {
-            marginBottom: 12,
-            height: 48,
-            backgroundColor: theme.centerChannelBg,
-        },
-        sectionContainer: {
-            justifyContent: 'center',
-            paddingLeft: 20,
-            height: SECTION_HEIGHT,
+        titleContainer: {
+            alignItems: 'center',
+            flexDirection: 'row',
+            marginTop: 20,
+            marginRight: 18,
         },
         title: {
-            marginTop: 20,
-            paddingVertical: 12,
-            paddingHorizontal: 20,
+            flex: 1,
+            alignItems: 'center',
+            paddingLeft: 18,
             color: theme.centerChannelColor,
             ...typography('Heading', 300, 'SemiBold'),
-        },
-        showMore: {
-            padding: 0,
-            color: theme.buttonBg,
-            ...typography('Body', 200, 'SemiBold'),
-        },
-        separatorContainer: {
-            justifyContent: 'center',
-            flex: 1,
-            height: RECENT_SEPARATOR_HEIGHT,
-        },
-        separator: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 1,
-        },
-        sectionList: {
-            flex: 1,
         },
     };
 });
@@ -97,14 +74,14 @@ const getModifiersSectionsData = (intl: IntlShape): ModifierItem[] => {
 };
 
 type Props = {
-    scrollPaddingTop: number;
     setSearchValue: (value: string) => void;
     searchValue?: string;
+    setTeamId: (id: string) => void;
+    teamId: string;
 }
-const SearchModifiers = ({scrollPaddingTop, searchValue, setSearchValue}: Props) => {
+const Modifiers = ({searchValue, setSearchValue, setTeamId, teamId}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
 
     const [showMore, setShowMore] = useState(false);
     const show = useSharedValue(3 * MODIFIER_LABEL_HEIGHT);
@@ -137,12 +114,19 @@ const SearchModifiers = ({scrollPaddingTop, searchValue, setSearchValue}: Props)
     };
 
     return (
-        <View style={paddingTop}>
-            <FormattedText
-                style={styles.title}
-                id={'screen.search.modifier.header'}
-                defaultMessage='Search options'
-            />
+        <>
+            <View style={styles.titleContainer}>
+                <FormattedText
+                    style={styles.title}
+                    id={'screen.search.modifier.header'}
+                    defaultMessage='Search options'
+                />
+                <TeamPickerIcon
+                    size={TEAM_PICKER_ICON_SIZE}
+                    setTeamId={setTeamId}
+                    teamId={teamId}
+                />
+            </View>
             <Animated.View style={animatedStyle}>
                 {data.map((item) => renderModifier(item))}
             </Animated.View>
@@ -150,9 +134,9 @@ const SearchModifiers = ({scrollPaddingTop, searchValue, setSearchValue}: Props)
                 onPress={handleShowMore}
                 showMore={showMore}
             />
-        </View>
+        </>
     );
 };
 
-export default SearchModifiers;
+export default Modifiers;
 

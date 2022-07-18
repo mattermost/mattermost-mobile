@@ -109,7 +109,11 @@ const GalleryViewer = ({
             onInteraction: interaction,
         };
 
-        if (props.item.type !== 'image' && typeof renderPage === 'function') {
+        if (
+            props.item.type !== 'image' &&
+            props.item.type !== 'avatar' &&
+            typeof renderPage === 'function'
+        ) {
             return renderPage(props, index);
         }
 

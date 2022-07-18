@@ -43,6 +43,9 @@ export default class GroupModel extends Model {
     /** deleted_at : The timestamp for when it was deleted */
     deletedAt: number;
 
+    /** member_count : The number of members in the group */
+    memberCount: number;
+
     /** channels : All the channels associated with this group */
     @lazy channels: Query<ChannelModel>;
 

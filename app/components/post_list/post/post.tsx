@@ -38,7 +38,7 @@ type PostProps = {
     canDelete: boolean;
     currentUser: UserModel;
     differentThreadSequence: boolean;
-    filesCount: number;
+    hasFiles: boolean;
     hasReplies: boolean;
     highlight?: boolean;
     highlightPinnedOrSaved?: boolean;
@@ -54,7 +54,7 @@ type PostProps = {
     location: string;
     post: PostModel;
     previousPost?: PostModel;
-    reactionsCount: number;
+    hasReactions: boolean;
     searchPatterns?: SearchPattern[];
     shouldRenderReplyButton?: boolean;
     showAddReaction?: boolean;
@@ -103,9 +103,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Post = ({
-    appsEnabled, canDelete, currentUser, differentThreadSequence, filesCount, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
+    appsEnabled, canDelete, currentUser, differentThreadSequence, hasFiles, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
     isCRTEnabled, isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
-    location, post, reactionsCount, searchPatterns, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
+    location, post, hasReactions, searchPatterns, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
     testID, thread, previousPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
@@ -274,8 +274,8 @@ const Post = ({
         body = (
             <Body
                 appsEnabled={appsEnabled}
-                filesCount={filesCount}
-                hasReactions={reactionsCount > 0}
+                hasFiles={hasFiles}
+                hasReactions={hasReactions}
                 highlight={Boolean(highlightedStyle)}
                 highlightReplyBar={highlightReplyBar}
                 isEphemeral={isEphemeral}

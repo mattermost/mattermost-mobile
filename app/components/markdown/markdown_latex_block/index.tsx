@@ -213,7 +213,7 @@ const LatexCodeBlock = ({content, theme}: Props) => {
                                     math={latexCode}
                                     renderError={onRenderErrorMessage}
                                     resizeMode={'cover'}
-                                    style={styles}
+                                    style={styles.mathStyle}
                                 />
                             </View>
                         ))}

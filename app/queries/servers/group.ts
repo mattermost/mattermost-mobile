@@ -7,6 +7,7 @@ import {MM_TABLES} from '@constants/database';
 
 import type GroupModel from '@typings/database/models/servers/group';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
+import type GroupTeamModel from '@typings/database/models/servers/group_team';
 
 const {SERVER: {GROUP, GROUP_CHANNEL, GROUP_MEMBERSHIP, GROUP_TEAM}} = MM_TABLES;
 
@@ -39,5 +40,11 @@ export const queryGroupsByNameInChannel = (database: Database, name: string, cha
 export const queryGroupMembershipForMember = (database: Database, userId: string) => {
     return database.collections.get<GroupMembershipModel>(GROUP_MEMBERSHIP).query(
         Q.where('user_id', userId),
+    );
+};
+
+export const queryGroupTeamForTeam = (database: Database, teamId: string) => {
+    return database.collections.get<GroupTeamModel>(GROUP_TEAM).query(
+        Q.where('team_id', teamId),
     );
 };

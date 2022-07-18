@@ -4,6 +4,7 @@
 import React, {useCallback, useState} from 'react';
 import {LayoutChangeEvent, StyleProp, View, ViewStyle} from 'react-native';
 
+import Files from '@components/files';
 import FormattedText from '@components/formatted_text';
 import JumboEmoji from '@components/jumbo_emoji';
 import {Screens} from '@constants';
@@ -14,7 +15,6 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import AddMembers from './add_members';
 import Content from './content';
 import Failed from './failed';
-import Files from './files';
 import Message from './message';
 import Reactions from './reactions';
 
@@ -23,7 +23,7 @@ import type {SearchPattern} from '@typings/global/markdown';
 
 type BodyProps = {
     appsEnabled: boolean;
-    filesCount: number;
+    hasFiles: boolean;
     hasReactions: boolean;
     highlight: boolean;
     highlightReplyBar: boolean;
@@ -74,7 +74,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Body = ({
-    appsEnabled, filesCount, hasReactions, highlight, highlightReplyBar,
+    appsEnabled, hasFiles, hasReactions, highlight, highlightReplyBar,
     isEphemeral, isFirstReply, isJumboEmoji, isLastReply, isPendingOrFailed, isPostAddChannelMember,
     location, post, searchPatterns, showAddReaction, theme,
 }: BodyProps) => {
@@ -170,7 +170,7 @@ const Body = ({
                     theme={theme}
                 />
                 }
-                {filesCount > 0 &&
+                {hasFiles &&
                 <Files
                     failed={isFailed}
                     layoutWidth={layoutWidth}
