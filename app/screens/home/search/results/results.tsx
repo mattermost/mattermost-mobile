@@ -161,7 +161,6 @@ const SearchResults = ({
                 return (
                     <DateSeparator
                         date={getDateForDateLine(item)}
-                        theme={theme}
                         timezone={isTimezoneEnabled ? currentTimezone : null}
                     />
                 );

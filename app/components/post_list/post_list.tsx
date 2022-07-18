@@ -229,7 +229,6 @@ const PostList = ({
                 return (
                     <DateSeparator
                         date={getDateForDateLine(item)}
-                        theme={theme}
                         style={styles.scale}
                         timezone={isTimezoneEnabled ? currentTimezone : null}
                     />
