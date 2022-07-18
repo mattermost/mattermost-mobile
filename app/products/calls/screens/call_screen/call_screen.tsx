@@ -16,7 +16,6 @@ import {
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {RTCView} from 'react-native-webrtc';
 
-import {switchToChannelById} from '@actions/remote/channel';
 import {appEntry} from '@actions/remote/entry';
 import {
     leaveCall,
@@ -314,35 +313,34 @@ const CallScreen = ({currentCall, participantsDict, teammateNameDisplay}: Props)
         setShowControlsInLandscape(!showControlsInLandscape);
     }, [showControlsInLandscape]);
 
+    const switchToThread = useCallback(async () => {
+        Keyboard.dismiss();
+        await dismissBottomSheet();
+        if (!currentCall) {
+            return;
+        }
+
+        const activeUrl = await DatabaseManager.getActiveServerUrl();
+        if (activeUrl === currentCall.serverUrl) {
+            goToScreen(Screens.THREAD, '', {rootId: currentCall.threadId});
+            return;
+        }
+
+        // TODO: this is a temporary solution until we have a proper cross-team thread view.
+        //  https://mattermost.atlassian.net/browse/MM-45752
+        popTopScreen();
+        await DatabaseManager.setActiveServerDatabase(currentCall.serverUrl);
+        await appEntry(currentCall.serverUrl, Date.now());
+        goToScreen(Screens.THREAD, '', {rootId: currentCall.threadId});
+    }, [currentCall?.serverUrl, currentCall?.threadId]);
+
     const showOtherActions = useCallback(() => {
         const renderContent = () => {
             return (
                 <View style={style.bottomSheet}>
                     <SlideUpPanelItem
                         icon='message-text-outline'
-                        onPress={async () => {
-                            Keyboard.dismiss();
-                            await dismissBottomSheet();
-                            if (!currentCall) {
-                                return;
-                            }
-
-                            const activeUrl = await DatabaseManager.getActiveServerUrl();
-                            if (activeUrl === currentCall.serverUrl) {
-                                goToScreen(Screens.THREAD, '', {rootId: currentCall.threadId});
-                                return;
-                            }
-
-                            // TODO: this is a temporary solution until we have a proper cross-team thread view.
-                            //  https://mattermost.atlassian.net/browse/MM-45752
-                            popTopScreen();
-                            await DatabaseManager.setActiveServerDatabase(currentCall.serverUrl);
-
-                            // TODO: not certain if this is the best way. Maybe entry instead?
-                            await appEntry(currentCall.serverUrl, Date.now());
-                            await switchToChannelById(currentCall.serverUrl, currentCall.channelId);
-                            goToScreen(Screens.THREAD, '', {rootId: currentCall.threadId});
-                        }}
+                        onPress={switchToThread}
                         text='Chat thread'
                     />
                 </View>
@@ -356,7 +354,7 @@ const CallScreen = ({currentCall, participantsDict, teammateNameDisplay}: Props)
             title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
             theme,
         });
-    }, [currentCall?.threadId, insets, intl, theme]);
+    }, [insets, intl, theme]);
 
     if (!currentCall || !myParticipant) {
         return null;
