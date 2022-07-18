@@ -7,7 +7,11 @@ import * as Reducers from './apps';
 
 describe('bindings', () => {
     const initialState = [];
-
+    const basicSubmitForm = {
+        submit: {
+            path: '/submit_url',
+        },
+    };
     test('No element get filtered', () => {
         const data = [
             {
@@ -17,7 +21,7 @@ describe('bindings', () => {
                     {
                         location: 'locA',
                         label: 'a',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                 ],
             },
@@ -28,7 +32,7 @@ describe('bindings', () => {
                     {
                         location: 'locA',
                         label: 'a',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                 ],
             },
@@ -40,7 +44,7 @@ describe('bindings', () => {
                         location: 'locB',
                         label: 'b',
                         icon: 'icon',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                 ],
             },
@@ -51,7 +55,7 @@ describe('bindings', () => {
                     {
                         location: 'locC',
                         label: 'c',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                 ],
             },
@@ -77,7 +81,7 @@ describe('bindings', () => {
                     {
                         location: 'locA',
                         label: 'a',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                 ],
             },
@@ -88,7 +92,7 @@ describe('bindings', () => {
                     {
                         location: 'locA',
                         label: 'a',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                 ],
             },
@@ -100,12 +104,12 @@ describe('bindings', () => {
                         location: 'locB',
                         label: 'b',
                         icon: 'icon',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                     {
                         location: 'locC',
                         label: 'c',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                 ],
             },
@@ -114,15 +118,14 @@ describe('bindings', () => {
                 location: '/channel_header',
                 bindings: [
                     {
-                        location: 'locB',
                         icon: 'icon',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                     {
                         location: 'locC',
                         label: 'c',
                         icon: 'icon',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                 ],
             },
@@ -132,12 +135,12 @@ describe('bindings', () => {
                 bindings: [
                     {
                         location: 'locB',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                     {
                         location: 'locC',
                         label: 'c',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                 ],
             },
@@ -148,7 +151,7 @@ describe('bindings', () => {
                     {
                         location: 'locC',
                         label: 'c',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                 ],
             },
@@ -172,13 +175,12 @@ describe('bindings', () => {
                 location: '/post_menu',
                 bindings: [
                     {
-                        location: 'locA',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                     {
                         location: 'locB',
                         label: 'a',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                 ],
             },
@@ -189,12 +191,12 @@ describe('bindings', () => {
                     {
                         location: 'locA',
                         label: 'a',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                     {
                         location: 'locB',
                         label: 'b',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                 ],
             },
@@ -203,8 +205,7 @@ describe('bindings', () => {
                 location: '/post_menu',
                 bindings: [
                     {
-                        location: 'locA',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                 ],
             },
@@ -216,7 +217,7 @@ describe('bindings', () => {
                         location: 'locB',
                         label: 'b',
                         icon: 'icon',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                 ],
             },
@@ -227,7 +228,7 @@ describe('bindings', () => {
                     {
                         location: 'locC',
                         label: 'c',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                 ],
             },
@@ -253,12 +254,12 @@ describe('bindings', () => {
                     {
                         location: 'locA',
                         label: 'a',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                     {
                         location: 'locB',
                         label: 'a',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                 ],
             },
@@ -270,7 +271,7 @@ describe('bindings', () => {
                         location: 'locB',
                         label: 'b',
                         icon: 'icon',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                 ],
             },
@@ -283,13 +284,12 @@ describe('bindings', () => {
                         label: 'c',
                         bindings: [
                             {
-                                location: 'subC1',
-                                call: {},
+                                form: basicSubmitForm,
                             },
                             {
                                 location: 'subC2',
                                 label: 'c2',
-                                call: {},
+                                form: basicSubmitForm,
                             },
                         ],
                     },
@@ -298,8 +298,7 @@ describe('bindings', () => {
                         label: 'd',
                         bindings: [
                             {
-                                location: 'subC1',
-                                call: {},
+                                form: basicSubmitForm,
                             },
                         ],
                     },
@@ -310,8 +309,7 @@ describe('bindings', () => {
                 location: '/command',
                 bindings: [
                     {
-                        location: 'locC',
-                        call: {},
+                        form: basicSubmitForm,
                     },
                 ],
             },
@@ -322,17 +320,16 @@ describe('bindings', () => {
                     {
                         location: 'locC',
                         label: 'c',
-                        call: {},
                         bindings: [
                             {
                                 location: 'subC1',
                                 label: 'c1',
-                                call: {},
+                                form: basicSubmitForm,
                             },
                             {
                                 location: 'subC2',
                                 label: 'c2',
-                                call: {},
+                                form: basicSubmitForm,
                             },
                         ],
                     },

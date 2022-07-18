@@ -3,194 +3,155 @@
 exports[`CallAvatar should match snapshot muted 1`] = `
 <View
   style={
-    Object {
-      "backgroundColor": "rgba(255,255,255,0.16)",
-      "borderRadius": 28,
-      "height": 56,
-      "marginRight": 4,
-      "padding": 4,
-      "width": 56,
-    }
+    Array [
+      Object {
+        "borderRadius": 20,
+        "height": 40,
+        "marginBottom": 5,
+        "width": 40,
+      },
+      Object {
+        "shadowColor": "rgb(61, 184, 135)",
+        "shadowOffset": Object {
+          "height": 0,
+          "width": 0,
+        },
+        "shadowOpacity": 1,
+        "shadowRadius": 10,
+      },
+    ]
   }
 >
-  <View
+  <Connect(ProfilePicture)
+    showStatus={false}
+    size={40}
+    userId="user-id"
+  />
+  <CompassIcon
+    name="microphone-off"
+    size={12}
     style={
       Object {
-        "backgroundColor": "rgba(255,255,255,0.24)",
-        "borderRadius": 24,
-        "height": 48,
-        "padding": 4,
-        "width": 48,
+        "backgroundColor": "black",
+        "borderColor": "black",
+        "borderRadius": 10,
+        "borderWidth": 2,
+        "bottom": -5,
+        "color": "white",
+        "height": 20,
+        "overflow": "hidden",
+        "padding": 2,
+        "position": "absolute",
+        "right": -5,
+        "textAlign": "center",
+        "textAlignVertical": "center",
+        "width": 20,
       }
     }
-  >
-    <View
-      style={
-        Object {
-          "borderRadius": 20,
-          "height": 40,
-          "width": 40,
-        }
-      }
-    >
-      <Connect(ProfilePicture)
-        showStatus={false}
-        size={40}
-        userId="user-id"
-      />
-      <CompassIcon
-        name="microphone-off"
-        size={16}
-        style={
-          Object {
-            "backgroundColor": "black",
-            "borderColor": "black",
-            "borderRadius": 12,
-            "borderWidth": 2,
-            "bottom": -5,
-            "color": "white",
-            "height": 24,
-            "overflow": "hidden",
-            "padding": 2,
-            "position": "absolute",
-            "right": -5,
-            "textAlign": "center",
-            "textAlignVertical": "center",
-            "width": 24,
-          }
-        }
-      />
-    </View>
-  </View>
+  />
 </View>
 `;
 
 exports[`CallAvatar should match snapshot size large 1`] = `
 <View
   style={
-    Object {
-      "backgroundColor": "rgba(255,255,255,0.16)",
-      "borderRadius": 44,
-      "height": 88,
-      "marginRight": 4,
-      "padding": 4,
-      "width": 88,
-    }
+    Array [
+      Object {
+        "borderRadius": 36,
+        "height": 72,
+        "marginBottom": 5,
+        "width": 72,
+      },
+      Object {
+        "shadowColor": "rgb(61, 184, 135)",
+        "shadowOffset": Object {
+          "height": 0,
+          "width": 0,
+        },
+        "shadowOpacity": 1,
+        "shadowRadius": 10,
+      },
+    ]
   }
 >
-  <View
+  <Connect(ProfilePicture)
+    showStatus={false}
+    size={72}
+    userId="user-id"
+  />
+  <CompassIcon
+    name="microphone"
+    size={16}
     style={
       Object {
-        "backgroundColor": "rgba(255,255,255,0.24)",
-        "borderRadius": 40,
-        "height": 80,
-        "padding": 4,
-        "width": 80,
+        "backgroundColor": "#3DB887",
+        "borderColor": "black",
+        "borderRadius": 12,
+        "borderWidth": 2,
+        "bottom": -5,
+        "color": "white",
+        "height": 24,
+        "overflow": "hidden",
+        "padding": 2,
+        "position": "absolute",
+        "right": -5,
+        "textAlign": "center",
+        "textAlignVertical": "center",
+        "width": 24,
       }
     }
-  >
-    <View
-      style={
-        Object {
-          "borderRadius": 36,
-          "height": 72,
-          "width": 72,
-        }
-      }
-    >
-      <Connect(ProfilePicture)
-        showStatus={false}
-        size={72}
-        userId="user-id"
-      />
-      <CompassIcon
-        name="microphone"
-        size={16}
-        style={
-          Object {
-            "backgroundColor": "#3DB887",
-            "borderColor": "black",
-            "borderRadius": 12,
-            "borderWidth": 2,
-            "bottom": -5,
-            "color": "white",
-            "height": 24,
-            "overflow": "hidden",
-            "padding": 2,
-            "position": "absolute",
-            "right": -5,
-            "textAlign": "center",
-            "textAlignVertical": "center",
-            "width": 24,
-          }
-        }
-      />
-    </View>
-  </View>
+  />
 </View>
 `;
 
 exports[`CallAvatar should match snapshot unmuted 1`] = `
 <View
   style={
-    Object {
-      "backgroundColor": "rgba(255,255,255,0.16)",
-      "borderRadius": 28,
-      "height": 56,
-      "marginRight": 4,
-      "padding": 4,
-      "width": 56,
-    }
+    Array [
+      Object {
+        "borderRadius": 20,
+        "height": 40,
+        "marginBottom": 5,
+        "width": 40,
+      },
+      Object {
+        "shadowColor": "rgb(61, 184, 135)",
+        "shadowOffset": Object {
+          "height": 0,
+          "width": 0,
+        },
+        "shadowOpacity": 1,
+        "shadowRadius": 10,
+      },
+    ]
   }
 >
-  <View
+  <Connect(ProfilePicture)
+    showStatus={false}
+    size={40}
+    userId="user-id"
+  />
+  <CompassIcon
+    name="microphone"
+    size={12}
     style={
       Object {
-        "backgroundColor": "rgba(255,255,255,0.24)",
-        "borderRadius": 24,
-        "height": 48,
-        "padding": 4,
-        "width": 48,
+        "backgroundColor": "#3DB887",
+        "borderColor": "black",
+        "borderRadius": 10,
+        "borderWidth": 2,
+        "bottom": -5,
+        "color": "white",
+        "height": 20,
+        "overflow": "hidden",
+        "padding": 2,
+        "position": "absolute",
+        "right": -5,
+        "textAlign": "center",
+        "textAlignVertical": "center",
+        "width": 20,
       }
     }
-  >
-    <View
-      style={
-        Object {
-          "borderRadius": 20,
-          "height": 40,
-          "width": 40,
-        }
-      }
-    >
-      <Connect(ProfilePicture)
-        showStatus={false}
-        size={40}
-        userId="user-id"
-      />
-      <CompassIcon
-        name="microphone"
-        size={16}
-        style={
-          Object {
-            "backgroundColor": "#3DB887",
-            "borderColor": "black",
-            "borderRadius": 12,
-            "borderWidth": 2,
-            "bottom": -5,
-            "color": "white",
-            "height": 24,
-            "overflow": "hidden",
-            "padding": 2,
-            "position": "absolute",
-            "right": -5,
-            "textAlign": "center",
-            "textAlignVertical": "center",
-            "width": 24,
-          }
-        }
-      />
-    </View>
-  </View>
+  />
 </View>
 `;

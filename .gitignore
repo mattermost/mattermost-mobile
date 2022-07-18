@@ -14,7 +14,7 @@ env.d.ts
 
 # Xcode
 #
-build/
+ios/build/*
 *.pbxuser
 !default.pbxuser
 *.mode1v3
@@ -43,6 +43,8 @@ ios/Pods
 local.properties
 *.iml
 android/app/bin
+android/app/build
+android/build
 .settings
 .project
 .classpath
@@ -103,3 +105,8 @@ detox/detox_pixel_4_xl_api_30
 
 #editor-settings
 .vscode
+.scannerwork
+
+# Notice.txt generation
+!build/notice-file
+

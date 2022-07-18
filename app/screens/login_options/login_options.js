@@ -20,9 +20,8 @@ import gitlab from '@assets/images/gitlab.png';
 import google from '@assets/images/google.png';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
-import {ViewTypes} from '@constants';
+import {Sso} from '@constants';
 import globalEventHandler from '@init/global_event_handler';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 
 import {GlobalStyles} from 'app/styles';
@@ -172,7 +171,7 @@ export default class LoginOptions extends PureComponent {
             return (
                 <Button
                     key='gitlab'
-                    onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.GITLAB))}
+                    onPress={preventDoubleTap(() => this.goToSSO(Sso.GITLAB))}
                     containerStyle={[GlobalStyles.signupButton, additionalButtonStyle]}
                 >
                     <Image
@@ -211,7 +210,7 @@ export default class LoginOptions extends PureComponent {
             return (
                 <Button
                     key='google'
-                    onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.GOOGLE))}
+                    onPress={preventDoubleTap(() => this.goToSSO(Sso.GOOGLE))}
                     containerStyle={[GlobalStyles.signupButton, additionalButtonStyle]}
                 >
                     <Image
@@ -247,7 +246,7 @@ export default class LoginOptions extends PureComponent {
             return (
                 <Button
                     key='o365'
-                    onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.OFFICE365))}
+                    onPress={preventDoubleTap(() => this.goToSSO(Sso.OFFICE365))}
                     containerStyle={[GlobalStyles.signupButton, additionalButtonStyle]}
                 >
                     <FormattedText
@@ -264,7 +263,7 @@ export default class LoginOptions extends PureComponent {
 
     renderOpenIdOption = () => {
         const {config, license} = this.props;
-        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true' && isMinimumServerVersion(config.Version, 5, 33, 0);
+        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true';
 
         if (openIdEnabled) {
             const additionalButtonStyle = {
@@ -278,7 +277,7 @@ export default class LoginOptions extends PureComponent {
             return (
                 <Button
                     key='openId'
-                    onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.OPENID))}
+                    onPress={preventDoubleTap(() => this.goToSSO(Sso.OPENID))}
                     containerStyle={[GlobalStyles.signupButton, additionalButtonStyle]}
                 >
                     <FormattedText
@@ -315,7 +314,7 @@ export default class LoginOptions extends PureComponent {
             return (
                 <Button
                     key='saml'
-                    onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.SAML))}
+                    onPress={preventDoubleTap(() => this.goToSSO(Sso.SAML))}
                     containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
                     <Text

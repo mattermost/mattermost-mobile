@@ -38,6 +38,7 @@ describe('JoinCall', () => {
         alreadyInTheCall: false,
         currentChannelName: 'Current Channel',
         callChannelName: 'Call Channel',
+        isLimitRestricted: false,
     };
 
     test('should match snapshot', () => {
@@ -56,7 +57,7 @@ describe('JoinCall', () => {
     test('should join on click', () => {
         const joinCall = jest.fn();
         const props = {...baseProps, actions: {joinCall}};
-        const wrapper = shallowWithIntl(<JoinCall {...props}/>).dive();
+        const wrapper = shallowWithIntl(<JoinCall {...props}/>).dive().childAt(0);
 
         wrapper.simulate('press');
         expect(Alert.alert).not.toHaveBeenCalled();
@@ -66,7 +67,7 @@ describe('JoinCall', () => {
     test('should ask for confirmation on click', () => {
         const joinCall = jest.fn();
         const props = {...baseProps, confirmToJoin: true, actions: {joinCall}};
-        const wrapper = shallowWithIntl(<JoinCall {...props}/>).dive();
+        const wrapper = shallowWithIntl(<JoinCall {...props}/>).dive().childAt(0);
 
         wrapper.simulate('press');
         expect(Alert.alert).toHaveBeenCalled();

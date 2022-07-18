@@ -14,6 +14,7 @@ PODS:
   - fmt (6.2.1)
   - glog (0.3.5)
   - HMSegmentedControl (1.5.6)
+  - iosMath (0.9.4)
   - jail-monkey (2.6.0):
     - React-Core
   - libwebp (1.2.1):
@@ -348,7 +349,7 @@ PODS:
   - ReactNativeExceptionHandler (2.10.10):
     - React-Core
   - ReactNativeIncallManager (3.3.0):
-    - React
+    - React-Core
   - ReactNativeKeyboardTrackingView (5.7.0):
     - React
   - ReactNativeNavigation (7.25.1):
@@ -386,6 +387,8 @@ PODS:
     - React-Core
   - RNLocalize (2.1.9):
     - React-Core
+  - RNMathView (1.0.0):
+    - iosMath
   - RNPermissions (3.2.0):
     - React-Core
   - RNReactNativeHapticFeedback (1.13.0):
@@ -521,6 +524,7 @@ DEPENDENCIES:
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNLocalize (from `../node_modules/react-native-localize`)
+  - RNMathView (from `../node_modules/react-native-math-view/ios`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
@@ -538,6 +542,7 @@ SPEC REPOS:
   trunk:
     - fmt
     - HMSegmentedControl
+    - iosMath
     - libwebp
     - MMKV
     - MMKVCore
@@ -689,6 +694,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-keychain"
   RNLocalize:
     :path: "../node_modules/react-native-localize"
+  RNMathView:
+    :path: "../node_modules/react-native-math-view/ios"
   RNPermissions:
     :path: "../node_modules/react-native-permissions"
   RNReactNativeHapticFeedback:
@@ -728,6 +735,7 @@ SPEC CHECKSUMS:
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 85ecdd10ee8d8ec362ef519a6a45ff9aa27b2e85
   HMSegmentedControl: 34c1f54d822d8308e7b24f5d901ec674dfa31352
+  iosMath: f7a6cbadf9d836d2149c2a84c435b1effc244cba
   jail-monkey: 07b83767601a373db876e939b8dbf3f5eb15f073
   libwebp: 98a37e597e40bfdb4c911fc98f2c53d0b12d05fc
   MMKV: 76033b9ace2006623308910a3afcc0e25eba3140
@@ -781,7 +789,7 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: 2450b43df7ffe8e805a0b3dcb2abd4282f1f1836
   ReactCommon: d98c6c96b567f9b3a15f9fd4cc302c1eda8e3cf2
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
-  ReactNativeIncallManager: a840ef75640518065742a893e6c6ff98ee820039
+  ReactNativeIncallManager: 642c22630caadff0a0619413aff4a9da08d63df9
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
   ReactNativeNavigation: 6e747bdf88f138088a105285274170b3fc0404ed
   rn-fetch-blob: 17961aec08caae68bb8fc0e5b40f93b3acfa6932
@@ -795,6 +803,7 @@ SPEC CHECKSUMS:
   RNGestureHandler: bf572f552ea324acd5b5464b8d30755b2d8c1de6
   RNKeychain: 4f63aada75ebafd26f4bc2c670199461eab85d94
   RNLocalize: 291e5e21b53cd30b5205c10ed95d31b0dc9b8d63
+  RNMathView: 4c8a3c081fa671ab3136c51fa0bdca7ffb708bd5
   RNPermissions: f7ebe52db07c00901127966ca080b4ec6a6ceb0a
   RNReactNativeHapticFeedback: b83bfb4b537bdd78eb4f6ffe63c6884f7b049ead
   RNReanimated: 1326679461fa5d2399d54c18ca1432ba3e816b9e
@@ -815,4 +824,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 8214414d5676358401d8ad51dff19e7fd8c71b5c
 
-COCOAPODS: 1.11.2
+COCOAPODS: 1.11.3

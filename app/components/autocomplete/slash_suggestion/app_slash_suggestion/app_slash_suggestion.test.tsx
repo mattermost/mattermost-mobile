@@ -32,6 +32,7 @@ const makeStore = async (bindings: AppBinding[]) => {
                 bindingsForms: {},
                 threadBindings: bindings,
                 threadBindingsForms: {},
+                pluginEnabled: true,
             },
         },
     } as any;

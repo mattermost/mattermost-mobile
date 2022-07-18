@@ -21,6 +21,8 @@ import {
 } from 'react-native-webrtc';
 import stream from 'readable-stream';
 
+import {ICEServersConfigs} from '@mmproducts/calls/store/types/calls';
+
 const queueMicrotask = (callback: any) => {
     Promise.resolve().then(callback).catch((e) => setTimeout(() => {
         throw e;
@@ -94,7 +96,7 @@ export default class Peer extends stream.Duplex {
     private pc: RTCPeerConnection|null = null;
     private onFinishBound?: () => void;
 
-    constructor(localStream: MediaStream | null, iceServers?: string[]) {
+    constructor(localStream: MediaStream | null, iceServers: ICEServersConfigs) {
         super({allowHalfOpen: false});
 
         this.streams = localStream ? [localStream] : [];
@@ -104,20 +106,9 @@ export default class Peer extends stream.Duplex {
         };
 
         const connConfig = {
-            iceServers: [
-                {
-                    urls: [
-                        'stun:stun.l.google.com:19302',
-                        'stun:global.stun.twilio.com:3478',
-                    ],
-                },
-            ],
+            iceServers,
             sdpSemantics: 'unified-plan',
         };
-
-        if (iceServers && iceServers.length > 0) {
-            connConfig.iceServers[0].urls = iceServers;
-        }
 
         try {
             this.pc = new RTCPeerConnection(connConfig);
@@ -421,7 +412,12 @@ export default class Peer extends stream.Duplex {
         this.isNegotiating = true;
     }
 
-    _destroy(err: Error | null, cb: (error: Error | null) => void) {
+    destroy(err?: Error, cb?: (error: Error | null) => void, cbPCClose?: () => void): this {
+        this._destroy(err, cb, cbPCClose);
+        return this;
+    }
+
+    _destroy(err?: Error | null, cb?: (error: Error | null) => void, cbPcClose?: () => void) {
         if (this.destroyed || this.destroying) {
             return;
         }
@@ -468,14 +464,14 @@ export default class Peer extends stream.Duplex {
                 } catch (err) {} // eslint-disable-line
 
                 // allow events concurrent with destruction to be handled
-                this.channel.onmessage = null;
-                this.channel.onopen = null;
-                this.channel.onclose = null;
-                this.channel.onerror = null;
+                this.channel.onmessage = undefined;
+                this.channel.onopen = undefined;
+                this.channel.onclose = undefined;
+                this.channel.onerror = undefined;
             }
             if (this.pc) {
                 try {
-                    this.pc.close();
+                    this.pc.close(cbPcClose);
                 } catch (err) {} // eslint-disable-line
 
                 // allow events concurrent with destruction to be handled
@@ -491,7 +487,7 @@ export default class Peer extends stream.Duplex {
                 this.emit('error', err);
             }
             this.emit('close');
-            cb(null);
+            cb?.(null);
         }, 0);
     }
 

@@ -6,6 +6,7 @@ import keyMirror from '@mm-redux/utils/key_mirror';
 export default keyMirror({
     RECEIVED_CALLS: null,
     RECEIVED_CALL_STARTED: null,
+    RECEIVED_CALL_ENDED: null,
     RECEIVED_CALL_FINISHED: null,
     RECEIVED_CHANNEL_CALL_ENABLED: null,
     RECEIVED_CHANNEL_CALL_DISABLED: null,
@@ -19,8 +20,10 @@ export default keyMirror({
     RECEIVED_UNMUTE_USER_CALL: null,
     RECEIVED_VOICE_ON_USER_CALL: null,
     RECEIVED_VOICE_OFF_USER_CALL: null,
-    RECEIVED_RAISE_HAND_CALL: null,
-    RECEIVED_UNRAISE_HAND_CALL: null,
+    RECEIVED_RAISE_HAND: null,
+    RECEIVED_UNRAISE_HAND: null,
     SET_SCREENSHARE_URL: null,
     SET_SPEAKERPHONE: null,
+    RECEIVED_CONFIG: null,
+    RECEIVED_PLUGIN_ENABLED: null,
 });

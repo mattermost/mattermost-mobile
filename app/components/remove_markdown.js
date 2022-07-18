@@ -38,6 +38,7 @@ export default class RemoveMarkdown extends React.PureComponent {
                 channelLink: Renderer.forwardChildren,
                 emoji: this.renderNull,
                 hashtag: Renderer.forwardChildren,
+                latexinline: Renderer.forwardChildren,
 
                 paragraph: Renderer.forwardChildren,
                 heading: Renderer.forwardChildren,

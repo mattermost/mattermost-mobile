@@ -2,17 +2,19 @@
 // See LICENSE.txt for license information.
 import {EventEmitter} from 'events';
 
+import Calls from '@constants/calls';
 import {encode} from '@msgpack/msgpack/dist';
 
 export default class WebSocketClient extends EventEmitter {
     private ws: WebSocket | null;
-    private seqNo = 0;
+    private seqNo = 1;
     private connID = '';
-    private eventPrefix = 'custom_com.mattermost.calls';
+    private eventPrefix = `custom_${Calls.PluginId}`;
 
-    constructor(connURL: string) {
+    constructor(connURL: string, authToken: string) {
         super();
-        this.ws = new WebSocket(connURL);
+
+        this.ws = new WebSocket(connURL, [], {headers: {authorization: `Bearer ${authToken}`}});
 
         this.ws.onerror = (err) => {
             this.emit('error', err);
@@ -72,6 +74,7 @@ export default class WebSocketClient extends EventEmitter {
             seq: this.seqNo++,
             data,
         };
+
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             if (binary) {
                 this.ws.send(encode(msg));
@@ -86,7 +89,7 @@ export default class WebSocketClient extends EventEmitter {
             this.ws.close();
             this.ws = null;
         }
-        this.seqNo = 0;
+        this.seqNo = 1;
         this.connID = '';
         this.emit('close');
     }

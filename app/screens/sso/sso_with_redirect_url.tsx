@@ -12,6 +12,7 @@ import urlParse from 'url-parse';
 import {setDeepLinkURL} from '@actions/views/root';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
+import {Sso} from '@constants';
 import {Theme} from '@mm-redux/types/theme';
 import Store from '@store/store';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -39,9 +40,9 @@ function SSOWithRedirectURL({
     const [error, setError] = React.useState<string>('');
     const style = getStyleSheet(theme);
 
-    let customUrlScheme = 'mmauth://';
+    let customUrlScheme = Sso.REDIRECT_URL_SCHEME;
     if (DeviceInfo.getBundleId && DeviceInfo.getBundleId().includes('rnbeta')) {
-        customUrlScheme = 'mmauthbeta://';
+        customUrlScheme = Sso.REDIRECT_URL_SCHEME_DEV;
     }
 
     const redirectUrl = customUrlScheme + 'callback';
@@ -97,10 +98,10 @@ function SSOWithRedirectURL({
     };
 
     React.useEffect(() => {
-        Linking.addEventListener('url', onURLChange);
+        const listener = Linking.addEventListener('url', onURLChange);
         init(false);
         return () => {
-            Linking.removeEventListener('url', onURLChange);
+            listener.remove();
         };
     }, []);
 

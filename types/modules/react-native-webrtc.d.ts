@@ -50,11 +50,17 @@ declare module 'react-native-webrtc' {
         constructor();
 
         stop(): void;
+
         applyConstraints(): void;
+
         clone(): void;
+
         getCapabilities(): void;
+
         getConstraints(): void;
+
         getSettings(): void;
+
         release(): void;
 
         private _switchCamera(): void;
@@ -74,13 +80,21 @@ declare module 'react-native-webrtc' {
         constructor(arg: any);
 
         addTrack(track: MediaStreamTrack): void;
+
         removeTrack(track: MediaStreamTrack): void;
+
         getTracks(): MediaStreamTrack[];
+
         getTrackById(trackId: string): MediaStreamTrack | undefined;
+
         getAudioTracks(): MediaStreamTrack[];
+
         getVideoTracks(): MediaStreamTrack[];
+
         clone(): void;
+
         toURL(): string;
+
         release(): void;
     }
 
@@ -92,23 +106,27 @@ declare module 'react-native-webrtc' {
         bufferedAmountLowThreshold: number;
         id: number;
         label: string;
-        maxPacketLifeTime: ?number;
-        maxRetransmits: ?number;
+        maxPacketLifeTime?: number;
+        maxRetransmits?: number;
         negotiated: boolean;
         ordered: boolean;
         protocol: string;
         readyState: 'connecting' | 'open' | 'closing' | 'closed';
 
-        onopen: ?Function;
-        onmessage: ?Function;
-        onbufferedamountlow: ?Function;
-        onerror: ?Function;
-        onclose: ?Function;
+        onopen?: Function;
+        onmessage?: Function;
+        onbufferedamountlow?: Function;
+        onerror?: Function;
+        onclose?: Function;
 
         constructor(peerConnectionId: number, label: string, dataChannelDict: RTCDataChannelInit)
+
         send(data: string | ArrayBuffer | ArrayBufferView): void
+
         close(): void
+
         _unregisterEvents(): void
+
         _registerEvents(): void
     }
 
@@ -116,6 +134,7 @@ declare module 'react-native-webrtc' {
         type: string;
         data: string | ArrayBuffer | Blob;
         origin: string;
+
         constructor(type: any, eventInitDict: any)
     }
 
@@ -127,6 +146,33 @@ declare module 'react-native-webrtc' {
         stream: MediaStream;
         target: RTCPeerConnection;
         track?: MediaStreamTrack;
+    }
+
+    export interface EventOnConnectionStateChange {
+        target: {
+            iceConnectionState: RTCIceConnectionState;
+        };
+    }
+
+    export interface ConfigurationParam {
+        username?: string | undefined;
+        credential?: string | undefined;
+    }
+
+    export interface ConfigurationParamWithUrls extends ConfigurationParam {
+        urls: string[];
+    }
+
+    export interface ConfigurationParamWithUrl extends ConfigurationParam {
+        url: string;
+    }
+
+    export interface RTCPeerConnectionConfiguration {
+        iceServers: Array<ConfigurationParamWithUrls | ConfigurationParamWithUrl>;
+        iceTransportPolicy?: 'all' | 'relay' | 'nohost' | 'none' | undefined;
+        bundlePolicy?: 'balanced' | 'max-compat' | 'max-bundle' | undefined;
+        rtcpMuxPolicy?: 'negotiate' | 'require' | undefined;
+        iceCandidatePoolSize?: number | undefined;
     }
 
     export class RTCPeerConnection {
@@ -164,11 +210,11 @@ declare module 'react-native-webrtc' {
 
         addTrack(track: MediaStreamTrack): void;
 
-        addTransceiver(kind: 'audio'|'video'|MediaStreamTrack, init: any): void;
+        addTransceiver(kind: 'audio' | 'video' | MediaStreamTrack, init: any): void;
 
         removeStream(stream: MediaStream): void;
 
-        removeTrack(sender: RtpSender): Promise<boolean>
+        removeTrack(sender: RTCRtpSender): Promise<boolean>
 
         createOffer(options?: RTCOfferOptions): Promise<RTCSessionDescriptionType>;
 
@@ -188,7 +234,7 @@ declare module 'react-native-webrtc' {
 
         getRemoteStreams(): MediaStream[];
 
-        close(): void;
+        close(cb?: () => void): void;
 
         private _getTrack(streamReactTag: string, trackId: string): MediaStreamTrack;
 
@@ -218,6 +264,7 @@ declare module 'react-native-webrtc' {
 
     export class RTCSessionDescription extends RTCSessionDescriptionType {
         constructor(info: RTCSessionDescriptionType);
+
         toJSON(): RTCSessionDescriptionType;
     }
 

@@ -7,6 +7,7 @@
 import {RNFetchBlobFetchRepsonse} from 'rn-fetch-blob';
 import urlParse from 'url-parse';
 
+import Calls from '@constants/calls';
 import {Options} from '@mm-redux/types/client4';
 
 import * as ClientConstants from './constants';
@@ -286,12 +287,16 @@ export default class ClientBase {
         return `${this.getUserThreadsRoute(userId, teamId)}/${threadId}`;
     }
 
+    getPluginsRoute() {
+        return `${this.getBaseRoute()}/plugins`;
+    }
+
     getAppsProxyRoute() {
         return `${this.url}/plugins/com.mattermost.apps`;
     }
 
     getCallsRoute() {
-        return `${this.url}/plugins/com.mattermost.calls`;
+        return `${this.url}/plugins/${Calls.PluginId}`;
     }
 
     // Client Helpers

@@ -9,6 +9,7 @@ import {
     Platform,
     Text,
     View,
+    Dimensions,
 } from 'react-native';
 
 import AtMention from '@components/at_mention';
@@ -19,6 +20,8 @@ import Hashtag from '@components/markdown/hashtag';
 import {blendColors, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
 import {getScheme} from '@utils/url';
 
+import LatexCodeBlock from './latex_code_block';
+import LatexInline from './latex_inline';
 import MarkdownBlockQuote from './markdown_block_quote';
 import MarkdownCodeBlock from './markdown_code_block';
 import MarkdownImage from './markdown_image';
@@ -59,6 +62,8 @@ export default class Markdown extends PureComponent {
         disableChannelLink: PropTypes.bool,
         disableAtChannelMentionHighlight: PropTypes.bool,
         disableGallery: PropTypes.bool,
+        enableLatex: PropTypes.bool,
+        enableInlineLatex: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -78,6 +83,10 @@ export default class Markdown extends PureComponent {
 
         this.parser = this.createParser();
         this.renderer = this.createRenderer();
+
+        this.state = {
+            inlineLatexHeight: 20,
+        };
     }
 
     createParser = () => {
@@ -108,7 +117,7 @@ export default class Markdown extends PureComponent {
                 channelLink: this.renderChannelLink,
                 emoji: this.renderEmoji,
                 hashtag: this.renderHashtag,
-                latexinline: this.renderParagraph,
+                latexInline: this.renderLatexInline,
 
                 paragraph: this.renderParagraph,
                 heading: this.renderHeading,
@@ -156,6 +165,11 @@ export default class Markdown extends PureComponent {
     computeTextStyle = (baseStyle, context) => {
         const contextStyles = context.map((type) => this.props.textStyles[type]).filter((f) => f !== undefined);
         return contextStyles.length ? concatStyles(baseStyle, contextStyles) : baseStyle;
+    };
+
+    onInlineLatexLayout = (event) => {
+        const mathLineHeight = Math.max(event.nativeEvent.layout.height, this.state.inlineLatexHeight);
+        this.setState({inlineLatexHeight: mathLineHeight});
     };
 
     renderText = ({context, literal}) => {
@@ -280,6 +294,25 @@ export default class Markdown extends PureComponent {
         );
     };
 
+    renderLatexInline = ({context, latexCode}) => {
+        if (!this.props.enableInlineLatex) {
+            return this.renderText({context, literal: `$${latexCode}$`});
+        }
+
+        return (
+            <Text
+                style={{lineHeight: this.state.inlineLatexHeight}}
+            >
+                <LatexInline
+                    content={latexCode}
+                    onLayout={this.onInlineLatexLayout}
+                    maxMathWidth={Dimensions.get('window').width * 0.75}
+                    mathHeight={this.state.inlineLatexHeight}
+                />
+            </Text>
+        );
+    };
+
     renderParagraph = ({children, first}) => {
         if (!children || children.length === 0) {
             return null;
@@ -318,6 +351,16 @@ export default class Markdown extends PureComponent {
     renderCodeBlock = (props) => {
         // These sometimes include a trailing newline
         const content = props.literal.replace(/\n$/, '');
+
+        if (this.props.enableLatex && props.language === 'latex') {
+            return (
+                <LatexCodeBlock
+                    content={content}
+                    language={props.language}
+                    textStyle={this.props.textStyles.codeBlock}
+                />
+            );
+        }
 
         return (
             <MarkdownCodeBlock

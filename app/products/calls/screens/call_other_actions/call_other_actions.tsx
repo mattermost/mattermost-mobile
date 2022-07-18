@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback} from 'react';
+import React from 'react';
 import {injectIntl} from 'react-intl';
 import {View} from 'react-native';
 
-import {dismissModal} from '@actions/navigation';
+import {dismissModal, goToScreen} from '@actions/navigation';
 import SlideUpPanel from '@components/slide_up_panel';
+import {THREAD} from '@constants/screen';
 
 import Action from './action';
 
@@ -13,21 +14,19 @@ import type {Theme} from '@mm-redux/types/theme';
 
 type Props = {
     theme: Theme;
+    channelId?: string;
+    rootId?: string;
 }
 
-const CallOtherActions = ({theme}: Props) => {
+const CallOtherActions = ({theme, channelId, rootId}: Props) => {
     const close = () => {
         dismissModal();
     };
 
-    // TODO: Implement this whenever we support participants invitation to calls
-    const addParticipants = useCallback(() => null, []);
-
-    // TODO: Implement this whenever we support calls links
-    const copyCallLink = useCallback(() => null, []);
-
-    // TODO: Implement this whenever we support give feedback
-    const giveFeedback = useCallback(() => null, []);
+    const chatThread = () => {
+        goToScreen(THREAD, '', {channelId, rootId});
+        return null;
+    };
 
     return (
         <View style={{flex: 1}}>
@@ -38,23 +37,9 @@ const CallOtherActions = ({theme}: Props) => {
             >
                 <Action
                     destructive={false}
-                    icon='account-plus-outline'
-                    onPress={addParticipants}
-                    text='Add participants'
-                    theme={theme}
-                />
-                <Action
-                    destructive={false}
-                    icon='link-variant'
-                    onPress={copyCallLink}
-                    text='Copy call link'
-                    theme={theme}
-                />
-                <Action
-                    destructive={false}
-                    icon='send-outline'
-                    onPress={giveFeedback}
-                    text='Give Feedback'
+                    icon='message-text-outline'
+                    onPress={chatThread}
+                    text='Chat thread'
                     theme={theme}
                 />
             </SlideUpPanel>

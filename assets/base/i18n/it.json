@@ -17,7 +17,6 @@
   "apps.error.command.unknown_channel": "Canale sconosciuto per il campo `{fieldName}`: `{option}`.",
   "apps.error.command.unknown_option": "Opzione sconosciuta per il campo `{fieldName}`: `{option}`.",
   "apps.error.command.unknown_user": "Utente sconosciuto per il campo `{fieldName}`: `{option}`.",
-  "apps.error.form.no_call": "`call` non è definito",
   "apps.error.form.no_form": "`form` non è definito.",
   "archivedChannelMessage": "Stai visualizzato un **canale archiviato**. Non si possono pubblicare nuovi messaggi.",
   "center_panel.archived.closeChannel": "Chiudi Canale",

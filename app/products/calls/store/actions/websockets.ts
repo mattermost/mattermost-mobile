@@ -50,7 +50,15 @@ export function handleCallUserVoiceOff(msg: WebSocketMessage) {
 export function handleCallStarted(msg: WebSocketMessage): GenericAction {
     return {
         type: CallsTypes.RECEIVED_CALL_STARTED,
-        data: {channelId: msg.data.channelID, startTime: msg.data.start_at, threadId: msg.data.thread_id, participants: {}},
+        data: {channelId: msg.data.channelID, startTime: msg.data.start_at, threadId: msg.data.thread_id, participants: {}, creatorId: msg.data.creator_id},
+    };
+}
+
+export function handleCallEnded(msg: WebSocketMessage): GenericAction {
+    DeviceEventEmitter.emit(WebsocketEvents.CALLS_CALL_END, {channelId: msg.broadcast.channel_id});
+    return {
+        type: CallsTypes.RECEIVED_CALL_ENDED,
+        data: {channelId: msg.broadcast.channel_id},
     };
 }
 
@@ -79,5 +87,19 @@ export function handleCallScreenOff(msg: WebSocketMessage): GenericAction {
     return {
         type: CallsTypes.RECEIVED_CHANNEL_CALL_SCREEN_OFF,
         data: {channelId: msg.broadcast.channel_id, userId: msg.data.userID},
+    };
+}
+
+export function handleCallUserRaiseHand(msg: WebSocketMessage): GenericAction {
+    return {
+        type: CallsTypes.RECEIVED_RAISE_HAND,
+        data: {channelId: msg.broadcast.channel_id, userId: msg.data.userID, ts: msg.data.raised_hand},
+    };
+}
+
+export function handleCallUserUnraiseHand(msg: WebSocketMessage): GenericAction {
+    return {
+        type: CallsTypes.RECEIVED_UNRAISE_HAND,
+        data: {channelId: msg.broadcast.channel_id, userId: msg.data.userID, ts: msg.data.raised_hand},
     };
 }

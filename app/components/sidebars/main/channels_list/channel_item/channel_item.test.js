@@ -41,7 +41,6 @@ describe('ChannelItem', () => {
         isBot: false,
         customStatusEnabled: true,
         channelHasCall: false,
-        callsFeatureEnabled: false,
     };
 
     test('should match snapshot', () => {
@@ -52,24 +51,9 @@ describe('ChannelItem', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot when there is a call and calls are enabled', () => {
+    test('should match snapshot when there is a call', () => {
         const newProps = {
             ...baseProps,
-            callsFeatureEnabled: true,
-            channelHasCall: true,
-        };
-
-        const wrapper = shallowWithIntl(
-            <ChannelItem {...newProps}/>,
-        );
-
-        expect(wrapper.getElement()).toMatchSnapshot();
-    });
-
-    test('should match snapshot when there is a call and but calls are disabled', () => {
-        const newProps = {
-            ...baseProps,
-            callsFeatureEnabled: false,
             channelHasCall: true,
         };
 

@@ -373,7 +373,7 @@ export function showSearchModal(initialValue = '') {
     showModal(name, title, passProps, options);
 }
 
-export const showAppForm = async (form, call, theme) => {
+export const showAppForm = async (form, context, theme) => {
     const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
 
     let submitButtons;
@@ -397,7 +397,7 @@ export const showAppForm = async (form, call, theme) => {
         },
     };
 
-    const passProps = {form, call};
+    const passProps = {form, context};
     showModal('AppForm', form.title, passProps, options);
 };
 

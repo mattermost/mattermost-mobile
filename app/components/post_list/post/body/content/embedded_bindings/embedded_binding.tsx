@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {View} from 'react-native';
 
 import {AppBindingLocations} from '@mm-redux/constants/apps';
@@ -39,9 +39,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const EmbeddedBinding = ({embed, postId, theme}: Props) => {
-    const style = getStyleSheet(theme);
+    const [cleanedBindings, setCleanedBindings] = useState<AppBinding[]>([]);
 
-    const bindings = cleanBinding(embed, AppBindingLocations.IN_POST)?.bindings;
+    useEffect(() => {
+        const copiedBindings = JSON.parse(JSON.stringify(embed)) as AppBinding;
+        const bindings = cleanBinding(copiedBindings, AppBindingLocations.IN_POST)?.bindings;
+        setCleanedBindings(bindings!);
+    }, [embed]);
+
+    const style = getStyleSheet(theme);
 
     return (
         <>
@@ -58,9 +64,9 @@ const EmbeddedBinding = ({embed, postId, theme}: Props) => {
                     theme={theme}
                 />
                 }
-                {Boolean(bindings?.length) &&
+                {Boolean(cleanedBindings?.length) &&
                 <EmbedSubBindings
-                    bindings={bindings!}
+                    bindings={cleanedBindings}
                     postId={postId}
                     theme={theme}
                 />
