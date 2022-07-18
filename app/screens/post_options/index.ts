@@ -79,11 +79,11 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
     const serverVersion = config.pipe(switchMap((cfg) => of$(cfg?.Version || '')));
     const postEditTimeLimit = config.pipe(switchMap((cfg) => of$(parseInt(cfg?.PostEditTimeLimit || '-1', 10))));
 
-    const canPostPermission = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => ((c && u) ? observePermissionForChannel(database, c, u, Permissions.CREATE_POST, false) : of$(false))));
-    const hasAddReactionPermission = currentUser.pipe(switchMap((u) => (u ? observePermissionForPost(database, post, u, Permissions.ADD_REACTION, true) : of$(false))));
+    const canPostPermission = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => observePermissionForChannel(database, c, u, Permissions.CREATE_POST, false)));
+    const hasAddReactionPermission = currentUser.pipe(switchMap((u) => observePermissionForPost(database, post, u, Permissions.ADD_REACTION, true)));
     const canDeletePostPermission = currentUser.pipe(switchMap((u) => {
         const isOwner = post.userId === u?.id;
-        return u ? observePermissionForPost(database, post, u, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false) : of$(false);
+        return observePermissionForPost(database, post, u, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false);
     }));
 
     const experimentalTownSquareIsReadOnly = config.pipe(switchMap((value) => of$(value?.ExperimentalTownSquareIsReadOnly === 'true')));

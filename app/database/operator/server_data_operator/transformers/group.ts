@@ -10,10 +10,12 @@ import {generateGroupAssociationId} from '@utils/groups';
 import type {TransformerArgs} from '@typings/database/database';
 import type GroupModel from '@typings/database/models/servers/group';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
+import type GroupTeamModel from '@typings/database/models/servers/group_team';
 
 const {
     GROUP,
     GROUP_MEMBERSHIP,
+    GROUP_TEAM,
 } = MM_TABLES.SERVER;
 
 /**
@@ -35,6 +37,7 @@ export const transformGroupRecord = ({action, database, value}: TransformerArgs)
         group.displayName = raw.display_name;
         group.source = raw.source;
         group.remoteId = raw.remote_id;
+        group.memberCount = raw.member_count || 0;
     };
 
     return prepareBaseRecord({
@@ -70,4 +73,30 @@ export const transformGroupMembershipRecord = ({action, database, value}: Transf
         value,
         fieldsMapper,
     }) as Promise<GroupMembershipModel>;
+};
+
+/**
+   * transformGroupTeamRecord: Prepares a record of the SERVER database 'GroupTeam' table for update or create actions.
+   * @param {TransformerArgs} operator
+   * @param {Database} operator.database
+   * @param {RecordPair} operator.value
+   * @returns {Promise<GroupTeamModel>}
+   */
+export const transformGroupTeamRecord = ({action, database, value}: TransformerArgs): Promise<GroupTeamModel> => {
+    const raw = value.raw as GroupTeam;
+
+    // id of group comes from server response
+    const fieldsMapper = (model: GroupTeamModel) => {
+        model._raw.id = raw.id || generateGroupAssociationId(raw.group_id, raw.team_id);
+        model.groupId = raw.group_id;
+        model.teamId = raw.team_id;
+    };
+
+    return prepareBaseRecord({
+        action,
+        database,
+        tableName: GROUP_TEAM,
+        value,
+        fieldsMapper,
+    }) as Promise<GroupTeamModel>;
 };

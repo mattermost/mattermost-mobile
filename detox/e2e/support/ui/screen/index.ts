@@ -17,6 +17,7 @@ import GlobalThreadsScreen from './global_threads';
 import HomeScreen from './home';
 import LoginScreen from './login';
 import PermalinkScreen from './permalink';
+import PinnedMessagesScreen from './pinned_messages';
 import PostOptionsScreen from './post_options';
 import ReactionsScreen from './reactions';
 import RecentMentionsScreen from './recent_mentions';
@@ -45,6 +46,7 @@ export {
     HomeScreen,
     LoginScreen,
     PermalinkScreen,
+    PinnedMessagesScreen,
     PostOptionsScreen,
     ReactionsScreen,
     RecentMentionsScreen,

@@ -22,12 +22,12 @@ import type {ResizeMode} from 'react-native-fast-image';
 type Props = {
     index: number;
     file: FileInfo;
-    forwardRef: React.RefObject<unknown>;
+    forwardRef?: React.RefObject<unknown>;
     inViewPort?: boolean;
     isSingleImage?: boolean;
     resizeMode?: ResizeMode;
     wrapperWidth: number;
-    updateFileForGallery: (idx: number, file: FileInfo) => void;
+    updateFileForGallery?: (idx: number, file: FileInfo) => void;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -118,7 +118,7 @@ const VideoFile = ({
             );
             data.height = th;
             data.width = tw;
-            updateFileForGallery(index, data);
+            updateFileForGallery?.(index, data);
         }
     };
 

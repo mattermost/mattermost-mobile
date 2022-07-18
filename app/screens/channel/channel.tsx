@@ -13,6 +13,7 @@ import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import {Events} from '@constants';
 import {ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
+import {useChannelSwitch} from '@hooks/channel_switch';
 import {useAppState, useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
@@ -46,8 +47,11 @@ const Channel = ({serverUrl, channelId, componentId, isCallsPluginEnabled, isCal
     const insets = useSafeAreaInsets();
     const [shouldRenderPosts, setShouldRenderPosts] = useState(false);
     const switchingTeam = useTeamSwitch();
+    const switchingChannels = useChannelSwitch();
     const defaultHeight = useDefaultHeaderHeight();
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
+
+    const shouldRender = !switchingTeam && !switchingChannels && shouldRenderPosts && Boolean(channelId);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.PAUSE_KEYBOARD_TRACKING_VIEW, (pause: boolean) => {
@@ -121,8 +125,11 @@ const Channel = ({serverUrl, channelId, componentId, isCallsPluginEnabled, isCal
                 edges={edges}
                 testID='channel.screen'
             >
-                <ChannelHeader componentId={componentId}/>
-                {!switchingTeam && shouldRenderPosts && Boolean(channelId) &&
+                <ChannelHeader
+                    channelId={channelId}
+                    componentId={componentId}
+                />
+                {shouldRender &&
                 <>
                     <View style={[styles.flex, {marginTop}]}>
                         <ChannelPostList

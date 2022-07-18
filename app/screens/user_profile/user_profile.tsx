@@ -22,6 +22,7 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     channelId?: string;
+    closeButtonId: string;
     currentUserId: string;
     enablePostIconOverride: boolean;
     enablePostUsernameOverride: boolean;
@@ -45,7 +46,7 @@ const LABEL_HEIGHT = 58;
 const EXTRA_HEIGHT = 60;
 
 const UserProfile = ({
-    channelId, currentUserId, enablePostIconOverride, enablePostUsernameOverride,
+    channelId, closeButtonId, currentUserId, enablePostIconOverride, enablePostUsernameOverride,
     isChannelAdmin, isDirectMessage, isMilitaryTime, isSystemAdmin, isTeamAdmin,
     location, teamId, teammateDisplayName,
     user, userIconOverride, usernameOverride,
@@ -152,7 +153,7 @@ const UserProfile = ({
     return (
         <BottomSheet
             renderContent={renderContent}
-            closeButtonId='close-post-options'
+            closeButtonId={closeButtonId}
             componentId={Screens.USER_PROFILE}
             initialSnapIndex={0}
             snapPoints={snapPoints}

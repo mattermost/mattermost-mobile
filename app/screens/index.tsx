@@ -175,6 +175,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.SETTINGS_NOTIFICATION_AUTO_RESPONDER:
             screen = withServerDatabase(require('@screens/settings/notification_auto_responder').default);
             break;
+        case Screens.SETTINGS_NOTIFICATION_EMAIL:
+            screen = withServerDatabase(require('@screens/settings/notification_email').default);
+            break;
         case Screens.SETTINGS_NOTIFICATION_MENTION:
             screen = withServerDatabase(require('@screens/settings/notification_mention').default);
             break;

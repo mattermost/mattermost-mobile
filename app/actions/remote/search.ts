@@ -25,7 +25,7 @@ export async function fetchRecentMentions(serverUrl: string): Promise<PostSearch
             };
         }
         const terms = currentUser.userMentionKeys.map(({key}) => key).join(' ').trim() + ' ';
-        const results = await searchPosts(serverUrl, {terms, is_or_search: true});
+        const results = await searchPosts(serverUrl, '', {terms, is_or_search: true});
         if (results.error) {
             throw results.error;
         }
@@ -46,13 +46,13 @@ export async function fetchRecentMentions(serverUrl: string): Promise<PostSearch
     }
 }
 
-export const searchPosts = async (serverUrl: string, params: PostSearchParams): Promise<PostSearchRequest> => {
+export const searchPosts = async (serverUrl: string, teamId: string, params: PostSearchParams): Promise<PostSearchRequest> => {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
 
         let postsArray: Post[] = [];
-        const data = await client.searchPosts('', params.terms, params.is_or_search);
+        const data = await client.searchPosts(teamId, params.terms, params.is_or_search);
 
         const posts = data.posts || {};
         const order = data.order || [];

@@ -5,7 +5,6 @@ import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {bottomSheetSnapPoint} from '@app/utils/helpers';
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
@@ -13,13 +12,14 @@ import {useIsTablet} from '@hooks/device';
 import {SEPARATOR_MARGIN, SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
 import {FileFilter, FileFilters} from '@utils/file';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {TabTypes, TabType} from '@utils/search';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import TeamPickerIcon from '../team_picker_icon';
+
 import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, NUMBER_FILTER_ITEMS} from './filter';
 import SelectButton from './header_button';
-
-const HEADER_HEIGHT = 64;
 
 type Props = {
     onTabSelect: (tab: TabType) => void;
@@ -28,34 +28,34 @@ type Props = {
     selectedFilter: FileFilter;
     numberMessages: number;
     numberFiles: number;
+    setTeamId: (id: string) => void;
+    teamId: string;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
-        flex: {
-            flex: 1,
-        },
         container: {
+            marginTop: 10,
             backgroundColor: theme.centerChannelBg,
-            marginHorizontal: 12,
+            borderBottomWidth: 1,
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
+        },
+        buttonsContainer: {
+            marginBottom: 12,
+            paddingHorizontal: 12,
             flexDirection: 'row',
-            paddingVertical: 12,
-            flexGrow: 0,
-            height: HEADER_HEIGHT,
-            alignItems: 'center',
         },
         filter: {
-            marginRight: 12,
+            alignItems: 'center',
+            flexDirection: 'row',
             marginLeft: 'auto',
-        },
-        divider: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-            height: 1,
         },
     };
 });
 
 const Header = ({
+    teamId,
+    setTeamId,
     onTabSelect,
     onFilterChanged,
     numberMessages,
@@ -71,6 +71,7 @@ const Header = ({
 
     const messagesText = intl.formatMessage({id: 'screen.search.header.messages', defaultMessage: 'Messages'});
     const filesText = intl.formatMessage({id: 'screen.search.header.files', defaultMessage: 'Files'});
+    const title = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
 
     const showFilterIcon = selectedTab === TabTypes.FILES;
     const hasFilters = selectedFilter !== FileFilters.ALL;
@@ -99,6 +100,7 @@ const Header = ({
                 <Filter
                     initialFilter={selectedFilter}
                     setFilter={onFilterChanged}
+                    title={title}
                 />
             );
         };
@@ -107,13 +109,13 @@ const Header = ({
             renderContent,
             snapPoints,
             theme,
-            title: intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'}),
+            title,
         });
     }, [selectedFilter]);
 
     return (
-        <>
-            <View style={styles.container}>
+        <View style={styles.container}>
+            <View style={styles.buttonsContainer}>
                 <SelectButton
                     selected={selectedTab === TabTypes.MESSAGES}
                     onPress={handleMessagesPress}
@@ -144,11 +146,15 @@ const Header = ({
                         />
                     </>
                     }
+                    <TeamPickerIcon
+                        size={32}
+                        divider={true}
+                        setTeamId={setTeamId}
+                        teamId={teamId}
+                    />
                 </View>
             </View>
-            <View style={styles.divider}/>
-        </>
-
+        </View>
     );
 };
 

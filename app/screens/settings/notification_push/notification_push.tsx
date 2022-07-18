@@ -3,8 +3,6 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {ScrollView} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateMe} from '@actions/remote/user';
 import {useServerUrl} from '@context/server';
@@ -12,32 +10,16 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {popTopScreen, setButtons} from '@screens/navigation';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getNotificationProps} from '@utils/user';
+
+import {getSaveButton} from '../config';
+import SettingContainer from '../setting_container';
 
 import MobileSendPush from './push_send';
 import MobilePushStatus from './push_status';
 import MobilePushThread from './push_thread';
 
 import type UserModel from '@typings/database/models/servers/user';
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg,
-        },
-        scrollView: {
-            flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-        },
-        scrollViewContent: {
-            paddingVertical: 30,
-        },
-    };
-});
-
-const edges: Edge[] = ['left', 'right'];
 
 const SAVE_NOTIF_BUTTON_ID = 'SAVE_NOTIF_BUTTON_ID';
 
@@ -58,22 +40,12 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
 
     const intl = useIntl();
     const theme = useTheme();
-    const styles = getStyleSheet(theme);
 
     const onMobilePushThreadChanged = useCallback(() => {
         setPushThreadPref(pushThread === 'all' ? 'mention' : 'all');
     }, [pushThread]);
 
-    const saveButton = useMemo(() => {
-        return {
-            id: SAVE_NOTIF_BUTTON_ID,
-            enabled: false,
-            showAsAction: 'always' as const,
-            testID: 'notification_settings.save.button',
-            color: theme.sidebarHeaderTextColor,
-            text: intl.formatMessage({id: 'settings.save', defaultMessage: 'Save'}),
-        };
-    }, [theme.sidebarHeaderTextColor]);
+    const saveButton = useMemo(() => getSaveButton(SAVE_NOTIF_BUTTON_ID, intl, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
 
     const close = useCallback(() => popTopScreen(componentId), [componentId]);
 
@@ -110,35 +82,25 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
     useAndroidHardwareBackHandler(componentId, close);
 
     return (
-        <SafeAreaView
-            edges={edges}
-            testID='notification_push.screen'
-            style={styles.container}
-        >
-            <ScrollView
-                style={styles.scrollView}
-                contentContainerStyle={styles.scrollViewContent}
-                alwaysBounceVertical={false}
-            >
-                <MobileSendPush
-                    pushStatus={pushSend}
-                    sendPushNotifications={sendPushNotifications}
-                    setMobilePushPref={setPushSend}
+        <SettingContainer>
+            <MobileSendPush
+                pushStatus={pushSend}
+                sendPushNotifications={sendPushNotifications}
+                setMobilePushPref={setPushSend}
+            />
+            {isCRTEnabled && pushSend === 'mention' && (
+                <MobilePushThread
+                    pushThread={pushThread}
+                    onMobilePushThreadChanged={onMobilePushThreadChanged}
                 />
-                {isCRTEnabled && pushSend === 'mention' && (
-                    <MobilePushThread
-                        pushThread={pushThread}
-                        onMobilePushThreadChanged={onMobilePushThreadChanged}
-                    />
-                )}
-                {sendPushNotifications && pushSend !== 'none' && (
-                    <MobilePushStatus
-                        pushStatus={pushStatus}
-                        setMobilePushStatus={setPushStatus}
-                    />
-                )}
-            </ScrollView>
-        </SafeAreaView>
+            )}
+            {sendPushNotifications && pushSend !== 'none' && (
+                <MobilePushStatus
+                    pushStatus={pushStatus}
+                    setMobilePushStatus={setPushStatus}
+                />
+            )}
+        </SettingContainer>
     );
 };
 

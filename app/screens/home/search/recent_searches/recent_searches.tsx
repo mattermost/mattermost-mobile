@@ -3,10 +3,9 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, View} from 'react-native';
+import {FlatList, Text, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -37,12 +36,20 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 type Props = {
     setRecentValue: (value: string) => void;
     recentSearches: TeamSearchHistoryModel[];
+    teamName: string;
 }
 
-const RecentSearches = ({setRecentValue, recentSearches}: Props) => {
+const RecentSearches = ({setRecentValue, recentSearches, teamName}: Props) => {
     const theme = useTheme();
     const {formatMessage} = useIntl();
     const styles = getStyleFromTheme(theme);
+
+    const title = formatMessage({
+        id: 'smobile.search.recent_title',
+        defaultMessage: 'Recent searches in {teamName}',
+    }, {
+        teamName,
+    });
 
     const renderRecentItem = useCallback(({item}) => {
         return (
@@ -56,11 +63,12 @@ const RecentSearches = ({setRecentValue, recentSearches}: Props) => {
     const header = (
         <>
             <View style={styles.divider}/>
-            <FormattedText
+            <Text
                 style={styles.title}
-                id={'screen.search.recent.header'}
-                defaultMessage={formatMessage({id: 'mobile.search.recent_title', defaultMessage: 'Recent searches'})}
-            />
+                numberOfLines={2}
+            >
+                {title}
+            </Text>
         </>
     );
 

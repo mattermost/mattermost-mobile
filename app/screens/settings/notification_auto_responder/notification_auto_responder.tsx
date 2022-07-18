@@ -3,13 +3,10 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateMe} from '@actions/remote/user';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
-import OptionItem from '@components/option_item';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -21,11 +18,16 @@ import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} 
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
 
+import {getSaveButton} from '../config';
+import SettingContainer from '../setting_container';
+import SettingOption from '../setting_option';
+import SettingSeparator from '../settings_separator';
+
 import type UserModel from '@typings/database/models/servers/user';
 
-const headerText = {
-    id: t('notification_settings.auto_responder'),
-    defaultMessage: 'Custom message',
+const label = {
+    id: t('notification_settings.auto_responder.message'),
+    defaultMessage: 'Message',
 };
 
 const OOO = {
@@ -34,43 +36,25 @@ const OOO = {
 };
 const SAVE_OOO_BUTTON_ID = 'notification_settings.auto_responder.save.button';
 
-const edges: Edge[] = ['left', 'right'];
-
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
-        container: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg,
-        },
-        wrapper: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-            flex: 1,
-            paddingTop: 35,
-        },
         input: {
             color: theme.centerChannelColor,
-            height: 150,
-            paddingHorizontal: 15,
-            paddingVertical: 10,
             ...typography('Body', 200, 'Regular'),
+            flex: 1,
+        },
+        textInputContainer: {
+            width: '91%',
+            marginTop: 20,
+            alignSelf: 'center',
+            height: 154,
         },
         footer: {
-            paddingHorizontal: 15,
+            paddingHorizontal: 20,
             color: changeOpacity(theme.centerChannelColor, 0.5),
             textAlign: 'justify',
-            ...typography('Body', 75),
-        },
-        area: {
-            paddingHorizontal: 16,
-        },
-        label: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 100, 'Regular'),
-        },
-        enabled: {
-            paddingHorizontal: 8,
-            backgroundColor: theme.centerChannelBg,
-            marginBottom: 16,
+            ...typography('Body', 75, 'Regular'),
+            marginTop: 20,
         },
     };
 });
@@ -83,53 +67,33 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const intl = useIntl();
-    const userNotifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
-    const [autoResponderActive, setAutoResponderActive] = useState((currentUser.status === General.OUT_OF_OFFICE && userNotifyProps.auto_responder_active) ? 'true' : 'false');
-    const [autoResponderMessage, setAutoResponderMessage] = useState(userNotifyProps.auto_responder_message || intl.formatMessage(OOO));
+    const notifyProps = useMemo(() => getNotificationProps(currentUser), []); // dependency array should remain empty
+
+    const initialAutoResponderActive = useMemo(() => Boolean(currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active === 'true'), []); // dependency array should remain empty
+    const [autoResponderActive, setAutoResponderActive] = useState<boolean>(initialAutoResponderActive);
+
+    const initialOOOMsg = useMemo(() => notifyProps.auto_responder_message || intl.formatMessage(OOO), []); // dependency array should remain empty
+    const [autoResponderMessage, setAutoResponderMessage] = useState<string>(initialOOOMsg);
 
     const styles = getStyleSheet(theme);
 
     const close = () => popTopScreen(componentId);
 
-    const saveButton = useMemo(() => {
-        return {
-            id: SAVE_OOO_BUTTON_ID,
-            enabled: false,
-            showAsAction: 'always' as const,
-            testID: 'notification_settings.auto_res.save.button',
-            color: theme.sidebarHeaderTextColor,
-            text: intl.formatMessage({id: 'settings.save', defaultMessage: 'Save'}),
-        };
-    }, [theme.sidebarHeaderTextColor]);
-
-    const onAutoResponseToggle = useCallback((active: boolean) => {
-        setAutoResponderActive(`${active}`);
-    }, []);
-
-    const onAutoResponseChangeText = useCallback((message: string) => {
-        setAutoResponderMessage(message);
-    }, []);
+    const saveButton = useMemo(() => getSaveButton(SAVE_OOO_BUTTON_ID, intl, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
 
     const saveAutoResponder = useCallback(() => {
-        const notifyProps = {
-            ...userNotifyProps,
-            auto_responder_active: autoResponderActive,
-            auto_responder_message: autoResponderMessage,
-        } as unknown as UserNotifyProps;
-
         updateMe(serverUrl, {
-            notify_props: notifyProps,
+            notify_props: {
+                ...notifyProps,
+                auto_responder_active: `${autoResponderActive}`,
+                auto_responder_message: autoResponderMessage,
+            },
         });
         close();
-    }, [serverUrl, autoResponderActive, autoResponderMessage, userNotifyProps]);
+    }, [serverUrl, autoResponderActive, autoResponderMessage, notifyProps]);
 
     useEffect(() => {
-        const updatedMsg = userNotifyProps?.auto_responder_message !== autoResponderMessage;
-        const enabling = currentUser.status !== General.OUT_OF_OFFICE && autoResponderActive === 'true';
-        const disabling = currentUser.status === General.OUT_OF_OFFICE && autoResponderActive === 'false';
-
-        const enabled = enabling || disabling || updatedMsg;
-
+        const enabled = initialAutoResponderActive !== autoResponderActive || initialOOOMsg !== autoResponderMessage;
         const buttons = {
             rightButtons: [{
                 ...saveButton,
@@ -137,55 +101,48 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
             }],
         };
         setButtons(componentId, buttons);
-    }, [autoResponderActive, autoResponderMessage, componentId, currentUser.status, userNotifyProps.auto_responder_message]);
+    }, [autoResponderActive, autoResponderMessage, componentId, currentUser.status, notifyProps.auto_responder_message]);
 
     useNavButtonPressed(SAVE_OOO_BUTTON_ID, componentId, saveAutoResponder, [saveAutoResponder]);
 
     useAndroidHardwareBackHandler(componentId, close);
 
     return (
-        <SafeAreaView
-            edges={edges}
-            style={styles.container}
-        >
-            <View style={styles.wrapper}>
-                <View
-                    style={styles.enabled}
-                >
-                    <OptionItem
-                        label={intl.formatMessage({id: 'notification_settings.auto_responder.enabled', defaultMessage: 'Enabled'})}
-                        action={onAutoResponseToggle}
-                        type='toggle'
-                        selected={autoResponderActive === 'true'}
-                    />
-                </View>
-                {autoResponderActive === 'true' && (
-                    <FloatingTextInput
-                        allowFontScaling={true}
-                        autoCapitalize='none'
-                        autoCorrect={false}
-                        blurOnSubmit={true}
-                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                        label={intl.formatMessage(headerText)}
-                        multiline={true}
-                        onChangeText={onAutoResponseChangeText}
-                        placeholder={intl.formatMessage(headerText)}
-                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
-                        returnKeyType='done'
-                        textInputStyle={styles.input}
-                        textAlignVertical='top'
-                        theme={theme}
-                        underlineColorAndroid='transparent'
-                        value={autoResponderMessage || ''}
-                    />
-                )}
-                <FormattedText
-                    id={'notification_settings.auto_responder.footer_message'}
-                    defaultMessage={'Set a custom message that will be automatically sent in response to Direct Messages. Mentions in Public and Private Channels will not trigger the automated reply. Enabling Automatic Replies sets your status to Out of Office and disables email and push notifications.'}
-                    style={styles.footer}
+        <SettingContainer>
+            <SettingOption
+                label={intl.formatMessage({id: 'notification_settings.auto_responder.to.enable', defaultMessage: 'Enable automatic replies'})}
+                action={setAutoResponderActive}
+                type='toggle'
+                selected={autoResponderActive}
+            />
+            <SettingSeparator/>
+            {autoResponderActive && (
+                <FloatingTextInput
+                    allowFontScaling={true}
+                    autoCapitalize='none'
+                    autoCorrect={false}
+                    blurOnSubmit={true}
+                    containerStyle={styles.textInputContainer}
+                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                    label={intl.formatMessage(label)}
+                    multiline={true}
+                    onChangeText={setAutoResponderMessage}
+                    placeholder={intl.formatMessage(label)}
+                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
+                    returnKeyType='done'
+                    textAlignVertical='top'
+                    textInputStyle={styles.input}
+                    theme={theme}
+                    underlineColorAndroid='transparent'
+                    value={autoResponderMessage || ''}
                 />
-            </View>
-        </SafeAreaView>
+            )}
+            <FormattedText
+                id={'notification_settings.auto_responder.footer.message'}
+                defaultMessage={'Set a custom message that is automatically sent in response to direct messages, such as an out of office or vacation reply. Enabling this setting changes your status to Out of Office and disables notifications.'}
+                style={styles.footer}
+            />
+        </SettingContainer>
     );
 };
 
