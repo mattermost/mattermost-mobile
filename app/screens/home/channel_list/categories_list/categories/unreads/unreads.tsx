@@ -47,10 +47,7 @@ const UnreadCategories = ({onChannelSwitch, onlyUnreads, unreadChannels, unreadT
     const styles = getStyleSheet(theme);
 
     const renderItem = useCallback(({item}: {item: ChannelModel}) => {
-        // TODO: ts error about "Property 'serverUrl' is missing in type"
         return (
-            // eslint-disable-next-line
-            // @ts-ignore
             <ChannelItem
                 channel={item}
                 onPress={onChannelSwitch}

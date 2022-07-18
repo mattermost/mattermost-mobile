@@ -45,10 +45,7 @@ const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, limit,
     }, [ids.length, unreadChannels.length]);
 
     const renderItem = useCallback(({item}: {item: ChannelModel}) => {
-        // TODO: ts error about "Property 'serverUrl' is missing in type"
         return (
-            // eslint-disable-next-line
-            // @ts-ignore
             <ChannelItem
                 channel={item}
                 onPress={onChannelSwitch}
