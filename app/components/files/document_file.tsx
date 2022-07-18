@@ -12,6 +12,7 @@ import tinyColor from 'tinycolor2';
 import ProgressBar from '@components/progress_bar';
 import {DOWNLOAD_TIMEOUT} from '@constants/network';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 import NetworkManager from '@managers/network_manager';
 import {alertDownloadDocumentDisabled, alertDownloadFailed, alertFailedToOpenDocument} from '@utils/document';
 import {fileExists, getLocalFilePathFromFile} from '@utils/file';
@@ -29,7 +30,6 @@ type DocumentFileProps = {
     backgroundColor?: string;
     canDownloadFiles: boolean;
     file: FileInfo;
-    theme: Theme;
 }
 
 const styles = StyleSheet.create({
@@ -42,9 +42,10 @@ const styles = StyleSheet.create({
     },
 });
 
-const DocumentFile = forwardRef<DocumentFileRef, DocumentFileProps>(({backgroundColor, canDownloadFiles, file, theme}: DocumentFileProps, ref) => {
+const DocumentFile = forwardRef<DocumentFileRef, DocumentFileProps>(({backgroundColor, canDownloadFiles, file}: DocumentFileProps, ref) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
+    const theme = useTheme();
     const [didCancel, setDidCancel] = useState(false);
     const [downloading, setDownloading] = useState(false);
     const [preview, setPreview] = useState(false);

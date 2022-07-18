@@ -177,7 +177,6 @@ const Body = ({
                     location={location}
                     post={post}
                     isReplyPost={isReplyPost}
-                    theme={theme}
                 />
                 }
                 {hasReactions && showAddReaction &&
