@@ -136,6 +136,8 @@ const Channel = ({serverUrl, channelId, componentId, isCallsPluginEnabled, isCal
                             channelId={channelId}
                             forceQueryAfterAppState={appState}
                             nativeID={channelId}
+                            currentCallBarVisible={isInCall}
+                            joinCallBannerVisible={isCallInCurrentChannel && !isInCall}
                         />
                     </View>
                     <PostDraft

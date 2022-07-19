@@ -10,6 +10,7 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Events} from '@constants';
+import {CURRENT_CALL_BAR_HEIGHT, JOIN_CALL_BAR_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme, hexToHue} from '@utils/theme';
@@ -28,6 +29,8 @@ type Props = {
     unreadCount: number;
     theme: Theme;
     testID: string;
+    currentCallBarVisible: boolean;
+    joinCallBannerVisible: boolean;
 }
 
 const HIDDEN_TOP = -60;
@@ -100,6 +103,8 @@ const MoreMessages = ({
     unreadCount,
     testID,
     theme,
+    currentCallBarVisible,
+    joinCallBannerVisible,
 }: Props) => {
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
@@ -110,8 +115,9 @@ const MoreMessages = ({
     const [remaining, setRemaining] = useState(0);
     const underlayColor = useMemo(() => `hsl(${hexToHue(theme.buttonBg)}, 50%, 38%)`, [theme]);
     const top = useSharedValue(0);
-    const shownTop = isTablet ? 5 : SHOWN_TOP;
-    const BARS_FACTOR = Math.abs((1) / (HIDDEN_TOP - SHOWN_TOP));
+    const adjustedShownTop = SHOWN_TOP + (currentCallBarVisible ? CURRENT_CALL_BAR_HEIGHT : 0) + (joinCallBannerVisible ? JOIN_CALL_BAR_HEIGHT : 0);
+    const shownTop = isTablet ? 5 : adjustedShownTop;
+    const BARS_FACTOR = Math.abs((1) / (HIDDEN_TOP - shownTop));
     const styles = getStyleSheet(theme);
     const animatedStyle = useAnimatedStyle(() => ({
         transform: [{
@@ -132,7 +138,7 @@ const MoreMessages = ({
                 Animated.Extrapolate.CLAMP,
             ), {damping: 15}),
         }],
-    }), [isTablet, shownTop]);
+    }), [isTablet, shownTop, BARS_FACTOR]);
 
     const resetCount = async () => {
         if (resetting.current) {
