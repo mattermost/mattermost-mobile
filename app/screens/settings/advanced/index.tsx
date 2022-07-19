@@ -8,6 +8,7 @@ import {TouchableOpacity} from 'react-native';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {popTopScreen} from '@screens/navigation';
+import SettingSeparator from '@screens/settings/settings_separator';
 import {deleteFileCache, getAllFilesInCachesDirectory, getFormattedFileSize} from '@utils/file';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -86,6 +87,7 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
                     label={intl.formatMessage({id: 'advanced_settings.delete_data', defaultMessage: 'Delete Documents & Data'})}
                     type='none'
                 />
+                <SettingSeparator/>
             </TouchableOpacity>
         </SettingContainer>
     );
