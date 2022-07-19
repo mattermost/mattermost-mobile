@@ -10,7 +10,6 @@
 import {
     Channel,
     Setup,
-    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -35,12 +34,6 @@ describe('Channels - Archive Channel', () => {
     let testUser: any;
 
     beforeAll(async () => {
-        System.apiUpdateConfig(siteOneUrl, {
-            TeamSettings: {
-                ExperimentalViewArchivedChannels: true,
-            },
-        });
-
         const {team, user} = await Setup.apiInit(siteOneUrl);
         testTeam = team;
         testUser = user;
