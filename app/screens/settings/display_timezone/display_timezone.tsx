@@ -3,7 +3,6 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
 
 import {updateMe} from '@actions/remote/user';
 import {Screens} from '@constants';
@@ -34,7 +33,9 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
     const serverUrl = useServerUrl();
     const timezone = useMemo(() => getUserTimezoneProps(currentUser), [currentUser.timezone]);
     const [userTimezone, setUserTimezone] = useState(timezone);
+    const [newManualTimezone, setNewManualTimezone] = useState<string | undefined>(undefined);
     const theme = useTheme();
+
     const updateAutomaticTimezone = (useAutomaticTimezone: boolean) => {
         const automaticTimezone = getDeviceTimezone();
         setUserTimezone((prev) => ({
@@ -50,13 +51,14 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
             automaticTimezone: '',
             manualTimezone: mtz,
         });
+        setNewManualTimezone(mtz);
     };
 
     const goToSelectTimezone = preventDoubleTap(() => {
         const screen = Screens.SETTINGS_DISPLAY_TIMEZONE_SELECT;
         const title = intl.formatMessage({id: 'settings_display.timezone.select', defaultMessage: 'Select Timezone'});
         const passProps = {
-            selectedTimezone: userTimezone.manualTimezone || timezone.manualTimezone || timezone.automaticTimezone,
+            currentTimezone: userTimezone.manualTimezone || timezone.manualTimezone || timezone.automaticTimezone,
             onBack: updateManualTimezone,
         };
 
@@ -99,7 +101,6 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
 
     return (
         <SettingContainer>
-            <SettingSeparator/>
             <SettingOption
                 action={updateAutomaticTimezone}
                 description={getTimezoneRegion(userTimezone.automaticTimezone)}
@@ -108,15 +109,15 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
                 type='toggle'
             />
             {!userTimezone.useAutomaticTimezone && (
-                <View>
+                <>
                     <SettingSeparator/>
                     <SettingOption
                         action={goToSelectTimezone}
-                        description={getTimezoneRegion(userTimezone.manualTimezone)}
+                        info={getTimezoneRegion(newManualTimezone || userTimezone.manualTimezone)}
                         label={intl.formatMessage({id: 'settings_display.timezone.manual', defaultMessage: 'Change timezone'})}
                         type='arrow'
                     />
-                </View>
+                </>
             )}
             <SettingSeparator/>
         </SettingContainer>

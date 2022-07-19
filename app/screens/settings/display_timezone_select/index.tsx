@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -10,7 +10,10 @@ import {getAllSupportedTimezones} from '@actions/remote/user';
 import Search from '@components/search';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {popTopScreen} from '@screens/navigation';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {popTopScreen, setButtons} from '@screens/navigation';
+import {getSaveButton} from '@screens/settings/config';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getTimezoneRegion} from '@utils/user';
@@ -47,7 +50,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 const EDGES: Edge[] = ['left', 'right'];
 const EMPTY_TIMEZONES: string[] = [];
 const ITEM_HEIGHT = 48;
-
+const SAVE_DISPLAY_TZ_BTN_ID = 'SAVE_DISPLAY_TZ_BTN_ID';
 const keyExtractor = (item: string) => item;
 const getItemLayout = (_data: string[], index: number) => ({
     length: ITEM_HEIGHT,
@@ -56,15 +59,16 @@ const getItemLayout = (_data: string[], index: number) => ({
 });
 
 type SelectTimezonesProps = {
-    selectedTimezone: string;
+    componentId: string;
     onBack: (tz: string) => void;
+    currentTimezone: string;
 }
-const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
+const SelectTimezones = ({componentId, onBack, currentTimezone}: SelectTimezonesProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-
+    const initialTimezones = useMemo(() => currentTimezone, []);
     const cancelButtonProps = useMemo(() => ({
         buttonTextStyle: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
@@ -77,17 +81,18 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
 
     const [timezones, setTimezones] = useState<string[]>(EMPTY_TIMEZONES);
     const [initialScrollIndex, setInitialScrollIndex] = useState<number|undefined>();
-    const [value, setValue] = useState('');
+    const [searchRegion, setSearchRegion] = useState('');
+    const [manualTimezone, setManualTimezone] = useState(currentTimezone);
 
-    const filteredTimezones = (timezonePrefix: string) => {
-        if (timezonePrefix.length === 0) {
+    const filteredTimezones = () => {
+        if (searchRegion.length === 0) {
             return timezones;
         }
 
-        const lowerCasePrefix = timezonePrefix.toLowerCase();
+        const lowerCasePrefix = searchRegion.toLowerCase();
 
         // if initial scroll index is set when the items change
-        // and the index is grater than the amount of items
+        // and the index is greater than the amount of items
         // the list starts to render partial results until there is
         // and interaction, so setting the index as undefined corrects
         // the rendering
@@ -101,19 +106,21 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
         ));
     };
 
-    const onPressTimezone = useCallback((tzne: string) => {
-        onBack(tzne);
-        popTopScreen();
-    }, [onBack]);
-
     const renderItem = ({item: timezone}: {item: string}) => {
         return (
             <TimezoneRow
-                onPressTimezone={onPressTimezone}
-                selectedTimezone={selectedTimezone}
+                isSelected={timezone === manualTimezone}
+                onPressTimezone={setManualTimezone}
                 timezone={timezone}
             />
         );
+    };
+
+    const saveButton = useMemo(() => getSaveButton(SAVE_DISPLAY_TZ_BTN_ID, intl, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
+
+    const close = () => {
+        onBack(manualTimezone);
+        popTopScreen(componentId);
     };
 
     useEffect(() => {
@@ -122,7 +129,7 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
             const allTzs = await getAllSupportedTimezones(serverUrl);
             if (allTzs.length > 0) {
                 setTimezones(allTzs);
-                const timezoneIndex = allTzs.findIndex((timezone) => timezone === selectedTimezone);
+                const timezoneIndex = allTzs.findIndex((timezone) => timezone === currentTimezone);
                 if (timezoneIndex > 0) {
                     setInitialScrollIndex(timezoneIndex);
                 }
@@ -130,6 +137,20 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
         };
         getSupportedTimezones();
     }, []);
+
+    useEffect(() => {
+        const buttons = {
+            rightButtons: [{
+                ...saveButton,
+                enabled: initialTimezones !== manualTimezone,
+            }],
+        };
+        setButtons(componentId, buttons);
+    }, [componentId, saveButton, initialTimezones, manualTimezone]);
+
+    useNavButtonPressed(SAVE_DISPLAY_TZ_BTN_ID, componentId, close, [manualTimezone]);
+
+    useAndroidHardwareBackHandler(componentId, close);
 
     return (
         <SafeAreaView
@@ -144,16 +165,16 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
                     inputContainerStyle={styles.inputContainerStyle}
                     inputStyle={styles.searchBarInput}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                    onChangeText={setValue}
+                    onChangeText={setSearchRegion}
                     placeholder={intl.formatMessage({id: 'search_bar.search.placeholder', defaultMessage: 'Search timezone'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     selectionColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     testID='settings.select_timezone.search_bar'
-                    value={value}
+                    value={searchRegion}
                 />
             </View>
             <FlatList
-                data={filteredTimezones(value)}
+                data={filteredTimezones()}
                 getItemLayout={getItemLayout}
                 initialScrollIndex={initialScrollIndex}
                 keyExtractor={keyExtractor}
@@ -162,6 +183,7 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
                 removeClippedSubviews={true}
                 renderItem={renderItem}
                 contentContainerStyle={styles.flexGrow}
+                extraData={timezones}
             />
         </SafeAreaView>
     );
