@@ -9,6 +9,25 @@ import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        learnContainer: {
+            flex: 1,
+            flexDirection: 'column',
+            marginVertical: 20,
+        },
+        learn: {
+            color: theme.centerChannelColor,
+            ...typography('Body', 200, 'Regular'),
+        },
+        learnLink: {
+            color: theme.linkColor,
+            ...typography('Body', 200, 'Regular'),
+        },
+    };
+});
 
 type LearnMoreProps = {
     config: ClientConfig;
@@ -51,23 +70,5 @@ const LearnMore = ({config, onHandleAboutEnterprise, onHandleAboutTeam}: LearnMo
         </View>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        learnContainer: {
-            flex: 1,
-            flexDirection: 'column',
-            marginVertical: 20,
-        },
-        learn: {
-            color: theme.centerChannelColor,
-            fontSize: 16,
-        },
-        learnLink: {
-            color: theme.linkColor,
-            fontSize: 16,
-        },
-    };
-});
 
 export default LearnMore;

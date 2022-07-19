@@ -55,7 +55,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     let extraStyles: StyleProp<ViewStyle>;
     switch (screenName) {
         case Screens.ABOUT:
-            screen = withServerDatabase(require('@screens/about').default);
+            screen = withServerDatabase(require('@screens/settings/about').default);
             break;
         case Screens.APPS_FORM:
             screen = withServerDatabase(require('@screens/apps_form').default);
