@@ -29,7 +29,7 @@ function ServerUrlProvider({server, children}: Props) {
 }
 
 export function withServerUrl<C extends React.ComponentType<P>, P = GetProps<C>>(Component: C) {
-    return function ServerUrlComponent(props: any) {
+    return function ServerUrlComponent(props: JSX.LibraryManagedAttributes<C, P>) {
         return (
             <Consumer>
                 {(server: ServerContext) => (

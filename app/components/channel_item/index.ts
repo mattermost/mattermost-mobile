@@ -23,7 +23,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 type EnhanceProps = WithDatabaseArgs & {
     channel: ChannelModel;
     showTeamName?: boolean;
-    serverUrl: string;
+    serverUrl?: string;
 }
 
 const observeIsMutedSetting = (mc: MyChannelModel) => mc.settings.observe().pipe(switchMap((s) => of$(s?.notifyProps?.mark_unread === General.MENTION)));
@@ -79,7 +79,7 @@ const enhance = withObservables(['channel', 'showTeamName'], ({channel, database
         distinctUntilChanged(),
     );
 
-    const hasCall = observeChannelsWithCalls(serverUrl).pipe(
+    const hasCall = observeChannelsWithCalls(serverUrl || '').pipe(
         switchMap((calls) => of$(Boolean(calls[channel.id]))));
 
     return {
