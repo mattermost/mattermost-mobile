@@ -7,7 +7,7 @@ import {AppStateStatus} from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeChannel} from '@queries/servers/channel';
+import {observeMyChannel, observeChannel} from '@queries/servers/channel';
 import {queryPostsChunk, queryPostsInThread} from '@queries/servers/post';
 import {observeIsCRTEnabled, observeThreadById} from '@queries/servers/thread';
 
@@ -24,6 +24,9 @@ type Props = WithDatabaseArgs & {
 const enhanced = withObservables(['forceQueryAfterAppState', 'rootPost'], ({database, rootPost}: Props) => {
     return {
         isCRTEnabled: observeIsCRTEnabled(database),
+        channelLastViewedAt: observeMyChannel(database, rootPost.channelId).pipe(
+            switchMap((myChannel) => of$(myChannel?.viewedAt)),
+        ),
         posts: queryPostsInThread(database, rootPost.id, true, true).observeWithColumns(['earliest', 'latest']).pipe(
             switchMap((postsInThread) => {
                 if (!postsInThread.length) {

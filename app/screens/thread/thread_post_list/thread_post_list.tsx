@@ -15,6 +15,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
 
 type Props = {
+    channelLastViewedAt: number;
     isCRTEnabled: boolean;
     nativeID: string;
     posts: PostModel[];
@@ -32,7 +33,8 @@ const styles = StyleSheet.create({
 });
 
 const ThreadPostList = ({
-    isCRTEnabled, nativeID, posts, rootPost, teamId, thread,
+    channelLastViewedAt, isCRTEnabled,
+    nativeID, posts, rootPost, teamId, thread,
 }: Props) => {
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
@@ -57,12 +59,14 @@ const ThreadPostList = ({
         }
     }, [isCRTEnabled, posts, rootPost, serverUrl, teamId, thread]);
 
+    const lastViewedAt = isCRTEnabled ? (thread?.viewedAt ?? 0) : channelLastViewedAt;
+
     const postList = (
         <PostList
             channelId={rootPost.channelId}
             contentContainerStyle={styles.container}
             isCRTEnabled={isCRTEnabled}
-            lastViewedAt={thread?.viewedAt ?? 0}
+            lastViewedAt={lastViewedAt}
             location={Screens.THREAD}
             nativeID={nativeID}
             posts={threadPosts}
