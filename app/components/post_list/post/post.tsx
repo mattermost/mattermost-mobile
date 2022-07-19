@@ -295,7 +295,7 @@ const Post = ({
 
     let unreadDot;
     let footer;
-    if (isCRTEnabled && thread) {
+    if (isCRTEnabled && thread && location !== Screens.THREAD) {
         if (thread.replyCount > 0 || thread.isFollowing) {
             footer = (
                 <Footer

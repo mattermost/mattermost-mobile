@@ -16,7 +16,6 @@ import type ThreadModel from '@typings/database/models/servers/thread';
 
 type Props = {
     isCRTEnabled: boolean;
-    lastViewedAt: number;
     nativeID: string;
     posts: PostModel[];
     rootPost: PostModel;
@@ -33,8 +32,7 @@ const styles = StyleSheet.create({
 });
 
 const ThreadPostList = ({
-    isCRTEnabled, lastViewedAt,
-    nativeID, posts, rootPost, teamId, thread,
+    isCRTEnabled, nativeID, posts, rootPost, teamId, thread,
 }: Props) => {
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
@@ -43,7 +41,14 @@ const ThreadPostList = ({
         return [...posts, rootPost];
     }, [posts, rootPost]);
 
-    // If CRT is enabled, When new post arrives and thread modal is open, mark thread as read
+    // If CRT is enabled, mark the thread as read on mount.
+    useEffect(() => {
+        if (isCRTEnabled) {
+            markThreadAsRead(serverUrl, teamId, rootPost.id);
+        }
+    }, []);
+
+    // If CRT is enabled, When new post arrives and thread modal is open, mark thread as read.
     const oldPostsCount = useRef<number>(posts.length);
     useEffect(() => {
         if (isCRTEnabled && thread?.isFollowing && oldPostsCount.current < posts.length) {
@@ -56,14 +61,14 @@ const ThreadPostList = ({
         <PostList
             channelId={rootPost.channelId}
             contentContainerStyle={styles.container}
-            lastViewedAt={lastViewedAt}
+            isCRTEnabled={isCRTEnabled}
+            lastViewedAt={thread?.viewedAt ?? 0}
             location={Screens.THREAD}
             nativeID={nativeID}
             posts={threadPosts}
             rootId={rootPost.id}
             shouldShowJoinLeaveMessages={false}
-            showMoreMessages={false}
-            showNewMessageLine={false}
+            showMoreMessages={isCRTEnabled}
             footer={<View style={styles.footer}/>}
             testID='thread.post_list'
         />
