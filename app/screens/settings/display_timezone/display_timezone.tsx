@@ -31,9 +31,8 @@ type DisplayTimezoneProps = {
 const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const timezone = useMemo(() => getUserTimezoneProps(currentUser), [currentUser.timezone]);
-    const [userTimezone, setUserTimezone] = useState(timezone);
-    const [newManualTimezone, setNewManualTimezone] = useState<string | undefined>(undefined);
+    const initialTimezone = useMemo(() => getUserTimezoneProps(currentUser), []); // deps array should remain empty
+    const [userTimezone, setUserTimezone] = useState(initialTimezone);
     const theme = useTheme();
 
     const updateAutomaticTimezone = (useAutomaticTimezone: boolean) => {
@@ -51,14 +50,14 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
             automaticTimezone: '',
             manualTimezone: mtz,
         });
-        setNewManualTimezone(mtz);
     };
 
     const goToSelectTimezone = preventDoubleTap(() => {
         const screen = Screens.SETTINGS_DISPLAY_TIMEZONE_SELECT;
         const title = intl.formatMessage({id: 'settings_display.timezone.select', defaultMessage: 'Select Timezone'});
+
         const passProps = {
-            currentTimezone: userTimezone.manualTimezone || timezone.manualTimezone || timezone.automaticTimezone,
+            currentTimezone: userTimezone.manualTimezone || initialTimezone.manualTimezone || initialTimezone.automaticTimezone,
             onBack: updateManualTimezone,
         };
 
@@ -82,9 +81,9 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
 
     useEffect(() => {
         const enabled =
-            timezone.useAutomaticTimezone !== userTimezone.useAutomaticTimezone ||
-            timezone.automaticTimezone !== userTimezone.automaticTimezone ||
-            timezone.manualTimezone !== userTimezone.manualTimezone;
+            initialTimezone.useAutomaticTimezone !== userTimezone.useAutomaticTimezone ||
+            initialTimezone.automaticTimezone !== userTimezone.automaticTimezone ||
+            initialTimezone.manualTimezone !== userTimezone.manualTimezone;
 
         const buttons = {
             rightButtons: [{
@@ -99,22 +98,34 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
 
     useAndroidHardwareBackHandler(componentId, close);
 
+    const toggleDesc = useMemo(() => {
+        if (userTimezone.useAutomaticTimezone) {
+            return getTimezoneRegion(userTimezone.automaticTimezone);
+        }
+        return intl.formatMessage({id: 'settings_display.timezone.off', defaultMessage: 'Off'});
+    }, [userTimezone.useAutomaticTimezone]);
+
     return (
         <SettingContainer>
             <SettingOption
                 action={updateAutomaticTimezone}
-                description={getTimezoneRegion(userTimezone.automaticTimezone)}
+                description={toggleDesc}
                 label={intl.formatMessage({id: 'settings_display.timezone.automatically', defaultMessage: 'Set automatically'})}
                 selected={userTimezone.useAutomaticTimezone}
                 type='toggle'
             />
             <SettingSeparator/>
-            <SettingOption
-                action={goToSelectTimezone}
-                info={getTimezoneRegion(newManualTimezone || userTimezone.manualTimezone)}
-                label={intl.formatMessage({id: 'settings_display.timezone.manual', defaultMessage: 'Change timezone'})}
-                type='arrow'
-            />
+            {!userTimezone.useAutomaticTimezone && (
+                <>
+                    <SettingSeparator/>
+                    <SettingOption
+                        action={goToSelectTimezone}
+                        info={getTimezoneRegion(userTimezone.manualTimezone)}
+                        label={intl.formatMessage({id: 'settings_display.timezone.manual', defaultMessage: 'Change timezone'})}
+                        type='arrow'
+                    />
+                </>
+            )}
             <SettingSeparator/>
         </SettingContainer>
     );
