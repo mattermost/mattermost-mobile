@@ -9,8 +9,10 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import RadioItem from './radio_item';
+
 export type OptionItemProps = {
-    action?: (React.Dispatch<React.SetStateAction<string | boolean>>)|((value: string | boolean) => void) ;
+    action?: (React.Dispatch<React.SetStateAction<string | boolean>>)|((value: string | boolean) => void);
     description?: string;
     inline?: boolean;
     destructive?: boolean;
@@ -29,9 +31,10 @@ export type OptionItemProps = {
 const OptionType = {
     ARROW: 'arrow',
     DEFAULT: 'default',
-    TOGGLE: 'toggle',
-    SELECT: 'select',
     NONE: 'none',
+    RADIO: 'radio',
+    SELECT: 'select',
+    TOGGLE: 'toggle',
 } as const;
 
 type OptionType = typeof OptionType[keyof typeof OptionType];
@@ -136,6 +139,7 @@ const OptionItem = ({
     }, [destructive, styles, isInLine]);
 
     let actionComponent;
+    let radioComponent;
     if (type === OptionType.SELECT && selected) {
         actionComponent = (
             <CompassIcon
@@ -145,6 +149,8 @@ const OptionItem = ({
                 testID={`${testID}.selected`}
             />
         );
+    } else if (type === OptionType.RADIO) {
+        radioComponent = <RadioItem selected={Boolean(selected)}/>;
     } else if (type === OptionType.TOGGLE) {
         const trackColor = Platform.select({
             ios: {true: theme.buttonBg, false: changeOpacity(theme.centerChannelColor, 0.16)},
@@ -192,6 +198,7 @@ const OptionItem = ({
                             />
                         </View>
                     )}
+                    {type === OptionType.RADIO && radioComponent}
                     <View style={labelStyle}>
                         <Text
                             style={[optionLabelTextStyle, labelTextStyle]}
@@ -224,7 +231,7 @@ const OptionItem = ({
         </View>
     );
 
-    if (type === OptionType.DEFAULT || type === OptionType.SELECT || type === OptionType.ARROW) {
+    if (type === OptionType.DEFAULT || type === OptionType.SELECT || type === OptionType.ARROW || type === OptionType.RADIO) {
         return (
             <TouchableOpacity onPress={onPress}>
                 {component}
