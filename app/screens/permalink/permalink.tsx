@@ -89,7 +89,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.centerChannelColor,
         ...typography('Heading', 300),
     },
-    subtitle: {
+    description: {
         color: theme.centerChannelColor,
         ...typography('Body', 100),
     },
@@ -386,7 +386,7 @@ function Permalink({
                                 values={{
                                     channelName: channel?.displayName,
                                 }}
-                                style={style.subtitle}
+                                style={style.description}
                             />
                         )}
                     </View>
