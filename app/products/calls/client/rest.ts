@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ServerChannelState, ServerConfig} from '@calls/types/calls';
+import {ApiResp, ServerChannelState, ServerConfig} from '@calls/types/calls';
 
 export interface ClientCallsMix {
     getEnabled: () => Promise<Boolean>;
@@ -9,6 +9,7 @@ export interface ClientCallsMix {
     getCallsConfig: () => Promise<ServerConfig>;
     enableChannelCalls: (channelId: string) => Promise<ServerChannelState>;
     disableChannelCalls: (channelId: string) => Promise<ServerChannelState>;
+    endCall: (channelId: string) => Promise<ApiResp>;
 }
 
 const ClientCalls = (superclass: any) => class extends superclass {
@@ -49,6 +50,13 @@ const ClientCalls = (superclass: any) => class extends superclass {
         return this.doFetch(
             `${this.getCallsRoute()}/${channelId}`,
             {method: 'post', body: JSON.stringify({enabled: false})},
+        );
+    };
+
+    endCall = async (channelId: string) => {
+        return this.doFetch(
+            `${this.getCallsRoute()}/calls/${channelId}/end`,
+            {method: 'post'},
         );
     };
 };

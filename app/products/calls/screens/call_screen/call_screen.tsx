@@ -356,6 +356,16 @@ const CallScreen = ({currentCall, participantsDict, teammateNameDisplay}: Props)
         });
     }, [insets, intl, theme]);
 
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_CALL_END, ({channelId}) => {
+            if (channelId === currentCall?.channelId) {
+                popTopScreen();
+            }
+        });
+
+        return () => listener.remove();
+    }, []);
+
     if (!currentCall || !myParticipant) {
         return null;
     }

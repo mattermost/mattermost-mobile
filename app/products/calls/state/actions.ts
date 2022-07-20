@@ -3,7 +3,10 @@
 
 import {getCallsConfig, exportedForInternalUse as callsConfigInternal} from '@calls/state/calls_config';
 import {getCallsState, exportedForInternalUse as callsStateInternal} from '@calls/state/calls_state';
-import {getChannelsWithCalls, exportedForInternalUse as channelsWithCallsInternal} from '@calls/state/channels_with_calls';
+import {
+    getChannelsWithCalls,
+    exportedForInternalUse as channelsWithCallsInternal,
+} from '@calls/state/channels_with_calls';
 import {getCurrentCall, exportedForInternalUse as currentCallInternal} from '@calls/state/current_call';
 import {Call, ChannelsWithCalls, ServerConfig} from '@calls/types/calls';
 
@@ -119,8 +122,7 @@ export const callStarted = (serverUrl: string, call: Call) => {
     setChannelsWithCalls(serverUrl, nextChannelsWithCalls);
 };
 
-// TODO: should be called callEnded to match the ws event. Will fix when callEnded is implemented.
-export const callFinished = (serverUrl: string, channelId: string) => {
+export const callEnded = (serverUrl: string, channelId: string) => {
     const callsState = getCallsState(serverUrl);
     const nextCalls = {...callsState.calls};
     delete nextCalls[channelId];
@@ -130,6 +132,11 @@ export const callFinished = (serverUrl: string, channelId: string) => {
     const nextChannelsWithCalls = {...channelsWithCalls};
     delete nextChannelsWithCalls[channelId];
     setChannelsWithCalls(serverUrl, nextChannelsWithCalls);
+
+    const currentCall = getCurrentCall();
+    if (currentCall?.channelId === channelId) {
+        setCurrentCall(null);
+    }
 };
 
 export const setUserMuted = (serverUrl: string, channelId: string, userId: string, muted: boolean) => {
