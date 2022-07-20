@@ -9,24 +9,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import RadioItem from './radio_item';
-
-export type OptionItemProps = {
-    action?: (React.Dispatch<React.SetStateAction<string | boolean>>)|((value: string | boolean) => void);
-    description?: string;
-    inline?: boolean;
-    destructive?: boolean;
-    icon?: string;
-    info?: string;
-    label: string;
-    selected?: boolean;
-    testID?: string;
-    type: OptionType;
-    value?: string;
-    containerStyle?: StyleProp<ViewStyle>;
-    optionLabelTextStyle?: StyleProp<TextStyle>;
-    optionDescriptionTextStyle?: StyleProp<TextStyle>;
-}
+import RadioItem, {RadioItemProps} from './radio_item';
 
 const OptionType = {
     ARROW: 'arrow',
@@ -99,6 +82,23 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+export type OptionItemProps = {
+    action?: (React.Dispatch<React.SetStateAction<string | boolean>>)|((value: string | boolean) => void);
+    containerStyle?: StyleProp<ViewStyle>;
+    description?: string;
+    destructive?: boolean;
+    icon?: string;
+    info?: string;
+    inline?: boolean;
+    label: string;
+    optionDescriptionTextStyle?: StyleProp<TextStyle>;
+    optionLabelTextStyle?: StyleProp<TextStyle>;
+    radioItemProps?: Partial<RadioItemProps>;
+    selected?: boolean;
+    testID?: string;
+    type: OptionType;
+    value?: string;
+}
 const OptionItem = ({
     action,
     containerStyle,
@@ -110,6 +110,7 @@ const OptionItem = ({
     label,
     optionDescriptionTextStyle,
     optionLabelTextStyle,
+    radioItemProps,
     selected,
     testID = 'optionItem',
     type,
@@ -150,7 +151,12 @@ const OptionItem = ({
             />
         );
     } else if (type === OptionType.RADIO) {
-        radioComponent = <RadioItem selected={Boolean(selected)}/>;
+        radioComponent = (
+            <RadioItem
+                selected={Boolean(selected)}
+                {...radioItemProps}
+            />
+        );
     } else if (type === OptionType.TOGGLE) {
         const trackColor = Platform.select({
             ios: {true: theme.buttonBg, false: changeOpacity(theme.centerChannelColor, 0.16)},
