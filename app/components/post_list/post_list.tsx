@@ -312,6 +312,7 @@ const PostList = ({
                 isCRTEnabled={isCRTEnabled}
                 key={item.id}
                 post={item}
+                rootId={rootId}
                 style={styles.scale}
                 testID={`${testID}.post`}
                 {...postProps}

@@ -7,7 +7,7 @@ import Animated from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchChannelById, joinChannel, switchToChannelById} from '@actions/remote/channel';
-import {fetchPostById, fetchPostsAround} from '@actions/remote/post';
+import {fetchPostById, fetchPostsAround, fetchPostThread} from '@actions/remote/post';
 import {addUserToTeam, fetchTeamByName, removeUserFromTeam} from '@actions/remote/team';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -34,6 +34,7 @@ import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
     channel?: ChannelModel;
+    rootId?: string;
     teamName?: string;
     isTeamMember?: boolean;
     currentUserId: string;
@@ -88,6 +89,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.centerChannelColor,
         ...typography('Heading', 300),
     },
+    subtitle: {
+        color: theme.centerChannelColor,
+        ...typography('Body', 100),
+    },
     postList: {
         flex: 1,
     },
@@ -116,8 +121,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }),
 );
 
+const POSTS_LIMIT = 5;
+
 function Permalink({
     channel,
+    rootId,
     isCRTEnabled,
     postId,
     teamName,
@@ -144,12 +152,22 @@ function Permalink({
     useEffect(() => {
         (async () => {
             if (channelId) {
-                const data = await fetchPostsAround(serverUrl, channelId, postId, 5, isCRTEnabled);
-                if (data.error) {
-                    setError({unreachable: true});
-                }
-                if (data?.posts) {
-                    setPosts(data.posts);
+                if (isCRTEnabled && rootId) {
+                    const data = await fetchPostThread(serverUrl, rootId);
+                    if (data.error) {
+                        setError({unreachable: true});
+                    }
+                    if (data?.posts) {
+                        setPosts(processThreadPosts(data.posts, postId));
+                    }
+                } else {
+                    const data = await fetchPostsAround(serverUrl, channelId, postId, POSTS_LIMIT, isCRTEnabled);
+                    if (data.error) {
+                        setError({unreachable: true});
+                    }
+                    if (data?.posts) {
+                        setPosts(data.posts);
+                    }
                 }
                 setLoading(false);
                 return;
@@ -241,7 +259,7 @@ function Permalink({
             });
             setLoading(false);
         })();
-    }, [channelId, teamName]);
+    }, [channelId, rootId, isCRTEnabled, teamName]);
 
     const handleClose = useCallback(() => {
         if (error?.joinedTeam && error.teamId) {
@@ -295,11 +313,13 @@ function Permalink({
                 <View style={style.postList}>
                     <PostList
                         highlightedId={postId}
+                        isCRTEnabled={isCRTEnabled}
                         posts={posts}
                         location={Screens.PERMALINK}
                         lastViewedAt={0}
                         shouldShowJoinLeaveMessages={false}
                         channelId={channel!.id}
+                        rootId={rootId}
                         testID='permalink.post_list'
                         nativeID={Screens.PERMALINK}
                         highlightPinnedOrSaved={false}
@@ -343,13 +363,32 @@ function Permalink({
                         />
                     </TouchableOpacity>
                     <View style={style.titleContainer}>
-                        <Text
-                            ellipsizeMode='tail'
-                            numberOfLines={1}
-                            style={style.title}
-                        >
-                            {channel?.displayName}
-                        </Text>
+                        {isCRTEnabled && rootId ? (
+                            <FormattedText
+                                id='thread.header.thread'
+                                defaultMessage='Thread'
+                                style={style.title}
+                            />
+                        ) : (
+                            <Text
+                                ellipsizeMode='tail'
+                                numberOfLines={1}
+                                style={style.title}
+                            >
+                                {channel?.displayName}
+                            </Text>
+                        )}
+                        {Boolean(isCRTEnabled && rootId) && (
+                            <FormattedText
+                                ellipsizeMode='tail'
+                                id='thread.header.thread_in'
+                                defaultMessage='in {channelName}'
+                                values={{
+                                    channelName: channel?.displayName,
+                                }}
+                                style={style.subtitle}
+                            />
+                        )}
                     </View>
                 </View>
                 {showHeaderDivider && (
@@ -361,6 +400,13 @@ function Permalink({
             </Animated.View>
         </SafeAreaView>
     );
+}
+
+// Get the posts around the focused post
+function processThreadPosts(posts: PostModel[], postId: string) {
+    posts.sort((a, b) => b.createAt - a.createAt);
+    const postIndex = posts.findIndex((p) => p.id === postId);
+    return posts.slice(postIndex - POSTS_LIMIT, postIndex + POSTS_LIMIT + 1);
 }
 
 export default Permalink;
