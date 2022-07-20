@@ -57,6 +57,9 @@ export default class GroupModel extends Model implements GroupInterface {
     /** remote_id : The remote id for the group (i.e. in a shared channel) */
     @field('remote_id') remoteId!: string;
 
+    /** member_count : The number of members in the group */
+    @field('member_count') memberCount!: number;
+
     /** created_at : The creation date for this row */
     @field('created_at') createdAt!: number;
 

@@ -11,6 +11,7 @@ import Permissions from 'react-native-permissions';
 
 import {dismissBottomSheet} from '@screens/navigation';
 import {extractFileInfo, lookupMimeType} from '@utils/file';
+import {logError} from '@utils/log';
 
 const MattermostManaged = NativeModules.MattermostManaged;
 
@@ -116,6 +117,7 @@ export default class FilePickerUtil {
 
     private getFilesFromResponse = async (response: ImagePickerResponse): Promise<Asset[]> => {
         if (!response?.assets?.length) {
+            logError('no assets in response');
             return [];
         }
 
@@ -129,12 +131,14 @@ export default class FilePickerUtil {
                 const uri = (await MattermostManaged.getFilePath(file.uri)).filePath;
                 const type = file.type || lookupMimeType(uri);
                 let fileName = file.fileName;
-                if (type.includes('video/')) {
-                    fileName = uri.split('\\').pop().split('/').pop();
+                if (type.includes('video/') && uri) {
+                    fileName = decodeURIComponent(uri.split('\\').pop().split('/').pop());
                 }
 
                 if (uri) {
                     files.push({...file, fileName, uri, type, width: file.width, height: file.height});
+                } else {
+                    logError('attaching file reponse return empty uri');
                 }
             }
         })));
@@ -229,10 +233,10 @@ export default class FilePickerUtil {
             if (uri === undefined) {
                 return {doc: undefined};
             }
+
+            doc.uri = uri;
         }
 
-        // Decode file uri to get the actual path
-        doc.uri = decodeURIComponent(uri);
         return {doc};
     };
 
@@ -298,6 +302,7 @@ export default class FilePickerUtil {
             launchImageLibrary(options, async (response: ImagePickerResponse) => {
                 StatusBar.setHidden(false);
                 if (response.errorMessage || response.didCancel) {
+                    logError('Attach failed', response.errorMessage);
                     return;
                 }
 

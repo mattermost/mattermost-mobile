@@ -3,34 +3,18 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
+import {StyleSheet} from 'react-native';
 
-import Block from '@components/block';
-import OptionItem from '@components/option_item';
-import {useTheme} from '@context/theme';
 import {t} from '@i18n';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        upperCase: {
-            textTransform: 'uppercase',
-        },
-        separator: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            flex: 1,
-            height: 1,
-            marginLeft: 15,
-        },
-        area: {
-            paddingHorizontal: 16,
-        },
-        label: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 100, 'Regular'),
-        },
-    };
+import SettingBlock from '../setting_block';
+import SettingOption from '../setting_option';
+import SettingSeparator from '../settings_separator';
+
+const styles = StyleSheet.create({
+    area: {
+        paddingHorizontal: 16,
+    },
 });
 
 const headerText = {
@@ -48,25 +32,22 @@ type MobilePushThreadProps = {
 }
 
 const MobilePushThread = ({pushThread, onMobilePushThreadChanged}: MobilePushThreadProps) => {
-    const theme = useTheme();
     const intl = useIntl();
-    const styles = getStyleSheet(theme);
 
     return (
-        <Block
+        <SettingBlock
             headerText={headerText}
             footerText={footerText}
-            headerStyles={styles.upperCase}
             containerStyles={styles.area}
         >
-            <OptionItem
+            <SettingOption
                 action={onMobilePushThreadChanged}
                 label={intl.formatMessage({id: 'notification_settings.push_threads.description', defaultMessage: 'Notify me about all replies to threads I\'m following'})}
                 selected={pushThread === 'all'}
                 type='toggle'
             />
-            <View style={styles.separator}/>
-        </Block>
+            <SettingSeparator/>
+        </SettingBlock>
     );
 };
 

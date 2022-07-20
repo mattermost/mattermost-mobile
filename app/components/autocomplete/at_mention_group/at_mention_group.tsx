@@ -60,12 +60,14 @@ type Props = {
     name: string;
     displayName: string;
     onPress: (handle: string) => void;
+    testID?: string;
 }
 
 const GroupMentionItem = ({
     onPress,
     name,
     displayName,
+    testID,
 }: Props) => {
     const insets = useSafeAreaInsets();
     const theme = useTheme();
@@ -79,11 +81,14 @@ const GroupMentionItem = ({
         onPress(name);
     }, [onPress, name]);
 
+    const groupMentionItemTestId = `${testID}.${name}`;
+
     return (
         <TouchableWithFeedback
             onPress={completeMention}
             style={touchableStyle}
             type={'opacity'}
+            testID={groupMentionItemTestId}
         >
             <View style={style.rowPicture}>
                 <CompassIcon
@@ -92,8 +97,18 @@ const GroupMentionItem = ({
                 />
             </View>
             <View style={style.rowInfo}>
-                <Text style={style.rowDisplayName}>{`${displayName} `}</Text>
-                <Text style={style.rowName}>{`@${name}`}</Text>
+                <Text
+                    style={style.rowDisplayName}
+                    testID={`${groupMentionItemTestId}.display_name`}
+                >
+                    {`${displayName} `}
+                </Text>
+                <Text
+                    style={style.rowName}
+                    testID={`${groupMentionItemTestId}.name`}
+                >
+                    {`@${name}`}
+                </Text>
             </View>
         </TouchableWithFeedback>
     );

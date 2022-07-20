@@ -159,6 +159,7 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
         <Text
             onPress={handlePress}
             onLongPress={handleLongPress}
+            testID='markdown_link'
         >
             {renderChildren}
         </Text>

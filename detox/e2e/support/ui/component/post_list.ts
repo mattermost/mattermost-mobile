@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Post from './post';
+import PostChannelInfo from './post_channel_info';
 
 class PostList {
     testID: any;
@@ -18,6 +19,7 @@ class PostList {
             threadOverviewUnsaveButton: `${screenPrefix}post_list.thread_overview.unsave.button`,
             threadOverviewPostOptionsButton: `${screenPrefix}post_list.thread_overview.post_options.button`,
             postListPostItem: `${screenPrefix}post_list.post`,
+            postListPostItemChannelInfo: `${screenPrefix}post_list.post_channel_info`,
         };
     }
 
@@ -61,6 +63,10 @@ class PostList {
         const {
             postItem,
             postItemBlockQuote,
+            postItemBreak,
+            postItemCheckbox,
+            postItemCodeBlock,
+            postItemCodeSpan,
             postItemEditedIndicator,
             postItemEmoji,
             postItemFooterFollowButton,
@@ -71,24 +77,46 @@ class PostList {
             postItemHeaderDisplayName,
             postItemHeaderBotTag,
             postItemHeaderGuestTag,
+            postItemHeaderAutoResponderTag,
             postItemHeaderReply,
             postItemHeaderReplyCount,
+            postItemHeading,
+            postItemHtml,
             postItemImage,
             postItemMessage,
+            postItemLatexCodeBlock,
+            postItemInlineLatex,
+            postItemLink,
+            postItemListItem,
+            postItemListItemBullet,
+            postItemParagraph,
             postItemPreHeaderText,
             postItemProfilePicture,
             postItemProfilePictureUserStatus,
             postItemShowLessButton,
             postItemShowMoreButton,
             postItemTable,
+            postItemTableCell,
             postItemTableExpandButton,
+            postItemTableImage,
+            postItemTableRow,
             postItemThematicBreak,
             postItemUnreadDotBadge,
         } = Post.getPost(this.testID.postListPostItem, postId, postMessage, postProfileOptions);
+        const {
+            postItemChannelInfoChannelDisplayName,
+            postItemChannelInfoTeamDisplayName,
+        } = PostChannelInfo.getPostChannelInfo(this.testID.postListPostItemChannelInfo, postId);
 
         return {
             postListPostItem: postItem,
             postListPostItemBlockQuote: postItemBlockQuote,
+            postListPostItemBreak: postItemBreak,
+            postListPostItemChannelInfoChannelDisplayName: postItemChannelInfoChannelDisplayName,
+            postListPostItemChannelInfoTeamDisplayName: postItemChannelInfoTeamDisplayName,
+            postListPostItemCheckbox: postItemCheckbox,
+            postListPostItemCodeBlock: postItemCodeBlock,
+            postListPostItemCodeSpan: postItemCodeSpan,
             postListPostItemEditedIndicator: postItemEditedIndicator,
             postListPostItemEmoji: postItemEmoji,
             postListPostItemFooterFollowButton: postItemFooterFollowButton,
@@ -99,17 +127,29 @@ class PostList {
             postListPostItemHeaderDisplayName: postItemHeaderDisplayName,
             postListPostItemHeaderBotTag: postItemHeaderBotTag,
             postListPostItemHeaderGuestTag: postItemHeaderGuestTag,
+            postListPostItemHeaderAutoResponderTag: postItemHeaderAutoResponderTag,
             postListPostItemHeaderReply: postItemHeaderReply,
             postListPostItemHeaderReplyCount: postItemHeaderReplyCount,
+            postListPostItemHeading: postItemHeading,
+            postListPostItemHtml: postItemHtml,
             postListPostItemImage: postItemImage,
             postListPostItemMessage: postItemMessage,
+            postListPostItemLatexCodeBlock: postItemLatexCodeBlock,
+            postListPostItemInlineLatex: postItemInlineLatex,
+            postListPostItemLink: postItemLink,
+            postListPostItemListItem: postItemListItem,
+            postListPostItemListItemBullet: postItemListItemBullet,
+            postListPostItemParagraph: postItemParagraph,
             postListPostItemPreHeaderText: postItemPreHeaderText,
             postListPostItemProfilePicture: postItemProfilePicture,
             postListPostItemProfilePictureUserStatus: postItemProfilePictureUserStatus,
             postListPostItemShowLessButton: postItemShowLessButton,
             postListPostItemShowMoreButton: postItemShowMoreButton,
             postListPostItemTable: postItemTable,
+            postListPostItemTableCell: postItemTableCell,
             postListPostItemTableExpandButton: postItemTableExpandButton,
+            postListPostItemTableImage: postItemTableImage,
+            postListPostItemTableRow: postItemTableRow,
             postListPostItemThematicBreak: postItemThematicBreak,
             postListPostItemUnreadDotBadge: postItemUnreadDotBadge,
         };

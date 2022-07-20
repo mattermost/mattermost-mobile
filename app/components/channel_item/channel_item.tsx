@@ -208,8 +208,8 @@ const ChannelListItem = ({
                             <Text
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
-                                testID={`${testID}.${teamDisplayName}.display_name`}
                                 style={[styles.teamName, isMuted && styles.teamNameMuted]}
+                                testID={`${testID}.${channel.name}.team_display_name`}
                             >
                                 {teamDisplayName}
                             </Text>
@@ -225,8 +225,8 @@ const ChannelListItem = ({
                         <Text
                             ellipsizeMode='tail'
                             numberOfLines={1}
-                            testID={`${testID}.${teamDisplayName}.display_name`}
                             style={[styles.teamName, styles.teamNameTablet, isMuted && styles.teamNameMuted]}
+                            testID={`${testID}.${channel.name}.team_display_name`}
                         >
                             {teamDisplayName}
                         </Text>

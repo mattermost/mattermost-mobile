@@ -4,11 +4,12 @@
 /* eslint-disable max-lines */
 import {Model} from '@nozbe/watermelondb';
 import {IntlShape} from 'react-intl';
+import {DeviceEventEmitter} from 'react-native';
 
 import {addChannelToDefaultCategory, storeCategories} from '@actions/local/category';
 import {removeCurrentUserFromChannel, setChannelDeleteAt, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
 import {switchToGlobalThreads} from '@actions/local/thread';
-import {General, Preferences, Screens} from '@constants';
+import {Events, General, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
@@ -1101,11 +1102,15 @@ export async function switchToChannelById(serverUrl: string, channelId: string, 
         return {error: `${serverUrl} database not found`};
     }
 
+    DeviceEventEmitter.emit(Events.CHANNEL_SWITCH, true);
+
     fetchPostsForChannel(serverUrl, channelId);
     await switchToChannel(serverUrl, channelId, teamId, skipLastUnread);
     setDirectChannelVisible(serverUrl, channelId);
     markChannelAsRead(serverUrl, channelId);
     fetchChannelStats(serverUrl, channelId);
+
+    DeviceEventEmitter.emit(Events.CHANNEL_SWITCH, false);
 
     return {};
 }

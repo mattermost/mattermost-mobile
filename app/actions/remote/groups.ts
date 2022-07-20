@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {storeGroups} from '@actions/local/group';
 import {Client} from '@client/rest';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {prepareGroups} from '@queries/servers/group';
+import {getTeamById} from '@queries/servers/team';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -15,12 +14,7 @@ export const fetchGroupsForAutocomplete = async (serverUrl: string, query: strin
         const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getGroups(query);
 
-        // Save locally
-        if (!fetchOnly) {
-            return storeGroups(serverUrl, response);
-        }
-
-        return prepareGroups(operator, response);
+        return operator.handleGroups({groups: response, prepareRecordsOnly: fetchOnly});
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -41,11 +35,7 @@ export const fetchGroupsByNames = async (serverUrl: string, names: string[], fet
         const groups = (await Promise.all(promises)).flat();
 
         // Save locally
-        if (!fetchOnly) {
-            return storeGroups(serverUrl, groups);
-        }
-
-        return prepareGroups(operator, groups);
+        return operator.handleGroups({groups, prepareRecordsOnly: fetchOnly});
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -58,11 +48,7 @@ export const fetchGroupsForChannel = async (serverUrl: string, channelId: string
         const client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToChannel(channelId);
 
-        if (!fetchOnly) {
-            return storeGroups(serverUrl, response.groups);
-        }
-
-        return prepareGroups(operator, response.groups);
+        return operator.handleGroups({groups: response.groups, prepareRecordsOnly: fetchOnly});
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -72,16 +58,43 @@ export const fetchGroupsForChannel = async (serverUrl: string, channelId: string
 export const fetchGroupsForTeam = async (serverUrl: string, teamId: string, fetchOnly = false) => {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToTeam(teamId);
 
+        const [groups, groupTeams] = await Promise.all([
+            operator.handleGroups({groups: response.groups, prepareRecordsOnly: true}),
+            operator.handleGroupTeamsForTeam({groups: response.groups, teamId, prepareRecordsOnly: true}),
+        ]);
+
         if (!fetchOnly) {
-            return storeGroups(serverUrl, response.groups);
+            await operator.batchRecords([...groups, ...groupTeams]);
         }
 
-        return prepareGroups(operator, response.groups);
+        return {groups, groupTeams};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const fetchGroupsForMember = async (serverUrl: string, userId: string, fetchOnly = false) => {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const client: Client = NetworkManager.getClient(serverUrl);
+        const response = await client.getAllGroupsAssociatedToMembership(userId);
+
+        const [groups, groupMemberships] = await Promise.all([
+            operator.handleGroups({groups: response, prepareRecordsOnly: true}),
+            operator.handleGroupMembershipsForMember({groups: response, userId, prepareRecordsOnly: true}),
+        ]);
+
+        if (!fetchOnly) {
+            await operator.batchRecords([...groups, ...groupMemberships]);
+        }
+
+        return {groups, groupMemberships};
+    } catch (error) {
         return {error};
     }
 };
@@ -114,3 +127,17 @@ export const fetchFilteredChannelGroups = async (serverUrl: string, searchTerm: 
     }
 };
 
+export const fetchGroupsForTeamIfConstrained = async (serverUrl: string, teamId: string, fetchOnly = false) => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const team = await getTeamById(database, teamId);
+
+        if (team?.isGroupConstrained) {
+            return fetchGroupsForTeam(serverUrl, teamId, fetchOnly);
+        }
+
+        return {};
+    } catch (error) {
+        return {error};
+    }
+};

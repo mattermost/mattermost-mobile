@@ -2,15 +2,15 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {Platform, StyleProp, Switch, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {Platform, StyleProp, Switch, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-type Props = {
-    action: (value: string | boolean) => void;
+export type OptionItemProps = {
+    action?: (React.Dispatch<React.SetStateAction<string | boolean>>)|((value: string | boolean) => void) ;
     description?: string;
     inline?: boolean;
     destructive?: boolean;
@@ -22,6 +22,8 @@ type Props = {
     type: OptionType;
     value?: string;
     containerStyle?: StyleProp<ViewStyle>;
+    optionLabelTextStyle?: StyleProp<TextStyle>;
+    optionDescriptionTextStyle?: StyleProp<TextStyle>;
 }
 
 const OptionType = {
@@ -29,9 +31,12 @@ const OptionType = {
     DEFAULT: 'default',
     TOGGLE: 'toggle',
     SELECT: 'select',
+    NONE: 'none',
 } as const;
 
 type OptionType = typeof OptionType[keyof typeof OptionType];
+
+export const ITEM_HEIGHT = 48;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -43,7 +48,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             flexDirection: 'row',
             alignItems: 'center',
-            minHeight: 48,
+            minHeight: ITEM_HEIGHT,
         },
         destructive: {
             color: theme.dndIndicator,
@@ -92,10 +97,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const OptionItem = ({
-    action, description, destructive, icon,
-    info, inline = false, label, selected,
-    testID = 'optionItem', type, value, containerStyle,
-}: Props) => {
+    action,
+    containerStyle,
+    description,
+    destructive,
+    icon,
+    info,
+    inline = false,
+    label,
+    optionDescriptionTextStyle,
+    optionLabelTextStyle,
+    selected,
+    testID = 'optionItem',
+    type,
+    value,
+}: OptionItemProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -157,7 +173,7 @@ const OptionItem = ({
     }
 
     const onPress = useCallback(() => {
-        action(value || '');
+        action?.(value || '');
     }, [value, action]);
 
     const component = (
@@ -178,14 +194,14 @@ const OptionItem = ({
                     )}
                     <View style={labelStyle}>
                         <Text
-                            style={labelTextStyle}
+                            style={[optionLabelTextStyle, labelTextStyle]}
                             testID={`${testID}.label`}
                         >
                             {label}
                         </Text>
                         {Boolean(description) &&
                         <Text
-                            style={descriptionTextStyle}
+                            style={[optionDescriptionTextStyle, descriptionTextStyle]}
                             testID={`${testID}.description`}
                         >
                             {description}
@@ -196,10 +212,11 @@ const OptionItem = ({
             </View>
             {Boolean(actionComponent || info) &&
             <View style={styles.actionContainer}>
-                {Boolean(info) &&
-                <View style={styles.infoContainer}>
-                    <Text style={styles.info}>{info}</Text>
-                </View>
+                {
+                    Boolean(info) &&
+                    <View style={styles.infoContainer}>
+                        <Text style={[styles.info, destructive && {color: theme.dndIndicator}]}>{info}</Text>
+                    </View>
                 }
                 {actionComponent}
             </View>

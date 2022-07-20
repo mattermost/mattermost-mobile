@@ -8,6 +8,7 @@ import {MM_TABLES} from '@constants/database';
 import {getPreferenceValue} from '@helpers/api/preference';
 
 import {getCurrentTeamId} from './system';
+import {getIsCRTEnabled} from './thread';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {ServerDatabase} from '@typings/database/database';
@@ -79,3 +80,16 @@ export const differsFromLocalNameFormat = async (database: Database, preferences
 
     return true;
 };
+
+export async function getHasCRTChanged(database: Database, preferences: PreferenceType[]): Promise<boolean> {
+    const oldCRT = await getIsCRTEnabled(database);
+    const newCRTPref = preferences.filter((p) => p.name === Preferences.COLLAPSED_REPLY_THREADS)?.[0];
+
+    if (!newCRTPref) {
+        return false;
+    }
+
+    const newCRT = newCRTPref.value === 'on';
+
+    return oldCRT !== newCRT;
+}

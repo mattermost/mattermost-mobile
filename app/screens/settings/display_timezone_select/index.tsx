@@ -1,14 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {getAllSupportedTimezones} from '@actions/remote/user';
 import Search from '@components/search';
-import {List} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {popTopScreen} from '@screens/navigation';
@@ -20,6 +19,9 @@ import TimezoneRow from './timezone_row';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        flexGrow: {
+            flexGrow: 1,
+        },
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
@@ -31,14 +33,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         searchBar: {
             height: 38,
             marginVertical: 5,
+            marginBottom: 32,
+        },
+        inputContainerStyle: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            paddingHorizontal: 12,
+            marginLeft: 12,
+            marginTop: 12,
         },
     };
 });
 
 const EDGES: Edge[] = ['left', 'right'];
 const EMPTY_TIMEZONES: string[] = [];
-const ITEM_HEIGHT = 45;
-const VIEWABILITY_CONFIG = List.VISIBILITY_CONFIG_DEFAULTS;
+const ITEM_HEIGHT = 48;
 
 const keyExtractor = (item: string) => item;
 const getItemLayout = (_data: string[], index: number) => ({
@@ -57,8 +65,18 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
+    const cancelButtonProps = useMemo(() => ({
+        buttonTextStyle: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 100),
+        },
+        buttonStyle: {
+            marginTop: 12,
+        },
+    }), [theme.centerChannelColor]);
+
     const [timezones, setTimezones] = useState<string[]>(EMPTY_TIMEZONES);
-    const [initialScrollIndex, setInitialScrollIndex] = useState<number>(0);
+    const [initialScrollIndex, setInitialScrollIndex] = useState<number|undefined>();
     const [value, setValue] = useState('');
 
     const filteredTimezones = (timezonePrefix: string) => {
@@ -67,6 +85,15 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
         }
 
         const lowerCasePrefix = timezonePrefix.toLowerCase();
+
+        // if initial scroll index is set when the items change
+        // and the index is grater than the amount of items
+        // the list starts to render partial results until there is
+        // and interaction, so setting the index as undefined corrects
+        // the rendering
+        if (initialScrollIndex) {
+            setInitialScrollIndex(undefined);
+        }
 
         return timezones.filter((t) => (
             getTimezoneRegion(t).toLowerCase().indexOf(lowerCasePrefix) >= 0 ||
@@ -113,11 +140,12 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
             <View style={styles.searchBar}>
                 <Search
                     autoCapitalize='none'
-                    containerStyle={styles.searchBarContainer}
+                    cancelButtonProps={cancelButtonProps}
+                    inputContainerStyle={styles.inputContainerStyle}
                     inputStyle={styles.searchBarInput}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     onChangeText={setValue}
-                    placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                    placeholder={intl.formatMessage({id: 'search_bar.search.placeholder', defaultMessage: 'Search timezone'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     selectionColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     testID='settings.select_timezone.search_bar'
@@ -131,10 +159,9 @@ const SelectTimezones = ({selectedTimezone, onBack}: SelectTimezonesProps) => {
                 keyExtractor={keyExtractor}
                 keyboardDismissMode='on-drag'
                 keyboardShouldPersistTaps='always'
-                maxToRenderPerBatch={15}
                 removeClippedSubviews={true}
                 renderItem={renderItem}
-                viewabilityConfig={VIEWABILITY_CONFIG}
+                contentContainerStyle={styles.flexGrow}
             />
         </SafeAreaView>
     );

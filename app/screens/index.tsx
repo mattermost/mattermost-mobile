@@ -151,6 +151,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.SETTINGS:
             screen = withServerDatabase(require('@screens/settings').default);
             break;
+        case Screens.SETTINGS_ADVANCED:
+            screen = withServerDatabase(require('@screens/settings/advanced').default);
+            break;
         case Screens.SETTINGS_DISPLAY:
             screen = withServerDatabase(require('@screens/settings/display').default);
             break;
@@ -171,6 +174,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.SETTINGS_NOTIFICATION_AUTO_RESPONDER:
             screen = withServerDatabase(require('@screens/settings/notification_auto_responder').default);
+            break;
+        case Screens.SETTINGS_NOTIFICATION_EMAIL:
+            screen = withServerDatabase(require('@screens/settings/notification_email').default);
             break;
         case Screens.SETTINGS_NOTIFICATION_MENTION:
             screen = withServerDatabase(require('@screens/settings/notification_mention').default);

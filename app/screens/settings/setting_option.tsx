@@ -2,42 +2,38 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Platform} from 'react-native';
 
-import MenuItem, {MenuItemProps} from '@components/menu_item';
+import OptionItem, {OptionItemProps} from '@components/option_item';
 import {useTheme} from '@context/theme';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import Options, {DisplayOptionConfig, NotificationsOptionConfig, SettingOptionConfig} from './constant';
-
-type SettingsConfig = keyof typeof SettingOptionConfig | keyof typeof NotificationsOptionConfig| keyof typeof DisplayOptionConfig
-type SettingOptionProps = {
-    optionName: SettingsConfig;
-    onPress: () => void;
-} & Omit<MenuItemProps, 'testID'| 'theme'>;
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        menuLabel: {
+        container: {
+            paddingHorizontal: 20,
+        },
+        optionLabelTextStyle: {
             color: theme.centerChannelColor,
-            ...typography('Body', 200),
+            ...typography('Body', 200, 'Regular'),
+            marginBottom: 4,
+        },
+        optionDescriptionTextStyle: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 75, 'Regular'),
         },
     };
 });
 
-const SettingOption = ({onPress, optionName, ...rest}: SettingOptionProps) => {
+const SettingOption = ({...props}: OptionItemProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const props = {...rest, ...Options[optionName]} as unknown as Omit<MenuItemProps, 'onPress'| 'theme'>;
 
     return (
-        <MenuItem
-            labelStyle={styles.menuLabel}
-            onPress={onPress}
-            separator={true}
-            showArrow={Platform.select({ios: true, default: false})}
-            theme={theme}
+        <OptionItem
+            optionDescriptionTextStyle={styles.optionDescriptionTextStyle}
+            optionLabelTextStyle={styles.optionLabelTextStyle}
+            containerStyle={[styles.container, props.description && {marginTop: 16}]}
             {...props}
         />
     );

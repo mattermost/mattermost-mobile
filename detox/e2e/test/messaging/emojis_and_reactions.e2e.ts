@@ -41,7 +41,7 @@ describe('Messaging - Emojis and Reactions', () => {
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await LoginScreen.login(user);
+        await LoginScreen.login(testUser);
     });
 
     beforeEach(async () => {
@@ -72,7 +72,7 @@ describe('Messaging - Emojis and Reactions', () => {
 
         // # Open emoji picker screen and add a new reaction
         await EmojiPickerScreen.open();
-        await EmojiPickerScreen.searchInput.typeText('clown_face');
+        await EmojiPickerScreen.searchInput.replaceText('clown_face');
         await element(by.text('🤡')).tap();
 
         // * Verify new reaction is added to the message
@@ -103,7 +103,7 @@ describe('Messaging - Emojis and Reactions', () => {
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await EmojiPickerScreen.open();
-        await EmojiPickerScreen.searchInput.typeText('fire');
+        await EmojiPickerScreen.searchInput.replaceText('fire');
         await element(by.text('🔥')).tap();
 
         // * Verify reaction is added to the message
@@ -115,11 +115,11 @@ describe('Messaging - Emojis and Reactions', () => {
 
         // * Verify user who reacted with the emoji
         await ReactionsScreen.toBeVisible();
-        const {reactorItemEmojiAliases, reactorItemUserProfilePicture, reactorItemUserDisplayName, reactorItemUserUsername} = ReactionsScreen.getReactorItem(testUser.id, 'fire');
+        const {reactorItemEmojiAliases, reactorItemUserProfilePicture, reactorItemUserDisplayName, reactorItemUsername} = ReactionsScreen.getReactorItem(testUser.id, 'fire');
         await expect(reactorItemEmojiAliases).toHaveText(':fire:');
         await expect(reactorItemUserProfilePicture).toBeVisible();
         await expect(reactorItemUserDisplayName).toHaveText(`${testUser.first_name} ${testUser.last_name}`);
-        await expect(reactorItemUserUsername).toHaveText(` @${testUser.username}`);
+        await expect(reactorItemUsername).toHaveText(` @${testUser.username}`);
 
         // # Go back to channel list screen
         await ReactionsScreen.close();
@@ -168,7 +168,7 @@ describe('Messaging - Emojis and Reactions', () => {
         const searchTerm = 'blahblahblahblah';
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await EmojiPickerScreen.open();
-        await EmojiPickerScreen.searchInput.typeText(searchTerm);
+        await EmojiPickerScreen.searchInput.replaceText(searchTerm);
 
         // * Verify empty search state for emoji picker
         await expect(element(by.text(`No results for “${searchTerm}”`))).toBeVisible();

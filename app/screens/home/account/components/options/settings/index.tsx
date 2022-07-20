@@ -15,10 +15,9 @@ import {preventDoubleTap} from '@utils/tap';
 type Props = {
     isTablet: boolean;
     style: TextStyle;
-    theme: Theme;
 }
 
-const Settings = ({isTablet, style, theme}: Props) => {
+const Settings = ({isTablet, style}: Props) => {
     const intl = useIntl();
 
     const openSettings = useCallback(preventDoubleTap(() => {
@@ -34,7 +33,7 @@ const Settings = ({isTablet, style, theme}: Props) => {
 
     return (
         <MenuItem
-            testID='account.settings.action'
+            iconName='settings-outline'
             labelComponent={
                 <FormattedText
                     id='account.settings'
@@ -42,10 +41,9 @@ const Settings = ({isTablet, style, theme}: Props) => {
                     style={style}
                 />
             }
-            iconName='settings-outline'
             onPress={openSettings}
             separator={false}
-            theme={theme}
+            testID='account.settings.action'
         />
     );
 };

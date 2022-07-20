@@ -33,7 +33,7 @@ const YourProfile = ({isTablet, style, theme}: Props) => {
 
     return (
         <MenuItem
-            testID='account.your_profile.action'
+            iconName={ACCOUNT_OUTLINE_IMAGE}
             labelComponent={
                 <FormattedText
                     id='account.your_profile'
@@ -41,10 +41,9 @@ const YourProfile = ({isTablet, style, theme}: Props) => {
                     style={style}
                 />
             }
-            iconName={ACCOUNT_OUTLINE_IMAGE}
             onPress={openProfile}
             separator={false}
-            theme={theme}
+            testID='account.your_profile.action'
         />
     );
 };
