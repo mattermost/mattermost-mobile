@@ -3,7 +3,6 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet} from 'react-native';
 
 import {t} from '@i18n';
 
@@ -11,19 +10,9 @@ import SettingBlock from '../setting_block';
 import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
 
-const styles = StyleSheet.create({
-    area: {
-        paddingHorizontal: 16,
-    },
-});
-
 const headerText = {
-    id: t('notification_settings.push_threads'),
-    defaultMessage: 'Thread reply notifications',
-};
-const footerText = {
-    id: t('notification_settings.push_threads.info'),
-    defaultMessage: 'When enabled, any reply to a thread you\'re following will send a mobile push notification',
+    id: t('notification_settings.push_threads.replies'),
+    defaultMessage: 'Thread replies',
 };
 
 type MobilePushThreadProps = {
@@ -37,12 +26,10 @@ const MobilePushThread = ({pushThread, onMobilePushThreadChanged}: MobilePushThr
     return (
         <SettingBlock
             headerText={headerText}
-            footerText={footerText}
-            containerStyles={styles.area}
         >
             <SettingOption
                 action={onMobilePushThreadChanged}
-                label={intl.formatMessage({id: 'notification_settings.push_threads.description', defaultMessage: 'Notify me about all replies to threads I\'m following'})}
+                label={intl.formatMessage({id: 'notification_settings.push_threads.following', defaultMessage: 'Notify me about replies to threads I\'m following in this channel'})}
                 selected={pushThread === 'all'}
                 type='toggle'
             />

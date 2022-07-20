@@ -36,7 +36,7 @@ const SettingOption = ({...props}: OptionItemProps) => {
         <OptionItem
             optionDescriptionTextStyle={styles.optionDescriptionTextStyle}
             optionLabelTextStyle={styles.optionLabelTextStyle}
-            containerStyle={[styles.container, props.description && {marginTop: 16}]}
+            containerStyle={[styles.container, props.description && {marginVertical: 14}]}
             {...props}
             type={useRadioButton ? 'radio' : props.type}
         />
