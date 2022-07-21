@@ -10,7 +10,6 @@
 import {
     Channel,
     Setup,
-    System,
     Team,
     User,
 } from '@support/server_api';
@@ -35,15 +34,6 @@ describe('Channels - Find Channels', () => {
     let testUser: any;
 
     beforeAll(async () => {
-        System.apiUpdateConfig(siteOneUrl, {
-            ServiceSettings: {
-                EnableAPIChannelDeletion: true,
-            },
-            TeamSettings: {
-                ExperimentalViewArchivedChannels: true,
-            },
-        });
-
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testTeam = team;

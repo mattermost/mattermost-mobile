@@ -11,7 +11,6 @@ import {
     Channel,
     Post,
     Setup,
-    System,
     Team,
     User,
 } from '@support/server_api';
@@ -42,12 +41,6 @@ describe('Smoke Test - Channels', () => {
     let testUser: any;
 
     beforeAll(async () => {
-        System.apiUpdateConfig(siteOneUrl, {
-            TeamSettings: {
-                ExperimentalViewArchivedChannels: true,
-            },
-        });
-
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testTeam = team;
