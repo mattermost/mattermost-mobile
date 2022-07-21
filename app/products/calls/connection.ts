@@ -47,9 +47,7 @@ export async function newClient(channelID: string, iceServers: ICEServersConfigs
     const ws = new WebSocketClient(Client4.getWebSocketUrl(), Client4.getToken());
 
     const disconnect = () => {
-        ws.send('leave', {
-            channelID,
-        });
+        ws.send('leave');
         ws.close();
         isClosed = true;
 

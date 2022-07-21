@@ -43,7 +43,9 @@ export class WebSocketClient extends EventEmitter {
 
         this.ws.onclose = () => {
             this.ws = null;
-            this.close();
+            if (!this.closed) {
+                this.close();
+            }
         };
 
         if (isReconnect) {
@@ -126,7 +128,6 @@ export class WebSocketClient extends EventEmitter {
     close() {
         if (this.ws) {
             this.closed = true;
-            this.ws.onclose = null;
             this.ws.close();
             this.ws = null;
             this.seqNo = 1;
