@@ -10,7 +10,6 @@
 import {
     Channel,
     Setup,
-    System,
     Team,
     User,
 } from '@support/server_api';
@@ -36,15 +35,6 @@ describe('Channels - Browse Channels', () => {
     let testUser: any;
 
     beforeAll(async () => {
-        System.apiUpdateConfig(siteOneUrl, {
-            ServiceSettings: {
-                EnableAPIChannelDeletion: true,
-            },
-            TeamSettings: {
-                ExperimentalViewArchivedChannels: true,
-            },
-        });
-
         const {team, user} = await Setup.apiInit(siteOneUrl);
         testTeam = team;
         testUser = user;
@@ -77,24 +67,24 @@ describe('Channels - Browse Channels', () => {
         await BrowseChannelsScreen.close();
     });
 
-    it('MM-T4729_2 - should be able to browse and join a channel', async () => {
-        // # As admin, create a new channel so that user can join
+    it('MM-T4729_2 - should be able to browse and join an unjoined public channel', async () => {
+        // # As admin, create a new public channel so that user can join
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
 
-        // * Verify new channel does not appear on channel list screen
+        // * Verify new public channel does not appear on channel list screen
         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, channel.display_name)).not.toExist();
 
-        // # Open browse channels screen and search for the new channel name to join
+        // # Open browse channels screen and search for the new public channel name to join
         await BrowseChannelsScreen.open();
         await BrowseChannelsScreen.searchInput.replaceText(channel.name);
 
-        // * Verify search returns the new channel item
+        // * Verify search returns the new public channel item
         await expect(BrowseChannelsScreen.getChannelItemDisplayName(channel.name)).toHaveText(channel.display_name);
 
-        // # Tap on the new channel item
+        // # Tap on the new public channel item
         await BrowseChannelsScreen.getChannelItem(channel.name).multiTap(2);
 
-        // * Verify on newly joined channel screen
+        // * Verify on newly joined public channel screen
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(channel.display_name);
         await expect(ChannelScreen.introDisplayName).toHaveText(channel.display_name);
@@ -103,7 +93,7 @@ describe('Channels - Browse Channels', () => {
         await ChannelScreen.back();
         await ChannelListScreen.toBeVisible();
 
-        // * Verify newly joined channel is added to channel list
+        // * Verify newly joined public channel is added to channel list
         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, channel.name)).toBeVisible();
     });
 
@@ -114,7 +104,7 @@ describe('Channels - Browse Channels', () => {
         await BrowseChannelsScreen.searchInput.replaceText(searchTerm);
 
         // * Verify empty search state for browse channels
-        await expect(element(by.text(`No results for “${searchTerm}”`))).toBeVisible();
+        await expect(element(by.text(`No matches found for “${searchTerm}”`))).toBeVisible();
         await expect(element(by.text('Check the spelling or try another search.'))).toBeVisible();
 
         // # Go back to channel list screen
@@ -133,13 +123,13 @@ describe('Channels - Browse Channels', () => {
         await BrowseChannelsScreen.searchInput.replaceText(testOtherUser1.username);
 
         // * Verify empty search state for browse channels
-        await expect(element(by.text(`No results for “${testOtherUser1.username}”`))).toBeVisible();
+        await expect(element(by.text(`No matches found for “${testOtherUser1.username}”`))).toBeVisible();
 
         // # Search for the group message channel
         await BrowseChannelsScreen.searchInput.replaceText(testOtherUser2.username);
 
         // * Verify empty search state for browse channels
-        await expect(element(by.text(`No results for “${testOtherUser2.username}”`))).toBeVisible();
+        await expect(element(by.text(`No matches found for “${testOtherUser2.username}”`))).toBeVisible();
 
         // # Go back to channel list screen
         await BrowseChannelsScreen.close();
@@ -157,6 +147,41 @@ describe('Channels - Browse Channels', () => {
 
         // * Verify search returns the archived channel item
         await expect(BrowseChannelsScreen.getChannelItemDisplayName(archivedChannel.name)).toHaveText(archivedChannel.display_name);
+
+        // # Go back to channel list screen
+        await BrowseChannelsScreen.close();
+    });
+
+    it('MM-T4729_6 - should not be able to browse a joined public channel', async () => {
+        // # Open browse channels screen and search for a joined public channel
+        const {channel: joinedPublicChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'O', teamId: testTeam.id});
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, joinedPublicChannel.id);
+        await BrowseChannelsScreen.open();
+        await BrowseChannelsScreen.searchInput.replaceText(joinedPublicChannel.name);
+
+        // * Verify empty search state for browse channels
+        await expect(element(by.text(`No matches found for “${joinedPublicChannel.name}”`))).toBeVisible();
+
+        // # Go back to channel list screen
+        await BrowseChannelsScreen.close();
+    });
+
+    it('MM-T4729_7 - should not be able to browse joined and unjoined private channel', async () => {
+        // # As admin, create joined and unjoined private channels, open browse channels screen, and search for the joined private channel
+        const {channel: joinedPrivateChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'P', teamId: testTeam.id});
+        const {channel: unjoinedPrivateChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'P', teamId: testTeam.id});
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, joinedPrivateChannel.id);
+        await BrowseChannelsScreen.open();
+        await BrowseChannelsScreen.searchInput.replaceText(joinedPrivateChannel.name);
+
+        // * Verify empty search state for browse channels
+        await expect(element(by.text(`No matches found for “${joinedPrivateChannel.name}”`))).toBeVisible();
+
+        // # Search for the unjoined private channel
+        await BrowseChannelsScreen.searchInput.replaceText(unjoinedPrivateChannel.name);
+
+        // * Verify empty search state for browse channels
+        await expect(element(by.text(`No matches found for “${unjoinedPrivateChannel.name}”`))).toBeVisible();
 
         // # Go back to channel list screen
         await BrowseChannelsScreen.close();

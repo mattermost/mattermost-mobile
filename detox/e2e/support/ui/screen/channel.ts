@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {
+    Alert,
     CameraQuickAction,
     FileQuickAction,
     ImageQuickAction,
@@ -23,19 +24,43 @@ class ChannelScreen {
     testID = {
         channelScreenPrefix: 'channel.',
         channelScreen: 'channel.screen',
+        channelQuickActionsButton: 'channel_header.channel_quick_actions.button',
+        favoriteQuickAction: 'channel.quick_actions.favorite.action',
+        unfavoriteQuickAction: 'channel.quick_actions.unfavorite.action',
+        muteQuickAction: 'channel.quick_actions.mute.action',
+        unmuteQuickAction: 'channel.quick_actions.unmute.action',
+        setHeaderQuickAction: 'channel.quick_actions.set_header.action',
+        addPeopleQuickAction: 'channel.quick_actions.add_people.action',
+        copyChannelLinkQuickAction: 'channel.quick_actions.copy_channel_link.action',
+        channelInfoQuickAction: 'channel.quick_actions.channel_info.action',
+        leaveChannelQuickAction: 'channel.quick_actions.leave_channel.action',
         introDisplayName: 'channel_post_list.intro.display_name',
-        introAddPeopleOption: 'channel_post_list.intro_options.add_people.option',
-        introSetHeaderOption: 'channel_post_list.intro_options.set_header.option',
-        introFavoriteOption: 'channel_post_list.intro_options.set_header.option',
-        introChannelDetailsOption: 'channel_post_list.intro_options.channel_details.option',
+        introAddPeopleAction: 'channel_post_list.intro_options.add_people.action',
+        introSetHeaderAction: 'channel_post_list.intro_options.set_header.action',
+        introFavoriteAction: 'channel_post_list.intro_options.favorite.action',
+        introUnfavoriteAction: 'channel_post_list.intro_options.unfavorite.action',
+        introChannelInfoAction: 'channel_post_list.intro_options.channel_info.action',
+        toastMessage: 'toast.message',
     };
 
     channelScreen = element(by.id(this.testID.channelScreen));
+    channelQuickActionsButton = element(by.id(this.testID.channelQuickActionsButton));
+    favoriteQuickAction = element(by.id(this.testID.favoriteQuickAction));
+    unfavoriteQuickAction = element(by.id(this.testID.unfavoriteQuickAction));
+    muteQuickAction = element(by.id(this.testID.muteQuickAction));
+    unmuteQuickAction = element(by.id(this.testID.unmuteQuickAction));
+    setHeaderQuickAction = element(by.id(this.testID.setHeaderQuickAction));
+    addPeopleQuickAction = element(by.id(this.testID.addPeopleQuickAction));
+    copyChannelLinkQuickAction = element(by.id(this.testID.copyChannelLinkQuickAction));
+    channelInfoQuickAction = element(by.id(this.testID.channelInfoQuickAction));
+    leaveChannelQuickAction = element(by.id(this.testID.leaveChannelQuickAction));
     introDisplayName = element(by.id(this.testID.introDisplayName));
-    introAddPeopleOption = element(by.id(this.testID.introAddPeopleOption));
-    introSetHeaderOption = element(by.id(this.testID.introSetHeaderOption));
-    introFavoriteOption = element(by.id(this.testID.introFavoriteOption));
-    introChannelDetailsOption = element(by.id(this.testID.introChannelDetailsOption));
+    introAddPeopleAction = element(by.id(this.testID.introAddPeopleAction));
+    introSetHeaderAction = element(by.id(this.testID.introSetHeaderAction));
+    introFavoriteAction = element(by.id(this.testID.introFavoriteAction));
+    introUnfavoriteAction = element(by.id(this.testID.introUnfavoriteAction));
+    introChannelInfoAction = element(by.id(this.testID.introChannelInfoAction));
+    toastMessage = element(by.id(this.testID.toastMessage));
 
     // convenience props
     backButton = NavigationHeader.backButton;
@@ -52,6 +77,7 @@ class ChannelScreen {
     cameraQuickActionDisabled = CameraQuickAction.getCameraQuickActionDisabled(this.testID.channelScreenPrefix);
     postDraft = PostDraft.getPostDraft(this.testID.channelScreenPrefix);
     postDraftArchived = PostDraft.getPostDraftArchived(this.testID.channelScreenPrefix);
+    postDraftArchivedCloseChannelButton = PostDraft.getPostDraftArchivedCloseChannelButton(this.testID.channelScreenPrefix);
     postDraftReadOnly = PostDraft.getPostDraftReadOnly(this.testID.channelScreenPrefix);
     postInput = PostDraft.getPostInput(this.testID.channelScreenPrefix);
     sendButton = SendButton.getSendButton(this.testID.channelScreenPrefix);
@@ -99,6 +125,28 @@ class ChannelScreen {
     back = async () => {
         await this.backButton.tap();
         await expect(this.channelScreen).not.toBeVisible();
+    };
+
+    leaveChannel = async ({confirm = true} = {}) => {
+        await waitFor(this.leaveChannelQuickAction).toExist().withTimeout(timeouts.TWO_SEC);
+        await this.leaveChannelQuickAction.tap({x: 1, y: 1});
+        const {
+            leaveChannelTitle,
+            cancelButton,
+            leaveButton,
+        } = Alert;
+        await expect(leaveChannelTitle).toBeVisible();
+        await expect(cancelButton).toBeVisible();
+        await expect(leaveButton).toBeVisible();
+        if (confirm) {
+            await leaveButton.tap();
+            await wait(timeouts.ONE_SEC);
+            await expect(this.channelScreen).not.toExist();
+        } else {
+            await cancelButton.tap();
+            await wait(timeouts.ONE_SEC);
+            await expect(this.leaveChannelQuickAction).toExist();
+        }
     };
 
     openPostOptionsFor = async (postId: string, text: string) => {
