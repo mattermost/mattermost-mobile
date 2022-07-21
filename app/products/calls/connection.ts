@@ -81,12 +81,19 @@ export async function newClient(channelID: string, iceServers: ICEServersConfigs
     });
 
     const mute = () => {
-        if (!peer) {
+        if (!peer || peer.destroyed) {
             return;
         }
-        if (voiceTrackAdded && voiceTrack) {
-            peer.replaceTrack(voiceTrack, null, stream);
+
+        try {
+            if (voiceTrackAdded && voiceTrack) {
+                peer.replaceTrack(voiceTrack, null, stream);
+            }
+        } catch (e) {
+            console.log('Error from simple-peer:', e); //eslint-disable-line no-console
+            return;
         }
+
         if (voiceTrack) {
             voiceTrack.enabled = false;
         }
@@ -96,15 +103,22 @@ export async function newClient(channelID: string, iceServers: ICEServersConfigs
     };
 
     const unmute = () => {
-        if (!peer || !voiceTrack) {
+        if (!peer || !voiceTrack || peer.destroyed) {
             return;
         }
-        if (voiceTrackAdded) {
-            peer.replaceTrack(voiceTrack, voiceTrack, stream);
-        } else {
-            peer.addStream(stream);
-            voiceTrackAdded = true;
+
+        try {
+            if (voiceTrackAdded) {
+                peer.replaceTrack(voiceTrack, voiceTrack, stream);
+            } else {
+                peer.addStream(stream);
+                voiceTrackAdded = true;
+            }
+        } catch (e) {
+            console.log('Error from simple-peer:', e); //eslint-disable-line no-console
+            return;
         }
+
         voiceTrack.enabled = true;
         if (ws) {
             ws.send('unmute');
