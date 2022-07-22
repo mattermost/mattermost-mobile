@@ -1,0 +1,63 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
+import withObservables from '@nozbe/with-observables';
+import {combineLatest, of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
+
+import {CallsCustomMessage} from '@calls/components/calls_custom_message/calls_custom_message';
+import {observeCurrentCall} from '@calls/state';
+import {Preferences} from '@constants';
+import DatabaseManager from '@database/manager';
+import {getPreferenceAsBool} from '@helpers/api/preference';
+import {observeChannel} from '@queries/servers/channel';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeCurrentUser, observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
+import {WithDatabaseArgs} from '@typings/database/database';
+
+import type PostModel from '@typings/database/models/servers/post';
+
+const enhanced = withObservables(['post'], ({post, database}: { post: PostModel } & WithDatabaseArgs) => {
+    const currentUser = observeCurrentUser(database);
+    const author = observeUser(database, post.userId);
+    const isMilitaryTime = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observeWithColumns(['value']).pipe(
+        switchMap(
+            (preferences) => of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)),
+        ),
+    );
+
+    // The call is not active, so return early with what we need to render the post.
+    if (post.props.end_at) {
+        return {
+            currentUser,
+            author,
+            isMilitaryTime,
+        };
+    }
+
+    const currentCall = observeCurrentCall();
+    const ccDatabase = currentCall.pipe(
+        switchMap((call) => of$(call ? call.serverUrl : '')),
+        switchMap((url) => of$(DatabaseManager.serverDatabases[url]?.database)),
+    );
+
+    return {
+        currentUser,
+        author,
+        isMilitaryTime,
+        teammateNameDisplay: observeTeammateNameDisplay(database),
+        currentCallChannelId: currentCall.pipe(
+            switchMap((cc) => of$(cc?.channelId || '')),
+        ),
+        leaveChannelName: combineLatest([ccDatabase, currentCall]).pipe(
+            switchMap(([db, call]) => (db && call ? observeChannel(db, call.channelId) : of$(undefined))),
+            switchMap((c) => of$(c ? c.displayName : '')),
+        ),
+        joinChannelName: observeChannel(database, post.channelId).pipe(
+            switchMap((chan) => of$(chan?.displayName || '')),
+        ),
+    };
+});
+
+export default withDatabase(enhanced(CallsCustomMessage));

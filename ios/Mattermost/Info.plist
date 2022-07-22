@@ -74,7 +74,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Send your current location to $(PRODUCT_NAME)</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Capture audio when recording a video to share within $(PRODUCT_NAME)</string>
+	<string>Capture audio when making a call or recording a video to share within $(PRODUCT_NAME)</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Share your route in your $(PRODUCT_NAME) workspace</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
@@ -102,6 +102,7 @@
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
+		<string>audio</string>
 		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>

@@ -8,6 +8,8 @@ import {Keyboard, Platform, StyleProp, View, ViewStyle, TouchableHighlight} from
 import {removePost} from '@actions/local/post';
 import {showPermalink} from '@actions/remote/permalink';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import CallsCustomMessage from '@calls/components/calls_custom_message';
+import {isCallsCustomMessage} from '@calls/utils';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import {POST_TIME_TO_FAIL} from '@constants/post';
@@ -119,6 +121,8 @@ const Post = ({
     const isPendingOrFailed = isPostPendingOrFailed(post);
     const isFailed = isPostFailed(post);
     const isSystemPost = isSystemMessage(post);
+    const isCallsPost = isCallsCustomMessage(post);
+    const hasBeenDeleted = (post.deleteAt !== 0);
     const isWebHook = isFromWebhook(post);
     const hasSameRoot = useMemo(() => {
         if (isFirstReply) {
@@ -139,12 +143,12 @@ const Post = ({
         }
 
         const isValidSystemMessage = isAutoResponder || !isSystemPost;
-        if (post.deleteAt === 0 && isValidSystemMessage && !isPendingOrFailed) {
+        if (isValidSystemMessage && !hasBeenDeleted && !isPendingOrFailed) {
             if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
                 const postRootId = post.rootId || post.id;
                 fetchAndSwitchToThread(serverUrl, postRootId);
             }
-        } else if ((isEphemeral || post.deleteAt > 0)) {
+        } else if ((isEphemeral || hasBeenDeleted)) {
             removePost(serverUrl, post);
         }
 
@@ -168,7 +172,6 @@ const Post = ({
             return;
         }
 
-        const hasBeenDeleted = (post.deleteAt !== 0);
         if (isSystemPost && (!canDelete || hasBeenDeleted)) {
             return;
         }
@@ -268,6 +271,12 @@ const Post = ({
         body = (
             <SystemMessage
                 location={location}
+                post={post}
+            />
+        );
+    } else if (isCallsPost && !hasBeenDeleted) {
+        body = (
+            <CallsCustomMessage
                 post={post}
             />
         );
