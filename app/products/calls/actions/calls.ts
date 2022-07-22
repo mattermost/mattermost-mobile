@@ -296,7 +296,7 @@ export const endCallAlert = async (serverUrl: string, intl: IntlShape, channelId
         return;
     }
 
-    const numParticipants = Object.keys(call.participants).length || 0;
+    const numParticipants = Object.keys(call.participants).length;
     const isAdmin = isSystemAdmin(currentUser.roles);
     const {formatMessage} = intl;
 
