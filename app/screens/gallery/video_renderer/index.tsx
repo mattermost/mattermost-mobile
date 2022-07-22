@@ -140,16 +140,20 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
     const animatedStyle = useAnimatedStyle(() => {
         let w = width;
         let h = height - (VIDEO_INSET + GALLERY_FOOTER_HEIGHT + bottom);
+
         if (fullscreen.value) {
             w = dimensions.width;
             h = dimensions.height;
+        } else if (dimensions.width > dimensions.height) {
+            w = h;
+            h = width;
         }
 
         return {
             width: withTiming(w, timingConfig),
             height: withTiming(h, timingConfig),
         };
-    }, [dimensions.height]);
+    }, [dimensions]);
 
     useEffect(() => {
         if (initialIndex === index && videoReady) {
