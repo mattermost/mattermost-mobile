@@ -28,7 +28,6 @@ import {
     DefaultCallsConfig,
     ServerChannelState,
 } from '@calls/types/calls';
-import {getUserIdFromDM} from '@calls/utils';
 import {General, Preferences} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
@@ -38,7 +37,7 @@ import {getChannelById} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCommonSystemValues} from '@queries/servers/system';
 import {getCurrentUser, getUserById} from '@queries/servers/user';
-import {displayUsername, isSystemAdmin} from '@utils/user';
+import {displayUsername, getUserIdFromChannelName, isSystemAdmin} from '@utils/user';
 
 import type {Client} from '@client/rest';
 import type ClientError from '@client/rest/error';
@@ -335,7 +334,7 @@ export const endCallAlert = async (serverUrl: string, intl: IntlShape, channelId
     }, {numParticipants, displayName: channel.displayName});
 
     if (channel.type === General.DM_CHANNEL) {
-        const otherID = getUserIdFromDM(channel.name, currentUser.id);
+        const otherID = getUserIdFromChannelName(currentUser.id, channel.name);
         const otherUser = await getUserById(database, otherID);
         const {config, license} = await getCommonSystemValues(database);
         const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT).fetch();
