@@ -15,7 +15,7 @@
     "@formatjs/intl-relativetimeformat": "11.0.1",
     "@mattermost/compass-icons": "0.1.23",
     "@mattermost/react-native-emm": "1.2.3",
-    "@mattermost/react-native-network-client": "github:mattermost/react-native-network-client",
+    "@mattermost/react-native-network-client": "github:mattermost/react-native-network-client#c32749d6eb52ab577fa388ba4c7a0dfcacc6e9ff",
     "@mattermost/react-native-paste-input": "0.4.2",
     "@nozbe/watermelondb": "0.24.0",
     "@nozbe/with-observables": "1.4.0",
