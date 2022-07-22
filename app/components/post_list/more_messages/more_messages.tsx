@@ -114,7 +114,7 @@ const MoreMessages = ({
     const [remaining, setRemaining] = useState(0);
     const underlayColor = useMemo(() => `hsl(${hexToHue(theme.buttonBg)}, 50%, 38%)`, [theme]);
     const top = useSharedValue(0);
-    const shownTop = isTablet || isCRTEnabled ? 5 : SHOWN_TOP;
+    const shownTop = isTablet || (isCRTEnabled && rootId) ? 5 : SHOWN_TOP;
     const BARS_FACTOR = Math.abs((1) / (HIDDEN_TOP - SHOWN_TOP));
     const styles = getStyleSheet(theme);
     const animatedStyle = useAnimatedStyle(() => ({
