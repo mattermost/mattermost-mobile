@@ -70,5 +70,6 @@ const WebsocketEvents = {
     CALLS_SCREEN_OFF: `custom_${Calls.PluginId}_user_screen_off`,
     CALLS_USER_RAISE_HAND: `custom_${Calls.PluginId}_user_raise_hand`,
     CALLS_USER_UNRAISE_HAND: `custom_${Calls.PluginId}_user_unraise_hand`,
+    SESSION_REVOKED: 'session_revoked',
 };
 export default WebsocketEvents;

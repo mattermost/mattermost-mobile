@@ -68,7 +68,7 @@ import {handleAddEmoji, handleReactionAddedEvent, handleReactionRemovedEvent} fr
 import {handleRoleAddedEvent, handleRoleRemovedEvent, handleRoleUpdatedEvent} from './roles';
 import {handleLeaveTeamEvent, handleUpdateTeamEvent, handleTeamAddedEvent} from './teams';
 import {handleThreadUpdated, handleThreadReadChanged, handleThreadFollowChanged} from './threads';
-import {handleStatusChangedEvent, handleUserAddedEvent, handleUserRemovedEvent, handleUserRoleUpdated, handleUserUpdatedEvent} from './users';
+import {handleStatusChangedEvent, handleUserAddedEvent, handleUserRemovedEvent, handleUserRoleUpdated, handleUserSessionRevokedEvent, handleUserUpdatedEvent} from './users';
 
 export function init(additionalOptions: any = {}) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
@@ -484,6 +484,8 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleCallUserRaiseHand(msg));
         case WebsocketEvents.CALLS_USER_UNRAISE_HAND:
             return dispatch(handleCallUserUnraiseHand(msg));
+        case WebsocketEvents.SESSION_REVOKED:
+            return dispatch(handleUserSessionRevokedEvent());
         }
 
         return {data: true};

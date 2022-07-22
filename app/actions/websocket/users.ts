@@ -1,10 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Alert} from 'react-native';
+
 import {fetchChannelAndMyMember} from '@actions/helpers/channels';
 import {loadChannelsForTeam} from '@actions/views/channel';
-import {getMe} from '@actions/views/user';
+import {getMe, logout} from '@actions/views/user';
 import {Client4} from '@client/rest';
+import {getTranslations} from '@i18n';
 import {ChannelTypes, TeamTypes, UserTypes, RoleTypes} from '@mm-redux/action_types';
 import {notVisibleUsersActions} from '@mm-redux/actions/helpers';
 import {General} from '@mm-redux/constants';
@@ -15,6 +18,7 @@ import {ActionResult, DispatchFunc, GenericAction, GetStateFunc, batchActions} f
 import {WebSocketMessage} from '@mm-redux/types/websocket';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {isGuest} from '@mm-redux/utils/user_utils';
+import {getCurrentLocale} from '@selectors/i18n';
 
 export function handleStatusChangedEvent(msg: WebSocketMessage): GenericAction {
     return {
@@ -200,6 +204,22 @@ export function handleUserUpdatedEvent(msg: WebSocketMessage) {
                 },
             });
         }
+        return {data: true};
+    };
+}
+
+export function handleUserSessionRevokedEvent() {
+    return (dispatch: DispatchFunc, getState: GetStateFunc): ActionResult => {
+        dispatch(logout(true));
+
+        const locale = getCurrentLocale(getState()) || General.DEFAULT_LOCALE;
+        const translations = getTranslations(locale) as {[key: string]: string};
+
+        Alert.alert(
+            translations['mobile.session_revoked.title'],
+            translations['mobile.session_revoked.message'],
+        );
+
         return {data: true};
     };
 }

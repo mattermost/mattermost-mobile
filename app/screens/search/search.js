@@ -142,7 +142,9 @@ export default class Search extends PureComponent {
     }
 
     componentWillUnmount() {
-        HWKeyboardEvent.removeOnHWKeyPressed();
+        if (HWKeyboardEvent && HWKeyboardEvent.removeOnHWKeyPressed) {
+            HWKeyboardEvent.removeOnHWKeyPressed();
+        }
     }
 
     handleHardwareEnterPress = (keyEvent) => {
@@ -211,9 +213,7 @@ export default class Search extends PureComponent {
         const pageOffsetY = event.nativeEvent.contentOffset.y;
         if (pageOffsetY > 0) {
             const contentHeight = event.nativeEvent.contentSize.height;
-            const direction = (this.contentOffsetY < pageOffsetY) ?
-                ListTypes.VISIBILITY_SCROLL_UP :
-                ListTypes.VISIBILITY_SCROLL_DOWN;
+            const direction = (this.contentOffsetY < pageOffsetY) ? ListTypes.VISIBILITY_SCROLL_UP : ListTypes.VISIBILITY_SCROLL_DOWN;
 
             this.contentOffsetY = pageOffsetY;
             if (

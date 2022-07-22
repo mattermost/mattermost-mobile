@@ -132,7 +132,9 @@ export default class DraftInput extends PureComponent {
     }
 
     componentWillUnmount() {
-        HWKeyboardEvent.removeOnHWKeyPressed();
+        if (HWKeyboardEvent && HWKeyboardEvent.removeOnHWKeyPressed) {
+            HWKeyboardEvent.removeOnHWKeyPressed();
+        }
     }
 
     canSend = () => {
