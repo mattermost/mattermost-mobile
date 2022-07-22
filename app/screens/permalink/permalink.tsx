@@ -152,22 +152,18 @@ function Permalink({
     useEffect(() => {
         (async () => {
             if (channelId) {
-                if (isCRTEnabled && rootId) {
-                    const data = await fetchPostThread(serverUrl, rootId);
-                    if (data.error) {
-                        setError({unreachable: true});
-                    }
-                    if (data?.posts) {
-                        setPosts(processThreadPosts(data.posts, postId));
-                    }
+                let data;
+                const loadThreadPosts = isCRTEnabled && rootId;
+                if (loadThreadPosts) {
+                    data = await fetchPostThread(serverUrl, rootId);
                 } else {
-                    const data = await fetchPostsAround(serverUrl, channelId, postId, POSTS_LIMIT, isCRTEnabled);
-                    if (data.error) {
-                        setError({unreachable: true});
-                    }
-                    if (data?.posts) {
-                        setPosts(data.posts);
-                    }
+                    data = await fetchPostsAround(serverUrl, channelId, postId, POSTS_LIMIT, isCRTEnabled);
+                }
+                if (data.error) {
+                    setError({unreachable: true});
+                }
+                if (data?.posts) {
+                    setPosts(loadThreadPosts ? processThreadPosts(data.posts, postId) : data.posts);
                 }
                 setLoading(false);
                 return;
