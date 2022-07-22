@@ -53,6 +53,7 @@ type PostProps = {
     isPostAddChannelMember: boolean;
     location: string;
     post: PostModel;
+    rootId?: string;
     previousPost?: PostModel;
     hasReactions: boolean;
     searchPatterns?: SearchPattern[];
@@ -105,7 +106,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const Post = ({
     appsEnabled, canDelete, currentUser, differentThreadSequence, hasFiles, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
     isCRTEnabled, isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
-    location, post, hasReactions, searchPatterns, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
+    location, post, rootId, hasReactions, searchPatterns, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
     testID, thread, previousPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
@@ -140,8 +141,8 @@ const Post = ({
         const isValidSystemMessage = isAutoResponder || !isSystemPost;
         if (post.deleteAt === 0 && isValidSystemMessage && !isPendingOrFailed) {
             if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
-                const rootId = post.rootId || post.id;
-                fetchAndSwitchToThread(serverUrl, rootId);
+                const postRootId = post.rootId || post.id;
+                fetchAndSwitchToThread(serverUrl, postRootId);
             }
         } else if ((isEphemeral || post.deleteAt > 0)) {
             removePost(serverUrl, post);
@@ -278,6 +279,7 @@ const Post = ({
                 hasReactions={hasReactions}
                 highlight={Boolean(highlightedStyle)}
                 highlightReplyBar={highlightReplyBar}
+                isCRTEnabled={isCRTEnabled}
                 isEphemeral={isEphemeral}
                 isFirstReply={isFirstReply}
                 isJumboEmoji={isJumboEmoji}
@@ -295,7 +297,7 @@ const Post = ({
 
     let unreadDot;
     let footer;
-    if (isCRTEnabled && thread && location !== Screens.THREAD) {
+    if (isCRTEnabled && thread && location !== Screens.THREAD && !(rootId && location === Screens.PERMALINK)) {
         if (thread.replyCount > 0 || thread.isFollowing) {
             footer = (
                 <Footer
