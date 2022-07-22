@@ -5,7 +5,6 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, Pressable} from 'react-native';
 
-import {joinCall} from '@calls/actions';
 import leaveAndJoinWithAlert from '@calls/components/leave_and_join_alert';
 import {CurrentCall} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
@@ -104,7 +103,7 @@ const JoinCallBanner = ({
     // }, [props.call, props.alreadyInTheCall]);
 
     const joinHandler = async () => {
-        leaveAndJoinWithAlert(intl, serverUrl, channelId, currentCallChannelName, displayName, confirmToJoin, joinCall);
+        leaveAndJoinWithAlert(intl, serverUrl, channelId, currentCallChannelName, displayName, confirmToJoin, false);
     };
 
     return (

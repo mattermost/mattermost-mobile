@@ -5,7 +5,9 @@ import React from 'react';
 import {ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import CallsChannelInfo from '@calls/components/calls_channel_info';
 import ChannelActions from '@components/channel_actions';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal} from '@screens/navigation';
@@ -20,6 +22,7 @@ type Props = {
     channelId: string;
     closeButtonId: string;
     componentId: string;
+    isCallsPluginEnabled: boolean;
     type?: ChannelType;
 }
 
@@ -42,6 +45,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const ChannelInfo = ({channelId, closeButtonId, componentId, type}: Props) => {
     const theme = useTheme();
+    const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
 
     const onPressed = () => {
@@ -78,6 +82,12 @@ const ChannelInfo = ({channelId, closeButtonId, componentId, type}: Props) => {
                     type={type}
                 />
                 <View style={styles.separator}/>
+                <CallsChannelInfo
+                    serverUrl={serverUrl}
+                    channelId={channelId}
+                    dismissChannelInfo={onPressed}
+                    separatorStyle={styles.separator}
+                />
                 <DestructiveOptions
                     channelId={channelId}
                     componentId={componentId}

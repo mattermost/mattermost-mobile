@@ -10,10 +10,10 @@ import * as CallsActions from '@calls/actions';
 import {getConnectionForTesting} from '@calls/actions/calls';
 import * as Permissions from '@calls/actions/permissions';
 import * as State from '@calls/state';
-import {exportedForInternalUse as callsConfigTesting} from '@calls/state/calls_config';
-import {exportedForInternalUse as callsStateTesting} from '@calls/state/calls_state';
+import {exportedForInternalUse as callsConfigTesting, useCallsConfig} from '@calls/state/calls_config';
+import {exportedForInternalUse as callsStateTesting, useCallsState} from '@calls/state/calls_state';
 import {exportedForInternalUse as channelsWithCallsTesting} from '@calls/state/channels_with_calls';
-import {exportedForInternalUse as currentCallTesting} from '@calls/state/current_call';
+import {exportedForInternalUse as currentCallTesting, useCurrentCall} from '@calls/state/current_call';
 import {
     Call,
     CallsState,
@@ -25,10 +25,10 @@ import {
 import NetworkManager from '@managers/network_manager';
 import {getIntlShape} from '@test/intl-test-helper';
 
-const {setCallsConfig, useCallsConfig} = callsConfigTesting;
-const {setCallsState, useCallsState} = callsStateTesting;
+const {setCallsConfig} = callsConfigTesting;
+const {setCallsState} = callsStateTesting;
 const {setChannelsWithCalls, useChannelsWithCalls} = channelsWithCallsTesting;
-const {useCurrentCall, setCurrentCall} = currentCallTesting;
+const {setCurrentCall} = currentCallTesting;
 
 const mockClient = {
     getCalls: jest.fn(() => [
@@ -60,7 +60,6 @@ const mockClient = {
         ]
     )),
     enableChannelCalls: jest.fn(),
-    disableChannelCalls: jest.fn(),
 };
 
 jest.mock('@calls/connection/connection', () => ({
@@ -119,7 +118,6 @@ describe('Actions.Calls', () => {
         mockClient.getCallsConfig.mockClear();
         mockClient.getPluginsManifests.mockClear();
         mockClient.enableChannelCalls.mockClear();
-        mockClient.disableChannelCalls.mockClear();
 
         // reset to default state for each test
         act(() => {
@@ -262,26 +260,28 @@ describe('Actions.Calls', () => {
     it('enableChannelCalls', async () => {
         const {result} = renderHook(() => useCallsState('server1'));
         assert.equal(result.current.enabled['channel-1'], undefined);
+        mockClient.enableChannelCalls.mockReturnValueOnce({enabled: true});
         await act(async () => {
-            await CallsActions.enableChannelCalls('server1', 'channel-1');
+            await CallsActions.enableChannelCalls('server1', 'channel-1', true);
         });
-        expect(mockClient.enableChannelCalls).toBeCalledWith('channel-1');
+        expect(mockClient.enableChannelCalls).toBeCalledWith('channel-1', true);
         assert.equal(result.current.enabled['channel-1'], true);
     });
 
     it('disableChannelCalls', async () => {
         const {result} = renderHook(() => useCallsState('server1'));
         assert.equal(result.current.enabled['channel-1'], undefined);
+        mockClient.enableChannelCalls.mockReturnValueOnce({enabled: true});
         await act(async () => {
-            await CallsActions.enableChannelCalls('server1', 'channel-1');
+            await CallsActions.enableChannelCalls('server1', 'channel-1', true);
         });
-        expect(mockClient.enableChannelCalls).toBeCalledWith('channel-1');
-        expect(mockClient.disableChannelCalls).not.toBeCalledWith('channel-1');
+        expect(mockClient.enableChannelCalls).toBeCalledWith('channel-1', true);
         assert.equal(result.current.enabled['channel-1'], true);
+        mockClient.enableChannelCalls.mockReturnValueOnce({enabled: false});
         await act(async () => {
-            await CallsActions.disableChannelCalls('server1', 'channel-1');
+            await CallsActions.enableChannelCalls('server1', 'channel-1', false);
         });
-        expect(mockClient.disableChannelCalls).toBeCalledWith('channel-1');
+        expect(mockClient.enableChannelCalls).toBeCalledWith('channel-1', false);
         assert.equal(result.current.enabled['channel-1'], false);
     });
 });

@@ -28,7 +28,7 @@ export const observeCallsConfig = (serverUrl: string) => {
     return getCallsConfigSubject(serverUrl).asObservable();
 };
 
-const useCallsConfig = (serverUrl: string) => {
+export const useCallsConfig = (serverUrl: string) => {
     const [state, setState] = useState(DefaultCallsConfig);
 
     const callsConfigSubject = getCallsConfigSubject(serverUrl);
@@ -48,5 +48,4 @@ const useCallsConfig = (serverUrl: string) => {
 
 export const exportedForInternalUse = {
     setCallsConfig,
-    useCallsConfig,
 };

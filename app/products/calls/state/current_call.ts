@@ -20,7 +20,7 @@ export const observeCurrentCall = () => {
     return currentCallSubject.asObservable();
 };
 
-const useCurrentCall = () => {
+export const useCurrentCall = () => {
     const [state, setState] = useState<CurrentCall | null>(null);
 
     useEffect(() => {
@@ -38,5 +38,4 @@ const useCurrentCall = () => {
 
 export const exportedForInternalUse = {
     setCurrentCall,
-    useCurrentCall,
 };

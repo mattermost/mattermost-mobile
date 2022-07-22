@@ -21,17 +21,16 @@ import {
     setScreenShareURL,
     setSpeakerPhone, setConfig, setPluginEnabled,
 } from '@calls/state/actions';
-import {exportedForInternalUse as callsConfigTesting} from '@calls/state/calls_config';
-import {exportedForInternalUse as callsStateTesting} from '@calls/state/calls_state';
+import {useCallsConfig} from '@calls/state/calls_config';
+import {exportedForInternalUse as callsStateTesting, useCallsState} from '@calls/state/calls_state';
 import {exportedForInternalUse as channelsWithCallsTesting} from '@calls/state/channels_with_calls';
-import {exportedForInternalUse as currentCallTesting} from '@calls/state/current_call';
+import {exportedForInternalUse as currentCallTesting, useCurrentCall} from '@calls/state/current_call';
 
 import {CallsState, CurrentCall, DefaultCallsConfig, DefaultCallsState} from '../types/calls';
 
-const {useCallsConfig} = callsConfigTesting;
-const {setCallsState, useCallsState} = callsStateTesting;
+const {setCallsState} = callsStateTesting;
 const {setChannelsWithCalls, useChannelsWithCalls} = channelsWithCallsTesting;
-const {setCurrentCall, useCurrentCall} = currentCallTesting;
+const {setCurrentCall} = currentCallTesting;
 
 const call1 = {
     participants: {

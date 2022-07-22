@@ -151,7 +151,7 @@ export const checkIsCallsPluginEnabled = async (serverUrl: string) => {
     return {data: enabled};
 };
 
-export const enableChannelCalls = async (serverUrl: string, channelId: string) => {
+export const enableChannelCalls = async (serverUrl: string, channelId: string, enable: boolean) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -160,36 +160,19 @@ export const enableChannelCalls = async (serverUrl: string, channelId: string) =
     }
 
     try {
-        await client.enableChannelCalls(channelId);
+        const res = await client.enableChannelCalls(channelId, enable);
+        if (res.enabled === enable) {
+            setChannelEnabled(serverUrl, channelId, enable);
+        }
     } catch (error) {
         await forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
 
-    setChannelEnabled(serverUrl, channelId, true);
     return {};
 };
 
-export const disableChannelCalls = async (serverUrl: string, channelId: string) => {
-    let client: Client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    try {
-        await client.disableChannelCalls(channelId);
-    } catch (error) {
-        await forceLogoutIfNecessary(serverUrl, error as ClientError);
-        return {error};
-    }
-
-    setChannelEnabled(serverUrl, channelId, false);
-    return {};
-};
-
-export const joinCall = async (serverUrl: string, channelId: string, intl: IntlShape) => {
+export const joinCall = async (serverUrl: string, channelId: string, intl: IntlShape): Promise<{error?: string | Error; data?: string}> => {
     // Edge case: calls was disabled when app loaded, and then enabled, but app hasn't
     // reconnected its websocket since then (i.e., hasn't called batchLoadCalls yet)
     const {data: enabled} = await checkIsCallsPluginEnabled(serverUrl);
@@ -210,9 +193,9 @@ export const joinCall = async (serverUrl: string, channelId: string, intl: IntlS
 
     try {
         connection = await newConnection(serverUrl, channelId, () => null, setScreenShareURL);
-    } catch (error) {
+    } catch (error: unknown) {
         await forceLogoutIfNecessary(serverUrl, error as ClientError);
-        return {error};
+        return {error: error as Error};
     }
 
     try {
@@ -222,7 +205,7 @@ export const joinCall = async (serverUrl: string, channelId: string, intl: IntlS
     } catch (e) {
         connection.disconnect();
         connection = null;
-        return {error: 'unable to connect to the voice call'};
+        return {error: `unable to connect to the voice call: ${e}`};
     }
 };
 

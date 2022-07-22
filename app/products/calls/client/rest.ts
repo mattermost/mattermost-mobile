@@ -7,8 +7,7 @@ export interface ClientCallsMix {
     getEnabled: () => Promise<Boolean>;
     getCalls: () => Promise<ServerChannelState[]>;
     getCallsConfig: () => Promise<ServerConfig>;
-    enableChannelCalls: (channelId: string) => Promise<ServerChannelState>;
-    disableChannelCalls: (channelId: string) => Promise<ServerChannelState>;
+    enableChannelCalls: (channelId: string, enable: boolean) => Promise<ServerChannelState>;
 }
 
 const ClientCalls = (superclass: any) => class extends superclass {
@@ -38,17 +37,10 @@ const ClientCalls = (superclass: any) => class extends superclass {
         ) as ServerConfig;
     };
 
-    enableChannelCalls = async (channelId: string) => {
+    enableChannelCalls = async (channelId: string, enable: boolean) => {
         return this.doFetch(
             `${this.getCallsRoute()}/${channelId}`,
-            {method: 'post', body: JSON.stringify({enabled: true})},
-        );
-    };
-
-    disableChannelCalls = async (channelId: string) => {
-        return this.doFetch(
-            `${this.getCallsRoute()}/${channelId}`,
-            {method: 'post', body: JSON.stringify({enabled: false})},
+            {method: 'post', body: {enabled: enable}},
         );
     };
 };

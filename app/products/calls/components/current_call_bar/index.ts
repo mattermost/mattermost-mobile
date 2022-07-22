@@ -22,7 +22,7 @@ const enhanced = withObservables([], () => {
     );
     const displayName = combineLatest([database, currentCall]).pipe(
         switchMap(([db, call]) => (db && call ? observeChannel(db, call.channelId) : of$(undefined))),
-        switchMap((c) => of$(c ? c.displayName : '')),
+        switchMap((c) => of$(c?.displayName || '')),
     );
     const userModelsDict = combineLatest([database, currentCall]).pipe(
         switchMap(([db, call]) => (db && call ? observeUsersById(db, Object.keys(call.participants)) : of$([]))),

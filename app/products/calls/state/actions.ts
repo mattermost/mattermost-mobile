@@ -3,7 +3,10 @@
 
 import {getCallsConfig, exportedForInternalUse as callsConfigInternal} from '@calls/state/calls_config';
 import {getCallsState, exportedForInternalUse as callsStateInternal} from '@calls/state/calls_state';
-import {getChannelsWithCalls, exportedForInternalUse as channelsWithCallsInternal} from '@calls/state/channels_with_calls';
+import {
+    getChannelsWithCalls,
+    exportedForInternalUse as channelsWithCallsInternal,
+} from '@calls/state/channels_with_calls';
 import {getCurrentCall, exportedForInternalUse as currentCallInternal} from '@calls/state/current_call';
 import {Call, ChannelsWithCalls, ServerConfig} from '@calls/types/calls';
 
@@ -96,10 +99,14 @@ export const userLeftCall = (serverUrl: string, channelId: string, userId: strin
 
 export const myselfJoinedCall = (serverUrl: string, channelId: string) => {
     const callsState = getCallsState(serverUrl);
+
+    const participants = callsState.calls[channelId]?.participants || {};
     setCurrentCall({
         ...callsState.calls[channelId],
         serverUrl,
         myUserId: callsState.myUserId,
+        participants,
+        channelId,
         screenShareURL: '',
         speakerphoneOn: false,
     });
@@ -117,6 +124,18 @@ export const callStarted = (serverUrl: string, call: Call) => {
 
     const nextChannelsWithCalls = {...getChannelsWithCalls(serverUrl), [call.channelId]: true};
     setChannelsWithCalls(serverUrl, nextChannelsWithCalls);
+
+    // Was it the current call? If so, we started it, and need to fill in the currentCall's details.
+    const currentCall = getCurrentCall();
+    if (!currentCall || currentCall.channelId !== call.channelId) {
+        return;
+    }
+
+    const nextCurrentCall = {
+        ...currentCall,
+        ...call,
+    };
+    setCurrentCall(nextCurrentCall);
 };
 
 // TODO: should be called callEnded to match the ws event. Will fix when callEnded is implemented.
