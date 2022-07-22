@@ -20,11 +20,13 @@ import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
     channelId: string;
-    isManualUnread: boolean;
+    isCRTEnabled?: boolean;
+    isManualUnread?: boolean;
     newMessageLineIndex: number;
     posts: Array<string | PostModel>;
     registerScrollEndIndexListener: (fn: (endIndex: number) => void) => () => void;
     registerViewableItemsListener: (fn: (viewableItems: ViewToken[]) => void) => () => void;
+    rootId?: string;
     scrollToIndex: (index: number, animated?: boolean, applyOffset?: boolean) => void;
     unreadCount: number;
     theme: Theme;
@@ -94,11 +96,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const MoreMessages = ({
     channelId,
+    isCRTEnabled,
     isManualUnread,
     newMessageLineIndex,
     posts,
     registerViewableItemsListener,
     registerScrollEndIndexListener,
+    rootId,
     scrollToIndex,
     unreadCount,
     testID,
@@ -116,8 +120,8 @@ const MoreMessages = ({
     const underlayColor = useMemo(() => `hsl(${hexToHue(theme.buttonBg)}, 50%, 38%)`, [theme]);
     const top = useSharedValue(0);
     const adjustedShownTop = SHOWN_TOP + (currentCallBarVisible ? CURRENT_CALL_BAR_HEIGHT : 0) + (joinCallBannerVisible ? JOIN_CALL_BAR_HEIGHT : 0);
-    const shownTop = isTablet ? 5 : adjustedShownTop;
-    const BARS_FACTOR = Math.abs((1) / (HIDDEN_TOP - shownTop));
+    const shownTop = isTablet || (isCRTEnabled && rootId) ? 5 : adjustedShownTop;
+    const BARS_FACTOR = Math.abs((1) / (HIDDEN_TOP - SHOWN_TOP));
     const styles = getStyleSheet(theme);
     const animatedStyle = useAnimatedStyle(() => ({
         transform: [{
@@ -138,10 +142,20 @@ const MoreMessages = ({
                 Animated.Extrapolate.CLAMP,
             ), {damping: 15}),
         }],
-    }), [isTablet, shownTop, BARS_FACTOR]);
+    }), [isTablet, shownTop]);
+
+    // Due to the implementation differences "unreadCount" gets updated for a channel on reset but not for a thread.
+    // So we maintain a localUnreadCount to hide the indicator when the count is reset.
+    // If we don't maintain the local counter, in the case of a thread, the indicator will be shown again once we scroll down after we reach the top.
+    const localUnreadCount = useRef(unreadCount);
+    useEffect(() => {
+        localUnreadCount.current = unreadCount;
+    }, [unreadCount]);
 
     const resetCount = async () => {
-        if (resetting.current) {
+        localUnreadCount.current = 0;
+
+        if (resetting.current || (isCRTEnabled && rootId)) {
             return;
         }
 
@@ -171,7 +185,7 @@ const MoreMessages = ({
         }
 
         const readCount = posts.slice(0, lastViewableIndex).filter((v) => typeof v !== 'string').length;
-        const totalUnread = unreadCount - readCount;
+        const totalUnread = localUnreadCount.current - readCount;
         if (lastViewableIndex >= newMessageLineIndex) {
             resetCount();
             top.value = 0;
