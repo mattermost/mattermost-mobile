@@ -314,7 +314,6 @@ export async function updateThread(serverUrl: string, threadId: string, updatedT
         const model = thread.prepareUpdate((record) => {
             record.isFollowing = updatedThread.is_following ?? record.isFollowing;
             record.replyCount = updatedThread.reply_count ?? record.replyCount;
-
             record.lastViewedAt = updatedThread.last_viewed_at ?? record.lastViewedAt;
             record.viewedAt = updatedThread.viewed_at ?? record.viewedAt;
             record.unreadMentions = updatedThread.unread_mentions ?? record.unreadMentions;
