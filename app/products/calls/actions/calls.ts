@@ -80,23 +80,20 @@ export const loadCalls = async (serverUrl: string, userId: string) => {
         await forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
+
     const callsResults: Dictionary<Call> = {};
     const enabledChannels: Dictionary<boolean> = {};
-
-    // Batch load userModels async because we'll need them later
     const ids = new Set<string>();
-    resp.forEach((channel) => {
-        channel.call?.users.forEach((id) => ids.add(id));
-    });
-    if (ids.size > 0) {
-        fetchUsersByIds(serverUrl, Array.from(ids));
-    }
 
     for (const channel of resp) {
         if (channel.call) {
             const call = channel.call;
             callsResults[channel.channel_id] = {
                 participants: channel.call.users.reduce((accum, cur, curIdx) => {
+                    // Add the id to the set of UserModels we want to ensure are loaded.
+                    ids.add(cur);
+
+                    // Create the CallParticipant
                     const muted = call.states && call.states[curIdx] ? !call.states[curIdx].unmuted : true;
                     const raisedHand = call.states && call.states[curIdx] ? call.states[curIdx].raised_hand : 0;
                     accum[cur] = {id: cur, muted, raisedHand};
@@ -109,6 +106,11 @@ export const loadCalls = async (serverUrl: string, userId: string) => {
             };
         }
         enabledChannels[channel.channel_id] = channel.enabled;
+    }
+
+    // Batch load user models async because we'll need them later
+    if (ids.size > 0) {
+        fetchUsersByIds(serverUrl, Array.from(ids));
     }
 
     setCalls(serverUrl, userId, callsResults, enabledChannels);
@@ -167,7 +169,7 @@ export const enableChannelCalls = async (serverUrl: string, channelId: string, e
     return {};
 };
 
-export const joinCall = async (serverUrl: string, channelId: string, intl: IntlShape): Promise<{error?: string | Error; data?: string}> => {
+export const joinCall = async (serverUrl: string, channelId: string, intl: IntlShape): Promise<{ error?: string | Error; data?: string }> => {
     // Edge case: calls was disabled when app loaded, and then enabled, but app hasn't
     // reconnected its websocket since then (i.e., hasn't called batchLoadCalls yet)
     const {data: enabled} = await checkIsCallsPluginEnabled(serverUrl);
