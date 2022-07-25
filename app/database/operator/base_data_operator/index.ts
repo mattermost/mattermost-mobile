@@ -126,7 +126,6 @@ export default class BaseDataOperator {
      * @param {RawValue[]} prepareRecord.updateRaws
      * @param {Model[]} prepareRecord.deleteRaws
      * @param {(TransformerArgs) => Promise<Model>;} prepareRecord.composer
-     * @throws {DataOperatorException}
      * @returns {Promise<Model[]>}
      */
     prepareRecords = async ({tableName, createRaws, deleteRaws, updateRaws, transformer}: OperationArgs): Promise<Model[]> => {
@@ -184,7 +183,6 @@ export default class BaseDataOperator {
      * batchRecords: Accepts an instance of Database (either Default or Server) and an array of
      * prepareCreate/prepareUpdate 'models' and executes the actions on the database.
      * @param {Array} models
-     * @throws {DataOperatorException}
      * @returns {Promise<void>}
      */
     async batchRecords(models: Model[]): Promise<void> {
