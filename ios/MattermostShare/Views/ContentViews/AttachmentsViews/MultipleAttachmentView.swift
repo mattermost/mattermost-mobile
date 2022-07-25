@@ -29,6 +29,10 @@ struct MultipleAttachmentView: View {
                     attachment: attachment,
                     hasError: hasError
                   )
+                  .overlay(
+                    RemoveAttachmentView(attachments: $attachments, index: index),
+                    alignment: .topTrailing
+                  )
                 }
               } else if attachment.type == .video {
                 AttachmentWrapperView(isFirst: isFirst, isLast: isLast) {
@@ -37,6 +41,10 @@ struct MultipleAttachmentView: View {
                     attachment: attachment,
                     hasError: hasError
                   )
+                  .overlay(
+                    RemoveAttachmentView(attachments: $attachments, index: index),
+                    alignment: .topTrailing
+                  )
                 }
               } else if attachment.type == .file {
                 AttachmentWrapperView(isFirst: isFirst, isLast: isLast) {
@@ -44,13 +52,13 @@ struct MultipleAttachmentView: View {
                     attachment: attachment,
                     hasError: hasError
                   )
+                  .overlay(
+                    RemoveAttachmentView(attachments: $attachments, index: index),
+                    alignment: .topTrailing
+                  )
                 }
               }
             }
-            .overlay(
-              RemoveAttachmentView(attachments: $attachments, index: index),
-              alignment: .topTrailing
-            )
           }
         }
         .frame(height: 116)
