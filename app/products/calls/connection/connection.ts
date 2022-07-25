@@ -13,6 +13,7 @@ import {
 
 import {CallsConnection} from '@calls/types/calls';
 import NetworkManager from '@managers/network_manager';
+import {logError} from '@utils/log';
 
 import Peer from './simple-peer';
 import WebSocketClient from './websocket_client';
@@ -36,7 +37,7 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
         voiceTrack.enabled = false;
         streams.push(stream);
     } catch (err) {
-        console.log('Unable to get media device:', err); // eslint-disable-line no-console
+        logError('Unable to get media device:', err); // eslint-disable-line no-console
     }
 
     // getClient can throw an error, which will be handled by the caller.
@@ -78,7 +79,7 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
                 peer.replaceTrack(voiceTrack, null, stream);
             }
         } catch (e) {
-            console.log('Error from simple-peer:', e); //eslint-disable-line no-console
+            logError('Error from simple-peer:', e); //eslint-disable-line no-console
             return;
         }
 
@@ -103,7 +104,7 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
                 voiceTrackAdded = true;
             }
         } catch (e) {
-            console.log('Error from simple-peer:', e); //eslint-disable-line no-console
+            logError('Error from simple-peer:', e); //eslint-disable-line no-console
             return;
         }
 
@@ -126,7 +127,7 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
     };
 
     ws.on('error', (err: Event) => {
-        console.log('WS (CALLS) ERROR', err); // eslint-disable-line no-console
+        logError('WS (CALLS) ERROR', err); // eslint-disable-line no-console
         ws.close();
     });
 
@@ -140,7 +141,7 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
         try {
             config = await client.getCallsConfig();
         } catch (err) {
-            console.log('ERROR FETCHING CALLS CONFIG:', err); // eslint-disable-line no-console
+            logError('ERROR FETCHING CALLS CONFIG:', err); // eslint-disable-line no-console
             return;
         }
 
@@ -167,7 +168,7 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
         });
 
         peer.on('error', (err: any) => {
-            console.log('PEER ERROR', err); // eslint-disable-line no-console
+            logError('PEER ERROR', err); // eslint-disable-line no-console
         });
     });
 
