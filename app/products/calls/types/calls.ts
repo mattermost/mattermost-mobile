@@ -88,7 +88,7 @@ export type CallsConnection = {
     unraiseHand: () => void;
 }
 
-export type ServerConfig = {
+export type ServerCallsConfig = {
     ICEServers: string[];
     AllowEnableCalls: boolean;
     DefaultEnabled: boolean;

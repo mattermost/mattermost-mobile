@@ -11,7 +11,7 @@ import {
     setChannelsWithCalls,
     setCurrentCall,
 } from '@calls/state';
-import {Call, ChannelsWithCalls, ServerConfig} from '@calls/types/calls';
+import {Call, ChannelsWithCalls, ServerCallsConfig} from '@calls/types/calls';
 
 export const setCalls = (serverUrl: string, myUserId: string, calls: Dictionary<Call>, enabled: Dictionary<boolean>) => {
     const channelsWithCalls = Object.keys(calls).reduce(
@@ -282,7 +282,7 @@ export const setSpeakerPhone = (speakerphoneOn: boolean) => {
     }
 };
 
-export const setConfig = (serverUrl: string, config: ServerConfig) => {
+export const setConfig = (serverUrl: string, config: ServerCallsConfig) => {
     const callsConfig = getCallsConfig(serverUrl);
     setCallsConfig(serverUrl, {...callsConfig, ...config});
 };
