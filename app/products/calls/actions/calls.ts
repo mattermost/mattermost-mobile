@@ -21,7 +21,6 @@ import {
     Call,
     CallParticipant,
     CallsConnection,
-    DefaultCallsConfig,
     ServerChannelState,
 } from '@calls/types/calls';
 import Calls from '@constants/calls';
@@ -59,10 +58,6 @@ export const loadConfig = async (serverUrl: string, force = false) => {
         data = await client.getCallsConfig();
     } catch (error) {
         await forceLogoutIfNecessary(serverUrl, error as ClientError);
-
-        // Reset the config to the default (off) since it looks like Calls is not enabled.
-        setConfig(serverUrl, {...DefaultCallsConfig, last_retrieved_at: now});
-
         return {error};
     }
 
