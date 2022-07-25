@@ -34,12 +34,13 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 });
 
 type Props = {
+    onRemoveSearch: () => void;
     setRecentValue: (value: string) => void;
     recentSearches: TeamSearchHistoryModel[];
     teamName: string;
 }
 
-const RecentSearches = ({setRecentValue, recentSearches, teamName}: Props) => {
+const RecentSearches = ({onRemoveSearch, setRecentValue, recentSearches, teamName}: Props) => {
     const theme = useTheme();
     const {formatMessage} = useIntl();
     const styles = getStyleFromTheme(theme);
@@ -54,6 +55,7 @@ const RecentSearches = ({setRecentValue, recentSearches, teamName}: Props) => {
     const renderRecentItem = useCallback(({item}) => {
         return (
             <RecentItem
+                onRemoveSearch={onRemoveSearch}
                 item={item}
                 setRecentValue={setRecentValue}
             />
@@ -71,10 +73,6 @@ const RecentSearches = ({setRecentValue, recentSearches, teamName}: Props) => {
             </Text>
         </>
     );
-
-    if (!recentSearches.length) {
-        return null;
-    }
 
     return (
         <AnimatedFlatList

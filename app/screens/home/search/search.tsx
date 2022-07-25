@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useIsFocused, useNavigation} from '@react-navigation/native';
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
@@ -16,7 +16,9 @@ import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import DatabaseManager from '@database/manager';
 import {useCollapsibleHeader} from '@hooks/header';
+import {queryTeamSearchHistoryByTeamId} from '@queries/servers/team';
 import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes, TabType} from '@utils/search';
 
@@ -24,6 +26,8 @@ import Modifiers from './modifiers';
 import RecentSearches from './recent_searches';
 import Results from './results';
 import Header from './results/header';
+
+import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
 
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
@@ -36,6 +40,7 @@ const dummyData = [1];
 
 type Props = {
     teamId: string;
+    recentSearches: TeamSearchHistoryModel[];
 }
 
 const styles = StyleSheet.create({
@@ -49,6 +54,14 @@ const styles = StyleSheet.create({
     },
 });
 
+const getRecentSearches = async (serverUrl: string, teamId: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return [];
+    }
+    return queryTeamSearchHistoryByTeamId(database, teamId).fetch();
+};
+
 const getSearchParams = (terms: string, filterValue?: FileFilter) => {
     const fileExtensions = filterFileExtensions(filterValue);
     const extensionTerms = fileExtensions ? ' ' + fileExtensions : '';
@@ -60,7 +73,7 @@ const getSearchParams = (terms: string, filterValue?: FileFilter) => {
 
 const searchScreenIndex = 1;
 
-const SearchScreen = ({teamId}: Props) => {
+const SearchScreen = ({teamId, recentSearches}: Props) => {
     const nav = useNavigation();
     const isFocused = useIsFocused();
     const intl = useIntl();
@@ -74,6 +87,7 @@ const SearchScreen = ({teamId}: Props) => {
     const [searchTeamId, setSearchTeamId] = useState<string>(teamId);
     const [selectedTab, setSelectedTab] = useState<TabType>(TabTypes.MESSAGES);
     const [filter, setFilter] = useState<FileFilter>(FileFilters.ALL);
+    const [recents, setRecents] = useState<TeamSearchHistoryModel[]>(recentSearches);
     const [showResults, setShowResults] = useState(false);
 
     const [loading, setLoading] = useState(false);
@@ -94,6 +108,18 @@ const SearchScreen = ({teamId}: Props) => {
         setLastSearchedValue('');
         setFilter(FileFilters.ALL);
     }, []);
+
+    const updateRecents = useCallback(async () => {
+        const newRecents = await getRecentSearches(serverUrl, searchTeamId);
+        setRecents(newRecents);
+    }, [searchTeamId]);
+
+    useEffect(() => {
+        const getTeamRecents = async () => {
+            updateRecents();
+        };
+        getTeamRecents();
+    }, [searchTeamId]);
 
     const handleCancelSearch = useCallback(() => {
         handleClearSearch();
@@ -119,9 +145,10 @@ const SearchScreen = ({teamId}: Props) => {
         setPostIds(postResults?.order?.length ? postResults.order : emptyPostResults);
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
 
+        updateRecents();
         setShowResults(true);
         setLoading(false);
-    }, [handleClearSearch]);
+    }, [handleClearSearch, setRecents]);
 
     const onSubmit = useCallback(() => {
         handleSearch(searchTeamId, searchValue);
@@ -156,7 +183,7 @@ const SearchScreen = ({teamId}: Props) => {
         />
     ), [theme, scrollPaddingTop]);
 
-    const modifiersComponent = useMemo(() => (
+    const searchComponent = useMemo(() => (
         <>
             <Modifiers
                 setSearchValue={setSearchValue}
@@ -164,12 +191,16 @@ const SearchScreen = ({teamId}: Props) => {
                 teamId={searchTeamId}
                 setTeamId={setSearchTeamId}
             />
-            <RecentSearches
-                setRecentValue={handleRecentSearch}
-                teamId={searchTeamId}
-            />
+            {Boolean(recents?.length) &&
+                <RecentSearches
+                    onRemoveSearch={updateRecents}
+                    recentSearches={recents}
+                    setRecentValue={handleRecentSearch}
+                    teamId={searchTeamId}
+                />
+            }
         </>
-    ), [searchValue, searchTeamId, handleRecentSearch]);
+    ), [searchValue, searchTeamId, handleRecentSearch, recents]);
 
     const resultsComponent = useMemo(() => (
         <Results
@@ -187,12 +218,12 @@ const SearchScreen = ({teamId}: Props) => {
             return loadingComponent;
         }
         if (!showResults) {
-            return modifiersComponent;
+            return searchComponent;
         }
         return resultsComponent;
     }, [
         loading && loadingComponent,
-        !loading && !showResults && modifiersComponent,
+        !loading && !showResults && searchComponent,
         !loading && showResults && resultsComponent,
     ]);
 

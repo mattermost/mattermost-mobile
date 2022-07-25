@@ -40,11 +40,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 });
 
 type Props = {
+    onRemoveSearch: () => void;
     setRecentValue: (value: string) => void;
     item: TeamSearchHistoryModel;
 }
 
-const RecentItem = ({item, setRecentValue}: Props) => {
+const RecentItem = ({item, onRemoveSearch, setRecentValue}: Props) => {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
     const testID = 'search.recent_item';
@@ -56,6 +57,7 @@ const RecentItem = ({item, setRecentValue}: Props) => {
 
     const handleRemove = useCallback(async () => {
         await removeSearchFromTeamSearchHistory(serverUrl, item.id);
+        onRemoveSearch();
     }, [item.id]);
 
     return (
