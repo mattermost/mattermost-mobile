@@ -1,19 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getCallsConfig, exportedForInternalUse as callsConfigInternal} from '@calls/state/calls_config';
-import {getCallsState, exportedForInternalUse as callsStateInternal} from '@calls/state/calls_state';
 import {
+    getCallsConfig,
+    getCallsState,
     getChannelsWithCalls,
-    exportedForInternalUse as channelsWithCallsInternal,
-} from '@calls/state/channels_with_calls';
-import {getCurrentCall, exportedForInternalUse as currentCallInternal} from '@calls/state/current_call';
+    getCurrentCall,
+    setCallsConfig,
+    setCallsState,
+    setChannelsWithCalls,
+    setCurrentCall,
+} from '@calls/state';
 import {Call, ChannelsWithCalls, ServerConfig} from '@calls/types/calls';
-
-const {setCallsConfig} = callsConfigInternal;
-const {setCallsState} = callsStateInternal;
-const {setChannelsWithCalls} = channelsWithCallsInternal;
-const {setCurrentCall} = currentCallInternal;
 
 export const setCalls = (serverUrl: string, myUserId: string, calls: Dictionary<Call>, enabled: Dictionary<boolean>) => {
     const channelsWithCalls = Object.keys(calls).reduce(

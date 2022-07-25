@@ -20,7 +20,7 @@ export const getChannelsWithCalls = (serverUrl: string) => {
     return getChannelsWithCallsSubject(serverUrl).value;
 };
 
-const setChannelsWithCalls = (serverUrl: string, channelsWithCalls: ChannelsWithCalls) => {
+export const setChannelsWithCalls = (serverUrl: string, channelsWithCalls: ChannelsWithCalls) => {
     getChannelsWithCallsSubject(serverUrl).next(channelsWithCalls);
 };
 
@@ -28,7 +28,7 @@ export const observeChannelsWithCalls = (serverUrl: string) => {
     return getChannelsWithCallsSubject(serverUrl).asObservable();
 };
 
-const useChannelsWithCalls = (serverUrl: string) => {
+export const useChannelsWithCalls = (serverUrl: string) => {
     const [state, setState] = useState<ChannelsWithCalls>({});
 
     useEffect(() => {
@@ -42,9 +42,4 @@ const useChannelsWithCalls = (serverUrl: string) => {
     }, []);
 
     return state;
-};
-
-export const exportedForInternalUse = {
-    setChannelsWithCalls,
-    useChannelsWithCalls,
 };

@@ -18,7 +18,7 @@ export const DefaultCallsState = {
 } as CallsState;
 
 export type Call = {
-	participants: Dictionary<CallParticipant>;
+    participants: Dictionary<CallParticipant>;
     channelId: string;
     startTime: number;
     screenOn: string;
@@ -92,7 +92,6 @@ export type ServerConfig = {
     ICEServers: string[];
     AllowEnableCalls: boolean;
     DefaultEnabled: boolean;
-    last_retrieved_at: number;
 }
 
 export type CallsConfig = {

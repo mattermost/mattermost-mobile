@@ -12,7 +12,7 @@ export const getCurrentCall = () => {
     return currentCallSubject.value;
 };
 
-const setCurrentCall = (currentCall: CurrentCall | null) => {
+export const setCurrentCall = (currentCall: CurrentCall | null) => {
     currentCallSubject.next(currentCall);
 };
 
@@ -34,8 +34,4 @@ export const useCurrentCall = () => {
     }, []);
 
     return state;
-};
-
-export const exportedForInternalUse = {
-    setCurrentCall,
 };
