@@ -112,7 +112,7 @@ const SearchScreen = ({teamId, recentSearches}: Props) => {
     const updateRecents = useCallback(async () => {
         const newRecents = await getRecentSearches(serverUrl, searchTeamId);
         setRecents(newRecents);
-    }, [searchTeamId]);
+    }, [searchTeamId, serverUrl]);
 
     useEffect(() => {
         const getTeamRecents = async () => {
