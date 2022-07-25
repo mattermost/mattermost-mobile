@@ -29,7 +29,6 @@ import {
     DefaultCallsState,
 } from '@calls/types/calls';
 import NetworkManager from '@managers/network_manager';
-import {getIntlShape} from '@test/intl-test-helper';
 
 const mockClient = {
     getCalls: jest.fn(() => [
@@ -98,7 +97,6 @@ describe('Actions.Calls', () => {
     // eslint-disable-next-line
     // @ts-ignore
     NetworkManager.getClient = () => mockClient;
-    const intl = getIntlShape();
     jest.spyOn(Permissions, 'hasMicrophonePermission').mockReturnValue(Promise.resolve(true));
 
     beforeAll(() => {
@@ -138,7 +136,7 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', intl);
+            response = await CallsActions.joinCall('server1', 'channel-id');
         });
 
         assert.equal(response!.data, 'channel-id');
@@ -161,7 +159,7 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', intl);
+            response = await CallsActions.joinCall('server1', 'channel-id');
         });
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall | null)?.channelId, 'channel-id');
@@ -188,7 +186,7 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', intl);
+            response = await CallsActions.joinCall('server1', 'channel-id');
         });
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall | null)?.channelId, 'channel-id');
@@ -214,7 +212,7 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', intl);
+            response = await CallsActions.joinCall('server1', 'channel-id');
         });
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall | null)?.channelId, 'channel-id');

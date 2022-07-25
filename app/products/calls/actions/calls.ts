@@ -5,7 +5,6 @@ import InCallManager from 'react-native-incall-manager';
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {fetchUsersByIds} from '@actions/remote/user';
-import {hasMicrophonePermission} from '@calls/actions/permissions';
 import {
     getCallsConfig,
     myselfJoinedCall,
@@ -30,7 +29,6 @@ import {newConnection} from '../connection/connection';
 
 import type {Client} from '@client/rest';
 import type ClientError from '@client/rest/error';
-import type {IntlShape} from 'react-intl';
 
 let connection: CallsConnection | null = null;
 export const getConnectionForTesting = () => connection;
@@ -169,17 +167,12 @@ export const enableChannelCalls = async (serverUrl: string, channelId: string, e
     return {};
 };
 
-export const joinCall = async (serverUrl: string, channelId: string, intl: IntlShape): Promise<{ error?: string | Error; data?: string }> => {
+export const joinCall = async (serverUrl: string, channelId: string): Promise<{ error?: string | Error; data?: string }> => {
     // Edge case: calls was disabled when app loaded, and then enabled, but app hasn't
     // reconnected its websocket since then (i.e., hasn't called batchLoadCalls yet)
     const {data: enabled} = await checkIsCallsPluginEnabled(serverUrl);
     if (!enabled) {
         return {error: 'calls plugin not enabled'};
-    }
-
-    const hasPermission = await hasMicrophonePermission(intl);
-    if (!hasPermission) {
-        return {error: 'no permissions to microphone, unable to start call'};
     }
 
     if (connection) {

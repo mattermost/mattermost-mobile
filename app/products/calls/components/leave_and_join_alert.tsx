@@ -4,7 +4,7 @@
 import {IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
-import {joinCall} from '@calls/actions';
+import {hasMicrophonePermission, joinCall} from '@calls/actions';
 
 export default function leaveAndJoinWithAlert(
     intl: IntlShape,
@@ -58,12 +58,9 @@ export default function leaveAndJoinWithAlert(
 }
 
 export const doJoinCall = async (serverUrl: string, channelId: string, intl: IntlShape) => {
-    const res = await joinCall(serverUrl, channelId, intl);
-    if (res.error) {
-        const {formatMessage} = intl;
-        const seeLogs = formatMessage({id: 'mobile.calls_see_logs', defaultMessage: 'see server logs'});
-        const error = res.error?.toString() || seeLogs;
+    const {formatMessage} = intl;
 
+    const alert = (error: string) => {
         Alert.alert(
             formatMessage({
                 id: 'mobile.calls_error_title',
@@ -74,7 +71,20 @@ export const doJoinCall = async (serverUrl: string, channelId: string, intl: Int
                 defaultMessage: 'Error: {error}',
             }, {error}),
         );
+    };
+
+    const hasPermission = await hasMicrophonePermission(intl);
+    if (!hasPermission) {
+        alert(formatMessage({
+            id: 'mobile.calls_error_permissions',
+            defaultMessage: 'no permissions to microphone, unable to start call',
+        }));
+        return;
     }
 
-    return res;
+    const res = await joinCall(serverUrl, channelId);
+    if (res.error) {
+        const seeLogs = formatMessage({id: 'mobile.calls_see_logs', defaultMessage: 'see server logs'});
+        alert(res.error?.toString() || seeLogs);
+    }
 };
