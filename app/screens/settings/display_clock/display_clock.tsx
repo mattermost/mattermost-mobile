@@ -12,7 +12,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {popTopScreen, setButtons} from '@screens/navigation';
 
-import {getSaveButton, showSettingSnackBar} from '../config';
+import {getSaveButton, updateSettings} from '../config';
 import SettingBlock from '../setting_block';
 import SettingContainer from '../setting_container';
 import SettingOption from '../setting_option';
@@ -52,10 +52,8 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
             value: `${isMilitaryTimeFormat}`,
         };
 
-        savePreference(serverUrl, [timePreference]).
-            then(({error}) => showSettingSnackBar(error ? 'error' : 'success')).
-            catch(() => showSettingSnackBar('error')).
-            finally(() => close());
+        const updatedSettings = savePreference(serverUrl, [timePreference]);
+        updateSettings(componentId, updatedSettings);
     };
 
     useEffect(() => {

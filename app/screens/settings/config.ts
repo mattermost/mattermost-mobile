@@ -19,13 +19,13 @@ export const getSaveButton = (buttonId: string, intl: IntlShape, color: string) 
     ...typography('Body', 100, 'SemiBold'),
 });
 
-const close = (componentId: string) => popTopScreen(componentId);
+export const closeSetting = (componentId: string) => popTopScreen(componentId);
 
 export const updateSettings = (componentId: string, settingPromise: Promise<{ error?: unknown; data?: unknown}>) => {
     settingPromise.
         then(({error}) => showSettingSnackBar(error ? 'error' : 'success')).
         catch(() => showSettingSnackBar('error')).
-        finally(() => close(componentId));
+        finally(() => closeSetting(componentId));
 };
 
 export const showSettingSnackBar = (type: 'success' | 'error') => {
@@ -41,7 +41,7 @@ export const showSettingSnackBar = (type: 'success' | 'error') => {
             id: t('settings.saved.error'),
             defaultMessage: 'An error occurred while saving this setting.  Please try again later',
             iconName: 'link-variant',
-            canUndo: false, //fixme: should be destructive
+            canUndo: false,
             barType: SNACK_BAR_TYPE.ERROR,
         },
     };
