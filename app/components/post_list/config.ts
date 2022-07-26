@@ -22,7 +22,7 @@ export const SCROLL_POSITION_CONFIG = {
 };
 export const VIEWABILITY_CONFIG = {
     itemVisiblePercentThreshold: 50,
-    minimumViewTime: 100,
+    minimumViewTime: 500,
 };
 
 export const MORE_MESSAGES = {
