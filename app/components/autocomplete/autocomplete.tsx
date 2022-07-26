@@ -55,7 +55,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 type Props = {
     cursorPosition: number;
     postInputTop: number;
-    paddingTop: number;
+    paddingTop?: number;
     rootId?: string;
     channelId?: string;
     fixedBottomPosition?: boolean;
@@ -128,7 +128,6 @@ const Autocomplete = ({
         if (isSearch) {
             s.push(style.base, paddingTop ? {top: paddingTop} : style.searchContainer, {height: hasElements ? maxListHeight : 0});
         }
-        console.log('s', s);
         return s;
     }, [style, isSearch && maxListHeight, hasElements, paddingTop]);
 
