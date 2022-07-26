@@ -71,6 +71,7 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
                         type='select'
                         value='none'
                     />
+                    <SettingSeparator/>
                 </>
             }
             {!sendPushNotifications &&

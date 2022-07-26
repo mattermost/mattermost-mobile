@@ -18,7 +18,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingHorizontal: 36,
         },
         spacerTop: {
-            marginTop: 12,
+            marginTop: 8,
         },
         spacerBottom: {
             marginBottom: 8,

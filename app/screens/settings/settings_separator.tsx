@@ -9,7 +9,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     const groupSeparator = {
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.12),
         width: '91%',
         alignSelf: 'center',
         height: 1,
@@ -27,7 +27,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         groupSeparator: {
             ...groupSeparator,
-            marginBottom: 28,
+            marginBottom: 16,
         },
     };
 });

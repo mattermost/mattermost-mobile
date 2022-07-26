@@ -20,12 +20,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             flexDirection: 'column',
             padding: TILE_PADDING,
-            marginTop: 8,
         },
         imageWrapper: {
             position: 'relative',
             alignItems: 'flex-start',
-            marginBottom: 12,
+            marginBottom: 8,
         },
         thumbnail: {
             resizeMode: 'stretch',

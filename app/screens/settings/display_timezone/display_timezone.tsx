@@ -117,7 +117,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
             <SettingSeparator/>
             {!userTimezone.useAutomaticTimezone && (
                 <>
-                    <SettingSeparator/>
+                    {/* <SettingSeparator/> */}
                     <SettingOption
                         action={goToSelectTimezone}
                         info={getTimezoneRegion(userTimezone.manualTimezone)}
@@ -126,7 +126,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
                     />
                 </>
             )}
-            <SettingSeparator/>
+            {/* <SettingSeparator/> */}
         </SettingContainer>
     );
 };

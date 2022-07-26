@@ -16,7 +16,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             width: RADIO_SIZE,
             borderRadius: RADIO_SIZE / 2,
             marginRight: 16,
-            borderWidth: 4,
+            borderWidth: 2,
             borderColor: theme.buttonBg,
             alignItems: 'center',
             justifyContent: 'center',
@@ -27,7 +27,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         center: {
             height: RADIO_SIZE / 2,
             width: RADIO_SIZE / 2,
-            borderRadius: RADIO_SIZE / 4,
+            borderRadius: RADIO_SIZE / 2,
             backgroundColor: theme.buttonBg,
         },
         checkedBodyContainer: {
