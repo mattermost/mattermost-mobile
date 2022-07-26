@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {t} from '@i18n';
+import {showSnackBar} from '@utils/snack_bar';
 import {typography} from '@utils/typography';
 
 import type {IntlShape} from 'react-intl';
@@ -15,6 +17,30 @@ export const getSaveButton = (buttonId: string, intl: IntlShape, color: string) 
     text: intl.formatMessage({id: 'settings.save', defaultMessage: 'Save'}),
     ...typography('Body', 100, 'SemiBold'),
 });
+
+export const showSettingSnackBar = (type: 'success' | 'error') => {
+    const snackBarConfig = {
+        success: {
+            id: t('settings.saved.success'),
+            defaultMessage: 'Setting successfully saved',
+            iconName: 'link-variant',
+            canUndo: false,
+            barType: SNACK_BAR_TYPE.SUCCESS,
+        },
+        error: {
+            id: t('settings.saved.error'),
+            defaultMessage: 'An error occurred while saving this setting.  Please try again later',
+            iconName: 'link-variant',
+            canUndo: false, //fixme: should be destructive
+            barType: SNACK_BAR_TYPE.ERROR,
+        },
+    };
+    const barType = snackBarConfig[type].barType;
+    return showSnackBar({
+        snackBarConfig: snackBarConfig[type],
+        barType,
+    });
+};
 
 export const SettingOptionConfig = {
     notification: {
