@@ -162,13 +162,7 @@ const SearchScreen = ({teamId}: Props) => {
 
     const handleTextChange = useCallback((newValue: string) => {
         setSearchValue(newValue);
-
-        // if (Platform.OS === 'ios') {
-        //     setKeyboardType(switchKeyboardForCodeBlocks(postMessage, curPos));
-        // }
         setCursorPosition(newValue.length);
-
-        // setCursorPosition(curPos);
     }, [setSearchValue, setCursorPosition]);
 
     const modifiersComponent = useMemo(() => (
