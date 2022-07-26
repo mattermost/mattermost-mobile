@@ -14,7 +14,7 @@ import {popTopScreen, setButtons} from '@screens/navigation';
 import SettingSeparator from '@screens/settings/settings_separator';
 import {getNotificationProps} from '@utils/user';
 
-import {getSaveButton, showSettingSnackBar} from '../config';
+import {getSaveButton, updateSettings} from '../config';
 import SettingContainer from '../setting_container';
 
 import MobileSendPush from './push_send';
@@ -53,10 +53,8 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
 
     const saveNotificationSettings = useCallback(() => {
         const notify_props = {...notifyProps, push: pushSend, push_status: pushStatus, push_threads: pushThread};
-        updateMe(serverUrl, {notify_props} as unknown as UserNotifyProps).
-            then(({error}) => showSettingSnackBar(error ? 'error' : 'success')).
-            catch(() => showSettingSnackBar('error')).
-            finally(() => close());
+        const updatedSettings = updateMe(serverUrl, {notify_props} as unknown as UserNotifyProps);
+        updateSettings(componentId, updatedSettings);
     }, [serverUrl, notifyProps, pushSend, pushStatus, pushThread, close]);
 
     useEffect(() => {

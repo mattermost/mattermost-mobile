@@ -3,6 +3,7 @@
 
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {t} from '@i18n';
+import {popTopScreen} from '@screens/navigation';
 import {showSnackBar} from '@utils/snack_bar';
 import {typography} from '@utils/typography';
 
@@ -17,6 +18,15 @@ export const getSaveButton = (buttonId: string, intl: IntlShape, color: string) 
     text: intl.formatMessage({id: 'settings.save', defaultMessage: 'Save'}),
     ...typography('Body', 100, 'SemiBold'),
 });
+
+const close = (componentId: string) => popTopScreen(componentId);
+
+export const updateSettings = (componentId: string, settingPromise: Promise<{ error?: unknown; data?: unknown}>) => {
+    settingPromise.
+        then(({error}) => showSettingSnackBar(error ? 'error' : 'success')).
+        catch(() => showSettingSnackBar('error')).
+        finally(() => close(componentId));
+};
 
 export const showSettingSnackBar = (type: 'success' | 'error') => {
     const snackBarConfig = {

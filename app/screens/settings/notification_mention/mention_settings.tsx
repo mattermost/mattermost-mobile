@@ -17,7 +17,7 @@ import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} 
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
 
-import {getSaveButton, showSettingSnackBar} from '../config';
+import {getSaveButton, updateSettings} from '../config';
 import SettingBlock from '../setting_block';
 import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
@@ -100,10 +100,8 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
             mention_keys: mentionKeys,
         };
 
-        updateMe(serverUrl, {notify_props}).
-            then(({error}) => showSettingSnackBar(error ? 'error' : 'success')).
-            catch(() => showSettingSnackBar('error')).
-            finally(() => close());
+        const updatedSettings = updateMe(serverUrl, {notify_props});
+        updateSettings(componentId, updatedSettings);
     }, [serverUrl, notifyProps, tglFirstName, tglChannel, mentionKeys]);
 
     const onToggleFirstName = useCallback(() => {

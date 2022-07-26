@@ -14,11 +14,11 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import {popTopScreen, setButtons} from '@screens/navigation';
-import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
+import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
 
-import {getSaveButton, showSettingSnackBar} from '../config';
+import {getSaveButton, updateSettings} from '../config';
 import SettingContainer from '../setting_container';
 import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
@@ -81,15 +81,13 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
     const saveButton = useMemo(() => getSaveButton(SAVE_OOO_BUTTON_ID, intl, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
 
     const saveAutoResponder = useCallback(() => {
-        updateMe(serverUrl, {
+        const updatedSettings = updateMe(serverUrl, {
             notify_props: {
                 ...notifyProps,
                 auto_responder_active: `${autoResponderActive}`,
                 auto_responder_message: autoResponderMessage,
-            }}).
-            then(({error}) => showSettingSnackBar(error ? 'error' : 'success')).
-            catch(() => showSettingSnackBar('error')).
-            finally(() => close());
+            }});
+        updateSettings(componentId, updatedSettings);
     }, [serverUrl, autoResponderActive, autoResponderMessage, notifyProps]);
 
     useEffect(() => {
