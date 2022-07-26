@@ -127,7 +127,7 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
             subtitle = subtitle.replace('{channelName}', channel.displayName);
         }
 
-        EphemeralStore.setLastViewedThreadId(rootId);
+        EphemeralStore.setCurrentThreadId(rootId);
 
         if (isFromNotification) {
             await dismissAllModalsAndPopToRoot();
@@ -267,6 +267,7 @@ export async function markTeamThreadsAsRead(serverUrl: string, teamId: string, p
             record.unreadMentions = 0;
             record.unreadReplies = 0;
             record.lastViewedAt = Date.now();
+            record.viewedAt = Date.now();
         }));
         if (!prepareRecordsOnly) {
             await operator.batchRecords(models);
@@ -278,7 +279,31 @@ export async function markTeamThreadsAsRead(serverUrl: string, teamId: string, p
     }
 }
 
-export async function updateThread(serverUrl: string, threadId: string, updatedThread: Partial<Thread>, prepareRecordsOnly = false) {
+export async function markThreadAsViewed(serverUrl: string, threadId: string, prepareRecordsOnly = false) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const thread = await getThreadById(database, threadId);
+        if (!thread) {
+            return {error: 'Thread not found'};
+        }
+
+        thread.prepareUpdate((th) => {
+            th.viewedAt = thread.lastViewedAt;
+            th.lastViewedAt = Date.now();
+        });
+
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords([thread]);
+        }
+
+        return {model: thread};
+    } catch (error) {
+        logError('Failed markThreadAsViewed', error);
+        return {error};
+    }
+}
+
+export async function updateThread(serverUrl: string, threadId: string, updatedThread: Partial<ThreadWithViewedAt>, prepareRecordsOnly = false) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const thread = await getThreadById(database, threadId);
@@ -289,8 +314,8 @@ export async function updateThread(serverUrl: string, threadId: string, updatedT
         const model = thread.prepareUpdate((record) => {
             record.isFollowing = updatedThread.is_following ?? record.isFollowing;
             record.replyCount = updatedThread.reply_count ?? record.replyCount;
-
             record.lastViewedAt = updatedThread.last_viewed_at ?? record.lastViewedAt;
+            record.viewedAt = updatedThread.viewed_at ?? record.viewedAt;
             record.unreadMentions = updatedThread.unread_mentions ?? record.unreadMentions;
             record.unreadReplies = updatedThread.unread_replies ?? record.unreadReplies;
         });

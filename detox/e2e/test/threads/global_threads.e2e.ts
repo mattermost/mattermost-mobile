@@ -10,7 +10,6 @@
 import {
     Post,
     Setup,
-    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -35,12 +34,6 @@ describe('Threads - Global Threads', () => {
     let testUser: any;
 
     beforeAll(async () => {
-        System.apiUpdateConfig(siteOneUrl, {
-            ServiceSettings: {
-                CollapsedThreads: 'default_on',
-            },
-        });
-
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testUser = user;
@@ -75,7 +68,7 @@ describe('Threads - Global Threads', () => {
     });
 
     it('MM-T4805_2 - should be able to go to a thread a user started and followed', async () => {
-        // # Create a thread started by the current user
+        // # Create a thread started by the current user which current user replied to
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
@@ -100,7 +93,7 @@ describe('Threads - Global Threads', () => {
         await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
         await expect(GlobalThreadsScreen.getThreadItemThreadStarterUserDisplayName(parentPost.id)).toHaveText(testUser.username);
         await expect(GlobalThreadsScreen.getThreadItemThreadStarterChannelDisplayName(parentPost.id)).toHaveText(testChannel.display_name.toUpperCase());
-        await expect(GlobalThreadsScreen.getThreadItemFooterUnreadReplies(parentPost.id)).toHaveText('1 new reply');
+        await expect(GlobalThreadsScreen.getThreadItemFooterReplyCount(parentPost.id)).toHaveText('1 reply');
 
         // # Tap on the thread
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
@@ -168,7 +161,7 @@ describe('Threads - Global Threads', () => {
         await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
         await expect(GlobalThreadsScreen.getThreadItemThreadStarterUserDisplayName(parentPost.id)).toHaveText('sysadmin');
         await expect(GlobalThreadsScreen.getThreadItemThreadStarterChannelDisplayName(parentPost.id)).toHaveText(testChannel.display_name.toUpperCase());
-        await expect(GlobalThreadsScreen.getThreadItemFooterUnreadReplies(parentPost.id)).toHaveText('1 new reply');
+        await expect(GlobalThreadsScreen.getThreadItemFooterReplyCount(parentPost.id)).toHaveText('1 reply');
 
         // # Tap on the thread
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();

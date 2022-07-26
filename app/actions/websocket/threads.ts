@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {markTeamThreadsAsRead, processReceivedThreads, updateThread} from '@actions/local/thread';
+import EphemeralStore from '@store/ephemeral_store';
 
 export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     try {
@@ -20,11 +21,19 @@ export async function handleThreadReadChangedEvent(serverUrl: string, msg: WebSo
     try {
         const {thread_id, timestamp, unread_mentions, unread_replies} = msg.data;
         if (thread_id) {
-            await updateThread(serverUrl, thread_id, {
-                last_viewed_at: timestamp,
+            const data: Partial<ThreadWithViewedAt> = {
                 unread_mentions,
                 unread_replies,
-            });
+                last_viewed_at: timestamp,
+            };
+
+            // Do not update viewing data if the user is currently in the same thread
+            const isThreadVisible = EphemeralStore.getCurrentThreadId() === thread_id;
+            if (!isThreadVisible) {
+                data.viewed_at = timestamp;
+            }
+
+            await updateThread(serverUrl, thread_id, data);
         } else {
             await markTeamThreadsAsRead(serverUrl, msg.broadcast.team_id);
         }
