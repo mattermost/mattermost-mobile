@@ -18,7 +18,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getEmailInterval, getNotificationProps} from '@utils/user';
 
-import {getSaveButton} from '../config';
+import {getSaveButton, showSettingSnackBar} from '../config';
 import SettingBlock from '../setting_block';
 import SettingContainer from '../setting_container';
 import SettingOption from '../setting_option';
@@ -106,8 +106,9 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
             const savePrefPromise = savePreference(serverUrl, [emailIntervalPreference]);
             promises.push(savePrefPromise);
         }
-        await Promise.all(promises);
-        close();
+        await Promise.all(promises).then(() => showSettingSnackBar('success')).
+            catch(() => showSettingSnackBar('error')).
+            finally(() => close());
     }, [notifyProps, notifyInterval, emailThreads, serverUrl, currentUser.id, sendEmailNotifications]);
 
     useEffect(() => {

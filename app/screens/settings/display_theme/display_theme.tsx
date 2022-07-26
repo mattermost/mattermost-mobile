@@ -11,7 +11,7 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {popTopScreen, setButtons} from '@screens/navigation';
-import {getSaveButton} from '@screens/settings/config';
+import {getSaveButton, showSettingSnackBar} from '@screens/settings/config';
 
 import SettingContainer from '../setting_container';
 
@@ -49,8 +49,10 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
             user_id: currentUserId,
             value: JSON.stringify(Preferences.THEMES[selectedTheme]),
         };
-        savePreference(serverUrl, [pref]);
-        close();
+        savePreference(serverUrl, [pref]).
+            then(({error}) => showSettingSnackBar(error ? 'error' : 'success')).
+            catch(() => showSettingSnackBar('error')).
+            finally(() => close());
     }, [serverUrl, allowedThemeKeys, currentTeamId, displayTheme]);
 
     useEffect(() => {

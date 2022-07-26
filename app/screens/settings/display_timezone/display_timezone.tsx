@@ -15,7 +15,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {getDeviceTimezone} from '@utils/timezone';
 import {getTimezoneRegion, getUserTimezoneProps} from '@utils/user';
 
-import {getSaveButton} from '../config';
+import {getSaveButton, showSettingSnackBar} from '../config';
 import SettingContainer from '../setting_container';
 import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
@@ -73,8 +73,10 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
             manualTimezone: userTimezone.manualTimezone,
         };
 
-        updateMe(serverUrl, {timezone: timeZone});
-        close();
+        updateMe(serverUrl, {timezone: timeZone}).
+            then(({error}) => showSettingSnackBar(error ? 'error' : 'success')).
+            catch(() => showSettingSnackBar('error')).
+            finally(() => close());
     }, [userTimezone, currentUser.timezone, serverUrl]);
 
     const saveButton = useMemo(() => getSaveButton(SAVE_TIMEZONE_BUTTON_ID, intl, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);

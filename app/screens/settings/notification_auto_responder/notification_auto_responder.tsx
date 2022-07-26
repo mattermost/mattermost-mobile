@@ -18,7 +18,7 @@ import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} 
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
 
-import {getSaveButton} from '../config';
+import {getSaveButton, showSettingSnackBar} from '../config';
 import SettingContainer from '../setting_container';
 import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
@@ -86,9 +86,10 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
                 ...notifyProps,
                 auto_responder_active: `${autoResponderActive}`,
                 auto_responder_message: autoResponderMessage,
-            },
-        });
-        close();
+            }}).
+            then(({error}) => showSettingSnackBar(error ? 'error' : 'success')).
+            catch(() => showSettingSnackBar('error')).
+            finally(() => close());
     }, [serverUrl, autoResponderActive, autoResponderMessage, notifyProps]);
 
     useEffect(() => {
