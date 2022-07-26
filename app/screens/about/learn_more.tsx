@@ -16,6 +16,24 @@ type LearnMoreProps = {
     onHandleAboutTeam: () => void;
 };
 
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        learnContainer: {
+            flex: 1,
+            flexDirection: 'column',
+            marginVertical: 20,
+        },
+        learn: {
+            color: theme.centerChannelColor,
+            fontSize: 16,
+        },
+        learnLink: {
+            color: theme.linkColor,
+            fontSize: 16,
+        },
+    };
+});
+
 const LearnMore = ({config, onHandleAboutEnterprise, onHandleAboutTeam}: LearnMoreProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -51,23 +69,5 @@ const LearnMore = ({config, onHandleAboutEnterprise, onHandleAboutTeam}: LearnMo
         </View>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        learnContainer: {
-            flex: 1,
-            flexDirection: 'column',
-            marginVertical: 20,
-        },
-        learn: {
-            color: theme.centerChannelColor,
-            fontSize: 16,
-        },
-        learnLink: {
-            color: theme.linkColor,
-            fontSize: 16,
-        },
-    };
-});
 
 export default LearnMore;

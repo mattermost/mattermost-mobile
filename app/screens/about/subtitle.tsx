@@ -12,6 +12,16 @@ type SubtitleProps = {
     config: ClientConfig;
 }
 
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        subtitle: {
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            fontSize: 19,
+            marginBottom: 15,
+        },
+    };
+});
+
 const Subtitle = ({config}: SubtitleProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -33,15 +43,5 @@ const Subtitle = ({config}: SubtitleProps) => {
         />
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        subtitle: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 19,
-            marginBottom: 15,
-        },
-    };
-});
 
 export default Subtitle;

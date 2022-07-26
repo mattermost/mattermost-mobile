@@ -12,6 +12,16 @@ type ServerVersionProps = {
     config: ClientConfig;
 }
 
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        info: {
+            color: theme.centerChannelColor,
+            fontSize: 16,
+            lineHeight: 19,
+        },
+    };
+});
+
 const ServerVersion = ({config}: ServerVersionProps) => {
     const buildNumber = config.BuildNumber;
     const version = config.Version;
@@ -43,15 +53,5 @@ const ServerVersion = ({config}: ServerVersionProps) => {
         />
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        info: {
-            color: theme.centerChannelColor,
-            fontSize: 16,
-            lineHeight: 19,
-        },
-    };
-});
 
 export default ServerVersion;

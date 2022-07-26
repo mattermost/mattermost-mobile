@@ -13,6 +13,15 @@ type TitleProps = {
     license: ClientLicense;
 }
 
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        title: {
+            fontSize: 22,
+            color: theme.centerChannelColor,
+        },
+    };
+});
+
 const Title = ({config, license}: TitleProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -38,14 +47,5 @@ const Title = ({config, license}: TitleProps) => {
         />
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        title: {
-            fontSize: 22,
-            color: theme.centerChannelColor,
-        },
-    };
-});
 
 export default Title;
