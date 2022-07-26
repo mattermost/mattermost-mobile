@@ -35,7 +35,7 @@ struct OptionView<Content: View>: View {
           .foregroundColor(Color.theme.centerChannelColor.opacity(0.56))
           .font(.caption)
       }
-      .padding()
+      .padding(.vertical)
     }
   }
 }
