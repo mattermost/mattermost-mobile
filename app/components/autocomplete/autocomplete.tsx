@@ -22,7 +22,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             left: 8,
             position: 'absolute',
             right: 8,
-            zIndex: 99999,
         },
         borders: {
             borderWidth: 1,

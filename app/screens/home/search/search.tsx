@@ -284,9 +284,11 @@ const SearchScreen = ({teamId}: Props) => {
                 style={styles.flex}
                 edges={EDGES}
             >
+                <Animated.View style={[top, {zIndex: 9999}]}>
+                    {autocomplete}
+                </Animated.View>
                 <Animated.View style={animated}>
                     <Animated.View style={top}>
-                        {autocomplete}
                         <RoundedHeaderContext/>
                         {header}
                     </Animated.View>
@@ -306,7 +308,6 @@ const SearchScreen = ({teamId}: Props) => {
                         renderItem={renderItem}
                     />
                 </Animated.View>
-                {/* {autocomplete} */}
             </SafeAreaView>
         </FreezeScreen>
     );
