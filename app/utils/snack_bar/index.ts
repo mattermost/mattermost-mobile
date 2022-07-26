@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {Screens} from '@constants';
-import {SNACK_BAR_TYPE} from '@constants/snack_bar';
+import {SNACK_BAR_TYPE, SnackBarConfig} from '@constants/snack_bar';
 import {showOverlay} from '@screens/navigation';
 
 type ShowSnackBarArgs = {
     barType: keyof typeof SNACK_BAR_TYPE;
     onAction?: () => void;
+    snackBarConfig?: SnackBarConfig;
     sourceScreen?: typeof Screens[keyof typeof Screens];
 };
 

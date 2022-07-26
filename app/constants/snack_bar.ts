@@ -5,15 +5,17 @@ import {t} from '@i18n';
 import keyMirror from '@utils/key_mirror';
 
 export const SNACK_BAR_TYPE = keyMirror({
+    ERROR: null,
     FAVORITE_CHANNEL: null,
     LINK_COPIED: null,
     MESSAGE_COPIED: null,
     MUTE_CHANNEL: null,
+    SUCCESS: null,
     UNFAVORITE_CHANNEL: null,
     UNMUTE_CHANNEL: null,
 });
 
-type SnackBarConfig = {
+export type SnackBarConfig = {
     id: string;
     defaultMessage: string;
     iconName: string;

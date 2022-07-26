@@ -19,7 +19,7 @@ import Animated, {
 
 import Toast, {TOAST_HEIGHT} from '@components/toast';
 import {Navigation as NavigationConstants, Screens} from '@constants';
-import {SNACK_BAR_CONFIG, SNACK_BAR_TYPE} from '@constants/snack_bar';
+import {SNACK_BAR_CONFIG, SNACK_BAR_TYPE, SnackBarConfig} from '@constants/snack_bar';
 import {TABLET_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -70,13 +70,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 type SnackBarProps = {
+    barType: keyof typeof SNACK_BAR_TYPE;
     componentId: string;
     onAction?: () => void;
-    barType: keyof typeof SNACK_BAR_TYPE;
+    snackBarConfig?: SnackBarConfig;
     sourceScreen: typeof Screens[keyof typeof Screens];
 }
 
-const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps) => {
+const SnackBar = ({barType, componentId, onAction, snackBarConfig, sourceScreen}: SnackBarProps) => {
     const [showSnackBar, setShowSnackBar] = useState<boolean | undefined>();
     const intl = useIntl();
     const theme = useTheme();
@@ -88,7 +89,7 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
     const mounted = useRef(false);
     const userHasUndo = useRef(false);
 
-    const config = SNACK_BAR_CONFIG[barType];
+    const config = snackBarConfig ?? SNACK_BAR_CONFIG[barType];
     const styles = getStyleSheet(theme);
 
     const snackBarStyle = useMemo(() => {
@@ -225,6 +226,18 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
         };
     }, []);
 
+    let bgBarColor;
+    switch (true) {
+        case barType === SNACK_BAR_TYPE.SUCCESS || barType === SNACK_BAR_TYPE.LINK_COPIED :
+            bgBarColor = theme.onlineIndicator;
+            break;
+        case barType === SNACK_BAR_TYPE.ERROR :
+            bgBarColor = theme.dndIndicator;
+            break;
+        default:
+            bgBarColor = theme.centerChannelColor;
+    }
+
     return (
         <GestureHandlerRootView style={styles.gestureRoot}>
             <GestureDetector gesture={gesture}>
@@ -237,7 +250,7 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
                         message={intl.formatMessage({id: config.id, defaultMessage: config.defaultMessage})}
                         iconName={config.iconName}
                         textStyle={styles.text}
-                        style={styles.toast}
+                        style={[styles.toast, {backgroundColor: bgBarColor}]}
                     >
                         {config.canUndo && onAction && (
                             <TouchableOpacity onPress={onUndoPressHandler}>
