@@ -31,6 +31,7 @@ export const PostTypes: Record<string, string> = {
     ADD_BOT_TEAMS_CHANNELS: 'add_bot_teams_channels',
 
     SYSTEM_AUTO_RESPONDER: 'system_auto_responder',
+    CUSTOM_CALLS: 'custom_calls',
 };
 
 export const POST_TIME_TO_FAIL = 10000;

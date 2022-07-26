@@ -6,7 +6,10 @@ import {isAndroid} from '@support/utils';
 class Alert {
     // alert titles
     confirmSendingNotificationsTitle = isAndroid() ? element(by.text('Confirm sending notifications to entire channel')) : element(by.label('Confirm sending notifications to entire channel')).atIndex(0);
+    archivePrivateChannelTitle = isAndroid() ? element(by.text('Archive Private Channel')) : element(by.label('Archive Private Channel')).atIndex(0);
+    archivePublicChannelTitle = isAndroid() ? element(by.text('Archive Public Channel')) : element(by.label('Archive Public Channel')).atIndex(0);
     deletePostTitle = isAndroid() ? element(by.text('Delete Post')) : element(by.label('Delete Post')).atIndex(0);
+    leaveChannelTitle = isAndroid() ? element(by.text('Leave channel')) : element(by.label('Leave channel')).atIndex(0);
     logoutTitle = (serverDisplayName: string) => {
         const title = `Are you sure you want to log out of ${serverDisplayName}?`;
 
@@ -19,15 +22,20 @@ class Alert {
 
         return isAndroid() ? element(by.text(title)) : element(by.label(title)).atIndex(0);
     };
+    unarchivePrivateChannelTitle = isAndroid() ? element(by.text('Unarchive Private Channel')) : element(by.label('Unarchive Private Channel')).atIndex(0);
+    unarchivePublicChannelTitle = isAndroid() ? element(by.text('Unarchive Public Channel')) : element(by.label('Unarchive Public Channel')).atIndex(0);
 
     // alert buttons
     cancelButton = isAndroid() ? element(by.text('CANCEL')) : element(by.label('Cancel')).atIndex(1);
     confirmButton = isAndroid() ? element(by.text('CONFIRM')) : element(by.label('Confirm')).atIndex(1);
     deleteButton = isAndroid() ? element(by.text('DELETE')) : element(by.label('Delete')).atIndex(0);
+    leaveButton = isAndroid() ? element(by.text('LEAVE')) : element(by.label('Leave')).atIndex(0);
     logoutButton = isAndroid() ? element(by.text('LOG OUT')) : element(by.label('Log out')).atIndex(1);
     markReadButton = isAndroid() ? element(by.text('MARK READ')) : element(by.label('Mark read')).atIndex(1);
+    noButton = isAndroid() ? element(by.text('NO')) : element(by.label('No')).atIndex(1);
     okButton = isAndroid() ? element(by.text('OK')) : element(by.label('OK')).atIndex(1);
     removeButton = isAndroid() ? element(by.text('REMOVE')) : element(by.label('Remove')).atIndex(1);
+    yesButton = isAndroid() ? element(by.text('YES')) : element(by.label('Yes')).atIndex(1);
 }
 
 const alert = new Alert();

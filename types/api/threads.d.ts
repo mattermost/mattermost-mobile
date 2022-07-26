@@ -18,6 +18,10 @@ type ThreadWithLastFetchedAt = Thread & {
     lastFetchedAt: number;
 }
 
+type ThreadWithViewedAt = Thread & {
+    viewed_at: number;
+};
+
 type ThreadParticipant = {
     id: $ID<User>;
     thread_id: $ID<Thread>;

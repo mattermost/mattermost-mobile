@@ -10,7 +10,6 @@
 import {
     Channel,
     Setup,
-    System,
     Team,
     User,
 } from '@support/server_api';
@@ -35,15 +34,6 @@ describe('Channels - Find Channels', () => {
     let testUser: any;
 
     beforeAll(async () => {
-        System.apiUpdateConfig(siteOneUrl, {
-            ServiceSettings: {
-                EnableAPIChannelDeletion: true,
-            },
-            TeamSettings: {
-                ExperimentalViewArchivedChannels: true,
-            },
-        });
-
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testTeam = team;
@@ -77,18 +67,18 @@ describe('Channels - Find Channels', () => {
         await FindChannelsScreen.close();
     });
 
-    it('MM-T4907_2 - should be able to find and navigate to a channel', async () => {
-        // # Open find channels screen and search for the channel to navigate to
+    it('MM-T4907_2 - should be able to find and navigate to a public channel', async () => {
+        // # Open find channels screen and search for a public channel to navigate to
         await FindChannelsScreen.open();
         await FindChannelsScreen.searchInput.replaceText(testChannel.name);
 
-        // * Verify search returns the target channel item
+        // * Verify search returns the target public channel item
         await expect(FindChannelsScreen.getFilteredChannelItemDisplayName(testChannel.name)).toHaveText(testChannel.display_name);
 
-        // # Tap on the target channel item
+        // # Tap on the target public channel item
         await FindChannelsScreen.getFilteredChannelItem(testChannel.name).tap();
 
-        // * Verify on target channel screen
+        // * Verify on target public channel screen
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(testChannel.display_name);
         await expect(ChannelScreen.introDisplayName).toHaveText(testChannel.display_name);
@@ -104,7 +94,7 @@ describe('Channels - Find Channels', () => {
         await FindChannelsScreen.searchInput.replaceText(searchTerm);
 
         // * Verify empty search state for find channels
-        await expect(element(by.text(`No results for “${searchTerm}”`))).toBeVisible();
+        await expect(element(by.text(`No matches found for “${searchTerm}”`))).toBeVisible();
         await expect(element(by.text('Check the spelling or try another search.'))).toBeVisible();
 
         // # Go back to channel list screen
@@ -135,7 +125,7 @@ describe('Channels - Find Channels', () => {
         await FindChannelsScreen.close();
     });
 
-    it('MM-T4907_5 - should be able to find archived channel', async () => {
+    it('MM-T4907_5 - should be able to find an archived channel', async () => {
         // # Archive a channel, open find channels screen, and search for the archived channel
         const {channel: archivedChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, archivedChannel.id);
@@ -145,6 +135,27 @@ describe('Channels - Find Channels', () => {
 
         // * Verify search returns the target archived channel item
         await expect(FindChannelsScreen.getFilteredChannelItemDisplayName(archivedChannel.name)).toHaveText(archivedChannel.display_name);
+
+        // # Go back to channel list screen
+        await FindChannelsScreen.close();
+    });
+
+    it('MM-T4907_6 - should be able to find a joined private channel and not find an unjoined private channel', async () => {
+        // # Open find channels screen and search for a joined private channel
+        const {channel: joinedPrivateChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'P', teamId: testTeam.id});
+        const {channel: unjoinedPrivateChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'P', teamId: testTeam.id});
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, joinedPrivateChannel.id);
+        await FindChannelsScreen.open();
+        await FindChannelsScreen.searchInput.replaceText(joinedPrivateChannel.name);
+
+        // * Verify search returns the target joined private channel item
+        await expect(FindChannelsScreen.getFilteredChannelItemDisplayName(joinedPrivateChannel.name)).toHaveText(joinedPrivateChannel.display_name);
+
+        // # Search for an unjoined private channel
+        await FindChannelsScreen.searchInput.replaceText(unjoinedPrivateChannel.name);
+
+        // * Verify empty search state for find channels
+        await expect(element(by.text(`No matches found for “${unjoinedPrivateChannel.name}”`))).toBeVisible();
 
         // # Go back to channel list screen
         await FindChannelsScreen.close();

@@ -10,7 +10,6 @@
 import {
     Post,
     Setup,
-    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -36,12 +35,6 @@ describe('Threads - Mark Thread as Read and Unread', () => {
     let testChannel: any;
 
     beforeAll(async () => {
-        System.apiUpdateConfig(siteOneUrl, {
-            ServiceSettings: {
-                CollapsedThreads: 'default_on',
-            },
-        });
-
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
 
@@ -61,15 +54,16 @@ describe('Threads - Mark Thread as Read and Unread', () => {
     });
 
     it('MM-T4807_1 - should be able to mark a thread as read by opening thread', async () => {
-        // # Create a thread, go back to channel list screen, then go to global threads screen, and tap on unread threads button
+        // # Create a thread started by the current user which another user replied to, go back to channel list screen, then go to global threads screen, and tap on unread threads button
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
-        const replyMessage = `${parentMessage} reply`;
-        await ThreadScreen.postMessage(replyMessage);
-        await ThreadScreen.back();
+        await Post.apiCreatePost(siteOneUrl, {
+            channelId: testChannel.id,
+            message: `${parentMessage} reply`,
+            rootId: parentPost.id,
+        });
         await ChannelScreen.back();
         await device.reloadReactNative();
         await GlobalThreadsScreen.open();
@@ -100,15 +94,16 @@ describe('Threads - Mark Thread as Read and Unread', () => {
     });
 
     it('MM-T4807_2 - should be able to mark a thread as read/unread via thread options', async () => {
-        // # Create a thread, go back to channel list screen, then go to global threads screen, and tap on unread threads button
+        // # Create a thread started by the current user which another user replied to, go back to channel list screen, then go to global threads screen, and tap on unread threads button
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
-        const replyMessage = `${parentMessage} reply`;
-        await ThreadScreen.postMessage(replyMessage);
-        await ThreadScreen.back();
+        await Post.apiCreatePost(siteOneUrl, {
+            channelId: testChannel.id,
+            message: `${parentMessage} reply`,
+            rootId: parentPost.id,
+        });
         await ChannelScreen.back();
         await device.reloadReactNative();
         await GlobalThreadsScreen.open();
@@ -148,15 +143,16 @@ describe('Threads - Mark Thread as Read and Unread', () => {
     });
 
     it('MM-T4807_3 - should be able to mark all threads as read', async () => {
-        // # Create a thread, go back to channel list screen, then go to global threads screen, and tap on unread threads button
+        // # Create a thread started by the current user which another user replied to, go back to channel list screen, then go to global threads screen, and tap on unread threads button
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
-        const replyMessage = `${parentMessage} reply`;
-        await ThreadScreen.postMessage(replyMessage);
-        await ThreadScreen.back();
+        await Post.apiCreatePost(siteOneUrl, {
+            channelId: testChannel.id,
+            message: `${parentMessage} reply`,
+            rootId: parentPost.id,
+        });
         await ChannelScreen.back();
         await device.reloadReactNative();
         await GlobalThreadsScreen.open();
