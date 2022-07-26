@@ -2,14 +2,15 @@
 // See LICENSE.txt for license information.
 
 import {useIsFocused, useNavigation} from '@react-navigation/native';
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, StyleSheet} from 'react-native';
-import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import {FlatList, Platform, StyleSheet, View} from 'react-native';
+import Animated, {onChange, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {addSearchToTeamSearchHistory} from '@actions/local/team';
 import {searchPosts, searchFiles} from '@actions/remote/search';
+import Autocomplete from '@components/autocomplete';
 import FreezeScreen from '@components/freeze_screen';
 import Loading from '@components/loading';
 import NavigationHeader from '@components/navigation_header';
@@ -70,6 +71,9 @@ const SearchScreen = ({teamId}: Props) => {
     const serverUrl = useServerUrl();
     const searchTerm = (nav.getState().routes[stateIndex].params as any)?.searchTerm;
 
+    const [cursorPosition, setCursorPosition] = useState(searchTerm?.length);
+
+    // const [keyboardType, setKeyboardType] = useState<KeyboardTypeOptions>('default');
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
     const [searchTeamId, setSearchTeamId] = useState<string>(teamId);
     const [selectedTab, setSelectedTab] = useState<TabType>(TabTypes.MESSAGES);
@@ -90,7 +94,7 @@ const SearchScreen = ({teamId}: Props) => {
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight, hideHeader} = useCollapsibleHeader<FlatList>(true, onSnap);
 
     const handleClearSearch = useCallback(() => {
-        setSearchValue('');
+        handleTextChange('');
         setLastSearchedValue('');
         setFilter(FileFilters.ALL);
     }, []);
@@ -128,7 +132,7 @@ const SearchScreen = ({teamId}: Props) => {
     }, [handleSearch, searchTeamId, searchValue]);
 
     const handleRecentSearch = useCallback((text: string) => {
-        setSearchValue(text);
+        handleTextChange(text);
         handleSearch(searchTeamId, text);
     }, [handleSearch, searchTeamId]);
 
@@ -156,10 +160,21 @@ const SearchScreen = ({teamId}: Props) => {
         />
     ), [theme, scrollPaddingTop]);
 
+    const handleTextChange = useCallback((newValue: string) => {
+        setSearchValue(newValue);
+
+        // if (Platform.OS === 'ios') {
+        //     setKeyboardType(switchKeyboardForCodeBlocks(postMessage, curPos));
+        // }
+        setCursorPosition(newValue.length);
+
+        // setCursorPosition(curPos);
+    }, [setSearchValue, setCursorPosition]);
+
     const modifiersComponent = useMemo(() => (
         <>
             <Modifiers
-                setSearchValue={setSearchValue}
+                setSearchValue={handleTextChange}
                 searchValue={searchValue}
                 teamId={searchTeamId}
                 setTeamId={setSearchTeamId}
@@ -169,7 +184,7 @@ const SearchScreen = ({teamId}: Props) => {
                 teamId={searchTeamId}
             />
         </>
-    ), [searchValue, searchTeamId, handleRecentSearch]);
+    ), [handleTextChange, searchValue, searchTeamId, handleRecentSearch]);
 
     const resultsComponent = useMemo(() => (
         <Results
@@ -235,6 +250,17 @@ const SearchScreen = ({teamId}: Props) => {
             />
         );
     }
+    const autocomplete = useMemo(() => (
+        <Autocomplete
+            paddingTop={2}
+            postInputTop={0}
+            updateValue={handleTextChange}
+            cursorPosition={cursorPosition}
+            value={searchValue}
+            isSearch={true}
+            hasFilesAttached={false}
+        />
+    ), [searchValue, handleTextChange, paddingTop]);
 
     return (
         <FreezeScreen freeze={!isFocused}>
@@ -245,13 +271,14 @@ const SearchScreen = ({teamId}: Props) => {
                 hasSearch={true}
                 scrollValue={scrollValue}
                 hideHeader={hideHeader}
-                onChangeText={setSearchValue}
+                onChangeText={handleTextChange}
                 onSubmitEditing={onSubmit}
                 blurOnSubmit={true}
                 placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
                 onClear={handleClearSearch}
                 onCancel={handleCancelSearch}
                 defaultValue={searchValue}
+                value={searchValue}
             />
             <SafeAreaView
                 style={styles.flex}
@@ -259,6 +286,7 @@ const SearchScreen = ({teamId}: Props) => {
             >
                 <Animated.View style={animated}>
                     <Animated.View style={top}>
+                        {autocomplete}
                         <RoundedHeaderContext/>
                         {header}
                     </Animated.View>
@@ -278,6 +306,7 @@ const SearchScreen = ({teamId}: Props) => {
                         renderItem={renderItem}
                     />
                 </Animated.View>
+                {/* {autocomplete} */}
             </SafeAreaView>
         </FreezeScreen>
     );
