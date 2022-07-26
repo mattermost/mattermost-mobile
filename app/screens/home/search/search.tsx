@@ -72,8 +72,6 @@ const SearchScreen = ({teamId}: Props) => {
     const searchTerm = (nav.getState().routes[stateIndex].params as any)?.searchTerm;
 
     const [cursorPosition, setCursorPosition] = useState(searchTerm?.length);
-
-    // const [keyboardType, setKeyboardType] = useState<KeyboardTypeOptions>('default');
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
     const [searchTeamId, setSearchTeamId] = useState<string>(teamId);
     const [selectedTab, setSelectedTab] = useState<TabType>(TabTypes.MESSAGES);
