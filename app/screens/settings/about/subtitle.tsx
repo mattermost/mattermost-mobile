@@ -7,11 +7,22 @@ import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        subtitle: {
+            color: changeOpacity(theme.centerChannelColor, 0.72),
+            ...typography('Heading', 400, 'Regular'),
+            textAlign: 'center',
+            paddingHorizontal: 36,
+        },
+    };
+});
 
 type SubtitleProps = {
     config: ClientConfig;
 }
-
 const Subtitle = ({config}: SubtitleProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -21,7 +32,7 @@ const Subtitle = ({config}: SubtitleProps) => {
 
     if (config.BuildEnterpriseReady === 'true') {
         id = t('about.enterpriseEditionSt');
-        defaultMessage = 'Modern communication from behind your firewall.';
+        defaultMessage = 'Modern communication from\n behind your firewall.';
     }
 
     return (
@@ -33,15 +44,5 @@ const Subtitle = ({config}: SubtitleProps) => {
         />
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        subtitle: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 19,
-            marginBottom: 15,
-        },
-    };
-});
 
 export default Subtitle;

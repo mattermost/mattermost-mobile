@@ -1,37 +1,45 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {useIntl} from 'react-intl';
 
 import {savePreference} from '@actions/remote/preference';
 import {Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {popTopScreen, setButtons} from '@screens/navigation';
+import {getSaveButton} from '@screens/settings/config';
 
 import SettingContainer from '../setting_container';
 
 import CustomTheme from './custom_theme';
 import {ThemeTiles} from './theme_tiles';
 
+const SAVE_DISPLAY_THEME_BTN_ID = 'SAVE_DISPLAY_THEME_BTN_ID';
+
 type DisplayThemeProps = {
     allowedThemeKeys: string[];
+    componentId: string;
     currentTeamId: string;
     currentUserId: string;
 }
-
-const DisplayTheme = ({allowedThemeKeys, currentTeamId, currentUserId}: DisplayThemeProps) => {
+const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUserId}: DisplayThemeProps) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const [customTheme, setCustomTheme] = useState<Theme|null>();
+    const intl = useIntl();
+    const initialTheme = useMemo(() => theme.type, []); // dependency array should remain empty
 
-    useEffect(() => {
-        if (theme.type === 'custom') {
-            setCustomTheme(theme);
-        }
-    }, []);
+    const [displayTheme, setDisplayTheme] = useState<string | undefined>(initialTheme);
 
-    const updateTheme = useCallback((selectedThemeKey: string) => {
-        const selectedTheme = allowedThemeKeys.find((tk) => tk === selectedThemeKey);
+    const saveButton = useMemo(() => getSaveButton(SAVE_DISPLAY_THEME_BTN_ID, intl, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
+
+    const close = () => popTopScreen(componentId);
+
+    const updateTheme = useCallback(() => {
+        const selectedTheme = allowedThemeKeys.find((tk) => tk === displayTheme);
         if (!selectedTheme) {
             return;
         }
@@ -42,18 +50,34 @@ const DisplayTheme = ({allowedThemeKeys, currentTeamId, currentUserId}: DisplayT
             value: JSON.stringify(Preferences.THEMES[selectedTheme]),
         };
         savePreference(serverUrl, [pref]);
-    }, [serverUrl, allowedThemeKeys, currentTeamId]);
+        close();
+    }, [serverUrl, allowedThemeKeys, currentTeamId, displayTheme]);
+
+    useEffect(() => {
+        const buttons = {
+            rightButtons: [{
+                ...saveButton,
+                enabled: initialTheme?.toLowerCase() !== displayTheme?.toLowerCase(),
+            }],
+        };
+        setButtons(componentId, buttons);
+    }, [componentId, saveButton, displayTheme, initialTheme]);
+
+    useNavButtonPressed(SAVE_DISPLAY_THEME_BTN_ID, componentId, updateTheme, [updateTheme]);
+
+    useAndroidHardwareBackHandler(componentId, close);
 
     return (
         <SettingContainer>
             <ThemeTiles
                 allowedThemeKeys={allowedThemeKeys}
-                onThemeChange={updateTheme}
+                onThemeChange={setDisplayTheme}
+                selectedTheme={displayTheme}
             />
-            {customTheme && (
+            {theme.type === 'custom' && (
                 <CustomTheme
-                    customTheme={customTheme}
-                    setTheme={updateTheme}
+                    setTheme={setDisplayTheme}
+                    displayTheme={displayTheme}
                 />
             )}
         </SettingContainer>
