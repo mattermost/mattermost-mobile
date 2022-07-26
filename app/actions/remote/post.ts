@@ -570,7 +570,7 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
     }
 };
 
-export async function fetchPostThread(serverUrl: string, postId: string, fetchOnly = false): Promise<PostsRequest> {
+export async function fetchPostThread(serverUrl: string, postId: string, fetchOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -587,12 +587,15 @@ export async function fetchPostThread(serverUrl: string, postId: string, fetchOn
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
         const data = await client.getPostThread(postId, isCRTEnabled, isCRTEnabled);
         const result = processPostsFetched(data);
+        let posts: Model[] = [];
         if (!fetchOnly) {
-            const models = await operator.handlePosts({
+            const models: Model[] = [];
+            posts = await operator.handlePosts({
                 ...result,
                 actionType: ActionType.POSTS.RECEIVED_IN_THREAD,
                 prepareRecordsOnly: true,
             });
+            models.push(...posts);
 
             const {authors} = await fetchPostAuthors(serverUrl, result.posts, true);
             if (authors?.length) {
@@ -611,7 +614,7 @@ export async function fetchPostThread(serverUrl: string, postId: string, fetchOn
             }
             await operator.batchRecords(models);
         }
-        return result;
+        return {posts: extractRecordsForTable<PostModel>(posts, MM_TABLES.SERVER.POST)};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -641,7 +644,7 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
         const preData: PostResponse = {
             posts: {
                 ...filterPostsInOrderedArray(after.posts, after.order),
-                postId: post.posts![postId],
+                [postId]: post.posts![postId],
                 ...filterPostsInOrderedArray(before.posts, before.order),
             },
             order: [],

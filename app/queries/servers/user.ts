@@ -56,6 +56,10 @@ export const queryUsersById = (database: Database, userIds: string[]) => {
     return database.get<UserModel>(USER).query(Q.where('id', Q.oneOf(userIds)));
 };
 
+export const observeUsersById = (database: Database, userIds: string[]) => {
+    return queryUsersById(database, userIds).observe();
+};
+
 export const queryUsersByUsername = (database: Database, usernames: string[]) => {
     return database.get<UserModel>(USER).query(Q.where('username', Q.oneOf(usernames)));
 };
