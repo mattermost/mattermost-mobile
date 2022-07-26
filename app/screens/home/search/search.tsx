@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {useIsFocused, useNavigation} from '@react-navigation/native';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, Platform, StyleSheet, View} from 'react-native';
-import Animated, {onChange, useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import {FlatList, StyleSheet} from 'react-native';
+import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {addSearchToTeamSearchHistory} from '@actions/local/team';
