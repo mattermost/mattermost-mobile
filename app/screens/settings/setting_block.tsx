@@ -18,7 +18,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         contentContainerStyle: {
             marginBottom: 0,
-        }
+        },
     };
 });
 

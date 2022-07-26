@@ -32,6 +32,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             height: 1,
             alignSelf: 'center',
+
             // marginTop: 20,
         },
     };
