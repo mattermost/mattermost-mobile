@@ -4,7 +4,9 @@
 import React from 'react';
 import {View} from 'react-native';
 
+import {useCallsEnabled} from '@calls/hooks';
 import ChannelActions from '@components/channel_actions';
+import CopyChannelLinkOption from '@components/channel_actions/copy_channel_link_option';
 import InfoBox from '@components/channel_actions/info_box';
 import LeaveChannelLabel from '@components/channel_actions/leave_channel_label';
 import {QUICK_OPTIONS_HEIGHT} from '@constants/view';
@@ -36,6 +38,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const ChannelQuickAction = ({channelId}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const callsEnabled = useCallsEnabled(channelId);
 
     return (
         <View style={styles.container}>
@@ -51,6 +54,9 @@ const ChannelQuickAction = ({channelId}: Props) => {
                 showAsLabel={true}
                 testID='channel.quick_actions.channel_info.action'
             />
+            {callsEnabled &&
+                <CopyChannelLinkOption channelId={channelId}/>
+            }
             <View style={styles.line}/>
             <LeaveChannelLabel
                 channelId={channelId}
