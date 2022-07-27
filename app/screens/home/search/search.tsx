@@ -35,6 +35,7 @@ const emptyChannelIds: string[] = [];
 
 const dummyData = [1];
 const AutocompletePaddingTop = 2;
+const AutocompleteZindex = 11;
 
 type Props = {
     teamId: string;
@@ -276,7 +277,7 @@ const SearchScreen = ({teamId}: Props) => {
                 style={styles.flex}
                 edges={EDGES}
             >
-                <Animated.View style={[top, {zIndex: 11}]}>
+                <Animated.View style={[top, {zIndex: AutocompleteZindex}]}>
                     {autocomplete}
                 </Animated.View>
                 <Animated.View style={animated}>
