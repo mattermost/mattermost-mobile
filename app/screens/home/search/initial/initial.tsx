@@ -10,21 +10,21 @@ import type TeamSearchHistoryModel from '@typings/database/models/servers/team_s
 
 type Props = {
     recentSearches: TeamSearchHistoryModel[];
-    teamId: string;
     searchValue?: string;
     setRecentValue: (value: string) => void;
     setSearchValue: (value: string) => void;
     setTeamId: (value: string) => void;
+    teamId: string;
 }
 
 const Initial = ({setRecentValue, recentSearches, searchValue, teamId, setTeamId, setSearchValue}: Props) => {
     return (
         <>
             <Modifiers
-                setSearchValue={setSearchValue}
                 searchValue={searchValue}
-                teamId={teamId}
+                setSearchValue={setSearchValue}
                 setTeamId={setTeamId}
+                teamId={teamId}
             />
             {Boolean(recentSearches?.length) &&
                 <RecentSearches

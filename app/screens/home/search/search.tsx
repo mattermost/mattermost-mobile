@@ -157,11 +157,11 @@ const SearchScreen = ({teamId}: Props) => {
 
     const initialComponent = useMemo(() => (
         <Intial
-            setSearchValue={setSearchValue}
             searchValue={searchValue}
-            teamId={searchTeamId}
-            setTeamId={setSearchTeamId}
             setRecentValue={handleRecentSearch}
+            setSearchValue={setSearchValue}
+            setTeamId={setSearchTeamId}
+            teamId={searchTeamId}
         />
     ), [setSearchValue, setSearchTeamId, searchValue, searchTeamId, handleRecentSearch]);
 
