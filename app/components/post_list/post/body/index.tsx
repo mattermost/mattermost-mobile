@@ -27,7 +27,6 @@ type BodyProps = {
     hasReactions: boolean;
     highlight: boolean;
     highlightReplyBar: boolean;
-    isCRTEnabled?: boolean;
     isEphemeral: boolean;
     isFirstReply?: boolean;
     isJumboEmoji: boolean;
@@ -76,7 +75,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Body = ({
     appsEnabled, hasFiles, hasReactions, highlight, highlightReplyBar,
-    isCRTEnabled, isEphemeral, isFirstReply, isJumboEmoji, isLastReply, isPendingOrFailed, isPostAddChannelMember,
+    isEphemeral, isFirstReply, isJumboEmoji, isLastReply, isPendingOrFailed, isPostAddChannelMember,
     location, post, searchPatterns, showAddReaction, theme,
 }: BodyProps) => {
     const style = getStyleSheet(theme);
@@ -91,7 +90,7 @@ const Body = ({
     const hasContent = (post.metadata?.embeds?.length || (appsEnabled && post.props?.app_bindings?.length)) || post.props?.attachments?.length;
 
     const replyBarStyle = useCallback((): StyleProp<ViewStyle>|undefined => {
-        if (!isReplyPost || (isCRTEnabled && location === Screens.PERMALINK)) {
+        if (!isReplyPost) {
             return undefined;
         }
 

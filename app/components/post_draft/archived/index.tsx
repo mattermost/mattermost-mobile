@@ -95,7 +95,6 @@ export default function Archived({
             <Button
                 containerStyle={style.closeButton}
                 onPress={onCloseChannelPress}
-                testID={`${testID}.close_channel.button`}
             >
                 <FormattedText
                     id='center_panel.archived.closeChannel'

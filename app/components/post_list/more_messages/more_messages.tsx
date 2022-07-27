@@ -19,13 +19,11 @@ import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
     channelId: string;
-    isCRTEnabled?: boolean;
-    isManualUnread?: boolean;
+    isManualUnread: boolean;
     newMessageLineIndex: number;
     posts: Array<string | PostModel>;
     registerScrollEndIndexListener: (fn: (endIndex: number) => void) => () => void;
     registerViewableItemsListener: (fn: (viewableItems: ViewToken[]) => void) => () => void;
-    rootId?: string;
     scrollToIndex: (index: number, animated?: boolean, applyOffset?: boolean) => void;
     unreadCount: number;
     theme: Theme;
@@ -93,13 +91,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const MoreMessages = ({
     channelId,
-    isCRTEnabled,
     isManualUnread,
     newMessageLineIndex,
     posts,
     registerViewableItemsListener,
     registerScrollEndIndexListener,
-    rootId,
     scrollToIndex,
     unreadCount,
     testID,
@@ -114,7 +110,7 @@ const MoreMessages = ({
     const [remaining, setRemaining] = useState(0);
     const underlayColor = useMemo(() => `hsl(${hexToHue(theme.buttonBg)}, 50%, 38%)`, [theme]);
     const top = useSharedValue(0);
-    const shownTop = isTablet || (isCRTEnabled && rootId) ? 5 : SHOWN_TOP;
+    const shownTop = isTablet ? 5 : SHOWN_TOP;
     const BARS_FACTOR = Math.abs((1) / (HIDDEN_TOP - SHOWN_TOP));
     const styles = getStyleSheet(theme);
     const animatedStyle = useAnimatedStyle(() => ({
@@ -138,18 +134,8 @@ const MoreMessages = ({
         }],
     }), [isTablet, shownTop]);
 
-    // Due to the implementation differences "unreadCount" gets updated for a channel on reset but not for a thread.
-    // So we maintain a localUnreadCount to hide the indicator when the count is reset.
-    // If we don't maintain the local counter, in the case of a thread, the indicator will be shown again once we scroll down after we reach the top.
-    const localUnreadCount = useRef(unreadCount);
-    useEffect(() => {
-        localUnreadCount.current = unreadCount;
-    }, [unreadCount]);
-
     const resetCount = async () => {
-        localUnreadCount.current = 0;
-
-        if (resetting.current || (isCRTEnabled && rootId)) {
+        if (resetting.current) {
             return;
         }
 
@@ -179,7 +165,7 @@ const MoreMessages = ({
         }
 
         const readCount = posts.slice(0, lastViewableIndex).filter((v) => typeof v !== 'string').length;
-        const totalUnread = localUnreadCount.current - readCount;
+        const totalUnread = unreadCount - readCount;
         if (lastViewableIndex >= newMessageLineIndex) {
             resetCount();
             top.value = 0;

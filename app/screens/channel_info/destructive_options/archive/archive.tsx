@@ -119,7 +119,6 @@ const Archive = ({
                 icon='archive-arrow-up-outline'
                 destructive={true}
                 type='default'
-                testID='channel_info.options.unarchive_channel.option'
             />
         );
     }

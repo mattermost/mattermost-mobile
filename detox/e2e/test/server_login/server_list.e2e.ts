@@ -212,23 +212,25 @@ describe('Server Login - Server List', () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
-        // # Open server list screen, swipe left on third server and tap on logout option
+        // # Open server list screen, swipe left on first server and tap on logout option
         await ServerListScreen.open();
-        await ServerListScreen.getServerItemInactive(serverThreeDisplayName).swipe('left');
-        await ServerListScreen.getServerItemLogoutOption(serverThreeDisplayName).tap();
+        await ServerListScreen.getServerItemActive(serverOneDisplayName).swipe('left');
+        await ServerListScreen.getServerItemLogoutOption(serverOneDisplayName).tap();
 
         // * Verify logout server alert is displayed
-        await expect(Alert.logoutTitle(serverThreeDisplayName)).toBeVisible();
+        await expect(Alert.logoutTitle(serverOneDisplayName)).toBeVisible();
 
-        // # Tap on logout button
+        // # Tap on logout button and go back to server list screen
         await Alert.logoutButton.tap();
+        await ServerListScreen.open();
 
-        // * Verify third server is logged out
-        await ServerListScreen.getServerItemInactive(serverThreeDisplayName).swipe('left');
-        await expect(ServerListScreen.getServerItemLoginOption(serverThreeDisplayName)).toBeVisible();
+        // * Verify first server is logged out
+        await ServerListScreen.getServerItemInactive(serverOneDisplayName).swipe('left');
+        await expect(ServerListScreen.getServerItemLoginOption(serverOneDisplayName)).toBeVisible();
 
-        // # Go back to first server
-        await ServerListScreen.getServerItemActive(serverOneDisplayName).tap();
+        // # Log back in to first server
+        await ServerListScreen.getServerItemLoginOption(serverOneDisplayName).tap();
+        await LoginScreen.login(serverOneUser);
     });
 
     it('MM-T4691_7 - should not be able to add server for an already existing server', async () => {
@@ -255,12 +257,7 @@ describe('Server Login - Server List', () => {
         // * Verify same name server error
         await expect(ServerScreen.serverDisplayNameInputError).toHaveText(sameNameServerError);
 
-        // # Close server screen, open server list screen, log out of second server, and go back to first server
+        // # Close server screen to go back to first server
         await ServerScreen.close();
-        await ServerListScreen.open();
-        await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left');
-        await ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).tap();
-        await Alert.logoutButton.tap();
-        await ServerListScreen.getServerItemActive(serverOneDisplayName).tap();
     });
 });

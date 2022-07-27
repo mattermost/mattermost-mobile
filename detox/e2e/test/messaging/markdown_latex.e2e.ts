@@ -10,6 +10,7 @@
 import {
     Post,
     Setup,
+    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -30,6 +31,13 @@ describe('Messaging - Markdown Latex', () => {
     let testChannel: any;
 
     beforeAll(async () => {
+        System.apiUpdateConfig(siteOneUrl, {
+            ServiceSettings: {
+                EnableLatex: true,
+                EnableInlineLatex: true,
+            },
+        });
+
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
 

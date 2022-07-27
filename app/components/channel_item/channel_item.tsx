@@ -7,7 +7,6 @@ import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
 import Badge from '@components/badge';
 import ChannelIcon from '@components/channel_icon';
-import CompassIcon from '@components/compass_icon';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -33,7 +32,6 @@ type Props = {
     hasMember: boolean;
     teamDisplayName?: string;
     testID?: string;
-    hasCall: boolean;
 }
 
 export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -115,12 +113,6 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingBottom: 0,
         top: 5,
     },
-    hasCall: {
-        color: theme.sidebarText,
-        flex: 1,
-        textAlign: 'right',
-        marginRight: 20,
-    },
 }));
 
 export const textStyle = StyleSheet.create({
@@ -131,7 +123,7 @@ export const textStyle = StyleSheet.create({
 const ChannelListItem = ({
     channel, currentUserId, hasDraft,
     isActive, isInfo, isMuted, membersCount, hasMember,
-    isUnread, mentionsCount, onPress, teamDisplayName, testID, hasCall}: Props) => {
+    isUnread, mentionsCount, onPress, teamDisplayName, testID}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -245,13 +237,6 @@ const ChannelListItem = ({
                         value={mentionsCount}
                         style={[styles.badge, isMuted && styles.mutedBadge, isInfo && styles.infoBadge]}
                     />
-                    {hasCall &&
-                        <CompassIcon
-                            name='phone-in-talk'
-                            size={16}
-                            style={styles.hasCall}
-                        />
-                    }
                 </View>
             </>
         </TouchableOpacity>

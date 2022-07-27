@@ -59,7 +59,6 @@ export const THREAD = 'Thread';
 export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
 export const THREAD_OPTIONS = 'ThreadOptions';
 export const USER_PROFILE = 'UserProfile';
-export const CALL = 'Call';
 
 export default {
     ABOUT,
@@ -120,7 +119,6 @@ export default {
     THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
     USER_PROFILE,
-    CALL,
 };
 
 export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([

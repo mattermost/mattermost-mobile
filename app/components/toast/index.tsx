@@ -73,12 +73,7 @@ const Toast = ({animatedStyle, children, style, iconName, message, textStyle}: T
                 }
                 {Boolean(message) &&
                 <View style={styles.flex}>
-                    <Text
-                        style={[styles.text, textStyle]}
-                        testID='toast.message'
-                    >
-                        {message}
-                    </Text>
+                    <Text style={[styles.text, textStyle]}>{message}</Text>
                 </View>
                 }
                 {children}

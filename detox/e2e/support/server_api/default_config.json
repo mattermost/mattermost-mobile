@@ -73,7 +73,6 @@
         "ExperimentalGroupUnreadChannels": "disabled",
         "ExperimentalChannelOrganization": false,
         "ExperimentalChannelSidebarOrganization": "disabled",
-        "EnableAPIChannelDeletion": true,
         "EnableAPITeamDeletion": true,
         "ExperimentalEnableHardenedMode": false,
         "DisableLegacyMFA": true,
@@ -82,9 +81,7 @@
         "DisableBotsWhenOwnerIsDeactivated": true,
         "EnableBotAccountCreation": true,
         "EnableSVGs": true,
-        "EnableLatex": true,
-        "EnableInlineLatex": true,
-        "CollapsedThreads": "always_on"
+        "EnableLatex": false
     },
     "TeamSettings": {
         "SiteName": "Mattermost",
@@ -113,7 +110,7 @@
         "MaxNotificationsPerChannel": 1000,
         "EnableConfirmNotificationsToChannel": true,
         "TeammateNameDisplay": "username",
-        "ExperimentalViewArchivedChannels": true,
+        "ExperimentalViewArchivedChannels": false,
         "ExperimentalEnableAutomaticReplies": false,
         "ExperimentalHideTownSquareinLHS": false,
         "ExperimentalTownSquareIsReadOnly": false,

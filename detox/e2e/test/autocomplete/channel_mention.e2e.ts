@@ -10,6 +10,7 @@
 import {
     Channel,
     Setup,
+    System,
     Team,
 } from '@support/server_api';
 import {
@@ -37,6 +38,12 @@ describe('Autocomplete - Channel Mention', () => {
     let otherChannelMentionAutocomplete: any;
 
     beforeAll(async () => {
+        System.apiUpdateConfig(siteOneUrl, {
+            ServiceSettings: {
+                EnableAPIChannelDeletion: true,
+            },
+        });
+
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testTeam = team;
@@ -190,7 +197,7 @@ describe('Autocomplete - Channel Mention', () => {
         await expect(Autocomplete.sectionChannelMentionList).toBeVisible();
     });
 
-    it('MM-T4879_8 - should be able to autocomplete archived channel', async () => {
+    it('MM-T4879_8 - should not be able to autocomplete archived channel', async () => {
         // # Archive another team channel and type in "~" to activate channel mention autocomplete
         await Channel.apiDeleteChannel(siteOneUrl, testOtherChannel.id);
         await ChannelScreen.postInput.typeText('~');
@@ -202,8 +209,8 @@ describe('Autocomplete - Channel Mention', () => {
         // # Type in channel name of archived channel
         await ChannelScreen.postInput.typeText(testOtherChannel.name);
 
-        // * Verify channel mention autocomplete contains associated channel suggestion
-        await expect(otherChannelMentionAutocomplete).toBeVisible();
+        // * Verify channel mention autocomplete does not contain associated channel suggestion
+        await expect(otherChannelMentionAutocomplete).not.toBeVisible();
 
         // # Unarchive channel, clear post input, and type in "~" to activate channel mention list
         await Channel.apiRestoreChannel(siteOneUrl, testOtherChannel.id);

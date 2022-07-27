@@ -4,7 +4,6 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {Events} from '@constants';
-import Calls from '@constants/calls';
 import {t} from '@i18n';
 import {setServerCredentials} from '@init/credentials';
 import {Analytics, create} from '@managers/analytics';
@@ -202,16 +201,8 @@ export default class ClientBase {
         return `${this.getThreadsRoute(userId, teamId)}/${threadId}`;
     }
 
-    getPluginsRoute() {
-        return `${this.urlVersion}/plugins`;
-    }
-
     getAppsProxyRoute() {
         return '/plugins/com.mattermost.apps';
-    }
-
-    getCallsRoute() {
-        return `/plugins/${Calls.PluginId}`;
     }
 
     doFetch = async (url: string, options: ClientOptions, returnDataOnly = true) => {

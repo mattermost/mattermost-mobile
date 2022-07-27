@@ -68,7 +68,7 @@ class CreateOrEditChannelScreen {
         if (fromChannelInfo) {
             await ChannelInfoScreen.setHeaderAction.tap();
         } else {
-            await ChannelScreen.introSetHeaderAction.tap();
+            await ChannelScreen.introSetHeaderOption.tap();
         }
 
         return this.toBeVisible();

@@ -27,8 +27,6 @@ const MutedBox = ({channelId, containerStyle, isMuted, showSnackBar = false, tes
         toggleMuteChannel(serverUrl, channelId, showSnackBar);
     }, [channelId, isMuted, serverUrl, showSnackBar]);
 
-    const muteActionTestId = isMuted ? `${testID}.unmute.action` : `${testID}.mute.action`;
-
     return (
         <OptionBox
             activeIconName='bell-off-outline'
@@ -37,7 +35,7 @@ const MutedBox = ({channelId, containerStyle, isMuted, showSnackBar = false, tes
             iconName='bell-outline'
             isActive={isMuted}
             onPress={handleOnPress}
-            testID={muteActionTestId}
+            testID={testID}
             text={intl.formatMessage({id: 'channel_info.muted', defaultMessage: 'Mute'})}
         />
     );

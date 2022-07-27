@@ -46,13 +46,13 @@ const ChannelActions = ({channelId, channelType, inModal = false, testID}: Props
             <FavoriteBox
                 channelId={channelId}
                 showSnackBar={!inModal}
-                testID={testID}
+                testID={`${testID}.favorite.action`}
             />
             <View style={styles.separator}/>
             <MutedBox
                 channelId={channelId}
                 showSnackBar={!inModal}
-                testID={testID}
+                testID={`${testID}.mute.action`}
             />
             <View style={styles.separator}/>
             {channelType && DIRECT_CHANNELS.includes(channelType) &&
