@@ -6,7 +6,10 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
 import OptionItem from '@components/option_item';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
+import {dismissBottomSheet} from '@screens/navigation';
+import {showSnackBar} from '@utils/snack_bar';
 
 type Props = {
     channelName?: string;
@@ -18,10 +21,10 @@ const CopyChannelLinkOption = ({channelName, teamName, testID}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
-    const onCopyLink = useCallback(() => {
+    const onCopyLink = useCallback(async () => {
         Clipboard.setString(`${serverUrl}/${teamName}/channels/${channelName}`);
-
-        // TODO: Maybe show a toast?
+        await dismissBottomSheet();
+        showSnackBar({barType: SNACK_BAR_TYPE.LINK_COPIED});
     }, [channelName, teamName, serverUrl]);
 
     return (
