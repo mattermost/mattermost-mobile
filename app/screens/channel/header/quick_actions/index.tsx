@@ -55,7 +55,10 @@ const ChannelQuickAction = ({channelId}: Props) => {
                 testID='channel.quick_actions.channel_info.action'
             />
             {callsEnabled &&
-                <CopyChannelLinkOption channelId={channelId}/>
+                <CopyChannelLinkOption
+                    channelId={channelId}
+                    showAsLabel={true}
+                />
             }
             <View style={styles.line}/>
             <LeaveChannelLabel
