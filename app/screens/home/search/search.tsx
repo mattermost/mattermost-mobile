@@ -54,7 +54,7 @@ const getSearchParams = (terms: string, filterValue?: FileFilter) => {
     const extensionTerms = fileExtensions ? ' ' + fileExtensions : '';
     return {
         terms: terms + extensionTerms,
-        is_or_search: true,
+        is_or_search: false,
     };
 };
 
