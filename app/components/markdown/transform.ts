@@ -160,6 +160,105 @@ export function highlightMentions(ast: Node, mentionKeys: UserMentionKey[]) {
     return ast;
 }
 
+const puncStart = /^[^\p{L}\d\s#]+/u;
+const puncEnd = /[^\p{L}\d\s]+$/u;
+
+export function parseSearchTerms(searchTerm: string): string[] {
+    let terms = [];
+
+    let termString = searchTerm;
+
+    while (termString) {
+        let captured;
+
+        // check for a quoted string
+        captured = (/^"([^"]*)"/).exec(termString);
+        if (captured) {
+            termString = termString.substring(captured[0].length);
+
+            if (captured[1].length > 0) {
+                terms.push(captured[1]);
+            }
+            continue;
+        }
+
+        // check for a search flag (and don't add it to terms)
+        captured = (/^-?(?:in|from|channel|on|before|after): ?\S+/).exec(termString);
+        if (captured) {
+            termString = termString.substring(captured[0].length);
+            continue;
+        }
+
+        // capture at mentions differently from the server so we can highlight them with the preceeding at sign
+        captured = (/^@[a-z0-9.-_]+\b/).exec(termString);
+        if (captured) {
+            termString = termString.substring(captured[0].length);
+
+            terms.push(captured[0]);
+            continue;
+        }
+
+        // capture any plain text up until the next quote or search flag
+        captured = (/^.+?(?=(?:\b|\B-)(?:in:|from:|channel:|on:|before:|after:)|"|$)/).exec(termString);
+        if (captured) {
+            termString = termString.substring(captured[0].length);
+
+            // break the text up into words based on how the server splits them in SqlPostStore.SearchPosts and then discard empty terms
+            terms.push(
+                ...captured[0].split(/[ <>+()~@]/).filter((term) => Boolean(term)),
+            );
+            continue;
+        }
+
+        // we should never reach this point since at least one of the regexes should match something in the remaining text
+        throw new Error(
+            'Infinite loop in search term parsing: "' + termString + '"',
+        );
+    }
+
+    // remove punctuation from each term
+    terms = terms.map((term) => {
+        term.replace(puncStart, '');
+        if (term.charAt(term.length - 1) !== '*') {
+            term.replace(puncEnd, '');
+        }
+        return term;
+    });
+
+    return terms;
+}
+
+function convertSearchTermToRegex(term: string): SearchPattern {
+    let pattern;
+
+    if (cjkPattern.test(term)) {
+        // term contains Chinese, Japanese, or Korean characters so don't mark word boundaries
+        pattern = '()(' + escapeRegex(term.replace(/\*/g, '')) + ')';
+    } else if ((/[^\s][*]$/).test(term)) {
+        pattern = '\\b()(' + escapeRegex(term.substring(0, term.length - 1)) + ')';
+    } else if (term.startsWith('@') || term.startsWith('#')) {
+        // needs special handling of the first boundary because a word boundary doesn't work before a symbol
+        pattern = '(\\W|^)(' + escapeRegex(term) + ')\\b';
+    } else {
+        pattern = '\\b()(' + escapeRegex(term) + ')\\b';
+    }
+
+    return {
+        pattern: new RegExp(pattern, 'gi'),
+        term,
+    };
+}
+
+export function searchTermsToPatterns(terms: string) {
+    const hasPhrases = (/"([^"]*)"/).test(terms || '');
+
+    const searchPatterns = parseSearchTerms(terms || '').map(convertSearchTermToRegex).sort((a, b) => {
+        return b.term.length - a.term.length;
+    });
+
+    return searchPatterns;
+}
+
 export function mentionKeysToPatterns(mentionKeys: UserMentionKey[]) {
     return mentionKeys.filter((mention) => mention.key.trim() !== '').map((mention) => {
         const flags = mention.caseSensitive ? '' : 'i';

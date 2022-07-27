@@ -8,6 +8,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {ITEM_HEIGHT} from '@app/components/option_item';
 import File from '@components/files/file';
+import {searchTermsToPatterns} from '@components/markdown/transform';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
@@ -30,6 +31,7 @@ import {HEADER_HEIGHT} from './file_options/header';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
+import type {SearchPattern} from '@typings/global/markdown';
 
 const styles = StyleSheet.create({
     container: {
@@ -71,6 +73,7 @@ const SearchResults = ({
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
     const [lastViewedIndex, setLastViewedIndex] = useState<number | undefined>(undefined);
+    const [searchPatterns, setSearchPatterns] = useState<SearchPattern[]>([]);
 
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
@@ -155,6 +158,15 @@ const SearchResults = ({
         }
     }, [canDownloadFiles, publicLinkEnabled]);
 
+    useEffect(() => {
+        // const patterns: SearchPattern[] = [];
+
+        const patterns = searchTermsToPatterns(searchValue);
+        setSearchPatterns(patterns);
+
+        // console.log('patterns', patterns);
+    }, [searchValue]);
+
     const renderItem = useCallback(({item}: ListRenderItemInfo<string|FileInfo | Post>) => {
         if (typeof item === 'string') {
             if (isDateLine(item)) {
@@ -174,6 +186,7 @@ const SearchResults = ({
                 <PostWithChannelInfo
                     location={Screens.SEARCH}
                     post={item}
+                    searchPatterns={searchPatterns}
                     testID='search_results.post_list'
                 />
             );
@@ -223,6 +236,7 @@ const SearchResults = ({
         canDownloadFiles,
         handlePreviewPress,
         publicLinkEnabled,
+        searchPatterns,
         isTablet,
         fileInfos.length > 1,
     ]);

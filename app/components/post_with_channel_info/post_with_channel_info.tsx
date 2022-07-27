@@ -9,10 +9,12 @@ import Post from '@components/post_list/post';
 import ChannelInfo from './channel_info';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type {SearchPattern} from '@typings/global/markdown';
 
 type Props = {
     isCRTEnabled: boolean;
     post: PostModel;
+    searchPatterns?: SearchPattern[];
     location: string;
     testID?: string;
 }
@@ -28,7 +30,7 @@ const styles = StyleSheet.create({
     },
 });
 
-function PostWithChannelInfo({isCRTEnabled, post, location, testID}: Props) {
+function PostWithChannelInfo({isCRTEnabled, post, location, searchPatterns, testID}: Props) {
     return (
         <View style={styles.container}>
             <ChannelInfo
@@ -41,6 +43,7 @@ function PostWithChannelInfo({isCRTEnabled, post, location, testID}: Props) {
                     post={post}
                     location={location}
                     highlightPinnedOrSaved={false}
+                    searchPatterns={searchPatterns}
                     skipPinnedHeader={true}
                     skipSavedHeader={true}
                     shouldRenderReplyButton={false}
