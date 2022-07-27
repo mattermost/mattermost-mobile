@@ -31,7 +31,6 @@ import {HEADER_HEIGHT} from './file_options/header';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
-import type {SearchPattern} from '@typings/global/markdown';
 
 const styles = StyleSheet.create({
     container: {
