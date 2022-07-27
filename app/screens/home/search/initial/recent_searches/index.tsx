@@ -1,32 +1,88 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
-import compose from 'lodash/fp/compose';
-import {of as of$} from 'rxjs';
-import {switchMap, distinctUntilChanged} from 'rxjs/operators';
+import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
+import {FlatList, Text, View} from 'react-native';
+import Animated from 'react-native-reanimated';
 
-import {observeTeam} from '@queries/servers/team';
+import {useTheme} from '@context/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
-import RecentSearches from './recent_searches';
+import RecentItem from './recent_item';
 
-import type {WithDatabaseArgs} from '@typings/database/database';
+import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
 
-type EnhanceProps = WithDatabaseArgs & {
-    teamId: string;
-}
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
-const enhance = withObservables(['teamId'], ({database, teamId}: EnhanceProps) => {
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        teamName: observeTeam(database, teamId).pipe(
-            switchMap((t) => of$(t?.displayName || '')),
-            distinctUntilChanged(),
-        ),
+        divider: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            height: 1,
+            marginVertical: 15,
+            marginHorizontal: 20,
+        },
+        title: {
+            paddingHorizontal: 20,
+            paddingVertical: 12,
+            color: theme.centerChannelColor,
+            ...typography('Heading', 300, 'SemiBold'),
+        },
     };
 });
 
-export default compose(
-    withDatabase,
-    enhance,
-)(RecentSearches);
+type Props = {
+    setRecentValue: (value: string) => void;
+    recentSearches: TeamSearchHistoryModel[];
+    teamName: string;
+}
+
+const RecentSearches = ({setRecentValue, recentSearches, teamName}: Props) => {
+    const theme = useTheme();
+    const {formatMessage} = useIntl();
+    const styles = getStyleFromTheme(theme);
+
+    const title = formatMessage({
+        id: 'smobile.search.recent_title',
+        defaultMessage: 'Recent searches in {teamName}',
+    }, {
+        teamName,
+    });
+
+    const renderRecentItem = useCallback(({item}) => {
+        return (
+            <RecentItem
+                item={item}
+                setRecentValue={setRecentValue}
+            />
+        );
+    }, [setRecentValue]);
+
+    const header = (
+        <>
+            <View style={styles.divider}/>
+            <Text
+                style={styles.title}
+                numberOfLines={2}
+            >
+                {title}
+            </Text>
+        </>
+    );
+
+    return (
+        <AnimatedFlatList
+            data={recentSearches}
+            keyboardShouldPersistTaps='always'
+            keyboardDismissMode='interactive'
+            ListHeaderComponent={header}
+            renderItem={renderRecentItem}
+            testID='search.recents_list'
+            removeClippedSubviews={true}
+        />
+    );
+};
+
+export default RecentSearches;

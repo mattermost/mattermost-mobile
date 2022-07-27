@@ -15,9 +15,10 @@ type Props = {
     setSearchValue: (value: string) => void;
     setTeamId: (value: string) => void;
     teamId: string;
+    teamName: string;
 }
 
-const Initial = ({setRecentValue, recentSearches, searchValue, teamId, setTeamId, setSearchValue}: Props) => {
+const Initial = ({setRecentValue, recentSearches, searchValue, teamId, teamName, setTeamId, setSearchValue}: Props) => {
     return (
         <>
             <Modifiers
@@ -30,7 +31,7 @@ const Initial = ({setRecentValue, recentSearches, searchValue, teamId, setTeamId
                 <RecentSearches
                     recentSearches={recentSearches}
                     setRecentValue={setRecentValue}
-                    teamId={teamId}
+                    teamName={teamName}
                 />
             }
         </>
