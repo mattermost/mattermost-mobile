@@ -92,11 +92,16 @@ const SearchScreen = ({teamId}: Props) => {
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight, hideHeader} = useCollapsibleHeader<FlatList>(true, onSnap);
 
+    const handleTextChange = useCallback((newValue: string) => {
+        setSearchValue(newValue);
+        setCursorPosition(newValue.length);
+    }, [setSearchValue, setCursorPosition]);
+
     const handleClearSearch = useCallback(() => {
         handleTextChange('');
         setLastSearchedValue('');
         setFilter(FileFilters.ALL);
-    }, []);
+    }, [handleTextChange]);
 
     const handleCancelSearch = useCallback(() => {
         handleClearSearch();
@@ -133,7 +138,7 @@ const SearchScreen = ({teamId}: Props) => {
     const handleRecentSearch = useCallback((text: string) => {
         handleTextChange(text);
         handleSearch(searchTeamId, text);
-    }, [handleSearch, searchTeamId]);
+    }, [handleSearch, handleTextChange, searchTeamId]);
 
     const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
         setLoading(true);
@@ -158,11 +163,6 @@ const SearchScreen = ({teamId}: Props) => {
             size='large'
         />
     ), [theme, scrollPaddingTop]);
-
-    const handleTextChange = useCallback((newValue: string) => {
-        setSearchValue(newValue);
-        setCursorPosition(newValue.length);
-    }, [setSearchValue, setCursorPosition]);
 
     const modifiersComponent = useMemo(() => (
         <>
