@@ -94,6 +94,8 @@ PODS:
   - OpenSSL-Universal (1.1.1100)
   - Permission-Camera (3.3.1):
     - RNPermissions
+  - Permission-Microphone (3.3.1):
+    - RNPermissions
   - Permission-PhotoLibrary (3.3.1):
     - RNPermissions
   - RCT-Folly (2021.06.28.00-v2):
@@ -359,6 +361,8 @@ PODS:
     - react-native-video/Video (= 5.2.0)
   - react-native-video/Video (5.2.0):
     - React-Core
+  - react-native-webrtc (1.75.3):
+    - React
   - react-native-webview (11.18.2):
     - React-Core
   - React-perflogger (0.68.2)
@@ -429,6 +433,8 @@ PODS:
   - ReactNativeART (1.2.0):
     - React
   - ReactNativeExceptionHandler (2.10.10):
+    - React-Core
+  - ReactNativeIncallManager (3.3.0):
     - React-Core
   - ReactNativeKeyboardTrackingView (5.7.0):
     - React
@@ -566,6 +572,7 @@ DEPENDENCIES:
   - libevent (~> 2.1.12)
   - OpenSSL-Universal (= 1.1.1100)
   - Permission-Camera (from `../node_modules/react-native-permissions/ios/Camera`)
+  - Permission-Microphone (from `../node_modules/react-native-permissions/ios/Microphone`)
   - Permission-PhotoLibrary (from `../node_modules/react-native-permissions/ios/PhotoLibrary`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
@@ -597,6 +604,7 @@ DEPENDENCIES:
   - "react-native-paste-input (from `../node_modules/@mattermost/react-native-paste-input`)"
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-video (from `../node_modules/react-native-video`)
+  - react-native-webrtc (from `../node_modules/react-native-webrtc`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
@@ -612,6 +620,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "ReactNativeART (from `../node_modules/@react-native-community/art`)"
   - ReactNativeExceptionHandler (from `../node_modules/react-native-exception-handler`)
+  - ReactNativeIncallManager (from `../node_modules/react-native-incall-manager`)
   - ReactNativeKeyboardTrackingView (from `../node_modules/react-native-keyboard-tracking-view`)
   - ReactNativeNavigation (from `../node_modules/react-native-navigation`)
   - "RNCClipboard (from `../node_modules/@react-native-community/clipboard`)"
@@ -685,6 +694,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/jail-monkey"
   Permission-Camera:
     :path: "../node_modules/react-native-permissions/ios/Camera"
+  Permission-Microphone:
+    :path: "../node_modules/react-native-permissions/ios/Microphone"
   Permission-PhotoLibrary:
     :path: "../node_modules/react-native-permissions/ios/PhotoLibrary"
   RCT-Folly:
@@ -743,6 +754,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-video:
     :path: "../node_modules/react-native-video"
+  react-native-webrtc:
+    :path: "../node_modules/react-native-webrtc"
   react-native-webview:
     :path: "../node_modules/react-native-webview"
   React-perflogger:
@@ -773,6 +786,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/art"
   ReactNativeExceptionHandler:
     :path: "../node_modules/react-native-exception-handler"
+  ReactNativeIncallManager:
+    :path: "../node_modules/react-native-incall-manager"
   ReactNativeKeyboardTrackingView:
     :path: "../node_modules/react-native-keyboard-tracking-view"
   ReactNativeNavigation:
@@ -857,6 +872,7 @@ SPEC CHECKSUMS:
   libwebp: 98a37e597e40bfdb4c911fc98f2c53d0b12d05fc
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   Permission-Camera: bae27a8503530770c35aadfecbb97ec71823382a
+  Permission-Microphone: 13922195a81b9d46d2df8050c225006eae126d49
   Permission-PhotoLibrary: ddb5a158725b29cb12e9e477e8a5f5151c66cc3c
   RCT-Folly: 4d8508a426467c48885f1151029bc15fa5d7b3b8
   RCTRequired: 3e917ea5377751094f38145fdece525aa90545a0
@@ -886,6 +902,7 @@ SPEC CHECKSUMS:
   react-native-paste-input: efbf0b08fa1673f0e3131da6ea01678c1bb8003e
   react-native-safe-area-context: ebf8c413eb8b5f7c392a036a315eb7b46b96845f
   react-native-video: a4c2635d0802f983594b7057e1bce8f442f0ad28
+  react-native-webrtc: 86d841823e66d68cc1f86712db1c2956056bf0c2
   react-native-webview: 8ec7ddf9eb4ddcd92b32cee7907efec19a9ec7cb
   React-perflogger: a18b4f0bd933b8b24ecf9f3c54f9bf65180f3fe6
   React-RCTActionSheet: 547fe42fdb4b6089598d79f8e1d855d7c23e2162
@@ -901,6 +918,7 @@ SPEC CHECKSUMS:
   ReactCommon: 095366164a276d91ea704ce53cb03825c487a3f2
   ReactNativeART: 78edc68dd4a1e675338cd0cd113319cf3a65f2ab
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
+  ReactNativeIncallManager: 642c22630caadff0a0619413aff4a9da08d63df9
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
   ReactNativeNavigation: 94979dd1572a3f093fc85d4599360530a1bed8c8
   RNCClipboard: 41d8d918092ae8e676f18adada19104fa3e68495
@@ -935,6 +953,6 @@ SPEC CHECKSUMS:
   Yoga: 99652481fcd320aefa4a7ef90095b95acd181952
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: d2731f6f5ef095481cc3a9332ef85c4369866d2b
+PODFILE CHECKSUM: 872e3e8209322408f2af28f478db4ad3ef313ea4
 
 COCOAPODS: 1.11.3

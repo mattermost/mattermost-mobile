@@ -214,6 +214,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.USER_PROFILE:
             screen = withServerDatabase(require('@screens/user_profile').default);
             break;
+        case Screens.CALL:
+            screen = withServerDatabase(require('@calls/screens/call_screen').default);
+            break;
     }
 
     if (screen) {

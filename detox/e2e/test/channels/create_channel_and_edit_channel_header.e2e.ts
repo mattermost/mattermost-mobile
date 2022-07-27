@@ -81,8 +81,8 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         await expect(ChannelScreen.headerTitle).toHaveText(displayName);
         await expect(ChannelScreen.introDisplayName).toHaveText(displayName);
 
-        // # Tap on set header option to edit the channel header
-        await ChannelScreen.introSetHeaderOption.tap();
+        // # Tap on set header action to edit the channel header
+        await ChannelScreen.introSetHeaderAction.tap();
 
         // * Verify channel header is correct
         await expect(CreateOrEditChannelScreen.headerInput).toHaveValue(header);
@@ -118,8 +118,8 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         await expect(ChannelScreen.headerTitle).toHaveText(displayName);
         await expect(ChannelScreen.introDisplayName).toHaveText(displayName);
 
-        // # Tap on set header option to edit the channel header
-        await ChannelScreen.introSetHeaderOption.tap();
+        // # Tap on set header action to edit the channel header
+        await ChannelScreen.introSetHeaderAction.tap();
 
         // * Verify channel header is correct
         await expect(CreateOrEditChannelScreen.headerInput).toHaveValue(header);
