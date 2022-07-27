@@ -7,8 +7,8 @@ import {View} from 'react-native';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import FormattedText from '@components/formatted_text';
-import {ITEM_HEIGHT} from '@components/menu_item';
 import {Screens} from '@constants';
+import {MENU_ITEM_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
@@ -124,7 +124,7 @@ const ThreadOptions = ({
             closeButtonId={THREAD_OPTIONS_BUTTON}
             componentId={Screens.THREAD_OPTIONS}
             initialSnapIndex={0}
-            snapPoints={[((options.length + 2) * ITEM_HEIGHT), 10]}
+            snapPoints={[((options.length + 2) * MENU_ITEM_HEIGHT), 10]}
             testID='thread_options'
         />
     );
