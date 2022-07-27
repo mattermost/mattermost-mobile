@@ -271,7 +271,6 @@ const SearchScreen = ({teamId}: Props) => {
                 onClear={handleClearSearch}
                 onCancel={handleCancelSearch}
                 defaultValue={searchValue}
-                value={searchValue}
             />
             <SafeAreaView
                 style={styles.flex}
