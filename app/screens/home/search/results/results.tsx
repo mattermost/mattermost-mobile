@@ -73,7 +73,6 @@ const SearchResults = ({
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
     const [lastViewedIndex, setLastViewedIndex] = useState<number | undefined>(undefined);
-    const [searchPatterns, setSearchPatterns] = useState<SearchPattern[]>([]);
 
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
@@ -158,11 +157,6 @@ const SearchResults = ({
         }
     }, [canDownloadFiles, publicLinkEnabled]);
 
-    useEffect(() => {
-        const patterns = searchTermsToPatterns(searchValue);
-        setSearchPatterns(patterns);
-    }, [searchValue]);
-
     const renderItem = useCallback(({item}: ListRenderItemInfo<string|FileInfo | Post>) => {
         if (typeof item === 'string') {
             if (isDateLine(item)) {
@@ -182,7 +176,7 @@ const SearchResults = ({
                 <PostWithChannelInfo
                     location={Screens.SEARCH}
                     post={item}
-                    searchPatterns={searchPatterns}
+                    searchPatterns={searchTermsToPatterns(searchValue)}
                     testID='search_results.post_list'
                 />
             );
@@ -232,7 +226,6 @@ const SearchResults = ({
         canDownloadFiles,
         handlePreviewPress,
         publicLinkEnabled,
-        searchPatterns,
         isTablet,
         fileInfos.length > 1,
     ]);
