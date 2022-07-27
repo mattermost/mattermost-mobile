@@ -26,7 +26,7 @@ const Initial = ({setRecentValue, recentSearches, searchValue, teamId, setTeamId
                 setTeamId={setTeamId}
                 teamId={teamId}
             />
-            {Boolean(recentSearches?.length) &&
+            {Boolean(recentSearches.length) &&
                 <RecentSearches
                     recentSearches={recentSearches}
                     setRecentValue={setRecentValue}
