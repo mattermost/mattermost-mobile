@@ -9,7 +9,7 @@ import {muteMyself, unmuteMyself} from '@calls/actions';
 import CallAvatar from '@calls/components/call_avatar';
 import {CurrentCall, VoiceEventData} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
-import {Events, WebsocketEvents} from '@constants';
+import {Events, Screens, WebsocketEvents} from '@constants';
 import {CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {goToScreen} from '@screens/navigation';
@@ -123,7 +123,7 @@ const CurrentCallBar = ({
                 visible: Platform.OS === 'android',
             },
         };
-        goToScreen('Call', 'Call', {}, options);
+        goToScreen(Screens.CALL, 'Call', {}, options);
     }, []);
 
     const myParticipant = currentCall?.participants[currentCall.myUserId];
