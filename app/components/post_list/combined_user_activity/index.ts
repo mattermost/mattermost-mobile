@@ -25,7 +25,9 @@ const withCombinedPosts = withObservables(['postId'], ({database, postId}: WithD
     );
 
     const postIds = getPostIdsForCombinedUserActivityPost(postId);
-    const posts = queryPostsById(database, postIds).observe();
+
+    // Columns observed: `props` is used by `usernamesById`. `message` is used by generateCombinedPost.
+    const posts = queryPostsById(database, postIds).observeWithColumns(['props', 'message']);
     const post = posts.pipe(map((ps) => generateCombinedPost(postId, ps)));
     const canDelete = combineLatest([posts, currentUser]).pipe(
         switchMap(([ps, u]) => (ps.length ? observePermissionForPost(database, ps[0], u, Permissions.DELETE_OTHERS_POSTS, false) : of$(false))),
@@ -33,7 +35,7 @@ const withCombinedPosts = withObservables(['postId'], ({database, postId}: WithD
 
     const usernamesById = post.pipe(
         switchMap(
-            (p) => queryUsersByIdsOrUsernames(database, p.props.user_activity.allUserIds, p.props.user_activity.allUsernames).observe().
+            (p) => queryUsersByIdsOrUsernames(database, p.props.user_activity.allUserIds, p.props.user_activity.allUsernames).observeWithColumns(['username']).
                 pipe(
                     // eslint-disable-next-line max-nested-callbacks
                     switchMap((users) => {
