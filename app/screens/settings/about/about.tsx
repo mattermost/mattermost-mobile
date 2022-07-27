@@ -31,6 +31,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         logoContainer: {
             alignItems: 'center',
             paddingHorizontal: 20,
+            marginTop: 20,
         },
         lineStyles: {
             width: '100%',
@@ -40,9 +41,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         leftHeading: {
             ...typography('Body', 200, 'SemiBold'),
             marginRight: 8,
+            color: theme.centerChannelColor,
         },
         rightHeading: {
             ...typography('Body', 200, 'Regular'),
+            color: theme.centerChannelColor,
         },
         infoContainer: {
             flexDirection: 'column',
@@ -169,7 +172,7 @@ const About = ({config, license}: AboutProps) => {
                 <CompassIcon
                     color={theme.centerChannelColor}
                     name='mattermost'
-                    size={120}
+                    size={88}
                     testID='about.logo'
                 />
                 <Title

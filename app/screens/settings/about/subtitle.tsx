@@ -23,7 +23,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 type SubtitleProps = {
     config: ClientConfig;
 }
-
 const Subtitle = ({config}: SubtitleProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);

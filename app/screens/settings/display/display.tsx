@@ -3,6 +3,7 @@
 
 import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
+import {StyleSheet} from 'react-native';
 
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
@@ -38,6 +39,12 @@ const TIMEZONE_FORMAT = [
         defaultMessage: 'Manual',
     },
 ];
+
+const styles = StyleSheet.create({
+    title: {
+        textTransform: 'capitalize',
+    },
+});
 
 type DisplayProps = {
     currentUser: UserModel;
@@ -76,9 +83,10 @@ const Display = ({currentUser, hasMilitaryTimeFormat, isThemeSwitchingEnabled, i
                 <SettingItem
                     optionName='theme'
                     onPress={goToThemeSettings}
-                    rightComponent={
+                    rightComponent={Boolean(theme.type) &&
                         <SettingRowLabel
-                            text={theme.type || ''}
+                            text={theme.type!}
+                            textStyle={styles.title}
                         />
                     }
                 />

@@ -25,14 +25,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         containerStyle: {
             paddingLeft: 8,
-            marginTop: 20,
+            marginTop: 12,
         },
         helpGroup: {
             width: '91%',
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             height: 1,
             alignSelf: 'center',
-            marginTop: 20,
+
+            // marginTop: 20,
         },
     };
 });

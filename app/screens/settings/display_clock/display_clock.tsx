@@ -10,7 +10,6 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {t} from '@i18n';
 import {popTopScreen, setButtons} from '@screens/navigation';
 
 import {getSaveButton} from '../config';
@@ -18,11 +17,6 @@ import SettingBlock from '../setting_block';
 import SettingContainer from '../setting_container';
 import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
-
-const footer = {
-    id: t('settings_display.clock.preferTime'),
-    defaultMessage: 'Select how you prefer time displayed.',
-};
 
 const CLOCK_TYPE = {
     NORMAL: 'NORMAL',
@@ -79,11 +73,11 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
         <SettingContainer>
             <SettingBlock
                 disableHeader={true}
-                footerText={footer}
             >
                 <SettingOption
                     action={onSelectClockPreference}
-                    label={intl.formatMessage({id: 'settings_display.clock.normal', defaultMessage: '12-hour clock (example: 4:00 PM)'})}
+                    label={intl.formatMessage({id: 'settings_display.clock.standard', defaultMessage: '12-hour clock'})}
+                    description={intl.formatMessage({id: 'settings_display.clock.normal.desc', defaultMessage: 'Example: 4:00 PM'})}
                     selected={!isMilitaryTimeFormat}
                     testID='clock_display_settings.normal_clock.action'
                     type='select'
@@ -92,12 +86,14 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
                 <SettingSeparator/>
                 <SettingOption
                     action={onSelectClockPreference}
-                    label={intl.formatMessage({id: 'settings_display.clock.military', defaultMessage: '24-hour clock (example: 16:00)'})}
+                    label={intl.formatMessage({id: 'settings_display.clock.mz', defaultMessage: '24-hour clock'})}
+                    description={intl.formatMessage({id: 'settings_display.clock.mz.desc', defaultMessage: 'Example: 16:00'})}
                     selected={isMilitaryTimeFormat}
                     testID='clock_display_settings.military_clock.action'
                     type='select'
                     value={CLOCK_TYPE.MILITARY}
                 />
+                <SettingSeparator/>
             </SettingBlock>
         </SettingContainer>
     );

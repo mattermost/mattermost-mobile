@@ -12,8 +12,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         blockHeader: {
             color: theme.centerChannelColor,
             ...typography('Heading', 300, 'SemiBold'),
-            marginBottom: 16,
-            marginLeft: 18,
+            marginBottom: 8,
+            marginLeft: 20,
+            marginTop: 12,
+        },
+        contentContainerStyle: {
+            marginBottom: 0,
         },
     };
 });
@@ -30,6 +34,7 @@ const SettingBlock = ({headerText, ...props}: SettingBlockProps) => {
         <Block
             headerText={headerText}
             headerStyles={styles.blockHeader}
+            containerStyles={styles.contentContainerStyle}
             {...props}
         >
 

@@ -18,7 +18,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingHorizontal: 36,
         },
         spacerTop: {
-            marginTop: 12,
+            marginTop: 8,
         },
         spacerBottom: {
             marginBottom: 8,
@@ -30,7 +30,6 @@ type TitleProps = {
     config: ClientConfig;
     license: ClientLicense;
 }
-
 const Title = ({config, license}: TitleProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);

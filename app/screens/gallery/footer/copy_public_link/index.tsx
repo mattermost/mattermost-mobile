@@ -6,6 +6,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet} from 'react-native';
 import {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchPublicLink} from '@actions/remote/file';
 import Toast from '@components/toast';
@@ -29,13 +30,14 @@ const styles = StyleSheet.create({
 const CopyPublicLink = ({item, setAction}: Props) => {
     const {formatMessage} = useIntl();
     const serverUrl = useServerUrl();
+    const insets = useSafeAreaInsets();
     const [showToast, setShowToast] = useState<boolean|undefined>();
     const [error, setError] = useState('');
     const mounted = useRef(false);
 
     const animatedStyle = useAnimatedStyle(() => ({
         position: 'absolute',
-        bottom: GALLERY_FOOTER_HEIGHT + 8,
+        bottom: GALLERY_FOOTER_HEIGHT + 8 + insets.bottom,
         opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
     }));
 
