@@ -18,7 +18,7 @@ type Props = {
     channelId: string;
     channelType?: string;
     inModal?: boolean;
-    dismissChannelInfo?: () => void;
+    dismissChannelInfo: () => void;
     testID?: string;
 }
 

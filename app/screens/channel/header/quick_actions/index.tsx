@@ -9,6 +9,7 @@ import InfoBox from '@components/channel_actions/info_box';
 import LeaveChannelLabel from '@components/channel_actions/leave_channel_label';
 import {QUICK_OPTIONS_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
+import {dismissBottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
@@ -41,6 +42,7 @@ const ChannelQuickAction = ({channelId}: Props) => {
             <View style={styles.wrapper}>
                 <ChannelActions
                     channelId={channelId}
+                    dismissChannelInfo={dismissBottomSheet}
                     testID='channel.quick_actions'
                 />
             </View>

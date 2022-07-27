@@ -19,7 +19,7 @@ export interface Props {
     channel?: ChannelModel;
     currentCall: CurrentCall | null;
     currentCallChannelName: string;
-    dismissChannelInfo?: () => void;
+    dismissChannelInfo: () => void;
 }
 
 const ChannelInfoStartButton = ({channel, currentCall, currentCallChannelName, dismissChannelInfo}: Props) => {
@@ -37,7 +37,7 @@ const ChannelInfoStartButton = ({channel, currentCall, currentCallChannelName, d
             leaveAndJoinWithAlert(intl, serverUrl, channel?.id || '', currentCallChannelName, channel?.displayName || '', confirmToJoin, !callInCurrentChannel);
         }
 
-        dismissChannelInfo?.();
+        dismissChannelInfo();
     };
     const [tryJoin, msgPostfix] = useTryCallsFunction(toggleJoinLeave);
 
@@ -48,11 +48,14 @@ const ChannelInfoStartButton = ({channel, currentCall, currentCallChannelName, d
     return (
         <OptionBox
             onPress={preventDoubleTap(tryJoin)}
-            text={(callInCurrentChannel ? joinText : startText) + msgPostfix}
-            iconName='phone-in-talk'
-            activeText={leaveText}
-            activeIconName='phone-outline'
-            isActive={alreadyInCall}
+            text={startText + msgPostfix}
+            iconName='phone-outline'
+            activeText={joinText + msgPostfix}
+            activeIconName='phone-in-talk'
+            isActive={callInCurrentChannel}
+            destructiveText={leaveText}
+            destructiveIconName={'phone-hangup'}
+            isDestructive={alreadyInCall}
             testID='channel_info.options.join_start_call.option'
         />
     );
