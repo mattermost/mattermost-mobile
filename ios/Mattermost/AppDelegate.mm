@@ -9,8 +9,6 @@
 
 #import <RNKeychain/RNKeychainManager.h>
 #import <ReactNativeNavigation/ReactNativeNavigation.h>
-#import <UploadAttachments/UploadAttachments-Swift.h>
-#import <UploadAttachments/MattermostBucket.h>
 #import <UserNotifications/UserNotifications.h>
 #import <RNHWKeyboardEvent.h>
 
@@ -40,11 +38,10 @@ NSString* const NOTIFICATION_MESSAGE_ACTION = @"message";
 NSString* const NOTIFICATION_CLEAR_ACTION = @"clear";
 NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
 NSString* const NOTIFICATION_TEST_ACTION = @"test";
-MattermostBucket* bucket = nil;
 
 -(void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)(void))completionHandler {
   os_log(OS_LOG_DEFAULT, "Mattermost will attach session from handleEventsForBackgroundURLSession!! identifier=%{public}@", identifier);
-  [[UploadSession shared] attachSessionWithIdentifier:identifier completionHandler:completionHandler];
+  [[GekidouWrapper default] attachSession:identifier completionHandler:completionHandler];
   os_log(OS_LOG_DEFAULT, "Mattermost session ATTACHED from handleEventsForBackgroundURLSession!! identifier=%{public}@", identifier);
 }
 
@@ -61,10 +58,6 @@ MattermostBucket* bucket = nil;
 {
   RCTAppSetupPrepareApp(application);
 
-  if (bucket == nil) {
-    bucket = [[MattermostBucket alloc] init];
-  }
-  
   if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
   {
     _allowRotation = YES;
@@ -176,19 +169,19 @@ MattermostBucket* bucket = nil;
 }
 
 -(void)applicationDidBecomeActive:(UIApplication *)application {
-  [bucket setPreference:@"ApplicationIsForeground" value:@"true"];
+  [[GekidouWrapper default] setPreference:@"true" forKey:@"ApplicationIsForeground"];
 }
 
 -(void)applicationWillResignActive:(UIApplication *)application {
-  [bucket setPreference:@"ApplicationIsForeground" value:@"false"];
+  [[GekidouWrapper default] setPreference:@"false" forKey:@"ApplicationIsForeground"];
 }
 
 -(void)applicationDidEnterBackground:(UIApplication *)application {
-  [bucket setPreference:@"ApplicationIsForeground" value:@"false"];
+  [[GekidouWrapper default] setPreference:@"false" forKey:@"ApplicationIsForeground"];
 }
 
 -(void)applicationWillTerminate:(UIApplication *)application {
-  [bucket setPreference:@"ApplicationIsForeground" value:@"false"];
+  [[GekidouWrapper default] setPreference:@"false" forKey:@"ApplicationIsForeground"];
 }
 
 - (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window {
