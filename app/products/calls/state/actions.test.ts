@@ -6,6 +6,15 @@ import assert from 'assert';
 import {act, renderHook} from '@testing-library/react-hooks';
 
 import {
+    setCallsState,
+    setChannelsWithCalls,
+    setCurrentCall,
+    useCallsConfig,
+    useCallsState,
+    useChannelsWithCalls,
+    useCurrentCall,
+} from '@calls/state';
+import {
     setCalls,
     userJoinedCall,
     userLeftCall,
@@ -19,18 +28,12 @@ import {
     myselfLeftCall,
     setChannelEnabled,
     setScreenShareURL,
-    setSpeakerPhone, setConfig, setPluginEnabled,
+    setSpeakerPhone,
+    setConfig,
+    setPluginEnabled,
 } from '@calls/state/actions';
-import {useCallsConfig} from '@calls/state/calls_config';
-import {exportedForInternalUse as callsStateTesting, useCallsState} from '@calls/state/calls_state';
-import {exportedForInternalUse as channelsWithCallsTesting} from '@calls/state/channels_with_calls';
-import {exportedForInternalUse as currentCallTesting, useCurrentCall} from '@calls/state/current_call';
 
 import {CallsState, CurrentCall, DefaultCallsConfig, DefaultCallsState} from '../types/calls';
-
-const {setCallsState} = callsStateTesting;
-const {setChannelsWithCalls, useChannelsWithCalls} = channelsWithCallsTesting;
-const {setCurrentCall} = currentCallTesting;
 
 const call1 = {
     participants: {

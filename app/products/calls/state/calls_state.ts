@@ -20,7 +20,7 @@ export const getCallsState = (serverUrl: string) => {
     return getCallsStateSubject(serverUrl).value;
 };
 
-const setCallsState = (serverUrl: string, state: CallsState) => {
+export const setCallsState = (serverUrl: string, state: CallsState) => {
     getCallsStateSubject(serverUrl).next(state);
 };
 
@@ -44,8 +44,4 @@ export const useCallsState = (serverUrl: string) => {
     }, []);
 
     return state;
-};
-
-export const exportedForInternalUse = {
-    setCallsState,
 };

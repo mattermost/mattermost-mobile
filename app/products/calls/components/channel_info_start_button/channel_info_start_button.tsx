@@ -7,7 +7,7 @@ import {useIntl} from 'react-intl';
 import {leaveCall} from '@calls/actions';
 import leaveAndJoinWithAlert from '@calls/components/leave_and_join_alert';
 import {useTryCallsFunction} from '@calls/hooks';
-import {useCallsState} from '@calls/state/calls_state';
+import {useCallsState} from '@calls/state';
 import {CurrentCall} from '@calls/types/calls';
 import OptionBox from '@components/option_box';
 import {useServerUrl} from '@context/server';
