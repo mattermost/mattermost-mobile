@@ -20,7 +20,7 @@ import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes, TabType} from '@utils/search';
 
-import Intial from './initial';
+import Initial from './initial';
 import Results from './results';
 import Header from './results/header';
 
@@ -156,14 +156,14 @@ const SearchScreen = ({teamId}: Props) => {
     ), [theme, scrollPaddingTop]);
 
     const initialComponent = useMemo(() => (
-        <Intial
+        <Initial
             searchValue={searchValue}
             setRecentValue={handleRecentSearch}
             setSearchValue={setSearchValue}
             setTeamId={setSearchTeamId}
             teamId={searchTeamId}
         />
-    ), [setSearchValue, setSearchTeamId, searchValue, searchTeamId, handleRecentSearch]);
+    ), [searchValue, searchTeamId, handleRecentSearch]);
 
     const resultsComponent = useMemo(() => (
         <Results
