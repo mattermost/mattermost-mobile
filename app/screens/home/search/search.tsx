@@ -34,7 +34,8 @@ const emptyPostResults: string[] = [];
 const emptyChannelIds: string[] = [];
 
 const dummyData = [1];
-const AutocompletePaddingTop = 2;
+
+const AutocompletePaddingTop = -4;
 const AutocompleteZindex = 11;
 
 type Props = {
@@ -273,13 +274,13 @@ const SearchScreen = ({teamId}: Props) => {
                 onCancel={handleCancelSearch}
                 defaultValue={searchValue}
             />
+            <Animated.View style={[top, {zIndex: AutocompleteZindex}]}>
+                {autocomplete}
+            </Animated.View>
             <SafeAreaView
                 style={styles.flex}
                 edges={EDGES}
             >
-                <Animated.View style={[top, {zIndex: AutocompleteZindex}]}>
-                    {autocomplete}
-                </Animated.View>
                 <Animated.View style={animated}>
                     <Animated.View style={top}>
                         <RoundedHeaderContext/>
