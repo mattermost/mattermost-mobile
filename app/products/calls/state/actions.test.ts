@@ -28,7 +28,9 @@ import {
     myselfLeftCall,
     setChannelEnabled,
     setScreenShareURL,
-    setSpeakerPhone, setConfig, setPluginEnabled,
+    setSpeakerPhone,
+    setConfig,
+    setPluginEnabled,
 } from '@calls/state/actions';
 
 import {CallsState, CurrentCall, DefaultCallsConfig, DefaultCallsState} from '../types/calls';

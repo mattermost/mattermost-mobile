@@ -8,8 +8,7 @@ import {useIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {loadConfig} from '@calls/actions';
-import {useCallsConfig} from '@calls/state/calls_config';
-import {useCallsState} from '@calls/state/calls_state';
+import {useCallsConfig, useCallsState} from '@calls/state';
 import {useServerUrl} from '@context/server';
 import NetworkManager from '@managers/network_manager';
 

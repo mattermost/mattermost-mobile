@@ -5,7 +5,7 @@ import React from 'react';
 import {View} from 'react-native';
 
 import EnableDisableCallsOption from '@calls/components/channel_info_enable_option/enable_disable_calls_option';
-import {useCallsConfig} from '@calls/state/calls_config';
+import {useCallsConfig} from '@calls/state';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 
