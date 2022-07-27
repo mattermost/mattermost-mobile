@@ -66,8 +66,6 @@ const AccountOptions = ({user, enableCustomUserStatuses, isCustomStatusExpirySup
             <View style={styles.container}>
                 <UserPresence
                     currentUser={user}
-                    style={styles.menuLabel}
-                    theme={theme}
                 />
                 {enableCustomUserStatuses &&
                 <CustomStatus
@@ -78,7 +76,6 @@ const AccountOptions = ({user, enableCustomUserStatuses, isCustomStatusExpirySup
                 <View style={styles.divider}/>
                 <YourProfile
                     isTablet={isTablet}
-                    style={styles.menuLabel}
                     theme={theme}
                 />
                 {/* <SavedMessages
