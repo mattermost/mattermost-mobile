@@ -20,12 +20,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             flexDirection: 'column',
             padding: TILE_PADDING,
-            marginTop: 8,
         },
         imageWrapper: {
             position: 'relative',
             alignItems: 'flex-start',
-            marginBottom: 12,
+            marginBottom: 8,
         },
         thumbnail: {
             resizeMode: 'stretch',
@@ -39,6 +38,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         label: {
             color: theme.centerChannelColor,
             ...typography('Body', 200),
+            textTransform: 'capitalize',
         },
         tilesContainer: {
             marginBottom: 30,
@@ -46,10 +46,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             flexWrap: 'wrap',
             backgroundColor: theme.centerChannelBg,
-            borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
     };
 });
@@ -99,8 +95,8 @@ export const ThemeTile = ({
         >
             <View style={[styles.imageWrapper, layoutStyle.thumbnail]}>
                 <ThemeThumbnail
-                    borderColorBase={selected ? activeTheme.sidebarTextActiveBorder : activeTheme.centerChannelBg}
-                    borderColorMix={selected ? activeTheme.sidebarTextActiveBorder : changeOpacity(activeTheme.centerChannelColor, 0.16)}
+                    borderColorBase={selected ? activeTheme.buttonBg : activeTheme.centerChannelBg}
+                    borderColorMix={selected ? activeTheme.buttonBg : changeOpacity(activeTheme.centerChannelColor, 0.16)}
                     theme={theme}
                     width={layoutStyle.thumbnail.width}
                 />
@@ -120,29 +116,36 @@ export const ThemeTile = ({
 type ThemeTilesProps = {
     allowedThemeKeys: string[];
     onThemeChange: (v: string) => void;
+    selectedTheme: string | undefined;
 }
-export const ThemeTiles = ({allowedThemeKeys, onThemeChange}: ThemeTilesProps) => {
+export const ThemeTiles = ({allowedThemeKeys, onThemeChange, selectedTheme}: ThemeTilesProps) => {
     const theme = useTheme();
 
     const styles = getStyleSheet(theme);
     return (
         <View style={styles.tilesContainer}>
             {
-                allowedThemeKeys.map((themeKey: string) => (
-                    <ThemeTile
-                        key={themeKey}
-                        label={(
-                            <Text style={styles.label}>
-                                {themeKey}
-                            </Text>
-                        )}
-                        action={onThemeChange}
-                        actionValue={themeKey}
-                        selected={theme.type?.toLowerCase() === themeKey.toLowerCase()}
-                        theme={Preferences.THEMES[themeKey]}
-                        activeTheme={theme}
-                    />
-                ))
+                allowedThemeKeys.map((themeKey: string) => {
+                    if (!Preferences.THEMES[themeKey] || !selectedTheme) {
+                        return null;
+                    }
+
+                    return (
+                        <ThemeTile
+                            key={themeKey}
+                            label={(
+                                <Text style={styles.label}>
+                                    {themeKey}
+                                </Text>
+                            )}
+                            action={onThemeChange}
+                            actionValue={themeKey}
+                            selected={selectedTheme?.toLowerCase() === themeKey.toLowerCase()}
+                            theme={Preferences.THEMES[themeKey]}
+                            activeTheme={theme}
+                        />
+                    );
+                })
             }
         </View>
     );

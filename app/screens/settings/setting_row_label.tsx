@@ -2,15 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Platform, Text} from 'react-native';
+import {Platform, StyleProp, Text, TextStyle} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-type SettingRowLabelProps = {
-    text: string;
-}
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -27,13 +23,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const SettingRowLabel = ({text}: SettingRowLabelProps) => {
+type SettingRowLabelProps = {
+    text: string;
+    textStyle?: StyleProp<TextStyle>;
+}
+const SettingRowLabel = ({text, textStyle}: SettingRowLabelProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     return (
         <Text
-            style={styles.rightLabel}
+            style={[styles.rightLabel, textStyle]}
         >
             {text}
         </Text>
