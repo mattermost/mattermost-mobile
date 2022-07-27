@@ -4,10 +4,8 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import compose from 'lodash/fp/compose';
-import {switchMap} from 'rxjs/operators';
 
 import {observeCurrentTeamId} from '@queries/servers/system';
-import {queryTeamSearchHistoryByTeamId} from '@queries/servers/team';
 
 import SearchScreen from './search';
 
@@ -17,8 +15,6 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentTeamId = observeCurrentTeamId(database);
     return {
         teamId: currentTeamId,
-        recentSearches: currentTeamId.pipe(
-            switchMap((teamId) => queryTeamSearchHistoryByTeamId(database, teamId).observe())),
     };
 });
 

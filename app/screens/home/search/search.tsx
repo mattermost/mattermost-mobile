@@ -24,8 +24,6 @@ import Intial from './initial';
 import Results from './results';
 import Header from './results/header';
 
-import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
-
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
@@ -37,7 +35,6 @@ const dummyData = [1];
 
 type Props = {
     teamId: string;
-    recentSearches: TeamSearchHistoryModel[];
 }
 
 const styles = StyleSheet.create({
@@ -62,7 +59,7 @@ const getSearchParams = (terms: string, filterValue?: FileFilter) => {
 
 const searchScreenIndex = 1;
 
-const SearchScreen = ({teamId, recentSearches}: Props) => {
+const SearchScreen = ({teamId}: Props) => {
     const nav = useNavigation();
     const isFocused = useIsFocused();
     const intl = useIntl();
@@ -76,7 +73,6 @@ const SearchScreen = ({teamId, recentSearches}: Props) => {
     const [searchTeamId, setSearchTeamId] = useState<string>(teamId);
     const [selectedTab, setSelectedTab] = useState<TabType>(TabTypes.MESSAGES);
     const [filter, setFilter] = useState<FileFilter>(FileFilters.ALL);
-    const [recents, setRecents] = useState<TeamSearchHistoryModel[]>(recentSearches);
     const [showResults, setShowResults] = useState(false);
 
     const [loading, setLoading] = useState(false);
@@ -124,7 +120,7 @@ const SearchScreen = ({teamId, recentSearches}: Props) => {
 
         setShowResults(true);
         setLoading(false);
-    }, [handleClearSearch, setRecents]);
+    }, [handleClearSearch]);
 
     const onSubmit = useCallback(() => {
         handleSearch(searchTeamId, searchValue);
@@ -167,7 +163,7 @@ const SearchScreen = ({teamId, recentSearches}: Props) => {
             setTeamId={setSearchTeamId}
             setRecentValue={handleRecentSearch}
         />
-    ), [searchValue, searchTeamId, handleRecentSearch, recents]);
+    ), [setSearchValue, setSearchTeamId, searchValue, searchTeamId, handleRecentSearch]);
 
     const resultsComponent = useMemo(() => (
         <Results
