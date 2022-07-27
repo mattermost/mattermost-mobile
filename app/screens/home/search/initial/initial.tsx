@@ -3,8 +3,8 @@
 
 import React from 'react';
 
-import Modifiers from '../modifiers';
-import RecentSearches from '../recent_searches';
+import Modifiers from './modifiers';
+import RecentSearches from './recent_searches';
 
 import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
 

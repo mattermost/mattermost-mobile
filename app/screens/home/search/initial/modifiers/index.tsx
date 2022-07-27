@@ -11,7 +11,7 @@ import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import TeamPickerIcon from '../team_picker_icon';
+import TeamPickerIcon from '../../team_picker_icon';
 
 import Modifier, {ModifierItem} from './modifier';
 import ShowMoreButton from './show_more';
