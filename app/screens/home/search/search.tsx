@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useIsFocused, useNavigation} from '@react-navigation/native';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
@@ -16,14 +16,11 @@ import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import DatabaseManager from '@database/manager';
 import {useCollapsibleHeader} from '@hooks/header';
-import {queryTeamSearchHistoryByTeamId} from '@queries/servers/team';
 import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes, TabType} from '@utils/search';
 
-import Modifiers from './modifiers';
-import RecentSearches from './recent_searches';
+import Intial from './initial';
 import Results from './results';
 import Header from './results/header';
 
@@ -53,14 +50,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
 });
-
-const getRecentSearches = async (serverUrl: string, teamId: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return [];
-    }
-    return queryTeamSearchHistoryByTeamId(database, teamId).fetch();
-};
 
 const getSearchParams = (terms: string, filterValue?: FileFilter) => {
     const fileExtensions = filterFileExtensions(filterValue);
@@ -109,18 +98,6 @@ const SearchScreen = ({teamId, recentSearches}: Props) => {
         setFilter(FileFilters.ALL);
     }, []);
 
-    const updateRecents = useCallback(async () => {
-        const newRecents = await getRecentSearches(serverUrl, searchTeamId);
-        setRecents(newRecents);
-    }, [searchTeamId, serverUrl]);
-
-    useEffect(() => {
-        const getTeamRecents = async () => {
-            updateRecents();
-        };
-        getTeamRecents();
-    }, [searchTeamId]);
-
     const handleCancelSearch = useCallback(() => {
         handleClearSearch();
         setShowResults(false);
@@ -145,7 +122,6 @@ const SearchScreen = ({teamId, recentSearches}: Props) => {
         setPostIds(postResults?.order?.length ? postResults.order : emptyPostResults);
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
 
-        updateRecents();
         setShowResults(true);
         setLoading(false);
     }, [handleClearSearch, setRecents]);
@@ -183,23 +159,14 @@ const SearchScreen = ({teamId, recentSearches}: Props) => {
         />
     ), [theme, scrollPaddingTop]);
 
-    const searchComponent = useMemo(() => (
-        <>
-            <Modifiers
-                setSearchValue={setSearchValue}
-                searchValue={searchValue}
-                teamId={searchTeamId}
-                setTeamId={setSearchTeamId}
-            />
-            {Boolean(recents?.length) &&
-                <RecentSearches
-                    onRemoveSearch={updateRecents}
-                    recentSearches={recents}
-                    setRecentValue={handleRecentSearch}
-                    teamId={searchTeamId}
-                />
-            }
-        </>
+    const initialComponent = useMemo(() => (
+        <Intial
+            setSearchValue={setSearchValue}
+            searchValue={searchValue}
+            teamId={searchTeamId}
+            setTeamId={setSearchTeamId}
+            setRecentValue={handleRecentSearch}
+        />
     ), [searchValue, searchTeamId, handleRecentSearch, recents]);
 
     const resultsComponent = useMemo(() => (
@@ -218,12 +185,12 @@ const SearchScreen = ({teamId, recentSearches}: Props) => {
             return loadingComponent;
         }
         if (!showResults) {
-            return searchComponent;
+            return initialComponent;
         }
         return resultsComponent;
     }, [
         loading && loadingComponent,
-        !loading && !showResults && searchComponent,
+        !loading && !showResults && initialComponent,
         !loading && showResults && resultsComponent,
     ]);
 
