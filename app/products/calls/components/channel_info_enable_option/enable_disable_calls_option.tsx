@@ -5,19 +5,19 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 
 import {enableChannelCalls} from '@calls/actions';
-import {useTryCallsFunction} from '@calls/hooks';
+import {useCallsEnabled, useTryCallsFunction} from '@calls/hooks';
 import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {preventDoubleTap} from '@utils/tap';
 
 interface Props {
     channelId: string;
-    enabled: boolean;
 }
 
-const EnableDisableCallsOption = ({enabled, channelId}: Props) => {
+const EnableDisableCallsOption = ({channelId}: Props) => {
     const {formatMessage} = useIntl();
     const serverUrl = useServerUrl();
+    const enabled = useCallsEnabled(channelId);
 
     const toggleCalls = async () => {
         enableChannelCalls(serverUrl, channelId, !enabled);
