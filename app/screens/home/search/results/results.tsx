@@ -159,12 +159,8 @@ const SearchResults = ({
     }, [canDownloadFiles, publicLinkEnabled]);
 
     useEffect(() => {
-        // const patterns: SearchPattern[] = [];
-
         const patterns = searchTermsToPatterns(searchValue);
         setSearchPatterns(patterns);
-
-        // console.log('patterns', patterns);
     }, [searchValue]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<string|FileInfo | Post>) => {
