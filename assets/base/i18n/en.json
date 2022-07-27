@@ -600,7 +600,7 @@
   "notification_settings.push_threads.replies": "Thread replies",
   "notification_settings.pushNotification.all_new_messages": "All new messages",
   "notification_settings.pushNotification.disabled_long": "Push notifications for mobile devices have been disabled by your System Administrator.",
-  "notification_settings.pushNotification.mentions.only": "Mentions, direct messages only(default)",
+  "notification_settings.pushNotification.mentions_only": "Mentions, direct messages only (default)",
   "notification_settings.pushNotification.nothing": "Nothing",
   "notification_settings.send_notification.about": "Notify me about...",
   "notification_settings.threads_mentions": "Mentions in threads",
