@@ -20,8 +20,7 @@ import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes, TabType} from '@utils/search';
 
-import Modifiers from './modifiers';
-import RecentSearches from './recent_searches';
+import Initial from './initial';
 import Results from './results';
 import Header from './results/header';
 
@@ -156,19 +155,14 @@ const SearchScreen = ({teamId}: Props) => {
         />
     ), [theme, scrollPaddingTop]);
 
-    const modifiersComponent = useMemo(() => (
-        <>
-            <Modifiers
-                setSearchValue={setSearchValue}
-                searchValue={searchValue}
-                teamId={searchTeamId}
-                setTeamId={setSearchTeamId}
-            />
-            <RecentSearches
-                setRecentValue={handleRecentSearch}
-                teamId={searchTeamId}
-            />
-        </>
+    const initialComponent = useMemo(() => (
+        <Initial
+            searchValue={searchValue}
+            setRecentValue={handleRecentSearch}
+            setSearchValue={setSearchValue}
+            setTeamId={setSearchTeamId}
+            teamId={searchTeamId}
+        />
     ), [searchValue, searchTeamId, handleRecentSearch]);
 
     const resultsComponent = useMemo(() => (
@@ -187,12 +181,12 @@ const SearchScreen = ({teamId}: Props) => {
             return loadingComponent;
         }
         if (!showResults) {
-            return modifiersComponent;
+            return initialComponent;
         }
         return resultsComponent;
     }, [
         loading && loadingComponent,
-        !loading && !showResults && modifiersComponent,
+        !loading && !showResults && initialComponent,
         !loading && showResults && resultsComponent,
     ]);
 
