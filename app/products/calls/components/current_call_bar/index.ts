@@ -8,7 +8,7 @@ import {switchMap} from 'rxjs/operators';
 import {observeCurrentCall} from '@calls/state';
 import DatabaseManager from '@database/manager';
 import {observeChannel} from '@queries/servers/channel';
-import {observeTeammateNameDisplay, observeUsersById} from '@queries/servers/user';
+import {observeTeammateNameDisplay, queryUsersById} from '@queries/servers/user';
 
 import CurrentCallBar from './current_call_bar';
 
@@ -25,7 +25,7 @@ const enhanced = withObservables([], () => {
         switchMap((c) => of$(c?.displayName || '')),
     );
     const userModelsDict = combineLatest([database, currentCall]).pipe(
-        switchMap(([db, call]) => (db && call ? observeUsersById(db, Object.keys(call.participants)) : of$([]))),
+        switchMap(([db, call]) => (db && call ? queryUsersById(db, Object.keys(call.participants)).observeWithColumns(['nickname', 'username', 'firstname', 'lastname', 'first_name', 'last_name']) : of$([]))),
         switchMap((ps) => of$(
             ps.reduce((accum, cur) => { // eslint-disable-line max-nested-callbacks
                 accum[cur.id] = cur;

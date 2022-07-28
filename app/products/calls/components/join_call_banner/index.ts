@@ -7,9 +7,9 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import JoinCallBanner from '@calls/components/join_call_banner/join_call_banner';
-import {observeCallsState, observeChannelsWithCalls, observeCurrentCall} from '@calls/state';
+import {observeCallsState, observeCurrentCall} from '@calls/state';
 import {observeChannel} from '@queries/servers/channel';
-import {observeUsersById} from '@queries/servers/user';
+import {queryUsersById} from '@queries/servers/user';
 import {WithDatabaseArgs} from '@typings/database/database';
 
 type OwnProps = {
@@ -21,27 +21,26 @@ const enhanced = withObservables(['serverUrl', 'channelId'], ({serverUrl, channe
     const displayName = observeChannel(database, channelId).pipe(
         switchMap((c) => of$(c?.displayName)),
     );
-    const currentCall = observeCurrentCall();
-    const participants = currentCall.pipe(
-        switchMap((call) => (call ? observeUsersById(database, Object.keys(call.participants)) : of$([]))),
+    const callsState = observeCallsState(serverUrl);
+    const participants = callsState.pipe(
+        switchMap((state) => of$(state.calls[channelId])),
+        switchMap((call) => (call ? queryUsersById(database, Object.keys(call.participants)).observeWithColumns(['lastPictureUpdate', 'last_picture_update']) : of$([]))),
     );
+    const currentCall = observeCurrentCall();
+    const inACall = currentCall.pipe(switchMap((call) => of$(Boolean(call))));
     const currentCallChannelName = currentCall.pipe(
         switchMap((call) => observeChannel(database, call ? call.channelId : '')),
         switchMap((channel) => of$(channel ? channel.displayName : '')),
     );
-    const isCallInCurrentChannel = observeChannelsWithCalls(serverUrl).pipe(
-        switchMap((calls) => of$(Boolean(calls[channelId]))),
-    );
-    const channelCallStartTime = observeCallsState(serverUrl).pipe(
-        switchMap((callsState) => of$(callsState.calls[channelId]?.startTime || 0)),
+    const channelCallStartTime = callsState.pipe(
+        switchMap((cs) => of$(cs.calls[channelId]?.startTime || 0)),
     );
 
     return {
         displayName,
-        currentCall,
         participants,
+        inACall,
         currentCallChannelName,
-        isCallInCurrentChannel,
         channelCallStartTime,
     };
 });

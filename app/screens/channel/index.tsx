@@ -26,15 +26,20 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
     const isCallInCurrentChannel = combineLatest([channelId, observeChannelsWithCalls(serverUrl)]).pipe(
         switchMap(([id, calls]) => of$(Boolean(calls[id]))),
     );
-    const isInCall = observeCurrentCall().pipe(
+    const currentCall = observeCurrentCall();
+    const isInACall = currentCall.pipe(
         switchMap((call) => of$(Boolean(call))),
+    );
+    const isInCurrentChannelCall = combineLatest([channelId, currentCall]).pipe(
+        switchMap(([id, call]) => of$(id === call?.channelId)),
     );
 
     return {
         channelId,
         isCallsPluginEnabled,
         isCallInCurrentChannel,
-        isInCall,
+        isInACall,
+        isInCurrentChannelCall,
     };
 });
 

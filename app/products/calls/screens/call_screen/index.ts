@@ -9,7 +9,9 @@ import CallScreen from '@calls/screens/call_screen/call_screen';
 import {observeCurrentCall} from '@calls/state';
 import {CallParticipant} from '@calls/types/calls';
 import DatabaseManager from '@database/manager';
-import {observeTeammateNameDisplay, observeUsersById} from '@queries/servers/user';
+import {observeTeammateNameDisplay, queryUsersById} from '@queries/servers/user';
+
+import type UserModel from '@typings/database/models/servers/user';
 
 const enhanced = withObservables([], () => {
     const currentCall = observeCurrentCall();
@@ -18,9 +20,9 @@ const enhanced = withObservables([], () => {
         switchMap((url) => of$(DatabaseManager.serverDatabases[url]?.database)),
     );
     const participantsDict = combineLatest([database, currentCall]).pipe(
-        switchMap(([db, call]) => (db && call ? observeUsersById(db, Object.keys(call.participants)) : of$([])).pipe(
+        switchMap(([db, call]) => (db && call ? queryUsersById(db, Object.keys(call.participants)).observeWithColumns(['nickname', 'username', 'firstname', 'lastname', 'first_name', 'last_name', 'lastPictureUpdate', 'last_picture_update']) : of$([])).pipe(
             // eslint-disable-next-line max-nested-callbacks
-            switchMap((ps) => of$(ps.reduce((accum, cur) => {
+            switchMap((ps: UserModel[]) => of$(ps.reduce((accum, cur) => {
                 accum[cur.id] = {
                     ...call!.participants[cur.id],
                     userModel: cur,

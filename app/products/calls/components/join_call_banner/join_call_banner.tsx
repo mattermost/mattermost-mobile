@@ -6,7 +6,6 @@ import {useIntl} from 'react-intl';
 import {View, Text, Pressable} from 'react-native';
 
 import leaveAndJoinWithAlert from '@calls/components/leave_and_join_alert';
-import {CurrentCall} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
 import UserAvatarsStack from '@components/user_avatars_stack';
@@ -21,10 +20,9 @@ type Props = {
     channelId: string;
     serverUrl: string;
     displayName: string;
-    currentCall: CurrentCall | null;
+    inACall: boolean;
     participants: UserModel[];
     currentCallChannelName: string;
-    isCallInCurrentChannel: boolean;
     channelCallStartTime: number;
 }
 
@@ -73,26 +71,14 @@ const JoinCallBanner = ({
     channelId,
     serverUrl,
     displayName,
-    currentCall,
     participants,
+    inACall,
     currentCallChannelName,
-    isCallInCurrentChannel,
     channelCallStartTime,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
-
-    if (!isCallInCurrentChannel) {
-        return null;
-    }
-
-    const confirmToJoin = Boolean(currentCall && currentCall.channelId !== channelId);
-    const alreadyInTheCall = Boolean(currentCall && currentCall.channelId === channelId);
-
-    if (alreadyInTheCall) {
-        return null;
-    }
 
     // TODO: implement join_call_banner/more_messages spacing: https://mattermost.atlassian.net/browse/MM-45744
     // useEffect(() => {
@@ -103,7 +89,7 @@ const JoinCallBanner = ({
     // }, [props.call, props.alreadyInTheCall]);
 
     const joinHandler = async () => {
-        leaveAndJoinWithAlert(intl, serverUrl, channelId, currentCallChannelName, displayName, confirmToJoin, false);
+        leaveAndJoinWithAlert(intl, serverUrl, channelId, currentCallChannelName, displayName, inACall, false);
     };
 
     return (

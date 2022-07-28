@@ -30,7 +30,8 @@ type ChannelProps = {
     componentId?: string;
     isCallsPluginEnabled: boolean;
     isCallInCurrentChannel: boolean;
-    isInCall: boolean;
+    isInACall: boolean;
+    isInCurrentChannelCall: boolean;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -41,7 +42,15 @@ const styles = StyleSheet.create({
     },
 });
 
-const Channel = ({serverUrl, channelId, componentId, isCallsPluginEnabled, isCallInCurrentChannel, isInCall}: ChannelProps) => {
+const Channel = ({
+    serverUrl,
+    channelId,
+    componentId,
+    isCallsPluginEnabled,
+    isCallInCurrentChannel,
+    isInACall,
+    isInCurrentChannelCall,
+}: ChannelProps) => {
     const appState = useAppState();
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
@@ -103,16 +112,17 @@ const Channel = ({serverUrl, channelId, componentId, isCallsPluginEnabled, isCal
     }, [channelId]);
 
     let callsComponents: JSX.Element | null = null;
-    if (isCallsPluginEnabled && (isCallInCurrentChannel || isInCall)) {
+    const showJoinCallBanner = isCallInCurrentChannel && !isInCurrentChannelCall;
+    if (isCallsPluginEnabled && (showJoinCallBanner || isInACall)) {
         callsComponents = (
             <FloatingCallContainer>
-                {isCallInCurrentChannel &&
+                {showJoinCallBanner &&
                     <JoinCallBanner
                         serverUrl={serverUrl}
                         channelId={channelId}
                     />
                 }
-                {isInCall && <CurrentCallBar/>}
+                {isInACall && <CurrentCallBar/>}
             </FloatingCallContainer>
         );
     }
