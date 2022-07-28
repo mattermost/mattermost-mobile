@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import ClientCalls, {ClientCallsMix} from '@calls/client/rest';
+import ClientPlugins, {ClientPluginsMix} from '@client/rest/plugins';
 import mix from '@utils/mix';
 
 import ClientApps, {ClientAppsMix} from './apps';
@@ -36,7 +38,9 @@ interface Client extends ClientBase,
     ClientTeamsMix,
     ClientThreadsMix,
     ClientTosMix,
-    ClientUsersMix
+    ClientUsersMix,
+    ClientCallsMix,
+    ClientPluginsMix
 {}
 
 class Client extends mix(ClientBase).with(
@@ -54,6 +58,8 @@ class Client extends mix(ClientBase).with(
     ClientThreads,
     ClientTos,
     ClientUsers,
+    ClientCalls,
+    ClientPlugins,
 ) {
     // eslint-disable-next-line no-useless-constructor
     constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string) {

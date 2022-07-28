@@ -47,6 +47,7 @@ const ChannelQuickAction = ({channelId}: Props) => {
             <InfoBox
                 channelId={channelId}
                 showAsLabel={true}
+                testID='channel.quick_actions.channel_info.action'
             />
             <View style={styles.line}/>
             <LeaveChannelLabel

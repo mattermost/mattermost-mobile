@@ -34,6 +34,9 @@ const enhance = withObservables([], ({database, postId, teamName}: OwnProps) => 
         channel: post.pipe(
             switchMap((p) => (p ? p.channel.observe() : of$(undefined))),
         ),
+        rootId: post.pipe(
+            switchMap((p) => of$(p?.rootId)),
+        ),
         isTeamMember: team.pipe(
             switchMap((t) => (t ? queryMyTeamsByIds(database, [t.id]).observe() : of$(undefined))),
             switchMap((ms) => of$(Boolean(ms?.[0]))),

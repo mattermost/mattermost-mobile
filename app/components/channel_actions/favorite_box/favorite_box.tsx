@@ -27,6 +27,8 @@ const FavoriteBox = ({channelId, containerStyle, isFavorited, showSnackBar = fal
         toggleFavoriteChannel(serverUrl, channelId, showSnackBar);
     }, [serverUrl, channelId, showSnackBar]);
 
+    const favoriteActionTestId = isFavorited ? `${testID}.unfavorite.action` : `${testID}.favorite.action`;
+
     return (
         <OptionBox
             activeIconName='star'
@@ -35,7 +37,7 @@ const FavoriteBox = ({channelId, containerStyle, isFavorited, showSnackBar = fal
             iconName='star-outline'
             isActive={isFavorited}
             onPress={handleOnPress}
-            testID={testID}
+            testID={favoriteActionTestId}
             text={intl.formatMessage({id: 'channel_info.favorite', defaultMessage: 'Favorite'})}
         />
     );

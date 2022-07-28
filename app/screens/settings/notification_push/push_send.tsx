@@ -56,7 +56,7 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
                     <SettingSeparator/>
                     <SettingOption
                         action={setMobilePushPref}
-                        label={intl.formatMessage({id: 'notification_settings.pushNotification.mentions.only', defaultMessage: 'Mentions, direct messages only(default)'})}
+                        label={intl.formatMessage({id: 'notification_settings.pushNotification.mentions_only', defaultMessage: 'Mentions, direct messages only (default)'})}
                         selected={pushStatus === 'mention'}
                         testID='notification_settings.pushNotification.onlyMentions'
                         type='select'
@@ -71,6 +71,7 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
                         type='select'
                         value='none'
                     />
+                    <SettingSeparator/>
                 </>
             }
             {!sendPushNotifications &&

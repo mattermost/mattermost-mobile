@@ -105,7 +105,6 @@ extension Network {
         } catch {
             
         }
-        
     }
     
     public func fetchAndStoreDataForPushNotification(_ notification: UNMutableNotificationContent, withContentHandler contentHandler: ((UNNotificationContent) -> Void)?) {

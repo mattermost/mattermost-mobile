@@ -24,7 +24,7 @@ type Props = WithDatabaseArgs & {
 const enhanced = withObservables(['forceQueryAfterAppState', 'rootPost'], ({database, rootPost}: Props) => {
     return {
         isCRTEnabled: observeIsCRTEnabled(database),
-        lastViewedAt: observeMyChannel(database, rootPost.channelId).pipe(
+        channelLastViewedAt: observeMyChannel(database, rootPost.channelId).pipe(
             switchMap((myChannel) => of$(myChannel?.viewedAt)),
         ),
         posts: queryPostsInThread(database, rootPost.id, true, true).observeWithColumns(['earliest', 'latest']).pipe(
