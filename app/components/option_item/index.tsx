@@ -12,14 +12,18 @@ import {typography} from '@utils/typography';
 
 import RadioItem, {RadioItemProps} from './radio_item';
 
-const OptionType = {
+const TouchableOptionTypes = {
     ARROW: 'arrow',
     DEFAULT: 'default',
-    NONE: 'none',
     RADIO: 'radio',
     REMOVE: 'remove',
     SELECT: 'select',
+};
+
+const OptionType = {
+    NONE: 'none',
     TOGGLE: 'toggle',
+    ...TouchableOptionTypes,
 } as const;
 
 type OptionType = typeof OptionType[keyof typeof OptionType];
@@ -265,11 +269,7 @@ const OptionItem = ({
         </View>
     );
 
-    if (type === OptionType.ARROW ||
-        type === OptionType.DEFAULT ||
-        type === OptionType.RADIO ||
-        type === OptionType.REMOVE ||
-        type === OptionType.SELECT) {
+    if (Object.values(TouchableOptionTypes).includes(type)) {
         return (
             <TouchableOpacity onPress={onPress}>
                 {component}
