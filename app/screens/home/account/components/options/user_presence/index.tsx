@@ -43,6 +43,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
 const {OUT_OF_OFFICE, OFFLINE, AWAY, ONLINE, DND} = General;
 
 const UserStatus = ({currentUser}: Props) => {

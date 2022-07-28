@@ -19,6 +19,7 @@ type Props = {
 const styles = StyleSheet.create({
     spacer: {
         marginLeft: 16,
+        marginTop: 4,
     },
 });
 

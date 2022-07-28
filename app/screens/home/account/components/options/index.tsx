@@ -78,15 +78,7 @@ const AccountOptions = ({user, enableCustomUserStatuses, isCustomStatusExpirySup
                     isTablet={isTablet}
                     theme={theme}
                 />
-                {/* <SavedMessages
-                    isTablet={isTablet}
-                    style={styles.menuLabel}
-                    theme={theme}
-                /> */}
-                <Settings
-                    isTablet={isTablet}
-                    style={styles.menuLabel}
-                />
+                <Settings/>
                 <View style={styles.divider}/>
                 <Logout
                     style={styles.menuLabel}
