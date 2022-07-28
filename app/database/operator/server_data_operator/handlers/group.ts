@@ -26,7 +26,6 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
       * handleGroups: Handler responsible for the Create/Update operations occurring on the Group table from the 'Server' schema
       *
       * @param {HandleGroupArgs}
-      * @throws DataOperatorException
       * @returns {Promise<GroupModel[]>}
       */
     handleGroups = async ({groups, prepareRecordsOnly = true}: HandleGroupArgs): Promise<GroupModel[]> => {
@@ -52,7 +51,6 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
      * handleGroupMembershipsForMember: Handler responsible for the Create/Update operations occurring on the GroupMembership table from the 'Server' schema
      *
      * @param {HandleGroupMembershipForMemberArgs}
-     * @throws DataOperatorException
      * @returns {Promise<GroupMembershipModel[]>}
      */
     handleGroupMembershipsForMember = async ({userId, groups, prepareRecordsOnly = true}: HandleGroupMembershipForMemberArgs): Promise<GroupMembershipModel[]> => {
@@ -110,7 +108,6 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
      * handleGroupTeamsForTeam: Handler responsible for the Create/Update operations occurring on the GroupTeam table from the 'Server' schema
      *
      * @param {HandleGroupTeamsForTeamArgs}
-     * @throws DataOperatorException
      * @returns {Promise<GroupTeamModel[]>}
      */
     handleGroupTeamsForTeam = async ({teamId, groups, prepareRecordsOnly = true}: HandleGroupTeamsForTeamArgs): Promise<GroupTeamModel[]> => {
