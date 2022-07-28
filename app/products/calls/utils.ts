@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {IntlShape} from 'react-intl';
+import {Alert} from 'react-native';
+
 import {CallParticipant} from '@calls/types/calls';
 import {Post} from '@constants';
 import Calls from '@constants/calls';
@@ -87,4 +90,17 @@ export function idsAreEqual(a: string[], b: string[]) {
         }
     }
     return true;
+}
+
+export function errorAlert(error: string, intl: IntlShape) {
+    Alert.alert(
+        intl.formatMessage({
+            id: 'mobile.calls_error_title',
+            defaultMessage: 'Error',
+        }),
+        intl.formatMessage({
+            id: 'mobile.calls_error_message',
+            defaultMessage: 'Error: {error}',
+        }, {error}),
+    );
 }

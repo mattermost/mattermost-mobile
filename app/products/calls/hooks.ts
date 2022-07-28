@@ -7,35 +7,51 @@ import {useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
+import {errorAlert} from '@calls/utils';
+import {Client} from '@client/rest';
+import ClientError from '@client/rest/error';
 import {useServerUrl} from '@context/server';
 import NetworkManager from '@managers/network_manager';
 
 export const useTryCallsFunction = (fn: () => void) => {
-    const {formatMessage} = useIntl();
+    const intl = useIntl();
     const serverUrl = useServerUrl();
-    const client = NetworkManager.getClient(serverUrl);
     const [msgPostfix, setMsgPostfix] = useState('');
+    const [clientError, setClientError] = useState('');
 
+    let client: Client | undefined;
+    if (!clientError) {
+        try {
+            client = NetworkManager.getClient(serverUrl);
+        } catch (error) {
+            setClientError((error as ClientError).message);
+        }
+    }
     const tryFn = async () => {
-        if (await client.getEnabled()) {
+        if (client && await client.getEnabled()) {
             setMsgPostfix('');
             fn();
             return;
         }
 
-        const title = formatMessage({
+        if (clientError) {
+            errorAlert(clientError, intl);
+            return;
+        }
+
+        const title = intl.formatMessage({
             id: 'mobile.calls_not_available_title',
             defaultMessage: 'Calls is not enabled',
         });
-        const message = formatMessage({
+        const message = intl.formatMessage({
             id: 'mobile.calls_not_available_msg',
             defaultMessage: 'Please contact your system administrator to enable the feature.',
         });
-        const ok = formatMessage({
+        const ok = intl.formatMessage({
             id: 'mobile.calls_ok',
             defaultMessage: 'OK',
         });
-        const notAvailable = formatMessage({
+        const notAvailable = intl.formatMessage({
             id: 'mobile.calls_not_available_option',
             defaultMessage: '(Not Available)',
         });

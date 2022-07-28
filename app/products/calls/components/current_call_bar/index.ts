@@ -39,7 +39,7 @@ const enhanced = withObservables([], () => {
         distinctUntilChanged((prev, curr) => idsAreEqual(prev, curr)),
     );
     const userModelsDict = combineLatest([database, participantIds]).pipe(
-        switchMap(([db, ids]) => (db && ids.length > 0 ? queryUsersById(db, ids).observeWithColumns(['nickname', 'username', 'firstname', 'lastname', 'first_name', 'last_name']) : of$([]))),
+        switchMap(([db, ids]) => (db && ids.length > 0 ? queryUsersById(db, ids).observeWithColumns(['nickname', 'username', 'first_name', 'last_name']) : of$([]))),
         switchMap((ps) => of$(arrayToDic(ps))),
     );
     const teammateNameDisplay = database.pipe(

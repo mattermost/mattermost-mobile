@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
+import {useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity, Pressable, Platform, DeviceEventEmitter} from 'react-native';
 import {Options} from 'react-native-navigation';
 
@@ -86,8 +87,10 @@ const CurrentCallBar = ({
     teammateNameDisplay,
 }: Props) => {
     const theme = useTheme();
-    const isCurrentCall = Boolean(currentCall);
+    const {formatMessage} = useIntl();
     const [speaker, setSpeaker] = useState<string | null>(null);
+
+    const isCurrentCall = Boolean(currentCall);
     const handleVoiceOn = (data: VoiceEventData) => {
         if (data.channelId === currentCall?.channelId) {
             setSpeaker(data.userId);
@@ -124,7 +127,8 @@ const CurrentCallBar = ({
                 visible: Platform.OS === 'android',
             },
         };
-        goToScreen(Screens.CALL, 'Call', {}, options);
+        const title = formatMessage({id: 'mobile.calls_call_screen', defaultMessage: 'Call'});
+        goToScreen(Screens.CALL, title, {}, options);
     }, []);
 
     const myParticipant = currentCall?.participants[currentCall.myUserId];
