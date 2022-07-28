@@ -44,6 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         userInfo: {
             flex: 1,
+            paddingLeft: 10,
         },
         speakingUser: {
             color: theme.sidebarText,

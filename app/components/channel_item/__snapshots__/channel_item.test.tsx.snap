@@ -226,12 +226,30 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
       name="phone-in-talk"
       size={16}
       style={
-        Object {
-          "color": "#ffffff",
-          "flex": 1,
-          "marginRight": 20,
-          "textAlign": "right",
-        }
+        Array [
+          Object {
+            "fontFamily": "OpenSans",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "lineHeight": 24,
+          },
+          Object {
+            "color": "rgba(255,255,255,0.72)",
+            "marginTop": -1,
+            "paddingLeft": 12,
+            "paddingRight": 20,
+          },
+          false,
+          null,
+          null,
+          false,
+          false,
+          Object {
+            "flex": 1,
+            "marginRight": 20,
+            "textAlign": "right",
+          },
+        ]
       }
     />
   </View>

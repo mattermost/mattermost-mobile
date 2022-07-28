@@ -3,7 +3,7 @@
 
 import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import CallScreen from '@calls/screens/call_screen/call_screen';
 import {observeCurrentCall} from '@calls/state';
@@ -17,6 +17,7 @@ const enhanced = withObservables([], () => {
     const currentCall = observeCurrentCall();
     const database = currentCall.pipe(
         switchMap((call) => of$(call ? call.serverUrl : '')),
+        distinctUntilChanged(),
         switchMap((url) => of$(DatabaseManager.serverDatabases[url]?.database)),
     );
     const participantsDict = combineLatest([database, currentCall]).pipe(

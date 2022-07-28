@@ -68,3 +68,23 @@ export function isSupportedServerCalls(serverVersion?: string) {
 export function isCallsCustomMessage(post: PostModel | Post): boolean {
     return Boolean(post.type && post.type?.startsWith(Post.POST_TYPES.CUSTOM_CALLS));
 }
+
+export function idsAreEqual(a: string[], b: string[]) {
+    if (a.length !== b.length) {
+        return false;
+    }
+
+    // We can assume ids are unique
+    // Doing a quick search indicated objects are tuned better than Map or Set
+    const obj = a.reduce((prev, cur) => {
+        prev[cur] = true;
+        return prev;
+    }, {} as Record<string, boolean>);
+
+    for (let i = 0; i < b.length; i++) {
+        if (!obj.hasOwnProperty(b[i])) {
+            return false;
+        }
+    }
+    return true;
+}

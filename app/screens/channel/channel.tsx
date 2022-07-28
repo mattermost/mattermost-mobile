@@ -32,6 +32,7 @@ type ChannelProps = {
     isCallInCurrentChannel: boolean;
     isInACall: boolean;
     isInCurrentChannelCall: boolean;
+    isCallsEnabledInChannel: boolean;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -50,6 +51,7 @@ const Channel = ({
     isCallInCurrentChannel,
     isInACall,
     isInCurrentChannelCall,
+    isCallsEnabledInChannel,
 }: ChannelProps) => {
     const appState = useAppState();
     const isTablet = useIsTablet();
@@ -138,6 +140,7 @@ const Channel = ({
                 <ChannelHeader
                     channelId={channelId}
                     componentId={componentId}
+                    callsEnabled={isCallsEnabledInChannel}
                 />
                 {shouldRender &&
                 <>

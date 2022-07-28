@@ -4,7 +4,6 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import {useCallsEnabled} from '@calls/hooks';
 import ChannelActions from '@components/channel_actions';
 import CopyChannelLinkOption from '@components/channel_actions/copy_channel_link_option';
 import InfoBox from '@components/channel_actions/info_box';
@@ -16,6 +15,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     channelId: string;
+    callsEnabled: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -35,10 +35,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ChannelQuickAction = ({channelId}: Props) => {
+const ChannelQuickAction = ({channelId, callsEnabled}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const callsEnabled = useCallsEnabled(channelId);
 
     return (
         <View style={styles.container}>
@@ -46,6 +45,7 @@ const ChannelQuickAction = ({channelId}: Props) => {
                 <ChannelActions
                     channelId={channelId}
                     dismissChannelInfo={dismissBottomSheet}
+                    callsEnabled={callsEnabled}
                     testID='channel.quick_actions'
                 />
             </View>

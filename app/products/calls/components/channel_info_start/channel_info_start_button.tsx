@@ -7,34 +7,37 @@ import {useIntl} from 'react-intl';
 import {leaveCall} from '@calls/actions';
 import leaveAndJoinWithAlert from '@calls/components/leave_and_join_alert';
 import {useTryCallsFunction} from '@calls/hooks';
-import {useCallsState} from '@calls/state';
-import {CurrentCall} from '@calls/types/calls';
 import OptionBox from '@components/option_box';
-import {useServerUrl} from '@context/server';
 import {preventDoubleTap} from '@utils/tap';
 
-import type ChannelModel from '@typings/database/models/servers/channel';
-
 export interface Props {
-    channel?: ChannelModel;
-    currentCall: CurrentCall | null;
+    serverUrl: string;
+    displayName: string;
+    channelId: string;
+    isACallInCurrentChannel: boolean;
+    confirmToJoin: boolean;
+    alreadyInCall: boolean;
     currentCallChannelName: string;
     dismissChannelInfo: () => void;
 }
 
-const ChannelInfoStartButton = ({channel, currentCall, currentCallChannelName, dismissChannelInfo}: Props) => {
+const ChannelInfoStartButton = ({
+    serverUrl,
+    displayName,
+    channelId,
+    isACallInCurrentChannel,
+    confirmToJoin,
+    alreadyInCall,
+    currentCallChannelName,
+    dismissChannelInfo,
+}: Props) => {
     const intl = useIntl();
-    const serverUrl = useServerUrl();
-    const callsState = useCallsState(serverUrl);
 
-    const callInCurrentChannel = Boolean(channel ? callsState.calls[channel.id] : false);
-    const alreadyInCall = Boolean(currentCall && currentCall.channelId === channel?.id);
-    const confirmToJoin = Boolean(currentCall && currentCall.channelId !== channel?.id);
     const toggleJoinLeave = () => {
         if (alreadyInCall) {
             leaveCall();
         } else {
-            leaveAndJoinWithAlert(intl, serverUrl, channel?.id || '', currentCallChannelName, channel?.displayName || '', confirmToJoin, !callInCurrentChannel);
+            leaveAndJoinWithAlert(intl, serverUrl, channelId, currentCallChannelName, displayName, confirmToJoin, !isACallInCurrentChannel);
         }
 
         dismissChannelInfo();
@@ -52,7 +55,7 @@ const ChannelInfoStartButton = ({channel, currentCall, currentCallChannelName, d
             iconName='phone-outline'
             activeText={joinText + msgPostfix}
             activeIconName='phone-in-talk'
-            isActive={callInCurrentChannel}
+            isActive={isACallInCurrentChannel}
             destructiveText={leaveText}
             destructiveIconName={'phone-hangup'}
             isDestructive={alreadyInCall}

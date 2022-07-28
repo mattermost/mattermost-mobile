@@ -36,6 +36,7 @@ type ChannelProps = {
     memberCount?: number;
     searchTerm: string;
     teamId: string;
+    callsEnabled: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -63,7 +64,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const ChannelHeader = ({
     channelId, channelType, componentId, customStatus, displayName,
     isCustomStatusExpired, isOwnDirectMessage, memberCount,
-    searchTerm, teamId,
+    searchTerm, teamId, callsEnabled,
 }: ChannelProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -124,20 +125,26 @@ const ChannelHeader = ({
             return;
         }
 
+        // When calls is enabled, we need space to move the "Copy Link" from a button to an option
+        const height = QUICK_OPTIONS_HEIGHT + (callsEnabled ? 48 : 0);
+
         const renderContent = () => {
             return (
-                <QuickActions channelId={channelId}/>
+                <QuickActions
+                    channelId={channelId}
+                    callsEnabled={callsEnabled}
+                />
             );
         };
 
         bottomSheet({
             title: '',
             renderContent,
-            snapPoints: [QUICK_OPTIONS_HEIGHT, 10],
+            snapPoints: [height, 10],
             theme,
             closeButtonId: 'close-channel-quick-actions',
         });
-    }, [channelId, channelType, isTablet, onTitlePress, theme]);
+    }, [channelId, channelType, isTablet, onTitlePress, theme, callsEnabled]);
 
     const rightButtons: HeaderRightButton[] = useMemo(() => ([
 

@@ -3,7 +3,6 @@
 
 import React from 'react';
 
-import {useCallsEnabled} from '@calls/hooks';
 import CopyChannelLinkOption from '@components/channel_actions/copy_channel_link_option';
 import {General} from '@constants';
 
@@ -16,11 +15,10 @@ import PinnedMessages from './pinned_messages';
 type Props = {
     channelId: string;
     type?: ChannelType;
+    callsEnabled: boolean;
 }
 
-const Options = ({channelId, type}: Props) => {
-    const callsEnabled = useCallsEnabled(channelId);
-
+const Options = ({channelId, type, callsEnabled}: Props) => {
     return (
         <>
             {type !== General.DM_CHANNEL &&

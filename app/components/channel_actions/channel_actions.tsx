@@ -4,14 +4,14 @@
 import React, {useCallback} from 'react';
 import {StyleSheet, View} from 'react-native';
 
-import ChannelInfoStartButton from '@calls/components/channel_info_start_button';
-import {useCallsEnabled} from '@calls/hooks';
+import ChannelInfoStartButton from '@calls/components/channel_info_start';
 import AddPeopleBox from '@components/channel_actions/add_people_box';
 import CopyChannelLinkBox from '@components/channel_actions/copy_channel_link_box';
 import FavoriteBox from '@components/channel_actions/favorite_box';
 import MutedBox from '@components/channel_actions/mute_box';
 import SetHeaderBox from '@components/channel_actions/set_header_box';
 import {General} from '@constants';
+import {useServerUrl} from '@context/server';
 import {dismissBottomSheet} from '@screens/navigation';
 
 type Props = {
@@ -19,6 +19,7 @@ type Props = {
     channelType?: string;
     inModal?: boolean;
     dismissChannelInfo: () => void;
+    callsEnabled: boolean;
     testID?: string;
 }
 
@@ -35,8 +36,9 @@ const styles = StyleSheet.create({
     },
 });
 
-const ChannelActions = ({channelId, channelType, inModal = false, dismissChannelInfo, testID}: Props) => {
-    const callsEnabled = useCallsEnabled(channelId);
+const ChannelActions = ({channelId, channelType, inModal = false, dismissChannelInfo, callsEnabled, testID}: Props) => {
+    const serverUrl = useServerUrl();
+
     const onCopyLinkAnimationEnd = useCallback(() => {
         if (!inModal) {
             requestAnimationFrame(async () => {
@@ -89,6 +91,7 @@ const ChannelActions = ({channelId, channelType, inModal = false, dismissChannel
                 <>
                     <View style={styles.separator}/>
                     <ChannelInfoStartButton
+                        serverUrl={serverUrl}
                         channelId={channelId}
                         dismissChannelInfo={dismissChannelInfo}
                     />
