@@ -201,7 +201,7 @@ const OptionItem = ({
                         </Text>
                         {Boolean(description) &&
                         <Text
-                            style={[optionDescriptionTextStyle, descriptionTextStyle]}
+                            style={[descriptionTextStyle, optionDescriptionTextStyle]}
                             testID={`${testID}.description`}
                         >
                             {description}

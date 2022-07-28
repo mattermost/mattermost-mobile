@@ -80,10 +80,7 @@ const AccountOptions = ({user, enableCustomUserStatuses, isCustomStatusExpirySup
                 />
                 <Settings/>
                 <View style={styles.divider}/>
-                <Logout
-                    style={styles.menuLabel}
-                    theme={theme}
-                />
+                <Logout/>
             </View>
         </Shadow>
     );
