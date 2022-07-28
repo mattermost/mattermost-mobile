@@ -52,7 +52,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         footer: {
             paddingHorizontal: 20,
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            textAlign: 'justify',
             ...typography('Body', 75, 'Regular'),
             marginTop: 20,
         },
