@@ -161,7 +161,6 @@ const SearchResults = ({
                 return (
                     <DateSeparator
                         date={getDateForDateLine(item)}
-                        theme={theme}
                         timezone={isTimezoneEnabled ? currentTimezone : null}
                     />
                 );
@@ -202,7 +201,6 @@ const SearchResults = ({
                     index={filesForGalleryIndexes[item.id!] || 0}
                     onPress={handlePreviewPress}
                     onOptionsPress={handleOptionsPress}
-                    theme={theme}
                     isSingleImage={isSingleImage}
                     showDate={true}
                     publicLinkEnabled={publicLinkEnabled}
