@@ -30,9 +30,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             textAlignVertical: 'center',
             includeFontPadding: false,
         },
-        spacer: {
-            marginLeft: 16, //fixme: 'remove this when we have a better way to handle this',
-        },
         body: {
             flexDirection: 'row',
             marginVertical: 18,
@@ -90,7 +87,6 @@ const CustomStatus = ({isCustomStatusExpirySupported, isTablet, currentUser}: Cu
     return (
         <TouchableOpacity
             onPress={goToCustomStatusScreen}
-            style={styles.spacer}
         >
             <View style={styles.body}>
                 <CustomStatusEmoji

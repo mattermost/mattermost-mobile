@@ -22,9 +22,6 @@ import {confirmOutOfOfficeDisabled} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
 
-type Props = {
-    currentUser: UserModel;
-};
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         label: {
@@ -33,19 +30,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             textAlignVertical: 'center',
             includeFontPadding: false,
         },
-        spacer: {
-            marginLeft: 16, //fixme: 'remove this when we have a better way to handle this',
-
-        },
         body: {
             flexDirection: 'row',
             marginTop: 18,
+        },
+        spacer: {
+            marginLeft: 16,
         },
     };
 });
 
 const {OUT_OF_OFFICE, OFFLINE, AWAY, ONLINE, DND} = General;
 
+type Props = {
+    currentUser: UserModel;
+};
 const UserStatus = ({currentUser}: Props) => {
     const intl = useIntl();
     const insets = useSafeAreaInsets();
@@ -140,7 +139,6 @@ const UserStatus = ({currentUser}: Props) => {
     return (
         <TouchableOpacity
             onPress={handleSetStatus}
-            style={styles.spacer}
         >
             <View style={styles.body}>
                 <UserStatusIndicator

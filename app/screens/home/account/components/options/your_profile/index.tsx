@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, StyleSheet} from 'react-native';
+import {DeviceEventEmitter} from 'react-native';
 
 import OptionItem from '@components/option_item';
 import {Events, Screens} from '@constants';
@@ -15,13 +15,6 @@ type Props = {
     isTablet: boolean;
     theme: Theme;
 }
-
-const styles = StyleSheet.create({
-    spacer: {
-        marginLeft: 16,
-        marginTop: 4,
-    },
-});
 
 const YourProfile = ({isTablet, theme}: Props) => {
     const intl = useIntl();
@@ -38,7 +31,6 @@ const YourProfile = ({isTablet, theme}: Props) => {
 
     return (
         <OptionItem
-            containerStyle={styles.spacer} // fixme: perhaps we have space at the parent level
             icon={ACCOUNT_OUTLINE_IMAGE}
             label={intl.formatMessage({id: 'account.your_profile', defaultMessage: 'Your Profile'})}
             testID='account.your_profile.action'

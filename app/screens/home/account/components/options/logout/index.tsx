@@ -15,10 +15,6 @@ import {typography} from '@utils/typography';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        spacer: {
-            marginLeft: 16, //fixme: 'remove this when we have a better way to handle this',
-            marginTop: 16,
-        },
         desc: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75),
@@ -26,7 +22,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const Settings = () => {
+const LogOut = () => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
@@ -40,7 +36,6 @@ const Settings = () => {
     return (
         <OptionItem
             action={onLogout}
-            containerStyle={styles.spacer} // fixme: perhaps we have space at the parent level
             description={intl.formatMessage({id: 'account.logout_from', defaultMessage: 'Log out from'}, {serverName: serverDisplayName})}
             destructive={true}
             icon='exit-to-app'
@@ -52,4 +47,4 @@ const Settings = () => {
     );
 };
 
-export default Settings;
+export default LogOut;
