@@ -121,7 +121,7 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
     });
 
     return (
-        <SettingContainer >
+        <SettingContainer>
             <SettingItem
                 onPress={goToNotifications}
                 optionName='notification'
