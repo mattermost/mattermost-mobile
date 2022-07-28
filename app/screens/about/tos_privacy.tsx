@@ -35,13 +35,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 const TosPrivacyContainer = ({config, onPressTOS, onPressPrivacyPolicy}: TosPrivacyContainerProps) => {
-    const hasTermsOfServiceLink = Boolean(config.TermsOfServiceLink);
-    const hasPrivacyPolicyLink = Boolean(config.PrivacyPolicyLink);
+    const hasTermsOfServiceLink = config.TermsOfServiceLink;
+    const hasPrivacyPolicyLink = config.PrivacyPolicyLink;
     const theme = useTheme();
     const style = getStyleSheet(theme);
     return (
         <>
-            { hasTermsOfServiceLink && (
+            {Boolean(hasTermsOfServiceLink) && (
                 <FormattedText
                     id={t('mobile.tos_link')}
                     defaultMessage='Terms of Service'
@@ -50,12 +50,12 @@ const TosPrivacyContainer = ({config, onPressTOS, onPressPrivacyPolicy}: TosPriv
                     testID='about.terms_of_service'
                 />
             )}
-            { hasTermsOfServiceLink && hasPrivacyPolicyLink && (
+            {Boolean(hasTermsOfServiceLink && hasPrivacyPolicyLink) && (
                 <Text style={[style.footerText, style.hyphenText]}>
                     {' - '}
                 </Text>
             )}
-            { hasPrivacyPolicyLink && (
+            {Boolean(hasPrivacyPolicyLink) && (
                 <FormattedText
                     id={t('mobile.privacy_link')}
                     defaultMessage='Privacy Policy'

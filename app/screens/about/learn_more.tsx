@@ -9,7 +9,12 @@ import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
+
+type LearnMoreProps = {
+    config: ClientConfig;
+    onHandleAboutEnterprise: () => void;
+    onHandleAboutTeam: () => void;
+};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -20,20 +25,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         learn: {
             color: theme.centerChannelColor,
-            ...typography('Body', 200, 'Regular'),
+            fontSize: 16,
         },
         learnLink: {
             color: theme.linkColor,
-            ...typography('Body', 200, 'Regular'),
+            fontSize: 16,
         },
     };
 });
-
-type LearnMoreProps = {
-    config: ClientConfig;
-    onHandleAboutEnterprise: () => void;
-    onHandleAboutTeam: () => void;
-};
 
 const LearnMore = ({config, onHandleAboutEnterprise, onHandleAboutTeam}: LearnMoreProps) => {
     const theme = useTheme();
