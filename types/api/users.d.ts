@@ -97,12 +97,4 @@ type UserCustomStatus = {
     duration?: CustomStatusDuration;
 };
 
-enum CustomStatusDuration {
-    DONT_CLEAR = '',
-    THIRTY_MINUTES = 'thirty_minutes',
-    ONE_HOUR = 'one_hour',
-    FOUR_HOURS = 'four_hours',
-    TODAY = 'today',
-    THIS_WEEK = 'this_week',
-    DATE_AND_TIME = 'date_and_time',
-}
+type CustomStatusDuration = '' | 'thirty_minutes' | 'one_hour' | 'four_hours' | 'today' | 'this_week' | 'date_and_time';

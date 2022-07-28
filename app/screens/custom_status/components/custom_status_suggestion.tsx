@@ -75,7 +75,7 @@ const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handl
         }
     }, []);
 
-    const showCustomStatus = Boolean(duration && duration !== CustomStatusDuration.DATE_AND_TIME && isExpirySupported);
+    const showCustomStatus = Boolean(duration && duration !== 'date_and_time' && isExpirySupported);
 
     const clearButton =
         handleClear && expires_at ? (

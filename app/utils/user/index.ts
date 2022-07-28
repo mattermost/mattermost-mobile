@@ -5,6 +5,7 @@ import moment from 'moment-timezone';
 import {Alert} from 'react-native';
 
 import {General, Permissions, Preferences} from '@constants';
+import {CustomStatusDurationEnum} from '@constants/custom_status';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import {toTitleCase} from '@utils/helpers';
 
@@ -171,7 +172,7 @@ export function isCustomStatusExpired(user?: UserModel | UserProfile) {
         return true;
     }
 
-    if (customStatus.duration === CustomStatusDuration.DONT_CLEAR || !customStatus.duration) {
+    if (customStatus.duration === CustomStatusDurationEnum.DONT_CLEAR || !customStatus.duration) {
         return false;
     }
 

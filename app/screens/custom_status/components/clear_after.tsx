@@ -54,7 +54,7 @@ const ClearAfter = ({duration, expiresAt, onOpenClearAfterModal, theme}: Props) 
     const style = getStyleSheet(theme);
 
     const renderClearAfterTime = () => {
-        if (duration && duration === CustomStatusDuration.DATE_AND_TIME) {
+        if (duration && duration === 'date_and_time') {
             return (
                 <View style={style.expiryTime}>
                     <CustomStatusExpiry
