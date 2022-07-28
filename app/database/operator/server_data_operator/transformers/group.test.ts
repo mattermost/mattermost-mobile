@@ -23,6 +23,7 @@ describe('*** GROUP Prepare Records Test ***', () => {
                     name: 'recent',
                     source: 'custom',
                     remote_id: 'custom',
+                    member_count: 10,
                 } as Group,
             },
         });

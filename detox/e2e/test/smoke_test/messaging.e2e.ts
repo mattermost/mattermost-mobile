@@ -69,7 +69,7 @@ describe('Smoke Test - Messaging', () => {
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: originalPostListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(originalPostListPostItem).toExist();
+        await expect(originalPostListPostItem).toBeVisible();
 
         // # Open post options for the message that was just posted and tap edit option
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -85,7 +85,7 @@ describe('Smoke Test - Messaging', () => {
 
         // * Verify post message is updated and displays edited indicator '(edited)'
         const {postListPostItem: updatedPostListPostItem, postListPostItemEditedIndicator} = ChannelScreen.getPostListPostItem(post.id, updatedMessage);
-        await expect(updatedPostListPostItem).toExist();
+        await expect(updatedPostListPostItem).toBeVisible();
         await expect(postListPostItemEditedIndicator).toHaveText('(edited)');
 
         // # Open post options for the updated message, tap delete option and confirm
@@ -118,7 +118,7 @@ describe('Smoke Test - Messaging', () => {
         // * Verify reply message is posted
         const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id, replyMessage);
-        await expect(replyPostListPostItem).toExist();
+        await expect(replyPostListPostItem).toBeVisible();
 
         // # Go back to channel list screen
         await ThreadScreen.back();

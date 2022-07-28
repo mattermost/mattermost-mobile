@@ -57,9 +57,9 @@ describe('Channels - Channel Post List', () => {
         await expect(ChannelScreen.backButton).toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(testChannel.display_name);
         await expect(ChannelScreen.introDisplayName).toHaveText(testChannel.display_name);
-        await expect(ChannelScreen.introAddPeopleOption).toBeVisible();
-        await expect(ChannelScreen.introSetHeaderOption).toBeVisible();
-        await expect(ChannelScreen.introChannelDetailsOption).toBeVisible();
+        await expect(ChannelScreen.introAddPeopleAction).toBeVisible();
+        await expect(ChannelScreen.introSetHeaderAction).toBeVisible();
+        await expect(ChannelScreen.introChannelInfoAction).toBeVisible();
         await expect(ChannelScreen.postList.getFlatList()).toBeVisible();
         await expect(ChannelScreen.postDraft).toBeVisible();
         await expect(ChannelScreen.postInput).toBeVisible();
@@ -83,7 +83,7 @@ describe('Channels - Channel Post List', () => {
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toExist();
+        await expect(postListPostItem).toBeVisible();
 
         // # Open post options for the message that was just posted, tap delete option and confirm
         await ChannelScreen.openPostOptionsFor(post.id, message);

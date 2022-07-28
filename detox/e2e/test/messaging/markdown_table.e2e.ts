@@ -95,7 +95,7 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Right text that wraps row'))).toBeVisible();
 
         // # Expand to full view
-        await ChannelScreen.flatPostList.scrollTo('bottom');
+        await ChannelScreen.getFlatPostList().scrollTo('bottom');
         await postListPostItemTableExpandButton.tap();
 
         // * Verify on table screen with the markdown table
@@ -133,7 +133,7 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Right HS last'))).not.toBeVisible();
 
         // # Expand to full view
-        await ChannelScreen.flatPostList.scrollTo('bottom');
+        await ChannelScreen.getFlatPostList().scrollTo('bottom');
         await postListPostItemTableExpandButton.tap();
         await TableScreen.toBeVisible();
         await expect(element(by.text('Header HS last'))).not.toBeVisible();
@@ -170,7 +170,7 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Right VS last'))).not.toBeVisible();
 
         // # Expand to full view
-        await ChannelScreen.flatPostList.scrollTo('bottom');
+        await ChannelScreen.getFlatPostList().scrollTo('bottom');
         await postListPostItemTableExpandButton.tap();
         await TableScreen.toBeVisible();
         await expect(element(by.text('Header VS last'))).toBeVisible();
@@ -207,7 +207,7 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Right last'))).not.toBeVisible();
 
         // # Expand to full view
-        await ChannelScreen.flatPostList.scrollTo('bottom');
+        await ChannelScreen.getFlatPostList().scrollTo('bottom');
         await postListPostItemTableExpandButton.tap();
         await TableScreen.toBeVisible();
         await expect(element(by.text('Header last'))).not.toBeVisible();

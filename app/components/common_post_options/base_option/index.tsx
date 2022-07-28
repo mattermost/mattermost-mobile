@@ -52,14 +52,13 @@ const BaseOption = ({
 
     return (
         <MenuItem
-            testID={testID}
-            labelComponent={label}
             iconContainerStyle={styles.iconContainerStyle}
             iconName={iconName}
+            isDestructor={isDestructive}
+            labelComponent={label}
             onPress={onPress}
             separator={false}
-            theme={theme}
-            isDestructor={isDestructive}
+            testID={testID}
         />
     );
 };

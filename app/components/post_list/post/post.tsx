@@ -8,6 +8,8 @@ import {Keyboard, Platform, StyleProp, View, ViewStyle, TouchableHighlight} from
 import {removePost} from '@actions/local/post';
 import {showPermalink} from '@actions/remote/permalink';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import CallsCustomMessage from '@calls/components/calls_custom_message';
+import {isCallsCustomMessage} from '@calls/utils';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import {POST_TIME_TO_FAIL} from '@constants/post';
@@ -38,7 +40,7 @@ type PostProps = {
     canDelete: boolean;
     currentUser: UserModel;
     differentThreadSequence: boolean;
-    filesCount: number;
+    hasFiles: boolean;
     hasReplies: boolean;
     highlight?: boolean;
     highlightPinnedOrSaved?: boolean;
@@ -53,8 +55,9 @@ type PostProps = {
     isPostAddChannelMember: boolean;
     location: string;
     post: PostModel;
+    rootId?: string;
     previousPost?: PostModel;
-    reactionsCount: number;
+    hasReactions: boolean;
     searchPatterns?: SearchPattern[];
     shouldRenderReplyButton?: boolean;
     showAddReaction?: boolean;
@@ -103,9 +106,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Post = ({
-    appsEnabled, canDelete, currentUser, differentThreadSequence, filesCount, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
+    appsEnabled, canDelete, currentUser, differentThreadSequence, hasFiles, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
     isCRTEnabled, isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
-    location, post, reactionsCount, searchPatterns, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
+    location, post, rootId, hasReactions, searchPatterns, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
     testID, thread, previousPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
@@ -118,6 +121,8 @@ const Post = ({
     const isPendingOrFailed = isPostPendingOrFailed(post);
     const isFailed = isPostFailed(post);
     const isSystemPost = isSystemMessage(post);
+    const isCallsPost = isCallsCustomMessage(post);
+    const hasBeenDeleted = (post.deleteAt !== 0);
     const isWebHook = isFromWebhook(post);
     const hasSameRoot = useMemo(() => {
         if (isFirstReply) {
@@ -138,12 +143,12 @@ const Post = ({
         }
 
         const isValidSystemMessage = isAutoResponder || !isSystemPost;
-        if (post.deleteAt === 0 && isValidSystemMessage && !isPendingOrFailed) {
+        if (isValidSystemMessage && !hasBeenDeleted && !isPendingOrFailed) {
             if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
-                const rootId = post.rootId || post.id;
-                fetchAndSwitchToThread(serverUrl, rootId);
+                const postRootId = post.rootId || post.id;
+                fetchAndSwitchToThread(serverUrl, postRootId);
             }
-        } else if ((isEphemeral || post.deleteAt > 0)) {
+        } else if ((isEphemeral || hasBeenDeleted)) {
             removePost(serverUrl, post);
         }
 
@@ -167,7 +172,6 @@ const Post = ({
             return;
         }
 
-        const hasBeenDeleted = (post.deleteAt !== 0);
         if (isSystemPost && (!canDelete || hasBeenDeleted)) {
             return;
         }
@@ -270,14 +274,21 @@ const Post = ({
                 post={post}
             />
         );
+    } else if (isCallsPost && !hasBeenDeleted) {
+        body = (
+            <CallsCustomMessage
+                post={post}
+            />
+        );
     } else {
         body = (
             <Body
                 appsEnabled={appsEnabled}
-                filesCount={filesCount}
-                hasReactions={reactionsCount > 0}
+                hasFiles={hasFiles}
+                hasReactions={hasReactions}
                 highlight={Boolean(highlightedStyle)}
                 highlightReplyBar={highlightReplyBar}
+                isCRTEnabled={isCRTEnabled}
                 isEphemeral={isEphemeral}
                 isFirstReply={isFirstReply}
                 isJumboEmoji={isJumboEmoji}
@@ -295,7 +306,7 @@ const Post = ({
 
     let unreadDot;
     let footer;
-    if (isCRTEnabled && thread) {
+    if (isCRTEnabled && thread && location !== Screens.THREAD && !(rootId && location === Screens.PERMALINK)) {
         if (thread.replyCount > 0 || thread.isFollowing) {
             footer = (
                 <Footer

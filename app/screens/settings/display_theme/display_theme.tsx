@@ -1,52 +1,45 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
-import {ScrollView, View} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {useIntl} from 'react-intl';
 
 import {savePreference} from '@actions/remote/preference';
 import {Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import CustomTheme from '@screens/settings/display_theme/custom_theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {popTopScreen, setButtons} from '@screens/navigation';
+import {getSaveButton} from '@screens/settings/config';
 
+import SettingContainer from '../setting_container';
+
+import CustomTheme from './custom_theme';
 import {ThemeTiles} from './theme_tiles';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            flex: 1,
-        },
-        wrapper: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-            flex: 1,
-            paddingTop: 35,
-        },
-    };
-});
+const SAVE_DISPLAY_THEME_BTN_ID = 'SAVE_DISPLAY_THEME_BTN_ID';
 
 type DisplayThemeProps = {
     allowedThemeKeys: string[];
+    componentId: string;
     currentTeamId: string;
     currentUserId: string;
 }
-
-const DisplayTheme = ({allowedThemeKeys, currentTeamId, currentUserId}: DisplayThemeProps) => {
+const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUserId}: DisplayThemeProps) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const [customTheme, setCustomTheme] = useState<Theme|null>();
+    const intl = useIntl();
+    const initialTheme = useMemo(() => theme.type, []); // dependency array should remain empty
 
-    const styles = getStyleSheet(theme);
+    const [displayTheme, setDisplayTheme] = useState<string | undefined>(initialTheme);
 
-    useEffect(() => {
-        if (theme.type === 'custom') {
-            setCustomTheme(theme);
-        }
-    }, []);
+    const saveButton = useMemo(() => getSaveButton(SAVE_DISPLAY_THEME_BTN_ID, intl, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
 
-    const updateTheme = useCallback((selectedThemeKey: string) => {
-        const selectedTheme = allowedThemeKeys.find((tk) => tk === selectedThemeKey);
+    const close = () => popTopScreen(componentId);
+
+    const updateTheme = useCallback(() => {
+        const selectedTheme = allowedThemeKeys.find((tk) => tk === displayTheme);
         if (!selectedTheme) {
             return;
         }
@@ -57,23 +50,37 @@ const DisplayTheme = ({allowedThemeKeys, currentTeamId, currentUserId}: DisplayT
             value: JSON.stringify(Preferences.THEMES[selectedTheme]),
         };
         savePreference(serverUrl, [pref]);
-    }, [serverUrl, allowedThemeKeys, currentTeamId]);
+        close();
+    }, [serverUrl, allowedThemeKeys, currentTeamId, displayTheme]);
+
+    useEffect(() => {
+        const buttons = {
+            rightButtons: [{
+                ...saveButton,
+                enabled: initialTheme?.toLowerCase() !== displayTheme?.toLowerCase(),
+            }],
+        };
+        setButtons(componentId, buttons);
+    }, [componentId, saveButton, displayTheme, initialTheme]);
+
+    useNavButtonPressed(SAVE_DISPLAY_THEME_BTN_ID, componentId, updateTheme, [updateTheme]);
+
+    useAndroidHardwareBackHandler(componentId, close);
 
     return (
-        <ScrollView style={styles.container}>
-            <View style={styles.wrapper}>
-                <ThemeTiles
-                    allowedThemeKeys={allowedThemeKeys}
-                    onThemeChange={updateTheme}
+        <SettingContainer>
+            <ThemeTiles
+                allowedThemeKeys={allowedThemeKeys}
+                onThemeChange={setDisplayTheme}
+                selectedTheme={displayTheme}
+            />
+            {theme.type === 'custom' && (
+                <CustomTheme
+                    setTheme={setDisplayTheme}
+                    displayTheme={displayTheme}
                 />
-                {customTheme && (
-                    <CustomTheme
-                        customTheme={customTheme}
-                        setTheme={updateTheme}
-                    />
-                )}
-            </View>
-        </ScrollView>
+            )}
+        </SettingContainer>
     );
 };
 

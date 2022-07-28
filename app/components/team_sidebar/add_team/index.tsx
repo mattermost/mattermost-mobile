@@ -9,7 +9,7 @@ import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {bottomSheet} from '@screens/navigation';
+import {bottomSheetWithTeamList} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -20,12 +20,6 @@ import type TeamModel from '@typings/database/models/servers/team';
 type Props = {
     otherTeams: TeamModel[];
 }
-
-const ITEM_HEIGHT = 72;
-const HEADER_HEIGHT = 66;
-const CONTAINER_HEIGHT = 392;
-
-//const CREATE_HEIGHT = 97;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -55,31 +49,27 @@ export default function AddTeam({otherTeams}: Props) {
     const dimensions = useWindowDimensions();
     const intl = useIntl();
     const isTablet = useIsTablet();
-    const maxHeight = Math.round((dimensions.height * 0.9));
 
     const onPress = useCallback(preventDoubleTap(() => {
+        const title = intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'});
         const renderContent = () => {
             return (
                 <AddTeamSlideUp
                     otherTeams={otherTeams}
                     showTitle={!isTablet && Boolean(otherTeams.length)}
+                    title={title}
                 />
             );
         };
 
-        let height = CONTAINER_HEIGHT;
-        if (otherTeams.length) {
-            height = Math.min(maxHeight, HEADER_HEIGHT + ((otherTeams.length + 1) * ITEM_HEIGHT));
-        }
-
-        bottomSheet({
-            closeButtonId: 'close-join-team',
+        bottomSheetWithTeamList({
+            dimensions,
             renderContent,
-            snapPoints: [height, 10],
             theme,
-            title: intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'}),
+            title,
+            teams: otherTeams,
         });
-    }), [otherTeams, isTablet, theme]);
+    }), [otherTeams, intl, isTablet, dimensions, theme]);
 
     return (
         <View style={styles.container}>

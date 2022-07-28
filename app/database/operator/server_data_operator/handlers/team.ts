@@ -50,7 +50,6 @@ const TeamHandler = (superclass: any) => class extends superclass {
      * @param {HandleTeamMembershipArgs} teamMembershipsArgs
      * @param {TeamMembership[]} teamMembershipsArgs.teamMemberships
      * @param {boolean} teamMembershipsArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<TeamMembershipModel[]>}
      */
     handleTeamMemberships = async ({teamMemberships, prepareRecordsOnly = true}: HandleTeamMembershipArgs): Promise<TeamMembershipModel[]> => {
@@ -106,7 +105,6 @@ const TeamHandler = (superclass: any) => class extends superclass {
      * @param {HandleTeamArgs} teamsArgs
      * @param {Team[]} teamsArgs.teams
      * @param {boolean} teamsArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<TeamModel[]>}
      */
     handleTeam = async ({teams, prepareRecordsOnly = true}: HandleTeamArgs): Promise<TeamModel[]> => {
@@ -156,7 +154,6 @@ const TeamHandler = (superclass: any) => class extends superclass {
      * @param {HandleTeamChannelHistoryArgs} teamChannelHistoriesArgs
      * @param {TeamChannelHistory[]} teamChannelHistoriesArgs.teamChannelHistories
      * @param {boolean} teamChannelHistoriesArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<TeamChannelHistoryModel[]>}
      */
     handleTeamChannelHistory = async ({teamChannelHistories, prepareRecordsOnly = true}: HandleTeamChannelHistoryArgs): Promise<TeamChannelHistoryModel[]> => {
@@ -183,7 +180,6 @@ const TeamHandler = (superclass: any) => class extends superclass {
      * @param {HandleTeamSearchHistoryArgs} teamSearchHistoriesArgs
      * @param {TeamSearchHistory[]} teamSearchHistoriesArgs.teamSearchHistories
      * @param {boolean} teamSearchHistoriesArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<TeamSearchHistoryModel[]>}
      */
     handleTeamSearchHistory = async ({teamSearchHistories, prepareRecordsOnly = true}: HandleTeamSearchHistoryArgs): Promise<TeamSearchHistoryModel[]> => {
@@ -211,7 +207,6 @@ const TeamHandler = (superclass: any) => class extends superclass {
      * @param {HandleMyTeamArgs} myTeamsArgs
      * @param {MyTeam[]} myTeamsArgs.myTeams
      * @param {boolean} myTeamsArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<MyTeamModel[]>}
      */
     handleMyTeam = async ({myTeams, prepareRecordsOnly = true}: HandleMyTeamArgs): Promise<MyTeamModel[]> => {

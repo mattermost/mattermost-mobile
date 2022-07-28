@@ -31,6 +31,8 @@ const {
     POST,
 } = MM_TABLES.SERVER;
 
+type PostActionType = keyof typeof ActionType.POSTS;
+
 export interface PostHandlerMix {
     handleDraft: ({drafts, prepareRecordsOnly}: HandleDraftArgs) => Promise<DraftModel[]>;
     handleFiles: ({files, prepareRecordsOnly}: HandleFilesArgs) => Promise<FileModel[]>;
@@ -45,7 +47,6 @@ const PostHandler = (superclass: any) => class extends superclass {
      * @param {HandleDraftArgs} draftsArgs
      * @param {RawDraft[]} draftsArgs.drafts
      * @param {boolean} draftsArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<DraftModel[]>}
      */
     handleDraft = async ({drafts, prepareRecordsOnly = true}: HandleDraftArgs): Promise<DraftModel[]> => {
@@ -266,10 +267,12 @@ const PostHandler = (superclass: any) => class extends superclass {
 
     /**
      * handlePostsInThread: Handler responsible for the Create/Update operations occurring on the PostsInThread table from the 'Server' schema
-     * @param {PostsInThread[]} rootPosts
+     * @param {Record<string, Post[]>} postsMap
+     * @param {PostActionType} actionType
+     * @param {boolean} prepareRecordsOnly
      * @returns {Promise<void>}
      */
-    handlePostsInThread = async (postsMap: Record<string, Post[]>, actionType: never, prepareRecordsOnly = false): Promise<PostsInThreadModel[]> => {
+    handlePostsInThread = async (postsMap: Record<string, Post[]>, actionType: PostActionType, prepareRecordsOnly = false): Promise<PostsInThreadModel[]> => {
         if (!postsMap || !Object.keys(postsMap).length) {
             logWarning(
                 'An empty or undefined "postsMap" object has been passed to the handlePostsInThread method',
@@ -292,9 +295,11 @@ const PostHandler = (superclass: any) => class extends superclass {
     /**
      * handlePostsInChannel: Handler responsible for the Create/Update operations occurring on the PostsInChannel table from the 'Server' schema
      * @param {Post[]} posts
+     * @param {PostActionType} actionType
+     * @param {boolean} prepareRecordsOnly
      * @returns {Promise<void>}
      */
-    handlePostsInChannel = async (posts: Post[], actionType: never, prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
+    handlePostsInChannel = async (posts: Post[], actionType: PostActionType, prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
         // At this point, the parameter 'posts' is already a chain of posts.  Now, we have to figure out how to plug it
         // into existing chains in the PostsInChannel table
 

@@ -7,30 +7,10 @@ import {Platform, StyleProp, TextStyle, View, ViewStyle} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export const ITEM_HEIGHT = 50;
-
-export type MenuItemProps = {
-    centered?: boolean;
-    defaultMessage?: string;
-    i18nId?: string;
-    iconContainerStyle?: StyleProp<ViewStyle>;
-    iconName?: string;
-    containerStyle?: StyleProp<ViewStyle>;
-    isDestructor?: boolean;
-    labelComponent?: ReactNode;
-    leftComponent?: ReactNode;
-    messageValues?: Record<string, any>;
-    onPress: () => void;
-    separator?: boolean;
-    showArrow?: boolean;
-    testID: string;
-    theme: Theme;
-    labelStyle?: StyleProp<TextStyle>;
-    isLink?: boolean;
-};
-
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
@@ -64,7 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             includeFontPadding: false,
         },
         divider: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.12),
             height: 1,
         },
         chevron: {
@@ -83,33 +63,50 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const MenuItem = (props: MenuItemProps) => {
-    const {
-        centered,
-        defaultMessage = '',
-        i18nId,
-        iconContainerStyle,
-        iconName,
-        containerStyle,
-        isDestructor = false,
-        isLink = false,
-        labelComponent,
-        labelStyle,
-        leftComponent,
-        messageValues,
-        onPress,
-        separator = true,
-        showArrow = false,
-        testID,
-        theme,
-    } = props;
-
+export type MenuItemProps = {
+    centered?: boolean;
+    chevronStyle?: StyleProp<ViewStyle>;
+    containerStyle?: StyleProp<ViewStyle>;
+    defaultMessage?: string;
+    i18nId?: string;
+    iconContainerStyle?: StyleProp<ViewStyle>;
+    iconName?: string;
+    isDestructor?: boolean;
+    isLink?: boolean;
+    labelComponent?: ReactNode;
+    labelStyle?: StyleProp<TextStyle>;
+    leftComponent?: ReactNode;
+    messageValues?: Record<string, any>;
+    onPress: () => void;
+    rightComponent?: ReactNode;
+    separator?: boolean;
+    separatorStyle?: StyleProp<ViewStyle>;
+    showArrow?: boolean;
+    testID: string;
+};
+const MenuItem = ({
+    centered,
+    chevronStyle,
+    containerStyle,
+    defaultMessage = '',
+    i18nId,
+    iconContainerStyle,
+    iconName,
+    isDestructor = false,
+    isLink = false,
+    labelComponent,
+    labelStyle,
+    leftComponent,
+    messageValues,
+    onPress,
+    rightComponent,
+    separator = true,
+    separatorStyle,
+    showArrow = false,
+    testID,
+}: MenuItemProps) => {
+    const theme = useTheme();
     const style = getStyleSheet(theme);
-
-    const destructor: any = {};
-    if (isDestructor) {
-        destructor.color = theme.errorTextColor;
-    }
 
     let icon;
     if (leftComponent) {
@@ -118,7 +115,7 @@ const MenuItem = (props: MenuItemProps) => {
         icon = (
             <CompassIcon
                 name={iconName}
-                style={[style.icon, destructor]}
+                style={[style.icon, isDestructor && {color: theme.errorTextColor}]}
             />
         );
     }
@@ -134,7 +131,7 @@ const MenuItem = (props: MenuItemProps) => {
                 style={[
                     style.label,
                     labelStyle,
-                    destructor,
+                    isDestructor && {color: theme.errorTextColor},
                     centered ? style.centerLabel : {},
                     isLink && style.linkContainer,
                 ]}
@@ -159,14 +156,15 @@ const MenuItem = (props: MenuItemProps) => {
                     <View style={style.labelContainer}>
                         {label}
                     </View>
+                    {rightComponent}
                     {Boolean(showArrow) && (
                         <CompassIcon
                             name='chevron-right'
-                            style={style.chevron}
+                            style={[style.chevron, chevronStyle]}
                         />
                     )}
                 </View>
-                {Boolean(separator) && (<View style={style.divider}/>)}
+                {Boolean(separator) && (<View style={[style.divider, separatorStyle]}/>)}
             </View>
         </TouchableWithFeedback>
     );

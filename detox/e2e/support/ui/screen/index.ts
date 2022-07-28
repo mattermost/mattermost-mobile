@@ -17,8 +17,11 @@ import GlobalThreadsScreen from './global_threads';
 import HomeScreen from './home';
 import LoginScreen from './login';
 import PermalinkScreen from './permalink';
+import PinnedMessagesScreen from './pinned_messages';
 import PostOptionsScreen from './post_options';
 import ReactionsScreen from './reactions';
+import RecentMentionsScreen from './recent_mentions';
+import SavedMessagesScreen from './saved_messages';
 import ServerScreen from './server';
 import ServerListScreen from './server_list';
 import TableScreen from './table';
@@ -43,8 +46,11 @@ export {
     HomeScreen,
     LoginScreen,
     PermalinkScreen,
+    PinnedMessagesScreen,
     PostOptionsScreen,
     ReactionsScreen,
+    RecentMentionsScreen,
+    SavedMessagesScreen,
     ServerScreen,
     ServerListScreen,
     TableScreen,

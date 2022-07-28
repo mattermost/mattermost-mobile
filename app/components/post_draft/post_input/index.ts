@@ -5,9 +5,9 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {observeChannel, observeCurrentChannel} from '@queries/servers/channel';
+import {observeChannel} from '@queries/servers/channel';
 import {observeConfig} from '@queries/servers/system';
 
 import PostInput from './post_input';
@@ -17,10 +17,9 @@ import type ChannelInfoModel from '@typings/database/models/servers/channel_info
 
 type OwnProps = {
     channelId: string;
-    rootId?: string;
 }
 
-const enhanced = withObservables([], ({database, channelId, rootId}: WithDatabaseArgs & OwnProps) => {
+const enhanced = withObservables(['channelId'], ({database, channelId}: WithDatabaseArgs & OwnProps) => {
     const config = observeConfig(database);
     const timeBetweenUserTypingUpdatesMilliseconds = config.pipe(
         switchMap((cfg) => of$(parseInt(cfg?.TimeBetweenUserTypingUpdatesMilliseconds || '0', 10))),
@@ -34,12 +33,7 @@ const enhanced = withObservables([], ({database, channelId, rootId}: WithDatabas
         switchMap((cfg) => of$(parseInt(cfg?.MaxNotificationsPerChannel || '0', 10))),
     );
 
-    let channel;
-    if (rootId) {
-        channel = observeChannel(database, channelId);
-    } else {
-        channel = observeCurrentChannel(database);
-    }
+    const channel = observeChannel(database, channelId);
 
     const channelDisplayName = channel.pipe(
         switchMap((c) => of$(c?.displayName)),
@@ -47,8 +41,8 @@ const enhanced = withObservables([], ({database, channelId, rootId}: WithDatabas
 
     const membersInChannel = channel.pipe(
         switchMap((c) => (c ? c.info.observe() : of$({memberCount: 0}))),
-    ).pipe(
         switchMap((i: ChannelInfoModel) => of$(i.memberCount)),
+        distinctUntilChanged(),
     );
 
     return {

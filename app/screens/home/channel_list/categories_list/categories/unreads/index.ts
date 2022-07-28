@@ -9,7 +9,7 @@ import {combineLatestWith, map, switchMap} from 'rxjs/operators';
 import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {filterAndSortMyChannels, makeChannelsMap} from '@helpers/database';
-import {getChannelById, observeChannelsByLastPostAt, observeCurrentChannel, observeNotifyPropsByChannels, queryMyChannelUnreads} from '@queries/servers/channel';
+import {getChannelById, observeChannelsByLastPostAt, observeNotifyPropsByChannels, queryMyChannelUnreads} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeLastUnreadChannelId} from '@queries/servers/system';
 import {observeUnreadsAndMentionsInTeam} from '@queries/servers/thread';
@@ -48,7 +48,6 @@ const enhanced = withObservables(['currentTeamId', 'isTablet', 'onlyUnreads'], (
         if (gU || onlyUnreads) {
             const lastUnread = isTablet ? observeLastUnreadChannelId(database).pipe(
                 switchMap(getC),
-                switchMap((ch) => (ch ? of$(ch) : observeCurrentChannel(database))),
             ) : of$(undefined);
             const myUnreadChannels = queryMyChannelUnreads(database, currentTeamId).observeWithColumns(['last_post_at']);
             const notifyProps = myUnreadChannels.pipe(switchMap((cs) => observeNotifyPropsByChannels(database, cs)));

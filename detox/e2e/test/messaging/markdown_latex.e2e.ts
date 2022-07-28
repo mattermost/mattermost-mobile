@@ -10,7 +10,6 @@
 import {
     Post,
     Setup,
-    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -31,13 +30,6 @@ describe('Messaging - Markdown Latex', () => {
     let testChannel: any;
 
     beforeAll(async () => {
-        System.apiUpdateConfig(siteOneUrl, {
-            ServiceSettings: {
-                EnableLatex: true,
-                EnableInlineLatex: true,
-            },
-        });
-
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
 
@@ -67,7 +59,7 @@ describe('Messaging - Markdown Latex', () => {
         // * Verify markdown latex code block is displayed
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemLatexCodeBlock} = ChannelScreen.getPostListPostItem(post.id);
-        await ChannelScreen.flatPostList.scrollTo('bottom');
+        await ChannelScreen.getFlatPostList().scrollTo('bottom');
         await expect(postListPostItemLatexCodeBlock).toBeVisible();
 
         // # Go back to channel list screen

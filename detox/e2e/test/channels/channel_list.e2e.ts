@@ -9,7 +9,6 @@
 
 import {
     Setup,
-    System,
     Team,
 } from '@support/server_api';
 import {
@@ -41,12 +40,6 @@ describe('Channels - Channel List', () => {
     let testUser: any;
 
     beforeAll(async () => {
-        System.apiUpdateConfig(siteOneUrl, {
-            ServiceSettings: {
-                CollapsedThreads: 'default_on',
-            },
-        });
-
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testTeam = team;

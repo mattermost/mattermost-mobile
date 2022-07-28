@@ -20,13 +20,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 13,
             color: changeOpacity(theme.centerChannelColor, 0.5),
         },
-        items: {
-            backgroundColor: theme.centerChannelBg,
-            borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
-        },
         footer: {
             marginTop: 10,
             marginHorizontal: 15,
@@ -36,13 +29,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-type SectionText = {
+export type SectionText = {
     id: string;
     defaultMessage: string;
     values?: MessageDescriptor;
 }
 
-type SectionProps = {
+export type BlockProps = {
     children: React.ReactNode;
     disableFooter?: boolean;
     disableHeader?: boolean;
@@ -62,7 +55,7 @@ const Block = ({
     headerStyles,
     headerText,
     footerStyles,
-}: SectionProps) => {
+}: BlockProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -76,7 +69,7 @@ const Block = ({
                     style={[styles.header, headerStyles]}
                 />
             }
-            <View style={[styles.items, containerStyles]}>
+            <View style={containerStyles}>
                 {children}
             </View>
             {(footerText && !disableFooter) &&
