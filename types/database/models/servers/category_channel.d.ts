@@ -1,12 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Relation} from '@nozbe/watermelondb';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
-
 import type CategoryModel from './category';
 import type ChannelModel from './channel';
 import type MyChannelModel from './my_channel';
+import type {Relation, Model} from '@nozbe/watermelondb';
+import type {Associations} from '@nozbe/watermelondb/Model';
 
 /**
  * The CategoryChannel model represents the 'association table' where many categories have channels and many channels are in

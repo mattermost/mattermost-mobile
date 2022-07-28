@@ -7,8 +7,8 @@ import type MyTeamModel from './my_team';
 import type TeamChannelHistoryModel from './team_channel_history';
 import type TeamMembershipModel from './team_membership';
 import type TeamSearchHistoryModel from './team_search_history';
-import type {Query, Relation} from '@nozbe/watermelondb';
-import type Model, {Associations} from '@nozbe/watermelondb/Model';
+import type {Query, Relation, Model} from '@nozbe/watermelondb';
+import type {Associations} from '@nozbe/watermelondb/Model';
 
 /**
  * A Team houses and enables communication to happen across channels and users.
@@ -30,7 +30,7 @@ export default class TeamModel extends Model {
     displayName: string;
 
     /** update_at : The timestamp to when this team was last updated on the server */
-    updateAt!: number;
+    updateAt: number;
 
     /** is_group_constrained : Boolean flag indicating if members are managed groups */
     isGroupConstrained: boolean;

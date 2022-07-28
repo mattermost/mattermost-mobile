@@ -21,6 +21,8 @@ import EphemeralStore from '@store/ephemeral_store';
 import {LaunchType} from '@typings/launch';
 import {deleteFileCache} from '@utils/file';
 
+import type {jsAndNativeErrorHandler} from '@typings/global/error_handling';
+
 type LinkingCallbackArg = {url: string};
 
 type LogoutCallbackArg = {

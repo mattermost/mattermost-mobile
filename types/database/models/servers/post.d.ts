@@ -1,9 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Query, Relation} from '@nozbe/watermelondb';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
-
 import type ChannelModel from './channel';
 import type DraftModel from './draft';
 import type FileModel from './file';
@@ -11,6 +8,8 @@ import type PostsInThreadModel from './posts_in_thread';
 import type ReactionModel from './reaction';
 import type ThreadModel from './thread';
 import type UserModel from './user';
+import type {Query, Relation, Model} from '@nozbe/watermelondb';
+import type {Associations} from '@nozbe/watermelondb/Model';
 
 /**
  * The Post model is the building block of communication in the Mattermost app.
@@ -32,7 +31,7 @@ export default class PostModel extends Model {
     deleteAt: number;
 
     /** update_at : The timestamp to when this post was last updated on the server */
-    updateAt!: number;
+    updateAt: number;
 
     /** edit_at : The timestamp to when this post was last edited */
     editAt: number;

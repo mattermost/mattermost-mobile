@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Relation} from '@nozbe/watermelondb';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
-
 import type PostModel from './post';
 import type UserModel from './user';
+import type {Relation, Model} from '@nozbe/watermelondb';
+import type {Associations} from '@nozbe/watermelondb/Model';
 
 /**
  * The Reaction Model is used to present the reactions a user had on a particular post

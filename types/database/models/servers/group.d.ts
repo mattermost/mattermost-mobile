@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Query} from '@nozbe/watermelondb';
 import {lazy} from '@nozbe/watermelondb/decorators';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import type ChannelModel from './channel';
 import type TeamModel from './team';
 import type UserModel from './user';
+import type {Query, Model} from '@nozbe/watermelondb';
+import type {Associations} from '@nozbe/watermelondb/Model';
 
 /**
  * A Group is a collection of users, associated to teams and/or channels

@@ -1,7 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-type GalleryManagerSharedValues = {
+import {GestureHandlerGestureEvent} from 'react-native-gesture-handler';
+import Animated from 'react-native-reanimated';
+
+export type GalleryManagerSharedValues = {
     width: Animated.SharedValue<number>;
     height: Animated.SharedValue<number>;
     x: Animated.SharedValue<number>;
@@ -12,25 +15,25 @@ type GalleryManagerSharedValues = {
     targetHeight: Animated.SharedValue<number>;
 }
 
-type Context = { [key: string]: any };
+export type Context = { [key: string]: any };
 
-type Handler<T, TContext extends Context> = (
+export type Handler<T, TContext extends Context> = (
   event: T,
   context: TContext,
 ) => void;
 
-type onEndHandler<T, TContext extends Context> = (
+export type onEndHandler<T, TContext extends Context> = (
   event: T,
   context: TContext,
   isCanceled: boolean,
 ) => void;
 
-type ReturnHandler<T, TContext extends Context, R> = (
+export type ReturnHandler<T, TContext extends Context, R> = (
   event: T,
   context: TContext,
 ) => R;
 
-interface GestureHandlers<T, TContext extends Context> {
+export interface GestureHandlers<T, TContext extends Context> {
   onInit?: Handler<T, TContext>;
   onEvent?: Handler<T, TContext>;
   shouldHandleEvent?: ReturnHandler<T, TContext, boolean>;
@@ -50,11 +53,11 @@ interface GestureHandlers<T, TContext extends Context> {
   ) => void;
 }
 
-type OnGestureEvent<T extends GestureHandlerGestureEvent> = (
+export type OnGestureEvent<T extends GestureHandlerGestureEvent> = (
   event: T,
 ) => void;
 
-type GalleryItemType = {
+export type GalleryItemType = {
     type: 'image' | 'video' | 'file' | 'avatar';
     id: string;
     width: number;
@@ -69,4 +72,4 @@ type GalleryItemType = {
     postId?: string;
 };
 
-type GalleryAction = 'none' | 'downloading' | 'copying' | 'sharing' | 'opening' | 'external';
+export type GalleryAction = 'none' | 'downloading' | 'copying' | 'sharing' | 'opening' | 'external';

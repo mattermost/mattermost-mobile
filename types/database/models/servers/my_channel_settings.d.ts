@@ -1,10 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Relation} from '@nozbe/watermelondb';
-import Model from '@nozbe/watermelondb/Model';
-
 import type MyChannelModel from './my_channel';
+import type {Relation, Model} from '@nozbe/watermelondb';
 
 /**
  * The MyChannelSettings model represents the specific user's configuration to

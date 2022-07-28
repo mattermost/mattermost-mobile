@@ -18,6 +18,7 @@ import {freezeOtherScreens} from '@utils/gallery';
 import {calculateDimensions} from '@utils/images';
 
 import type {BackdropProps} from './backdrop';
+import type {GalleryItemType, GalleryManagerSharedValues} from '@typings/screens/gallery';
 
 interface Size {
     height: number;

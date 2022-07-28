@@ -58,7 +58,7 @@ export type OperationArgs = {
   createRaws?: RecordPair[];
   updateRaws?: RecordPair[];
   deleteRaws?: Model[];
-  transformer: (TransformerArgs) => Promise<Model>;
+  transformer: (args: TransformerArgs) => Promise<Model>;
 };
 
 export type Models = Array<Class<Model>>;
@@ -155,7 +155,7 @@ export type ProcessRecordsArgs = {
 export type HandleRecordsArgs = {
   buildKeyRecordBy?: (obj: Record<string, any>) => string;
   fieldName: string;
-  transformer: (TransformerArgs) => Promise<Model>;
+  transformer: (args: TransformerArgs) => Promise<Model>;
   createOrUpdateRawValues: RawValue[];
   deleteRawValues?: RawValue[];
   tableName: string;

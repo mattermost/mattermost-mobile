@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Query, Relation} from '@nozbe/watermelondb';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import {Associations} from '@nozbe/watermelondb/Model';
 
 import type ChannelModel from './channel';
 import type UserModel from './user';
+import type {Query, Relation, Model} from '@nozbe/watermelondb';
 
 /**
  * The ChannelMembership model represents the 'association table' where many channels have users and many users are on

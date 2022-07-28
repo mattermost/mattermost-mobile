@@ -21,8 +21,8 @@ export default class ServersModel extends Model {
     url: string;
 
     /** last_active_at: The last time this server was active */
-    lastActiveAt!: number;
+    lastActiveAt: number;
 
     /** diagnostic_id: Determines the installation identifier of a server */
-    identifier!: string;
+    identifier: string;
 }

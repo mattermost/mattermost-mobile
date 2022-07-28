@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Model, {Associations} from '@nozbe/watermelondb/Model';
-
 import type ChannelModel from './channel';
 import type ChannelMembershipModel from './channel_membership';
 import type PostModel from './post';
@@ -10,6 +8,9 @@ import type PreferenceModel from './preference';
 import type ReactionModel from './reaction';
 import type TeamMembershipModel from './team_membership';
 import type ThreadParticipantsModel from './thread_participant';
+import type {Model} from '@nozbe/watermelondb';
+import type {Associations} from '@nozbe/watermelondb/Model';
+import type Query from '@nozbe/watermelondb/Query';
 import type {UserMentionKey} from '@typings/global/markdown';
 
 /**
@@ -27,7 +28,7 @@ export default class UserModel extends Model {
     authService: string;
 
     /** update_at : The timestamp at which this user account has been updated */
-    updateAt!: number;
+    updateAt: number;
 
     /** delete_at : The timestamp at which this user account has been archived/deleted */
     deleteAt: number;

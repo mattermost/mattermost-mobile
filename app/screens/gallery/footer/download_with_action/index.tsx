@@ -25,6 +25,7 @@ import {galleryItemToFileInfo} from '@utils/gallery';
 import {typography} from '@utils/typography';
 
 import type {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
+import type {GalleryAction, GalleryItemType} from '@typings/screens/gallery';
 
 type Props = {
     action: GalleryAction;

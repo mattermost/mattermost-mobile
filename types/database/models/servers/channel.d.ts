@@ -1,9 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Query, Relation} from '@nozbe/watermelondb';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
-
 import type CategoryChannelModel from './category_channel';
 import type ChannelInfoModel from './channel_info';
 import type ChannelMembershipModel from './channel_membership';
@@ -13,6 +10,8 @@ import type PostModel from './post';
 import type PostsInChannelModel from './posts_in_channel';
 import type TeamModel from './team';
 import type UserModel from './user';
+import type {Query, Relation, Model} from '@nozbe/watermelondb';
+import type {Associations} from '@nozbe/watermelondb/Model';
 
 /**
  * The Channel model represents a channel in the Mattermost app.
@@ -34,7 +33,7 @@ export default class ChannelModel extends Model {
     deleteAt: number;
 
     /** update_at : The timestamp to when this channel was last updated on the server */
-    updateAt!: number;
+    updateAt: number;
 
     /** display_name : The channel display name (e.g. Town Square ) */
     displayName: string;

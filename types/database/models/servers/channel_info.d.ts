@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Relation} from '@nozbe/watermelondb';
-import Model from '@nozbe/watermelondb/Model';
-
 import type ChannelModel from './channel';
+import type {Relation} from '@nozbe/watermelondb';
+import type Model from '@nozbe/watermelondb/Model';
 
 /**
  * ChannelInfo is an extension of the information contained in the Channel table.

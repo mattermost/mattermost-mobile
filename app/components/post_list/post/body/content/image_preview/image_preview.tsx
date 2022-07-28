@@ -19,6 +19,8 @@ import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/image
 import {changeOpacity} from '@utils/theme';
 import {extractFilenameFromUrl, isImageLink, isValidUrl} from '@utils/url';
 
+import type {GalleryItemType} from '@typings/screens/gallery';
+
 type ImagePreviewProps = {
     expandedLink?: string;
     isReplyPost: boolean;
