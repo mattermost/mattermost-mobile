@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 
-import {updateMe} from '@actions/remote/user';
+import {fetchStatusInBatch, updateMe} from '@actions/remote/user';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import {General} from '@constants';
@@ -89,8 +89,9 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
                 auto_responder_message: autoResponderMessage,
             },
         });
+        fetchStatusInBatch(serverUrl, currentUser.id);
         close();
-    }, [serverUrl, autoResponderActive, autoResponderMessage, notifyProps]);
+    }, [serverUrl, autoResponderActive, autoResponderMessage, notifyProps, currentUser]);
 
     useEffect(() => {
         const enabled = initialAutoResponderActive !== autoResponderActive || initialOOOMsg !== autoResponderMessage;
@@ -121,7 +122,6 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
                     allowFontScaling={true}
                     autoCapitalize='none'
                     autoCorrect={false}
-                    blurOnSubmit={true}
                     containerStyle={styles.textInputContainer}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     label={intl.formatMessage(label)}
@@ -129,7 +129,7 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
                     onChangeText={setAutoResponderMessage}
                     placeholder={intl.formatMessage(label)}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
-                    returnKeyType='done'
+                    returnKeyType='default'
                     textAlignVertical='top'
                     textInputStyle={styles.input}
                     theme={theme}
