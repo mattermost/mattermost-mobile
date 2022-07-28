@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {NativeScrollEvent, NativeSyntheticEvent, PanResponder} from 'react-native';
+import {ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, PanResponder} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import {fetchUsersByIds} from '@actions/remote/user';
@@ -35,7 +35,7 @@ const ReactorsList = ({location, reactions}: Props) => {
         },
     })).current;
 
-    const renderItem = useCallback(({item}) => (
+    const renderItem = useCallback(({item}: ListRenderItemInfo<ReactionModel>) => (
         <Reactor
             location={location}
             reaction={item}
