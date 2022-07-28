@@ -265,11 +265,11 @@ const OptionItem = ({
         </View>
     );
 
-    if (type === OptionType.DEFAULT ||
-        type === OptionType.SELECT ||
-            type === OptionType.ARROW ||
-                type === OptionType.RADIO ||
-                    type === OptionType.REMOVE) {
+    if (type === OptionType.ARROW ||
+        type === OptionType.DEFAULT ||
+        type === OptionType.RADIO ||
+        type === OptionType.REMOVE ||
+        type === OptionType.SELECT) {
         return (
             <TouchableOpacity onPress={onPress}>
                 {component}
