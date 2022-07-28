@@ -126,10 +126,10 @@ const Autocomplete = ({
             s.push(style.shadow);
         }
         if (isSearch) {
-            s.push(style.base, paddingTop ? {top: paddingTop} : style.searchContainer, {height: hasElements ? maxListHeight : 0});
+            s.push(style.base, paddingTop ? {top: paddingTop} : style.searchContainer, {height: maxListHeight});
         }
         return s;
-    }, [style, isSearch && maxListHeight, hasElements, paddingTop]);
+    }, [style, isSearch && maxListHeight, paddingTop]);
 
     const containerStyles = useMemo(() => {
         const s = [];
