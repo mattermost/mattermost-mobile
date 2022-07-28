@@ -29,4 +29,6 @@ export default keyMirror({
     ITEM_IN_VIEWPORT: null,
     SEND_TO_POST_DRAFT: null,
     CRT_TOGGLED: null,
+    JOIN_CALL_BAR_VISIBLE: null,
+    CURRENT_CALL_BAR_VISIBLE: null,
 });

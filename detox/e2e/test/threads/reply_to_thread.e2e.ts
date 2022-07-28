@@ -10,7 +10,6 @@
 import {
     Post,
     Setup,
-    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -35,12 +34,6 @@ describe('Threads - Reply to Thread', () => {
     let testChannel: any;
 
     beforeAll(async () => {
-        System.apiUpdateConfig(siteOneUrl, {
-            ServiceSettings: {
-                CollapsedThreads: 'default_on',
-            },
-        });
-
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
 

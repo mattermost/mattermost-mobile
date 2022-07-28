@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useRef} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -13,6 +13,7 @@ import {THREAD_ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useAppState} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {popTopScreen} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 
 import ThreadPostList from './thread_post_list';
 
@@ -32,6 +33,12 @@ const styles = StyleSheet.create({
 const Thread = ({componentId, rootPost}: ThreadProps) => {
     const appState = useAppState();
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
+
+    useEffect(() => {
+        return () => {
+            EphemeralStore.setCurrentThreadId('');
+        };
+    }, []);
 
     useDidUpdate(() => {
         if (!rootPost) {

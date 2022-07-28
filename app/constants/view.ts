@@ -23,6 +23,8 @@ export const HEADER_SEARCH_HEIGHT = SEARCH_INPUT_HEIGHT + 5;
 export const HEADER_SEARCH_BOTTOM_MARGIN = 10;
 
 export const INDICATOR_BAR_HEIGHT = 38;
+export const JOIN_CALL_BAR_HEIGHT = 38;
+export const CURRENT_CALL_BAR_HEIGHT = 74;
 
 export const QUICK_OPTIONS_HEIGHT = 270;
 

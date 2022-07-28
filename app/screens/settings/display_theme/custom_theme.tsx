@@ -3,40 +3,33 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet} from 'react-native';
 
 import {useTheme} from '@context/theme';
+import SettingSeparator from '@screens/settings/settings_separator';
 
-import SettingBlock from '../setting_block';
 import SettingOption from '../setting_option';
 
-const styles = StyleSheet.create({
-    containerStyles: {
-        paddingHorizontal: 16,
-    },
-});
+const radioItemProps = {checkedBody: true};
 
 type CustomThemeProps = {
-    customTheme: Theme;
     setTheme: (themeKey: string) => void;
+    displayTheme: string | undefined;
 }
-
-const CustomTheme = ({customTheme, setTheme}: CustomThemeProps) => {
+const CustomTheme = ({setTheme, displayTheme}: CustomThemeProps) => {
     const intl = useIntl();
     const theme = useTheme();
     return (
-        <SettingBlock
-            containerStyles={styles.containerStyles}
-            disableHeader={true}
-        >
+        <>
+            <SettingSeparator isGroupSeparator={true}/>
             <SettingOption
                 action={setTheme}
                 type='select'
-                value={customTheme.type}
+                value={theme.type}
                 label={intl.formatMessage({id: 'settings_display.custom_theme', defaultMessage: 'Custom Theme'})}
-                selected={theme.type?.toLowerCase() === customTheme.type?.toLowerCase()}
+                selected={theme.type?.toLowerCase() === displayTheme?.toLowerCase()}
+                radioItemProps={radioItemProps}
             />
-        </SettingBlock>
+        </>
     );
 };
 
