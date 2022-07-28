@@ -126,7 +126,7 @@ const Autocomplete = ({
             s.push(style.shadow);
         }
         if (isSearch) {
-            s.push(style.base, paddingTop ? {top: paddingTop} : style.searchContainer, {height: maxListHeight});
+            s.push(style.base, paddingTop ? {top: paddingTop} : style.searchContainer, {maxHeight: maxListHeight});
         }
         return s;
     }, [style, isSearch && maxListHeight, paddingTop]);
