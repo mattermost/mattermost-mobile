@@ -5,6 +5,7 @@ import React from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 
 import FormattedDate from '@components/formatted_date';
+import {useTheme} from '@context/theme';
 import {getFormattedFileSize} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -14,7 +15,6 @@ type FileInfoProps = {
     showDate: boolean;
     channelName?: string ;
     onPress: () => void;
-    theme: Theme;
 }
 const FORMAT = ' • MMM DD HH:MM A';
 
@@ -58,7 +58,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const FileInfo = ({file, channelName, showDate, onPress, theme}: FileInfoProps) => {
+const FileInfo = ({file, channelName, showDate, onPress}: FileInfoProps) => {
+    const theme = useTheme();
     const style = getStyleSheet(theme);
     return (
         <View style={style.attachmentContainer}>

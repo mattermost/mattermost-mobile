@@ -8,10 +8,9 @@ import Animated, {useSharedValue, useAnimatedStyle, withTiming} from 'react-nati
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
+import TeamPickerIcon from '@screens/home/search/team_picker_icon';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import TeamPickerIcon from '../team_picker_icon';
 
 import Modifier, {ModifierItem} from './modifier';
 import ShowMoreButton from './show_more';

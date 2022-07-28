@@ -6,6 +6,7 @@ import {StyleProp, View, ViewStyle} from 'react-native';
 
 import FormattedDate from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
+import {useTheme} from '@context/theme';
 import {isSameYear, isToday, isYesterday} from '@utils/datetime';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -13,7 +14,6 @@ import {typography} from '@utils/typography';
 type DateSeparatorProps = {
     date: number | Date;
     style?: StyleProp<ViewStyle>;
-    theme: Theme;
     timezone?: string | null;
 };
 
@@ -72,7 +72,8 @@ const RecentDate = (props: DateSeparatorProps) => {
 };
 
 const DateSeparator = (props: DateSeparatorProps) => {
-    const styles = getStyleSheet(props.theme);
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
 
     return (
         <View style={[styles.container, props.style]}>
