@@ -9,11 +9,23 @@ import {schemaMigrations, addColumns} from '@nozbe/watermelondb/Schema/migration
 import {MM_TABLES} from '@constants/database';
 
 const {SERVER: {
+    GROUP,
     MY_CHANNEL,
     THREAD,
 }} = MM_TABLES;
 
 export default schemaMigrations({migrations: [
+    {
+        toVersion: 3,
+        steps: [
+            addColumns({
+                table: GROUP,
+                columns: [
+                    {name: 'member_count', type: 'number'},
+                ],
+            }),
+        ],
+    },
     {
         toVersion: 2,
         steps: [

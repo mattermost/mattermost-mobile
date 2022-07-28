@@ -8,7 +8,7 @@ type Group = {
     description: string;
     source: string;
     remote_id: string;
-    member_count: number;
+    member_count?: number;
     allow_reference: boolean;
     create_at: number;
     update_at: number;
@@ -16,14 +16,9 @@ type Group = {
 };
 
 type GroupTeam = {
+    id?: string;
     team_id: string;
-    team_display_name: string;
-    team_type: string;
     group_id: string;
-    auto_add: boolean;
-    create_at: number;
-    delete_at: number;
-    update_at: number;
 }
 
 type GroupChannel = {

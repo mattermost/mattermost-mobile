@@ -38,15 +38,17 @@ describe('Smoke Test - Channels', () => {
     const channelsCategory = 'channels';
     let testChannel: any;
     let testTeam: any;
+    let testUser: any;
 
     beforeAll(async () => {
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testTeam = team;
+        testUser = user;
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await LoginScreen.login(user);
+        await LoginScreen.login(testUser);
     });
 
     beforeEach(async () => {
@@ -157,5 +159,52 @@ describe('Smoke Test - Channels', () => {
         // # Go back to channel list screen
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
+    });
+
+    it('MM-T4774_5 - should be able to favorite and mute a channel', async () => {
+        // # Open a channel screen, open channel info screen, tap on favorite action to favorite the channel, and tap on mute action to mute the channel
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelInfoScreen.open();
+        await ChannelInfoScreen.favoriteAction.tap();
+        await ChannelInfoScreen.muteAction.tap();
+
+        // * Verify channel is favorited and muted
+        await expect(ChannelInfoScreen.unfavoriteAction).toBeVisible();
+        await expect(ChannelInfoScreen.unmuteAction).toBeVisible();
+
+        // # Tap on favorited action to unfavorite the channel and tap on muted action to unmute the channel
+        await ChannelInfoScreen.unfavoriteAction.tap();
+        await ChannelInfoScreen.unmuteAction.tap();
+
+        // * Verify channel is unfavorited and unmuted
+        await expect(ChannelInfoScreen.favoriteAction).toBeVisible();
+        await expect(ChannelInfoScreen.muteAction).toBeVisible();
+
+        // # Go back to channel list screen
+        await ChannelInfoScreen.close();
+        await ChannelScreen.back();
+    });
+
+    it('MM-T4774_6 - should be able to archive and leave a channel', async () => {
+        // # Open a channel screen, open channel info screen, and tap on archive channel option and confirm
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
+        await device.reloadReactNative();
+        await ChannelScreen.open(channelsCategory, channel.name);
+        await ChannelInfoScreen.open();
+        await ChannelInfoScreen.archivePublicChannel({confirm: true});
+
+        // * Verify on channel screen and post draft archived message is displayed
+        await ChannelScreen.toBeVisible();
+        await expect(ChannelScreen.postDraftArchived).toBeVisible();
+        await expect(element(by.text('You are viewing an archived channel. New messages cannot be posted.'))).toBeVisible();
+
+        // # Open channel info screen, and tap on leave channel option and confirm
+        await ChannelInfoScreen.open();
+        await ChannelInfoScreen.leaveChannel({confirm: true});
+
+        // * Verify on channel list screen and the channel left by the user does not appear on the list
+        await ChannelListScreen.toBeVisible();
+        await expect(ChannelListScreen.getChannelItem(channelsCategory, channel.name)).not.toExist();
     });
 });

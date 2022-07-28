@@ -8,13 +8,30 @@ import {deferredAppEntryActions, entry} from '@actions/remote/entry/common';
 import {graphQLCommon} from '@actions/remote/entry/gql_common';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchStatusByIds} from '@actions/remote/user';
+import {loadConfigAndCalls} from '@calls/actions/calls';
+import {
+    handleCallChannelDisabled,
+    handleCallChannelEnabled, handleCallScreenOff, handleCallScreenOn, handleCallStarted,
+    handleCallUserConnected,
+    handleCallUserDisconnected,
+    handleCallUserMuted, handleCallUserRaiseHand,
+    handleCallUserUnmuted, handleCallUserUnraiseHand, handleCallUserVoiceOff, handleCallUserVoiceOn,
+} from '@calls/connection/websocket_event_handlers';
+import {isSupportedServerCalls} from '@calls/utils';
 import {Events, Screens, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
 import {getActiveServerUrl, queryActiveServer} from '@queries/app/servers';
 import {getCurrentChannel} from '@queries/servers/channel';
-import {getCommonSystemValues, getConfig, getWebSocketLastDisconnected, resetWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {
+    getCommonSystemValues,
+    getConfig,
+    getCurrentUserId,
+    getWebSocketLastDisconnected,
+    resetWebSocketLastDisconnected,
+    setCurrentTeamAndChannelId,
+} from '@queries/servers/system';
 import {getCurrentTeam} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
@@ -63,6 +80,11 @@ export async function handleFirstConnect(serverUrl: string) {
     alreadyConnected.add(serverUrl);
     resetWebSocketLastDisconnected(operator);
     fetchStatusByIds(serverUrl, ['me']);
+
+    if (isSupportedServerCalls(config?.Version)) {
+        const currentUserId = await getCurrentUserId(database);
+        loadConfigAndCalls(serverUrl, currentUserId);
+    }
 }
 
 export function handleReconnect(serverUrl: string) {
@@ -144,6 +166,10 @@ async function doReconnectRest(serverUrl: string, operator: ServerDataOperator, 
 
     const {locale: currentUserLocale} = (await getCurrentUser(database))!;
     await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchedToChannel ? initialChannelId : undefined);
+
+    if (isSupportedServerCalls(config?.Version)) {
+        loadConfigAndCalls(serverUrl, currentUserId);
+    }
 
     // https://mattermost.atlassian.net/browse/MM-41520
 }
@@ -333,6 +359,49 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
         case WebsocketEvents.APPS_FRAMEWORK_REFRESH_BINDINGS:
             break;
 
-        // return dispatch(handleRefreshAppsBindings());
+            // return dispatch(handleRefreshAppsBindings());
+
+        // Calls ws events:
+        case WebsocketEvents.CALLS_CHANNEL_ENABLED:
+            handleCallChannelEnabled(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_CHANNEL_DISABLED:
+            handleCallChannelDisabled(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_USER_CONNECTED:
+            handleCallUserConnected(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_USER_DISCONNECTED:
+            handleCallUserDisconnected(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_USER_MUTED:
+            handleCallUserMuted(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_USER_UNMUTED:
+            handleCallUserUnmuted(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_USER_VOICE_ON:
+            handleCallUserVoiceOn(msg);
+            break;
+        case WebsocketEvents.CALLS_USER_VOICE_OFF:
+            handleCallUserVoiceOff(msg);
+            break;
+        case WebsocketEvents.CALLS_CALL_START:
+            handleCallStarted(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_SCREEN_ON:
+            handleCallScreenOn(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_SCREEN_OFF:
+            handleCallScreenOff(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_USER_RAISE_HAND:
+            handleCallUserRaiseHand(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_USER_UNRAISE_HAND:
+            handleCallUserUnraiseHand(serverUrl, msg);
+            break;
     }
+
+    return {};
 }

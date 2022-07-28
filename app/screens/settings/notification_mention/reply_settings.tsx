@@ -3,82 +3,50 @@
 
 import React, {useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
 
-import Block from '@components/block';
-import OptionItem from '@components/option_item';
-import {useTheme} from '@context/theme';
 import {t} from '@i18n';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
+
+import SettingBlock from '../setting_block';
+import SettingOption from '../setting_option';
+import SettingSeparator from '../settings_separator';
 
 const replyHeaderText = {
     id: t('notification_settings.mention.reply'),
     defaultMessage: 'Send reply notifications for',
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        separator: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            flex: 1,
-            height: 1,
-        },
-        upperCase: {
-            textTransform: 'uppercase',
-        },
-        label: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 200, 'Regular'),
-        },
-        container: {
-            paddingHorizontal: 8,
-        },
-    };
-});
-
 const ReplySettings = () => {
-    const [replyNotificationType, setReplyNotificationType] = useState('any'); //todo: initialize with value from db/api
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
+    const [replyNotificationType, setReplyNotificationType] = useState('any');
     const intl = useIntl();
 
-    const setReplyNotifications = (notifType: string) => {
-        setReplyNotificationType(notifType);
-    };
-
     return (
-        <Block
+        <SettingBlock
             headerText={replyHeaderText}
-            headerStyles={styles.upperCase}
         >
-            <OptionItem
-                action={setReplyNotifications}
-                type='select'
-                value='any'
-                containerStyle={styles.container}
+            <SettingOption
+                action={setReplyNotificationType}
                 label={intl.formatMessage({id: 'notification_settings.threads_start_participate', defaultMessage: 'Threads that I start or participate in'})}
                 selected={replyNotificationType === 'any'}
-            />
-            <View style={styles.separator}/>
-            <OptionItem
-                action={setReplyNotifications}
                 type='select'
-                value='root'
-                containerStyle={styles.container}
+                value='any'
+            />
+            <SettingSeparator/>
+            <SettingOption
+                action={setReplyNotificationType}
                 label={intl.formatMessage({id: 'notification_settings.threads_start', defaultMessage: 'Threads that I start'})}
                 selected={replyNotificationType === 'root'}
-            />
-            <View style={styles.separator}/>
-            <OptionItem
-                action={setReplyNotifications}
                 type='select'
-                value='never'
-                containerStyle={styles.container}
+                value='root'
+            />
+            <SettingSeparator/>
+            <SettingOption
+                action={setReplyNotificationType}
                 label={intl.formatMessage({id: 'notification_settings.threads_mentions', defaultMessage: 'Mentions in threads'})}
                 selected={replyNotificationType === 'never'}
+                type='select'
+                value='never'
             />
-        </Block>
+        </SettingBlock>
     );
 };
 

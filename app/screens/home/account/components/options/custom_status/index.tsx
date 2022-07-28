@@ -88,7 +88,6 @@ const CustomStatus = ({isCustomStatusExpirySupported, isTablet, currentUser}: Cu
                 />}
             separator={false}
             onPress={goToCustomStatusScreen}
-            theme={theme}
         />
     );
 };

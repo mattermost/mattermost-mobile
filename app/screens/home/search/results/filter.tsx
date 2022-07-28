@@ -75,15 +75,14 @@ export const DIVIDERS_HEIGHT = data.length - 1;
 type FilterProps = {
     initialFilter: FileFilter;
     setFilter: (filter: FileFilter) => void;
+    title: string;
 }
 
-const Filter = ({initialFilter, setFilter}: FilterProps) => {
+const Filter = ({initialFilter, setFilter, title}: FilterProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const isTablet = useIsTablet();
-
-    const buttonTitle = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
 
     const handleOnPress = useCallback((fileType: FileFilter) => {
         if (fileType !== initialFilter) {
@@ -110,7 +109,7 @@ const Filter = ({initialFilter, setFilter}: FilterProps) => {
             showButton={false}
             showTitle={!isTablet}
             testID='search.filters'
-            title={buttonTitle}
+            title={title}
             titleSeparator={true}
         >
             <View style={style.container}>

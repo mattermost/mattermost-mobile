@@ -161,7 +161,7 @@ class PushNotifications {
             }
 
             const isDifferentChannel = payload?.channel_id !== channelId;
-            const isVisibleThread = payload?.root_id === EphemeralStore.getLastViewedThreadId() && NavigationStore.getNavigationTopComponentId() === Screens.THREAD;
+            const isVisibleThread = payload?.root_id === EphemeralStore.getCurrentThreadId();
             let isChannelScreenVisible = NavigationStore.getNavigationTopComponentId() === Screens.CHANNEL;
             if (isTabletDevice) {
                 isChannelScreenVisible = NavigationStore.getVisibleTab() === Screens.HOME;

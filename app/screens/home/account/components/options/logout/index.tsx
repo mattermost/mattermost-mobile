@@ -50,7 +50,8 @@ const Settings = ({style, theme}: Props) => {
 
     return (
         <MenuItem
-            testID='account.logout.action'
+            iconName='exit-to-app'
+            isDestructor={true}
             labelComponent={(
                 <View>
                     <FormattedText
@@ -66,11 +67,9 @@ const Settings = ({style, theme}: Props) => {
                     />
                 </View>
             )}
-            iconName='exit-to-app'
-            isDestructor={true}
             onPress={onLogout}
             separator={false}
-            theme={theme}
+            testID='account.logout.action'
         />
     );
 };

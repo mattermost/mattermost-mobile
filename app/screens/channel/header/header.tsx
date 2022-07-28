@@ -154,6 +154,7 @@ const ChannelHeader = ({
             iconName: Platform.select({android: 'dots-vertical', default: 'dots-horizontal'}),
             onPress: onChannelQuickAction,
             buttonType: 'opacity',
+            testID: 'channel_header.channel_quick_actions.button',
         }]), [isTablet, searchTerm, onChannelQuickAction]);
 
     let title = displayName;

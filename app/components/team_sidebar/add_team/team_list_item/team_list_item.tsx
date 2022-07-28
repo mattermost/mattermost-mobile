@@ -4,10 +4,9 @@
 import React, {useCallback} from 'react';
 import {Text, View} from 'react-native';
 
-import {addUserToTeam} from '@actions/remote/team';
+import CompassIcon from '@components/compass_icon';
 import TeamIcon from '@components/team_sidebar/team_list/team_item/team_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -16,18 +15,22 @@ import type TeamModel from '@typings/database/models/servers/team';
 
 type Props = {
     team: TeamModel | Team;
-    currentUserId: string;
     textColor?: string;
     iconTextColor?: string;
     iconBackgroundColor?: string;
-    onTeamAdded: (teamId: string) => void;
+    selectedTeamId?: string;
+    onPress: (teamId: string) => void;
 }
+
+const CONTAINER_HEIGHT = 40;
+const CONTAINER_VERTICAL_MARGIN = 8;
+export const ITEM_HEIGHT = CONTAINER_HEIGHT + (CONTAINER_VERTICAL_MARGIN * 2);
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            height: 64,
-            marginBottom: 2,
+            height: CONTAINER_HEIGHT,
+            marginVertical: CONTAINER_VERTICAL_MARGIN,
         },
         touchable: {
             display: 'flex',
@@ -46,28 +49,29 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             width: 40,
             height: 40,
         },
+        compassContainer: {
+            flex: 1,
+            alignItems: 'flex-end',
+        },
     };
 });
 
-export default function TeamListItem({team, currentUserId, textColor, iconTextColor, iconBackgroundColor, onTeamAdded}: Props) {
+export default function TeamListItem({team, textColor, iconTextColor, iconBackgroundColor, selectedTeamId, onPress}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const serverUrl = useServerUrl();
-    const onPress = useCallback(async () => {
-        const {error} = await addUserToTeam(serverUrl, team.id, currentUserId);
-        if (!error) {
-            onTeamAdded(team.id);
-        }
-    }, [onTeamAdded]);
 
     const displayName = 'displayName' in team ? team.displayName : team.display_name;
     const lastTeamIconUpdateAt = 'lastTeamIconUpdatedAt' in team ? team.lastTeamIconUpdatedAt : team.last_team_icon_update;
     const teamListItemTestId = `team_sidebar.team_list.team_list_item.${team.id}`;
 
+    const handlePress = useCallback(() => {
+        onPress(team.id);
+    }, [team.id, onPress]);
+
     return (
         <View style={styles.container}>
             <TouchableWithFeedback
-                onPress={onPress}
+                onPress={handlePress}
                 type='opacity'
                 style={styles.touchable}
             >
@@ -88,6 +92,15 @@ export default function TeamListItem({team, currentUserId, textColor, iconTextCo
                 >
                     {displayName}
                 </Text>
+                {(team.id === selectedTeamId) &&
+                    <View style={styles.compassContainer}>
+                        <CompassIcon
+                            color={theme.buttonBg}
+                            name='check'
+                            size={24}
+                        />
+                    </View>
+                }
             </TouchableWithFeedback>
         </View>
     );

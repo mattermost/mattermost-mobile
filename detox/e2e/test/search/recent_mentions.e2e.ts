@@ -16,12 +16,14 @@ import {
     siteOneUrl,
 } from '@support/test_config';
 import {
+    ChannelInfoScreen,
     ChannelListScreen,
     ChannelScreen,
     EditPostScreen,
     HomeScreen,
     LoginScreen,
     PermalinkScreen,
+    PinnedMessagesScreen,
     PostOptionsScreen,
     RecentMentionsScreen,
     SavedMessagesScreen,
@@ -204,5 +206,50 @@ describe('Search - Recent Mentions', () => {
 
         // # Go back to channel list screen
         await ChannelListScreen.open();
+    });
+
+    it('MM-T4909_5 - should be able to pin/unpin a recent mention from recent mentions screen', async () => {
+        // # Open a channel screen, post a message with at-mention to current user, go back to channel list screen, and open recent mentions screen
+        const message = `@${testUser.username}`;
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage(message);
+        await ChannelScreen.back();
+        await RecentMentionsScreen.open();
+
+        // * Verify on recent mentions screen
+        await RecentMentionsScreen.toBeVisible();
+
+        // # Open post options for recent mention, tap on pin to channel option, go back to channel list screen, open the channel screen where recent mention is posted, open channel info screen, and open pinned messages screen
+        const {post: mentionPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, message);
+        await PostOptionsScreen.pinPostOption.tap();
+        await ChannelListScreen.open();
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelInfoScreen.open();
+        await PinnedMessagesScreen.open();
+
+        // * Verify recent mention is displayed on pinned messages screen
+        const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(mentionPost.id, message);
+        await expect(postListPostItem).toBeVisible();
+
+        // # Go back to recent mentions screen, open post options for recent mention, tap on unpin from channel option, go back to channel list screen, open the channel screen where recent mention is posted, open channel info screen, and open pinned messages screen
+        await PinnedMessagesScreen.back();
+        await ChannelInfoScreen.close();
+        await ChannelScreen.back();
+        await RecentMentionsScreen.open();
+        await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, message);
+        await PostOptionsScreen.unpinPostOption.tap();
+        await ChannelListScreen.open();
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelInfoScreen.open();
+        await PinnedMessagesScreen.open();
+
+        // * Verify recent mention is not displayed anymore on pinned messages screen
+        await expect(postListPostItem).not.toExist();
+
+        // # Go back to channel list screen
+        await PinnedMessagesScreen.back();
+        await ChannelInfoScreen.close();
+        await ChannelScreen.back();
     });
 });
