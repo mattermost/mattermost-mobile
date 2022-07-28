@@ -97,7 +97,7 @@ const SearchScreen = ({teamId}: Props) => {
     const handleTextChange = useCallback((newValue: string) => {
         setSearchValue(newValue);
         setCursorPosition(newValue.length);
-    }, [setSearchValue, setCursorPosition]);
+    }, []);
 
     const handleClearSearch = useCallback(() => {
         handleTextChange('');
@@ -245,7 +245,7 @@ const SearchScreen = ({teamId}: Props) => {
             />
         );
     }
-    const autocomplete = useMemo(() => (
+    const autocomplete = (
         <Autocomplete
             paddingTop={AutocompletePaddingTop}
             postInputTop={0}
@@ -255,7 +255,7 @@ const SearchScreen = ({teamId}: Props) => {
             isSearch={true}
             hasFilesAttached={false}
         />
-    ), [searchValue, handleTextChange, paddingTop]);
+    );
 
     return (
         <FreezeScreen freeze={!isFocused}>
