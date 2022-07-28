@@ -10,7 +10,6 @@ import {MyTeamsRequest} from '@actions/remote/team';
 import {fetchNewThreads} from '@actions/remote/thread';
 import {MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
 import {gqlEntry, gqlEntryChannels, gqlOtherChannels} from '@client/graphQL/entry';
-import {GQLRole, gqlToClientChannel, gqlToClientChannelMembership, gqlToClientPreference, gqlToClientRole, gqlToClientSidebarCategory, gqlToClientTeam, gqlToClientTeamMembership, gqlToClientUser} from '@client/graphQL/types';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue} from '@helpers/api/preference';
@@ -21,6 +20,7 @@ import {getHasCRTChanged} from '@queries/servers/preference';
 import {prepareCommonSystemValues} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, queryMyTeams} from '@queries/servers/team';
 import {selectDefaultChannelForTeam} from '@utils/channel';
+import {filterAndTransformRoles, getMemberChannelsFromGQLQuery, getMemberTeamsFromGQLQuery, gqlToClientChannelMembership, gqlToClientPreference, gqlToClientSidebarCategory, gqlToClientTeamMembership, gqlToClientUser} from '@utils/graphql';
 import {isTablet} from '@utils/helpers';
 import {processIsCRTEnabled} from '@utils/thread';
 
@@ -145,23 +145,13 @@ const getChannelData = async (serverUrl: string, initialTeamId: string, userId: 
     const channelsFetchedData = response.data;
 
     const chData = {
-        channels: channelsFetchedData.channelMembers?.map((m) => gqlToClientChannel(m.channel!)),
+        channels: getMemberChannelsFromGQLQuery(channelsFetchedData),
         memberships: channelsFetchedData.channelMembers?.map((m) => gqlToClientChannelMembership(m, userId)),
         categories: channelsFetchedData.sidebarCategories?.map((c) => gqlToClientSidebarCategory(c, '')),
     };
     const roles = channelsFetchedData.channelMembers?.map((m) => m.roles).flat() || [];
 
     return {chData, roles};
-};
-
-const filterAndTransformRoles = (roles: Array<Partial<GQLRole> | undefined>) => {
-    const byName = roles.reduce<{[name: string]: Partial<GQLRole>}>((acum, r) => {
-        if (r?.name && !acum[r.name]) {
-            acum[r.name] = r;
-        }
-        return acum;
-    }, {});
-    return Object.values(byName).map((r) => gqlToClientRole(r!));
 };
 
 export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, currentTeamId: string, currentChannelId: string, isUpgrade = false) => {
@@ -200,12 +190,12 @@ export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, cu
     };
 
     const teamData = {
-        teams: fetchedData.teamMembers.map((m) => gqlToClientTeam(m.team!)),
+        teams: getMemberTeamsFromGQLQuery(fetchedData),
         memberships: fetchedData.teamMembers.map((m) => gqlToClientTeamMembership(m, meData.user.id)),
     };
 
     const prefData = {
-        preferences: fetchedData.user?.preferences?.map((p) => gqlToClientPreference(p)),
+        preferences: fetchedData.user?.preferences?.map(gqlToClientPreference),
     };
 
     if (prefData.preferences) {
@@ -229,7 +219,7 @@ export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, cu
     if (!teamData.teams.length) {
         initialTeamId = '';
     } else if (!initialTeamId || !teamData.teams.find((t) => t.id === currentTeamId)) {
-        const teamOrderPreference = getPreferenceValue(prefData.preferences!, Preferences.TEAMS_ORDER, '', '') as string;
+        const teamOrderPreference = getPreferenceValue(prefData.preferences || [], Preferences.TEAMS_ORDER, '', '') as string;
         initialTeamId = selectDefaultTeam(teamData.teams, meData.user.locale, teamOrderPreference, config.ExperimentalPrimaryTeam)?.id || '';
     }
     const gqlRoles = [

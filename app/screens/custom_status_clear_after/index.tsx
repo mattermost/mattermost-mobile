@@ -15,7 +15,6 @@ import {
     Options,
 } from 'react-native-navigation';
 
-import {CustomStatusDuration} from '@constants/custom_status';
 import {observeCurrentUser} from '@queries/servers/user';
 import {dismissModal, popTopScreen} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';

@@ -12,7 +12,6 @@ import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRe
 import {fetchNewThreads} from '@actions/remote/thread';
 import {fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
 import {gqlAllChannels} from '@client/graphQL/entry';
-import {gqlToClientChannel, gqlToClientChannelMembership} from '@client/graphQL/types';
 import {Preferences} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
@@ -29,6 +28,7 @@ import {getHasCRTChanged} from '@queries/servers/preference';
 import {getConfig, getCurrentUserId, getPushVerificationStatus, getWebSocketLastDisconnected} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, getNthLastChannelFromTeam, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
+import {getMemberChannelsFromGQLQuery, gqlToClientChannelMembership} from '@utils/graphql';
 import {logDebug} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
 
@@ -377,6 +377,11 @@ const syncAllChannelMembersAndThreads = async (serverUrl: string) => {
 };
 
 const graphQLSyncAllChannelMembers = async (serverUrl: string) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return 'Server database not found';
+    }
+
     const response = await gqlAllChannels(serverUrl);
     if ('error' in response) {
         return response.error;
@@ -386,19 +391,14 @@ const graphQLSyncAllChannelMembers = async (serverUrl: string) => {
         return response.errors[0].message;
     }
 
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return 'Server database not found';
-    }
-
     const userId = await getCurrentUserId(operator.database);
 
-    const channels = response.data.channelMembers?.map((m) => gqlToClientChannel(m.channel!));
+    const channels = getMemberChannelsFromGQLQuery(response.data);
     const memberships = response.data.channelMembers?.map((m) => gqlToClientChannelMembership(m, userId));
 
     if (channels && memberships) {
         const modelPromises = await prepareMyChannelsForTeam(operator, '', channels, memberships, undefined, true);
-        const models = (await Promise.all([...modelPromises])).flat();
+        const models = (await Promise.all(modelPromises)).flat();
         if (models.length) {
             operator.batchRecords(models);
         }

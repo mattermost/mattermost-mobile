@@ -16,7 +16,7 @@ import {updateLocalCustomStatus} from '@actions/local/user';
 import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import TabletTitle from '@components/tablet_title';
-import {CustomStatusDuration, Events, Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
 import {withServerUrl} from '@context/server';
 import {withTheme} from '@context/theme';
@@ -25,6 +25,7 @@ import {observeCurrentUser} from '@queries/servers/user';
 import {dismissModal, goToScreen, showModal} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {getCurrentMomentForTimezone, getRoundedTime, isCustomStatusExpirySupported} from '@utils/helpers';
+import {logDebug} from '@utils/log';
 import {mergeNavigationOptions} from '@utils/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -210,7 +211,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 updateLocalCustomStatus(serverUrl, currentUser, status);
 
                 this.setState({
-                    duration: status.duration,
+                    duration: status.duration!,
                     emoji: status.emoji,
                     expires_at: moment(status.expires_at),
                     text: status.text,
@@ -266,6 +267,11 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     handleCustomStatusSuggestionClick = (status: UserCustomStatus) => {
         const {emoji, text, duration} = status;
+        if (!duration) {
+            // This should never happen, but we add a safeguard here
+            logDebug('clicked on a custom status with no duration');
+            return;
+        }
         this.setState({emoji, text, duration});
     };
 

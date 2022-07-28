@@ -6,7 +6,6 @@ import {IntlShape} from 'react-intl';
 import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
-import {CustomStatusDuration} from '@constants/custom_status';
 import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -24,7 +23,7 @@ type DefaultUserCustomStatus = {
     emoji: string;
     message: string;
     messageDefault: string;
-    durationDefault: string;
+    durationDefault: CustomStatusDuration;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -72,11 +71,11 @@ const CustomStatusSuggestions = ({
             text: intl.formatMessage({id: status.message, defaultMessage: status.messageDefault}),
             duration: status.durationDefault,
         })).
-        filter((status: UserCustomStatus) => !recentCustomStatusTexts.has(status.text)).
-        map((status: UserCustomStatus, index: number, arr: UserCustomStatus[]) => (
+        filter((status) => !recentCustomStatusTexts.has(status.text)).
+        map((status, index, arr) => (
             <CustomStatusSuggestion
                 key={status.text}
-                handleSuggestionClick={onHandleCustomStatusSuggestionClick} // this.handleCustomStatusSuggestionClick
+                handleSuggestionClick={onHandleCustomStatusSuggestionClick}
                 emoji={status.emoji}
                 text={status.text}
                 theme={theme}

@@ -6,7 +6,6 @@ import NetworkManager from '@managers/network_manager';
 import {Client} from '../rest';
 
 import QueryNames from './constants';
-import {GQLResponse} from './types';
 
 const doGQLQuery = async (serverUrl: string, query: string, variables: {[name: string]: any}, operationName: string) => {
     let client: Client;

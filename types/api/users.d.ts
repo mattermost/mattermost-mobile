@@ -96,3 +96,13 @@ type UserCustomStatus = {
     expires_at?: string;
     duration?: CustomStatusDuration;
 };
+
+enum CustomStatusDuration {
+    DONT_CLEAR = '',
+    THIRTY_MINUTES = 'thirty_minutes',
+    ONE_HOUR = 'one_hour',
+    FOUR_HOURS = 'four_hours',
+    TODAY = 'today',
+    THIS_WEEK = 'this_week',
+    DATE_AND_TIME = 'date_and_time',
+}
