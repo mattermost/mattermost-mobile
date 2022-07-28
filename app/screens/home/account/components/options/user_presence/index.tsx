@@ -35,9 +35,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         spacer: {
             marginLeft: 16, //fixme: 'remove this when we have a better way to handle this',
+
         },
         body: {
             flexDirection: 'row',
+            marginTop: 18,
         },
     };
 });
