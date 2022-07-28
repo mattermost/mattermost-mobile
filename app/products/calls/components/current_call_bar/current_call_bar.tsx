@@ -128,9 +128,6 @@ const CurrentCallBar = ({
     }, []);
 
     const myParticipant = currentCall?.participants[currentCall.myUserId];
-    if (!currentCall || !myParticipant) {
-        return null;
-    }
 
     const muteUnmute = () => {
         if (myParticipant?.muted) {
@@ -147,7 +144,7 @@ const CurrentCallBar = ({
                 <CallAvatar
                     userModel={userModelsDict[speaker || '']}
                     volume={speaker ? 0.5 : 0}
-                    serverUrl={currentCall.serverUrl}
+                    serverUrl={currentCall?.serverUrl || ''}
                 />
                 <View style={style.userInfo}>
                     <Text style={style.speakingUser}>
