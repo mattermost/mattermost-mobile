@@ -9,6 +9,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import NavigationHeader from '@components/navigation_header';
+import {ITEM_HEIGHT} from '@components/option_item';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {General, Screens} from '@constants';
 import {QUICK_OPTIONS_HEIGHT} from '@constants/view';
@@ -126,7 +127,7 @@ const ChannelHeader = ({
         }
 
         // When calls is enabled, we need space to move the "Copy Link" from a button to an option
-        const height = QUICK_OPTIONS_HEIGHT + (callsEnabled ? 48 : 0);
+        const height = QUICK_OPTIONS_HEIGHT + (callsEnabled ? ITEM_HEIGHT : 0);
 
         const renderContent = () => {
             return (

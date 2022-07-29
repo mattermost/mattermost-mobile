@@ -33,7 +33,7 @@ const enhanced = withObservables(['serverUrl', 'channelId'], ({
         distinctUntilChanged((prev, curr) => prev.participants === curr.participants), // Did the participants object ref change?
         switchMap((call) => (call ? of$(Object.keys(call.participants)) : of$([]))),
         distinctUntilChanged((prev, curr) => idsAreEqual(prev, curr)), // Continue only if we have a different set of participant ids
-        switchMap((ids) => (ids.length > 0 ? queryUsersById(database, ids).observeWithColumns(['lastPictureUpdate', 'last_picture_update']) : of$([]))),
+        switchMap((ids) => (ids.length > 0 ? queryUsersById(database, ids).observeWithColumns(['last_picture_update']) : of$([]))),
     );
     const currentCallChannelId = observeCurrentCall().pipe(
         switchMap((call) => of$(call?.channelId || undefined)),

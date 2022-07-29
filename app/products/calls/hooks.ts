@@ -3,7 +3,7 @@
 
 // Check if calls is enabled. If it is, then run fn; if it isn't, show an alert and set
 // msgPostfix to ' (Not Available)'.
-import {useState} from 'react';
+import {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
@@ -27,7 +27,7 @@ export const useTryCallsFunction = (fn: () => void) => {
             setClientError((error as ClientError).message);
         }
     }
-    const tryFn = async () => {
+    const tryFn = useCallback(async () => {
         if (client && await client.getEnabled()) {
             setMsgPostfix('');
             fn();
@@ -67,7 +67,7 @@ export const useTryCallsFunction = (fn: () => void) => {
             ],
         );
         setMsgPostfix(` ${notAvailable}`);
-    };
+    }, [client, fn, clientError, intl]);
 
     return [tryFn, msgPostfix] as [() => Promise<void>, string];
 };

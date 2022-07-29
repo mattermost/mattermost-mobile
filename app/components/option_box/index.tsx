@@ -63,11 +63,7 @@ const OptionBox = ({
     const styles = getStyleSheet(theme);
 
     const pressedStyle = useCallback(({pressed}: PressableStateCallbackType) => {
-        const style = [
-            styles.container,
-            Boolean(containerStyle) && containerStyle,
-            isDestructive && styles.destructiveContainer,
-        ];
+        const style = [styles.container, containerStyle, isDestructive && styles.destructiveContainer];
         const baseBgColor = isDestructive ? theme.dndIndicator : theme.buttonBg;
 
         if (activated) {

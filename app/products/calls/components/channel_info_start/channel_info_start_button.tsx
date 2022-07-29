@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
 import {leaveCall} from '@calls/actions';
@@ -33,7 +33,7 @@ const ChannelInfoStartButton = ({
 }: Props) => {
     const intl = useIntl();
 
-    const toggleJoinLeave = () => {
+    const toggleJoinLeave = useCallback(() => {
         if (alreadyInCall) {
             leaveCall();
         } else {
@@ -41,7 +41,7 @@ const ChannelInfoStartButton = ({
         }
 
         dismissChannelInfo();
-    };
+    }, [alreadyInCall, dismissChannelInfo, intl, serverUrl, channelId, currentCallChannelName, displayName, confirmToJoin, isACallInCurrentChannel]);
     const [tryJoin, msgPostfix] = useTryCallsFunction(toggleJoinLeave);
 
     const joinText = intl.formatMessage({id: 'mobile.calls_join_call', defaultMessage: 'Join Call'});
