@@ -6,7 +6,6 @@ import {Text, TouchableOpacity, View} from 'react-native';
 
 import {removeSearchFromTeamSearchHistory} from '@actions/local/team';
 import CompassIcon from '@components/compass_icon';
-import MenuItem from '@components/menu_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -17,12 +16,11 @@ import type TeamSearchHistoryModel from '@typings/database/models/servers/team_s
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            marginVertical: -16,
-            paddingLeft: 20,
-            paddingRight: 6,
-            alignItems: 'center',
             height: 48,
             flexDirection: 'row',
+            justifyContent: 'space-between',
+            paddingHorizontal: 16,
+            marginTop: 20,
         },
         remove: {
             height: 40,
@@ -31,7 +29,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
         },
         term: {
-            flex: 1,
             marginLeft: 16,
             color: theme.centerChannelColor,
             ...typography('Body', 200, 'Regular'),
@@ -59,32 +56,30 @@ const RecentItem = ({item, setRecentValue}: Props) => {
     }, [item.id]);
 
     return (
-        <MenuItem
-            testID={testID}
-            onPress={handlePress}
-            labelComponent={
-                <View style={style.container}>
-                    <CompassIcon
-                        name='clock-outline'
-                        size={24}
-                        color={changeOpacity(theme.centerChannelColor, 0.56)}
-                    />
-                    <Text style={style.term}>{item.term}</Text>
-                    <TouchableOpacity
-                        onPress={handleRemove}
-                        style={style.remove}
-                        testID={`${testID}.remove.button`}
-                    >
-                        <CompassIcon
-                            name='close'
-                            size={18}
-                            color={changeOpacity(theme.centerChannelColor, 0.64)}
-                        />
-                    </TouchableOpacity>
-                </View>
-            }
-            separator={false}
-        />
+        <View style={style.container}>
+            <TouchableOpacity
+                onPress={handlePress}
+                style={{flexDirection: 'row'}}
+            >
+                <CompassIcon
+                    name='clock-outline'
+                    size={24}
+                    color={changeOpacity(theme.centerChannelColor, 0.56)}
+                />
+                <Text style={style.term}>{item.term}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                onPress={handleRemove}
+                style={style.remove}
+                testID={`${testID}.remove.button`}
+            >
+                <CompassIcon
+                    name='close'
+                    size={18}
+                    color={changeOpacity(theme.centerChannelColor, 0.64)}
+                />
+            </TouchableOpacity>
+        </View>
     );
 };
 
