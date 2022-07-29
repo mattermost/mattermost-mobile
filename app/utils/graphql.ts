@@ -1,31 +1,52 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+const defaultNotifyProps: UserNotifyProps = {
+    channel: 'true',
+    comments: 'never',
+    desktop: 'mention',
+    desktop_sound: 'true',
+    email: 'true',
+    email_threads: 'all',
+    first_name: 'false',
+    mention_keys: '',
+    push: 'mention',
+    push_status: 'away',
+    push_threads: 'all',
+
+};
 export const gqlToClientUser = (u: Partial<GQLUser>): UserProfile => {
     return {
-        auth_service: u.authService || '',
-        create_at: u.createAt || 0,
-        delete_at: u.deleteAt || 0,
-        email: u.email || '',
-        first_name: u.firstName || '',
         id: u.id || '',
-        is_bot: u.isBot || false,
-        last_name: u.lastName || '',
-        last_picture_update: u.lastPictureUpdateAt || 0,
-        locale: u.locale || '',
-        nickname: u.nickname || '',
-        notify_props: u.notifyProps!,
-        position: u.position || '',
-        roles: u.roles?.map((v) => v.name!).join(',') || '',
-        update_at: 0,
+        create_at: u.createAt || 0,
+        update_at: u.updateAt || 0,
+        delete_at: u.deleteAt || 0,
         username: u.username || '',
-        auth_data: '',
-        email_verified: true,
+        auth_service: u.authService || '',
+
+        email: u.email || '',
+        email_verified: u.emailVerified ?? true,
+        nickname: u.nickname || '',
+        first_name: u.firstName || '',
+        last_name: u.lastName || '',
+        position: u.position || '',
+        roles: u.roles?.map((v) => v.name!).join(' ') || '',
+        locale: u.locale || '',
+        notify_props: u.notifyProps || defaultNotifyProps,
         props: u.props,
-        status: u.status?.status || '',
-        terms_of_service_create_at: 0,
-        terms_of_service_id: '',
+
         timezone: u.timezone,
+        is_bot: u.isBot,
+        last_picture_update: u.lastPictureUpdate,
+        remote_id: u.remoteId,
+        status: u.status?.status || '',
+        bot_description: u.botDescription,
+        bot_last_icon_update: u.botLastIconUpdate,
+
+        auth_data: '',
+        terms_of_service_id: '',
+        terms_of_service_create_at: 0,
+
     };
 };
 
@@ -42,7 +63,7 @@ export const gqlToClientTeamMembership = (m: Partial<GQLTeamMembership>, userId?
     return {
         team_id: m.team?.id || '',
         delete_at: m.deleteAt || 0,
-        roles: m.roles?.map((v) => v.name!).join(',') || '',
+        roles: m.roles?.map((v) => v.name!).join(' ') || '',
         user_id: m.user?.id || userId || '',
         scheme_admin: m.schemeAdmin || false,
         scheme_user: m.schemeUser || false,
@@ -106,7 +127,7 @@ export const gqlToClientChannelMembership = (m: Partial<GQLChannelMembership>, u
         msg_count: m.msgCount || 0,
         msg_count_root: m.msgCountRoot || 0,
         notify_props: m.notifyProps || {},
-        roles: m.roles?.map((r) => r.name).join(',') || '',
+        roles: m.roles?.map((r) => r.name).join(' ') || '',
         user_id: m.user?.id || userId || '',
         is_unread: false,
         last_post_at: 0,

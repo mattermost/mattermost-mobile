@@ -24,28 +24,36 @@ type GQLError = {
 
 type GQLUser = {
     id: string;
+	createAt: number;
+	updateAt: number;
+	deleteAt: number;
 	username: string;
+	authService: string;
 	email: string;
+	emailVerified: boolean;
+	nickname: string;
 	firstName: string;
 	lastName: string;
-	nickname: string;
+	position: string;
+	locale: string;
+	notifyProps: UserNotifyProps;
+	props: UserProps;
+	timezone: UserTimezone;
 	isBot: boolean;
-	isGuest: boolean;
-	isSystemAdmin: boolean;
-	createAt: number;
-	deleteAt: number;
-	authService: string;
+	lastPictureUpdate: number;
+	remoteId: string;
+	botDescription: string;
+	botLastIconUpdate: number;
+
+	roles: Array<Partial<GQLRole>>;
 	customStatus: Partial<GQLUserCustomStatus>;
 	status: Partial<GQLUserStatus>;
-	props: UserProps;
-	notifyProps: UserNotifyProps;
-	lastPictureUpdateAt: number;
-	locale: string;
-	timezone: UserTimezone;
-	position: string;
-	roles: Array<Partial<GQLRole>>;
 	preferences: Array<Partial<GQLPreference>>;
     sessions: Array<Partial<GQLSession>>;
+
+	// Derived
+	isSystemAdmin: boolean;
+	isGuest: boolean;
 }
 
 type GQLSession = {

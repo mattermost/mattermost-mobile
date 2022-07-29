@@ -223,7 +223,7 @@ export function confirmOutOfOfficeDisabled(intl: IntlShape, status: string, upda
 }
 
 export function isBot(user: UserProfile | UserModel): boolean {
-    return 'is_bot' in user ? Boolean(user.is_bot) : Boolean(user.isBot);
+    return 'isBot' in user ? Boolean(user.isBot) : Boolean(user.is_bot);
 }
 
 export function isShared(user: UserProfile | UserModel): boolean {

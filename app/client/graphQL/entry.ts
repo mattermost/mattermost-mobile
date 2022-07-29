@@ -147,29 +147,34 @@ query ${QueryNames.QUERY_ENTRY} {
     license
     user(id:"me") {
         id
-        authService
+        createAt
+        updateAt
         deleteAt
+        username
+        authService
         email
-        #updateAt
+        emailVerified
+        nickname
         firstName
         lastName
-        lastPictureUpdateAt
-        locale
-        nickname
         position
         roles {
             id
             name
             permissions
         }
-        username
+        locale
         notifyProps
         props
         timezone
         isBot
+        lastPictureUpdate
+        remoteId
         status {
             status
         }
+        botDescription
+        botLastIconUpdate
         preferences{
             category
             name

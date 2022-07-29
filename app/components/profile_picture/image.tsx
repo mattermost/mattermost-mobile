@@ -71,7 +71,7 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
         if (isBot) {
             lastPictureUpdate = ('isBot' in author) ? author.props?.bot_last_icon_update : author.bot_last_icon_update || 0;
         } else {
-            lastPictureUpdate = ('lastPictureUpdate' in author) ? author.lastPictureUpdate : author.last_picture_update;
+            lastPictureUpdate = ('lastPictureUpdate' in author) ? author.lastPictureUpdate : author.last_picture_update || 0;
         }
 
         const pictureUrl = client.getProfilePictureUrl(author.id, lastPictureUpdate);
