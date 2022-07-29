@@ -24,7 +24,7 @@ class SavedMessagesScreen {
     emptyTitle = element(by.id(this.testID.emptyTitle));
     emptyParagraph = element(by.id(this.testID.emptyParagraph));
 
-    // convenience propers
+    // convenience props
     largeHeaderTitle = NavigationHeader.largeHeaderTitle;
     largeHeaderSubtitle = NavigationHeader.largeHeaderSubtitle;
 

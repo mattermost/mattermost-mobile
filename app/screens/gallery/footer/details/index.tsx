@@ -64,6 +64,7 @@ const Details = ({channelName, isDirectChannel, ownPost, userDisplayName}: Props
     return (
         <View style={styles.container}>
             {userElement}
+            {Boolean(channelName) &&
             <FormattedText
                 id='gallery.footer.channel_name'
                 defaultMessage='Shared in {channelName}'
@@ -72,6 +73,7 @@ const Details = ({channelName, isDirectChannel, ownPost, userDisplayName}: Props
                 style={styles.chanelText}
                 values={channelDisplayName}
             />
+            }
         </View>
     );
 };

@@ -16,12 +16,14 @@ import {
     siteOneUrl,
 } from '@support/test_config';
 import {
+    ChannelInfoScreen,
     ChannelListScreen,
     ChannelScreen,
     EditPostScreen,
     HomeScreen,
     LoginScreen,
     PermalinkScreen,
+    PinnedMessagesScreen,
     PostOptionsScreen,
     SavedMessagesScreen,
     ServerScreen,
@@ -199,5 +201,52 @@ describe('Search - Saved Messages', () => {
 
         // # Go back to channel list screen
         await ChannelListScreen.open();
+    });
+
+    it('MM-T4910_5 - should be able to pin/unpin a saved message from saved messages screen', async () => {
+        // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
+        const message = `Message ${getRandomId()}`;
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage(message);
+        const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        await ChannelScreen.openPostOptionsFor(savedPost.id, message);
+        await PostOptionsScreen.savePostOption.tap();
+        await ChannelScreen.back();
+        await SavedMessagesScreen.open();
+
+        // * Verify on saved messages screen
+        await SavedMessagesScreen.toBeVisible();
+
+        // # Open post options for saved message, tap on pin to channel option, go back to channel list screen, open the channel screen where saved message is posted, open channel info screen, and open pinned messages screen
+        await SavedMessagesScreen.openPostOptionsFor(savedPost.id, message);
+        await PostOptionsScreen.pinPostOption.tap();
+        await ChannelListScreen.open();
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelInfoScreen.open();
+        await PinnedMessagesScreen.open();
+
+        // * Verify saved message is displayed on pinned messages screen
+        const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(savedPost.id, message);
+        await expect(postListPostItem).toBeVisible();
+
+        // # Go back to saved messages screen, open post options for saved message, tap on unpin from channel option, go back to channel list screen, open the channel screen where saved message is posted, open channel info screen, and open pinned messages screen
+        await PinnedMessagesScreen.back();
+        await ChannelInfoScreen.close();
+        await ChannelScreen.back();
+        await SavedMessagesScreen.open();
+        await SavedMessagesScreen.openPostOptionsFor(savedPost.id, message);
+        await PostOptionsScreen.unpinPostOption.tap();
+        await ChannelListScreen.open();
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelInfoScreen.open();
+        await PinnedMessagesScreen.open();
+
+        // * Verify saved message is not displayed anymore on pinned messages screen
+        await expect(postListPostItem).not.toExist();
+
+        // # Go back to channel list screen
+        await PinnedMessagesScreen.back();
+        await ChannelInfoScreen.close();
+        await ChannelScreen.back();
     });
 });

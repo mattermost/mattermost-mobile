@@ -229,7 +229,6 @@ const PostList = ({
                 return (
                     <DateSeparator
                         date={getDateForDateLine(item)}
-                        theme={theme}
                         style={styles.scale}
                         timezone={isTimezoneEnabled ? currentTimezone : null}
                     />
@@ -312,6 +311,7 @@ const PostList = ({
                 isCRTEnabled={isCRTEnabled}
                 key={item.id}
                 post={item}
+                rootId={rootId}
                 style={styles.scale}
                 testID={`${testID}.post`}
                 {...postProps}
@@ -379,10 +379,12 @@ const PostList = ({
             {showMoreMessages &&
             <MoreMessages
                 channelId={channelId}
+                isCRTEnabled={isCRTEnabled}
                 newMessageLineIndex={initialIndex}
                 posts={orderedPosts}
                 registerScrollEndIndexListener={registerScrollEndIndexListener}
                 registerViewableItemsListener={registerViewableItemsListener}
+                rootId={rootId}
                 scrollToIndex={scrollToIndex}
                 theme={theme}
                 testID={`${testID}.more_messages_button`}

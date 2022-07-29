@@ -2,37 +2,27 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {Platform, StyleProp, Switch, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {Platform, StyleProp, Switch, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-type Props = {
-    action?: (value: string | boolean) => void;
-    description?: string;
-    inline?: boolean;
-    destructive?: boolean;
-    icon?: string;
-    info?: string;
-    label: string;
-    selected?: boolean;
-    testID?: string;
-    type: OptionType;
-    value?: string;
-    containerStyle?: StyleProp<ViewStyle>;
-}
+import RadioItem, {RadioItemProps} from './radio_item';
 
 const OptionType = {
     ARROW: 'arrow',
     DEFAULT: 'default',
-    TOGGLE: 'toggle',
-    SELECT: 'select',
     NONE: 'none',
+    RADIO: 'radio',
+    SELECT: 'select',
+    TOGGLE: 'toggle',
 } as const;
 
 type OptionType = typeof OptionType[keyof typeof OptionType];
+
+export const ITEM_HEIGHT = 48;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -44,7 +34,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             flexDirection: 'row',
             alignItems: 'center',
-            minHeight: 48,
+            minHeight: ITEM_HEIGHT,
         },
         destructive: {
             color: theme.dndIndicator,
@@ -92,11 +82,40 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+export type OptionItemProps = {
+    action?: (React.Dispatch<React.SetStateAction<string | boolean>>)|((value: string | boolean) => void);
+    containerStyle?: StyleProp<ViewStyle>;
+    description?: string;
+    destructive?: boolean;
+    icon?: string;
+    info?: string;
+    inline?: boolean;
+    label: string;
+    optionDescriptionTextStyle?: StyleProp<TextStyle>;
+    optionLabelTextStyle?: StyleProp<TextStyle>;
+    radioItemProps?: Partial<RadioItemProps>;
+    selected?: boolean;
+    testID?: string;
+    type: OptionType;
+    value?: string;
+}
 const OptionItem = ({
-    action, description, destructive, icon,
-    info, inline = false, label, selected,
-    testID = 'optionItem', type, value, containerStyle,
-}: Props) => {
+    action,
+    containerStyle,
+    description,
+    destructive,
+    icon,
+    info,
+    inline = false,
+    label,
+    optionDescriptionTextStyle,
+    optionLabelTextStyle,
+    radioItemProps,
+    selected,
+    testID = 'optionItem',
+    type,
+    value,
+}: OptionItemProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -121,6 +140,7 @@ const OptionItem = ({
     }, [destructive, styles, isInLine]);
 
     let actionComponent;
+    let radioComponent;
     if (type === OptionType.SELECT && selected) {
         actionComponent = (
             <CompassIcon
@@ -128,6 +148,13 @@ const OptionItem = ({
                 name='check'
                 size={24}
                 testID={`${testID}.selected`}
+            />
+        );
+    } else if (type === OptionType.RADIO) {
+        radioComponent = (
+            <RadioItem
+                selected={Boolean(selected)}
+                {...radioItemProps}
             />
         );
     } else if (type === OptionType.TOGGLE) {
@@ -177,16 +204,17 @@ const OptionItem = ({
                             />
                         </View>
                     )}
+                    {type === OptionType.RADIO && radioComponent}
                     <View style={labelStyle}>
                         <Text
-                            style={labelTextStyle}
+                            style={[optionLabelTextStyle, labelTextStyle]}
                             testID={`${testID}.label`}
                         >
                             {label}
                         </Text>
                         {Boolean(description) &&
                         <Text
-                            style={descriptionTextStyle}
+                            style={[optionDescriptionTextStyle, descriptionTextStyle]}
                             testID={`${testID}.description`}
                         >
                             {description}
@@ -197,10 +225,11 @@ const OptionItem = ({
             </View>
             {Boolean(actionComponent || info) &&
             <View style={styles.actionContainer}>
-                {Boolean(info) &&
-                <View style={styles.infoContainer}>
-                    <Text style={styles.info}>{info}</Text>
-                </View>
+                {
+                    Boolean(info) &&
+                    <View style={styles.infoContainer}>
+                        <Text style={[styles.info, destructive && {color: theme.dndIndicator}]}>{info}</Text>
+                    </View>
                 }
                 {actionComponent}
             </View>
@@ -208,7 +237,7 @@ const OptionItem = ({
         </View>
     );
 
-    if (type === OptionType.DEFAULT || type === OptionType.SELECT || type === OptionType.ARROW) {
+    if (type === OptionType.DEFAULT || type === OptionType.SELECT || type === OptionType.ARROW || type === OptionType.RADIO) {
         return (
             <TouchableOpacity onPress={onPress}>
                 {component}

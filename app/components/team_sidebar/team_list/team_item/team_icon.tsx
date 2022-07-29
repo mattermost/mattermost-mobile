@@ -19,7 +19,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: theme.sidebarBg,
-            borderRadius: 10,
+            borderRadius: 8,
         },
         containerSelected: {
             width: '100%',
@@ -32,10 +32,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         text: {
             color: theme.sidebarText,
             textTransform: 'capitalize',
-            ...typography('Heading', 400, 'SemiBold'),
         },
         image: {
-            borderRadius: 6,
+            borderRadius: 8,
             position: 'absolute',
             top: 0,
             bottom: 0,
@@ -55,6 +54,7 @@ type Props = {
     displayName: string;
     selected: boolean;
     backgroundColor?: string;
+    smallText?: boolean;
     textColor?: string;
     testID?: string;
 }
@@ -64,6 +64,7 @@ export default function TeamIcon({
     lastIconUpdate,
     displayName,
     selected,
+    smallText = false,
     textColor,
     backgroundColor,
     testID,
@@ -100,11 +101,20 @@ export default function TeamIcon({
         return backgroundColor ? [styles.container, {backgroundColor}] : [styles.container, nameOnly && styles.nameOnly];
     }, [styles, backgroundColor, selected, nameOnly]);
 
+    const textTypography = typography('Heading', smallText ? 200 : 400, 'SemiBold');
+    textTypography.fontFamily = 'Metropolis-SemiBold';
+
     let teamIconContent;
     if (nameOnly) {
+        const textStyle = [
+            styles.text,
+            textTypography,
+            textColor && {color: textColor},
+        ];
+
         teamIconContent = (
             <Text
-                style={textColor ? [styles.text, {color: textColor}] : styles.text}
+                style={textStyle}
                 testID={`${testID}.display_name_abbreviation`}
             >
                 {displayName.substring(0, 2)}

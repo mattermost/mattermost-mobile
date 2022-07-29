@@ -89,7 +89,6 @@ const AccountOptions = ({user, enableCustomUserStatuses, isCustomStatusExpirySup
                 <Settings
                     isTablet={isTablet}
                     style={styles.menuLabel}
-                    theme={theme}
                 />
                 <View style={styles.divider}/>
                 <Logout

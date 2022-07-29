@@ -9,7 +9,6 @@
 #import "AppDelegate.h"
 #import "RNNotificationEventHandler+HandleReplyAction.h"
 #import <react-native-notifications/RNNotificationParser.h>
-#import <UploadAttachments-Bridging-Header.h>
 #import <objc/runtime.h>
 @import Gekidou;
 
@@ -43,9 +42,6 @@ NSString *const ReplyActionID = @"REPLY_ACTION";
 }
 
 - (void)sendReply:(UNNotificationResponse *)response completionHandler:(void (^)(void))notificationCompletionHandler {
-  StoreManager *store = [StoreManager shared];
-  [store getEntities:true];
-  
   NSDictionary *parsedResponse = [RNNotificationParser parseNotificationResponse:response];
   NSString *serverUrl = [parsedResponse valueForKeyPath:@"notification.server_url"];
   

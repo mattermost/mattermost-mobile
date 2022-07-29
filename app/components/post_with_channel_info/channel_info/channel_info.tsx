@@ -9,7 +9,6 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type PostModel from '@typings/database/models/servers/post';
 import type TeamModel from '@typings/database/models/servers/team';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -23,10 +22,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         ...typography('Body', 75, 'SemiBold'),
         color: theme.centerChannelColor,
         marginRight: 5,
+        flexShrink: 1,
     },
     teamContainer: {
         borderColor: theme.centerChannelColor,
         borderLeftWidth: StyleSheet.hairlineWidth,
+        flexShrink: 1,
     },
     team: {
         ...typography('Body', 75, 'Light'),
@@ -37,7 +38,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 type Props = {
     channelName: ChannelModel['displayName'];
-    post: PostModel;
     teamName: TeamModel['displayName'];
     testID?: string;
 }
@@ -54,6 +54,7 @@ function ChannelInfo({channelName, teamName, testID}: Props) {
             <Text
                 style={styles.channel}
                 testID='channel_display_name'
+                numberOfLines={1}
             >
                 {channelName}
             </Text>
@@ -62,6 +63,7 @@ function ChannelInfo({channelName, teamName, testID}: Props) {
                     <Text
                         style={styles.team}
                         testID='team_display_name'
+                        numberOfLines={1}
                     >
                         {teamName}
                     </Text>

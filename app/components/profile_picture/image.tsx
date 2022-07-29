@@ -3,6 +3,7 @@
 
 import React, {useMemo} from 'react';
 import FastImage, {Source} from 'react-native-fast-image';
+import Animated from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
@@ -16,10 +17,15 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     author?: UserModel | UserProfile;
+    forwardRef?: React.RefObject<any>;
     iconSize?: number;
     size: number;
     source?: Source | string;
+    url?: string;
 };
+
+// @ts-expect-error FastImage does work with Animated.createAnimatedComponent
+const AnimatedFastImage = Animated.createAnimatedComponent(FastImage);
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -29,9 +35,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Image = ({author, iconSize, size, source}: Props) => {
+const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
     const theme = useTheme();
-    const serverUrl = useServerUrl();
+    let serverUrl = useServerUrl();
+    serverUrl = url || serverUrl;
+
     const style = getStyleSheet(theme);
     const fIStyle = useMemo(() => ({
         borderRadius: size / 2,
@@ -69,8 +77,9 @@ const Image = ({author, iconSize, size, source}: Props) => {
         const pictureUrl = client.getProfilePictureUrl(author.id, lastPictureUpdate);
         const imgSource = source ?? {uri: `${serverUrl}${pictureUrl}`};
         return (
-            <FastImage
+            <AnimatedFastImage
                 key={pictureUrl}
+                ref={forwardRef}
                 style={fIStyle}
                 source={imgSource}
             />

@@ -17,6 +17,7 @@ import {
     serverTwoUrl,
     siteTwoUrl,
 } from '@support/test_config';
+import {Alert} from '@support/ui/component';
 import {
     ChannelListScreen,
     HomeScreen,
@@ -55,7 +56,7 @@ describe('Smoke Test - Server Login', () => {
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
     });
 
-    it('MM-T4675_2 - should be able to add a new server and log in to the new server', async () => {
+    it('MM-T4675_2 - should be able to add a new server and log-in-to/log-out-from the new server', async () => {
         // # Open server list screen
         await ServerListScreen.open();
 
@@ -75,8 +76,24 @@ describe('Smoke Test - Server Login', () => {
         await device.reloadReactNative();
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverTwoDisplayName);
 
-        // # Go back to first server
+        // # Go back to first server, open server list screen, swipe left on second server and tap on logout option
         await ServerListScreen.open();
         await ServerListScreen.getServerItemInactive(serverOneDisplayName).tap();
+        await ServerListScreen.open();
+        await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left');
+        await ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).tap();
+
+        // * Verify logout server alert is displayed
+        await expect(Alert.logoutTitle(serverTwoDisplayName)).toBeVisible();
+
+        // # Tap on logout button
+        await Alert.logoutButton.tap();
+
+        // * Verify second server is logged out
+        await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left');
+        await expect(ServerListScreen.getServerItemLoginOption(serverTwoDisplayName)).toBeVisible();
+
+        // # Go back to first server
+        await ServerListScreen.getServerItemActive(serverOneDisplayName).tap();
     });
 });
