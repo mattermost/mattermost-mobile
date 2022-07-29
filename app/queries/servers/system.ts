@@ -3,7 +3,7 @@
 
 import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$, Observable} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -177,6 +177,7 @@ export const observeLicense = (database: Database): Observable<ClientLicense | u
 export const observeLicenseBooleanValue = (database: Database, key: keyof ClientLicense) => {
     return observeLicense(database).pipe(
         switchMap((license) => of$(license?.[key] === 'true')),
+        distinctUntilChanged(),
     );
 };
 
