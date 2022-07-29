@@ -64,7 +64,7 @@ export type EntryResponse = {
 }
 
 const FETCH_MISSING_DM_TIMEOUT = 2500;
-const FETCH_UNREADS_TIMEOUT = 2500;
+export const FETCH_UNREADS_TIMEOUT = 2500;
 
 export const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[]) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;

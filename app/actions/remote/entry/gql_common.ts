@@ -24,7 +24,7 @@ import {filterAndTransformRoles, getMemberChannelsFromGQLQuery, getMemberTeamsFr
 import {isTablet} from '@utils/helpers';
 import {processIsCRTEnabled} from '@utils/thread';
 
-import {teamsToRemove} from './common';
+import {teamsToRemove, FETCH_UNREADS_TIMEOUT} from './common';
 
 import type ClientError from '@client/rest/error';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -54,10 +54,12 @@ export async function deferredAppEntryGraphQLActions(
         markChannelAsRead(serverUrl, initialChannelId);
     }
 
-    if (chData?.channels?.length && chData.memberships?.length) {
-        // defer fetching posts for unread channels on initial team
-        fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId);
-    }
+    setTimeout(() => {
+        if (chData?.channels?.length && chData.memberships?.length) {
+            // defer fetching posts for unread channels on initial team
+            fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId);
+        }
+    }, FETCH_UNREADS_TIMEOUT);
 
     if (isCRTEnabled) {
         if (initialTeamId) {
@@ -88,10 +90,12 @@ export async function deferredAppEntryGraphQLActions(
         const models = (await Promise.all(modelPromises)).flat();
         operator.batchRecords(models);
 
-        if (result.chData?.channels?.length && result.chData.memberships?.length) {
-            // defer fetching posts for unread channels on initial team
-            fetchPostsForUnreadChannels(serverUrl, result.chData.channels, result.chData.memberships, initialChannelId);
-        }
+        setTimeout(() => {
+            if (result.chData?.channels?.length && result.chData.memberships?.length) {
+                // defer fetching posts for unread channels on other teams
+                fetchPostsForUnreadChannels(serverUrl, result.chData.channels, result.chData.memberships, initialChannelId);
+            }
+        }, FETCH_UNREADS_TIMEOUT);
     }
 
     if (meData.user?.id) {
