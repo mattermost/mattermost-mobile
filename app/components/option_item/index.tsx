@@ -84,6 +84,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 export type OptionItemProps = {
     action?: (React.Dispatch<React.SetStateAction<string | boolean>>)|((value: string | boolean) => void);
+    arrowStyle?: StyleProp<ViewStyle>;
     containerStyle?: StyleProp<ViewStyle>;
     description?: string;
     destructive?: boolean;
@@ -101,6 +102,7 @@ export type OptionItemProps = {
 }
 const OptionItem = ({
     action,
+    arrowStyle,
     containerStyle,
     description,
     destructive,
@@ -180,6 +182,7 @@ const OptionItem = ({
                 color={changeOpacity(theme.centerChannelColor, 0.32)}
                 name='chevron-right'
                 size={24}
+                style={arrowStyle}
             />
         );
     }
@@ -207,7 +210,7 @@ const OptionItem = ({
                     {type === OptionType.RADIO && radioComponent}
                     <View style={labelStyle}>
                         <Text
-                            style={[optionLabelTextStyle, labelTextStyle]}
+                            style={[labelTextStyle, optionLabelTextStyle]}
                             testID={`${testID}.label`}
                         >
                             {label}
