@@ -127,12 +127,11 @@ public class CustomPushNotificationHelper {
         replyIntent.putExtra(NOTIFICATION_ID, notificationId);
         replyIntent.putExtra(NOTIFICATION, bundle);
 
-        @SuppressLint("UnspecifiedImmutableFlag")
         PendingIntent replyPendingIntent = PendingIntent.getBroadcast(
                 context,
                 notificationId,
                 replyIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
 
         RemoteInput remoteInput = new RemoteInput.Builder(KEY_TEXT_REPLY)
                 .setLabel("Reply")
@@ -375,7 +374,7 @@ public class CustomPushNotificationHelper {
         delIntent.putExtra(NOTIFICATION_ID, notificationId);
         delIntent.putExtra(PUSH_NOTIFICATION_EXTRA_NAME, bundle);
         @SuppressLint("UnspecifiedImmutableFlag")
-        PendingIntent deleteIntent = PendingIntent.getService(context, (int) System.currentTimeMillis(), delIntent, PendingIntent.FLAG_ONE_SHOT);
+        PendingIntent deleteIntent = PendingIntent.getService(context, (int) System.currentTimeMillis(), delIntent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
         notification.setDeleteIntent(deleteIntent);
     }
 
