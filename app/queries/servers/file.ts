@@ -30,7 +30,7 @@ export function observeCanDownloadFiles(database: Database) {
     );
 
     const canDownloadFiles = combineLatest([enableMobileFileDownload, complianceEnabled]).pipe(
-        switchMap(([download, compliance]) => of$(compliance && download)),
+        switchMap(([download, compliance]) => of$(!compliance || download)),
     );
     return canDownloadFiles;
 }
