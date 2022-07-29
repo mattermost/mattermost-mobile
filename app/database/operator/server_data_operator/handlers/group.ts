@@ -54,7 +54,6 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
      * handleGroupChannelsForChannel: Handler responsible for the Create/Update operations occurring on the GroupChannel table from the 'Server' schema
      *
      * @param {HandleGroupChannelsForChannelArgs}
-     * @throws DataOperatorException
      * @returns {Promise<GroupChannelModel[]>}
      */
     handleGroupChannelsForChannel = async ({channelId, groups, prepareRecordsOnly = true}: HandleGroupChannelsForChannelArgs): Promise<GroupChannelModel[]> => {
