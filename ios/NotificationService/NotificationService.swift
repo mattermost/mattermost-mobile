@@ -1,9 +1,8 @@
 import Gekidou
 import UserNotifications
-import UploadAttachments
 
 class NotificationService: UNNotificationServiceExtension {
-  
+  let preferences = Gekidou.Preferences.default
   var contentHandler: ((UNNotificationContent) -> Void)?
   var bestAttemptContent: UNMutableNotificationContent?
 
@@ -74,7 +73,7 @@ class NotificationService: UNNotificationServiceExtension {
       }
     }
 
-    if (MattermostBucket.init().getPreference("ApplicationIsForeground") as? String != "true") {
+    if (preferences.object(forKey: "ApplicationIsForeground") as? String != "true") {
       Network.default.fetchAndStoreDataForPushNotification(bestAttemptContent, withContentHandler: contentHandler)
     } else if let contentHandler = contentHandler {
       contentHandler(bestAttemptContent)

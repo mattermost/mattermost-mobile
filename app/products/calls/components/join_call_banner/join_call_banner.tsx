@@ -80,14 +80,6 @@ const JoinCallBanner = ({
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    // TODO: implement join_call_banner/more_messages spacing: https://mattermost.atlassian.net/browse/MM-45744
-    // useEffect(() => {
-    //     EventEmitter.emit(ViewTypes.JOIN_CALL_BAR_VISIBLE, Boolean(props.call && !props.alreadyInTheCall));
-    //     return () => {
-    //         EventEmitter.emit(ViewTypes.JOIN_CALL_BAR_VISIBLE, Boolean(false));
-    //     };
-    // }, [props.call, props.alreadyInTheCall]);
-
     const joinHandler = async () => {
         leaveAndJoinWithAlert(intl, serverUrl, channelId, currentCallChannelName, displayName, inACall, false);
     };

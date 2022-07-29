@@ -49,6 +49,7 @@ const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusPro
                 type='select'
                 value='offline'
             />
+            <SettingSeparator/>
         </SettingBlock>
     );
 };

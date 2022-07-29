@@ -44,7 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             includeFontPadding: false,
         },
         divider: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.12),
             height: 1,
         },
         chevron: {

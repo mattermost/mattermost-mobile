@@ -112,7 +112,7 @@ exports[`DrawerItem should match snapshot 1`] = `
         style={
           Array [
             Object {
-              "backgroundColor": "rgba(63,67,80,0.2)",
+              "backgroundColor": "rgba(63,67,80,0.12)",
               "height": 1,
             },
             undefined,

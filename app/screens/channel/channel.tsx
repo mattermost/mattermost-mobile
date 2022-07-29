@@ -149,6 +149,8 @@ const Channel = ({
                             channelId={channelId}
                             forceQueryAfterAppState={appState}
                             nativeID={channelId}
+                            currentCallBarVisible={isInCall}
+                            joinCallBannerVisible={isCallInCurrentChannel && !isInCall}
                         />
                     </View>
                     <PostDraft
