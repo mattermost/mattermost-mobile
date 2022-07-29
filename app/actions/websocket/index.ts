@@ -402,6 +402,4 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             handleCallUserUnraiseHand(serverUrl, msg);
             break;
     }
-
-    return {};
 }

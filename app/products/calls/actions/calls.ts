@@ -5,7 +5,6 @@ import InCallManager from 'react-native-incall-manager';
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {fetchUsersByIds} from '@actions/remote/user';
-import {hasMicrophonePermission} from '@calls/actions/permissions';
 import {
     getCallsConfig,
     myselfJoinedCall,
@@ -21,7 +20,6 @@ import {
     Call,
     CallParticipant,
     CallsConnection,
-    DefaultCallsConfig,
     ServerChannelState,
 } from '@calls/types/calls';
 import Calls from '@constants/calls';
@@ -31,7 +29,6 @@ import {newConnection} from '../connection/connection';
 
 import type {Client} from '@client/rest';
 import type ClientError from '@client/rest/error';
-import type {IntlShape} from 'react-intl';
 
 let connection: CallsConnection | null = null;
 export const getConnectionForTesting = () => connection;
@@ -59,10 +56,6 @@ export const loadConfig = async (serverUrl: string, force = false) => {
         data = await client.getCallsConfig();
     } catch (error) {
         await forceLogoutIfNecessary(serverUrl, error as ClientError);
-
-        // Reset the config to the default (off) since it looks like Calls is not enabled.
-        setConfig(serverUrl, {...DefaultCallsConfig, last_retrieved_at: now});
-
         return {error};
     }
 
@@ -85,23 +78,20 @@ export const loadCalls = async (serverUrl: string, userId: string) => {
         await forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
+
     const callsResults: Dictionary<Call> = {};
     const enabledChannels: Dictionary<boolean> = {};
-
-    // Batch load userModels async because we'll need them later
     const ids = new Set<string>();
-    resp.forEach((channel) => {
-        channel.call?.users.forEach((id) => ids.add(id));
-    });
-    if (ids.size > 0) {
-        fetchUsersByIds(serverUrl, Array.from(ids));
-    }
 
     for (const channel of resp) {
         if (channel.call) {
             const call = channel.call;
             callsResults[channel.channel_id] = {
                 participants: channel.call.users.reduce((accum, cur, curIdx) => {
+                    // Add the id to the set of UserModels we want to ensure are loaded.
+                    ids.add(cur);
+
+                    // Create the CallParticipant
                     const muted = call.states && call.states[curIdx] ? !call.states[curIdx].unmuted : true;
                     const raisedHand = call.states && call.states[curIdx] ? call.states[curIdx].raised_hand : 0;
                     accum[cur] = {id: cur, muted, raisedHand};
@@ -114,6 +104,11 @@ export const loadCalls = async (serverUrl: string, userId: string) => {
             };
         }
         enabledChannels[channel.channel_id] = channel.enabled;
+    }
+
+    // Batch load user models async because we'll need them later
+    if (ids.size > 0) {
+        fetchUsersByIds(serverUrl, Array.from(ids));
     }
 
     setCalls(serverUrl, userId, callsResults, enabledChannels);
@@ -151,7 +146,7 @@ export const checkIsCallsPluginEnabled = async (serverUrl: string) => {
     return {data: enabled};
 };
 
-export const enableChannelCalls = async (serverUrl: string, channelId: string) => {
+export const enableChannelCalls = async (serverUrl: string, channelId: string, enable: boolean) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -160,46 +155,24 @@ export const enableChannelCalls = async (serverUrl: string, channelId: string) =
     }
 
     try {
-        await client.enableChannelCalls(channelId);
+        const res = await client.enableChannelCalls(channelId, enable);
+        if (res.enabled === enable) {
+            setChannelEnabled(serverUrl, channelId, enable);
+        }
     } catch (error) {
         await forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
 
-    setChannelEnabled(serverUrl, channelId, true);
     return {};
 };
 
-export const disableChannelCalls = async (serverUrl: string, channelId: string) => {
-    let client: Client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    try {
-        await client.disableChannelCalls(channelId);
-    } catch (error) {
-        await forceLogoutIfNecessary(serverUrl, error as ClientError);
-        return {error};
-    }
-
-    setChannelEnabled(serverUrl, channelId, false);
-    return {};
-};
-
-export const joinCall = async (serverUrl: string, channelId: string, intl: IntlShape) => {
+export const joinCall = async (serverUrl: string, channelId: string): Promise<{ error?: string | Error; data?: string }> => {
     // Edge case: calls was disabled when app loaded, and then enabled, but app hasn't
     // reconnected its websocket since then (i.e., hasn't called batchLoadCalls yet)
     const {data: enabled} = await checkIsCallsPluginEnabled(serverUrl);
     if (!enabled) {
         return {error: 'calls plugin not enabled'};
-    }
-
-    const hasPermission = await hasMicrophonePermission(intl);
-    if (!hasPermission) {
-        return {error: 'no permissions to microphone, unable to start call'};
     }
 
     if (connection) {
@@ -210,9 +183,9 @@ export const joinCall = async (serverUrl: string, channelId: string, intl: IntlS
 
     try {
         connection = await newConnection(serverUrl, channelId, () => null, setScreenShareURL);
-    } catch (error) {
+    } catch (error: unknown) {
         await forceLogoutIfNecessary(serverUrl, error as ClientError);
-        return {error};
+        return {error: error as Error};
     }
 
     try {
@@ -222,7 +195,7 @@ export const joinCall = async (serverUrl: string, channelId: string, intl: IntlS
     } catch (e) {
         connection.disconnect();
         connection = null;
-        return {error: 'unable to connect to the voice call'};
+        return {error: `unable to connect to the voice call: ${e}`};
     }
 };
 

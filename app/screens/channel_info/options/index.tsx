@@ -3,6 +3,7 @@
 
 import React from 'react';
 
+import CopyChannelLinkOption from '@components/channel_actions/copy_channel_link_option';
 import {General} from '@constants';
 
 import EditChannel from './edit_channel';
@@ -14,21 +15,25 @@ import PinnedMessages from './pinned_messages';
 type Props = {
     channelId: string;
     type?: ChannelType;
+    callsEnabled: boolean;
 }
 
-const Options = ({channelId, type}: Props) => {
+const Options = ({channelId, type, callsEnabled}: Props) => {
     return (
         <>
             {type !== General.DM_CHANNEL &&
-            <IgnoreMentions channelId={channelId}/>
+                <IgnoreMentions channelId={channelId}/>
             }
             <NotificationPreference channelId={channelId}/>
             <PinnedMessages channelId={channelId}/>
             {type !== General.DM_CHANNEL &&
-            <Members channelId={channelId}/>
+                <Members channelId={channelId}/>
+            }
+            {callsEnabled &&
+                <CopyChannelLinkOption channelId={channelId}/>
             }
             {type !== General.DM_CHANNEL && type !== General.GM_CHANNEL &&
-            <EditChannel channelId={channelId}/>
+                <EditChannel channelId={channelId}/>
             }
         </>
     );
