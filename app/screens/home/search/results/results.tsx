@@ -39,6 +39,7 @@ const styles = StyleSheet.create({
 });
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
+const AnimatedView = Animated.createAnimatedComponent(View);
 
 type Props = {
     canDownloadFiles: boolean;
@@ -70,7 +71,10 @@ const SearchResults = ({
     const theme = useTheme();
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
+    const [yOffset, setYOffset] = useState(0);
     const [lastViewedIndex, setLastViewedIndex] = useState<number | undefined>(undefined);
+    const [dotMenuItemNumber, setDotMenuItemNumber] = useState<number | undefined>(undefined);
+    const [openDotMenu, setOpenDotMenu] = useState(false);
 
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
@@ -123,6 +127,17 @@ const SearchResults = ({
     }, [canDownloadFiles, publicLinkEnabled]);
 
     const handleOptionsPress = useCallback((item: number) => {
+        if (isTablet) {
+            if (dotMenuItemNumber === item) {
+                setDotMenuItemNumber(undefined);
+                setOpenDotMenu(false);
+                return;
+            }
+            setOpenDotMenu(true);
+            setDotMenuItemNumber(item);
+            return;
+        }
+
         setLastViewedIndex(item);
         const renderContent = () => {
             return (
@@ -138,7 +153,7 @@ const SearchResults = ({
             theme,
             title: '',
         });
-    }, [orderedFilesForGallery, snapPoints, theme]);
+    }, [openDotMenu, orderedFilesForGallery, dotMenuItemNumber, snapPoints, theme]);
 
     // This effect handles the case where a user has the FileOptions Modal
     // open and the server changes the ability to download files or copy public
@@ -154,6 +169,22 @@ const SearchResults = ({
             });
         }
     }, [canDownloadFiles, publicLinkEnabled]);
+
+    const fileOptions = useMemo(() => {
+        return (
+            <AnimatedView
+                style={{
+                    zIndex: 11,
+                    top: yOffset,
+                    right: 20,
+                }}
+            >
+                <FileOptions
+                    fileInfo={orderedFilesForGallery[dotMenuItemNumber]}
+                />
+            </AnimatedView>
+        );
+    }, [dotMenuItemNumber, orderedFilesForGallery, yOffset]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<string|FileInfo | Post>) => {
         if (typeof item === 'string') {
@@ -190,6 +221,13 @@ const SearchResults = ({
 
         return (
             <View
+                onLayout={(event) => {
+                    if (dotMenuItemNumber === filesForGalleryIndexes[item.id!]) {
+                        const {y} = event.nativeEvent.layout;
+                        setYOffset(y);
+                        console.log('y', y);
+                    }
+                }}
                 style={container}
                 key={item.id}
             >
@@ -222,6 +260,8 @@ const SearchResults = ({
         filesForGalleryIndexes,
         canDownloadFiles,
         handlePreviewPress,
+        dotMenuItemNumber,
+        openDotMenu,
         publicLinkEnabled,
         isTablet,
         fileInfos.length > 1,
@@ -244,21 +284,27 @@ const SearchResults = ({
     }
 
     return (
-        <AnimatedFlatList
-            ListEmptyComponent={noResults}
-            data={data}
-            scrollToOverflowEnabled={true}
-            showsVerticalScrollIndicator={true}
-            scrollEventThrottle={16}
-            indicatorStyle='black'
-            refreshing={false}
-            renderItem={renderItem}
-            contentContainerStyle={paddingTop}
-            nestedScrollEnabled={true}
-            removeClippedSubviews={true}
-            style={containerStyle}
-            testID='search_results.post_list.flat_list'
-        />
+        <>
+            {openDotMenu && fileOptions}
+            <AnimatedFlatList
+                ListEmptyComponent={noResults}
+                data={data}
+                scrollToOverflowEnabled={true}
+                showsVerticalScrollIndicator={true}
+                scrollEventThrottle={16}
+                indicatorStyle='black'
+                refreshing={false}
+
+                //renderItem={renderItem}
+
+                CellRendererComponent={renderItem}
+                contentContainerStyle={paddingTop}
+                nestedScrollEnabled={true}
+                removeClippedSubviews={true}
+                style={containerStyle}
+                testID='search_results.post_list.flat_list'
+            />
+        </>
     );
 };
 
