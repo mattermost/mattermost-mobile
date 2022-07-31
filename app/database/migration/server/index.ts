@@ -43,5 +43,4 @@ export default schemaMigrations({migrations: [
             }),
         ],
     },
-
 ]});
