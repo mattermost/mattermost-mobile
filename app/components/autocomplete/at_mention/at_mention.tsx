@@ -319,6 +319,7 @@ const AtMention = ({
                 key={`autocomplete-group-${item.name}`}
                 name={item.name}
                 displayName={item.displayName}
+                memberCount={item.memberCount}
                 onPress={completeMention}
                 testID='autocomplete.group_mention_item'
             />

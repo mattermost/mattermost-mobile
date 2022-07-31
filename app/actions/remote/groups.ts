@@ -13,7 +13,7 @@ export const fetchGroupsForAutocomplete = async (serverUrl: string, query: strin
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client: Client = NetworkManager.getClient(serverUrl);
-        const response = await client.getGroups(query);
+        const response = await client.getGroups({query, includeMemberCount: true});
 
         return operator.handleGroups({groups: response, prepareRecordsOnly: fetchOnly});
     } catch (error) {
@@ -30,7 +30,7 @@ export const fetchGroupsByNames = async (serverUrl: string, names: string[], fet
         const promises: Array <Promise<Group[]>> = [];
 
         names.forEach((name) => {
-            promises.push(client.getGroups(name));
+            promises.push(client.getGroups({query: name}));
         });
 
         const groups = (await Promise.all(promises)).flat();
