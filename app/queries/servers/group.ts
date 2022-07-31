@@ -6,6 +6,7 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {MM_TABLES} from '@constants/database';
 
 import type GroupModel from '@typings/database/models/servers/group';
+import type GroupChannelModel from '@typings/database/models/servers/group_channel';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type GroupTeamModel from '@typings/database/models/servers/group_team';
 
@@ -34,6 +35,12 @@ export const queryGroupsByNameInChannel = (database: Database, name: string, cha
     return database.collections.get<GroupModel>(GROUP).query(
         Q.on(GROUP_CHANNEL, 'channel_id', channelId),
         Q.where('name', Q.like(`%${Q.sanitizeLikeString(name)}%`)),
+    );
+};
+
+export const queryGroupChannelForChannel = (database: Database, channelId: string) => {
+    return database.collections.get<GroupChannelModel>(GROUP_CHANNEL).query(
+        Q.where('channel_id', channelId),
     );
 };
 

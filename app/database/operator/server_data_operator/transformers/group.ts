@@ -9,11 +9,13 @@ import {generateGroupAssociationId} from '@utils/groups';
 
 import type {TransformerArgs} from '@typings/database/database';
 import type GroupModel from '@typings/database/models/servers/group';
+import type GroupChannelModel from '@typings/database/models/servers/group_channel';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type GroupTeamModel from '@typings/database/models/servers/group_team';
 
 const {
     GROUP,
+    GROUP_CHANNEL,
     GROUP_MEMBERSHIP,
     GROUP_TEAM,
 } = MM_TABLES.SERVER;
@@ -47,6 +49,32 @@ export const transformGroupRecord = ({action, database, value}: TransformerArgs)
         value,
         fieldsMapper,
     }) as Promise<GroupModel>;
+};
+
+/**
+   * transformGroupChannelRecord: Prepares a record of the SERVER database 'GroupChannel' table for update or create actions.
+   * @param {TransformerArgs} operator
+   * @param {Database} operator.database
+   * @param {RecordPair} operator.value
+   * @returns {Promise<GroupChannelModel>}
+   */
+export const transformGroupChannelRecord = ({action, database, value}: TransformerArgs): Promise<GroupChannelModel> => {
+    const raw = value.raw as GroupChannel;
+
+    // id of group comes from server response
+    const fieldsMapper = (model: GroupChannelModel) => {
+        model._raw.id = raw.id || generateGroupAssociationId(raw.group_id, raw.channel_id);
+        model.groupId = raw.group_id;
+        model.channelId = raw.channel_id;
+    };
+
+    return prepareBaseRecord({
+        action,
+        database,
+        tableName: GROUP_CHANNEL,
+        value,
+        fieldsMapper,
+    }) as Promise<GroupChannelModel>;
 };
 
 /**
