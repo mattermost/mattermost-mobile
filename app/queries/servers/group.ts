@@ -63,3 +63,7 @@ export const deleteGroupMembershipById = (database: Database, id: string) => {
 export const deleteGroupTeamById = (database: Database, id: string) => {
     return database.collections.get<GroupTeamModel>(GROUP_TEAM).find(id).then((model) => model.destroyPermanently());
 };
+
+export const deleteGroupChannelById = (database: Database, id: string) => {
+    return database.collections.get<GroupChannelModel>(GROUP_CHANNEL).find(id).then((model) => model.destroyPermanently());
+};

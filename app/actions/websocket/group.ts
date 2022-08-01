@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {fetchGroupsForChannel, fetchGroupsForMember, fetchGroupsForTeam} from '@actions/remote/groups';
-import {deleteGroupMembershipById, deleteGroupTeamById} from '@app/queries/servers/group';
+import {deleteGroupChannelById, deleteGroupMembershipById, deleteGroupTeamById} from '@app/queries/servers/group';
 import {generateGroupAssociationId} from '@app/utils/groups';
 import DatabaseManager from '@database/manager';
 import {logError} from '@utils/log';
@@ -19,7 +19,13 @@ type WebsocketGroupTeamMessage = WebSocketMessage<{
     group_team?: string; // type GroupMember
 }>
 
-const handleError = (serverUrl: string, e: unknown, msg: WebsocketGroupMessage | WebsocketGroupMemberMessage | WebsocketGroupTeamMessage) => {
+type WebsocketGroupChannelMessage = WebSocketMessage<{
+    group_channel?: string; // type GroupMember
+}>
+
+type WSMessage = WebsocketGroupMessage | WebsocketGroupMemberMessage | WebsocketGroupTeamMessage | WebsocketGroupChannelMessage
+
+const handleError = (serverUrl: string, e: unknown, msg: WSMessage) => {
     logError(`Group WS: ${msg.event}`, e, msg);
 
     const {team_id, channel_id, user_id} = msg.broadcast;
@@ -105,6 +111,37 @@ export async function handleGroupTeamDissociateEvent(serverUrl: string, msg: Web
             groupTeam = JSON.parse(msg.data.group_team);
 
             await deleteGroupTeamById(database, generateGroupAssociationId(groupTeam.group_id, groupTeam.team_id));
+        }
+    } catch (e) {
+        handleError(serverUrl, e, msg);
+    }
+}
+
+export async function handleGroupChannelAssociatedEvent(serverUrl: string, msg: WebsocketGroupChannelMessage) {
+    let groupChannel: GroupChannel;
+
+    try {
+        if (msg?.data?.group_channel) {
+            const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            groupChannel = JSON.parse(msg.data.group_channel);
+            const group = {id: groupChannel.group_id};
+
+            operator.handleGroupChannelsForChannel({channelId: groupChannel.channel_id, groups: [group], prepareRecordsOnly: false});
+        }
+    } catch (e) {
+        handleError(serverUrl, e, msg);
+    }
+}
+
+export async function handleGroupChannelDissociateEvent(serverUrl: string, msg: WebsocketGroupChannelMessage) {
+    let groupChannel: GroupChannel;
+
+    try {
+        if (msg?.data?.group_channel) {
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            groupChannel = JSON.parse(msg.data.group_channel);
+
+            await deleteGroupChannelById(database, generateGroupAssociationId(groupChannel.group_id, groupChannel.channel_id));
         }
     } catch (e) {
         handleError(serverUrl, e, msg);
