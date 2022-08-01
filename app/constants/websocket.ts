@@ -66,5 +66,8 @@ const WebsocketEvents = {
     CALLS_SCREEN_OFF: `custom_${Calls.PluginId}_user_screen_off`,
     CALLS_USER_RAISE_HAND: `custom_${Calls.PluginId}_user_raise_hand`,
     CALLS_USER_UNRAISE_HAND: `custom_${Calls.PluginId}_user_unraise_hand`,
+    GROUP_RECEIVED: 'received_group',
+    GROUP_MEMBER_ADD: 'group_member_add',
+    GROUP_MEMBER_DELETE: 'group_member_delete',
 };
 export default WebsocketEvents;
