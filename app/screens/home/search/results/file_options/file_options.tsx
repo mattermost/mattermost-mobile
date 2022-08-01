@@ -94,7 +94,7 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink, openUp = fal
                 }
             </>
         );
-    }, [canDownloadFiles, enablePublicLink]);
+    }, [canDownloadFiles, enablePublicLink, handlePermalink, handleDownload, handleCopyLink]);
 
     const tablet = useMemo(() => {
         return (
