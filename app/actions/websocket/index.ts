@@ -49,7 +49,7 @@ import {handleChannelConvertedEvent, handleChannelCreatedEvent,
     handleDirectAddedEvent,
     handleUserAddedToChannelEvent,
     handleUserRemovedFromChannelEvent} from './channel';
-import {handleGroupReceivedEvent} from './group';
+import {handleGroupMemberAddEvent, handleGroupMemberDeleteEvent, handleGroupReceivedEvent} from './group';
 import {handleOpenDialogEvent} from './integrations';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
@@ -405,6 +405,12 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
 
         case WebsocketEvents.GROUP_RECEIVED:
             handleGroupReceivedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.GROUP_MEMBER_ADD:
+            handleGroupMemberAddEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.GROUP_MEMBER_DELETE:
+            handleGroupMemberDeleteEvent(serverUrl, msg);
             break;
     }
 }

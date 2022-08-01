@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchGroup, fetchGroupsForChannel, fetchGroupsForMember, fetchGroupsForTeam} from '@actions/remote/groups';
+import {fetchGroupsForChannel, fetchGroupsForMember, fetchGroupsForTeam} from '@actions/remote/groups';
+import {deleteGroupMembershipById} from '@app/queries/servers/group';
+import {generateGroupAssociationId} from '@app/utils/groups';
 import DatabaseManager from '@database/manager';
 import {logError} from '@utils/log';
 
@@ -9,7 +11,11 @@ type WebsocketGroupMessage = WebSocketMessage<{
     group?: string; // type Group
 }>
 
-const handleError = (serverUrl: string, e: unknown, msg: WebsocketGroupMessage) => {
+type WebsocketGroupMemberMessage = WebSocketMessage<{
+    group_member?: string; // type GroupMember
+}>
+
+const handleError = (serverUrl: string, e: unknown, msg: WebsocketGroupMessage | WebsocketGroupMemberMessage) => {
     logError(`Group WS: ${msg.event}`, e, msg);
 
     const {team_id, channel_id, user_id} = msg.broadcast;
@@ -23,11 +29,6 @@ const handleError = (serverUrl: string, e: unknown, msg: WebsocketGroupMessage) 
     if (user_id) {
         fetchGroupsForMember(serverUrl, msg.broadcast.user_id);
     }
-
-    const group = JSON.parse(msg.data.group || '') as Partial<Group>;
-    if (!team_id && !channel_id && !user_id && group.id) {
-        fetchGroup(serverUrl, group.id);
-    }
 };
 
 export async function handleGroupReceivedEvent(serverUrl: string, msg: WebsocketGroupMessage) {
@@ -38,6 +39,37 @@ export async function handleGroupReceivedEvent(serverUrl: string, msg: Websocket
             const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
             group = JSON.parse(msg.data.group);
             operator.handleGroups({groups: [group], prepareRecordsOnly: false});
+        }
+    } catch (e) {
+        handleError(serverUrl, e, msg);
+    }
+}
+
+export async function handleGroupMemberAddEvent(serverUrl: string, msg: WebsocketGroupMemberMessage) {
+    let groupMember: GroupMembership;
+
+    try {
+        if (msg?.data?.group_member) {
+            const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            groupMember = JSON.parse(msg.data.group_member);
+            const group = {id: groupMember.group_id};
+
+            operator.handleGroupMembershipsForMember({userId: groupMember.user_id, groups: [group], prepareRecordsOnly: false});
+        }
+    } catch (e) {
+        handleError(serverUrl, e, msg);
+    }
+}
+
+export async function handleGroupMemberDeleteEvent(serverUrl: string, msg: WebsocketGroupMemberMessage) {
+    let groupMember: GroupMembership;
+
+    try {
+        if (msg?.data?.group_member) {
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            groupMember = JSON.parse(msg.data.group_member);
+
+            await deleteGroupMembershipById(database, generateGroupAssociationId(groupMember.group_id, groupMember.user_id));
         }
     } catch (e) {
         handleError(serverUrl, e, msg);
