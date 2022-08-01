@@ -222,6 +222,11 @@ export type HandleGroupArgs = PrepareOnly & {
   groups?: Group[];
 };
 
+export type HandleGroupChannelsForChannelArgs = PrepareOnly & {
+  channelId: string;
+  groups?: Group[];
+}
+
 export type HandleGroupMembershipForMemberArgs = PrepareOnly & {
   userId: string;
   groups?: Group[];

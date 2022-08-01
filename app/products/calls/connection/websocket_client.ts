@@ -8,6 +8,7 @@ import {encode} from '@msgpack/msgpack/dist';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import {getCommonSystemValues} from '@queries/servers/system';
+import {logError} from '@utils/log';
 
 export default class WebSocketClient extends EventEmitter {
     private readonly serverUrl: string;
@@ -53,7 +54,7 @@ export default class WebSocketClient extends EventEmitter {
             try {
                 msg = JSON.parse(data);
             } catch (err) {
-                console.log(err); // eslint-disable-line no-console
+                logError(err);
             }
 
             if (!msg || !msg.event || !msg.data) {

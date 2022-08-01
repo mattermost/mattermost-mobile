@@ -3,6 +3,7 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
+import {fetchUsersByIds} from '@actions/remote/user';
 import {
     callStarted, setCallScreenOff,
     setCallScreenOn,
@@ -15,6 +16,9 @@ import {WebsocketEvents} from '@constants';
 import DatabaseManager from '@database/manager';
 
 export const handleCallUserConnected = (serverUrl: string, msg: WebSocketMessage) => {
+    // Load user model async (if needed).
+    fetchUsersByIds(serverUrl, [msg.data.userID]);
+
     userJoinedCall(serverUrl, msg.broadcast.channel_id, msg.data.userID);
 };
 

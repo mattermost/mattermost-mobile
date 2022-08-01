@@ -118,6 +118,7 @@ interface ClientConfig {
     ExtendSessionLengthWithActivity: string;
     FeatureFlagAppsEnabled?: string;
     FeatureFlagCollapsedThreads?: string;
+    FeatureFlagGraphQL?: string;
     GfycatApiKey: string;
     GfycatApiSecret: string;
     GoogleDeveloperKey: string;

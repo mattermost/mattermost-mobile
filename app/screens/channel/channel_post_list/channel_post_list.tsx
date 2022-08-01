@@ -24,6 +24,8 @@ type Props = {
     nativeID: string;
     posts: PostModel[];
     shouldShowJoinLeaveMessages: boolean;
+    currentCallBarVisible: boolean;
+    joinCallBannerVisible: boolean;
 }
 
 const edges: Edge[] = ['bottom'];
@@ -35,6 +37,7 @@ const styles = StyleSheet.create({
 const ChannelPostList = ({
     channelId, contentContainerStyle, isCRTEnabled,
     lastViewedAt, nativeID, posts, shouldShowJoinLeaveMessages,
+    currentCallBarVisible, joinCallBannerVisible,
 }: Props) => {
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
@@ -75,6 +78,8 @@ const ChannelPostList = ({
             shouldShowJoinLeaveMessages={shouldShowJoinLeaveMessages}
             showMoreMessages={true}
             testID='channel.post_list'
+            currentCallBarVisible={currentCallBarVisible}
+            joinCallBannerVisible={joinCallBannerVisible}
         />
     );
 

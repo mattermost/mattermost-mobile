@@ -4,7 +4,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {CallsCustomMessage} from '@calls/components/calls_custom_message/calls_custom_message';
 import {observeCurrentCall} from '@calls/state';
@@ -36,10 +36,23 @@ const enhanced = withObservables(['post'], ({post, database}: { post: PostModel 
         };
     }
 
-    const currentCall = observeCurrentCall();
-    const ccDatabase = currentCall.pipe(
-        switchMap((call) => of$(call ? call.serverUrl : '')),
+    const ccDatabase = observeCurrentCall().pipe(
+        switchMap((call) => of$(call?.serverUrl || '')),
+        distinctUntilChanged(),
         switchMap((url) => of$(DatabaseManager.serverDatabases[url]?.database)),
+    );
+    const currentCallChannelId = observeCurrentCall().pipe(
+        switchMap((call) => of$(call?.channelId || '')),
+        distinctUntilChanged(),
+    );
+    const leaveChannelName = combineLatest([ccDatabase, currentCallChannelId]).pipe(
+        switchMap(([db, id]) => (db && id ? observeChannel(db, id) : of$(undefined))),
+        switchMap((c) => of$(c ? c.displayName : '')),
+        distinctUntilChanged(),
+    );
+    const joinChannelName = observeChannel(database, post.channelId).pipe(
+        switchMap((chan) => of$(chan?.displayName || '')),
+        distinctUntilChanged(),
     );
 
     return {
@@ -47,16 +60,9 @@ const enhanced = withObservables(['post'], ({post, database}: { post: PostModel 
         author,
         isMilitaryTime,
         teammateNameDisplay: observeTeammateNameDisplay(database),
-        currentCallChannelId: currentCall.pipe(
-            switchMap((cc) => of$(cc?.channelId || '')),
-        ),
-        leaveChannelName: combineLatest([ccDatabase, currentCall]).pipe(
-            switchMap(([db, call]) => (db && call ? observeChannel(db, call.channelId) : of$(undefined))),
-            switchMap((c) => of$(c ? c.displayName : '')),
-        ),
-        joinChannelName: observeChannel(database, post.channelId).pipe(
-            switchMap((chan) => of$(chan?.displayName || '')),
-        ),
+        currentCallChannelId,
+        leaveChannelName,
+        joinChannelName,
     };
 });
 

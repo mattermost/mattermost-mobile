@@ -8,7 +8,7 @@ import {Text, TouchableOpacity, View} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 import FormattedText from '@components/formatted_text';
-import {CustomStatusDuration, CST} from '@constants/custom_status';
+import {CST} from '@constants/custom_status';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {Moment} from 'moment-timezone';
@@ -54,7 +54,7 @@ const ClearAfter = ({duration, expiresAt, onOpenClearAfterModal, theme}: Props) 
     const style = getStyleSheet(theme);
 
     const renderClearAfterTime = () => {
-        if (duration && duration === CustomStatusDuration.DATE_AND_TIME) {
+        if (duration && duration === 'date_and_time') {
             return (
                 <View style={style.expiryTime}>
                     <CustomStatusExpiry

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
+import {useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity, Pressable, Platform, DeviceEventEmitter} from 'react-native';
 import {Options} from 'react-native-navigation';
 
@@ -9,7 +10,7 @@ import {muteMyself, unmuteMyself} from '@calls/actions';
 import CallAvatar from '@calls/components/call_avatar';
 import {CurrentCall, VoiceEventData} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
-import {Events, WebsocketEvents} from '@constants';
+import {Events, Screens, WebsocketEvents} from '@constants';
 import {CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {goToScreen} from '@screens/navigation';
@@ -44,6 +45,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         userInfo: {
             flex: 1,
+            paddingLeft: 10,
         },
         speakingUser: {
             color: theme.sidebarText,
@@ -85,8 +87,10 @@ const CurrentCallBar = ({
     teammateNameDisplay,
 }: Props) => {
     const theme = useTheme();
-    const isCurrentCall = Boolean(currentCall);
+    const {formatMessage} = useIntl();
     const [speaker, setSpeaker] = useState<string | null>(null);
+
+    const isCurrentCall = Boolean(currentCall);
     const handleVoiceOn = (data: VoiceEventData) => {
         if (data.channelId === currentCall?.channelId) {
             setSpeaker(data.userId);
@@ -123,13 +127,11 @@ const CurrentCallBar = ({
                 visible: Platform.OS === 'android',
             },
         };
-        goToScreen('Call', 'Call', {}, options);
+        const title = formatMessage({id: 'mobile.calls_call_screen', defaultMessage: 'Call'});
+        goToScreen(Screens.CALL, title, {}, options);
     }, []);
 
     const myParticipant = currentCall?.participants[currentCall.myUserId];
-    if (!currentCall || !myParticipant) {
-        return null;
-    }
 
     const muteUnmute = () => {
         if (myParticipant?.muted) {
@@ -146,7 +148,7 @@ const CurrentCallBar = ({
                 <CallAvatar
                     userModel={userModelsDict[speaker || '']}
                     volume={speaker ? 0.5 : 0}
-                    serverUrl={currentCall.serverUrl}
+                    serverUrl={currentCall?.serverUrl || ''}
                 />
                 <View style={style.userInfo}>
                     <Text style={style.speakingUser}>
