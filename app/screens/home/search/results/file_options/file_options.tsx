@@ -43,9 +43,9 @@ type Props = {
     canDownloadFiles: boolean;
     enablePublicLink: boolean;
     fileInfo: FileInfo;
-    openUp: boolean;
+    openUp?: boolean;
 }
-const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink, openUp}: Props) => {
+const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink, openUp = false}: Props) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
