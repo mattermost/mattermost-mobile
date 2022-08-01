@@ -6,11 +6,13 @@ import {Linking} from 'react-native';
 import urlParse from 'url-parse';
 
 import {Files} from '@constants';
-import {DeepLinkType, DeepLinkWithData} from '@typings/launch';
+import DeepLinkType from '@constants/deep_linking';
 import {emptyFunction} from '@utils/general';
 import {escapeRegex} from '@utils/markdown';
 
 import {latinise} from './latinise';
+
+import type {DeepLinkWithData} from '@typings/launch';
 
 const ytRegex = /(?:http|https):\/\/(?:www\.|m\.)?(?:(?:youtube\.com\/(?:(?:v\/)|(?:(?:watch|embed\/watch)(?:\/|.*v=))|(?:embed\/)|(?:user\/[^/]+\/u\/[0-9]\/)))|(?:youtu\.be\/))([^#&?]*)/;
 

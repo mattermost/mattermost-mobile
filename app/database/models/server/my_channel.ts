@@ -6,10 +6,10 @@ import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModelInterface from '@typings/database/models/servers/my_channel';
+import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 
 const {CATEGORY_CHANNEL, CHANNEL, MY_CHANNEL, MY_CHANNEL_SETTINGS} = MM_TABLES.SERVER;
 

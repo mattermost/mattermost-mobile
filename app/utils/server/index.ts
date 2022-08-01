@@ -6,8 +6,8 @@ import {Alert, AlertButton} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {Screens, Sso, SupportedServer} from '@constants';
+import LaunchType from '@constants/launch';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
-import {LaunchType} from '@typings/launch';
 import {getErrorMessage} from '@utils/client_error';
 import {changeOpacity} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';

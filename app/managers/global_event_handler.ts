@@ -8,6 +8,7 @@ import semver from 'semver';
 import {selectAllMyChannelIds} from '@actions/local/channel';
 import LocalConfig from '@assets/config.json';
 import {Events, Sso} from '@constants';
+import LaunchType from '@constants/launch';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations, resetMomentLocale, t} from '@i18n';
 import {getServerCredentials, removeServerCredentials} from '@init/credentials';
@@ -18,10 +19,10 @@ import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
-import {LaunchType} from '@typings/launch';
 import {deleteFileCache} from '@utils/file';
 
 import type {jsAndNativeErrorHandler} from '@typings/global/error_handling';
+import type {LaunchType as LaunchTypeType} from '@typings/launch';
 
 type LinkingCallbackArg = {url: string};
 
@@ -118,7 +119,7 @@ class GlobalEventHandler {
 
         if (activeServerUrl === serverUrl) {
             let displayName = '';
-            let launchType: LaunchType = LaunchType.AddServer;
+            let launchType: LaunchTypeType = LaunchType.AddServer;
             if (!Object.keys(DatabaseManager.serverDatabases).length) {
                 EphemeralStore.theme = undefined;
                 launchType = LaunchType.Normal;

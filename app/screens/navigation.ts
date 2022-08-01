@@ -11,18 +11,19 @@ import tinyColor from 'tinycolor2';
 import CompassIcon from '@components/compass_icon';
 import {ITEM_HEIGHT} from '@components/team_sidebar/add_team/team_list_item/team_list_item';
 import {Device, Events, Screens} from '@constants';
+import LaunchType from '@constants/launch';
 import NavigationConstants from '@constants/navigation';
 import {NOT_READY} from '@constants/screens';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
-import {LaunchProps, LaunchType} from '@typings/launch';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
 import type TeamModel from '@typings/database/models/servers/team';
+import type {LaunchProps} from '@typings/launch';
 import type {NavButtons} from '@typings/screens/navigation';
 
 const {MattermostManaged} = NativeModules;

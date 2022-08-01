@@ -7,6 +7,8 @@ import {Notifications} from 'react-native-notifications';
 
 import {appEntry, pushNotificationEntry, upgradeEntry} from '@actions/remote/entry';
 import {Screens} from '@constants';
+import DeepLinkType from '@constants/deep_linking';
+import LaunchType from '@constants/launch';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from '@init/credentials';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
@@ -14,10 +16,11 @@ import {getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
 import {goToScreen, resetToHome, resetToSelectServer, resetToTeams} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkType, DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
 import {parseDeepLink} from '@utils/url';
+
+import type {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkWithData, LaunchProps} from '@typings/launch';
 
 export const initialLaunch = async () => {
     const deepLinkUrl = await Linking.getInitialURL();

@@ -7,9 +7,10 @@ import {Alert} from 'react-native';
 import {CallParticipant} from '@calls/types/calls';
 import {Post} from '@constants';
 import Calls from '@constants/calls';
-import PostModel from '@typings/database/models/servers/post';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {displayUsername} from '@utils/user';
+
+import type PostModel from '@typings/database/models/servers/post';
 
 export function sortParticipants(teammateNameDisplay: string, participants?: Dictionary<CallParticipant>, presenterID?: string): CallParticipant[] {
     if (!participants) {

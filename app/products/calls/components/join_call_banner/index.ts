@@ -11,7 +11,8 @@ import {observeCallsState, observeCurrentCall} from '@calls/state';
 import {idsAreEqual} from '@calls/utils';
 import {observeChannel} from '@queries/servers/channel';
 import {queryUsersById} from '@queries/servers/user';
-import {WithDatabaseArgs} from '@typings/database/database';
+
+import type {WithDatabaseArgs} from '@typings/database/database';
 
 type OwnProps = {
     serverUrl: string;
