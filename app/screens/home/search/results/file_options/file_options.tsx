@@ -64,7 +64,7 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
 
     return (
         <View
-            style={styles.tablet}
+            style={isTablet ? styles.tablet : null}
         >
             {!isTablet && <Header fileInfo={fileInfo}/> }
             {canDownloadFiles &&
