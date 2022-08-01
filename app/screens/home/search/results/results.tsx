@@ -37,11 +37,8 @@ const styles = StyleSheet.create({
         marginHorizontal: 20,
     },
 });
-const tabletZindex = 11;
-const tabletTop = 10;
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
-const AnimatedView = Animated.createAnimatedComponent(View);
 
 type Props = {
     canDownloadFiles: boolean;
@@ -127,14 +124,6 @@ const SearchResults = ({
         }
         return [bottomSheetSnapPoint(numberOptions, ITEM_HEIGHT, insets.bottom) + HEADER_HEIGHT, 10];
     }, [canDownloadFiles, publicLinkEnabled]);
-
-    const fileOptions = useMemo(() => {
-        return (
-            <FileOptions
-                fileInfo={orderedFilesForGallery[dotMenuItemNumber]}
-            />
-        );
-    }, [dotMenuItemNumber, orderedFilesForGallery]);
 
     const handleOptionsPress = useCallback((item: number) => {
         if (isTablet) {
@@ -274,17 +263,11 @@ const SearchResults = ({
 
     return (
         <>
-            {openDotMenu &&
-                <AnimatedView
-                    style={{
-                        zIndex: tabletZindex,
-                        top: yOffset + tabletTop,
-                    }}
-                >
-                    <FileOptions
-                        fileInfo={orderedFilesForGallery[dotMenuItemNumber]}
-                    />
-                </AnimatedView>
+            {openDotMenu && dotMenuItemNumber &&
+                <FileOptions
+                    fileInfo={orderedFilesForGallery[dotMenuItemNumber]}
+                    yOffset={yOffset}
+                />
             }
             <AnimatedFlatList
                 ListEmptyComponent={noResults}
@@ -294,9 +277,7 @@ const SearchResults = ({
                 scrollEventThrottle={16}
                 indicatorStyle='black'
                 refreshing={false}
-
-                //renderItem={renderItem}
-
+                renderItem={null}
                 CellRendererComponent={renderItem}
                 contentContainerStyle={paddingTop}
                 nestedScrollEnabled={true}

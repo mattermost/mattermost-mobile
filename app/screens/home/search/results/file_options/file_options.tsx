@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import {showPermalink} from '@actions/remote/permalink';
 import OptionItem from '@components/option_item';
@@ -34,12 +35,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
+const AnimatedView = Animated.createAnimatedComponent(View);
+const tabletZindex = 11;
+const tabletTop = 10;
+
 type Props = {
     canDownloadFiles: boolean;
     enablePublicLink: boolean;
     fileInfo: FileInfo;
+    yOffset?: number;
 }
-const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
+const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink, yOffset}: Props) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
@@ -62,52 +68,77 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
         showPermalink(serverUrl, '', fileInfo.post_id, intl);
     }, [serverUrl, fileInfo.post_id, intl]);
 
-    return (
-        <View
-            style={isTablet ? styles.tablet : null}
-        >
-            {!isTablet && <Header fileInfo={fileInfo}/> }
-            {canDownloadFiles &&
+    const optionItems = useMemo(() => {
+        return (
+            <>
+                {canDownloadFiles &&
                 <OptionItem
                     action={handleDownload}
                     label={intl.formatMessage({id: 'screen.search.results.file_options.download', defaultMessage: 'Download'})}
                     icon={'download-outline'}
                     type='default'
                 />
-            }
-            <OptionItem
-                action={handlePermalink}
-                label={intl.formatMessage({id: 'screen.search.results.file_options.open_in_channel', defaultMessage: 'Open in channel'})}
-                icon={'globe'}
-                type='default'
-            />
-            {enablePublicLink &&
+                }
+                <OptionItem
+                    action={handlePermalink}
+                    label={intl.formatMessage({id: 'screen.search.results.file_options.open_in_channel', defaultMessage: 'Open in channel'})}
+                    icon={'globe'}
+                    type='default'
+                />
+                {enablePublicLink &&
                 <OptionItem
                     action={handleCopyLink}
                     label={intl.formatMessage({id: 'screen.search.results.file_options.copy_link', defaultMessage: 'Copy link'})}
                     icon={'link-variant'}
                     type='default'
                 />
-            }
-            {!isTablet &&
+                }
+            </>
+        );
+    }, [canDownloadFiles, enablePublicLink]);
+
+    const tablet = useMemo(() => {
+        return (
+            <AnimatedView
+                style={{
+                    zIndex: tabletZindex,
+                    top: yOffset! + tabletTop,
+                }}
+            >
+                <View
+                    style={styles.tablet}
+                >
+                    {optionItems}
+                </View>
+            </AnimatedView>
+        );
+    }, [optionItems, yOffset]);
+
+    const phone = useMemo(() => {
+        return (
+            <>
+                <Header fileInfo={fileInfo}/>
+                {optionItems}
                 <View style={styles.toast} >
                     {action === 'downloading' &&
-                        <DownloadWithAction
-                            action={action}
-                            item={galleryItem}
-                            setAction={setAction}
-                        />
+                    <DownloadWithAction
+                        action={action}
+                        item={galleryItem}
+                        setAction={setAction}
+                    />
                     }
                     {action === 'copying' &&
-                        <CopyPublicLink
-                            item={galleryItem}
-                            setAction={setAction}
-                        />
+                    <CopyPublicLink
+                        item={galleryItem}
+                        setAction={setAction}
+                    />
                     }
                 </View>
-            }
-        </View>
-    );
+            </>
+        );
+    }, [optionItems, fileInfo]);
+
+    return isTablet ? tablet : phone;
 };
 
 export default FileOptions;
