@@ -27,8 +27,6 @@ export const CURRENT_CALL_BAR_HEIGHT = 74;
 
 export const QUICK_OPTIONS_HEIGHT = 270;
 
-export const MENU_ITEM_HEIGHT = 50;
-
 export default {
     BOTTOM_TAB_HEIGHT,
     BOTTOM_TAB_ICON_SIZE,

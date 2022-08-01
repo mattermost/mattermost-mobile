@@ -90,7 +90,7 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
         });
         fetchStatusInBatch(serverUrl, currentUser.id);
         close();
-    }, [serverUrl, autoResponderActive, autoResponderMessage, notifyProps, currentUser]);
+    }, [serverUrl, autoResponderActive, autoResponderMessage, notifyProps, currentUser.id]);
 
     useEffect(() => {
         const enabled = initialAutoResponderActive !== autoResponderActive || initialOOOMsg !== autoResponderMessage;

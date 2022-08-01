@@ -5,8 +5,8 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import React from 'react';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
+import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
-import {MENU_ITEM_HEIGHT} from '@constants/view';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissModal} from '@screens/navigation';
@@ -127,7 +127,7 @@ const PostOptions = ({
             closeButtonId={POST_OPTIONS_BUTTON}
             componentId={Screens.POST_OPTIONS}
             initialSnapIndex={0}
-            snapPoints={[((snapPoints + additionalSnapPoints) * MENU_ITEM_HEIGHT), 10]}
+            snapPoints={[((snapPoints + additionalSnapPoints) * ITEM_HEIGHT), 10]}
             testID='post_options'
         />
     );
