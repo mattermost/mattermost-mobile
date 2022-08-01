@@ -24,9 +24,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingLeft: 20,
         position: 'absolute',
         right: 40,
-        top: 60,
         width: 252,
         zIndex: 100,
+    },
+    openUp: {
+        bottom: -20,
+    },
+    openDown: {
+        top: 60,
     },
     toast: {
         marginTop: 100,
@@ -38,13 +43,13 @@ type Props = {
     canDownloadFiles: boolean;
     enablePublicLink: boolean;
     fileInfo: FileInfo;
+    openUp: boolean;
 }
-const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
+const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink, openUp}: Props) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
     const serverUrl = useServerUrl();
-    const [openUp, setOpenUp] = useState(false);
     const [action, setAction] = useState<GalleryAction>('none');
     const styles = getStyleSheet(theme);
 
@@ -94,12 +99,12 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
     const tablet = useMemo(() => {
         return (
             <View
-                style={styles.tablet}
+                style={[styles.tablet, openUp ? styles.openUp : styles.openDown]}
             >
                 {optionItems}
             </View>
         );
-    }, [optionItems]);
+    }, [optionItems, openUp]);
 
     const mobile = useMemo(() => {
         return (

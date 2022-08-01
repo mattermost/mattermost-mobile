@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {LayoutChangeEvent, StyleSheet, FlatList, ListRenderItemInfo, StyleProp, View, ViewStyle} from 'react-native';
+import {LayoutChangeEvent, StyleSheet, FlatList, ListRenderItemInfo, StyleProp, useWindowDimensions, View, ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -73,7 +73,9 @@ const SearchResults = ({
     const theme = useTheme();
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
+    const dimensions = useWindowDimensions();
     const [yOffset, setYOffset] = useState(0);
+    const [openUp, setOpenUp] = useState(false);
     const [lastViewedIndex, setLastViewedIndex] = useState<number | undefined>(undefined);
     const [dotMenuItemNumber, setDotMenuItemNumber] = useState<number | undefined>(undefined);
     const [openDotMenu, setOpenDotMenu] = useState(false);
@@ -202,6 +204,8 @@ const SearchResults = ({
         const optionSelected = dotMenuItemNumber === filesForGalleryIndexes[item.id!] && openDotMenu;
         const onLayout = (event: LayoutChangeEvent) => {
             if (dotMenuItemNumber === filesForGalleryIndexes[item.id!]) {
+                const {height} = dimensions;
+                setOpenUp(event.nativeEvent.layout.y > height / 2);
                 setYOffset(event.nativeEvent.layout.y);
             }
         };
@@ -271,6 +275,7 @@ const SearchResults = ({
                 >
                     <FileOptions
                         fileInfo={orderedFilesForGallery[dotMenuItemNumber]}
+                        openUp={openUp}
                     />
                 </AnimatedView>
             }
