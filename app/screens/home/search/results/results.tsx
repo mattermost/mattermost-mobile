@@ -264,21 +264,27 @@ const SearchResults = ({
 
     const data = selectedTab === TabTypes.MESSAGES ? orderedPosts : orderedFilesForGallery;
 
+    const tabletOptions = useMemo(() => {
+        return (
+            <AnimatedView
+                style={{
+                    zIndex: tabletZindex,
+                    top: yOffset + tabletTop,
+                }}
+            >
+                {dotMenuItemNumber &&
+                <FileOptions
+                    fileInfo={orderedFilesForGallery[dotMenuItemNumber]}
+                    openUp={openUp}
+                />
+                }
+            </AnimatedView>
+        );
+    }, [dotMenuItemNumber, openUp, orderedFilesForGallery, yOffset]);
+
     return (
         <>
-            {openDotMenu &&
-                <AnimatedView
-                    style={{
-                        zIndex: tabletZindex,
-                        top: yOffset + tabletTop,
-                    }}
-                >
-                    <FileOptions
-                        fileInfo={orderedFilesForGallery[dotMenuItemNumber]}
-                        openUp={openUp}
-                    />
-                </AnimatedView>
-            }
+            {openDotMenu && tabletOptions}
             <AnimatedFlatList
                 ListEmptyComponent={noResults}
                 data={data}
