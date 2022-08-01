@@ -69,5 +69,7 @@ const WebsocketEvents = {
     GROUP_RECEIVED: 'received_group',
     GROUP_MEMBER_ADD: 'group_member_add',
     GROUP_MEMBER_DELETE: 'group_member_delete',
+    GROUP_ASSOCIATED_TO_TEAM: 'received_group_associated_to_team',
+    GROUP_DISSOCIATED_TO_TEAM: 'received_group_not_associated_to_team',
 };
 export default WebsocketEvents;

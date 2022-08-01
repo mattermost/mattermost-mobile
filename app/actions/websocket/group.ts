@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {fetchGroupsForChannel, fetchGroupsForMember, fetchGroupsForTeam} from '@actions/remote/groups';
-import {deleteGroupMembershipById} from '@app/queries/servers/group';
+import {deleteGroupMembershipById, deleteGroupTeamById} from '@app/queries/servers/group';
 import {generateGroupAssociationId} from '@app/utils/groups';
 import DatabaseManager from '@database/manager';
 import {logError} from '@utils/log';
@@ -15,7 +15,11 @@ type WebsocketGroupMemberMessage = WebSocketMessage<{
     group_member?: string; // type GroupMember
 }>
 
-const handleError = (serverUrl: string, e: unknown, msg: WebsocketGroupMessage | WebsocketGroupMemberMessage) => {
+type WebsocketGroupTeamMessage = WebSocketMessage<{
+    group_team?: string; // type GroupMember
+}>
+
+const handleError = (serverUrl: string, e: unknown, msg: WebsocketGroupMessage | WebsocketGroupMemberMessage | WebsocketGroupTeamMessage) => {
     logError(`Group WS: ${msg.event}`, e, msg);
 
     const {team_id, channel_id, user_id} = msg.broadcast;
@@ -70,6 +74,37 @@ export async function handleGroupMemberDeleteEvent(serverUrl: string, msg: Webso
             groupMember = JSON.parse(msg.data.group_member);
 
             await deleteGroupMembershipById(database, generateGroupAssociationId(groupMember.group_id, groupMember.user_id));
+        }
+    } catch (e) {
+        handleError(serverUrl, e, msg);
+    }
+}
+
+export async function handleGroupTeamAssociatedEvent(serverUrl: string, msg: WebsocketGroupTeamMessage) {
+    let groupTeam: GroupTeam;
+
+    try {
+        if (msg?.data?.group_team) {
+            const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            groupTeam = JSON.parse(msg.data.group_team);
+            const group = {id: groupTeam.group_id};
+
+            operator.handleGroupTeamsForTeam({teamId: groupTeam.team_id, groups: [group], prepareRecordsOnly: false});
+        }
+    } catch (e) {
+        handleError(serverUrl, e, msg);
+    }
+}
+
+export async function handleGroupTeamDissociateEvent(serverUrl: string, msg: WebsocketGroupTeamMessage) {
+    let groupTeam: GroupTeam;
+
+    try {
+        if (msg?.data?.group_team) {
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            groupTeam = JSON.parse(msg.data.group_team);
+
+            await deleteGroupTeamById(database, generateGroupAssociationId(groupTeam.group_id, groupTeam.team_id));
         }
     } catch (e) {
         handleError(serverUrl, e, msg);
