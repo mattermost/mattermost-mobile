@@ -37,6 +37,8 @@ const styles = StyleSheet.create({
         marginHorizontal: 20,
     },
 });
+const tabletZindex = 11;
+const tabletTop = 10;
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 const AnimatedView = Animated.createAnimatedComponent(View);
@@ -275,11 +277,13 @@ const SearchResults = ({
             {openDotMenu &&
                 <AnimatedView
                     style={{
-                        zIndex: 11,
-                        top: yOffset + 10,
+                        zIndex: tabletZindex,
+                        top: yOffset + tabletTop,
                     }}
                 >
-                    {fileOptions}
+                    <FileOptions
+                        fileInfo={orderedFilesForGallery[dotMenuItemNumber]}
+                    />
                 </AnimatedView>
             }
             <AnimatedFlatList
