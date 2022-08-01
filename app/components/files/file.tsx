@@ -30,6 +30,7 @@ type FileProps = {
     publicLinkEnabled: boolean;
     channelName?: string;
     onOptionsPress?: (index: number) => void;
+    optionSelected?: boolean;
     theme: Theme;
     wrapperWidth?: number;
     showDate?: boolean;
@@ -74,6 +75,7 @@ const File = ({
     nonVisibleImagesCount = 0,
     onOptionsPress,
     onPress,
+    optionSelected,
     publicLinkEnabled,
     showDate = false,
     theme,
@@ -102,6 +104,7 @@ const File = ({
             return (
                 <FileOptionsIcon
                     onPress={handleOnOptionsPress}
+                    selected={optionSelected}
                 />
             );
         }

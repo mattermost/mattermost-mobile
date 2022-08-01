@@ -2,23 +2,28 @@
 // See LICENSE.txt for license information.
 import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View, StyleSheet} from 'react-native';
+import {View} from 'react-native';
 
 import {showPermalink} from '@actions/remote/permalink';
 import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import CopyPublicLink from '@screens/gallery/footer/copy_public_link';
 import DownloadWithAction from '@screens/gallery/footer/download_with_action';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Header from './header';
 
-const styles = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     tablet: {
-        backgroundColor: 'yellow',
+        backgroundColor: theme.centerChannelBg,
+        borderColor: changeOpacity(theme.centerChannelColor, 0.08),
+        borderRadius: 8,
+        borderWidth: 1,
         paddingLeft: 20,
         position: 'absolute',
-        right: 10,
+        right: 40,
         top: 60,
         width: 252,
         zIndex: 100,
@@ -27,7 +32,7 @@ const styles = StyleSheet.create({
         marginTop: 100,
         alignItems: 'center',
     },
-});
+}));
 
 type Props = {
     canDownloadFiles: boolean;
@@ -37,9 +42,11 @@ type Props = {
 const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
+    const theme = useTheme();
     const serverUrl = useServerUrl();
     const [openUp, setOpenUp] = useState(false);
     const [action, setAction] = useState<GalleryAction>('none');
+    const styles = getStyleSheet(theme);
 
     const galleryItem = {...fileInfo, type: 'image'} as GalleryItemType;
 

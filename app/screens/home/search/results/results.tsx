@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {StyleSheet, FlatList, ListRenderItemInfo, StyleProp, View, ViewStyle} from 'react-native';
+import {LayoutChangeEvent, StyleSheet, FlatList, ListRenderItemInfo, StyleProp, View, ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -126,15 +126,22 @@ const SearchResults = ({
         return [bottomSheetSnapPoint(numberOptions, ITEM_HEIGHT, insets.bottom) + HEADER_HEIGHT, 10];
     }, [canDownloadFiles, publicLinkEnabled]);
 
+    const fileOptions = useMemo(() => {
+        return (
+            <FileOptions
+                fileInfo={orderedFilesForGallery[dotMenuItemNumber]}
+            />
+        );
+    }, [dotMenuItemNumber, orderedFilesForGallery]);
+
     const handleOptionsPress = useCallback((item: number) => {
         if (isTablet) {
+            setDotMenuItemNumber(dotMenuItemNumber === item ? undefined : item);
             if (dotMenuItemNumber === item) {
-                setDotMenuItemNumber(undefined);
                 setOpenDotMenu(false);
                 return;
             }
             setOpenDotMenu(true);
-            setDotMenuItemNumber(item);
             return;
         }
 
@@ -153,7 +160,7 @@ const SearchResults = ({
             theme,
             title: '',
         });
-    }, [openDotMenu, orderedFilesForGallery, dotMenuItemNumber, snapPoints, theme]);
+    }, [orderedFilesForGallery, dotMenuItemNumber, snapPoints, theme]);
 
     // This effect handles the case where a user has the FileOptions Modal
     // open and the server changes the ability to download files or copy public
@@ -169,22 +176,6 @@ const SearchResults = ({
             });
         }
     }, [canDownloadFiles, publicLinkEnabled]);
-
-    const fileOptions = useMemo(() => {
-        return (
-            <AnimatedView
-                style={{
-                    zIndex: 11,
-                    top: yOffset,
-                    right: 20,
-                }}
-            >
-                <FileOptions
-                    fileInfo={orderedFilesForGallery[dotMenuItemNumber]}
-                />
-            </AnimatedView>
-        );
-    }, [dotMenuItemNumber, orderedFilesForGallery, yOffset]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<string|FileInfo | Post>) => {
         if (typeof item === 'string') {
@@ -218,16 +209,16 @@ const SearchResults = ({
         const container: StyleProp<ViewStyle> = fileInfos.length > 1 ? styles.container : undefined;
         const isSingleImage = orderedFilesForGallery.length === 1 && (isImage(orderedFilesForGallery[0]) || isVideo(orderedFilesForGallery[0]));
         const isReplyPost = false;
+        const optionSelected = dotMenuItemNumber === filesForGalleryIndexes[item.id!] && openDotMenu;
+        const onLayout = (event: LayoutChangeEvent) => {
+            if (dotMenuItemNumber === filesForGalleryIndexes[item.id!]) {
+                setYOffset(event.nativeEvent.layout.y);
+            }
+        };
 
         return (
             <View
-                onLayout={(event) => {
-                    if (dotMenuItemNumber === filesForGalleryIndexes[item.id!]) {
-                        const {y} = event.nativeEvent.layout;
-                        setYOffset(y);
-                        console.log('y', y);
-                    }
-                }}
+                onLayout={onLayout}
                 style={container}
                 key={item.id}
             >
@@ -240,6 +231,7 @@ const SearchResults = ({
                     index={filesForGalleryIndexes[item.id!] || 0}
                     onPress={handlePreviewPress}
                     onOptionsPress={handleOptionsPress}
+                    optionSelected={optionSelected}
                     theme={theme}
                     isSingleImage={isSingleImage}
                     showDate={true}
@@ -276,16 +268,20 @@ const SearchResults = ({
         );
     }, [searchValue, selectedTab]);
 
-    let data;
-    if (selectedTab === TabTypes.MESSAGES) {
-        data = orderedPosts;
-    } else {
-        data = orderedFilesForGallery;
-    }
+    const data = selectedTab === TabTypes.MESSAGES ? orderedPosts : orderedFilesForGallery;
 
     return (
         <>
-            {openDotMenu && fileOptions}
+            {openDotMenu &&
+                <AnimatedView
+                    style={{
+                        zIndex: 11,
+                        top: yOffset + 10,
+                    }}
+                >
+                    {fileOptions}
+                </AnimatedView>
+            }
             <AnimatedFlatList
                 ListEmptyComponent={noResults}
                 data={data}
