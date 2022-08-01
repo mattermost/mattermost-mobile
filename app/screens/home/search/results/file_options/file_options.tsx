@@ -3,7 +3,6 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
-import Animated from 'react-native-reanimated';
 
 import {showPermalink} from '@actions/remote/permalink';
 import OptionItem from '@components/option_item';
@@ -35,17 +34,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const AnimatedView = Animated.createAnimatedComponent(View);
-const tabletZindex = 11;
-const tabletTop = 10;
-
 type Props = {
     canDownloadFiles: boolean;
     enablePublicLink: boolean;
     fileInfo: FileInfo;
-    yOffset?: number;
 }
-const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink, yOffset}: Props) => {
+const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink}: Props) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
@@ -99,22 +93,15 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink, yOffset}: Pr
 
     const tablet = useMemo(() => {
         return (
-            <AnimatedView
-                style={{
-                    zIndex: tabletZindex,
-                    top: yOffset! + tabletTop,
-                }}
+            <View
+                style={styles.tablet}
             >
-                <View
-                    style={styles.tablet}
-                >
-                    {optionItems}
-                </View>
-            </AnimatedView>
+                {optionItems}
+            </View>
         );
-    }, [optionItems, yOffset]);
+    }, [optionItems]);
 
-    const phone = useMemo(() => {
+    const mobile = useMemo(() => {
         return (
             <>
                 <Header fileInfo={fileInfo}/>
@@ -136,9 +123,9 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink, yOffset}: Pr
                 </View>
             </>
         );
-    }, [optionItems, fileInfo]);
+    }, [fileInfo, optionItems]);
 
-    return isTablet ? tablet : phone;
+    return isTablet ? tablet : mobile;
 };
 
 export default FileOptions;

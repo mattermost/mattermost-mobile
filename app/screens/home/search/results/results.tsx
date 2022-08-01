@@ -37,8 +37,11 @@ const styles = StyleSheet.create({
         marginHorizontal: 20,
     },
 });
+const tabletZindex = 11;
+const tabletTop = 10;
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
+const AnimatedView = Animated.createAnimatedComponent(View);
 
 type Props = {
     canDownloadFiles: boolean;
@@ -128,11 +131,7 @@ const SearchResults = ({
     const handleOptionsPress = useCallback((item: number) => {
         if (isTablet) {
             setDotMenuItemNumber(dotMenuItemNumber === item ? undefined : item);
-            if (dotMenuItemNumber === item) {
-                setOpenDotMenu(false);
-                return;
-            }
-            setOpenDotMenu(true);
+            setOpenDotMenu(dotMenuItemNumber !== item);
             return;
         }
 
@@ -263,11 +262,17 @@ const SearchResults = ({
 
     return (
         <>
-            {openDotMenu && dotMenuItemNumber &&
-                <FileOptions
-                    fileInfo={orderedFilesForGallery[dotMenuItemNumber]}
-                    yOffset={yOffset}
-                />
+            {openDotMenu &&
+                <AnimatedView
+                    style={{
+                        zIndex: tabletZindex,
+                        top: yOffset + tabletTop,
+                    }}
+                >
+                    <FileOptions
+                        fileInfo={orderedFilesForGallery[dotMenuItemNumber]}
+                    />
+                </AnimatedView>
             }
             <AnimatedFlatList
                 ListEmptyComponent={noResults}
