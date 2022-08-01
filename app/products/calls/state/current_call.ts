@@ -12,7 +12,7 @@ export const getCurrentCall = () => {
     return currentCallSubject.value;
 };
 
-const setCurrentCall = (currentCall: CurrentCall | null) => {
+export const setCurrentCall = (currentCall: CurrentCall | null) => {
     currentCallSubject.next(currentCall);
 };
 
@@ -20,7 +20,7 @@ export const observeCurrentCall = () => {
     return currentCallSubject.asObservable();
 };
 
-const useCurrentCall = () => {
+export const useCurrentCall = () => {
     const [state, setState] = useState<CurrentCall | null>(null);
 
     useEffect(() => {
@@ -34,9 +34,4 @@ const useCurrentCall = () => {
     }, []);
 
     return state;
-};
-
-export const exportedForInternalUse = {
-    setCurrentCall,
-    useCurrentCall,
 };

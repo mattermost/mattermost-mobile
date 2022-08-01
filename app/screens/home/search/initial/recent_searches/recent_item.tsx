@@ -56,7 +56,7 @@ const RecentItem = ({item, setRecentValue}: Props) => {
 
     const handleRemove = useCallback(async () => {
         await removeSearchFromTeamSearchHistory(serverUrl, item.id);
-    }, [item.id]);
+    }, [item.id, serverUrl]);
 
     return (
         <MenuItem

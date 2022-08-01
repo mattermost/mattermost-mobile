@@ -108,7 +108,7 @@
     "@babel/register": "7.17.7",
     "@babel/runtime": "7.18.0",
     "@react-native-community/eslint-config": "3.0.2",
-    "@testing-library/react-hooks": "8.0.0",
+    "@testing-library/react-hooks": "8.0.1",
     "@testing-library/react-native": "9.1.0",
     "@types/base-64": "1.0.0",
     "@types/commonmark": "0.27.5",

@@ -8,12 +8,12 @@ import {TouchableOpacity, View} from 'react-native';
 import ClearButton from '@components/custom_status/clear_button';
 import CustomStatusText from '@components/custom_status/custom_status_text';
 import Emoji from '@components/emoji';
-import {CST, CustomStatusDuration} from '@constants/custom_status';
+import {CST} from '@constants/custom_status';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
-    duration: CustomStatusDuration;
+    duration?: CustomStatusDuration;
     emoji?: string;
     expires_at?: string;
     handleClear?: (status: UserCustomStatus) => void;
@@ -75,7 +75,7 @@ const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handl
         }
     }, []);
 
-    const showCustomStatus = Boolean(duration && duration !== CustomStatusDuration.DATE_AND_TIME && isExpirySupported);
+    const showCustomStatus = Boolean(duration && duration !== 'date_and_time' && isExpirySupported);
 
     const clearButton =
         handleClear && expires_at ? (
@@ -118,7 +118,7 @@ const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handl
                         {showCustomStatus && (
                             <View style={{paddingTop: 5}}>
                                 <CustomStatusText
-                                    text={intl.formatMessage(CST[duration])}
+                                    text={intl.formatMessage(CST[duration!])}
                                     theme={theme}
                                     textStyle={style.customStatusDuration}
                                 />

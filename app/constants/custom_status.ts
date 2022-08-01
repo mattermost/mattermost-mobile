@@ -3,7 +3,7 @@
 
 import {t} from '@i18n';
 
-export enum CustomStatusDuration {
+export enum CustomStatusDurationEnum {
     DONT_CLEAR = '',
     THIRTY_MINUTES = 'thirty_minutes',
     ONE_HOUR = 'one_hour',
@@ -21,9 +21,9 @@ const {
     TODAY,
     THIS_WEEK,
     DATE_AND_TIME,
-} = CustomStatusDuration;
+} = CustomStatusDurationEnum;
 
-export const CST = {
+export const CST: {[key in CustomStatusDuration]: {id: string; defaultMessage: string}} = {
     [DONT_CLEAR]: {
         id: t('custom_status.expiry_dropdown.dont_clear'),
         defaultMessage: "Don't clear",

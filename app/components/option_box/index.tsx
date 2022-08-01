@@ -18,6 +18,9 @@ type OptionBoxProps = {
     onPress: () => void;
     testID?: string;
     text: string;
+    destructiveIconName?: string;
+    destructiveText?: string;
+    isDestructive?: boolean;
 }
 
 export const OPTIONS_HEIGHT = 62;
@@ -32,6 +35,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
         minWidth: 80,
     },
+    destructiveContainer: {
+        backgroundColor: changeOpacity(theme.dndIndicator, 0.04),
+    },
     text: {
         color: changeOpacity(theme.centerChannelColor, 0.56),
         paddingHorizontal: 5,
@@ -39,27 +45,41 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const OptionBox = ({activeIconName, activeText, containerStyle, iconName, isActive, onPress, testID, text}: OptionBoxProps) => {
+const OptionBox = ({
+    activeIconName,
+    activeText,
+    containerStyle,
+    iconName,
+    isActive,
+    onPress,
+    testID,
+    text,
+    destructiveIconName,
+    destructiveText,
+    isDestructive,
+}: OptionBoxProps) => {
     const theme = useTheme();
     const [activated, setActivated] = useState(isActive);
     const styles = getStyleSheet(theme);
+
     const pressedStyle = useCallback(({pressed}: PressableStateCallbackType) => {
-        const style = [styles.container, Boolean(containerStyle) && containerStyle];
+        const style = [styles.container, containerStyle, isDestructive && styles.destructiveContainer];
+        const baseBgColor = isDestructive ? theme.dndIndicator : theme.buttonBg;
 
         if (activated) {
             style.push({
-                backgroundColor: changeOpacity(theme.buttonBg, 0.08),
+                backgroundColor: changeOpacity(baseBgColor, 0.08),
             });
         }
 
         if (pressed) {
             style.push({
-                backgroundColor: changeOpacity(theme.buttonBg, 0.16),
+                backgroundColor: changeOpacity(baseBgColor, 0.16),
             });
         }
 
         return style;
-    }, [activated, containerStyle, theme]);
+    }, [activated, containerStyle, theme, isDestructive]);
 
     const handleOnPress = useCallback(() => {
         if (activeIconName || activeText) {
@@ -72,6 +92,10 @@ const OptionBox = ({activeIconName, activeText, containerStyle, iconName, isActi
         setActivated(isActive);
     }, [isActive]);
 
+    const destructIconName = (isDestructive && destructiveIconName) ? destructiveIconName : undefined;
+    const destructColor = isDestructive ? theme.dndIndicator : undefined;
+    const destructText = (isDestructive && destructiveText) ? destructiveText : undefined;
+
     return (
         <Pressable
             onPress={handleOnPress}
@@ -81,16 +105,16 @@ const OptionBox = ({activeIconName, activeText, containerStyle, iconName, isActi
             {({pressed}) => (
                 <>
                     <CompassIcon
-                        color={(pressed || activated) ? theme.buttonBg : changeOpacity(theme.centerChannelColor, 0.56)}
-                        name={activated && activeIconName ? activeIconName : iconName}
+                        color={destructColor || ((pressed || activated) ? theme.buttonBg : changeOpacity(theme.centerChannelColor, 0.56))}
+                        name={destructIconName || (activated && activeIconName ? activeIconName : iconName)}
                         size={24}
                     />
                     <Text
                         numberOfLines={1}
-                        style={[styles.text, {color: (pressed || activated) ? theme.buttonBg : changeOpacity(theme.centerChannelColor, 0.56)}]}
+                        style={[styles.text, {color: destructColor || ((pressed || activated) ? theme.buttonBg : changeOpacity(theme.centerChannelColor, 0.56))}]}
                         testID={`${testID}.label`}
                     >
-                        {activated && activeText ? activeText : text}
+                        {destructText || (activated && activeText ? activeText : text)}
                     </Text>
                 </>
             )}

@@ -44,6 +44,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
 export type Props = {
+    componentId: string;
     currentCall: CurrentCall | null;
     participantsDict: Dictionary<CallParticipant>;
     teammateNameDisplay: string;
@@ -244,7 +245,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const CallScreen = ({currentCall, participantsDict, teammateNameDisplay}: Props) => {
+const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDisplay}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const insets = useSafeAreaInsets();
@@ -328,7 +329,7 @@ const CallScreen = ({currentCall, participantsDict, teammateNameDisplay}: Props)
 
         // TODO: this is a temporary solution until we have a proper cross-team thread view.
         //  https://mattermost.atlassian.net/browse/MM-45752
-        popTopScreen();
+        popTopScreen(componentId);
         await DatabaseManager.setActiveServerDatabase(currentCall.serverUrl);
         await appEntry(currentCall.serverUrl, Date.now());
         goToScreen(Screens.THREAD, '', {rootId: currentCall.threadId});
@@ -357,6 +358,9 @@ const CallScreen = ({currentCall, participantsDict, teammateNameDisplay}: Props)
     }, [insets, intl, theme]);
 
     if (!currentCall || !myParticipant) {
+        // This should not be possible, but may happen until https://github.com/mattermost/mattermost-mobile/pull/6493 is merged.
+        // TODO: will figure out a way to remove the need for this check: https://mattermost.atlassian.net/browse/MM-46050
+        popTopScreen(componentId);
         return null;
     }
 
