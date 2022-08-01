@@ -43,9 +43,10 @@ type Props = {
     canDownloadFiles: boolean;
     enablePublicLink: boolean;
     fileInfo: FileInfo;
+    onActionComplete?: () => void;
     openUp?: boolean;
 }
-const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink, openUp = false}: Props) => {
+const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink, onActionComplete, openUp = false}: Props) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
@@ -57,14 +58,17 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink, openUp = fal
 
     const handleDownload = useCallback(() => {
         setAction('downloading');
+        onActionComplete?.();
     }, []);
 
     const handleCopyLink = useCallback(() => {
         setAction('copying');
+        onActionComplete?.();
     }, []);
 
     const handlePermalink = useCallback(() => {
         showPermalink(serverUrl, '', fileInfo.post_id, intl);
+        onActionComplete?.();
     }, [serverUrl, fileInfo.post_id, intl]);
 
     const optionItems = useMemo(() => {

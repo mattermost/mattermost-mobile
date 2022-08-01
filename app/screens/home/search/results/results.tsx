@@ -248,6 +248,7 @@ const SearchResults = ({
         handlePreviewPress,
         dotMenuItemNumber,
         publicLinkEnabled,
+        selectedFileInfo,
         isTablet,
         fileInfos.length > 1,
     ]);
@@ -263,6 +264,11 @@ const SearchResults = ({
 
     const data = selectedTab === TabTypes.MESSAGES ? orderedPosts : orderedFilesForGallery;
 
+    const onActionComplete = useCallback(() => {
+        setSelectedFileInfo(undefined);
+        setDotMenuItemNumber(undefined);
+    }, []);
+
     const renderTabletOptions = useCallback(() => {
         if (selectedFileInfo) {
             return (
@@ -274,13 +280,14 @@ const SearchResults = ({
                 >
                     <FileOptions
                         fileInfo={selectedFileInfo}
+                        onActionComplete={onActionComplete}
                         openUp={openUp}
                     />
                 </AnimatedView>
             );
         }
         return null;
-    }, [selectedFileInfo, yOffset, openUp]);
+    }, [selectedFileInfo, yOffset, openUp, onActionComplete]);
 
     return (
         <>
