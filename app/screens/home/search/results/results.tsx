@@ -263,7 +263,7 @@ const SearchResults = ({
         setSelectedItemNumber(undefined);
     }, []);
 
-    const renderTabletOptions = useMemo(() => {
+    const tabletOptions = useMemo(() => {
         if (selectedItemNumber === undefined) {
             return null;
         }
@@ -288,7 +288,7 @@ const SearchResults = ({
 
     return (
         <>
-            {renderTabletOptions}
+            {isTablet && tabletOptions}
             <AnimatedFlatList
                 ListEmptyComponent={noResults}
                 data={data}
