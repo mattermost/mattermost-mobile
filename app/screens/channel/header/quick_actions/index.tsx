@@ -16,6 +16,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 type Props = {
     channelId: string;
     callsEnabled: boolean;
+    isDMorGM: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -35,7 +36,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ChannelQuickAction = ({channelId, callsEnabled}: Props) => {
+const ChannelQuickAction = ({channelId, callsEnabled, isDMorGM}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -54,7 +55,7 @@ const ChannelQuickAction = ({channelId, callsEnabled}: Props) => {
                 showAsLabel={true}
                 testID='channel.quick_actions.channel_info.action'
             />
-            {callsEnabled &&
+            {callsEnabled && !isDMorGM && // if calls is not enabled, copy link will show in the channel actions
                 <CopyChannelLinkOption
                     channelId={channelId}
                     showAsLabel={true}
