@@ -6,6 +6,7 @@ import {buildQueryString} from '@utils/helpers';
 import {PER_PAGE_DEFAULT} from './constants';
 
 export interface ClientGroupsMix {
+    getGroup: (id: string) => Promise<Group>;
     getGroups: (params: {query?: string; filterAllowReference?: boolean; page?: number; perPage?: number; since?: number; includeMemberCount?: boolean}) => Promise<Group[]>;
     getAllGroupsAssociatedToChannel: (channelId: string, filterAllowReference?: boolean) => Promise<{groups: Group[]; total_group_count: number}>;
     getAllGroupsAssociatedToMembership: (userId: string, filterAllowReference?: boolean) => Promise<Group[]>;
@@ -16,6 +17,13 @@ export interface ClientGroupsMix {
 }
 
 const ClientGroups = (superclass: any) => class extends superclass {
+    getGroup = async (id: string) => {
+        return this.doFetch(
+            `${this.urlVersion}/groups/${id}`,
+            {method: 'get'},
+        );
+    };
+
     getGroups = async ({query = '', filterAllowReference = true, page = 0, perPage = PER_PAGE_DEFAULT, since = 0, includeMemberCount = false}) => {
         return this.doFetch(
             `${this.urlVersion}/groups${buildQueryString({

@@ -55,3 +55,7 @@ export const queryGroupTeamForTeam = (database: Database, teamId: string) => {
         Q.where('team_id', teamId),
     );
 };
+
+export const deleteGroupMembershipById = (database: Database, id: string) => {
+    return database.collections.get<GroupMembershipModel>(GROUP_MEMBERSHIP).find(id).then((model) => model.destroyPermanently());
+};
