@@ -78,7 +78,6 @@ const SearchResults = ({
     const [openUp, setOpenUp] = useState(false);
     const [lastViewedIndex, setLastViewedIndex] = useState<number | undefined>(undefined);
     const [dotMenuItemNumber, setDotMenuItemNumber] = useState<number | undefined>(undefined);
-    const [selectedFileInfo, setSelectedFileInfo] = useState<FileInfo | undefined>(undefined);
 
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
@@ -133,7 +132,6 @@ const SearchResults = ({
     const handleOptionsPress = useCallback((item: number) => {
         if (isTablet) {
             setDotMenuItemNumber(dotMenuItemNumber === item ? undefined : item);
-            setSelectedFileInfo(dotMenuItemNumber === item ? undefined : orderedFilesForGallery[item]);
             return;
         }
 
@@ -201,7 +199,7 @@ const SearchResults = ({
         const container: StyleProp<ViewStyle> = fileInfos.length > 1 ? styles.container : undefined;
         const isSingleImage = orderedFilesForGallery.length === 1 && (isImage(orderedFilesForGallery[0]) || isVideo(orderedFilesForGallery[0]));
         const isReplyPost = false;
-        const optionSelected = dotMenuItemNumber === filesForGalleryIndexes[item.id!] && selectedFileInfo;
+        const optionSelected = (dotMenuItemNumber !== undefined) && (dotMenuItemNumber === filesForGalleryIndexes[item.id!]);
         const onLayout = (event: LayoutChangeEvent) => {
             if (dotMenuItemNumber === filesForGalleryIndexes[item.id!]) {
                 const {height} = dimensions;
@@ -225,7 +223,7 @@ const SearchResults = ({
                     index={filesForGalleryIndexes[item.id!] || 0}
                     onPress={handlePreviewPress}
                     onOptionsPress={handleOptionsPress}
-                    optionSelected={Boolean(optionSelected)}
+                    optionSelected={optionSelected}
                     theme={theme}
                     isSingleImage={isSingleImage}
                     showDate={true}
@@ -248,7 +246,6 @@ const SearchResults = ({
         handlePreviewPress,
         dotMenuItemNumber,
         publicLinkEnabled,
-        selectedFileInfo,
         isTablet,
         fileInfos.length > 1,
     ]);
@@ -265,12 +262,12 @@ const SearchResults = ({
     const data = selectedTab === TabTypes.MESSAGES ? orderedPosts : orderedFilesForGallery;
 
     const onActionComplete = useCallback(() => {
-        setSelectedFileInfo(undefined);
         setDotMenuItemNumber(undefined);
     }, []);
 
     const renderTabletOptions = useCallback(() => {
-        if (selectedFileInfo) {
+        if (dotMenuItemNumber !== undefined) {
+            const fileInfo = orderedFilesForGallery[dotMenuItemNumber];
             return (
                 <AnimatedView
                     style={{
@@ -278,8 +275,9 @@ const SearchResults = ({
                         top: yOffset + tabletTop,
                     }}
                 >
+
                     <FileOptions
-                        fileInfo={selectedFileInfo}
+                        fileInfo={fileInfo}
                         onActionComplete={onActionComplete}
                         openUp={openUp}
                     />
@@ -287,7 +285,7 @@ const SearchResults = ({
             );
         }
         return null;
-    }, [selectedFileInfo, yOffset, openUp, onActionComplete]);
+    }, [dotMenuItemNumber, orderedFilesForGallery, yOffset, openUp, onActionComplete]);
 
     return (
         <>

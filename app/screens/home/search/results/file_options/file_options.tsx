@@ -25,7 +25,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         position: 'absolute',
         right: 40,
         width: 252,
-        zIndex: 100,
     },
     openUp: {
         bottom: -20,
