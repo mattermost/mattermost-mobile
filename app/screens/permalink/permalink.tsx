@@ -155,7 +155,9 @@ function Permalink({
                 let data;
                 const loadThreadPosts = isCRTEnabled && rootId;
                 if (loadThreadPosts) {
-                    data = await fetchPostThread(serverUrl, rootId);
+                    data = await fetchPostThread(serverUrl, rootId, {
+                        fetchAll: true,
+                    });
                 } else {
                     data = await fetchPostsAround(serverUrl, channelId, postId, POSTS_LIMIT, isCRTEnabled);
                 }
