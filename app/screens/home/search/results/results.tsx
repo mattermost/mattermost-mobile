@@ -173,7 +173,6 @@ const SearchResults = ({
                 return (
                     <DateSeparator
                         date={getDateForDateLine(item)}
-                        theme={theme}
                         timezone={isTimezoneEnabled ? currentTimezone : null}
                     />
                 );
@@ -224,7 +223,6 @@ const SearchResults = ({
                     onPress={handlePreviewPress}
                     onOptionsPress={handleOptionsPress}
                     optionSelected={optionSelected}
-                    theme={theme}
                     isSingleImage={isSingleImage}
                     showDate={true}
                     publicLinkEnabled={publicLinkEnabled}

@@ -6,6 +6,7 @@ import {View, TouchableWithoutFeedback} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {useTheme} from '@context/theme';
 import {useGalleryItem} from '@hooks/gallery';
 import {isDocument, isImage, isVideo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -31,7 +32,6 @@ type FileProps = {
     channelName?: string;
     onOptionsPress?: (index: number) => void;
     optionSelected?: boolean;
-    theme: Theme;
     wrapperWidth?: number;
     showDate?: boolean;
     updateFileForGallery: (idx: number, file: FileInfo) => void;
@@ -78,11 +78,11 @@ const File = ({
     optionSelected,
     publicLinkEnabled,
     showDate = false,
-    theme,
     updateFileForGallery,
     wrapperWidth = 300,
 }: FileProps) => {
     const document = useRef<DocumentFileRef>(null);
+    const theme = useTheme();
     const style = getStyleSheet(theme);
 
     const handlePreviewPress = useCallback(() => {
@@ -117,13 +117,11 @@ const File = ({
             showDate={showDate}
             channelName={channelName}
             onPress={handlePreviewPress}
-            theme={theme}
         />
     );
 
     const renderImageFileOverlay = (
         <ImageFileOverlay
-            theme={theme}
             value={nonVisibleImagesCount}
         />
     );
@@ -168,7 +166,6 @@ const File = ({
                 ref={document}
                 canDownloadFiles={canDownloadFiles}
                 file={file}
-                theme={theme}
             />
         </View>
     );
