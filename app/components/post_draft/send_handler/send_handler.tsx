@@ -10,6 +10,7 @@ import {executeCommand, handleGotoLocation} from '@actions/remote/command';
 import {createPost} from '@actions/remote/post';
 import {handleReactionToLatestPost} from '@actions/remote/reactions';
 import {setStatus} from '@actions/remote/user';
+import {endCallAlert} from '@calls/actions/calls';
 import {Events, Screens} from '@constants';
 import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
 import {useServerUrl} from '@context/server';
@@ -129,6 +130,12 @@ export default function SendHandler({
     }, [intl, isTimezoneEnabled, channelTimezoneCount, doSubmitMessage]);
 
     const sendCommand = useCallback(async () => {
+        if (value.trim() === '/call end') {
+            await endCallAlert(serverUrl, intl, channelId);
+
+            // NOTE: fallthrough because the server may want to handle the command as well
+        }
+
         const status = DraftUtils.getStatusFromSlashCommand(value);
         if (userIsOutOfOffice && status) {
             const updateStatus = (newStatus: string) => {
