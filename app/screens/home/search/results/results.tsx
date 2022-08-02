@@ -265,7 +265,7 @@ const SearchResults = ({
         setDotMenuItemNumber(undefined);
     }, []);
 
-    const renderTabletOptions = useCallback(() => {
+    const renderTabletOptions = useMemo(() => {
         if (dotMenuItemNumber === undefined) {
             return null;
         }
@@ -290,7 +290,7 @@ const SearchResults = ({
 
     return (
         <>
-            {renderTabletOptions()}
+            {renderTabletOptions}
             <AnimatedFlatList
                 ListEmptyComponent={noResults}
                 data={data}
