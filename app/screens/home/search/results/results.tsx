@@ -266,25 +266,26 @@ const SearchResults = ({
     }, []);
 
     const renderTabletOptions = useCallback(() => {
-        if (dotMenuItemNumber !== undefined) {
-            const fileInfo = orderedFilesForGallery[dotMenuItemNumber];
-            return (
-                <AnimatedView
-                    style={{
-                        zIndex: tabletZindex,
-                        top: yOffset + tabletTop,
-                    }}
-                >
-
-                    <FileOptions
-                        fileInfo={fileInfo}
-                        onActionComplete={onActionComplete}
-                        openUp={openUp}
-                    />
-                </AnimatedView>
-            );
+        if (dotMenuItemNumber === undefined) {
+            return null;
         }
-        return null;
+
+        const fileInfo = orderedFilesForGallery[dotMenuItemNumber];
+        return (
+            <AnimatedView
+                style={{
+                    zIndex: tabletZindex,
+                    top: yOffset + tabletTop,
+                }}
+            >
+
+                <FileOptions
+                    fileInfo={fileInfo}
+                    onActionComplete={onActionComplete}
+                    openUp={openUp}
+                />
+            </AnimatedView>
+        );
     }, [dotMenuItemNumber, orderedFilesForGallery, yOffset, openUp, onActionComplete]);
 
     return (
