@@ -27,7 +27,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         width: 252,
     },
     openUp: {
-        bottom: -20,
+        bottom: -22,
     },
     openDown: {
         top: 60,
