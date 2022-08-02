@@ -77,7 +77,7 @@ const SearchResults = ({
     const [yOffset, setYOffset] = useState(0);
     const [openUp, setOpenUp] = useState(false);
     const [lastViewedIndex, setLastViewedIndex] = useState<number | undefined>(undefined);
-    const [dotMenuItemNumber, setDotMenuItemNumber] = useState<number | undefined>(undefined);
+    const [selectedItemNumber, setSelectedItemNumber] = useState<number | undefined>(undefined);
 
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
@@ -131,7 +131,7 @@ const SearchResults = ({
 
     const handleOptionsPress = useCallback((item: number) => {
         if (isTablet) {
-            setDotMenuItemNumber(dotMenuItemNumber === item ? undefined : item);
+            setSelectedItemNumber(selectedItemNumber === item ? undefined : item);
             return;
         }
 
@@ -150,7 +150,7 @@ const SearchResults = ({
             theme,
             title: '',
         });
-    }, [orderedFilesForGallery, dotMenuItemNumber, snapPoints, theme]);
+    }, [orderedFilesForGallery, selectedItemNumber, snapPoints, theme]);
 
     // This effect handles the case where a user has the FileOptions Modal
     // open and the server changes the ability to download files or copy public
@@ -199,9 +199,9 @@ const SearchResults = ({
         const container: StyleProp<ViewStyle> = fileInfos.length > 1 ? styles.container : undefined;
         const isSingleImage = orderedFilesForGallery.length === 1 && (isImage(orderedFilesForGallery[0]) || isVideo(orderedFilesForGallery[0]));
         const isReplyPost = false;
-        const optionSelected = (dotMenuItemNumber !== undefined) && (dotMenuItemNumber === filesForGalleryIndexes[item.id!]);
+        const optionSelected = (selectedItemNumber !== undefined) && (selectedItemNumber === filesForGalleryIndexes[item.id!]);
         const onLayout = (event: LayoutChangeEvent) => {
-            if (dotMenuItemNumber === filesForGalleryIndexes[item.id!]) {
+            if (selectedItemNumber === filesForGalleryIndexes[item.id!]) {
                 const {height} = dimensions;
                 setOpenUp(event.nativeEvent.layout.y > height / 2);
                 setYOffset(event.nativeEvent.layout.y);
@@ -244,7 +244,7 @@ const SearchResults = ({
         filesForGalleryIndexes,
         canDownloadFiles,
         handlePreviewPress,
-        dotMenuItemNumber,
+        selectedItemNumber,
         publicLinkEnabled,
         isTablet,
         fileInfos.length > 1,
@@ -262,15 +262,15 @@ const SearchResults = ({
     const data = selectedTab === TabTypes.MESSAGES ? orderedPosts : orderedFilesForGallery;
 
     const onActionComplete = useCallback(() => {
-        setDotMenuItemNumber(undefined);
+        setSelectedItemNumber(undefined);
     }, []);
 
     const renderTabletOptions = useMemo(() => {
-        if (dotMenuItemNumber === undefined) {
+        if (selectedItemNumber === undefined) {
             return null;
         }
 
-        const fileInfo = orderedFilesForGallery[dotMenuItemNumber];
+        const fileInfo = orderedFilesForGallery[selectedItemNumber];
         return (
             <AnimatedView
                 style={{
@@ -286,7 +286,7 @@ const SearchResults = ({
                 />
             </AnimatedView>
         );
-    }, [dotMenuItemNumber, orderedFilesForGallery, onActionComplete, openUp, yOffset]);
+    }, [selectedItemNumber, orderedFilesForGallery, onActionComplete, openUp, yOffset]);
 
     return (
         <>
