@@ -271,7 +271,7 @@ function Permalink({
         if (channel) {
             switchToChannelById(serverUrl, channel.id, channel.teamId);
         }
-    }), [channel]);
+    }), [channel?.id, channel?.teamId]);
 
     const handleJoin = useCallback(preventDoubleTap(async () => {
         setLoading(true);
