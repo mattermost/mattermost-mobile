@@ -286,7 +286,7 @@ const SearchResults = ({
                 />
             </AnimatedView>
         );
-    }, [dotMenuItemNumber, orderedFilesForGallery, yOffset, openUp, onActionComplete]);
+    }, [dotMenuItemNumber, orderedFilesForGallery, onActionComplete, openUp, yOffset]);
 
     return (
         <>
