@@ -94,7 +94,9 @@ const JoinCallBanner = ({
                 size={16}
                 style={style.joinCallIcon}
             />
-            <Text style={style.joinCall}>{'Join Call'}</Text>
+            <Text style={style.joinCall}>
+                {intl.formatMessage({id: 'mobile.calls_join_call', defaultMessage: 'Join Call'})}
+            </Text>
             <Text style={style.started}>
                 <FormattedRelativeTime
                     value={channelCallStartTime}

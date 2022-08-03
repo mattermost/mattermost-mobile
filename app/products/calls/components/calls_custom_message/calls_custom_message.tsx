@@ -115,6 +115,7 @@ export const CallsCustomMessage = ({
     };
 
     if (post.props.end_at) {
+        const endedAt = intl.formatMessage({id: 'mobile.calls_ended_at', defaultMessage: 'Ended at'});
         return (
             <View style={style.messageStyle}>
                 <CompassIcon
@@ -123,9 +124,14 @@ export const CallsCustomMessage = ({
                     style={style.phoneHangupIcon}
                 />
                 <View style={style.messageText}>
-                    <Text style={style.startedText}>{'Call ended'}</Text>
+                    <Text style={style.startedText}>
+                        {intl.formatMessage({
+                            id: 'mobile.calls_call_ended',
+                            defaultMessage: 'Call ended',
+                        })}
+                    </Text>
                     <View style={style.endCallInfo}>
-                        <Text style={style.timeText}>{'Ended at '}</Text>
+                        <Text style={style.timeText}>{`${endedAt} `}</Text>
                         {
                             <FormattedTime
                                 value={post.props.end_at}
@@ -135,7 +141,10 @@ export const CallsCustomMessage = ({
                         }
                         <Text style={style.separator}>{'•'}</Text>
                         <Text style={style.timeText}>
-                            {`Lasted ${moment.duration(post.props.end_at - post.props.start_at).humanize(false)}`}
+                            {intl.formatMessage({
+                                id: 'mobile.calls_lasted',
+                                defaultMessage: 'Lasted {duration}',
+                            }, {duration: moment.duration(post.props.end_at - post.props.start_at).humanize(false)})}
                         </Text>
                     </View>
                 </View>
@@ -152,7 +161,10 @@ export const CallsCustomMessage = ({
             />
             <View style={style.messageText}>
                 <Text style={style.startedText}>
-                    {`${displayUsername(author, intl.locale, teammateNameDisplay)} started a call`}
+                    {intl.formatMessage({
+                        id: 'mobile.calls_name_started_call',
+                        defaultMessage: '{name} started a call',
+                    }, {name: displayUsername(author, intl.locale, teammateNameDisplay)})}
                 </Text>
                 <FormattedRelativeTime
                     value={post.props.start_at}
@@ -172,11 +184,15 @@ export const CallsCustomMessage = ({
                 />
                 {
                     alreadyInTheCall &&
-                    <Text style={style.joinCallButtonText}>{'Current call'}</Text>
+                    <Text style={style.joinCallButtonText}>
+                        {intl.formatMessage({id: 'mobile.calls_current_call', defaultMessage: 'Current call'})}
+                    </Text>
                 }
                 {
                     !alreadyInTheCall &&
-                    <Text style={style.joinCallButtonText}>{'Join call'}</Text>
+                    <Text style={style.joinCallButtonText}>
+                        {intl.formatMessage({id: 'mobile.calls_join_call', defaultMessage: 'Join call'})}
+                    </Text>
                 }
             </TouchableOpacity>
         </View>

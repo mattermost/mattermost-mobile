@@ -342,7 +342,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                     <SlideUpPanelItem
                         icon='message-text-outline'
                         onPress={switchToThread}
-                        text='Chat thread'
+                        text={intl.formatMessage({id: 'mobile.calls_chat_thread', defaultMessage: 'Chat thread'})}
                     />
                 </View>
             );
@@ -377,7 +377,10 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                     style={style.screenShareImage}
                 />
                 <Text style={style.screenShareText}>
-                    {`You are viewing ${displayUsername(participantsDict[currentCall.screenOn].userModel, teammateNameDisplay)}'s screen`}
+                    {intl.formatMessage({
+                        id: 'mobile.calls_viewing_screen',
+                        defaultMessage: 'You are viewing {name}\'s screen',
+                    }, {name: displayUsername(participantsDict[currentCall.screenOn].userModel, teammateNameDisplay)})}
                 </Text>
             </Pressable>
         );
@@ -414,7 +417,9 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                                 />
                                 <Text style={style.username}>
                                     {displayUsername(user.userModel, teammateNameDisplay)}
-                                    {user.id === myParticipant.id && ' (you)'}
+                                    {user.id === myParticipant.id &&
+                                        ` ${intl.formatMessage({id: 'mobile.calls_you', defaultMessage: '(you)'})}`
+                                    }
                                 </Text>
                             </View>
                         );
