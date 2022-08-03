@@ -1,8 +1,10 @@
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
-platform :ios, '12.1'
+platform :ios, '12.4'
 install! 'cocoapods', :deterministic_uuids => false
+
+production = ENV["PRODUCTION"] == "1"
 
 target 'Mattermost' do
   # Pods for Mattermost
@@ -15,8 +17,10 @@ target 'Mattermost' do
   use_react_native!(
     :path => config[:reactNativePath],
     # to enable hermes on iOS, change `false` to `true` and then install pods
+    :production => production,
     :hermes_enabled => true,
     :fabric_enabled => false,
+    :flipper_configuration => FlipperConfiguration.enabled,
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
@@ -28,31 +32,23 @@ target 'Mattermost' do
   pod 'React-jsi', :path => '../node_modules/react-native/ReactCommon/jsi', :modular_headers => true
   pod 'simdjson', path: '../node_modules/@nozbe/simdjson'
 
-  pod 'Swime', '3.0.6'
-
   # TODO: Remove this once upstream PR https://github.com/daltoniam/Starscream/pull/871 is merged
   pod 'Starscream', :git => 'https://github.com/mattermost/Starscream.git', :commit => '2770c931b2758f26e29b937d547a23122e9c6583'
 
 end
 
-# Enables Flipper.
-  #
-  # Note that if you have use_frameworks! enabled, Flipper will not work and
-  # you should disable these next few lines.
-  use_flipper!({'Flipper' => '0.125.0'})
+post_install do |installer|
+  react_native_post_install(installer)
+  __apply_Xcode_12_5_M1_post_install_workaround(installer)
 
-  post_install do |installer|
-    react_native_post_install(installer)
-    __apply_Xcode_12_5_M1_post_install_workaround(installer)
+  puts 'Patching Alamofire to include X-Uncompressed-Content-Length to measure download progress'
+  %x(patch Pods/Alamofire/Source/SessionDelegate.swift < patches/SessionDelegate.patch)
 
-    puts 'Patching Alamofire to include X-Uncompressed-Content-Length to measure download progress'
-    %x(patch Pods/Alamofire/Source/SessionDelegate.swift < patches/SessionDelegate.patch)
-
-    installer.pods_project.targets.each do |target|
-      if target.name != "RCT-Folly"
-        target.build_configurations.each do |config|
-          config.build_settings.delete 'IPHONEOS_DEPLOYMENT_TARGET'
-        end
+  installer.pods_project.targets.each do |target|
+    if target.name != "RCT-Folly"
+      target.build_configurations.each do |config|
+        config.build_settings.delete 'IPHONEOS_DEPLOYMENT_TARGET'
       end
     end
   end
+end

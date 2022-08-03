@@ -127,11 +127,20 @@ public class CustomPushNotificationHelper {
         replyIntent.putExtra(NOTIFICATION_ID, notificationId);
         replyIntent.putExtra(NOTIFICATION, bundle);
 
-        PendingIntent replyPendingIntent = PendingIntent.getBroadcast(
-                context,
-                notificationId,
-                replyIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+        PendingIntent replyPendingIntent;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            replyPendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    notificationId,
+                    replyIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+        } else {
+            replyPendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    notificationId,
+                    replyIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+        }
 
         RemoteInput remoteInput = new RemoteInput.Builder(KEY_TEXT_REPLY)
                 .setLabel("Reply")

@@ -150,9 +150,7 @@ exports[`components/channel_list/header Channel List Header Component should mat
         }
       }
       testID="channel_list_header.server_display_name"
-    >
-      
-    </Text>
+    />
     <View
       animatedStyle={
         Object {
