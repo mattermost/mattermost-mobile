@@ -9,7 +9,7 @@ import {
     RetryTypes,
 } from '@mattermost/react-native-network-client';
 import {DeviceEventEmitter} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
+import UserAgent from 'react-native-user-agent';
 
 import LocalConfig from '@assets/config.json';
 import {Client} from '@client/rest';
@@ -85,7 +85,7 @@ class NetworkManager {
     };
 
     private buildConfig = async () => {
-        const userAgent = await DeviceInfo.getUserAgent();
+        const userAgent = UserAgent.getUserAgent();
         const headers: Record<string, string> = {
             ...this.DEFAULT_CONFIG.headers,
             [ClientConstants.HEADER_USER_AGENT]: userAgent,
