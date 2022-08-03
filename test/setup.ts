@@ -225,6 +225,11 @@ jest.mock('react-native-device-info', () => {
         hasNotch: () => true,
         isTablet: () => false,
         getApplicationName: () => 'Mattermost',
+    };
+});
+
+jest.mock('react-native-user-agent', () => {
+    return {
         getUserAgent: () => 'user-agent',
     };
 });

@@ -23,7 +23,10 @@ const getMicrophonePermissionDeniedMessage = (intl: IntlShape) => {
 };
 
 export const hasMicrophonePermission = async (intl: IntlShape) => {
-    const targetSource = Platform.OS === 'ios' ? Permissions.PERMISSIONS.IOS.MICROPHONE : Permissions.PERMISSIONS.ANDROID.RECORD_AUDIO;
+    const targetSource = Platform.select({
+        ios: Permissions.PERMISSIONS.IOS.MICROPHONE,
+        default: Permissions.PERMISSIONS.ANDROID.RECORD_AUDIO,
+    });
     const hasPermission = await Permissions.check(targetSource);
 
     switch (hasPermission) {

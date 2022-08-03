@@ -24,8 +24,13 @@ export function getDirectChannelName(id: string, otherId: string): string {
 }
 
 export function isDMorGM(channel: Channel | ChannelModel): boolean {
-    const directTypes: string[] = [General.GM_CHANNEL, General.DM_CHANNEL];
-    return directTypes.includes(channel.type);
+    return isTypeDMorGM(channel.type);
+}
+
+const DIRECT_TYPES: string[] = [General.GM_CHANNEL, General.DM_CHANNEL];
+
+export function isTypeDMorGM(channelType: ChannelType | undefined): boolean {
+    return Boolean(channelType && DIRECT_TYPES.includes(channelType));
 }
 
 export function isArchived(channel: Channel | ChannelModel): boolean {

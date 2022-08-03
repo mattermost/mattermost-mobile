@@ -3,24 +3,29 @@
 
 import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import CallScreen from '@calls/screens/call_screen/call_screen';
 import {observeCurrentCall} from '@calls/state';
 import {CallParticipant} from '@calls/types/calls';
 import DatabaseManager from '@database/manager';
-import {observeTeammateNameDisplay, observeUsersById} from '@queries/servers/user';
+import {observeTeammateNameDisplay, queryUsersById} from '@queries/servers/user';
+
+import type UserModel from '@typings/database/models/servers/user';
 
 const enhanced = withObservables([], () => {
     const currentCall = observeCurrentCall();
     const database = currentCall.pipe(
         switchMap((call) => of$(call ? call.serverUrl : '')),
+        distinctUntilChanged(),
         switchMap((url) => of$(DatabaseManager.serverDatabases[url]?.database)),
     );
+
+    // TODO: to be optimized
     const participantsDict = combineLatest([database, currentCall]).pipe(
-        switchMap(([db, call]) => (db && call ? observeUsersById(db, Object.keys(call.participants)) : of$([])).pipe(
+        switchMap(([db, call]) => (db && call ? queryUsersById(db, Object.keys(call.participants)).observeWithColumns(['nickname', 'username', 'first_name', 'last_name', 'last_picture_update']) : of$([])).pipe(
             // eslint-disable-next-line max-nested-callbacks
-            switchMap((ps) => of$(ps.reduce((accum, cur) => {
+            switchMap((ps: UserModel[]) => of$(ps.reduce((accum, cur) => {
                 accum[cur.id] = {
                     ...call!.participants[cur.id],
                     userModel: cur,
@@ -31,6 +36,7 @@ const enhanced = withObservables([], () => {
     );
     const teammateNameDisplay = database.pipe(
         switchMap((db) => (db ? observeTeammateNameDisplay(db) : of$(''))),
+        distinctUntilChanged(),
     );
 
     return {

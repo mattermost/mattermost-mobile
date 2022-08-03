@@ -46,6 +46,8 @@ type Props = {
     showNewMessageLine?: boolean;
     footer?: ReactElement;
     testID: string;
+    currentCallBarVisible?: boolean;
+    joinCallBannerVisible?: boolean;
 }
 
 type onScrollEndIndexListenerEvent = (endIndex: number) => void;
@@ -98,6 +100,8 @@ const PostList = ({
     showMoreMessages,
     showNewMessageLine = true,
     testID,
+    currentCallBarVisible,
+    joinCallBannerVisible,
 }: Props) => {
     const listRef = useRef<FlatList>(null);
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
@@ -388,6 +392,8 @@ const PostList = ({
                 scrollToIndex={scrollToIndex}
                 theme={theme}
                 testID={`${testID}.more_messages_button`}
+                currentCallBarVisible={Boolean(currentCallBarVisible)}
+                joinCallBannerVisible={Boolean(joinCallBannerVisible)}
             />
             }
         </>

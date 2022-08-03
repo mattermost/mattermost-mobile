@@ -6,6 +6,7 @@ export const ACCOUNT = 'Account';
 export const APPS_FORM = 'AppForm';
 export const BOTTOM_SHEET = 'BottomSheet';
 export const BROWSE_CHANNELS = 'BrowseChannels';
+export const CALL = 'Call';
 export const CHANNEL = 'Channel';
 export const CHANNEL_ADD_PEOPLE = 'ChannelAddPeople';
 export const CHANNEL_INFO = 'ChannelInfo';
@@ -59,7 +60,6 @@ export const THREAD = 'Thread';
 export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
 export const THREAD_OPTIONS = 'ThreadOptions';
 export const USER_PROFILE = 'UserProfile';
-export const CALL = 'Call';
 
 export default {
     ABOUT,
@@ -67,6 +67,7 @@ export default {
     APPS_FORM,
     BOTTOM_SHEET,
     BROWSE_CHANNELS,
+    CALL,
     CHANNEL,
     CHANNEL_ADD_PEOPLE,
     CHANNEL_INFO,
@@ -120,7 +121,6 @@ export default {
     THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
     USER_PROFILE,
-    CALL,
 };
 
 export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([

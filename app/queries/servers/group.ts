@@ -6,6 +6,7 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {MM_TABLES} from '@constants/database';
 
 import type GroupModel from '@typings/database/models/servers/group';
+import type GroupChannelModel from '@typings/database/models/servers/group_channel';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type GroupTeamModel from '@typings/database/models/servers/group_team';
 
@@ -37,6 +38,12 @@ export const queryGroupsByNameInChannel = (database: Database, name: string, cha
     );
 };
 
+export const queryGroupChannelForChannel = (database: Database, channelId: string) => {
+    return database.collections.get<GroupChannelModel>(GROUP_CHANNEL).query(
+        Q.where('channel_id', channelId),
+    );
+};
+
 export const queryGroupMembershipForMember = (database: Database, userId: string) => {
     return database.collections.get<GroupMembershipModel>(GROUP_MEMBERSHIP).query(
         Q.where('user_id', userId),
@@ -47,4 +54,8 @@ export const queryGroupTeamForTeam = (database: Database, teamId: string) => {
     return database.collections.get<GroupTeamModel>(GROUP_TEAM).query(
         Q.where('team_id', teamId),
     );
+};
+
+export const deleteGroupMembershipById = (database: Database, id: string) => {
+    return database.collections.get<GroupMembershipModel>(GROUP_MEMBERSHIP).find(id).then((model) => model.destroyPermanently());
 };

@@ -32,10 +32,10 @@ class Alert {
     leaveButton = isAndroid() ? element(by.text('LEAVE')) : element(by.label('Leave')).atIndex(0);
     logoutButton = isAndroid() ? element(by.text('LOG OUT')) : element(by.label('Log out')).atIndex(1);
     markReadButton = isAndroid() ? element(by.text('MARK READ')) : element(by.label('Mark read')).atIndex(1);
-    noButton = isAndroid() ? element(by.text('NO')) : element(by.label('No')).atIndex(1);
+    noButton = isAndroid() ? element(by.text('NO')) : element(by.label('No')).atIndex(0);
     okButton = isAndroid() ? element(by.text('OK')) : element(by.label('OK')).atIndex(1);
     removeButton = isAndroid() ? element(by.text('REMOVE')) : element(by.label('Remove')).atIndex(1);
-    yesButton = isAndroid() ? element(by.text('YES')) : element(by.label('Yes')).atIndex(1);
+    yesButton = isAndroid() ? element(by.text('YES')) : element(by.label('Yes')).atIndex(0);
 }
 
 const alert = new Alert();

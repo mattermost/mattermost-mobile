@@ -1,14 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ServerChannelState, ServerConfig} from '@calls/types/calls';
+import {ServerChannelState, ServerCallsConfig} from '@calls/types/calls';
 
 export interface ClientCallsMix {
     getEnabled: () => Promise<Boolean>;
     getCalls: () => Promise<ServerChannelState[]>;
-    getCallsConfig: () => Promise<ServerConfig>;
-    enableChannelCalls: (channelId: string) => Promise<ServerChannelState>;
-    disableChannelCalls: (channelId: string) => Promise<ServerChannelState>;
+    getCallsConfig: () => Promise<ServerCallsConfig>;
+    enableChannelCalls: (channelId: string, enable: boolean) => Promise<ServerChannelState>;
 }
 
 const ClientCalls = (superclass: any) => class extends superclass {
@@ -35,20 +34,13 @@ const ClientCalls = (superclass: any) => class extends superclass {
         return this.doFetch(
             `${this.getCallsRoute()}/config`,
             {method: 'get'},
-        ) as ServerConfig;
+        ) as ServerCallsConfig;
     };
 
-    enableChannelCalls = async (channelId: string) => {
+    enableChannelCalls = async (channelId: string, enable: boolean) => {
         return this.doFetch(
             `${this.getCallsRoute()}/${channelId}`,
-            {method: 'post', body: JSON.stringify({enabled: true})},
-        );
-    };
-
-    disableChannelCalls = async (channelId: string) => {
-        return this.doFetch(
-            `${this.getCallsRoute()}/${channelId}`,
-            {method: 'post', body: JSON.stringify({enabled: false})},
+            {method: 'post', body: {enabled: enable}},
         );
     };
 };

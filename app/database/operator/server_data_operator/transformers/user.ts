@@ -33,7 +33,7 @@ export const transformUserRecord = ({action, database, value}: TransformerArgs):
         user.firstName = raw.first_name;
         user.isGuest = raw.roles.includes('system_guest');
         user.lastName = raw.last_name;
-        user.lastPictureUpdate = raw.last_picture_update;
+        user.lastPictureUpdate = raw.last_picture_update || 0;
         user.locale = raw.locale;
         user.nickname = raw.nickname;
         user.position = raw?.position ?? '';
@@ -41,7 +41,7 @@ export const transformUserRecord = ({action, database, value}: TransformerArgs):
         user.username = raw.username;
         user.notifyProps = raw.notify_props;
         user.timezone = raw.timezone || null;
-        user.isBot = raw.is_bot;
+        user.isBot = raw.is_bot ?? false;
         user.remoteId = raw?.remote_id ?? null;
         if (raw.status) {
             user.status = raw.status;

@@ -5,25 +5,32 @@ import React, {useCallback, useMemo} from 'react';
 import {Platform, StyleProp, Switch, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import RadioItem, {RadioItemProps} from './radio_item';
 
-const OptionType = {
+const TouchableOptionTypes = {
     ARROW: 'arrow',
     DEFAULT: 'default',
-    NONE: 'none',
     RADIO: 'radio',
+    REMOVE: 'remove',
     SELECT: 'select',
+};
+
+const OptionType = {
+    NONE: 'none',
     TOGGLE: 'toggle',
+    ...TouchableOptionTypes,
 } as const;
 
 type OptionType = typeof OptionType[keyof typeof OptionType];
 
 export const ITEM_HEIGHT = 48;
 
+const hitSlop = {top: 11, bottom: 11, left: 11, right: 11};
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         actionContainer: {
@@ -75,6 +82,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             ...typography('Body', 200),
         },
+        removeContainer: {
+            flex: 1,
+            alignItems: 'flex-end',
+            color: theme.centerChannelColor,
+            marginRight: 20,
+            ...typography('Body', 200),
+        },
         row: {
             flex: 1,
             flexDirection: 'row',
@@ -91,6 +105,7 @@ export type OptionItemProps = {
     info?: string;
     inline?: boolean;
     label: string;
+    onRemove?: () => void;
     optionDescriptionTextStyle?: StyleProp<TextStyle>;
     optionLabelTextStyle?: StyleProp<TextStyle>;
     radioItemProps?: Partial<RadioItemProps>;
@@ -99,6 +114,7 @@ export type OptionItemProps = {
     type: OptionType;
     value?: string;
 }
+
 const OptionItem = ({
     action,
     containerStyle,
@@ -108,6 +124,7 @@ const OptionItem = ({
     info,
     inline = false,
     label,
+    onRemove,
     optionDescriptionTextStyle,
     optionLabelTextStyle,
     radioItemProps,
@@ -182,6 +199,21 @@ const OptionItem = ({
                 size={24}
             />
         );
+    } else if (type === OptionType.REMOVE) {
+        actionComponent = (
+            <TouchableWithFeedback
+                hitSlop={hitSlop}
+                onPress={onRemove}
+                style={[styles.iconContainer]}
+                type='opacity'
+            >
+                <CompassIcon
+                    name={'close'}
+                    size={18}
+                    color={changeOpacity(theme.centerChannelColor, 0.64)}
+                />
+            </TouchableWithFeedback>
+        );
     }
 
     const onPress = useCallback(() => {
@@ -237,7 +269,7 @@ const OptionItem = ({
         </View>
     );
 
-    if (type === OptionType.DEFAULT || type === OptionType.SELECT || type === OptionType.ARROW || type === OptionType.RADIO) {
+    if (Object.values(TouchableOptionTypes).includes(type)) {
         return (
             <TouchableOpacity onPress={onPress}>
                 {component}
