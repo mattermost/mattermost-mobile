@@ -217,8 +217,8 @@ const ChannelMention = ({
     , [style, maxListHeight]);
 
     const runSearch = useMemo(() => debounce(async (sUrl: string, term: string) => {
+        const {channels: receivedChannels, error} = await searchChannels(sUrl, term, isSearch);
         setLoading(true);
-        const {channels: receivedChannels, error} = await searchChannels(sUrl, term);
         setUseLocal(Boolean(error));
 
         if (error) {

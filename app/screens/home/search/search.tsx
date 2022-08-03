@@ -169,11 +169,11 @@ const SearchScreen = ({teamId}: Props) => {
         <Initial
             searchValue={searchValue}
             setRecentValue={handleRecentSearch}
-            setSearchValue={setSearchValue}
+            setSearchValue={handleTextChange}
             setTeamId={setSearchTeamId}
             teamId={searchTeamId}
         />
-    ), [searchValue, searchTeamId, handleRecentSearch]);
+    ), [searchValue, searchTeamId, handleRecentSearch, handleTextChange]);
 
     const resultsComponent = useMemo(() => (
         <Results
@@ -239,7 +239,7 @@ const SearchScreen = ({teamId}: Props) => {
             />
         );
     }
-    const autocomplete = (
+    const autocomplete = useMemo(() => (
         <Autocomplete
             paddingTop={AutocompletePaddingTop}
             postInputTop={0}
@@ -249,7 +249,7 @@ const SearchScreen = ({teamId}: Props) => {
             isSearch={true}
             hasFilesAttached={false}
         />
-    );
+    ), [cursorPosition, handleTextChange, searchValue]);
 
     return (
         <FreezeScreen freeze={!isFocused}>
