@@ -271,10 +271,9 @@ export const endCallAlert = async (serverUrl: string, intl: IntlShape, channelId
     }
 
     const numParticipants = Object.keys(call.participants).length;
-    const isAdmin = isSystemAdmin(currentUser.roles);
     const {formatMessage} = intl;
 
-    if (!isAdmin && currentUser.id !== call.ownerId) {
+    if (!isSystemAdmin(currentUser.roles) && currentUser.id !== call.ownerId) {
         Alert.alert(
             formatMessage({
                 id: 'mobile.calls_end_permission_title',
