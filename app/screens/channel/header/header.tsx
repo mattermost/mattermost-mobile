@@ -17,6 +17,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
+import {isTypeDMorGM} from '@utils/channel';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -74,6 +75,7 @@ const ChannelHeader = ({
     const defaultHeight = useDefaultHeaderHeight();
     const insets = useSafeAreaInsets();
 
+    const isDMorGM = isTypeDMorGM(channelType);
     const contextStyle = useMemo(() => ({
         top: defaultHeight + insets.top,
     }), [defaultHeight, insets.top]);
@@ -127,13 +129,14 @@ const ChannelHeader = ({
         }
 
         // When calls is enabled, we need space to move the "Copy Link" from a button to an option
-        const height = QUICK_OPTIONS_HEIGHT + (callsEnabled ? ITEM_HEIGHT : 0);
+        const height = QUICK_OPTIONS_HEIGHT + (callsEnabled && !isDMorGM ? ITEM_HEIGHT : 0);
 
         const renderContent = () => {
             return (
                 <QuickActions
                     channelId={channelId}
                     callsEnabled={callsEnabled}
+                    isDMorGM={isDMorGM}
                 />
             );
         };
@@ -145,7 +148,7 @@ const ChannelHeader = ({
             theme,
             closeButtonId: 'close-channel-quick-actions',
         });
-    }, [channelId, channelType, isTablet, onTitlePress, theme, callsEnabled]);
+    }, [channelId, isDMorGM, isTablet, onTitlePress, theme, callsEnabled]);
 
     const rightButtons: HeaderRightButton[] = useMemo(() => ([
 

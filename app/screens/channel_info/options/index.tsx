@@ -5,6 +5,7 @@ import React from 'react';
 
 import CopyChannelLinkOption from '@components/channel_actions/copy_channel_link_option';
 import {General} from '@constants';
+import {isTypeDMorGM} from '@utils/channel';
 
 import EditChannel from './edit_channel';
 import IgnoreMentions from './ignore_mentions';
@@ -19,6 +20,8 @@ type Props = {
 }
 
 const Options = ({channelId, type, callsEnabled}: Props) => {
+    const isDMorGM = isTypeDMorGM(type);
+
     return (
         <>
             {type !== General.DM_CHANNEL &&
@@ -29,7 +32,7 @@ const Options = ({channelId, type, callsEnabled}: Props) => {
             {type !== General.DM_CHANNEL &&
                 <Members channelId={channelId}/>
             }
-            {callsEnabled &&
+            {callsEnabled && !isDMorGM && // if calls is not enabled, copy link will show in the channel actions
                 <CopyChannelLinkOption channelId={channelId}/>
             }
             {type !== General.DM_CHANNEL && type !== General.GM_CHANNEL &&
