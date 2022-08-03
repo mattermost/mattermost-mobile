@@ -171,7 +171,7 @@ describe('Messaging - Emojis and Reactions', () => {
         await EmojiPickerScreen.searchInput.replaceText(searchTerm);
 
         // * Verify empty search state for emoji picker
-        await expect(element(by.text(`No results for “${searchTerm}”`))).toBeVisible();
+        await expect(element(by.text(`No matches found for “${searchTerm}”`))).toBeVisible();
         await expect(element(by.text('Check the spelling or try another search.'))).toBeVisible();
 
         // # Go back to channel list screen

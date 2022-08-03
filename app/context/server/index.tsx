@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ComponentType, createContext} from 'react';
+import React, {createContext} from 'react';
 
 type Props = {
     server: ServerContext;
@@ -11,6 +11,8 @@ type Props = {
 type WithServerUrlProps = {
     serverUrl: string;
 }
+
+type GetProps<C> = C extends React.ComponentType<infer P & WithServerUrlProps> ? P : never
 
 type ServerContext = {
     displayName: string;
@@ -26,8 +28,8 @@ function ServerUrlProvider({server, children}: Props) {
     );
 }
 
-export function withServerUrl<T extends WithServerUrlProps>(Component: ComponentType<T>): ComponentType<T> {
-    return function ServerUrlComponent(props) {
+export function withServerUrl<C extends React.ComponentType<P>, P = GetProps<C>>(Component: C) {
+    return function ServerUrlComponent(props: JSX.LibraryManagedAttributes<C, P>) {
         return (
             <Consumer>
                 {(server: ServerContext) => (

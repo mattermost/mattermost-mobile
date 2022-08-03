@@ -13,8 +13,10 @@ public class Network: NSObject {
     internal var session: URLSession?
     internal let queue = OperationQueue()
     internal let urlVersion = "/api/v4"
+
+    @objc public static let `default` = Network()
     
-    override init() {
+    override private init() {
         super.init()
         
         queue.maxConcurrentOperationCount = 1
@@ -26,10 +28,12 @@ public class Network: NSObject {
         config.timeoutIntervalForResource = 10
         config.httpMaximumConnectionsPerHost = 10
         
-        self.session = URLSession.init(configuration: config, delegate: self, delegateQueue: nil)
+        self.session = URLSession.init(
+            configuration: config,
+            delegate: self,
+            delegateQueue: nil
+        )
     }
-    
-    @objc public static let `default` = Network()
     
     internal func buildApiUrl(_ serverUrl: String, _ endpoint: String) -> URL {
         return URL(string: "\(serverUrl)\(urlVersion)\(endpoint)")!

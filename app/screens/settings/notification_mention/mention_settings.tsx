@@ -41,11 +41,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         containerStyle: {
             marginTop: 30,
-            width: '90%',
             alignSelf: 'center',
+            paddingHorizontal: 18.5,
         },
         keywordLabelStyle: {
-            marginLeft: 20,
+            paddingHorizontal: 18.5,
             marginTop: 4,
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75, 'Regular'),
