@@ -9,7 +9,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {observeMyChannel, observeChannel} from '@queries/servers/channel';
 import {queryPostsChunk, queryPostsInThread} from '@queries/servers/post';
-import {observeConfig} from '@queries/servers/system';
+import {observeConfigValue} from '@queries/servers/system';
 import {observeIsCRTEnabled, observeThreadById} from '@queries/servers/thread';
 
 import ThreadPostList from './thread_post_list';
@@ -42,9 +42,7 @@ const enhanced = withObservables(['forceQueryAfterAppState', 'rootPost'], ({data
             switchMap((channel) => of$(channel?.teamId)),
         ),
         thread: observeThreadById(database, rootPost.id),
-        version: observeConfig(database).pipe(
-            switchMap((cfg) => of$(cfg?.Version || '')),
-        ),
+        version: observeConfigValue(database, 'Version'),
     };
 });
 

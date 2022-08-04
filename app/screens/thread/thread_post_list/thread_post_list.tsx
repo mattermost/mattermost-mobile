@@ -25,7 +25,7 @@ type Props = {
     rootPost: PostModel;
     teamId: string;
     thread?: ThreadModel;
-    version: string;
+    version?: string;
 }
 
 const edges: Edge[] = ['bottom'];
@@ -46,7 +46,7 @@ const ThreadPostList = ({
     const canLoadPosts = useRef(true);
     const fetchingPosts = useRef(false);
     const onEndReached = useCallback(debounce(async () => {
-        if (isMinimumServerVersion(version, 6, 6) && !fetchingPosts.current && canLoadPosts.current && posts.length) {
+        if (isMinimumServerVersion(version || '', 6, 7) && !fetchingPosts.current && canLoadPosts.current && posts.length) {
             fetchingPosts.current = true;
             const options: FetchPaginatedThreadOptions = {};
             const lastPost = posts[posts.length - 1];

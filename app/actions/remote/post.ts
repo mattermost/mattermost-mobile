@@ -585,6 +585,8 @@ export async function fetchPostThread(serverUrl: string, postId: string, options
 
     try {
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
+
+        // Not doing any version check as server versions below 6.7 will ignore the additional params from the client.
         const data = await client.getPostThread(postId, {
             collapsedThreads: isCRTEnabled,
             collapsedThreadsExtended: isCRTEnabled,
