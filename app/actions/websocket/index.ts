@@ -418,5 +418,9 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
         case WebsocketEvents.GROUP_DISSOCIATED_TO_TEAM:
             handleGroupTeamDissociateEvent(serverUrl, msg);
             break;
+        case WebsocketEvents.GROUP_ASSOCIATED_TO_CHANNEL:
+            break;
+        case WebsocketEvents.GROUP_DISSOCIATED_TO_CHANNEL:
+            break;
     }
 }
