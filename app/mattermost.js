@@ -140,18 +140,16 @@ export function componentDidDisappearListener({componentId}) {
 
     if (componentId === 'MainSidebar') {
         EventEmitter.emit(NavigationTypes.MAIN_SIDEBAR_DID_CLOSE);
-    }
-
-    if (componentId === THREAD) {
-        if (EphemeralStore.hasModalsOpened()) {
-            for (const modal of EphemeralStore.navigationModalStack) {
-                const enableSwipe = {
-                    modal: {
-                        swipeToDismiss: true,
-                    },
-                };
-                Navigation.mergeOptions(modal, enableSwipe);
-            }
+    } else if (componentId === 'SettingsSidebar') {
+        EventEmitter.emit(NavigationTypes.CLOSE_SETTINGS_SIDEBAR);
+    } else if (componentId === THREAD && EphemeralStore.hasModalsOpened()) {
+        for (const modal of EphemeralStore.navigationModalStack) {
+            const enableSwipe = {
+                modal: {
+                    swipeToDismiss: true,
+                },
+            };
+            Navigation.mergeOptions(modal, enableSwipe);
         }
     }
 }
