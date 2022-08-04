@@ -8,6 +8,7 @@ import {View} from 'react-native';
 import ClearButton from '@components/custom_status/clear_button';
 import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 import FormattedText from '@components/formatted_text';
+import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import CustomStatusText from './custom_status_text';
@@ -16,9 +17,8 @@ type CustomLabelProps = {
     customStatus: UserCustomStatus;
     isCustomStatusExpirySupported: boolean;
     isStatusSet: boolean;
-    showRetryMessage: boolean;
-    theme: Theme;
     onClearCustomStatus: () => void;
+    showRetryMessage: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -30,6 +30,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         customStatusTextContainer: {
             width: '70%',
+            marginLeft: 16,
         },
         customStatusExpiryText: {
             paddingTop: 3,
@@ -43,14 +44,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const CustomLabel = ({customStatus, isCustomStatusExpirySupported, isStatusSet, onClearCustomStatus, showRetryMessage, theme}: CustomLabelProps) => {
-    const style = getStyleSheet(theme);
+const CustomLabel = ({customStatus, isCustomStatusExpirySupported, isStatusSet, onClearCustomStatus, showRetryMessage}: CustomLabelProps) => {
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
 
     return (
         <>
-            <View style={style.customStatusTextContainer}>
+            <View style={styles.customStatusTextContainer}>
                 <CustomStatusText
-                    theme={theme}
                     isStatusSet={Boolean(isStatusSet)}
                     customStatus={customStatus}
                 />
@@ -58,7 +59,7 @@ const CustomLabel = ({customStatus, isCustomStatusExpirySupported, isStatusSet, 
                     <CustomStatusExpiry
                         time={moment(customStatus?.expires_at)}
                         theme={theme}
-                        textStyles={style.customStatusExpiryText}
+                        textStyles={styles.customStatusExpiryText}
                         withinBrackets={true}
                         showPrefix={true}
                         testID={'custom_status.expiry'}
@@ -69,11 +70,11 @@ const CustomLabel = ({customStatus, isCustomStatusExpirySupported, isStatusSet, 
                 <FormattedText
                     id={'custom_status.failure_message'}
                     defaultMessage='Failed to update status. Try again'
-                    style={style.retryMessage}
+                    style={styles.retryMessage}
                 />
             )}
             {isStatusSet && (
-                <View style={style.clearButton}>
+                <View style={styles.clearButton}>
                     <ClearButton
                         handlePress={onClearCustomStatus}
                         theme={theme}
