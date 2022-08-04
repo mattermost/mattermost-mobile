@@ -40,7 +40,7 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, 
     }
 
     // Load thread before we open to the thread modal
-    fetchPostThread(serverUrl, rootId, {});
+    fetchPostThread(serverUrl, rootId);
 
     // Mark thread as read
     const isCRTEnabled = await getIsCRTEnabled(database);
