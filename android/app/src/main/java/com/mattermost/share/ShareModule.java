@@ -167,6 +167,11 @@ public class ShareModule extends ReactContextBaseJavaModule {
                     map.putString("type", type);
                     map.putBoolean("isString", false);
                     items.pushMap(map);
+
+                    map = Arguments.createMap();
+                    map.putString("value", extra);
+                    map.putBoolean("isString", true);
+                    items.pushMap(map);
                 }
             } else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {
                 ArrayList<Uri> uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);

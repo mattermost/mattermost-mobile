@@ -39,6 +39,7 @@
   "apps.error.parser.missing_list_end": "Marqeur de fin de liste attendu.",
   "apps.error.parser.missing_quote": "Les doubles guillemets doivent être fermés avant la fin du champ de saisie.",
   "apps.error.parser.missing_source": "Le formulaire n'a ni `submit` ni `source`.",
+  "apps.error.parser.missing_submit": "Aucun appel dans le lien ou le formulaire.",
   "apps.error.parser.missing_tick": "Une marqueur de citation correspondant est attendu avant la fin du champ de saisie.",
   "apps.error.parser.multiple_equal": "Les signes `=` multiples ne sont pas autorisés.",
   "apps.error.parser.no_argument_pos_x": "Impossible d'identifier l'argument.",

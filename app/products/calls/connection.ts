@@ -17,7 +17,7 @@ import {WebsocketEvents} from '@constants';
 import {ICEServersConfigs} from '@mmproducts/calls/store/types/calls';
 
 import Peer from './simple-peer';
-import WebSocketClient from './websocket';
+import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket';
 
 export let client: any = null;
 
@@ -47,9 +47,13 @@ export async function newClient(channelID: string, iceServers: ICEServersConfigs
     const ws = new WebSocketClient(Client4.getWebSocketUrl(), Client4.getToken());
 
     const disconnect = () => {
-        if (!isClosed) {
-            ws.close();
+        if (isClosed) {
+            return;
         }
+
+        isClosed = true;
+        ws.send('leave');
+        ws.close();
 
         if (onCallEnd) {
             onCallEnd.remove();
@@ -81,12 +85,19 @@ export async function newClient(channelID: string, iceServers: ICEServersConfigs
     });
 
     const mute = () => {
-        if (!peer) {
+        if (!peer || peer.destroyed) {
             return;
         }
-        if (voiceTrackAdded && voiceTrack) {
-            peer.replaceTrack(voiceTrack, null, stream);
+
+        try {
+            if (voiceTrackAdded && voiceTrack) {
+                peer.replaceTrack(voiceTrack, null, stream);
+            }
+        } catch (e) {
+            console.log('Error from simple-peer:', e); //eslint-disable-line no-console
+            return;
         }
+
         if (voiceTrack) {
             voiceTrack.enabled = false;
         }
@@ -96,15 +107,22 @@ export async function newClient(channelID: string, iceServers: ICEServersConfigs
     };
 
     const unmute = () => {
-        if (!peer || !voiceTrack) {
+        if (!peer || !voiceTrack || peer.destroyed) {
             return;
         }
-        if (voiceTrackAdded) {
-            peer.replaceTrack(voiceTrack, voiceTrack, stream);
-        } else {
-            peer.addStream(stream);
-            voiceTrackAdded = true;
+
+        try {
+            if (voiceTrackAdded) {
+                peer.replaceTrack(voiceTrack, voiceTrack, stream);
+            } else {
+                peer.addStream(stream);
+                voiceTrackAdded = true;
+            }
+        } catch (e) {
+            console.log('Error from simple-peer:', e); //eslint-disable-line no-console
+            return;
         }
+
         voiceTrack.enabled = true;
         if (ws) {
             ws.send('unmute');
@@ -124,13 +142,14 @@ export async function newClient(channelID: string, iceServers: ICEServersConfigs
     };
 
     ws.on('error', (err) => {
-        console.log('WS (CALLS) ERROR', err); // eslint-disable-line no-console
-        ws.close();
+        console.log('calls: ws error', err); // eslint-disable-line no-console
+        if (err === wsReconnectionTimeoutErr) {
+            disconnect();
+        }
     });
 
     ws.on('close', () => {
-        isClosed = true;
-        disconnect();
+        console.log('calls: ws close'); // eslint-disable-line no-console
     });
 
     ws.on('join', async () => {
@@ -156,14 +175,30 @@ export async function newClient(channelID: string, iceServers: ICEServersConfigs
         });
 
         peer.on('error', (err: any) => {
-            console.log('PEER ERROR', err); // eslint-disable-line no-console
+            console.log('calls: peer error', err); // eslint-disable-line no-console
+        });
+
+        peer.on('close', () => {
+            console.log('calls: peer closed'); // eslint-disable-line no-console
+            if (!isClosed) {
+                disconnect();
+            }
         });
     });
 
-    ws.on('open', async () => {
-        ws.send('join', {
-            channelID,
-        });
+    ws.on('open', (originalConnID: string, prevConnID: string, isReconnect: boolean) => {
+        if (isReconnect) {
+            console.log('calls: ws reconnect, sending reconnect msg'); // eslint-disable-line no-console
+            ws.send('reconnect', {
+                channelID,
+                originalConnID,
+                prevConnID,
+            });
+        } else {
+            ws.send('join', {
+                channelID,
+            });
+        }
     });
 
     ws.on('message', ({data}) => {
