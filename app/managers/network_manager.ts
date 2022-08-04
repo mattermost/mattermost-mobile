@@ -14,6 +14,7 @@ import DeviceInfo from 'react-native-device-info';
 import LocalConfig from '@assets/config.json';
 import {Client} from '@client/rest';
 import * as ClientConstants from '@client/rest/constants';
+import ClientError from '@client/rest/error';
 import {CERTIFICATE_ERRORS} from '@constants/network';
 import ManagedApp from '@init/managed_app';
 import {logError} from '@utils/log';
@@ -81,7 +82,14 @@ class NetworkManager {
         try {
             client = await getOrCreateAPIClient(serverUrl, config, this.clientErrorEventHandler);
         } catch (error) {
-            throw new Error('Can’t find this server. Check spelling and URL format.');
+            throw new ClientError(serverUrl, {
+                message: 'Can’t find this server. Check spelling and URL format.',
+                intl: {
+                    id: 'apps.error.network.no_server',
+                    defaultMessage: 'Can’t find this server. Check spelling and URL format.',
+                },
+                url: serverUrl,
+            });
         }
         const csrfToken = await getCSRFFromCookie(serverUrl);
         this.clients[serverUrl] = new Client(client.client, serverUrl, bearerToken, csrfToken);
