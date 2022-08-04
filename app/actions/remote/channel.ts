@@ -1160,12 +1160,8 @@ export async function searchChannels(serverUrl: string, term: string, isSearch =
 
     try {
         const currentTeamId = await getCurrentTeamId(database);
-        let channels;
-        if (isSearch) {
-            channels = await client.autocompleteChannelsForSearch(currentTeamId, term);
-        } else {
-            channels = await client.autocompleteChannels(currentTeamId, term);
-        }
+        const autoCompleteFunc = isSearch ? client.autocompleteChannelsForSearch : client.autocompleteChannels;
+        const channels = await autoCompleteFunc(currentTeamId, term);
         return {channels};
     } catch (error) {
         return {error};
