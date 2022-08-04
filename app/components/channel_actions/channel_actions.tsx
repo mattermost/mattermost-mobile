@@ -10,13 +10,13 @@ import CopyChannelLinkBox from '@components/channel_actions/copy_channel_link_bo
 import FavoriteBox from '@components/channel_actions/favorite_box';
 import MutedBox from '@components/channel_actions/mute_box';
 import SetHeaderBox from '@components/channel_actions/set_header_box';
-import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {dismissBottomSheet} from '@screens/navigation';
+import {isTypeDMorGM} from '@utils/channel';
 
 type Props = {
     channelId: string;
-    channelType?: string;
+    channelType?: ChannelType;
     inModal?: boolean;
     dismissChannelInfo: () => void;
     callsEnabled: boolean;
@@ -24,7 +24,6 @@ type Props = {
 }
 
 const OPTIONS_HEIGHT = 62;
-const DIRECT_CHANNELS: string[] = [General.DM_CHANNEL, General.GM_CHANNEL];
 
 const styles = StyleSheet.create({
     wrapper: {
@@ -47,7 +46,7 @@ const ChannelActions = ({channelId, channelType, inModal = false, dismissChannel
         }
     }, [inModal]);
 
-    const notDM = Boolean(channelType && !DIRECT_CHANNELS.includes(channelType));
+    const isDM = isTypeDMorGM(channelType);
 
     return (
         <View style={styles.wrapper}>
@@ -63,21 +62,21 @@ const ChannelActions = ({channelId, channelType, inModal = false, dismissChannel
                 testID={testID}
             />
             <View style={styles.separator}/>
-            {channelType && DIRECT_CHANNELS.includes(channelType) &&
+            {isDM &&
                 <SetHeaderBox
                     channelId={channelId}
                     inModal={inModal}
                     testID={`${testID}.set_header.action`}
                 />
             }
-            {notDM &&
+            {!isDM &&
                 <AddPeopleBox
                     channelId={channelId}
                     inModal={inModal}
                     testID={`${testID}.add_people.action`}
                 />
             }
-            {notDM && !callsEnabled &&
+            {!isDM && !callsEnabled &&
                 <>
                     <View style={styles.separator}/>
                     <CopyChannelLinkBox

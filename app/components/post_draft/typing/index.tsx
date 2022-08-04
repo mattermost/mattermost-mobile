@@ -96,7 +96,7 @@ function Typing({
         } else if (mounted.current) {
             setRefresh(Date.now());
         }
-    }, []);
+    }, [channelId, rootId]);
 
     useEffect(() => {
         mounted.current = true;
@@ -122,6 +122,15 @@ function Typing({
     useEffect(() => {
         typingHeight.value = typing.current.length ? TYPING_HEIGHT : 0;
     }, [refresh]);
+
+    useEffect(() => {
+        typing.current = [];
+        typingHeight.value = 0;
+        if (timeoutToDisappear.current) {
+            clearTimeout(timeoutToDisappear.current);
+            timeoutToDisappear.current = undefined;
+        }
+    }, [channelId, rootId]);
 
     const renderTyping = () => {
         const nextTyping = typing.current.map(({username}) => username);

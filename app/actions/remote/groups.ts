@@ -9,6 +9,21 @@ import {getTeamById} from '@queries/servers/team';
 
 import {forceLogoutIfNecessary} from './session';
 
+export const fetchGroup = async (serverUrl: string, id: string, fetchOnly = false) => {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const client: Client = NetworkManager.getClient(serverUrl);
+
+        const group = await client.getGroup(id);
+
+        // Save locally
+        return operator.handleGroups({groups: [group], prepareRecordsOnly: fetchOnly});
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
 export const fetchGroupsForAutocomplete = async (serverUrl: string, query: string, fetchOnly = false) => {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
