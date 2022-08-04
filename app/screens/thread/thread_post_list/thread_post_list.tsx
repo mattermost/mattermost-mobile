@@ -56,10 +56,7 @@ const ThreadPostList = ({
             }
             const result = await fetchPostThread(serverUrl, rootPost.id, options);
             fetchingPosts.current = false;
-            canLoadPosts.current = false;
-            if (!('error' in result)) {
-                canLoadPosts.current = (result.posts?.length ?? 1) > 0;
-            }
+            canLoadPosts.current = Boolean(result?.posts?.length);
         }
     }, 500), [rootPost, posts, version]);
 
