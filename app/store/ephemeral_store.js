@@ -41,7 +41,7 @@ class EphemeralStore {
 
     addToNavigationComponentIdStack = (componentId) => {
         const index = this.navigationComponentIdStack.indexOf(componentId);
-        if (index > 0) {
+        if (index >= 0) {
             this.navigationComponentIdStack.slice(index, 1);
         }
 
