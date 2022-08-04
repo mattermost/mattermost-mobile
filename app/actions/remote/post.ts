@@ -570,7 +570,7 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
     }
 };
 
-export async function fetchPostThread(serverUrl: string, postId: string, fetchOnly = false) {
+export async function fetchPostThread(serverUrl: string, postId: string, options?: FetchPaginatedThreadOptions, fetchOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -585,7 +585,13 @@ export async function fetchPostThread(serverUrl: string, postId: string, fetchOn
 
     try {
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
-        const data = await client.getPostThread(postId, isCRTEnabled, isCRTEnabled);
+
+        // Not doing any version check as server versions below 6.7 will ignore the additional params from the client.
+        const data = await client.getPostThread(postId, {
+            collapsedThreads: isCRTEnabled,
+            collapsedThreadsExtended: isCRTEnabled,
+            ...options,
+        });
         const result = processPostsFetched(data);
         let posts: Model[] = [];
         if (!fetchOnly) {
@@ -637,7 +643,11 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
     try {
         const [after, post, before] = await Promise.all<PostsObjectsRequest>([
             client.getPostsAfter(channelId, postId, 0, perPage, isCRTEnabled, isCRTEnabled),
-            client.getPostThread(postId, isCRTEnabled, isCRTEnabled),
+            client.getPostThread(postId, {
+                collapsedThreads: isCRTEnabled,
+                collapsedThreadsExtended: isCRTEnabled,
+                fetchAll: true,
+            }),
             client.getPostsBefore(channelId, postId, 0, perPage, isCRTEnabled, isCRTEnabled),
         ]);
 

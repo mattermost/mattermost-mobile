@@ -324,7 +324,7 @@ export async function updateThread(serverUrl: string, threadId: string, updatedT
         }
         return {model};
     } catch (error) {
-        logError('Failed markTeamThreadsAsRead', error);
+        logError('Failed updateThread', error);
         return {error};
     }
 }
