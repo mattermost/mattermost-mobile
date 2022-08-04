@@ -93,8 +93,6 @@ export default class BaseDataOperator {
 
                 // We found a record in the database that matches this element; hence, we'll proceed for an UPDATE operation
                 if (existingRecord) {
-                    // const existingRecord = createOrUpdateRaws[findIndex];
-
                     // Some raw value has an update_at field.  We'll proceed to update only if the update_at value is different from the record's value in database
                     const updateRecords = getValidRecordsForUpdate({
                         tableName,
@@ -125,8 +123,7 @@ export default class BaseDataOperator {
      * @param {RawValue[]} prepareRecord.createRaws
      * @param {RawValue[]} prepareRecord.updateRaws
      * @param {Model[]} prepareRecord.deleteRaws
-     * @param {(TransformerArgs) => Promise<Model>;} prepareRecord.composer
-     * @throws {DataOperatorException}
+     * @param {(TransformerArgs) => Promise<Model>;} transformer
      * @returns {Promise<Model[]>}
      */
     prepareRecords = async ({tableName, createRaws, deleteRaws, updateRaws, transformer}: OperationArgs): Promise<Model[]> => {
@@ -184,7 +181,6 @@ export default class BaseDataOperator {
      * batchRecords: Accepts an instance of Database (either Default or Server) and an array of
      * prepareCreate/prepareUpdate 'models' and executes the actions on the database.
      * @param {Array} models
-     * @throws {DataOperatorException}
      * @returns {Promise<void>}
      */
     async batchRecords(models: Model[]): Promise<void> {

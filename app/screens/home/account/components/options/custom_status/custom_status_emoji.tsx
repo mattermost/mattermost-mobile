@@ -6,12 +6,12 @@ import {View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
+import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type CustomStatusEmojiProps = {
     emoji?: string;
     isStatusSet: boolean;
-    theme: Theme;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -22,7 +22,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const CustomStatusEmoji = ({emoji, isStatusSet, theme}: CustomStatusEmojiProps) => {
+const CustomStatusEmoji = ({emoji, isStatusSet}: CustomStatusEmojiProps) => {
+    const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     return (

@@ -3,75 +3,48 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {TextStyle, View} from 'react-native';
 
 import {logout} from '@actions/remote/session';
-import FormattedText from '@components/formatted_text';
-import MenuItem from '@components/menu_item';
+import OptionItem from '@components/option_item';
 import {useServerDisplayName, useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 import {alertServerLogout} from '@utils/server';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
-type Props = {
-    style: TextStyle;
-    theme: Theme;
-}
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        desc: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 75),
+        },
+    };
+});
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    label: {
-        color: theme.dndIndicator,
-        marginTop: 5,
-    },
-    logOutFrom: {
-        color: changeOpacity(theme.centerChannelColor, 0.64),
-        fontSize: 12,
-        height: 30,
-        lineHeight: 16,
-        fontFamily: 'OpenSans',
-    },
-}));
-
-const Settings = ({style, theme}: Props) => {
+const LogOut = () => {
+    const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const serverDisplayName = useServerDisplayName();
 
     const onLogout = useCallback(preventDoubleTap(() => {
-        alertServerLogout(
-            serverDisplayName,
-            () => {
-                logout(serverUrl);
-            },
-            intl,
-        );
+        alertServerLogout(serverDisplayName, () => logout(serverUrl), intl);
     }), [serverDisplayName, serverUrl, intl]);
 
     return (
-        <MenuItem
-            iconName='exit-to-app'
-            isDestructor={true}
-            labelComponent={(
-                <View>
-                    <FormattedText
-                        id='account.logout'
-                        defaultMessage='Log out'
-                        style={[style, styles.label]}
-                    />
-                    <FormattedText
-                        id={'account.logout_from'}
-                        defaultMessage={'Log out of {serverName}'}
-                        values={{serverName: serverDisplayName}}
-                        style={styles.logOutFrom}
-                    />
-                </View>
-            )}
-            onPress={onLogout}
-            separator={false}
+        <OptionItem
+            action={onLogout}
+            description={intl.formatMessage({id: 'account.logout_from', defaultMessage: 'Log out from'}, {serverName: serverDisplayName})}
+            destructive={true}
+            icon='exit-to-app'
+            label={intl.formatMessage({id: 'account.logout', defaultMessage: 'Log out'})}
+            optionDescriptionTextStyle={styles.desc}
             testID='account.logout.action'
+            type='default'
         />
     );
 };
 
-export default Settings;
+export default LogOut;
