@@ -18,13 +18,6 @@ import {
     setScreenShareURL,
     setSpeakerPhone,
 } from '@calls/state';
-import {
-    ApiResp,
-    Call,
-    CallParticipant,
-    CallsConnection,
-    ServerChannelState,
-} from '@calls/types/calls';
 import {General, Preferences} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
@@ -38,6 +31,13 @@ import {displayUsername, getUserIdFromChannelName, isSystemAdmin} from '@utils/u
 
 import {newConnection} from '../connection/connection';
 
+import type {
+    ApiResp,
+    Call,
+    CallParticipant,
+    CallsConnection,
+    ServerChannelState,
+} from '@calls/types/calls';
 import type {Client} from '@client/rest';
 import type ClientError from '@client/rest/error';
 
