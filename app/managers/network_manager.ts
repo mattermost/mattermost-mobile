@@ -78,9 +78,10 @@ class NetworkManager {
 
     public createClient = async (serverUrl: string, bearerToken?: string) => {
         const config = await this.buildConfig();
-        let client;
         try {
-            client = await getOrCreateAPIClient(serverUrl, config, this.clientErrorEventHandler);
+            const {client} = await getOrCreateAPIClient(serverUrl, config, this.clientErrorEventHandler);
+            const csrfToken = await getCSRFFromCookie(serverUrl);
+            this.clients[serverUrl] = new Client(client, serverUrl, bearerToken, csrfToken);
         } catch (error) {
             throw new ClientError(serverUrl, {
                 message: 'Can’t find this server. Check spelling and URL format.',
@@ -91,8 +92,6 @@ class NetworkManager {
                 url: serverUrl,
             });
         }
-        const csrfToken = await getCSRFFromCookie(serverUrl);
-        this.clients[serverUrl] = new Client(client.client, serverUrl, bearerToken, csrfToken);
 
         return this.clients[serverUrl];
     };
