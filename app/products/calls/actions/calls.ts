@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {IntlShape} from 'react-intl';
-import {Alert} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
@@ -40,6 +38,7 @@ import type {
 } from '@calls/types/calls';
 import type {Client} from '@client/rest';
 import type ClientError from '@client/rest/error';
+import type {IntlShape} from 'react-intl';
 
 let connection: CallsConnection | null = null;
 export const getConnectionForTesting = () => connection;
@@ -249,95 +248,78 @@ export const setSpeakerphoneOn = (speakerphoneOn: boolean) => {
     setSpeakerPhone(speakerphoneOn);
 };
 
-export const endCallAlert = async (serverUrl: string, intl: IntlShape, channelId: string) => {
+export const canEndCall = async (serverUrl: string, channelId: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
-        return;
+        return false;
     }
 
     const currentUser = await getCurrentUser(database);
     if (!currentUser) {
-        return;
-    }
-
-    const channel = await getChannelById(database, channelId);
-    if (!channel) {
-        return;
+        return false;
     }
 
     const call = getCallsState(serverUrl).calls[channelId];
     if (!call) {
-        return;
+        return false;
+    }
+
+    return isSystemAdmin(currentUser.roles) || currentUser.id === call.ownerId;
+};
+
+export const getEndCallMessage = async (serverUrl: string, channelId: string, currentUserId: string, intl: IntlShape) => {
+    let msg = intl.formatMessage({
+        id: 'mobile.calls_end_msg_channel_default',
+        defaultMessage: 'Are you sure you want to end the call?',
+    });
+
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return msg;
+    }
+
+    const channel = await getChannelById(database, channelId);
+    if (!channel) {
+        return msg;
+    }
+
+    const call = getCallsState(serverUrl).calls[channelId];
+    if (!call) {
+        return msg;
     }
 
     const numParticipants = Object.keys(call.participants).length;
-    const {formatMessage} = intl;
 
-    if (!isSystemAdmin(currentUser.roles) && currentUser.id !== call.ownerId) {
-        Alert.alert(
-            formatMessage({
-                id: 'mobile.calls_end_permission_title',
-                defaultMessage: 'Error',
-            }),
-            formatMessage({
-                id: 'mobile.calls_end_permission_msg',
-                defaultMessage: 'You do not have permission to end the call. Please ask the call creator to end the call.',
-            }));
-        return;
-    }
-
-    const endCall = async () => {
-        const client = NetworkManager.getClient(serverUrl);
-
-        let data: ApiResp;
-        try {
-            data = await client.endCall(channelId);
-        } catch (error) {
-            await forceLogoutIfNecessary(serverUrl, error as ClientError);
-            throw error;
-        }
-
-        return data;
-    };
-
-    const title = formatMessage({id: 'mobile.calls_end_call_title', defaultMessage: 'End call'});
-    let msg = formatMessage({
+    msg = intl.formatMessage({
         id: 'mobile.calls_end_msg_channel',
         defaultMessage: 'Are you sure you want to end a call with {numParticipants} participants in {displayName}?',
     }, {numParticipants, displayName: channel.displayName});
 
     if (channel.type === General.DM_CHANNEL) {
-        const otherID = getUserIdFromChannelName(currentUser.id, channel.name);
+        const otherID = getUserIdFromChannelName(currentUserId, channel.name);
         const otherUser = await getUserById(database, otherID);
         const {config, license} = await getCommonSystemValues(database);
         const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT).fetch();
         const displaySetting = getTeammateNameDisplaySetting(preferences, config, license);
-        msg = formatMessage({
+        msg = intl.formatMessage({
             id: 'mobile.calls_end_msg_dm',
-            defaultMessage: 'Are you sure you want to end a call with {displayName}?',
+            defaultMessage: 'Are you sure you want to end the call with {displayName}?',
         }, {displayName: displayUsername(otherUser, intl.locale, displaySetting)});
     }
-    const cancel = formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'});
 
-    Alert.alert(
-        title,
-        msg,
-        [
-            {
-                text: cancel,
-            },
-            {
-                text: title,
-                onPress: async () => {
-                    try {
-                        await endCall();
-                    } catch (e) {
-                        const err = (e as ClientError).message || 'unable to complete command, see server logs';
-                        Alert.alert('Error', `Error: ${err}`);
-                    }
-                },
-                style: 'cancel',
-            },
-        ],
-    );
+    return msg;
+};
+
+export const endCall = async (serverUrl: string, channelId: string) => {
+    const client = NetworkManager.getClient(serverUrl);
+
+    let data: ApiResp;
+    try {
+        data = await client.endCall(channelId);
+    } catch (error) {
+        await forceLogoutIfNecessary(serverUrl, error as ClientError);
+        throw error;
+    }
+
+    return data;
 };
