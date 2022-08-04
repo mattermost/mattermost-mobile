@@ -134,6 +134,7 @@ export const CallsCustomMessage = ({
                         <Text style={style.timeText}>{`${endedAt} `}</Text>
                         {
                             <FormattedTime
+                                style={style.timeText}
                                 value={post.props.end_at}
                                 isMilitaryTime={isMilitaryTime}
                                 timezone={timezone}
