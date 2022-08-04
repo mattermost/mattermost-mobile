@@ -148,14 +148,13 @@ export default function SendHandler({
 
         const message = await getEndCallMessage(serverUrl, channelId, currentUserId, intl);
         const title = intl.formatMessage({id: 'mobile.calls_end_call_title', defaultMessage: 'End call'});
-        const cancel = intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'});
 
         Alert.alert(
             title,
             message,
             [
                 {
-                    text: cancel,
+                    text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
                 },
                 {
                     text: title,
