@@ -4,7 +4,7 @@
 import {IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
-import {CallParticipant} from '@calls/types/calls';
+import {CallParticipant, ServerCallsConfig} from '@calls/types/calls';
 import {Post} from '@constants';
 import Calls from '@constants/calls';
 import PostModel from '@typings/database/models/servers/post';
@@ -103,4 +103,23 @@ export function errorAlert(error: string, intl: IntlShape) {
             defaultMessage: 'Error: {error}',
         }, {error}),
     );
+}
+
+export function getICEServersConfigs(config: ServerCallsConfig) {
+    // if ICEServersConfigs is set, we can trust this to be complete and
+    // coming from an updated API.
+    if (config.ICEServersConfigs && config.ICEServersConfigs.length > 0) {
+        return config.ICEServersConfigs;
+    }
+
+    // otherwise we revert to using the now deprecated field.
+    if (config.ICEServers && config.ICEServers.length > 0) {
+        return [
+            {
+                urls: config.ICEServers,
+            },
+        ];
+    }
+
+    return [];
 }

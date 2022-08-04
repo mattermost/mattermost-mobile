@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ServerChannelState, ServerCallsConfig} from '@calls/types/calls';
+import {ServerChannelState, ServerCallsConfig, ICEServersConfigs} from '@calls/types/calls';
 
 export interface ClientCallsMix {
     getEnabled: () => Promise<Boolean>;
     getCalls: () => Promise<ServerChannelState[]>;
     getCallsConfig: () => Promise<ServerCallsConfig>;
     enableChannelCalls: (channelId: string, enable: boolean) => Promise<ServerChannelState>;
+    genTURNCredentials: () => Promise<ICEServersConfigs>;
 }
 
 const ClientCalls = (superclass: any) => class extends superclass {
@@ -41,6 +42,13 @@ const ClientCalls = (superclass: any) => class extends superclass {
         return this.doFetch(
             `${this.getCallsRoute()}/${channelId}`,
             {method: 'post', body: {enabled: enable}},
+        );
+    };
+
+    genTURNCredentials = async () => {
+        return this.doFetch(
+            `${this.getCallsRoute()}/turn-credentials`,
+            {method: 'get'},
         );
     };
 };
