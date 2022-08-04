@@ -7,8 +7,7 @@ import semver from 'semver';
 
 import {selectAllMyChannelIds} from '@actions/local/channel';
 import LocalConfig from '@assets/config.json';
-import {Events, Sso} from '@constants';
-import LaunchType from '@constants/launch';
+import {Events, Sso, Launch} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations, resetMomentLocale, t} from '@i18n';
 import {getServerCredentials, removeServerCredentials} from '@init/credentials';
@@ -119,10 +118,10 @@ class GlobalEventHandler {
 
         if (activeServerUrl === serverUrl) {
             let displayName = '';
-            let launchType: LaunchTypeType = LaunchType.AddServer;
+            let launchType: LaunchTypeType = Launch.AddServer;
             if (!Object.keys(DatabaseManager.serverDatabases).length) {
                 EphemeralStore.theme = undefined;
-                launchType = LaunchType.Normal;
+                launchType = Launch.Normal;
 
                 if (activeServerDisplayName) {
                     displayName = activeServerDisplayName;

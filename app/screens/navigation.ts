@@ -10,9 +10,7 @@ import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
 import {ITEM_HEIGHT} from '@components/team_sidebar/add_team/team_list_item/team_list_item';
-import {Device, Events, Screens} from '@constants';
-import LaunchType from '@constants/launch';
-import NavigationConstants from '@constants/navigation';
+import {Device, Events, Screens, Navigation as NavigationConstants, Launch} from '@constants';
 import {NOT_READY} from '@constants/screens';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
@@ -188,12 +186,12 @@ function isScreenRegistered(screen: string) {
     return true;
 }
 
-export function resetToHome(passProps: LaunchProps = {launchType: LaunchType.Normal}) {
+export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}) {
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
-    if (passProps.launchType === LaunchType.AddServer) {
+    if (passProps.launchType === Launch.AddServer) {
         dismissModal({componentId: Screens.SERVER});
         dismissModal({componentId: Screens.LOGIN});
         dismissModal({componentId: Screens.SSO});

@@ -5,8 +5,7 @@ import {IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {CallParticipant} from '@calls/types/calls';
-import {Post} from '@constants';
-import Calls from '@constants/calls';
+import {Post, Calls} from '@constants';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {displayUsername} from '@utils/user';
 
