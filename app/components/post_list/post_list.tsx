@@ -260,6 +260,8 @@ const PostList = ({
 
                 return (<CombinedUserActivity {...postProps}/>);
             }
+
+            return null;
         }
 
         let previousPost: PostModel|undefined;
@@ -295,7 +297,7 @@ const PostList = ({
         }
 
         // Skip rendering Flag for the root post in the thread as it is visible in the `Thread Overview`
-        const post = item as PostModel;
+        const post = item;
         const skipSaveddHeader = (
             location === Screens.THREAD &&
             post.id === rootId
