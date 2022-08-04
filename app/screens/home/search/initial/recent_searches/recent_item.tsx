@@ -2,38 +2,18 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {StyleSheet} from 'react-native';
 
 import {removeSearchFromTeamSearchHistory} from '@actions/local/team';
-import CompassIcon from '@components/compass_icon';
+import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 
 import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            height: 48,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            paddingHorizontal: 16,
-            marginTop: 20,
-        },
-        remove: {
-            height: 40,
-            width: 40,
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        term: {
-            marginLeft: 16,
-            color: theme.centerChannelColor,
-            ...typography('Body', 200, 'Regular'),
-        },
-    };
+const styles = StyleSheet.create({
+    container: {
+        marginLeft: 20,
+    },
 });
 
 type Props = {
@@ -42,9 +22,6 @@ type Props = {
 }
 
 const RecentItem = ({item, setRecentValue}: Props) => {
-    const theme = useTheme();
-    const style = getStyleFromTheme(theme);
-    const testID = 'search.recent_item';
     const serverUrl = useServerUrl();
 
     const handlePress = useCallback(() => {
@@ -56,30 +33,16 @@ const RecentItem = ({item, setRecentValue}: Props) => {
     }, [item.id, serverUrl]);
 
     return (
-        <View style={style.container}>
-            <TouchableOpacity
-                onPress={handlePress}
-                style={{flexDirection: 'row'}}
-            >
-                <CompassIcon
-                    name='clock-outline'
-                    size={24}
-                    color={changeOpacity(theme.centerChannelColor, 0.56)}
-                />
-                <Text style={style.term}>{item.term}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-                onPress={handleRemove}
-                style={style.remove}
-                testID={`${testID}.remove.button`}
-            >
-                <CompassIcon
-                    name='close'
-                    size={18}
-                    color={changeOpacity(theme.centerChannelColor, 0.64)}
-                />
-            </TouchableOpacity>
-        </View>
+        <OptionItem
+            action={handlePress}
+            icon={'clock-outline'}
+            inline={true}
+            label={item.term}
+            onRemove={handleRemove}
+            testID={'search.recent_item'}
+            type='remove'
+            containerStyle={styles.container}
+        />
     );
 };
 
