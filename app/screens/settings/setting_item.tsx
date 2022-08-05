@@ -2,10 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {useIntl} from 'react-intl';
 import {Platform} from 'react-native';
 
-import MenuItem, {MenuItemProps} from '@components/menu_item';
+import OptionItem, {OptionItemProps} from '@components/option_item';
 import {useTheme} from '@context/theme';
+import SettingSeparator from '@screens/settings/settings_separator';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -15,17 +17,14 @@ type SettingsConfig = keyof typeof SettingOptionConfig | keyof typeof Notificati
 type SettingOptionProps = {
     optionName: SettingsConfig;
     onPress: () => void;
-} & Omit<MenuItemProps, 'testID'| 'theme'>;
+    separator?: boolean;
+} & Partial<OptionItemProps>;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         menuLabel: {
             color: theme.centerChannelColor,
             ...typography('Body', 200, 'Regular'),
-        },
-        separatorStyle: {
-            width: '91%',
-            alignSelf: 'center',
         },
         chevronStyle: {
             marginRight: 14,
@@ -34,21 +33,35 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const SettingItem = ({onPress, optionName, ...rest}: SettingOptionProps) => {
+const SettingItem = ({
+    info,
+    onPress,
+    optionName,
+    separator = true,
+    ...props
+}: SettingOptionProps) => {
     const theme = useTheme();
+    const intl = useIntl();
     const styles = getStyleSheet(theme);
-    const props = {...rest, ...Options[optionName]} as unknown as Omit<MenuItemProps, 'onPress'| 'theme'>;
+    const config = Options[optionName];
+
+    const label = props.label || intl.formatMessage({id: config.i18nId, defaultMessage: config.defaultMessage});
 
     return (
-        <MenuItem
-            chevronStyle={styles.chevronStyle}
-            labelStyle={styles.menuLabel}
-            onPress={onPress}
-            separator={Platform.OS === 'ios'}
-            separatorStyle={styles.separatorStyle}
-            showArrow={Platform.select({ios: true, default: false})}
-            {...props}
-        />
+        <>
+            <OptionItem
+                action={onPress}
+                arrowStyle={styles.chevronStyle}
+                containerStyle={{marginLeft: 16}}
+                icon={config.icon}
+                info={info}
+                label={label}
+                optionLabelTextStyle={[styles.menuLabel, props.optionLabelTextStyle]}
+                type={Platform.select({ios: 'arrow', default: 'default'})}
+                {...props}
+            />
+            {separator && <SettingSeparator/>}
+        </>
     );
 };
 

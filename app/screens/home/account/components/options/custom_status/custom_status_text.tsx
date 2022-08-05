@@ -5,27 +5,33 @@ import React from 'react';
 
 import CustomText from '@components/custom_status/custom_status_text';
 import FormattedText from '@components/formatted_text';
+import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type CustomStatusTextProps = {
     customStatus?: UserCustomStatus;
     isStatusSet: boolean;
-    theme: Theme;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     text: {
         color: theme.centerChannelColor,
+        ...typography('Body', 200),
     },
 }));
 
-const CustomStatusText = ({isStatusSet, customStatus, theme}: CustomStatusTextProps) => {
+const CustomStatusText = ({isStatusSet, customStatus}: CustomStatusTextProps) => {
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
+
     let text: React.ReactNode | string;
 
     text = (
         <FormattedText
             id='mobile.routes.custom_status'
             defaultMessage='Set a Status'
+            style={styles.text}
         />
     );
 
@@ -33,7 +39,6 @@ const CustomStatusText = ({isStatusSet, customStatus, theme}: CustomStatusTextPr
         text = customStatus.text;
     }
 
-    const styles = getStyleSheet(theme);
     return (
         <CustomText
             text={text}

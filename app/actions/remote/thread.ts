@@ -40,7 +40,6 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, 
     }
 
     // Load thread before we open to the thread modal
-    // @Todo: https://mattermost.atlassian.net/browse/MM-42232
     fetchPostThread(serverUrl, rootId);
 
     // Mark thread as read
