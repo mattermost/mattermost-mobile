@@ -5,9 +5,12 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {fetchUsersByIds} from '@actions/remote/user';
 import {
-    callStarted, setCallScreenOff,
+    callEnded,
+    callStarted,
+    setCallScreenOff,
     setCallScreenOn,
-    setChannelEnabled, setRaisedHand,
+    setChannelEnabled,
+    setRaisedHand,
     setUserMuted,
     userJoinedCall,
     userLeftCall,
@@ -60,6 +63,15 @@ export const handleCallStarted = (serverUrl: string, msg: WebSocketMessage) => {
         threadId: msg.data.thread_id,
         screenOn: '',
         participants: {},
+        ownerId: msg.data.owner_id,
+    });
+};
+
+export const handleCallEnded = (serverUrl: string, msg: WebSocketMessage) => {
+    callEnded(serverUrl, msg.broadcast.channel_id);
+
+    DeviceEventEmitter.emit(WebsocketEvents.CALLS_CALL_END, {
+        channelId: msg.broadcast.channel_id,
     });
 };
 

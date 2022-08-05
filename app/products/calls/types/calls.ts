@@ -23,6 +23,7 @@ export type Call = {
     startTime: number;
     screenOn: string;
     threadId: string;
+    ownerId: string;
 }
 
 export const DefaultCall = {
@@ -72,6 +73,7 @@ export type ServerCallState = {
     states: ServerUserState[];
     thread_id: string;
     screen_sharing_id: string;
+    owner_id: string;
 }
 
 export type VoiceEventData = {
@@ -109,3 +111,9 @@ export const DefaultCallsConfig = {
     DefaultEnabled: false,
     last_retrieved_at: 0,
 } as CallsConfig;
+
+export type ApiResp = {
+    message?: string;
+    detailed_error?: string;
+    status_code: number;
+}

@@ -11,11 +11,18 @@ import {fetchStatusByIds} from '@actions/remote/user';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {
     handleCallChannelDisabled,
-    handleCallChannelEnabled, handleCallScreenOff, handleCallScreenOn, handleCallStarted,
+    handleCallChannelEnabled, handleCallEnded,
+    handleCallScreenOff,
+    handleCallScreenOn,
+    handleCallStarted,
     handleCallUserConnected,
     handleCallUserDisconnected,
-    handleCallUserMuted, handleCallUserRaiseHand,
-    handleCallUserUnmuted, handleCallUserUnraiseHand, handleCallUserVoiceOff, handleCallUserVoiceOn,
+    handleCallUserMuted,
+    handleCallUserRaiseHand,
+    handleCallUserUnmuted,
+    handleCallUserUnraiseHand,
+    handleCallUserVoiceOff,
+    handleCallUserVoiceOn,
 } from '@calls/connection/websocket_event_handlers';
 import {isSupportedServerCalls} from '@calls/utils';
 import {Events, Screens, WebsocketEvents} from '@constants';
@@ -401,6 +408,9 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
         case WebsocketEvents.CALLS_USER_UNRAISE_HAND:
             handleCallUserUnraiseHand(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_CALL_END:
+            handleCallEnded(serverUrl, msg);
             break;
 
         case WebsocketEvents.GROUP_RECEIVED:
