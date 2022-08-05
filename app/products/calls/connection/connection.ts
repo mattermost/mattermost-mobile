@@ -12,8 +12,8 @@ import {
     mediaDevices,
 } from 'react-native-webrtc';
 
-import {WebsocketEvents} from '@constants';
 import {getICEServersConfigs} from '@calls/utils';
+import {WebsocketEvents} from '@constants';
 import NetworkManager from '@managers/network_manager';
 import {logError, logWarning} from '@utils/log';
 

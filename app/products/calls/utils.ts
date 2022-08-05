@@ -8,9 +8,9 @@ import Calls from '@constants/calls';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {displayUsername} from '@utils/user';
 
+import type {CallParticipant, ServerCallsConfig} from '@calls/types/calls';
 import type PostModel from '@typings/database/models/servers/post';
 import type {IntlShape} from 'react-intl';
-import type {CallParticipant, ServerCallsConfig} from '@calls/types/calls';
 
 export function sortParticipants(teammateNameDisplay: string, participants?: Dictionary<CallParticipant>, presenterID?: string): CallParticipant[] {
     if (!participants) {
