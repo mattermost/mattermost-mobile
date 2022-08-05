@@ -56,7 +56,7 @@ import {handleChannelConvertedEvent, handleChannelCreatedEvent,
     handleDirectAddedEvent,
     handleUserAddedToChannelEvent,
     handleUserRemovedFromChannelEvent} from './channel';
-import {handleGroupMemberAddEvent, handleGroupMemberDeleteEvent, handleGroupReceivedEvent} from './group';
+import {handleGroupMemberAddEvent, handleGroupMemberDeleteEvent, handleGroupReceivedEvent, handleGroupTeamAssociatedEvent, handleGroupTeamDissociateEvent} from './group';
 import {handleOpenDialogEvent} from './integrations';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
@@ -421,6 +421,16 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
         case WebsocketEvents.GROUP_MEMBER_DELETE:
             handleGroupMemberDeleteEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.GROUP_ASSOCIATED_TO_TEAM:
+            handleGroupTeamAssociatedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.GROUP_DISSOCIATED_TO_TEAM:
+            handleGroupTeamDissociateEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.GROUP_ASSOCIATED_TO_CHANNEL:
+            break;
+        case WebsocketEvents.GROUP_DISSOCIATED_TO_CHANNEL:
             break;
     }
 }
