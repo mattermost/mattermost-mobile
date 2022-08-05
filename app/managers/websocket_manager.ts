@@ -16,8 +16,6 @@ import {getCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
 import {logError} from '@utils/log';
 
-import type {ServerCredential} from '@typings/credentials';
-
 const WAIT_TO_CLOSE = 15 * 1000;
 const WAIT_UNTIL_NEXT = 20 * 1000;
 

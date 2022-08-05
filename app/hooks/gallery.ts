@@ -11,6 +11,7 @@ import {
 
 import {useGallery} from '@context/gallery';
 
+import type {Context, GestureHandlers, OnGestureEvent} from '@typings/screens/gallery';
 import type {GestureHandlerGestureEvent} from 'react-native-gesture-handler';
 
 function useRemoteContext<T extends object>(initialValue: T) {

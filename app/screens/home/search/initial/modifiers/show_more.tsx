@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
+import {useIntl} from 'react-intl';
 
-import FormattedText from '@components/formatted_text';
-import MenuItem from '@components/menu_item';
+import OptionItem from '@components/option_item';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -26,7 +26,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const ShowMoreButton = ({onPress, showMore}: ShowMoreButtonProps) => {
     const theme = useTheme();
-    const style = getStyleSheet(theme);
+    const intl = useIntl();
+    const styles = getStyleSheet(theme);
 
     let id = t('mobile.search.show_more');
     let defaultMessage = 'Show more';
@@ -36,17 +37,12 @@ const ShowMoreButton = ({onPress, showMore}: ShowMoreButtonProps) => {
     }
 
     return (
-        <MenuItem
-            labelComponent={
-                <FormattedText
-                    id={id}
-                    defaultMessage={defaultMessage}
-                    style={style.showMore}
-                />
-            }
-            onPress={onPress}
-            separator={false}
+        <OptionItem
+            action={onPress}
             testID={'mobile.search.show_more'}
+            type='default'
+            label={intl.formatMessage({id, defaultMessage})}
+            optionLabelTextStyle={styles.showMore}
         />
     );
 };

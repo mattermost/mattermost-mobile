@@ -1,11 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export default {
-    CHANNEL: 'channel',
-    DMCHANNEL: 'dmchannel',
-    GROUPCHANNEL: 'groupchannel',
-    PERMALINK: 'permalink',
-    PLUGIN: 'plugin',
-    OTHER: 'other',
-};
+const DeepLinkType = {
+    Channel: 'channel',
+    DirectMessage: 'dm',
+    GroupMessage: 'gm',
+    Invalid: 'invalid',
+    Permalink: 'permalink',
+    Plugin: 'plugin',
+} as const;
+
+export default DeepLinkType;

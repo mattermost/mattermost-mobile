@@ -4,8 +4,8 @@
 import React from 'react';
 
 import {Preferences} from '@constants';
+import LaunchType from '@constants/launch';
 import {renderWithIntl} from '@test/intl-test-helper';
-import {LaunchType} from '@typings/launch';
 
 import SSOLogin from './index';
 

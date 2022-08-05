@@ -33,8 +33,7 @@ import {CallParticipant, CurrentCall, VoiceEventData} from '@calls/types/calls';
 import {sortParticipants} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {WebsocketEvents} from '@constants';
-import Screens from '@constants/screens';
+import {WebsocketEvents, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {bottomSheet, dismissBottomSheet, goToScreen, popTopScreen} from '@screens/navigation';
@@ -357,8 +356,17 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
         });
     }, [insets, intl, theme]);
 
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_CALL_END, ({channelId}) => {
+            if (channelId === currentCall?.channelId) {
+                popTopScreen(componentId);
+            }
+        });
+
+        return () => listener.remove();
+    }, []);
+
     if (!currentCall || !myParticipant) {
-        // This should not be possible, but may happen until https://github.com/mattermost/mattermost-mobile/pull/6493 is merged.
         // TODO: will figure out a way to remove the need for this check: https://mattermost.atlassian.net/browse/MM-46050
         popTopScreen(componentId);
         return null;

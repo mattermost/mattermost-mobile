@@ -17,6 +17,8 @@ import {BestImage, getNearestPoint} from '@utils/opengraph';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {extractFilenameFromUrl, isValidUrl} from '@utils/url';
 
+import type {GalleryItemType} from '@typings/screens/gallery';
+
 type OpengraphImageProps = {
     isReplyPost: boolean;
     layoutWidth?: number;

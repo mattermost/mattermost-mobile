@@ -12,12 +12,13 @@ import {COMMAND_SUGGESTION_CHANNEL, COMMAND_SUGGESTION_USER} from '@constants/ap
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import analytics from '@managers/analytics';
-import ChannelModel from '@typings/database/models/servers/channel';
-import UserModel from '@typings/database/models/servers/user';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import {AppCommandParser, ExtendedAutocompleteSuggestion} from '../app_command_parser/app_command_parser';
 import SlashSuggestionItem from '../slash_suggestion_item';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type UserModel from '@typings/database/models/servers/user';
 
 export type Props = {
     currentTeamId: string;

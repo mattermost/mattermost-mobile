@@ -5,12 +5,13 @@ import GenericClient from '@mattermost/react-native-network-client';
 import {Linking} from 'react-native';
 import urlParse from 'url-parse';
 
-import {Files} from '@constants';
-import {DeepLinkType, DeepLinkWithData} from '@typings/launch';
+import {Files, DeepLink} from '@constants';
 import {emptyFunction} from '@utils/general';
 import {escapeRegex} from '@utils/markdown';
 
 import {latinise} from './latinise';
+
+import type {DeepLinkWithData} from '@typings/launch';
 
 const ytRegex = /(?:http|https):\/\/(?:www\.|m\.)?(?:(?:youtube\.com\/(?:(?:v\/)|(?:(?:watch|embed\/watch)(?:\/|.*v=))|(?:embed\/)|(?:user\/[^/]+\/u\/[0-9]\/)))|(?:youtu\.be\/))([^#&?]*)/;
 
@@ -141,30 +142,30 @@ export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
 
     let match = new RegExp('(.*)\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
     if (match) {
-        return {type: DeepLinkType.Channel, data: {serverUrl: match[1], teamName: match[2], channelName: match[3]}};
+        return {type: DeepLink.Channel, data: {serverUrl: match[1], teamName: match[2], channelName: match[3]}};
     }
 
     match = new RegExp('(.*)\\/([^\\/]+)\\/pl\\/(\\w+)').exec(url);
     if (match) {
-        return {type: DeepLinkType.Permalink, data: {serverUrl: match[1], teamName: match[2], postId: match[3]}};
+        return {type: DeepLink.Permalink, data: {serverUrl: match[1], teamName: match[2], postId: match[3]}};
     }
 
     match = new RegExp('(.*)\\/([^\\/]+)\\/messages\\/@(\\S+)').exec(url);
     if (match) {
-        return {type: DeepLinkType.DirectMessage, data: {serverUrl: match[1], teamName: match[2], userName: match[3]}};
+        return {type: DeepLink.DirectMessage, data: {serverUrl: match[1], teamName: match[2], userName: match[3]}};
     }
 
     match = new RegExp('(.*)\\/([^\\/]+)\\/messages\\/(\\S+)').exec(url);
     if (match) {
-        return {type: DeepLinkType.GroupMessage, data: {serverUrl: match[1], teamName: match[2], channelId: match[3]}};
+        return {type: DeepLink.GroupMessage, data: {serverUrl: match[1], teamName: match[2], channelId: match[3]}};
     }
 
     match = new RegExp('(.*)\\/plugins\\/([^\\/]+)\\/(\\S+)').exec(url);
     if (match) {
-        return {type: DeepLinkType.Plugin, data: {serverUrl: match[1], id: match[2], teamName: ''}};
+        return {type: DeepLink.Plugin, data: {serverUrl: match[1], id: match[2], teamName: ''}};
     }
 
-    return {type: DeepLinkType.Invalid};
+    return {type: DeepLink.Invalid};
 }
 
 export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string) {
@@ -185,7 +186,7 @@ export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string
     }
 
     const parsedDeepLink = parseDeepLink(urlToMatch);
-    if (parsedDeepLink.type !== DeepLinkType.Invalid) {
+    if (parsedDeepLink.type !== DeepLink.Invalid) {
         return parsedDeepLink;
     }
 

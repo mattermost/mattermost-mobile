@@ -136,8 +136,7 @@ export const callStarted = (serverUrl: string, call: Call) => {
     setCurrentCall(nextCurrentCall);
 };
 
-// TODO: should be called callEnded to match the ws event. Will fix when callEnded is implemented.
-export const callFinished = (serverUrl: string, channelId: string) => {
+export const callEnded = (serverUrl: string, channelId: string) => {
     const callsState = getCallsState(serverUrl);
     const nextCalls = {...callsState.calls};
     delete nextCalls[channelId];
@@ -147,6 +146,11 @@ export const callFinished = (serverUrl: string, channelId: string) => {
     const nextChannelsWithCalls = {...channelsWithCalls};
     delete nextChannelsWithCalls[channelId];
     setChannelsWithCalls(serverUrl, nextChannelsWithCalls);
+
+    const currentCall = getCurrentCall();
+    if (currentCall?.channelId === channelId) {
+        setCurrentCall(null);
+    }
 };
 
 export const setUserMuted = (serverUrl: string, channelId: string, userId: string, muted: boolean) => {
