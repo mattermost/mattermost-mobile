@@ -73,6 +73,18 @@ export const GLOBAL_IDENTIFIERS = {
     PROFILE_LONG_PRESS_TUTORIAL: 'profileLongPressTutorial',
 };
 
+export enum OperationType {
+    CREATE = 'CREATE',
+    UPDATE = 'UPDATE',
+    DELETE = 'DELETE',
+  }
+
+// The only two types of databases in the app
+export enum DatabaseType {
+    DEFAULT,
+    SERVER,
+  }
+
 export default {
     GLOBAL_IDENTIFIERS,
     MM_TABLES,

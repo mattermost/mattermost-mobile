@@ -55,7 +55,7 @@ type Post = {
     original_id: string;
     message: string;
     type: PostType;
-    participants?: null | UserProfile[];
+    participants?: null | UserProfile[]|string[];
     props: Record<string, any>;
     hashtags: string;
     pending_post_id: string;
@@ -66,7 +66,6 @@ type Post = {
     user_activity_posts?: Post[];
     state?: 'DELETED';
     prev_post_id?: string;
-    participants: null|string[];
 };
 
 type PostProps = {

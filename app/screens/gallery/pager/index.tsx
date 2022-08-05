@@ -11,6 +11,8 @@ import {clampVelocity, friction, getShouldRender, workletNoop, workletNoopTrue} 
 
 import Page, {PageRefs, RenderPageProps} from './page';
 
+import type {GalleryItemType} from '@typings/screens/gallery';
+
 export interface PagerReusableProps {
     gutterWidth?: number;
     initialDiffValue?: number;

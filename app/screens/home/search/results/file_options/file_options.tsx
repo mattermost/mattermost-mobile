@@ -12,6 +12,8 @@ import DownloadWithAction from '@screens/gallery/footer/download_with_action';
 
 import Header from './header';
 
+import type {GalleryAction, GalleryItemType} from '@typings/screens/gallery';
+
 const styles = StyleSheet.create({
     toast: {
         marginTop: 100,

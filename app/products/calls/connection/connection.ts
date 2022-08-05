@@ -4,6 +4,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import {deflate} from 'pako/lib/deflate.js';
+import {DeviceEventEmitter, EmitterSubscription} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 import {
     MediaStream,
@@ -11,6 +12,7 @@ import {
     mediaDevices,
 } from 'react-native-webrtc';
 
+import {WebsocketEvents} from '@constants';
 import {getICEServersConfigs} from '@calls/utils';
 import NetworkManager from '@managers/network_manager';
 import {logError, logWarning} from '@utils/log';
@@ -28,6 +30,7 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
     let voiceTrackAdded = false;
     let voiceTrack: MediaStreamTrack | null = null;
     let isClosed = false;
+    let onCallEnd: EmitterSubscription | null = null;
     const streams: MediaStream[] = [];
 
     try {
@@ -55,6 +58,11 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
             ws.close();
         }
 
+        if (onCallEnd) {
+            onCallEnd.remove();
+            onCallEnd = null;
+        }
+
         streams.forEach((s) => {
             s.getTracks().forEach((track: MediaStreamTrack) => {
                 track.stop();
@@ -72,6 +80,12 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
             closeCb();
         }
     };
+
+    onCallEnd = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_CALL_END, ({channelId}: { channelId: string }) => {
+        if (channelId === channelID) {
+            disconnect();
+        }
+    });
 
     const mute = () => {
         if (!peer || peer.destroyed) {

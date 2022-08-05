@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {Post} from '@constants';
 import Calls from '@constants/calls';
-import PostModel from '@typings/database/models/servers/post';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {displayUsername} from '@utils/user';
 
+import type PostModel from '@typings/database/models/servers/post';
+import type {IntlShape} from 'react-intl';
 import type {CallParticipant, ServerCallsConfig} from '@calls/types/calls';
 
 export function sortParticipants(teammateNameDisplay: string, participants?: Dictionary<CallParticipant>, presenterID?: string): CallParticipant[] {

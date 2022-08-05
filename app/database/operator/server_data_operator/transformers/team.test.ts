@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {OperationType} from '@constants/database';
 import {
     transformMyTeamRecord,
     transformTeamChannelHistoryRecord,
@@ -9,7 +10,6 @@ import {
     transformTeamSearchHistoryRecord,
 } from '@database/operator/server_data_operator/transformers/team';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
-import {OperationType} from '@typings/database/enums';
 
 describe('*** TEAM Prepare Records Test ***', () => {
     it('=> transformMyTeamRecord: should return an array of type MyTeam', async () => {

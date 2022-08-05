@@ -9,8 +9,6 @@ import * as analytics from '@managers/analytics';
 import {logWarning} from '@utils/log';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
-import type {ServerCredential} from '@typings/credentials';
-
 export const getAllServerCredentials = async (): Promise<ServerCredential[]> => {
     const serverCredentials: ServerCredential[] = [];
 
