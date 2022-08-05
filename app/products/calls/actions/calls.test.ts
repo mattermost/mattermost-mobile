@@ -85,6 +85,7 @@ const addFakeCall = (serverUrl: string, channelId: string) => {
         startTime: (new Date()).getTime(),
         screenOn: '',
         threadId: 'abcd1234567',
+        ownerId: 'xohi8cki9787fgiryne716u84o',
     } as Call;
     act(() => {
         State.callStarted(serverUrl, call);
