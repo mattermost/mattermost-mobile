@@ -154,7 +154,7 @@ function capture(captureFunc: () => void, config?: ClientConfig) {
         }
     } catch (e) {
         // Don't want this to get into an infinite loop again...
-        logError('Exception occured while sending to Sentry');
+        logError('Exception occurred while sending to Sentry');
         logError(e);
     }
 }

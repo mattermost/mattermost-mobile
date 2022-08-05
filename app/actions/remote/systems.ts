@@ -44,7 +44,7 @@ export const fetchDataRetentionPolicy = async (serverUrl: string) => {
 
         operator.handleSystem({systems, prepareRecordsOnly: false}).
             catch((error) => {
-                logError('An error ocurred while saving data retention policies', error);
+                logError('An error occurred while saving data retention policies', error);
             });
     }
 
@@ -89,7 +89,7 @@ export const fetchConfigAndLicense = async (serverUrl: string, fetchOnly = false
                 if (systems.length) {
                     await operator.handleSystem({systems, prepareRecordsOnly: false}).
                         catch((error) => {
-                            logError('An error ocurred while saving config & license', error);
+                            logError('An error occurred while saving config & license', error);
                         });
                 }
             }
