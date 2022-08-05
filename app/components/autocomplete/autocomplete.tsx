@@ -7,7 +7,8 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {LIST_BOTTOM, MAX_LIST_DIFF, MAX_LIST_HEIGHT, MAX_LIST_TABLET_DIFF} from '@constants/autocomplete';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
+import {useIsTablet, useKeyboardHeight} from '@hooks/device';
+import useHeaderHeight from '@hooks/header';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import AtMention from './at_mention/';
@@ -93,6 +94,8 @@ const Autocomplete = ({
     const dimensions = useWindowDimensions();
     const style = getStyleFromTheme(theme);
     const insets = useSafeAreaInsets();
+    const header = useHeaderHeight();
+    const keyboardHeight = useKeyboardHeight();
 
     const [showingAtMention, setShowingAtMention] = useState(false);
     const [showingChannelMention, setShowingChannelMention] = useState(false);
@@ -117,8 +120,10 @@ const Autocomplete = ({
         } else if (postInputTop) {
             postInputDiff = MAX_LIST_DIFF;
         }
-        return MAX_LIST_HEIGHT - postInputDiff;
-    }, [maxHeightOverride, postInputTop, isTablet, dimensions.width]);
+        const defaultMaxHeight = MAX_LIST_HEIGHT - postInputDiff;
+        const availableSpace = dimensions.height - postInputTop - keyboardHeight - header.defaultHeight;
+        return Math.min(defaultMaxHeight, availableSpace);
+    }, [maxHeightOverride, postInputTop, isTablet, dimensions.width, header.defaultHeight, keyboardHeight]);
 
     const wrapperStyles = useMemo(() => {
         const s = [];

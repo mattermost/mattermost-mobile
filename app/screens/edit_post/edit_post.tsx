@@ -3,8 +3,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Keyboard, KeyboardType, LayoutChangeEvent, Platform, SafeAreaView, useWindowDimensions, View} from 'react-native';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {Alert, Keyboard, KeyboardType, Platform, SafeAreaView, View} from 'react-native';
 
 import {deletePost, editPost} from '@actions/remote/post';
 import Autocomplete from '@components/autocomplete';
@@ -57,16 +56,12 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const [errorLine, setErrorLine] = useState<string | undefined>();
     const [errorExtra, setErrorExtra] = useState<string | undefined>();
     const [isUpdating, setIsUpdating] = useState(false);
-    const layoutHeight = useSharedValue(0);
-    const keyboardHeight = useSharedValue(0);
 
     const postInputRef = useRef<EditPostInputRef>(null);
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
-    const {width, height} = useWindowDimensions();
-    const isLandscape = width > height;
     const styles = getStyleSheet(theme);
 
     useEffect(() => {
@@ -79,31 +74,6 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             }],
         });
     }, []);
-
-    useEffect(() => {
-        const showListener = Keyboard.addListener('keyboardWillShow', (e) => {
-            const {height: end} = e.endCoordinates;
-
-            // on iPad if we use the hardware keyboard multiply its height by 2
-            // otherwise use the software keyboard height
-            const minKeyboardHeight = end < 100 ? end * 2 : end;
-            keyboardHeight.value = minKeyboardHeight;
-        });
-        const hideListener = Keyboard.addListener('keyboardWillHide', () => {
-            if (isTablet) {
-                const offset = isLandscape ? 60 : 0;
-                keyboardHeight.value = ((height - (layoutHeight.value + offset)) / 2);
-                return;
-            }
-
-            keyboardHeight.value = 0;
-        });
-
-        return () => {
-            showListener.remove();
-            hideListener.remove();
-        };
-    }, [isTablet, height]);
 
     useEffect(() => {
         const t = setTimeout(() => {
@@ -126,10 +96,6 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
         Keyboard.dismiss();
         dismissModal({componentId});
     }, []);
-
-    const onLayout = useCallback((e: LayoutChangeEvent) => {
-        layoutHeight.value = e.nativeEvent.layout.height;
-    }, [height]);
 
     const onTextSelectionChange = useCallback((curPos: number = cursorPosition) => {
         if (Platform.OS === 'ios') {
@@ -214,26 +180,6 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
         handleUIUpdates(res);
     }, [toggleSaveButton, serverUrl, post.id, postMessage, onClose]);
 
-    const animatedStyle = useAnimatedStyle(() => {
-        if (Platform.OS === 'android') {
-            return {bottom: 0};
-        }
-
-        let bottom = 0;
-        if (isTablet) {
-            // 60 is the size of the navigation header
-            const offset = isLandscape ? 60 : 0;
-
-            bottom = keyboardHeight.value - ((height - (layoutHeight.value + offset)) / 2);
-        } else {
-            bottom = keyboardHeight.value;
-        }
-
-        return {
-            bottom: withTiming(bottom, {duration: 250}),
-        };
-    });
-
     useNavButtonPressed(RIGHT_BUTTON.id, componentId, onSavePostMessage, [postMessage]);
     useNavButtonPressed(closeButtonId, componentId, onClose, []);
 
@@ -250,7 +196,6 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             <SafeAreaView
                 testID='edit_post.screen'
                 style={styles.container}
-                onLayout={onLayout}
             >
                 <View style={styles.body}>
                     {Boolean((errorLine || errorExtra)) &&
@@ -269,22 +214,19 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                     />
                 </View>
             </SafeAreaView>
-            <Animated.View style={animatedStyle}>
-                <Autocomplete
-                    channelId={post.channelId}
-                    hasFilesAttached={hasFilesAttached}
-                    nestedScrollEnabled={true}
-                    rootId={post.rootId}
-                    updateValue={onChangeText}
-                    value={postMessage}
-                    cursorPosition={cursorPosition}
-                    postInputTop={1}
-                    fixedBottomPosition={true}
-                    maxHeightOverride={isTablet ? 200 : undefined}
-                    inPost={false}
-                />
-            </Animated.View>
-
+            <Autocomplete
+                channelId={post.channelId}
+                hasFilesAttached={hasFilesAttached}
+                nestedScrollEnabled={true}
+                rootId={post.rootId}
+                updateValue={onChangeText}
+                value={postMessage}
+                cursorPosition={cursorPosition}
+                postInputTop={1}
+                fixedBottomPosition={true}
+                maxHeightOverride={isTablet ? 200 : undefined}
+                inPost={false}
+            />
         </>
     );
 };

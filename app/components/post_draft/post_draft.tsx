@@ -102,6 +102,7 @@ function PostDraft({
             value={value}
             isSearch={isSearch}
             hasFilesAttached={Boolean(files?.length)}
+            inPost={true}
         />
     );
 

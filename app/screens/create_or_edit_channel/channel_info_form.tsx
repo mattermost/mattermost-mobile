@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, useRef, useCallback} from 'react';
+import React, {useState, useRef, useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {
     LayoutChangeEvent,
@@ -11,8 +11,7 @@ import {
     View,
     NativeSyntheticEvent,
     NativeScrollEvent,
-    Platform,
-    KeyboardEvent,
+    useWindowDimensions,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -22,10 +21,10 @@ import ErrorText from '@components/error_text';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
-import OptionItem from '@components/option_item';
+import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {General, Channel} from '@constants';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
+import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 import useHeaderHeight from '@hooks/header';
 import {t} from '@i18n';
 import {
@@ -34,6 +33,10 @@ import {
     getKeyboardAppearanceFromTheme,
 } from '@utils/theme';
 import {typography} from '@utils/typography';
+
+const FIELD_MARGIN_BOTTOM = 24;
+const MAKE_PRIVATE_MARGIN_BOTTOM = 32;
+const BOTTOM_AUTOCOMPLETE_SEPARATION = 10;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
@@ -56,10 +59,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         justifyContent: 'center',
     },
     makePrivateContainer: {
-        marginBottom: 32,
+        marginBottom: MAKE_PRIVATE_MARGIN_BOTTOM,
     },
     fieldContainer: {
-        marginBottom: 24,
+        marginBottom: FIELD_MARGIN_BOTTOM,
     },
     helpText: {
         ...typography('Body', 75, 'Regular'),
@@ -103,6 +106,7 @@ export default function ChannelInfoForm({
     const {formatMessage} = intl;
     const isTablet = useIsTablet();
     const headerHeight = useHeaderHeight();
+    const dimensions = useWindowDimensions();
 
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -115,10 +119,14 @@ export default function ChannelInfoForm({
 
     const updateScrollTimeout = useRef<NodeJS.Timeout>();
 
+    const keyboardHeight = useKeyboardHeight();
     const [keyboardVisible, setKeyBoardVisible] = useState(false);
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [scrollPosition, setScrollPosition] = useState(0);
 
+    const [errorHeight, setErrorHeight] = useState(0);
+    const [displayNameFieldHeight, setDisplayNameFieldHeight] = useState(0);
+    const [purposeFieldHeight, setPurposeFieldHeight] = useState(0);
+    const [headerFieldHeight, setHeaderFieldHeight] = useState(0);
     const [headerPosition, setHeaderPosition] = useState(0);
 
     const optionalText = formatMessage({id: t('channel_modal.optional'), defaultMessage: '(optional)'});
@@ -150,27 +158,11 @@ export default function ChannelInfoForm({
         scrollViewRef.current?.scrollToPosition(0, 0, true);
     }, []);
 
-    const onHeaderLayout = useCallback(({nativeEvent}: LayoutChangeEvent) => {
-        setHeaderPosition(nativeEvent.layout.y);
-    }, []);
-
     const scrollHeaderToTop = useCallback(() => {
         if (scrollViewRef?.current) {
             scrollViewRef.current?.scrollToPosition(0, headerPosition);
         }
     }, [headerPosition]);
-
-    const onKeyboardDidShow = useCallback((frames: KeyboardEvent) => {
-        setKeyBoardVisible(true);
-        if (Platform.OS === 'android') {
-            setKeyboardHeight(frames.endCoordinates.height);
-        }
-    }, []);
-
-    const onKeyboardDidHide = useCallback(() => {
-        setKeyBoardVisible(false);
-        setKeyboardHeight(0);
-    }, []);
 
     const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
         const pos = e.nativeEvent.contentOffset.y;
@@ -181,6 +173,29 @@ export default function ChannelInfoForm({
             setScrollPosition(pos);
             updateScrollTimeout.current = undefined;
         }, 200);
+    }, []);
+
+    useEffect(() => {
+        if (keyboardVisible && !keyboardHeight) {
+            setKeyBoardVisible(false);
+        }
+        if (!keyboardVisible && keyboardHeight) {
+            setKeyBoardVisible(true);
+        }
+    }, [keyboardHeight]);
+
+    const onLayoutError = useCallback((e: LayoutChangeEvent) => {
+        setErrorHeight(e.nativeEvent.layout.height);
+    }, []);
+    const onLayoutDisplayName = useCallback((e: LayoutChangeEvent) => {
+        setDisplayNameFieldHeight(e.nativeEvent.layout.height);
+    }, []);
+    const onLayoutPurpose = useCallback((e: LayoutChangeEvent) => {
+        setPurposeFieldHeight(e.nativeEvent.layout.height);
+    }, []);
+    const onLayoutHeader = useCallback((e: LayoutChangeEvent) => {
+        setHeaderFieldHeight(e.nativeEvent.layout.height);
+        setHeaderPosition(e.nativeEvent.layout.y);
     }, []);
 
     if (saving) {
@@ -202,6 +217,7 @@ export default function ChannelInfoForm({
             <SafeAreaView
                 edges={['bottom', 'left', 'right']}
                 style={styles.errorContainer}
+                onLayout={onLayoutError}
             >
                 <View style={styles.errorWrapper}>
                     <ErrorText
@@ -213,8 +229,14 @@ export default function ChannelInfoForm({
         );
     }
 
-    const platformHeaderHeight = headerHeight.defaultHeight + Platform.select({ios: 10, default: headerHeight.defaultHeight + 10});
-    const postInputTop = (headerPosition + scrollPosition + platformHeaderHeight) - keyboardHeight;
+    const otherElementsSize = errorHeight +
+        (showSelector ? (ITEM_HEIGHT + MAKE_PRIVATE_MARGIN_BOTTOM) : 0) +
+        purposeFieldHeight + FIELD_MARGIN_BOTTOM + displayNameFieldHeight + FIELD_MARGIN_BOTTOM;
+    const workingSpace = dimensions.height - keyboardHeight - headerHeight.defaultHeight;
+    const spaceOnTop = otherElementsSize - scrollPosition;
+    const spaceOnBottom = (workingSpace + scrollPosition) - (otherElementsSize + headerFieldHeight + BOTTOM_AUTOCOMPLETE_SEPARATION);
+    const postInputTop = spaceOnTop > spaceOnBottom ? (workingSpace + scrollPosition) - otherElementsSize : BOTTOM_AUTOCOMPLETE_SEPARATION;
+    const maxHeight = spaceOnTop > spaceOnBottom ? undefined : spaceOnBottom;
 
     return (
         <SafeAreaView
@@ -226,8 +248,6 @@ export default function ChannelInfoForm({
                 testID={'create_or_edit_channel.scrollview'}
                 ref={scrollViewRef}
                 keyboardShouldPersistTaps={'always'}
-                onKeyboardDidShow={onKeyboardDidShow}
-                onKeyboardDidHide={onKeyboardDidHide}
                 enableAutomaticScroll={!keyboardVisible}
                 contentContainerStyle={styles.scrollView}
                 onScroll={onScroll}
@@ -270,8 +290,12 @@ export default function ChannelInfoForm({
                                     ref={nameInput}
                                     containerStyle={styles.fieldContainer}
                                     theme={theme}
+                                    onLayout={onLayoutDisplayName}
                                 />
-                                <View style={styles.fieldContainer}>
+                                <View
+                                    style={styles.fieldContainer}
+                                    onLayout={onLayoutPurpose}
+                                >
                                     <FloatingTextInput
                                         autoCorrect={false}
                                         autoCapitalize={'none'}
@@ -301,7 +325,7 @@ export default function ChannelInfoForm({
                         )}
                         <View
                             style={styles.fieldContainer}
-                            onLayout={onHeaderLayout}
+                            onLayout={onLayoutHeader}
                         >
                             <FloatingTextInput
                                 autoCorrect={false}
@@ -341,7 +365,7 @@ export default function ChannelInfoForm({
                     cursorPosition={header.length}
                     value={header}
                     nestedScrollEnabled={true}
-                    maxHeightOverride={isTablet ? 200 : undefined}
+                    maxHeightOverride={isTablet ? 200 : maxHeight}
                     inPost={false}
                 />
             </View>

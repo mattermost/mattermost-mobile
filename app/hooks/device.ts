@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useEffect, useState} from 'react';
-import {AppState, Keyboard, NativeModules, useWindowDimensions} from 'react-native';
+import {AppState, Keyboard, NativeModules, Platform, useWindowDimensions} from 'react-native';
 
 import {Device} from '@constants';
 
@@ -47,11 +47,11 @@ export function useKeyboardHeight() {
     const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     useEffect(() => {
-        const show = Keyboard.addListener('keyboardWillShow', (event) => {
+        const show = Keyboard.addListener(Platform.select({ios: 'keyboardWillShow', default: 'keyboardDidShow'}), (event) => {
             setKeyboardHeight(event.endCoordinates.height);
         });
 
-        const hide = Keyboard.addListener('keyboardWillHide', () => {
+        const hide = Keyboard.addListener(Platform.select({ios: 'keyboardWillHide', default: 'keyboardDidHide'}), () => {
             setKeyboardHeight(0);
         });
 
