@@ -3,12 +3,12 @@
 
 import {Database, Q} from '@nozbe/watermelondb';
 
+import {OperationType} from '@constants/database';
 import {
     getRangeOfValues,
     getValidRecordsForUpdate,
     retrieveRecords,
 } from '@database/operator/utils/general';
-import {OperationType} from '@typings/database/enums';
 import {logWarning} from '@utils/log';
 
 import type {WriterInterface} from '@nozbe/watermelondb/Database';

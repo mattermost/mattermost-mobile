@@ -16,6 +16,8 @@ import Backdrop, {BackdropProps} from './lightbox_swipeout/backdrop';
 import VideoRenderer from './video_renderer';
 import GalleryViewer from './viewer';
 
+import type {GalleryItemType} from '@typings/screens/gallery';
+
 // @ts-expect-error FastImage does work with Animated.createAnimatedComponent
 const AnimatedImage = Animated.createAnimatedComponent(FastImage);
 

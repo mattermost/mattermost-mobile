@@ -17,6 +17,8 @@ import {isGifTooLarge, calculateDimensions, getViewPortWidth} from '@utils/image
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {extractFilenameFromUrl, isValidUrl} from '@utils/url';
 
+import type {GalleryItemType} from '@typings/screens/gallery';
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         attachmentMargin: {

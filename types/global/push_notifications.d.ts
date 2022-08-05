@@ -4,7 +4,7 @@
 declare class Notification {
     fireDate?: number | string;
     identifier: string;
-    payload: any;
+    payload?: any;
     title: string;
     body: string;
     sound: string;

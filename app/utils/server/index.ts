@@ -5,9 +5,8 @@ import {IntlShape} from 'react-intl';
 import {Alert, AlertButton} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {Screens, Sso, SupportedServer} from '@constants';
+import {Screens, Sso, SupportedServer, Launch} from '@constants';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
-import {LaunchType} from '@typings/launch';
 import {getErrorMessage} from '@utils/client_error';
 import {changeOpacity} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
@@ -41,7 +40,7 @@ export async function addNewServer(theme: Theme, serverUrl?: string, displayName
     const props = {
         closeButtonId,
         displayName,
-        launchType: LaunchType.AddServer,
+        launchType: Launch.AddServer,
         serverUrl,
         theme,
     };
@@ -85,7 +84,7 @@ export async function loginToServer(theme: Theme, serverUrl: string, displayName
         closeButtonId,
         config,
         hasLoginForm,
-        launchType: LaunchType.AddServer,
+        launchType: Launch.AddServer,
         license,
         serverDisplayName: displayName,
         serverUrl,

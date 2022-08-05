@@ -4,8 +4,7 @@
 import {Q} from '@nozbe/watermelondb';
 import {Platform} from 'react-native';
 
-import {MM_TABLES} from '@constants/database';
-import {DatabaseType} from '@typings/database/enums';
+import {DatabaseType, MM_TABLES} from '@constants/database';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
 import DatabaseManager from './index';

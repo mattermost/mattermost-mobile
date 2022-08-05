@@ -6,7 +6,7 @@ import {Alert} from 'react-native';
 
 import {showPermalink} from '@actions/remote/permalink';
 import {Client} from '@client/rest';
-import DeepLinkTypes from '@constants/deep_linking';
+import DeepLinkType from '@constants/deep_linking';
 import DatabaseManager from '@database/manager';
 import IntegrationsManager from '@managers/integrations_manager';
 import NetworkManager from '@managers/network_manager';
@@ -140,17 +140,17 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
 
     if (match && linkServerUrl) {
         switch (match.type) {
-            case DeepLinkTypes.CHANNEL: {
+            case DeepLinkType.Channel: {
                 const data = match.data as DeepLinkChannel;
                 switchToChannelByName(linkServerUrl, data.channelName, data.teamName, DraftUtils.errorBadChannel, intl);
                 break;
             }
-            case DeepLinkTypes.PERMALINK: {
+            case DeepLinkType.Permalink: {
                 const data = match.data as DeepLinkPermalink;
                 showPermalink(linkServerUrl, data.teamName, data.postId, intl);
                 break;
             }
-            case DeepLinkTypes.DMCHANNEL: {
+            case DeepLinkType.DirectMessage: {
                 const data = match.data as DeepLinkDM;
                 if (!data.userName) {
                     DraftUtils.errorUnkownUser(intl);
@@ -171,7 +171,7 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
                 makeDirectChannel(linkServerUrl, user.id, displayUsername(user, intl.locale, await getTeammateNameDisplay(database)), true);
                 break;
             }
-            case DeepLinkTypes.GROUPCHANNEL: {
+            case DeepLinkType.GroupMessage: {
                 const data = match.data as DeepLinkGM;
                 if (!data.channelId) {
                     DraftUtils.errorBadChannel(intl);
@@ -181,7 +181,7 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
                 switchToChannelById(linkServerUrl, data.channelId);
                 break;
             }
-            case DeepLinkTypes.PLUGIN: {
+            case DeepLinkType.Plugin: {
                 const data = match.data as DeepLinkPlugin;
                 showModal('PluginInternal', data.id, {link: location});
                 break;
