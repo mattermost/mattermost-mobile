@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {hasMicrophonePermission, joinCall} from '@calls/actions';
 import {errorAlert} from '@calls/utils';
+
+import type {IntlShape} from 'react-intl';
 
 export default function leaveAndJoinWithAlert(
     intl: IntlShape,

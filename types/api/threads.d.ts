@@ -23,7 +23,7 @@ type ThreadWithViewedAt = Thread & {
 };
 
 type ThreadParticipant = {
-    id: $ID<User>;
+    id: $ID<UserProfile>;
     thread_id: $ID<Thread>;
 };
 

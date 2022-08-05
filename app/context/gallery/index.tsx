@@ -4,6 +4,8 @@
 import React, {useEffect, useLayoutEffect} from 'react';
 import Animated, {makeMutable, runOnUI} from 'react-native-reanimated';
 
+import type {GalleryManagerSharedValues} from '@typings/screens/gallery';
+
 export interface GalleryManagerItem {
     index: number;
     ref: React.RefObject<unknown>;

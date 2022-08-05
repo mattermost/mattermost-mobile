@@ -11,7 +11,8 @@ import {observeCallsState, observeCurrentCall} from '@calls/state';
 import {idsAreEqual} from '@calls/utils';
 import {observeChannel} from '@queries/servers/channel';
 import {queryUsersById} from '@queries/servers/user';
-import {WithDatabaseArgs} from '@typings/database/database';
+
+import type {WithDatabaseArgs} from '@typings/database/database';
 
 type OwnProps = {
     serverUrl: string;
@@ -30,7 +31,7 @@ const enhanced = withObservables(['serverUrl', 'channelId'], ({
     const callsState = observeCallsState(serverUrl);
     const participants = callsState.pipe(
         switchMap((state) => of$(state.calls[channelId])),
-        distinctUntilChanged((prev, curr) => prev.participants === curr.participants), // Did the participants object ref change?
+        distinctUntilChanged((prev, curr) => prev?.participants === curr?.participants), // Did the participants object ref change?
         switchMap((call) => (call ? of$(Object.keys(call.participants)) : of$([]))),
         distinctUntilChanged((prev, curr) => idsAreEqual(prev, curr)), // Continue only if we have a different set of participant ids
         switchMap((ids) => (ids.length > 0 ? queryUsersById(database, ids).observeWithColumns(['last_picture_update']) : of$([]))),

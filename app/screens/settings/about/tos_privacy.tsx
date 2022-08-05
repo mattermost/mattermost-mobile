@@ -8,18 +8,37 @@ import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        noticeLink: {
+            color: theme.linkColor,
+            ...typography('Body', 50),
+        },
+        footerText: {
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            ...typography('Body', 50),
+            marginBottom: 10,
+        },
+        hyphenText: {
+            marginBottom: 0,
+        },
+    };
+});
 
 type TosPrivacyContainerProps = {
     config: ClientConfig;
     onPressTOS: () => void;
     onPressPrivacyPolicy: () => void;
 }
-
 const TosPrivacyContainer = ({config, onPressTOS, onPressPrivacyPolicy}: TosPrivacyContainerProps) => {
-    const hasTermsOfServiceLink = config.TermsOfServiceLink;
-    const hasPrivacyPolicyLink = config.PrivacyPolicyLink;
     const theme = useTheme();
     const style = getStyleSheet(theme);
+
+    const hasTermsOfServiceLink = Boolean(config.TermsOfServiceLink);
+    const hasPrivacyPolicyLink = Boolean(config.PrivacyPolicyLink);
+
     return (
         <>
             {hasTermsOfServiceLink && (
@@ -48,24 +67,5 @@ const TosPrivacyContainer = ({config, onPressTOS, onPressPrivacyPolicy}: TosPriv
         </>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        noticeLink: {
-            color: theme.linkColor,
-            fontSize: 11,
-            lineHeight: 13,
-        },
-        footerText: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 11,
-            lineHeight: 13,
-            marginBottom: 10,
-        },
-        hyphenText: {
-            marginBottom: 0,
-        },
-    };
-});
 
 export default TosPrivacyContainer;

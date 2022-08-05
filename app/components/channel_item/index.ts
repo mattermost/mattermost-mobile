@@ -13,12 +13,12 @@ import {withServerUrl} from '@context/server';
 import {observeMyChannel} from '@queries/servers/channel';
 import {queryDraft} from '@queries/servers/drafts';
 import {observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
-import ChannelModel from '@typings/database/models/servers/channel';
-import MyChannelModel from '@typings/database/models/servers/my_channel';
 
 import ChannelItem from './channel_item';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
 type EnhanceProps = WithDatabaseArgs & {
     channel: ChannelModel;

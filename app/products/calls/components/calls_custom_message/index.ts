@@ -14,8 +14,8 @@ import {getPreferenceAsBool} from '@helpers/api/preference';
 import {observeChannel} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCurrentUser, observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
-import {WithDatabaseArgs} from '@typings/database/database';
 
+import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
 
 const enhanced = withObservables(['post'], ({post, database}: { post: PostModel } & WithDatabaseArgs) => {

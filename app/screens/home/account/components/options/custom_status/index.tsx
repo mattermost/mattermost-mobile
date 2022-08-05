@@ -3,23 +3,39 @@
 
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter} from 'react-native';
+import {DeviceEventEmitter, TouchableOpacity, View} from 'react-native';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
 import {unsetCustomStatus} from '@actions/remote/user';
-import MenuItem from '@components/menu_item';
 import {Events, Screens} from '@constants';
 import {SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {showModal} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {getUserCustomStatus, isCustomStatusExpired as checkCustomStatusIsExpired} from '@utils/user';
 
 import CustomLabel from './custom_label';
 import CustomStatusEmoji from './custom_status_emoji';
 
 import type UserModel from '@typings/database/models/servers/user';
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        label: {
+            color: theme.centerChannelColor,
+            ...typography('Body', 200),
+            textAlignVertical: 'center',
+            includeFontPadding: false,
+        },
+        body: {
+            flexDirection: 'row',
+            marginVertical: 18,
+        },
+    };
+});
 
 type CustomStatusProps = {
     isCustomStatusExpirySupported: boolean;
@@ -35,6 +51,7 @@ const CustomStatus = ({isCustomStatusExpirySupported, isTablet, currentUser}: Cu
     const customStatus = getUserCustomStatus(currentUser);
     const isCustomStatusExpired = checkCustomStatusIsExpired(currentUser);
     const isStatusSet = !isCustomStatusExpired && (customStatus?.text || customStatus?.emoji);
+    const styles = getStyleSheet(theme);
 
     useEffect(() => {
         const onSetCustomStatusError = () => {
@@ -68,27 +85,23 @@ const CustomStatus = ({isCustomStatusExpirySupported, isTablet, currentUser}: Cu
     }), [isTablet]);
 
     return (
-        <MenuItem
-            testID='settings.sidebar.custom_status.action'
-            labelComponent={
+        <TouchableOpacity
+            onPress={goToCustomStatusScreen}
+        >
+            <View style={styles.body}>
+                <CustomStatusEmoji
+                    emoji={customStatus?.emoji}
+                    isStatusSet={Boolean(isStatusSet)}
+                />
                 <CustomLabel
-                    theme={theme}
                     customStatus={customStatus!}
                     isCustomStatusExpirySupported={isCustomStatusExpirySupported}
                     isStatusSet={Boolean(isStatusSet)}
                     onClearCustomStatus={clearCustomStatus}
                     showRetryMessage={showRetryMessage}
                 />
-            }
-            leftComponent={
-                <CustomStatusEmoji
-                    emoji={customStatus?.emoji}
-                    isStatusSet={Boolean(isStatusSet)}
-                    theme={theme}
-                />}
-            separator={false}
-            onPress={goToCustomStatusScreen}
-        />
+            </View>
+        </TouchableOpacity>
     );
 };
 

@@ -9,6 +9,8 @@ import {InteractionType} from '../image_renderer/transformer';
 import Pager from '../pager';
 import {RenderPageProps} from '../pager/page';
 
+import type {GalleryItemType} from '@typings/screens/gallery';
+
 export interface GalleryViewerProps extends Handlers {
     gutterWidth?: number;
     height: number;

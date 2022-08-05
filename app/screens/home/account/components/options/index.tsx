@@ -36,13 +36,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             height: 1,
-            marginHorizontal: 15,
+            width: '90%',
+            alignSelf: 'center',
+            marginVertical: 8,
         },
-        menuLabel: {
-            color: theme.centerChannelColor,
-            fontSize: 16,
-            lineHeight: 24,
-            fontFamily: 'OpenSans',
+        group: {
+            paddingLeft: 16,
         },
     };
 });
@@ -64,37 +63,29 @@ const AccountOptions = ({user, enableCustomUserStatuses, isCustomStatusExpirySup
             }}
         >
             <View style={styles.container}>
-                <UserPresence
-                    currentUser={user}
-                    style={styles.menuLabel}
-                    theme={theme}
-                />
-                {enableCustomUserStatuses &&
-                <CustomStatus
-                    isCustomStatusExpirySupported={isCustomStatusExpirySupported}
-                    isTablet={isTablet}
-                    currentUser={user}
-                />}
+                <View style={styles.group}>
+                    <UserPresence
+                        currentUser={user}
+                    />
+                    {enableCustomUserStatuses &&
+                    <CustomStatus
+                        isCustomStatusExpirySupported={isCustomStatusExpirySupported}
+                        isTablet={isTablet}
+                        currentUser={user}
+                    />}
+                </View>
                 <View style={styles.divider}/>
-                <YourProfile
-                    isTablet={isTablet}
-                    style={styles.menuLabel}
-                    theme={theme}
-                />
-                {/* <SavedMessages
-                    isTablet={isTablet}
-                    style={styles.menuLabel}
-                    theme={theme}
-                /> */}
-                <Settings
-                    isTablet={isTablet}
-                    style={styles.menuLabel}
-                />
+                <View style={styles.group}>
+                    <YourProfile
+                        isTablet={isTablet}
+                        theme={theme}
+                    />
+                    <Settings/>
+                </View>
                 <View style={styles.divider}/>
-                <Logout
-                    style={styles.menuLabel}
-                    theme={theme}
-                />
+                <View style={styles.group}>
+                    <Logout/>
+                </View>
             </View>
         </Shadow>
     );

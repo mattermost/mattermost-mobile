@@ -3,8 +3,7 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {Events} from '@constants';
-import Calls from '@constants/calls';
+import {Events, Calls} from '@constants';
 import {t} from '@i18n';
 import {setServerCredentials} from '@init/credentials';
 import {Analytics, create} from '@managers/analytics';

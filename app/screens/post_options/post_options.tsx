@@ -5,7 +5,7 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import React from 'react';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
-import {ITEM_HEIGHT} from '@components/menu_item';
+import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
