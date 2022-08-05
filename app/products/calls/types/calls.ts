@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ConfigurationParamWithUrls, ConfigurationParamWithUrl} from 'react-native-webrtc';
-
 import type UserModel from '@typings/database/models/servers/user';
+import type {ConfigurationParamWithUrls, ConfigurationParamWithUrl} from 'react-native-webrtc';
 
 export type CallsState = {
     serverUrl: string;
@@ -98,13 +97,8 @@ export type ServerCallsConfig = {
     NeedsTURNCredentials: boolean;
 }
 
-export type CallsConfig = {
+export type CallsConfig = ServerCallsConfig & {
     pluginEnabled: boolean;
-    ICEServers?: string[]; // deprecated
-    ICEServersConfigs?: ICEServersConfigs;
-    AllowEnableCalls: boolean;
-    DefaultEnabled: boolean;
-    NeedsTURNCredentials: boolean;
     last_retrieved_at: number;
 }
 

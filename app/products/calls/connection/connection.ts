@@ -11,13 +11,14 @@ import {
     mediaDevices,
 } from 'react-native-webrtc';
 
-import {CallsConnection} from '@calls/types/calls';
 import {getICEServersConfigs} from '@calls/utils';
 import NetworkManager from '@managers/network_manager';
 import {logError, logWarning} from '@utils/log';
 
 import Peer from './simple-peer';
 import WebSocketClient from './websocket_client';
+
+import type {CallsConnection} from '@calls/types/calls';
 
 const websocketConnectTimeout = 3000;
 

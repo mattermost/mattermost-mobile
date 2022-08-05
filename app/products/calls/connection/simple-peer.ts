@@ -21,7 +21,7 @@ import {
 } from 'react-native-webrtc';
 import stream from 'readable-stream';
 
-import {ICEServersConfigs} from '@calls/types/calls';
+import type {ICEServersConfigs} from '@calls/types/calls';
 
 const queueMicrotask = (callback: any) => {
     Promise.resolve().then(callback).catch((e) => setTimeout(() => {
@@ -530,11 +530,9 @@ export default class Peer extends stream.Duplex {
         };
         this.channel.onerror = (e: any) => {
             const err =
-                e.error instanceof Error ?
-                    e.error :
-                    new Error(
-                        `Datachannel error: ${e.message} ${e.filename}:${e.lineno}:${e.colno}`,
-                    );
+                e.error instanceof Error ? e.error : new Error(
+                    `Datachannel error: ${e.message} ${e.filename}:${e.lineno}:${e.colno}`,
+                );
             this.destroy(errCode(err, 'ERR_DATA_CHANNEL'));
         };
 
