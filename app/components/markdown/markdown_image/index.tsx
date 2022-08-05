@@ -31,6 +31,8 @@ import {getMarkdownImageSize} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {normalizeProtocol, tryOpenURL} from '@utils/url';
 
+import type {GalleryItemType} from '@typings/screens/gallery';
+
 type MarkdownImageProps = {
     disabled?: boolean;
     errorTextStyle: StyleProp<TextStyle>;

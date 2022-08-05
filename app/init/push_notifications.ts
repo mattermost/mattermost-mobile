@@ -25,7 +25,7 @@ import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import NativeNotifications from '@notifications';
 import {queryServerName} from '@queries/app/servers';
 import {getCurrentChannelId} from '@queries/servers/system';
-import {getIsCRTEnabled} from '@queries/servers/thread';
+import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
 import {showOverlay} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
@@ -139,7 +139,10 @@ class PushNotifications {
             if (database) {
                 const isCRTEnabled = await getIsCRTEnabled(database);
                 if (isCRTEnabled && payload.root_id) {
-                    markThreadAsRead(serverUrl, payload.team_id, payload.post_id);
+                    const thread = await getThreadById(database, payload.root_id);
+                    if (thread?.isFollowing) {
+                        markThreadAsRead(serverUrl, payload.team_id, payload.post_id);
+                    }
                 } else {
                     markChannelAsViewed(serverUrl, payload.channel_id, false);
                 }

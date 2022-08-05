@@ -14,12 +14,11 @@ import UserAgent from 'react-native-user-agent';
 import LocalConfig from '@assets/config.json';
 import {Client} from '@client/rest';
 import * as ClientConstants from '@client/rest/constants';
+import ClientError from '@client/rest/error';
 import {CERTIFICATE_ERRORS} from '@constants/network';
 import ManagedApp from '@init/managed_app';
 import {logError} from '@utils/log';
 import {getCSRFFromCookie} from '@utils/security';
-
-import type {ServerCredential} from '@typings/credentials';
 
 const CLIENT_CERTIFICATE_IMPORT_ERROR_CODES = [-103, -104, -105, -108];
 const CLIENT_CERTIFICATE_MISSING_ERROR_CODE = -200;
@@ -77,9 +76,20 @@ class NetworkManager {
 
     public createClient = async (serverUrl: string, bearerToken?: string) => {
         const config = await this.buildConfig();
-        const {client} = await getOrCreateAPIClient(serverUrl, config, this.clientErrorEventHandler);
-        const csrfToken = await getCSRFFromCookie(serverUrl);
-        this.clients[serverUrl] = new Client(client, serverUrl, bearerToken, csrfToken);
+        try {
+            const {client} = await getOrCreateAPIClient(serverUrl, config, this.clientErrorEventHandler);
+            const csrfToken = await getCSRFFromCookie(serverUrl);
+            this.clients[serverUrl] = new Client(client, serverUrl, bearerToken, csrfToken);
+        } catch (error) {
+            throw new ClientError(serverUrl, {
+                message: 'Can’t find this server. Check spelling and URL format.',
+                intl: {
+                    id: 'apps.error.network.no_server',
+                    defaultMessage: 'Can’t find this server. Check spelling and URL format.',
+                },
+                url: serverUrl,
+            });
+        }
 
         return this.clients[serverUrl];
     };

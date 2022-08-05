@@ -2,9 +2,8 @@
 // See LICENSE.txt for license information.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES} from '@constants/database';
+import {MM_TABLES, OperationType} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
-import {OperationType} from '@typings/database/enums';
 import {generateGroupAssociationId} from '@utils/groups';
 
 import type {TransformerArgs} from '@typings/database/database';

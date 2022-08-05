@@ -1,64 +1,38 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React from 'react';
+import {useIntl} from 'react-intl';
 
-import FormattedText from '@components/formatted_text';
-import MenuItem from '@components/menu_item';
-import {useTheme} from '@context/theme';
-import {makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    destructive: {
-        color: theme.dndIndicator,
-    },
-    label: {
-        color: theme.centerChannelColor,
-        ...typography('Body', 200),
-    },
-    iconContainerStyle: {
-        marginLeft: 0,
-    },
-}));
+import OptionItem from '@components/option_item';
 
 type BaseOptionType = {
-    i18nId: string;
     defaultMessage: string;
+    i18nId: string;
     iconName: string;
+    isDestructive?: boolean;
     onPress: () => void;
     testID: string;
-    isDestructive?: boolean;
 }
 
 const BaseOption = ({
-    i18nId,
     defaultMessage,
+    i18nId,
     iconName,
+    isDestructive = false,
     onPress,
     testID,
-    isDestructive = false,
 }: BaseOptionType) => {
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
-
-    const label = useMemo(() => (
-        <FormattedText
-            id={i18nId}
-            defaultMessage={defaultMessage}
-            style={[styles.label, isDestructive && styles.destructive]}
-        />
-    ), [i18nId, defaultMessage, theme]);
+    const intl = useIntl();
 
     return (
-        <MenuItem
-            iconContainerStyle={styles.iconContainerStyle}
-            iconName={iconName}
-            isDestructor={isDestructive}
-            labelComponent={label}
-            onPress={onPress}
-            separator={false}
+        <OptionItem
+            action={onPress}
+            destructive={isDestructive}
+            icon={iconName}
+            label={intl.formatMessage({id: i18nId, defaultMessage})}
             testID={testID}
+            type='default'
         />
     );
 };

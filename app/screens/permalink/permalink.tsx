@@ -155,14 +155,16 @@ function Permalink({
                 let data;
                 const loadThreadPosts = isCRTEnabled && rootId;
                 if (loadThreadPosts) {
-                    data = await fetchPostThread(serverUrl, rootId);
+                    data = await fetchPostThread(serverUrl, rootId, {
+                        fetchAll: true,
+                    });
                 } else {
                     data = await fetchPostsAround(serverUrl, channelId, postId, POSTS_LIMIT, isCRTEnabled);
                 }
                 if (data.error) {
                     setError({unreachable: true});
                 }
-                if (data?.posts) {
+                if (data.posts) {
                     setPosts(loadThreadPosts ? processThreadPosts(data.posts, postId) : data.posts);
                 }
                 setLoading(false);
@@ -269,19 +271,21 @@ function Permalink({
 
     const handlePress = useCallback(preventDoubleTap(() => {
         if (channel) {
-            switchToChannelById(serverUrl, channel?.id, channel?.teamId);
+            switchToChannelById(serverUrl, channel.id, channel.teamId);
         }
-    }), []);
+    }), [channel?.id, channel?.teamId]);
 
     const handleJoin = useCallback(preventDoubleTap(async () => {
+        setLoading(true);
+        setError(undefined);
         if (error?.teamId && error.channelId) {
             const {error: joinError} = await joinChannel(serverUrl, currentUserId, error.teamId, error.channelId);
             if (joinError) {
                 Alert.alert('Error joining the channel', 'There was an error trying to join the channel');
+                setLoading(false);
+                setError(error);
                 return;
             }
-            setLoading(true);
-            setError(undefined);
             setChannelId(error.channelId);
         }
     }), [error, serverUrl, currentUserId]);

@@ -1147,7 +1147,7 @@ export async function switchToLastChannel(serverUrl: string, teamId?: string) {
     }
 }
 
-export async function searchChannels(serverUrl: string, term: string) {
+export async function searchChannels(serverUrl: string, term: string, isSearch = false) {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -1162,7 +1162,8 @@ export async function searchChannels(serverUrl: string, term: string) {
 
     try {
         const currentTeamId = await getCurrentTeamId(database);
-        const channels = await client.autocompleteChannels(currentTeamId, term);
+        const autoCompleteFunc = isSearch ? client.autocompleteChannelsForSearch : client.autocompleteChannels;
+        const channels = await autoCompleteFunc(currentTeamId, term);
         return {channels};
     } catch (error) {
         return {error};

@@ -18,6 +18,7 @@ import {changeOpacity} from '@utils/theme';
 import DownloadWithAction from '../footer/download_with_action';
 
 import type {ImageRendererProps} from '../image_renderer';
+import type {GalleryAction} from '@typings/screens/gallery';
 
 interface VideoRendererProps extends ImageRendererProps {
     index: number;

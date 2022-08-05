@@ -3,8 +3,9 @@
 
 import Model from '@nozbe/watermelondb/Model';
 
-import {TransformerArgs} from '@typings/database/database';
-import {OperationType} from '@typings/database/enums';
+import {OperationType} from '@constants/database';
+
+import type {TransformerArgs} from '@typings/database/database';
 
 /**
  * prepareBaseRecord:  This is the last step for each operator and depending on the 'action', it will either prepare an

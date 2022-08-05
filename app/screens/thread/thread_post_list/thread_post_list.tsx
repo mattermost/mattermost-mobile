@@ -1,15 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import {fetchPostThread} from '@actions/remote/post';
 import {markThreadAsRead} from '@actions/remote/thread';
 import PostList from '@components/post_list';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
+import {debounce} from '@helpers/api/general';
 import {useIsTablet} from '@hooks/device';
+import {isMinimumServerVersion} from '@utils/helpers';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
@@ -22,6 +25,7 @@ type Props = {
     rootPost: PostModel;
     teamId: string;
     thread?: ThreadModel;
+    version?: string;
 }
 
 const edges: Edge[] = ['bottom'];
@@ -34,10 +38,27 @@ const styles = StyleSheet.create({
 
 const ThreadPostList = ({
     channelLastViewedAt, isCRTEnabled,
-    nativeID, posts, rootPost, teamId, thread,
+    nativeID, posts, rootPost, teamId, thread, version,
 }: Props) => {
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
+
+    const canLoadPosts = useRef(true);
+    const fetchingPosts = useRef(false);
+    const onEndReached = useCallback(debounce(async () => {
+        if (isMinimumServerVersion(version || '', 6, 7) && !fetchingPosts.current && canLoadPosts.current && posts.length) {
+            fetchingPosts.current = true;
+            const options: FetchPaginatedThreadOptions = {};
+            const lastPost = posts[posts.length - 1];
+            if (lastPost) {
+                options.fromPost = lastPost.id;
+                options.fromCreateAt = lastPost.createAt;
+            }
+            const result = await fetchPostThread(serverUrl, rootPost.id, options);
+            fetchingPosts.current = false;
+            canLoadPosts.current = Boolean(result?.posts?.length);
+        }
+    }, 500), [rootPost, posts, version]);
 
     const threadPosts = useMemo(() => {
         return [...posts, rootPost];
@@ -45,7 +66,7 @@ const ThreadPostList = ({
 
     // If CRT is enabled, mark the thread as read on mount.
     useEffect(() => {
-        if (isCRTEnabled) {
+        if (isCRTEnabled && thread?.isFollowing) {
             markThreadAsRead(serverUrl, teamId, rootPost.id);
         }
     }, []);
@@ -69,6 +90,7 @@ const ThreadPostList = ({
             lastViewedAt={lastViewedAt}
             location={Screens.THREAD}
             nativeID={nativeID}
+            onEndReached={onEndReached}
             posts={threadPosts}
             rootId={rootPost.id}
             shouldShowJoinLeaveMessages={false}
