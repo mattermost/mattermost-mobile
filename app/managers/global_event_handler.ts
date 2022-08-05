@@ -21,7 +21,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {deleteFileCache} from '@utils/file';
 
 import type {jsAndNativeErrorHandler} from '@typings/global/error_handling';
-import type {LaunchType as LaunchTypeType} from '@typings/launch';
+import type {LaunchType} from '@typings/launch';
 
 type LinkingCallbackArg = {url: string};
 
@@ -118,7 +118,7 @@ class GlobalEventHandler {
 
         if (activeServerUrl === serverUrl) {
             let displayName = '';
-            let launchType: LaunchTypeType = Launch.AddServer;
+            let launchType: LaunchType = Launch.AddServer;
             if (!Object.keys(DatabaseManager.serverDatabases).length) {
                 EphemeralStore.theme = undefined;
                 launchType = Launch.Normal;
