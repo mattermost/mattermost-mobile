@@ -679,11 +679,13 @@ export async function bottomSheetWithTeamList({title, teams, dimensions, renderC
     const maxHeight = Math.round((dimensions.height * 0.9));
 
     const ADDITIONAL_BOTTOM_MARGIN = 34;
+    const BOTTOM_SHEET_TOP_PADDING = 20; // bottomSheet paddingTop
 
     let height = NO_TEAMS_HEIGHT;
     if (teams.length) {
         const itemsHeight = bottomSheetSnapPoint(teams.length, ITEM_HEIGHT, 0);
-        const heightWithHeader = TITLE_HEIGHT +
+        const heightWithHeader = BOTTOM_SHEET_TOP_PADDING +
+            TITLE_HEIGHT +
             (TITLE_SEPARATOR_MARGIN * 2) +
             itemsHeight +
             ADDITIONAL_BOTTOM_MARGIN;
