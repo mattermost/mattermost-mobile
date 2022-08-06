@@ -13,7 +13,7 @@ import {ITEM_HEIGHT} from '@components/team_sidebar/add_team/team_list_item/team
 import {Device, Events, Screens, Navigation as NavigationConstants, Launch} from '@constants';
 import {NOT_READY} from '@constants/screens';
 import {getDefaultThemeByAppearance} from '@context/theme';
-import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
+import {TITLE_HEIGHT, TITLE_SEPARATOR_MARGIN} from '@screens/bottom_sheet/content';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -678,10 +678,15 @@ export async function bottomSheetWithTeamList({title, teams, dimensions, renderC
     const NO_TEAMS_HEIGHT = 392;
     const maxHeight = Math.round((dimensions.height * 0.9));
 
+    const ADDITIONAL_BOTTOM_MARGIN = 34;
+
     let height = NO_TEAMS_HEIGHT;
     if (teams.length) {
         const itemsHeight = bottomSheetSnapPoint(teams.length, ITEM_HEIGHT, 0);
-        const heightWithHeader = TITLE_HEIGHT + itemsHeight;
+        const heightWithHeader = TITLE_HEIGHT +
+            (TITLE_SEPARATOR_MARGIN * 2) +
+            itemsHeight +
+            ADDITIONAL_BOTTOM_MARGIN;
         height = Math.min(maxHeight, heightWithHeader);
     }
 
