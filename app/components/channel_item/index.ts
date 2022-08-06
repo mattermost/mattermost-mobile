@@ -13,12 +13,12 @@ import {withServerUrl} from '@context/server';
 import {observeMyChannel} from '@queries/servers/channel';
 import {queryDraft} from '@queries/servers/drafts';
 import {observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
-import ChannelModel from '@typings/database/models/servers/channel';
-import MyChannelModel from '@typings/database/models/servers/my_channel';
 
 import ChannelItem from './channel_item';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
 type EnhanceProps = WithDatabaseArgs & {
     channel: ChannelModel;
@@ -28,7 +28,12 @@ type EnhanceProps = WithDatabaseArgs & {
 
 const observeIsMutedSetting = (mc: MyChannelModel) => mc.settings.observe().pipe(switchMap((s) => of$(s?.notifyProps?.mark_unread === General.MENTION)));
 
-const enhance = withObservables(['channel', 'showTeamName'], ({channel, database, showTeamName, serverUrl}: EnhanceProps) => {
+const enhance = withObservables(['channel', 'showTeamName'], ({
+    channel,
+    database,
+    showTeamName,
+    serverUrl,
+}: EnhanceProps) => {
     const currentUserId = observeCurrentUserId(database);
     const myChannel = observeMyChannel(database, channel.id);
 
@@ -80,7 +85,9 @@ const enhance = withObservables(['channel', 'showTeamName'], ({channel, database
     );
 
     const hasCall = observeChannelsWithCalls(serverUrl || '').pipe(
-        switchMap((calls) => of$(Boolean(calls[channel.id]))));
+        switchMap((calls) => of$(Boolean(calls[channel.id]))),
+        distinctUntilChanged(),
+    );
 
     return {
         channel: channel.observe(),

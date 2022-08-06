@@ -55,6 +55,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 type Props = {
     cursorPosition: number;
     postInputTop: number;
+    paddingTop?: number;
     rootId?: string;
     channelId?: string;
     fixedBottomPosition?: boolean;
@@ -72,6 +73,7 @@ type Props = {
 const Autocomplete = ({
     cursorPosition,
     postInputTop,
+    paddingTop,
     rootId,
     channelId,
     isSearch = false,
@@ -124,10 +126,10 @@ const Autocomplete = ({
             s.push(style.shadow);
         }
         if (isSearch) {
-            s.push(style.base, style.searchContainer, {height: maxListHeight});
+            s.push(style.base, paddingTop ? {top: paddingTop} : style.searchContainer, {maxHeight: maxListHeight});
         }
         return s;
-    }, [style, isSearch && maxListHeight, hasElements]);
+    }, [style, isSearch && maxListHeight, paddingTop]);
 
     const containerStyles = useMemo(() => {
         const s = [];

@@ -4,13 +4,14 @@
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
-import {prepareCommonSystemValues, getCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId, getCurrentChannelId} from '@queries/servers/system';
+import {prepareCommonSystemValues, getCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId, getConfig, getCurrentChannelId} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
-import {logInfo} from '@utils/log';
+import {logDebug, logInfo} from '@utils/log';
 
 import {deferredAppEntryActions, entry, registerDeviceToken, syncOtherServers, verifyPushProxy} from './common';
+import {graphQLCommon} from './gql_common';
 
 export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -30,6 +31,33 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
         operator.batchRecords(removeLastUnreadChannelId);
     }
 
+    const config = await getConfig(database);
+    let result;
+    if (config?.FeatureFlagGraphQL === 'true') {
+        const {currentTeamId, currentChannelId} = await getCommonSystemValues(database);
+        result = await graphQLCommon(serverUrl, true, currentTeamId, currentChannelId, isUpgrade);
+        if (result.error) {
+            logDebug('Error using GraphQL, trying REST', result.error);
+            result = restAppEntry(serverUrl, since, isUpgrade);
+        }
+    } else {
+        result = restAppEntry(serverUrl, since, isUpgrade);
+    }
+
+    if (!since) {
+        // Load data from other servers
+        syncOtherServers(serverUrl);
+    }
+    return result;
+}
+
+async function restAppEntry(serverUrl: string, since = 0, isUpgrade = false) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+    const {database} = operator;
+
     const tabletDevice = await isTablet();
     const currentTeamId = await getCurrentTeamId(database);
     const currentChannelId = await getCurrentChannelId(database);
@@ -39,6 +67,7 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
     if ('error' in entryData) {
         return {error: entryData.error};
     }
+
     const {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData} = entryData;
     if (isUpgrade && meData?.user) {
         const me = await prepareCommonSystemValues(operator, {currentUserId: meData.user.id});
@@ -65,10 +94,6 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
     const {id: currentUserId, locale: currentUserLocale} = meData?.user || (await getCurrentUser(database))!;
     const {config, license} = await getCommonSystemValues(database);
     await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchToChannel ? initialChannelId : undefined);
-    if (!since) {
-        // Load data from other servers
-        syncOtherServers(serverUrl);
-    }
 
     verifyPushProxy(serverUrl);
 

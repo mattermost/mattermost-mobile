@@ -11,6 +11,7 @@ import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
 import {fetchNewThreads} from '@actions/remote/thread';
 import {fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
+import {gqlAllChannels} from '@client/graphQL/entry';
 import {Preferences} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
@@ -21,12 +22,14 @@ import {DEFAULT_LOCALE} from '@i18n';
 import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {queryAllServers} from '@queries/app/servers';
-import {queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
+import {prepareMyChannelsForTeam, queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
 import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
-import {getConfig, getPushVerificationStatus, getWebSocketLastDisconnected} from '@queries/servers/system';
+import {getConfig, getCurrentUserId, getPushVerificationStatus, getWebSocketLastDisconnected} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, getNthLastChannelFromTeam, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
+import {getMemberChannelsFromGQLQuery, gqlToClientChannelMembership} from '@utils/graphql';
+import {logDebug} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
 
 import {fetchGroupsForMember} from '../groups';
@@ -61,12 +64,12 @@ export type EntryResponse = {
 }
 
 const FETCH_MISSING_DM_TIMEOUT = 2500;
-const FETCH_UNREADS_TIMEOUT = 2500;
+export const FETCH_UNREADS_TIMEOUT = 2500;
 
 export const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[]) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
-        return undefined;
+        return [];
     }
 
     const {database} = operator;
@@ -81,7 +84,7 @@ export const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[])
         }
     }
 
-    return undefined;
+    return [];
 };
 
 export const entry = async (serverUrl: string, teamId?: string, channelId?: string, since = 0): Promise<EntryResponse> => {
@@ -360,6 +363,51 @@ const syncAllChannelMembersAndThreads = async (serverUrl: string) => {
         return;
     }
 
+    const config = await getConfig(database);
+
+    if (config?.FeatureFlagGraphQL === 'true') {
+        const error = await graphQLSyncAllChannelMembers(serverUrl);
+        if (error) {
+            logDebug('failed graphQL, falling back to rest', error);
+            restSyncAllChannelMembers(serverUrl);
+        }
+    } else {
+        restSyncAllChannelMembers(serverUrl);
+    }
+};
+
+const graphQLSyncAllChannelMembers = async (serverUrl: string) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return 'Server database not found';
+    }
+
+    const response = await gqlAllChannels(serverUrl);
+    if ('error' in response) {
+        return response.error;
+    }
+
+    if (response.errors) {
+        return response.errors[0].message;
+    }
+
+    const userId = await getCurrentUserId(operator.database);
+
+    const channels = getMemberChannelsFromGQLQuery(response.data);
+    const memberships = response.data.channelMembers?.map((m) => gqlToClientChannelMembership(m, userId));
+
+    if (channels && memberships) {
+        const modelPromises = await prepareMyChannelsForTeam(operator, '', channels, memberships, undefined, true);
+        const models = (await Promise.all(modelPromises)).flat();
+        if (models.length) {
+            operator.batchRecords(models);
+        }
+    }
+
+    return '';
+};
+
+const restSyncAllChannelMembers = async (serverUrl: string) => {
     let client;
     try {
         client = NetworkManager.getClient(serverUrl);

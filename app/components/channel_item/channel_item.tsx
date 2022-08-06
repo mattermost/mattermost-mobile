@@ -116,7 +116,6 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         top: 5,
     },
     hasCall: {
-        color: theme.sidebarText,
         flex: 1,
         textAlign: 'right',
         marginRight: 20,
@@ -249,7 +248,7 @@ const ChannelListItem = ({
                         <CompassIcon
                             name='phone-in-talk'
                             size={16}
-                            style={styles.hasCall}
+                            style={[...textStyles, styles.hasCall]}
                         />
                     }
                 </View>

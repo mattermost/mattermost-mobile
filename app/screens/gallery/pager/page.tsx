@@ -10,6 +10,8 @@ import {typedMemo} from '@utils/gallery';
 
 import Gutter from './gutter';
 
+import type {GalleryItemType} from '@typings/screens/gallery';
+
 export type PageRefs = [
     React.Ref<TapGestureHandler>,
     React.Ref<PanGestureHandler>,

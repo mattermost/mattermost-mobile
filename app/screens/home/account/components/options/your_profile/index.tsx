@@ -3,10 +3,9 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, TextStyle} from 'react-native';
+import {DeviceEventEmitter} from 'react-native';
 
-import FormattedText from '@components/formatted_text';
-import MenuItem from '@components/menu_item';
+import OptionItem from '@components/option_item';
 import {Events, Screens} from '@constants';
 import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {showModal} from '@screens/navigation';
@@ -14,11 +13,10 @@ import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
     isTablet: boolean;
-    style: TextStyle;
     theme: Theme;
 }
 
-const YourProfile = ({isTablet, style, theme}: Props) => {
+const YourProfile = ({isTablet, theme}: Props) => {
     const intl = useIntl();
     const openProfile = useCallback(preventDoubleTap(() => {
         if (isTablet) {
@@ -32,18 +30,12 @@ const YourProfile = ({isTablet, style, theme}: Props) => {
     }), [isTablet, theme]);
 
     return (
-        <MenuItem
-            iconName={ACCOUNT_OUTLINE_IMAGE}
-            labelComponent={
-                <FormattedText
-                    id='account.your_profile'
-                    defaultMessage='Your Profile'
-                    style={style}
-                />
-            }
-            onPress={openProfile}
-            separator={false}
+        <OptionItem
+            icon={ACCOUNT_OUTLINE_IMAGE}
+            label={intl.formatMessage({id: 'account.your_profile', defaultMessage: 'Your Profile'})}
             testID='account.your_profile.action'
+            type='default'
+            action={openProfile}
         />
     );
 };

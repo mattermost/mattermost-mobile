@@ -18,11 +18,12 @@ export const DefaultCallsState = {
 } as CallsState;
 
 export type Call = {
-	participants: Dictionary<CallParticipant>;
+    participants: Dictionary<CallParticipant>;
     channelId: string;
     startTime: number;
     screenOn: string;
     threadId: string;
+    ownerId: string;
 }
 
 export const DefaultCall = {
@@ -72,6 +73,7 @@ export type ServerCallState = {
     states: ServerUserState[];
     thread_id: string;
     screen_sharing_id: string;
+    owner_id: string;
 }
 
 export type VoiceEventData = {
@@ -88,11 +90,10 @@ export type CallsConnection = {
     unraiseHand: () => void;
 }
 
-export type ServerConfig = {
+export type ServerCallsConfig = {
     ICEServers: string[];
     AllowEnableCalls: boolean;
     DefaultEnabled: boolean;
-    last_retrieved_at: number;
 }
 
 export type CallsConfig = {
@@ -110,3 +111,9 @@ export const DefaultCallsConfig = {
     DefaultEnabled: false,
     last_retrieved_at: 0,
 } as CallsConfig;
+
+export type ApiResp = {
+    message?: string;
+    detailed_error?: string;
+    status_code: number;
+}

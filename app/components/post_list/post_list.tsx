@@ -46,6 +46,8 @@ type Props = {
     showNewMessageLine?: boolean;
     footer?: ReactElement;
     testID: string;
+    currentCallBarVisible?: boolean;
+    joinCallBannerVisible?: boolean;
 }
 
 type onScrollEndIndexListenerEvent = (endIndex: number) => void;
@@ -98,6 +100,8 @@ const PostList = ({
     showMoreMessages,
     showNewMessageLine = true,
     testID,
+    currentCallBarVisible,
+    joinCallBannerVisible,
 }: Props) => {
     const listRef = useRef<FlatList>(null);
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
@@ -145,10 +149,17 @@ const PostList = ({
         if (location === Screens.CHANNEL && channelId) {
             await fetchPosts(serverUrl, channelId);
         } else if (location === Screens.THREAD && rootId) {
-            await fetchPostThread(serverUrl, rootId);
+            const options: FetchPaginatedThreadOptions = {};
+            const lastPost = posts[0];
+            if (lastPost) {
+                options.fromCreateAt = lastPost.createAt;
+                options.fromPost = lastPost.id;
+                options.direction = 'down';
+            }
+            await fetchPostThread(serverUrl, rootId, options);
         }
         setRefreshing(false);
-    }, [channelId, location, rootId]);
+    }, [channelId, location, posts, rootId]);
 
     const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
         if (Platform.OS === 'android') {
@@ -388,6 +399,8 @@ const PostList = ({
                 scrollToIndex={scrollToIndex}
                 theme={theme}
                 testID={`${testID}.more_messages_button`}
+                currentCallBarVisible={Boolean(currentCallBarVisible)}
+                joinCallBannerVisible={Boolean(joinCallBannerVisible)}
             />
             }
         </>

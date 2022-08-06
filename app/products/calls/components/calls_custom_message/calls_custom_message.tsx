@@ -6,7 +6,6 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, View} from 'react-native';
 
-import {joinCall} from '@calls/actions';
 import leaveAndJoinWithAlert from '@calls/components/leave_and_join_alert';
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
@@ -112,7 +111,7 @@ export const CallsCustomMessage = ({
             return;
         }
 
-        leaveAndJoinWithAlert(intl, serverUrl, post.channelId, leaveChannelName || '', joinChannelName || '', confirmToJoin, joinCall);
+        leaveAndJoinWithAlert(intl, serverUrl, post.channelId, leaveChannelName || '', joinChannelName || '', confirmToJoin, false);
     };
 
     if (post.props.end_at) {

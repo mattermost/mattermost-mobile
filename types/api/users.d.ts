@@ -11,7 +11,7 @@ type UserNotifyProps = {
     desktop_sound: 'true' | 'false';
     email: 'true' | 'false';
     first_name: 'true' | 'false';
-    mark_unread: 'all' | 'mention';
+    mark_unread?: 'all' | 'mention';
     mention_keys: string;
     push: 'default' | 'all' | 'mention' | 'none';
     push_status: 'ooo' | 'offline' | 'away' | 'dnd' | 'online';
@@ -41,8 +41,8 @@ type UserProfile = {
     terms_of_service_id?: string;
     terms_of_service_create_at?: number;
     timezone?: UserTimezone;
-    is_bot: boolean;
-    last_picture_update: number;
+    is_bot?: boolean;
+    last_picture_update?: number;
     remote_id?: string;
     status?: string;
     bot_description?: string;
@@ -96,3 +96,5 @@ type UserCustomStatus = {
     expires_at?: string;
     duration?: CustomStatusDuration;
 };
+
+type CustomStatusDuration = '' | 'thirty_minutes' | 'one_hour' | 'four_hours' | 'today' | 'this_week' | 'date_and_time';

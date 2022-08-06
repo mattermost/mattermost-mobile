@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {DEFAULT_LOCALE} from '@i18n';
-import TeamModel from '@typings/database/models/servers/team';
+
+import type TeamModel from '@typings/database/models/servers/team';
 
 export const selectDefaultTeam = (teams: Array<Team | TeamModel>, locale = DEFAULT_LOCALE, userTeamOrderPreference = '', primaryTeam = '') => {
     let defaultTeam;

@@ -6,9 +6,9 @@ import {LayoutChangeEvent, StyleSheet, FlatList, ListRenderItemInfo, StyleProp, 
 import Animated from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {ITEM_HEIGHT} from '@app/components/option_item';
 import File from '@components/files/file';
 import NoResultsWithTerm from '@components/no_results_with_term';
+import {ITEM_HEIGHT} from '@components/option_item';
 import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import {Screens} from '@constants';

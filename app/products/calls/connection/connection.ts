@@ -4,6 +4,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import {deflate} from 'pako/lib/deflate.js';
+import {DeviceEventEmitter, EmitterSubscription} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 import {
     MediaStream,
@@ -12,7 +13,9 @@ import {
 } from 'react-native-webrtc';
 
 import {CallsConnection} from '@calls/types/calls';
+import {WebsocketEvents} from '@constants';
 import NetworkManager from '@managers/network_manager';
+import {logError} from '@utils/log';
 
 import Peer from './simple-peer';
 import WebSocketClient from './websocket_client';
@@ -25,6 +28,7 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
     let voiceTrackAdded = false;
     let voiceTrack: MediaStreamTrack | null = null;
     let isClosed = false;
+    let onCallEnd: EmitterSubscription | null = null;
     const streams: MediaStream[] = [];
 
     try {
@@ -36,18 +40,25 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
         voiceTrack.enabled = false;
         streams.push(stream);
     } catch (err) {
-        console.log('Unable to get media device:', err); // eslint-disable-line no-console
+        logError('Unable to get media device:', err);
     }
 
     // getClient can throw an error, which will be handled by the caller.
     const client = NetworkManager.getClient(serverUrl);
 
     const ws = new WebSocketClient(serverUrl, client.getWebSocketUrl());
+
+    // Throws an error, to be caught by caller.
     await ws.initialize();
 
     const disconnect = () => {
         if (!isClosed) {
             ws.close();
+        }
+
+        if (onCallEnd) {
+            onCallEnd.remove();
+            onCallEnd = null;
         }
 
         streams.forEach((s) => {
@@ -68,6 +79,12 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
         }
     };
 
+    onCallEnd = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_CALL_END, ({channelId}: { channelId: string }) => {
+        if (channelId === channelID) {
+            disconnect();
+        }
+    });
+
     const mute = () => {
         if (!peer || peer.destroyed) {
             return;
@@ -78,7 +95,7 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
                 peer.replaceTrack(voiceTrack, null, stream);
             }
         } catch (e) {
-            console.log('Error from simple-peer:', e); //eslint-disable-line no-console
+            logError('From simple-peer:', e);
             return;
         }
 
@@ -103,7 +120,7 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
                 voiceTrackAdded = true;
             }
         } catch (e) {
-            console.log('Error from simple-peer:', e); //eslint-disable-line no-console
+            logError('From simple-peer:', e);
             return;
         }
 
@@ -126,7 +143,7 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
     };
 
     ws.on('error', (err: Event) => {
-        console.log('WS (CALLS) ERROR', err); // eslint-disable-line no-console
+        logError('WS (CALLS):', err);
         ws.close();
     });
 
@@ -140,7 +157,7 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
         try {
             config = await client.getCallsConfig();
         } catch (err) {
-            console.log('ERROR FETCHING CALLS CONFIG:', err); // eslint-disable-line no-console
+            logError('FETCHING CALLS CONFIG:', err);
             return;
         }
 
@@ -167,7 +184,7 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
         });
 
         peer.on('error', (err: any) => {
-            console.log('PEER ERROR', err); // eslint-disable-line no-console
+            logError('FROM PEER:', err);
         });
     });
 

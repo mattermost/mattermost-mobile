@@ -5,7 +5,6 @@ export {
     loadConfig,
     loadCalls,
     enableChannelCalls,
-    disableChannelCalls,
     joinCall,
     leaveCall,
     muteMyself,

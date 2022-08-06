@@ -15,6 +15,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Header from './header';
 
+import type {GalleryAction, GalleryItemType} from '@typings/screens/gallery';
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     tablet: {
         backgroundColor: theme.centerChannelBg,

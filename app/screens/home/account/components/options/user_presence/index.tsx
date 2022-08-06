@@ -3,36 +3,54 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {TextStyle} from 'react-native';
+import {TouchableOpacity, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {setStatus} from '@actions/remote/user';
-import MenuItem from '@components/menu_item';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import StatusLabel from '@components/status_label';
 import UserStatusIndicator from '@components/user_status';
 import General from '@constants/general';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 import {bottomSheet, dismissBottomSheet, dismissModal} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
-import {changeOpacity} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {confirmOutOfOfficeDisabled} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
 
-type Props = {
-    currentUser: UserModel;
-    style: TextStyle;
-    theme: Theme;
-};
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        label: {
+            color: theme.centerChannelColor,
+            ...typography('Body', 200),
+            textAlignVertical: 'center',
+            includeFontPadding: false,
+        },
+        body: {
+            flexDirection: 'row',
+            marginTop: 18,
+        },
+        spacer: {
+            marginLeft: 16,
+        },
+    };
+});
 
 const {OUT_OF_OFFICE, OFFLINE, AWAY, ONLINE, DND} = General;
 
-const UserStatus = ({currentUser, style, theme}: Props) => {
+type Props = {
+    currentUser: UserModel;
+};
+const UserStatus = ({currentUser}: Props) => {
     const intl = useIntl();
     const insets = useSafeAreaInsets();
     const serverUrl = useServerUrl();
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
 
     const handleSetStatus = useCallback(preventDoubleTap(() => {
         const renderContent = () => {
@@ -47,7 +65,7 @@ const UserStatus = ({currentUser, style, theme}: Props) => {
                             id: 'mobile.set_status.online',
                             defaultMessage: 'Online',
                         })}
-                        textStyles={style}
+                        textStyles={styles.label}
                     />
                     <SlideUpPanelItem
                         icon='clock'
@@ -58,7 +76,7 @@ const UserStatus = ({currentUser, style, theme}: Props) => {
                             id: 'mobile.set_status.away',
                             defaultMessage: 'Away',
                         })}
-                        textStyles={style}
+                        textStyles={styles.label}
                     />
                     <SlideUpPanelItem
                         icon='minus-circle'
@@ -69,7 +87,7 @@ const UserStatus = ({currentUser, style, theme}: Props) => {
                             id: 'mobile.set_status.dnd',
                             defaultMessage: 'Do Not Disturb',
                         })}
-                        textStyles={style}
+                        textStyles={styles.label}
                     />
                     <SlideUpPanelItem
                         icon='circle-outline'
@@ -80,7 +98,7 @@ const UserStatus = ({currentUser, style, theme}: Props) => {
                             id: 'mobile.set_status.offline',
                             defaultMessage: 'Offline',
                         })}
-                        textStyles={style}
+                        textStyles={styles.label}
                     />
                 </>
             );
@@ -119,23 +137,20 @@ const UserStatus = ({currentUser, style, theme}: Props) => {
     }, []);
 
     return (
-        <MenuItem
-            labelComponent={
-                <StatusLabel
-                    labelStyle={style}
-                    status={currentUser.status}
-                />
-            }
-            leftComponent={
+        <TouchableOpacity
+            onPress={handleSetStatus}
+        >
+            <View style={styles.body}>
                 <UserStatusIndicator
                     size={24}
                     status={currentUser.status}
                 />
-            }
-            onPress={handleSetStatus}
-            separator={false}
-            testID='account.status.action'
-        />
+                <StatusLabel
+                    labelStyle={[styles.label, styles.spacer]}
+                    status={currentUser.status}
+                />
+            </View>
+        </TouchableOpacity>
     );
 };
 

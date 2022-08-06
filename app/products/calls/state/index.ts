@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 export * from './actions';
-export {getCallsState, observeCallsState} from './calls_state';
-export {getCallsConfig, observeCallsConfig} from './calls_config';
-export {getCurrentCall, observeCurrentCall} from './current_call';
-export {observeChannelsWithCalls} from './channels_with_calls';
+export * from './calls_state';
+export * from './calls_config';
+export * from './current_call';
+export * from './channels_with_calls';

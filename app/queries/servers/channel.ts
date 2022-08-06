@@ -62,15 +62,18 @@ export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, 
     }
 }
 
-export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[], isCRTEnabled?: boolean) => {
+export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[], isCRTEnabled?: boolean, isGraphQL = false) => {
     const {database} = operator;
-    const allChannelsForTeam = (await queryAllChannelsForTeam(database, teamId).fetch()).
+
+    const channelsQuery = isGraphQL ? queryAllChannels(database) : queryAllChannelsForTeam(database, teamId);
+    const allChannelsForTeam = (await channelsQuery.fetch()).
         reduce((map: Record<string, ChannelModel>, channel) => {
             map[channel.id] = channel;
             return map;
         }, {});
 
-    const allChannelsInfoForTeam = (await queryAllChannelsInfoForTeam(database, teamId).fetch()).
+    const channelInfosQuery = isGraphQL ? queryAllChannelsInfo(database) : queryAllChannelsInfoForTeam(database, teamId);
+    const allChannelsInfoForTeam = (await channelInfosQuery.fetch()).
         reduce((map: Record<string, ChannelInfoModel>, info) => {
             map[info.id] = info;
             return map;
@@ -161,8 +164,16 @@ export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model
     return preparedModels;
 };
 
+export const queryAllChannels = (database: Database) => {
+    return database.get<ChannelModel>(CHANNEL).query();
+};
+
 export const queryAllChannelsForTeam = (database: Database, teamId: string) => {
     return database.get<ChannelModel>(CHANNEL).query(Q.where('team_id', teamId));
+};
+
+export const queryAllChannelsInfo = (database: Database) => {
+    return database.get<ChannelInfoModel>(CHANNEL_INFO).query();
 };
 
 export const queryAllChannelsInfoForTeam = (database: Database, teamId: string) => {

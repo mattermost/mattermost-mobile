@@ -17,6 +17,8 @@ import {typography} from '@utils/typography';
 
 import DownloadWithAction from '../footer/download_with_action';
 
+import type {GalleryAction, GalleryItemType} from '@typings/screens/gallery';
+
 type Props = {
     canDownloadFiles: boolean;
     item: GalleryItemType;

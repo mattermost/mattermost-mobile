@@ -33,8 +33,7 @@ import {CallParticipant, CurrentCall, VoiceEventData} from '@calls/types/calls';
 import {sortParticipants} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {WebsocketEvents} from '@constants';
-import Screens from '@constants/screens';
+import {WebsocketEvents, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {bottomSheet, dismissBottomSheet, goToScreen, popTopScreen} from '@screens/navigation';
@@ -44,6 +43,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
 export type Props = {
+    componentId: string;
     currentCall: CurrentCall | null;
     participantsDict: Dictionary<CallParticipant>;
     teammateNameDisplay: string;
@@ -244,7 +244,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const CallScreen = ({currentCall, participantsDict, teammateNameDisplay}: Props) => {
+const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDisplay}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const insets = useSafeAreaInsets();
@@ -328,7 +328,7 @@ const CallScreen = ({currentCall, participantsDict, teammateNameDisplay}: Props)
 
         // TODO: this is a temporary solution until we have a proper cross-team thread view.
         //  https://mattermost.atlassian.net/browse/MM-45752
-        popTopScreen();
+        popTopScreen(componentId);
         await DatabaseManager.setActiveServerDatabase(currentCall.serverUrl);
         await appEntry(currentCall.serverUrl, Date.now());
         goToScreen(Screens.THREAD, '', {rootId: currentCall.threadId});
@@ -356,7 +356,19 @@ const CallScreen = ({currentCall, participantsDict, teammateNameDisplay}: Props)
         });
     }, [insets, intl, theme]);
 
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_CALL_END, ({channelId}) => {
+            if (channelId === currentCall?.channelId) {
+                popTopScreen(componentId);
+            }
+        });
+
+        return () => listener.remove();
+    }, []);
+
     if (!currentCall || !myParticipant) {
+        // TODO: will figure out a way to remove the need for this check: https://mattermost.atlassian.net/browse/MM-46050
+        popTopScreen(componentId);
         return null;
     }
 

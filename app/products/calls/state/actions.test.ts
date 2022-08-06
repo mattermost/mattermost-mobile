@@ -6,11 +6,20 @@ import assert from 'assert';
 import {act, renderHook} from '@testing-library/react-hooks';
 
 import {
+    setCallsState,
+    setChannelsWithCalls,
+    setCurrentCall,
+    useCallsConfig,
+    useCallsState,
+    useChannelsWithCalls,
+    useCurrentCall,
+} from '@calls/state';
+import {
     setCalls,
     userJoinedCall,
     userLeftCall,
     callStarted,
-    callFinished,
+    callEnded,
     setUserMuted,
     setCallScreenOn,
     setCallScreenOff,
@@ -19,19 +28,12 @@ import {
     myselfLeftCall,
     setChannelEnabled,
     setScreenShareURL,
-    setSpeakerPhone, setConfig, setPluginEnabled,
+    setSpeakerPhone,
+    setConfig,
+    setPluginEnabled,
 } from '@calls/state/actions';
-import {exportedForInternalUse as callsConfigTesting} from '@calls/state/calls_config';
-import {exportedForInternalUse as callsStateTesting} from '@calls/state/calls_state';
-import {exportedForInternalUse as channelsWithCallsTesting} from '@calls/state/channels_with_calls';
-import {exportedForInternalUse as currentCallTesting} from '@calls/state/current_call';
 
 import {CallsState, CurrentCall, DefaultCallsConfig, DefaultCallsState} from '../types/calls';
-
-const {useCallsConfig} = callsConfigTesting;
-const {setCallsState, useCallsState} = callsStateTesting;
-const {setChannelsWithCalls, useChannelsWithCalls} = channelsWithCallsTesting;
-const {setCurrentCall, useCurrentCall} = currentCallTesting;
 
 const call1 = {
     participants: {
@@ -42,6 +44,7 @@ const call1 = {
     startTime: 123,
     screenOn: '',
     threadId: 'thread-1',
+    ownerId: 'user-1',
 };
 const call2 = {
     participants: {
@@ -52,6 +55,7 @@ const call2 = {
     startTime: 123,
     screenOn: '',
     threadId: 'thread-2',
+    ownerId: 'user-3',
 };
 const call3 = {
     participants: {
@@ -62,6 +66,7 @@ const call3 = {
     startTime: 123,
     screenOn: '',
     threadId: 'thread-3',
+    ownerId: 'user-5',
 };
 
 describe('useCallsState', () => {
@@ -163,6 +168,7 @@ describe('useCallsState', () => {
                 startTime: 123,
                 screenOn: '',
                 threadId: 'thread-1',
+                ownerId: 'user-1',
             },
         };
         const expectedChannelsWithCallsState = initialChannelsWithCallsState;
@@ -219,6 +225,7 @@ describe('useCallsState', () => {
                 startTime: 123,
                 screenOn: '',
                 threadId: 'thread-1',
+                ownerId: 'user-1',
             },
         };
         const expectedChannelsWithCallsState = initialChannelsWithCallsState;
@@ -267,8 +274,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[2], null);
     });
 
-    // TODO: needs to be changed to callEnd when that ws event is implemented
-    it('callFinished', () => {
+    it('callEnded', () => {
         const initialCallsState = {
             ...DefaultCallsState,
             calls: {'channel-1': call1, 'channel-2': call2},
@@ -293,7 +299,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[2], null);
 
         // test
-        act(() => callFinished('server1', 'channel-1'));
+        act(() => callEnded('server1', 'channel-1'));
         assert.deepEqual(result.current[0], expectedCallsState);
         assert.deepEqual(result.current[1], expectedChannelsWithCallsState);
         assert.deepEqual(result.current[2], null);
@@ -407,6 +413,7 @@ describe('useCallsState', () => {
                 startTime: 123,
                 screenOn: false,
                 threadId: 'thread-1',
+                ownerId: 'user-1',
             },
         };
         const initialCurrentCallState = {

@@ -2,24 +2,25 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {TextStyle} from 'react-native';
+import {StyleProp, TextStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type StatusLabelProps = {
     status?: string;
-    labelStyle?: TextStyle;
+    labelStyle?: StyleProp<TextStyle>;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         label: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 17,
+            ...typography('Body', 200),
             textAlignVertical: 'center',
             includeFontPadding: false,
         },
