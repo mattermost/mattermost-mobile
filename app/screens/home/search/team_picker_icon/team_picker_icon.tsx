@@ -4,6 +4,7 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {View, useWindowDimensions} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import TeamIcon from '@components/team_sidebar/team_list/team_item/team_icon';
@@ -52,6 +53,7 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
     const theme = useTheme();
     const dimensions = useWindowDimensions();
     const styles = getStyleFromTheme(theme);
+    const insets = useSafeAreaInsets();
 
     const selectedTeam = teams.find((t) => t.id === teamId);
 
@@ -71,6 +73,7 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
 
         bottomSheetWithTeamList({
             dimensions,
+            insets,
             renderContent,
             theme,
             title,

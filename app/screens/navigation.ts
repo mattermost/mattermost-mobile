@@ -13,6 +13,7 @@ import {ITEM_HEIGHT} from '@components/team_sidebar/add_team/team_list_item/team
 import {Device, Events, Screens, Navigation as NavigationConstants, Launch} from '@constants';
 import {NOT_READY} from '@constants/screens';
 import {getDefaultThemeByAppearance} from '@context/theme';
+import {PADDING_TOP_MOBILE} from '@screens/bottom_sheet';
 import {TITLE_HEIGHT, TITLE_SEPARATOR_MARGIN} from '@screens/bottom_sheet/content';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
@@ -23,6 +24,7 @@ import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 import type TeamModel from '@typings/database/models/servers/team';
 import type {LaunchProps} from '@typings/launch';
 import type {NavButtons} from '@typings/screens/navigation';
+import type {EdgeInsets} from 'react-native-safe-area-context';
 
 const {MattermostManaged} = NativeModules;
 const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
@@ -669,26 +671,24 @@ export async function bottomSheet({title, renderContent, snapPoints, initialSnap
 type BottomSheetWithTeamListArgs = {
     teams: TeamModel[];
     dimensions: ScaledSize;
+    insets: EdgeInsets;
     renderContent: () => JSX.Element;
     theme: Theme;
     title: string;
 }
 
-export async function bottomSheetWithTeamList({title, teams, dimensions, renderContent, theme}: BottomSheetWithTeamListArgs) {
+export async function bottomSheetWithTeamList({title, teams, dimensions, insets, renderContent, theme}: BottomSheetWithTeamListArgs) {
     const NO_TEAMS_HEIGHT = 392;
     const maxHeight = Math.round((dimensions.height * 0.9));
-
-    const ADDITIONAL_BOTTOM_MARGIN = 34;
-    const BOTTOM_SHEET_TOP_PADDING = 20; // bottomSheet paddingTop
 
     let height = NO_TEAMS_HEIGHT;
     if (teams.length) {
         const itemsHeight = bottomSheetSnapPoint(teams.length, ITEM_HEIGHT, 0);
-        const heightWithHeader = BOTTOM_SHEET_TOP_PADDING +
+        const heightWithHeader = PADDING_TOP_MOBILE +
             TITLE_HEIGHT +
             (TITLE_SEPARATOR_MARGIN * 2) +
             itemsHeight +
-            ADDITIONAL_BOTTOM_MARGIN;
+            insets.bottom;
         height = Math.min(maxHeight, heightWithHeader);
     }
 

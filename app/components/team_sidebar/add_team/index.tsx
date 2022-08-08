@@ -4,6 +4,7 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {useWindowDimensions, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -49,6 +50,7 @@ export default function AddTeam({otherTeams}: Props) {
     const dimensions = useWindowDimensions();
     const intl = useIntl();
     const isTablet = useIsTablet();
+    const insets = useSafeAreaInsets();
 
     const onPress = useCallback(preventDoubleTap(() => {
         const title = intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'});
@@ -64,6 +66,7 @@ export default function AddTeam({otherTeams}: Props) {
 
         bottomSheetWithTeamList({
             dimensions,
+            insets,
             renderContent,
             theme,
             title,
