@@ -3,19 +3,16 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {useWindowDimensions, ScaledSize, View} from 'react-native';
-import {useSafeAreaInsets, EdgeInsets} from 'react-native-safe-area-context';
+import {useWindowDimensions, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
-import {ITEM_HEIGHT} from '@components/team_sidebar/add_team/team_list_item/team_list_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {PADDING_TOP_MOBILE} from '@screens/bottom_sheet';
-import {TITLE_HEIGHT, TITLE_SEPARATOR_MARGIN} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
-import {bottomSheetSnapPoint} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
+import {getTeamsSnapHeight} from '@utils/team_list';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import AddTeamSlideUp from './add_team_slide_up';
@@ -47,26 +44,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
     };
 });
-
-type TeamsSnapProps = {
-    teams: TeamModel[];
-    dimensions: ScaledSize;
-    insets: EdgeInsets;
-}
-
-const NO_TEAMS_HEIGHT = 392;
-export const getTeamsSnapHeight = ({dimensions, teams, insets}: TeamsSnapProps) => {
-    let height = NO_TEAMS_HEIGHT;
-    if (teams.length) {
-        const itemsHeight = bottomSheetSnapPoint(teams.length, ITEM_HEIGHT, 0);
-        const heightWithHeader = PADDING_TOP_MOBILE +
-            TITLE_HEIGHT + (TITLE_SEPARATOR_MARGIN * 2) +
-            itemsHeight + insets.bottom;
-        const maxHeight = Math.round((dimensions.height * 0.9));
-        height = Math.min(maxHeight, heightWithHeader);
-    }
-    return height;
-};
 
 export default function AddTeam({otherTeams}: Props) {
     const theme = useTheme();

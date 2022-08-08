@@ -7,12 +7,12 @@ import {View, useWindowDimensions} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
-import {getTeamsSnapHeight} from '@components/team_sidebar/add_team';
 import TeamIcon from '@components/team_sidebar/team_list/team_item/team_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
+import {getTeamsSnapHeight} from '@utils/team_list';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import SelectTeamSlideUp from './search_team_slideup';
