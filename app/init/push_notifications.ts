@@ -236,11 +236,13 @@ class PushNotifications {
 
     // This triggers when a notification is tapped and the app was in the background (iOS)
     onNotificationOpened = (incoming: Notification, completion: () => void) => {
-        const notification = convertToNotificationData(incoming, false);
-        notification.userInteraction = true;
+        if (Platform.OS === 'ios') {
+            const notification = convertToNotificationData(incoming, false);
+            notification.userInteraction = true;
 
-        this.processNotification(notification);
-        completion();
+            this.processNotification(notification);
+            completion();
+        }
     };
 
     // This triggers when the app was in the background (iOS)

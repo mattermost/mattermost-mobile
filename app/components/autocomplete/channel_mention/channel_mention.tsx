@@ -3,7 +3,7 @@
 
 import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {Platform, SectionList, SectionListData} from 'react-native';
+import {Platform, SectionList, SectionListData, SectionListRenderItemInfo} from 'react-native';
 
 import {searchChannels} from '@actions/remote/channel';
 import AutocompleteSectionHeader from '@components/autocomplete/autocomplete_section_header';
@@ -280,7 +280,7 @@ const ChannelMention = ({
         setSections(emptySections);
     }, [value, localCursorPosition, isSearch]);
 
-    const renderItem = useCallback(({item}) => {
+    const renderItem = useCallback(({item}: SectionListRenderItemInfo<Channel | ChannelModel>) => {
         return (
             <ChannelMentionItem
                 channel={item}
@@ -290,7 +290,7 @@ const ChannelMention = ({
         );
     }, [completeMention]);
 
-    const renderSectionHeader = useCallback(({section}) => {
+    const renderSectionHeader = useCallback(({section}: SectionListRenderItemInfo<Channel | ChannelModel>) => {
         return (
             <AutocompleteSectionHeader
                 id={section.id}

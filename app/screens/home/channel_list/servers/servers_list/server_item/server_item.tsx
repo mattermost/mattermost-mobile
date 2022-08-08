@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Platform, Text, View} from 'react-native';
+import {Animated, DeviceEventEmitter, Platform, Text, View} from 'react-native';
 import {RectButton} from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 
@@ -311,7 +311,7 @@ const ServerItem = ({
         DeviceEventEmitter.emit(Events.SWIPEABLE, server.url);
     }, [server]);
 
-    const renderActions = useCallback((progress) => {
+    const renderActions = useCallback((progress: Animated.AnimatedInterpolation) => {
         return (
             <Options
                 onEdit={handleEdit}

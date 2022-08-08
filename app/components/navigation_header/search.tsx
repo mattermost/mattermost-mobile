@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo} from 'react';
-import {DeviceEventEmitter, Keyboard, Platform} from 'react-native';
+import {DeviceEventEmitter, Keyboard, NativeSyntheticEvent, Platform, TextInputFocusEventData} from 'react-native';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 
 import Search, {SearchProps} from '@components/search';
@@ -64,7 +64,7 @@ const NavigationSearch = ({
         return {marginTop: Math.min(-Math.min((value), min), min)};
     }, [largeHeight, defaultHeight]);
 
-    const onFocus = useCallback((e) => {
+    const onFocus = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => {
         hideHeader?.();
         searchProps.onFocus?.(e);
     }, [hideHeader, searchProps.onFocus]);

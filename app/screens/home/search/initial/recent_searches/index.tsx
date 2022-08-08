@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, Text, View} from 'react-native';
+import {FlatList, ListRenderItemInfo, Text, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {useTheme} from '@context/theme';
@@ -51,7 +51,7 @@ const RecentSearches = ({setRecentValue, recentSearches, teamName}: Props) => {
         teamName,
     });
 
-    const renderRecentItem = useCallback(({item}) => {
+    const renderRecentItem = useCallback(({item}: ListRenderItemInfo<TeamSearchHistoryModel>) => {
         return (
             <RecentItem
                 item={item}

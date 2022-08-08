@@ -162,8 +162,8 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
         toggleSaveButton(post.message !== message);
     }, [intl, maxPostSize, toggleSaveButton]);
 
-    const handleUIUpdates = useCallback((res) => {
-        if (res?.error) {
+    const handleUIUpdates = useCallback((res: {error?: unknown}) => {
+        if (res.error) {
             setIsUpdating(false);
             const errorMessage = intl.formatMessage({id: 'mobile.edit_post.error', defaultMessage: 'There was a problem editing this message. Please try again.'});
             setErrorLine(errorMessage);

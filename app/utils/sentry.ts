@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Breadcrumb, Severity} from '@sentry/types';
+import {Breadcrumb} from '@sentry/types';
 import {Platform} from 'react-native';
 
 import Config from '@assets/config.json';
@@ -87,7 +87,7 @@ function captureClientErrorAsBreadcrumb(error: ClientError, isFatal: boolean) {
         data: {
             isFatal: String(isFatal),
         },
-        level: Severity.Warning,
+        level: 'warning',
     };
 
     if (error.intl?.defaultMessage) {
