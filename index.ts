@@ -19,7 +19,6 @@ import {registerScreens} from './app/screens';
 import NavigationStore from './app/store/navigation_store';
 import setFontFamily from './app/utils/font_family';
 import {logInfo} from './app/utils/log';
-import './app/utils/emoji'; // Imported to ensure it is loaded when used
 
 declare const global: { HermesInternal: null | {} };
 
