@@ -60,10 +60,8 @@ export const getTeamsSnapHeight = ({dimensions, teams, insets}: TeamsSnapProps) 
     if (teams.length) {
         const itemsHeight = bottomSheetSnapPoint(teams.length, ITEM_HEIGHT, 0);
         const heightWithHeader = PADDING_TOP_MOBILE +
-            TITLE_HEIGHT +
-            (TITLE_SEPARATOR_MARGIN * 2) +
-            itemsHeight +
-            insets.bottom;
+            TITLE_HEIGHT + (TITLE_SEPARATOR_MARGIN * 2) +
+            itemsHeight + insets.bottom;
         const maxHeight = Math.round((dimensions.height * 0.9));
         height = Math.min(maxHeight, heightWithHeader);
     }
