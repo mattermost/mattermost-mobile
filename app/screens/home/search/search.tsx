@@ -244,7 +244,7 @@ const SearchScreen = ({teamId}: Props) => {
     const autocompleteRemoveFromHeight = headerHeight.value + Platform.select({
         ios: keyboardHeight ? keyboardHeight - BOTTOM_TAB_HEIGHT : insets.bottom,
         default: 0,
-    })
+    });
     const autocompleteMaxHeight = containerHeight - autocompleteRemoveFromHeight;
     const autocompletePosition = AutocompletePaddingTop;
     const autocomplete = useMemo(() => (
