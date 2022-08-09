@@ -21,7 +21,7 @@ import ErrorText from '@components/error_text';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
-import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
+import OptionItem from '@components/option_item';
 import {General, Channel} from '@constants';
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
@@ -125,6 +125,7 @@ export default function ChannelInfoForm({
     const [wrapperHeight, setWrapperHeight] = useState(0);
     const [errorHeight, setErrorHeight] = useState(0);
     const [displayNameFieldHeight, setDisplayNameFieldHeight] = useState(0);
+    const [makePrivateHeight, setMakePrivateHeight] = useState(0);
     const [purposeFieldHeight, setPurposeFieldHeight] = useState(0);
     const [headerFieldHeight, setHeaderFieldHeight] = useState(0);
     const [headerPosition, setHeaderPosition] = useState(0);
@@ -233,8 +234,8 @@ export default function ChannelInfoForm({
     }
 
     const otherElementsSize = LIST_PADDING + errorHeight +
-        (showSelector ? (ITEM_HEIGHT + MAKE_PRIVATE_MARGIN_BOTTOM) : 0) +
-        purposeFieldHeight + FIELD_MARGIN_BOTTOM + displayNameFieldHeight + FIELD_MARGIN_BOTTOM;
+        (showSelector ? makePrivateHeight + MAKE_PRIVATE_MARGIN_BOTTOM : 0) +
+        (displayHeaderOnly ? 0 : purposeFieldHeight + FIELD_MARGIN_BOTTOM + displayNameFieldHeight + FIELD_MARGIN_BOTTOM);
     const workingSpace = wrapperHeight - (keyboardHeight || insets.bottom);
     const spaceOnTop = otherElementsSize - scrollPosition - AUTOCOMPLETE_ADJUST;
     const spaceOnBottom = (workingSpace + scrollPosition) - (otherElementsSize + headerFieldHeight + BOTTOM_AUTOCOMPLETE_SEPARATION);
@@ -273,6 +274,7 @@ export default function ChannelInfoForm({
                                 selected={isPrivate}
                                 icon={'lock-outline'}
                                 containerStyle={styles.makePrivateContainer}
+                                onLayout={(e) => setMakePrivateHeight(e.nativeEvent.layout.height)}
                             />
                         )}
                         {!displayHeaderOnly && (
