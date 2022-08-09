@@ -104,7 +104,10 @@ function PostDraft({
 
     const keyboardAdjustment = (isTablet && isChannelScreen) ? KEYBOARD_TRACKING_OFFSET : 0;
     const insetsAdjustment = (isTablet && isChannelScreen) ? 0 : insets.bottom;
-    const autocompletePosition = (keyboardHeight ? keyboardHeight - keyboardAdjustment : (postInputTop + insetsAdjustment)) + AUTOCOMPLETE_ADJUST;
+    const autocompletePosition = AUTOCOMPLETE_ADJUST + Platform.select({
+        ios: (keyboardHeight ? keyboardHeight - keyboardAdjustment : (postInputTop + insetsAdjustment)),
+        default: postInputTop + insetsAdjustment,
+    });
     const autocompleteAvailableSpace = containerHeight - autocompletePosition - (isChannelScreen ? headerHeight + insets.top : 0);
 
     const autoComplete = (

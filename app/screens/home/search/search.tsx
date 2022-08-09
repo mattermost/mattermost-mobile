@@ -4,7 +4,7 @@
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, StyleSheet} from 'react-native';
+import {FlatList, Platform, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -241,7 +241,11 @@ const SearchScreen = ({teamId}: Props) => {
         );
     }
 
-    const autocompleteMaxHeight = containerHeight - (headerHeight.value + (keyboardHeight ? keyboardHeight - BOTTOM_TAB_HEIGHT : insets.bottom));
+    const autocompleteRemoveFromHeight = headerHeight.value + Platform.select({
+        ios: keyboardHeight ? keyboardHeight - BOTTOM_TAB_HEIGHT : insets.bottom,
+        default: 0,
+    })
+    const autocompleteMaxHeight = containerHeight - autocompleteRemoveFromHeight;
     const autocompletePosition = AutocompletePaddingTop;
     const autocomplete = useMemo(() => (
         <Autocomplete

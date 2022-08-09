@@ -194,7 +194,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
         );
     }
 
-    const autocompletePosition = keyboardHeight || insets.bottom;
+    const autocompletePosition = Platform.select({ios: keyboardHeight || insets.bottom, default: 0});
     const autocompleteAvailableSpace = containerHeight - autocompletePosition;
 
     return (
