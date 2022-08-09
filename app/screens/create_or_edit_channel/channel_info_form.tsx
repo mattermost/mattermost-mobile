@@ -11,10 +11,10 @@ import {
     View,
     NativeSyntheticEvent,
     NativeScrollEvent,
-    useWindowDimensions,
+    Platform,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
 import ErrorText from '@components/error_text';
@@ -24,8 +24,7 @@ import Loading from '@components/loading';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {General, Channel} from '@constants';
 import {useTheme} from '@context/theme';
-import {useIsTablet, useKeyboardHeight} from '@hooks/device';
-import useHeaderHeight from '@hooks/header';
+import {useKeyboardHeight} from '@hooks/device';
 import {t} from '@i18n';
 import {
     changeOpacity,
@@ -36,14 +35,16 @@ import {typography} from '@utils/typography';
 
 const FIELD_MARGIN_BOTTOM = 24;
 const MAKE_PRIVATE_MARGIN_BOTTOM = 32;
-const BOTTOM_AUTOCOMPLETE_SEPARATION = 10;
+const BOTTOM_AUTOCOMPLETE_SEPARATION = Platform.select({ios: 1, default: 10});
+const LIST_PADDING = 32;
+const AUTOCOMPLETE_ADJUST = 5;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
         flex: 1,
     },
     scrollView: {
-        paddingVertical: 32,
+        paddingVertical: LIST_PADDING,
         paddingHorizontal: 20,
     },
     errorContainer: {
@@ -104,9 +105,7 @@ export default function ChannelInfoForm({
 }: Props) {
     const intl = useIntl();
     const {formatMessage} = intl;
-    const isTablet = useIsTablet();
-    const headerHeight = useHeaderHeight();
-    const dimensions = useWindowDimensions();
+    const insets = useSafeAreaInsets();
 
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -123,6 +122,7 @@ export default function ChannelInfoForm({
     const [keyboardVisible, setKeyBoardVisible] = useState(false);
     const [scrollPosition, setScrollPosition] = useState(0);
 
+    const [wrapperHeight, setWrapperHeight] = useState(0);
     const [errorHeight, setErrorHeight] = useState(0);
     const [displayNameFieldHeight, setDisplayNameFieldHeight] = useState(0);
     const [purposeFieldHeight, setPurposeFieldHeight] = useState(0);
@@ -197,6 +197,9 @@ export default function ChannelInfoForm({
         setHeaderFieldHeight(e.nativeEvent.layout.height);
         setHeaderPosition(e.nativeEvent.layout.y);
     }, []);
+    const onLayoutWrapper = useCallback((e: LayoutChangeEvent) => {
+        setWrapperHeight(e.nativeEvent.layout.height);
+    }, []);
 
     if (saving) {
         return (
@@ -229,20 +232,23 @@ export default function ChannelInfoForm({
         );
     }
 
-    const otherElementsSize = errorHeight +
+    const otherElementsSize = LIST_PADDING + errorHeight +
         (showSelector ? (ITEM_HEIGHT + MAKE_PRIVATE_MARGIN_BOTTOM) : 0) +
         purposeFieldHeight + FIELD_MARGIN_BOTTOM + displayNameFieldHeight + FIELD_MARGIN_BOTTOM;
-    const workingSpace = dimensions.height - keyboardHeight - headerHeight.defaultHeight;
-    const spaceOnTop = otherElementsSize - scrollPosition;
+    const workingSpace = wrapperHeight - (keyboardHeight || insets.bottom);
+    const spaceOnTop = otherElementsSize - scrollPosition - AUTOCOMPLETE_ADJUST;
     const spaceOnBottom = (workingSpace + scrollPosition) - (otherElementsSize + headerFieldHeight + BOTTOM_AUTOCOMPLETE_SEPARATION);
-    const postInputTop = spaceOnTop > spaceOnBottom ? (workingSpace + scrollPosition) - otherElementsSize : BOTTOM_AUTOCOMPLETE_SEPARATION;
-    const maxHeight = spaceOnTop > spaceOnBottom ? undefined : spaceOnBottom;
+    const keyboardAdjust = keyboardHeight - (keyboardHeight ? insets.bottom : 0);
+    const autocompletePosition = spaceOnTop > spaceOnBottom ? (workingSpace + scrollPosition + AUTOCOMPLETE_ADJUST + keyboardAdjust) - otherElementsSize : (workingSpace + scrollPosition + keyboardAdjust) - (otherElementsSize + headerFieldHeight);
+    const autocompleteAvailableSpace = spaceOnTop > spaceOnBottom ? spaceOnTop : spaceOnBottom;
+    const growUp = spaceOnTop > spaceOnBottom;
 
     return (
         <SafeAreaView
             edges={['bottom', 'left', 'right']}
             style={styles.container}
             testID='create_or_edit_channel.screen'
+            onLayout={onLayoutWrapper}
         >
             <KeyboardAwareScrollView
                 testID={'create_or_edit_channel.scrollview'}
@@ -360,13 +366,14 @@ export default function ChannelInfoForm({
             </KeyboardAwareScrollView>
             <View>
                 <Autocomplete
-                    postInputTop={postInputTop}
+                    position={autocompletePosition}
                     updateValue={onHeaderChange}
                     cursorPosition={header.length}
                     value={header}
                     nestedScrollEnabled={true}
-                    maxHeightOverride={isTablet ? 200 : maxHeight}
+                    availableSpace={autocompleteAvailableSpace}
                     inPost={false}
+                    growDown={!growUp}
                 />
             </View>
         </SafeAreaView>

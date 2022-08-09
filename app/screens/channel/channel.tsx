@@ -61,6 +61,7 @@ const Channel = ({
     const switchingChannels = useChannelSwitch();
     const defaultHeight = useDefaultHeaderHeight();
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
+    const [containerHeight, setContainerHeight] = useState(0);
 
     const shouldRender = !switchingTeam && !switchingChannels && shouldRenderPosts && Boolean(channelId);
 
@@ -136,6 +137,7 @@ const Channel = ({
                 mode='margin'
                 edges={edges}
                 testID='channel.screen'
+                onLayout={(e) => setContainerHeight(e.nativeEvent.layout.height)}
             >
                 <ChannelHeader
                     channelId={channelId}
@@ -159,6 +161,8 @@ const Channel = ({
                         scrollViewNativeID={channelId}
                         accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
                         testID='channel.post_draft'
+                        containerHeight={containerHeight}
+                        isChannelScreen={true}
                     />
                 </>
                 }

@@ -4,13 +4,14 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Keyboard, KeyboardType, Platform, SafeAreaView, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {deletePost, editPost} from '@actions/remote/post';
 import Autocomplete from '@components/autocomplete';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
+import {useKeyboardHeight} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import PostError from '@screens/edit_post/post_error';
@@ -56,13 +57,15 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const [errorLine, setErrorLine] = useState<string | undefined>();
     const [errorExtra, setErrorExtra] = useState<string | undefined>();
     const [isUpdating, setIsUpdating] = useState(false);
+    const [containerHeight, setContainerHeight] = useState(0);
 
     const postInputRef = useRef<EditPostInputRef>(null);
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
+    const keyboardHeight = useKeyboardHeight();
+    const insets = useSafeAreaInsets();
 
     useEffect(() => {
         setButtons(componentId, {
@@ -191,11 +194,15 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
         );
     }
 
+    const autocompletePosition = keyboardHeight || insets.bottom;
+    const autocompleteAvailableSpace = containerHeight - autocompletePosition;
+
     return (
         <>
             <SafeAreaView
                 testID='edit_post.screen'
                 style={styles.container}
+                onLayout={(e) => setContainerHeight(e.nativeEvent.layout.height)}
             >
                 <View style={styles.body}>
                     {Boolean((errorLine || errorExtra)) &&
@@ -222,9 +229,8 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                 updateValue={onChangeText}
                 value={postMessage}
                 cursorPosition={cursorPosition}
-                postInputTop={1}
-                fixedBottomPosition={true}
-                maxHeightOverride={isTablet ? 200 : undefined}
+                position={autocompletePosition}
+                availableSpace={autocompleteAvailableSpace}
                 inPost={false}
             />
         </>

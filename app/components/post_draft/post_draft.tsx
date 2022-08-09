@@ -4,15 +4,18 @@
 import React, {RefObject, useEffect, useState} from 'react';
 import {Platform, View} from 'react-native';
 import {KeyboardTrackingView, KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
 import {View as ViewConstants} from '@constants';
-import {useIsTablet} from '@hooks/device';
+import {useIsTablet, useKeyboardHeight} from '@hooks/device';
+import {useDefaultHeaderHeight} from '@hooks/header';
 
 import Archived from './archived';
 import DraftHandler from './draft_handler';
 import ReadOnly from './read_only';
 
+const AUTOCOMPLETE_ADJUST = -5;
 type Props = {
     testID?: string;
     accessoriesContainerID?: string;
@@ -27,6 +30,8 @@ type Props = {
     rootId?: string;
     scrollViewNativeID?: string;
     keyboardTracker: RefObject<KeyboardTrackingViewRef>;
+    containerHeight: number;
+    isChannelScreen: boolean;
 }
 
 const {KEYBOARD_TRACKING_OFFSET} = ViewConstants;
@@ -45,11 +50,16 @@ function PostDraft({
     rootId = '',
     scrollViewNativeID,
     keyboardTracker,
+    containerHeight,
+    isChannelScreen,
 }: Props) {
     const [value, setValue] = useState(message);
     const [cursorPosition, setCursorPosition] = useState(message.length);
     const [postInputTop, setPostInputTop] = useState(0);
     const isTablet = useIsTablet();
+    const keyboardHeight = useKeyboardHeight(keyboardTracker);
+    const insets = useSafeAreaInsets();
+    const headerHeight = useDefaultHeaderHeight();
 
     // Update draft in case we switch channels or threads
     useEffect(() => {
@@ -92,9 +102,14 @@ function PostDraft({
         />
     );
 
+    const keyboardAdjustment = (isTablet && isChannelScreen) ? KEYBOARD_TRACKING_OFFSET : 0;
+    const insetsAdjustment = (isTablet && isChannelScreen) ? 0 : insets.bottom;
+    const autocompletePosition = (keyboardHeight ? keyboardHeight - keyboardAdjustment : (postInputTop + insetsAdjustment)) + AUTOCOMPLETE_ADJUST;
+    const autocompleteAvailableSpace = containerHeight - autocompletePosition - (isChannelScreen ? headerHeight + insets.top : 0);
+
     const autoComplete = (
         <Autocomplete
-            postInputTop={postInputTop}
+            position={autocompletePosition}
             updateValue={setValue}
             rootId={rootId}
             channelId={channelId}
@@ -103,6 +118,7 @@ function PostDraft({
             isSearch={isSearch}
             hasFilesAttached={Boolean(files?.length)}
             inPost={true}
+            availableSpace={autocompleteAvailableSpace}
         />
     );
 
@@ -125,7 +141,7 @@ function PostDraft({
             >
                 {draftHandler}
             </KeyboardTrackingView>
-            <View nativeID={accessoriesContainerID}>
+            <View>
                 {autoComplete}
             </View>
         </>
