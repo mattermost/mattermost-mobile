@@ -8,6 +8,7 @@ type ClientOptions = {
     method?: string;
     noRetry?: boolean;
     timeoutInterval?: number;
+    headers?: Record<string, any>;
 };
 
 interface ClientErrorProps extends Error {
