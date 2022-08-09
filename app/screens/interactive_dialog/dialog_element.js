@@ -59,7 +59,7 @@ export default class DialogElement extends PureComponent {
 
         this.setState({selected: null});
         onChange(name, null);
-    }
+    };
 
     handleAutocompleteSelect = (selected) => {
         if (!selected) {
