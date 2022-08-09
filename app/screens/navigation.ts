@@ -10,19 +10,18 @@ import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
 import {ITEM_HEIGHT} from '@components/team_sidebar/add_team/team_list_item/team_list_item';
-import {Device, Events, Screens} from '@constants';
-import NavigationConstants from '@constants/navigation';
+import {Device, Events, Screens, Navigation as NavigationConstants, Launch} from '@constants';
 import {NOT_READY} from '@constants/screens';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
-import {LaunchProps, LaunchType} from '@typings/launch';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
 import type TeamModel from '@typings/database/models/servers/team';
+import type {LaunchProps} from '@typings/launch';
 import type {NavButtons} from '@typings/screens/navigation';
 
 const {MattermostManaged} = NativeModules;
@@ -187,12 +186,12 @@ function isScreenRegistered(screen: string) {
     return true;
 }
 
-export function resetToHome(passProps: LaunchProps = {launchType: LaunchType.Normal}) {
+export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}) {
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
-    if (passProps.launchType === LaunchType.AddServer) {
+    if (passProps.launchType === Launch.AddServer) {
         dismissModal({componentId: Screens.SERVER});
         dismissModal({componentId: Screens.LOGIN});
         dismissModal({componentId: Screens.SSO});

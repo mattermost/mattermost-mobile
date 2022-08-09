@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
 import Emm from '@mattermost/react-native-emm';
@@ -6,7 +6,7 @@ import {Alert, Linking, Platform} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
 import {appEntry, pushNotificationEntry, upgradeEntry} from '@actions/remote/entry';
-import {Screens} from '@constants';
+import {Screens, DeepLink, Launch} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from '@init/credentials';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
@@ -14,10 +14,11 @@ import {getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
 import {goToScreen, resetToHome, resetToSelectServer, resetToTeams} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkType, DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
 import {parseDeepLink} from '@utils/url';
+
+import type {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkWithData, LaunchProps} from '@typings/launch';
 
 export const initialLaunch = async () => {
     const deepLinkUrl = await Linking.getInitialURL();
@@ -42,7 +43,7 @@ export const initialLaunch = async () => {
         return;
     }
 
-    launchApp({launchType: LaunchType.Normal});
+    launchApp({launchType: Launch.Normal});
 };
 
 const launchAppFromDeepLink = (deepLinkUrl: string) => {
@@ -58,13 +59,13 @@ const launchAppFromNotification = async (notification: NotificationWithData) => 
 const launchApp = async (props: LaunchProps, resetNavigation = true) => {
     let serverUrl: string | undefined;
     switch (props?.launchType) {
-        case LaunchType.DeepLink:
-            if (props.extra?.type !== DeepLinkType.Invalid) {
+        case Launch.DeepLink:
+            if (props.extra?.type !== DeepLink.Invalid) {
                 const extra = props.extra as DeepLinkWithData;
                 serverUrl = extra.data?.serverUrl;
             }
             break;
-        case LaunchType.Notification: {
+        case Launch.Notification: {
             serverUrl = props.serverUrl;
             break;
         }
@@ -91,15 +92,15 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
             let launchType = props.launchType;
             if (!hasCurrentUser) {
                 // migrating from v1
-                if (launchType === LaunchType.Normal) {
-                    launchType = LaunchType.Upgrade;
+                if (launchType === Launch.Normal) {
+                    launchType = Launch.Upgrade;
                 }
 
                 const result = await upgradeEntry(serverUrl);
                 if (result.error) {
                     Alert.alert(
                         'Error Upgrading',
-                        `An error ocurred while upgrading the app to the new version.\n\nDetails: ${result.error}\n\nThe app will now quit.`,
+                        `An error occurred while upgrading the app to the new version.\n\nDetails: ${result.error}\n\nThe app will now quit.`,
                         [{
                             text: 'OK',
                             onPress: async () => {
@@ -126,11 +127,11 @@ const launchToHome = async (props: LaunchProps) => {
     let openPushNotification = false;
 
     switch (props.launchType) {
-        case LaunchType.DeepLink:
+        case Launch.DeepLink:
             // TODO:
             // deepLinkEntry({props.serverUrl, props.extra});
             break;
-        case LaunchType.Notification: {
+        case Launch.Notification: {
             const extra = props.extra as NotificationWithData;
             openPushNotification = Boolean(props.serverUrl && !props.launchError && extra.userInteraction && extra.payload?.channel_id && !extra.payload?.userInfo?.local);
             if (openPushNotification) {
@@ -140,7 +141,7 @@ const launchToHome = async (props: LaunchProps) => {
             }
             break;
         }
-        case LaunchType.Normal:
+        case Launch.Normal:
             appEntry(props.serverUrl!);
             break;
     }
@@ -179,29 +180,29 @@ export const relaunchApp = (props: LaunchProps, resetNavigation = false) => {
 export const getLaunchPropsFromDeepLink = (deepLinkUrl: string): LaunchProps => {
     const parsed = parseDeepLink(deepLinkUrl);
     const launchProps: LaunchProps = {
-        launchType: LaunchType.DeepLink,
+        launchType: Launch.DeepLink,
     };
 
     switch (parsed.type) {
-        case DeepLinkType.Invalid:
+        case DeepLink.Invalid:
             launchProps.launchError = true;
             break;
-        case DeepLinkType.Channel: {
+        case DeepLink.Channel: {
             const parsedData = parsed.data as DeepLinkChannel;
             (launchProps.extra as DeepLinkWithData).data = parsedData;
             break;
         }
-        case DeepLinkType.DirectMessage: {
+        case DeepLink.DirectMessage: {
             const parsedData = parsed.data as DeepLinkDM;
             (launchProps.extra as DeepLinkWithData).data = parsedData;
             break;
         }
-        case DeepLinkType.GroupMessage: {
+        case DeepLink.GroupMessage: {
             const parsedData = parsed.data as DeepLinkGM;
             (launchProps.extra as DeepLinkWithData).data = parsedData;
             break;
         }
-        case DeepLinkType.Permalink: {
+        case DeepLink.Permalink: {
             const parsedData = parsed.data as DeepLinkPermalink;
             (launchProps.extra as DeepLinkWithData).data = parsedData;
             break;
@@ -213,7 +214,7 @@ export const getLaunchPropsFromDeepLink = (deepLinkUrl: string): LaunchProps => 
 
 export const getLaunchPropsFromNotification = async (notification: NotificationWithData): Promise<LaunchProps> => {
     const launchProps: LaunchProps = {
-        launchType: LaunchType.Notification,
+        launchType: Launch.Notification,
     };
 
     const {payload} = notification;

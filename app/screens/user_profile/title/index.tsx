@@ -20,6 +20,7 @@ import UserProfileAvatar from './avatar';
 import UserProfileTag from './tag';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {GalleryItemType} from '@typings/screens/gallery';
 
 type Props = {
     enablePostIconOverride: boolean;

@@ -20,8 +20,6 @@ import ManagedApp from '@init/managed_app';
 import {logError} from '@utils/log';
 import {getCSRFFromCookie} from '@utils/security';
 
-import type {ServerCredential} from '@typings/credentials';
-
 const CLIENT_CERTIFICATE_IMPORT_ERROR_CODES = [-103, -104, -105, -108];
 const CLIENT_CERTIFICATE_MISSING_ERROR_CODE = -200;
 

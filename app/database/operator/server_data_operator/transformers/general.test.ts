@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {OperationType} from '@constants/database';
 import {
     transformCustomEmojiRecord,
     transformRoleRecord,
     transformSystemRecord,
 } from '@database/operator/server_data_operator/transformers/general';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
-import {OperationType} from '@typings/database/enums';
 
 describe('*** Role Prepare Records Test ***', () => {
     it('=> transformRoleRecord: should return an array of type Role', async () => {

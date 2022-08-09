@@ -13,7 +13,7 @@ type SelectedView = {
     Component: any;
 }
 
-const TabletView: Record<string, React.ReactNode> = {
+const TabletView: Record<string, React.ComponentType<any>> = {
     [Screens.CUSTOM_STATUS]: CustomStatus,
     [Screens.EDIT_PROFILE]: EditProfile,
 };

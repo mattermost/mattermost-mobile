@@ -13,6 +13,8 @@ import Toast from '@components/toast';
 import {GALLERY_FOOTER_HEIGHT} from '@constants/gallery';
 import {useServerUrl} from '@context/server';
 
+import type {GalleryAction, GalleryItemType} from '@typings/screens/gallery';
+
 type Props = {
     item: GalleryItemType;
     setAction: (action: GalleryAction) => void;

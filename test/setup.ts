@@ -18,7 +18,6 @@ jest.doMock('react-native', () => {
     const {
         Platform,
         StyleSheet,
-        ViewPropTypes,
         PermissionsAndroid,
         requireNativeComponent,
         Alert: RNAlert,
@@ -143,7 +142,6 @@ jest.doMock('react-native', () => {
             },
         },
         StyleSheet,
-        ViewPropTypes,
         PermissionsAndroid,
         requireNativeComponent,
         Alert,
