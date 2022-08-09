@@ -16,8 +16,8 @@ export interface ClientFilesMix {
         onError: (response: ClientResponseError) => void,
         skipBytes?: number,
     ) => () => void;
-    searchFiles: (teamId: string, terms: string) => Promise<any>;
-    searchFilesWithParams: (teamId: string, FileSearchParams: string) => Promise<any>;
+    searchFiles: (teamId: string, terms: string) => Promise<FileSearchRequest>;
+    searchFilesWithParams: (teamId: string, FileSearchParams: string) => Promise<FileSearchRequest>;
 }
 
 const ClientFiles = (superclass: any) => class extends superclass {
@@ -55,7 +55,7 @@ const ClientFiles = (superclass: any) => class extends superclass {
         );
     };
 
-    uploadPostAttachment = async (
+    uploadPostAttachment = (
         file: FileInfo,
         channelId: string,
         onProgress: (fractionCompleted: number, bytesRead?: number | null | undefined) => void,

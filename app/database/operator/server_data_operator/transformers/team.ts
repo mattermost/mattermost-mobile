@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES} from '@constants/database';
+import {MM_TABLES, OperationType} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
-import {OperationType} from '@typings/database/enums';
 
 import type {TransformerArgs} from '@typings/database/database';
 import type MyTeamModel from '@typings/database/models/servers/my_team';

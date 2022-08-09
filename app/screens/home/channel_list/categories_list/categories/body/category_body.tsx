@@ -77,6 +77,10 @@ const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, limit,
         };
     }, [height, unreadHeight]);
 
+    const listHeight = useMemo(() => ({
+        height: category.collapsed ? unreadHeight : height,
+    }), [category.collapsed, height, unreadHeight]);
+
     return (
         <Animated.View style={animatedStyle}>
             <FlatList
@@ -86,6 +90,7 @@ const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, limit,
 
                 // @ts-expect-error strictMode not exposed on the types
                 strictMode={true}
+                style={listHeight}
             />
         </Animated.View>
     );

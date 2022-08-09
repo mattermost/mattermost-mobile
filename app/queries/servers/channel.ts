@@ -22,7 +22,7 @@ import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP, MY_CHANNEL_SETTINGS, CHANNEL_INFO, USER}} = MM_TABLES;
+const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP, MY_CHANNEL_SETTINGS, CHANNEL_INFO, USER, TEAM}} = MM_TABLES;
 
 export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, channels: Channel[], channelMembers: ChannelMembership[], isCRTEnabled?: boolean): Array<Promise<Model[]>> {
     const channelInfos: ChannelInfo[] = [];
@@ -62,15 +62,18 @@ export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, 
     }
 }
 
-export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[], isCRTEnabled?: boolean) => {
+export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[], isCRTEnabled?: boolean, isGraphQL = false) => {
     const {database} = operator;
-    const allChannelsForTeam = (await queryAllChannelsForTeam(database, teamId).fetch()).
+
+    const channelsQuery = isGraphQL ? queryAllChannels(database) : queryAllChannelsForTeam(database, teamId);
+    const allChannelsForTeam = (await channelsQuery.fetch()).
         reduce((map: Record<string, ChannelModel>, channel) => {
             map[channel.id] = channel;
             return map;
         }, {});
 
-    const allChannelsInfoForTeam = (await queryAllChannelsInfoForTeam(database, teamId).fetch()).
+    const channelInfosQuery = isGraphQL ? queryAllChannelsInfo(database) : queryAllChannelsInfoForTeam(database, teamId);
+    const allChannelsInfoForTeam = (await channelInfosQuery.fetch()).
         reduce((map: Record<string, ChannelInfoModel>, info) => {
             map[info.id] = info;
             return map;
@@ -161,8 +164,16 @@ export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model
     return preparedModels;
 };
 
+export const queryAllChannels = (database: Database) => {
+    return database.get<ChannelModel>(CHANNEL).query();
+};
+
 export const queryAllChannelsForTeam = (database: Database, teamId: string) => {
     return database.get<ChannelModel>(CHANNEL).query(Q.where('team_id', teamId));
+};
+
+export const queryAllChannelsInfo = (database: Database) => {
+    return database.get<ChannelInfoModel>(CHANNEL_INFO).query();
 };
 
 export const queryAllChannelsInfoForTeam = (database: Database, teamId: string) => {
@@ -211,8 +222,8 @@ export const observeChannel = (database: Database, channelId: string) => {
     );
 };
 
-export const getChannelByName = async (database: Database, channelName: string) => {
-    const channels = await database.get<ChannelModel>(CHANNEL).query(Q.where('name', channelName)).fetch();
+export const getChannelByName = async (database: Database, teamId: string, channelName: string) => {
+    const channels = await database.get<ChannelModel>(CHANNEL).query(Q.on(TEAM, 'id', teamId), Q.where('name', channelName)).fetch();
 
     // Check done to force types
     if (channels.length) {

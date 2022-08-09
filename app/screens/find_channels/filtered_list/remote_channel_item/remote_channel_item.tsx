@@ -101,7 +101,7 @@ const RemoteChannelItem = ({onPress, channel, teamDisplayName, testID}: Props) =
                             <Text
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
-                                testID={`${testID}.${teamDisplayName}.display_name`}
+                                testID={`${testID}.${channel.name}.team_display_name`}
                                 style={styles.teamName}
                             >
                                 {teamDisplayName}
@@ -112,7 +112,7 @@ const RemoteChannelItem = ({onPress, channel, teamDisplayName, testID}: Props) =
                             <Text
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
-                                testID={`${testID}.${teamDisplayName}.display_name`}
+                                testID={`${testID}.${channel.name}.team_display_name`}
                                 style={[styles.teamName, styles.teamNameTablet]}
                             >
                                 {teamDisplayName}

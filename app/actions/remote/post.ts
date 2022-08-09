@@ -130,30 +130,9 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
 
     const isCRTEnabled = await getIsCRTEnabled(database);
 
+    let created;
     try {
-        const created = await client.createPost(newPost);
-        const models = await operator.handlePosts({
-            actionType: ActionType.POSTS.RECEIVED_NEW,
-            order: [created.id],
-            posts: [created],
-            prepareRecordsOnly: true,
-        });
-        const isCrtReply = isCRTEnabled && created.root_id !== '';
-        if (!isCrtReply) {
-            const {member} = await updateLastPostAt(serverUrl, created.channel_id, created.create_at, true);
-            if (member) {
-                models.push(member);
-            }
-        }
-        if (isCRTEnabled) {
-            const {models: threadModels} = await createThreadFromNewPost(serverUrl, created, true);
-            if (threadModels?.length) {
-                models.push(...threadModels);
-            }
-        }
-        await operator.batchRecords(models);
-
-        newPost = created;
+        created = await client.createPost(newPost);
     } catch (error: any) {
         const errorPost = {
             ...newPost,
@@ -187,7 +166,32 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
             }
             await operator.batchRecords(models);
         }
+
+        return {data: true};
     }
+
+    const models = await operator.handlePosts({
+        actionType: ActionType.POSTS.RECEIVED_NEW,
+        order: [created.id],
+        posts: [created],
+        prepareRecordsOnly: true,
+    });
+    const isCrtReply = isCRTEnabled && created.root_id !== '';
+    if (!isCrtReply) {
+        const {member} = await updateLastPostAt(serverUrl, created.channel_id, created.create_at, true);
+        if (member) {
+            models.push(member);
+        }
+    }
+    if (isCRTEnabled) {
+        const {models: threadModels} = await createThreadFromNewPost(serverUrl, created, true);
+        if (threadModels?.length) {
+            models.push(...threadModels);
+        }
+    }
+    await operator.batchRecords(models);
+
+    newPost = created;
 
     return {data: true};
 }
@@ -322,11 +326,6 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
 }
 
 export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: Channel[], memberships: ChannelMembership[], excludeChannelId?: string, emitEvent = false) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
     try {
         const promises = [];
         if (emitEvent) {
@@ -343,6 +342,9 @@ export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: C
             DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
         }
     } catch (error) {
+        if (emitEvent) {
+            DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
+        }
         return {error};
     }
 
@@ -568,7 +570,7 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
     }
 };
 
-export async function fetchPostThread(serverUrl: string, postId: string, fetchOnly = false): Promise<PostsRequest> {
+export async function fetchPostThread(serverUrl: string, postId: string, options?: FetchPaginatedThreadOptions, fetchOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -583,14 +585,23 @@ export async function fetchPostThread(serverUrl: string, postId: string, fetchOn
 
     try {
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
-        const data = await client.getPostThread(postId, isCRTEnabled, isCRTEnabled);
+
+        // Not doing any version check as server versions below 6.7 will ignore the additional params from the client.
+        const data = await client.getPostThread(postId, {
+            collapsedThreads: isCRTEnabled,
+            collapsedThreadsExtended: isCRTEnabled,
+            ...options,
+        });
         const result = processPostsFetched(data);
+        let posts: Model[] = [];
         if (!fetchOnly) {
-            const models = await operator.handlePosts({
+            const models: Model[] = [];
+            posts = await operator.handlePosts({
                 ...result,
                 actionType: ActionType.POSTS.RECEIVED_IN_THREAD,
                 prepareRecordsOnly: true,
             });
+            models.push(...posts);
 
             const {authors} = await fetchPostAuthors(serverUrl, result.posts, true);
             if (authors?.length) {
@@ -609,7 +620,7 @@ export async function fetchPostThread(serverUrl: string, postId: string, fetchOn
             }
             await operator.batchRecords(models);
         }
-        return result;
+        return {posts: extractRecordsForTable<PostModel>(posts, MM_TABLES.SERVER.POST)};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -632,14 +643,18 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
     try {
         const [after, post, before] = await Promise.all<PostsObjectsRequest>([
             client.getPostsAfter(channelId, postId, 0, perPage, isCRTEnabled, isCRTEnabled),
-            client.getPostThread(postId, isCRTEnabled, isCRTEnabled),
+            client.getPostThread(postId, {
+                collapsedThreads: isCRTEnabled,
+                collapsedThreadsExtended: isCRTEnabled,
+                fetchAll: true,
+            }),
             client.getPostsBefore(channelId, postId, 0, perPage, isCRTEnabled, isCRTEnabled),
         ]);
 
         const preData: PostResponse = {
             posts: {
                 ...filterPostsInOrderedArray(after.posts, after.order),
-                postId: post.posts![postId],
+                [postId]: post.posts![postId],
                 ...filterPostsInOrderedArray(before.posts, before.order),
             },
             order: [],

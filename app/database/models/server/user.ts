@@ -6,7 +6,6 @@ import {children, field, json} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import ThreadParticipantsModel from '@typings/database/models/servers/thread_participant';
 import {safeParseJSON} from '@utils/helpers';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -15,6 +14,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
+import type ThreadParticipantsModel from '@typings/database/models/servers/thread_participant';
 import type UserModelInterface from '@typings/database/models/servers/user';
 import type {UserMentionKey} from '@typings/global/markdown';
 

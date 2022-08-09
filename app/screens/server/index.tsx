@@ -15,7 +15,7 @@ import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import ClientError from '@client/rest/error';
 import AppVersion from '@components/app_version';
-import {Screens} from '@constants';
+import {Screens, Launch} from '@constants';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
@@ -24,7 +24,6 @@ import {queryServerByDisplayName, queryServerByIdentifier} from '@queries/app/se
 import Background from '@screens/background';
 import {dismissModal, goToScreen, loginAnimationOptions} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {getErrorMessage} from '@utils/client_error';
 import {alertPushProxyError, alertPushProxyUnknown} from '@utils/push_proxy';
 import {loginOptions} from '@utils/server';
@@ -33,6 +32,8 @@ import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 
 import ServerForm from './form';
 import ServerHeader from './header';
+
+import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 
 interface ServerProps extends LaunchProps {
     closeButtonId?: string;
@@ -78,7 +79,7 @@ const Server = ({
         let serverUrl: string | undefined = defaultServerUrl || managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
         let autoconnect = managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl;
 
-        if (launchType === LaunchType.DeepLink) {
+        if (launchType === Launch.DeepLink) {
             const deepLinkServerUrl = (extra as DeepLinkWithData).data?.serverUrl;
             if (managedConfig) {
                 autoconnect = (managedConfig.allowOtherServers === 'false' && managedConfig.serverUrl === deepLinkServerUrl);
@@ -92,7 +93,7 @@ const Server = ({
                 autoconnect = true;
                 serverUrl = deepLinkServerUrl;
             }
-        } else if (launchType === LaunchType.AddServer) {
+        } else if (launchType === Launch.AddServer) {
             serverName = defaultDisplayName;
             serverUrl = defaultServerUrl;
         }
@@ -335,11 +336,11 @@ const Server = ({
                     style={styles.flex}
                 >
                     <ServerHeader
-                        additionalServer={launchType === LaunchType.AddServer}
+                        additionalServer={launchType === Launch.AddServer}
                         theme={theme}
                     />
                     <ServerForm
-                        autoFocus={launchType === LaunchType.AddServer}
+                        autoFocus={launchType === Launch.AddServer}
                         buttonDisabled={buttonDisabled}
                         connecting={connecting}
                         displayName={displayName}

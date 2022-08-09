@@ -34,7 +34,6 @@ const CategoryHandler = (superclass: any) => class extends superclass {
      * @param {HandleCategoryArgs} categoriesArgs
      * @param {Category[]} categoriesArgs.categories
      * @param {boolean} categoriesArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<CategoryModel[]>}
      */
     handleCategories = async ({categories, prepareRecordsOnly = true}: HandleCategoryArgs): Promise<CategoryModel[]> => {
@@ -51,7 +50,7 @@ const CategoryHandler = (superclass: any) => class extends superclass {
         const exists = await db.get<CategoryModel>(CATEGORY).query(
             Q.where('id', Q.oneOf(ids)),
         ).fetch();
-        const categoryMap = new Map<String, CategoryModel>(exists.map((c) => [c.id, c]));
+        const categoryMap = new Map<string, CategoryModel>(exists.map((c) => [c.id, c]));
         const createOrUpdateRawValues = uniqueRaws.reduce((res: Category[], c) => {
             const e = categoryMap.get(c.id);
             if (!e) {
@@ -85,9 +84,8 @@ const CategoryHandler = (superclass: any) => class extends superclass {
     /**
      * handleCategoryChannels: Handler responsible for the Create/Update operations occurring on the CategoryChannel table from the 'Server' schema
      * @param {HandleCategoryChannelArgs} categoriesArgs
-     * @param {CategoryChannel[]} categoriesArgs.categorychannels
+     * @param {CategoryChannel[]} categoriesArgs.categoryChannels
      * @param {boolean} categoriesArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<CategoryChannelModel[]>}
      */
     handleCategoryChannels = async ({categoryChannels, prepareRecordsOnly = true}: HandleCategoryChannelArgs): Promise<CategoryModel[]> => {

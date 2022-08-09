@@ -1,14 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {ProfilePicture} from '@support/ui/component';
 import {expect} from 'detox';
 
 class ReactionsScreen {
     testID = {
-        reactorItemPrefix: 'reactors_list.user_item.',
+        reactorItemPrefix: 'reactions.reactor_item.',
         reactionsScreen: 'reactions.screen',
         reactionsBackdrop: 'reactions.backdrop',
-        flatReactorsList: 'reactors_list.flat_list',
+        flatReactorsList: 'reactions.reactors_list.flat_list',
     };
 
     reactionsScreen = element(by.id(this.testID.reactionsScreen));
@@ -30,16 +31,16 @@ class ReactionsScreen {
         const reactorItemEmojiAliasesMatcher = by.id(`emoji_aliases.${emojiName}`);
         const reactorItemUserTestId = `${this.testID.reactorItemPrefix}${userId}`;
         const reactorItemUserMatcher = by.id(reactorItemUserTestId);
-        const reactorItemUserProfilePictureMatcher = by.id(`${reactorItemUserTestId}.profile_picture`);
+        const reactorItemUserProfilePictureMatcher = ProfilePicture.getProfilePictureItemMatcher(this.testID.reactorItemPrefix, userId);
         const reactorItemUserDisplayNameMatcher = by.id(`${reactorItemUserTestId}.display_name`);
-        const reactorItemUserUsernameMatcher = by.id(`${reactorItemUserTestId}.username`);
+        const reactorItemUsernameMatcher = by.id(`${reactorItemUserTestId}.username`);
 
         return {
             reactorItemEmojiAliases: element(reactorItemEmojiAliasesMatcher),
             reactorItemUser: element(reactorItemUserMatcher),
             reactorItemUserProfilePicture: element(reactorItemUserProfilePictureMatcher),
             reactorItemUserDisplayName: element(reactorItemUserDisplayNameMatcher),
-            reactorItemUserUsername: element(reactorItemUserUsernameMatcher),
+            reactorItemUsername: element(reactorItemUsernameMatcher),
         };
     };
 }

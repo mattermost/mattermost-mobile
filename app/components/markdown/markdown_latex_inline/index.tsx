@@ -57,6 +57,7 @@ const LatexInline = ({content, maxMathWidth, theme}: Props) => {
             <View
                 style={style.viewStyle}
                 key={content}
+                testID='markdown_latex_inline'
             >
                 <MathView
                     style={[style.mathStyle, {maxWidth: maxMathWidth || '100%'}]}

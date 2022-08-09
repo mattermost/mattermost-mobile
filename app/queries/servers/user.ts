@@ -108,8 +108,8 @@ export const observeUserIsTeamAdmin = (database: Database, userId: string, teamI
     );
 };
 
-export const observeUserIsChannelAdmin = (database: Database, userId: string, teamId: string) => {
-    const id = `${teamId}-${userId}`;
+export const observeUserIsChannelAdmin = (database: Database, userId: string, channelId: string) => {
+    const id = `${channelId}-${userId}`;
     return database.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(
         Q.where('id', Q.eq(id)),
     ).observe().pipe(

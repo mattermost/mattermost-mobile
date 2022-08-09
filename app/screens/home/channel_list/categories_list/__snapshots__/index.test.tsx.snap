@@ -170,9 +170,7 @@ exports[`components/categories_list should render channels error 1`] = `
           }
         }
         testID="channel_list_header.server_display_name"
-      >
-        
-      </Text>
+      />
       <View
         animatedStyle={
           Object {
@@ -409,9 +407,7 @@ exports[`components/categories_list should render team error 1`] = `
             }
           }
           testID="channel_list_header.team_display_name"
-        >
-          
-        </Text>
+        />
       </View>
       <View
         accessible={true}

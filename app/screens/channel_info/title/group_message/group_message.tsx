@@ -40,7 +40,10 @@ const GroupMessage = ({currentUserId, displayName, members}: Props) => {
             <GroupAvatars
                 userIds={userIds}
             />
-            <Text style={styles.title}>
+            <Text
+                style={styles.title}
+                testID='channel_info.title.group_message.display_name'
+            >
                 {displayName}
             </Text>
         </>

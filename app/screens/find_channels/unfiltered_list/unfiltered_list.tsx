@@ -69,7 +69,7 @@ const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, un
         switchToChannelById(serverUrl, channelId);
     }, [serverUrl, close]);
 
-    const renderSectionHeader = useCallback(({section}) => (
+    const renderSectionHeader = useCallback(({section}: SectionListRenderItemInfo<ChannelModel>) => (
         <FindChannelsHeader sectionName={intl.formatMessage({id: section.id, defaultMessage: section.defaultMessage})}/>
     ), [intl.locale]);
 
@@ -80,7 +80,7 @@ const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, un
                 isInfo={true}
                 onPress={onPress}
                 showTeamName={showTeamName}
-                testID='find_channels.unfiltered_list.channel_item'
+                testID={`${testID}.channel_item`}
             />
         );
     }, [onPress, showTeamName]);

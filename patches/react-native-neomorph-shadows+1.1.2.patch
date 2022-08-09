@@ -1,0 +1,10 @@
+diff --git a/node_modules/react-native-neomorph-shadows/src/types.js b/node_modules/react-native-neomorph-shadows/src/types.js
+index a2098cc..adc0734 100644
+--- a/node_modules/react-native-neomorph-shadows/src/types.js
++++ b/node_modules/react-native-neomorph-shadows/src/types.js
+@@ -1,4 +1,4 @@
+-import { ViewPropTypes } from 'react-native';
++import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+ import { number, shape, string, node, bool } from 'prop-types';
+ 
+ export const ShadowARTType = {

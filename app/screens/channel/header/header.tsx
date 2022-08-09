@@ -9,6 +9,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import NavigationHeader from '@components/navigation_header';
+import {ITEM_HEIGHT} from '@components/option_item';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {General, Screens} from '@constants';
 import {QUICK_OPTIONS_HEIGHT} from '@constants/view';
@@ -16,6 +17,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
+import {isTypeDMorGM} from '@utils/channel';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -36,6 +38,7 @@ type ChannelProps = {
     memberCount?: number;
     searchTerm: string;
     teamId: string;
+    callsEnabled: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -63,7 +66,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const ChannelHeader = ({
     channelId, channelType, componentId, customStatus, displayName,
     isCustomStatusExpired, isOwnDirectMessage, memberCount,
-    searchTerm, teamId,
+    searchTerm, teamId, callsEnabled,
 }: ChannelProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -72,6 +75,7 @@ const ChannelHeader = ({
     const defaultHeight = useDefaultHeaderHeight();
     const insets = useSafeAreaInsets();
 
+    const isDMorGM = isTypeDMorGM(channelType);
     const contextStyle = useMemo(() => ({
         top: defaultHeight + insets.top,
     }), [defaultHeight, insets.top]);
@@ -114,7 +118,6 @@ const ChannelHeader = ({
                     testID: 'close.channel_info.button',
                 }],
             },
-            modal: {swipeToDismiss: false},
         };
         showModal(Screens.CHANNEL_INFO, title, {channelId, closeButtonId}, options);
     }), [channelId, channelType, intl, theme]);
@@ -125,20 +128,27 @@ const ChannelHeader = ({
             return;
         }
 
+        // When calls is enabled, we need space to move the "Copy Link" from a button to an option
+        const height = QUICK_OPTIONS_HEIGHT + (callsEnabled && !isDMorGM ? ITEM_HEIGHT : 0);
+
         const renderContent = () => {
             return (
-                <QuickActions channelId={channelId}/>
+                <QuickActions
+                    channelId={channelId}
+                    callsEnabled={callsEnabled}
+                    isDMorGM={isDMorGM}
+                />
             );
         };
 
         bottomSheet({
             title: '',
             renderContent,
-            snapPoints: [QUICK_OPTIONS_HEIGHT, 10],
+            snapPoints: [height, 10],
             theme,
             closeButtonId: 'close-channel-quick-actions',
         });
-    }, [channelId, channelType, isTablet, onTitlePress, theme]);
+    }, [channelId, isDMorGM, isTablet, onTitlePress, theme, callsEnabled]);
 
     const rightButtons: HeaderRightButton[] = useMemo(() => ([
 
@@ -155,6 +165,7 @@ const ChannelHeader = ({
             iconName: Platform.select({android: 'dots-vertical', default: 'dots-horizontal'}),
             onPress: onChannelQuickAction,
             buttonType: 'opacity',
+            testID: 'channel_header.channel_quick_actions.button',
         }]), [isTablet, searchTerm, onChannelQuickAction]);
 
     let title = displayName;

@@ -19,7 +19,6 @@ import {registerScreens} from './app/screens';
 import NavigationStore from './app/store/navigation_store';
 import setFontFamily from './app/utils/font_family';
 import {logInfo} from './app/utils/log';
-import './app/utils/emoji'; // Imported to ensure it is loaded when used
 
 declare const global: { HermesInternal: null | {} };
 
@@ -29,7 +28,6 @@ if (__DEV__) {
         'scaleY',
         "[react-native-gesture-handler] Seems like you're using an old API with gesture components, check out new Gestures system!",
         'new NativeEventEmitter',
-        'ViewPropTypes will be removed from React Native',
     ]);
 
     // Ignore all notifications if running e2e
@@ -100,10 +98,6 @@ function screenDidDisappearListener({componentId}: ComponentDidDisappearEvent) {
     if (componentId !== Screens.HOME) {
         if ([Screens.EDIT_POST, Screens.THREAD].includes(componentId)) {
             DeviceEventEmitter.emit(Events.PAUSE_KEYBOARD_TRACKING_VIEW, false);
-        }
-
-        if (NavigationStore.getNavigationTopComponentId() === componentId) {
-            NavigationStore.removeNavigationComponentId(componentId);
         }
 
         if (NavigationStore.getNavigationTopComponentId() === Screens.HOME) {

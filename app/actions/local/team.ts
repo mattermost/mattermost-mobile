@@ -5,6 +5,8 @@ import DatabaseManager from '@database/manager';
 import {prepareDeleteTeam, getMyTeamById, queryTeamSearchHistoryByTeamId, removeTeamFromTeamHistory, getTeamSearchHistoryById} from '@queries/servers/team';
 import {logError} from '@utils/log';
 
+import type Model from '@nozbe/watermelondb/Model';
+
 export async function removeUserFromTeam(serverUrl: string, teamId: string) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -36,22 +38,31 @@ export async function addSearchToTeamSearchHistory(serverUrl: string, teamId: st
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const newSearch: TeamSearchHistory = {
-            created_at: 0,
+            created_at: Date.now(),
             display_term: terms,
             term: terms,
             team_id: teamId,
         };
-        await operator.handleTeamSearchHistory({teamSearchHistories: [newSearch], prepareRecordsOnly: false});
 
-        const teamSearchHistory = await queryTeamSearchHistoryByTeamId(database, teamId).fetch();
-        if (teamSearchHistory.length > MAX_TEAM_SEARCHES) {
-            const lastSearch = teamSearchHistory.pop();
-            await database.write(async () => {
-                await lastSearch?.destroyPermanently();
-            });
+        const models: Model[] = [];
+        const searchModels = await operator.handleTeamSearchHistory({teamSearchHistories: [newSearch], prepareRecordsOnly: true});
+        const searchModel = searchModels[0];
+
+        models.push(searchModel);
+
+        // determine if need to delete the oldest entry
+        if (searchModel._raw._changed !== 'created_at') {
+            const teamSearchHistory = await queryTeamSearchHistoryByTeamId(database, teamId).fetch();
+            if (teamSearchHistory.length > MAX_TEAM_SEARCHES) {
+                const lastSearches = teamSearchHistory.slice(MAX_TEAM_SEARCHES);
+                for (const lastSearch of lastSearches) {
+                    models.push(lastSearch.prepareDestroyPermanently());
+                }
+            }
         }
 
-        return {error: undefined};
+        await operator.batchRecords(models);
+        return {searchModel};
     } catch (error) {
         logError('Failed addSearchToTeamSearchHistory', error);
         return {error};
@@ -62,9 +73,11 @@ export async function removeSearchFromTeamSearchHistory(serverUrl: string, id: s
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const teamSearch = await getTeamSearchHistoryById(database, id);
-        await database.write(async () => {
-            await teamSearch?.destroyPermanently();
-        });
+        if (teamSearch) {
+            await database.write(async () => {
+                await teamSearch.destroyPermanently();
+            });
+        }
         return {teamSearch};
     } catch (error) {
         logError('Failed removeSearchFromTeamSearchHistory', error);

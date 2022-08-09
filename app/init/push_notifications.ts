@@ -17,6 +17,7 @@ import {
 import {storeDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
 import {backgroundNotification, openNotification} from '@actions/remote/notifications';
+import {markThreadAsRead} from '@actions/remote/thread';
 import {Device, Events, Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getTotalMentionsForServer} from '@database/subscription/unreads';
@@ -24,7 +25,7 @@ import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import NativeNotifications from '@notifications';
 import {queryServerName} from '@queries/app/servers';
 import {getCurrentChannelId} from '@queries/servers/system';
-import {getIsCRTEnabled} from '@queries/servers/thread';
+import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
 import {showOverlay} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
@@ -55,9 +56,9 @@ class PushNotifications {
         Notifications.cancelAllLocalNotifications();
     };
 
-    cancelChannelNotifications = async (channelId: string) => {
+    cancelChannelNotifications = async (channelId: string, rootId?: string, isCRTEnabled?: boolean) => {
         const notifications = await NativeNotifications.getDeliveredNotifications();
-        this.cancelNotificationsForChannel(notifications, channelId);
+        this.cancelNotificationsForChannel(notifications, channelId, rootId, isCRTEnabled);
     };
 
     cancelChannelsNotifications = async (channelIds: string[]) => {
@@ -67,15 +68,25 @@ class PushNotifications {
         }
     };
 
-    cancelNotificationsForChannel = (notifications: NotificationWithChannel[], channelId: string) => {
+    cancelNotificationsForChannel = (notifications: NotificationWithChannel[], channelId: string, rootId?: string, isCRTEnabled?: boolean) => {
         if (Platform.OS === 'android') {
-            NativeNotifications.removeDeliveredNotifications(channelId);
+            NativeNotifications.removeDeliveredNotifications(channelId, rootId, isCRTEnabled);
         } else {
             const ids: string[] = [];
+            const clearThreads = Boolean(rootId);
 
             for (const notification of notifications) {
                 if (notification.channel_id === channelId) {
-                    ids.push(notification.identifier);
+                    let doesNotificationMatch = true;
+                    if (clearThreads) {
+                        doesNotificationMatch = notification.thread === rootId;
+                    } else if (isCRTEnabled) {
+                        // Do not match when CRT is enabled BUT post is not a root post
+                        doesNotificationMatch = !notification.root_id;
+                    }
+                    if (doesNotificationMatch) {
+                        ids.push(notification.identifier);
+                    }
                 }
             }
 
@@ -128,9 +139,13 @@ class PushNotifications {
             if (database) {
                 const isCRTEnabled = await getIsCRTEnabled(database);
                 if (isCRTEnabled && payload.root_id) {
-                    return;
+                    const thread = await getThreadById(database, payload.root_id);
+                    if (thread?.isFollowing) {
+                        markThreadAsRead(serverUrl, payload.team_id, payload.post_id);
+                    }
+                } else {
+                    markChannelAsViewed(serverUrl, payload.channel_id, false);
                 }
-                markChannelAsViewed(serverUrl, payload.channel_id, false);
             }
         }
     };
@@ -149,7 +164,7 @@ class PushNotifications {
             }
 
             const isDifferentChannel = payload?.channel_id !== channelId;
-            const isVisibleThread = payload?.root_id === EphemeralStore.getLastViewedThreadId() && NavigationStore.getNavigationTopComponentId() === Screens.THREAD;
+            const isVisibleThread = payload?.root_id === EphemeralStore.getCurrentThreadId();
             let isChannelScreenVisible = NavigationStore.getNavigationTopComponentId() === Screens.CHANNEL;
             if (isTabletDevice) {
                 isChannelScreenVisible = NavigationStore.getVisibleTab() === Screens.HOME;
@@ -221,11 +236,13 @@ class PushNotifications {
 
     // This triggers when a notification is tapped and the app was in the background (iOS)
     onNotificationOpened = (incoming: Notification, completion: () => void) => {
-        const notification = convertToNotificationData(incoming, false);
-        notification.userInteraction = true;
+        if (Platform.OS === 'ios') {
+            const notification = convertToNotificationData(incoming, false);
+            notification.userInteraction = true;
 
-        this.processNotification(notification);
-        completion();
+            this.processNotification(notification);
+            completion();
+        }
     };
 
     // This triggers when the app was in the background (iOS)

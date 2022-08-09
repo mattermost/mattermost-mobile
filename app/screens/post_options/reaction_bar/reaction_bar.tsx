@@ -62,7 +62,7 @@ const ReactionBar = ({recentEmojis = [], postId}: QuickReactionProps) => {
         const title = intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
         const passProps = {closeButton, onEmojiPress: handleEmojiPress};
 
-        showModal(screen, title, passProps, {modal: {swipeToDismiss: false}});
+        showModal(screen, title, passProps);
     }, [intl, theme]);
 
     let containerSize = LARGE_CONTAINER_SIZE;

@@ -2,37 +2,35 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {Platform, StyleProp, Switch, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {Platform, StyleProp, Switch, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-type Props = {
-    action: (value: string | boolean) => void;
-    description?: string;
-    inline?: boolean;
-    destructive?: boolean;
-    icon?: string;
-    info?: string;
-    label: string;
-    selected?: boolean;
-    testID?: string;
-    type: OptionType;
-    value?: string;
-    containerStyle?: StyleProp<ViewStyle>;
-}
+import RadioItem, {RadioItemProps} from './radio_item';
 
-const OptionType = {
+const TouchableOptionTypes = {
     ARROW: 'arrow',
     DEFAULT: 'default',
-    TOGGLE: 'toggle',
+    RADIO: 'radio',
+    REMOVE: 'remove',
     SELECT: 'select',
+};
+
+const OptionType = {
+    NONE: 'none',
+    TOGGLE: 'toggle',
+    ...TouchableOptionTypes,
 } as const;
 
 type OptionType = typeof OptionType[keyof typeof OptionType];
 
+export const ITEM_HEIGHT = 48;
+
+const hitSlop = {top: 11, bottom: 11, left: 11, right: 11};
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         actionContainer: {
@@ -43,7 +41,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             flexDirection: 'row',
             alignItems: 'center',
-            minHeight: 48,
+            minHeight: ITEM_HEIGHT,
         },
         destructive: {
             color: theme.dndIndicator,
@@ -84,6 +82,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             ...typography('Body', 200),
         },
+        removeContainer: {
+            flex: 1,
+            alignItems: 'flex-end',
+            color: theme.centerChannelColor,
+            marginRight: 20,
+            ...typography('Body', 200),
+        },
         row: {
             flex: 1,
             flexDirection: 'row',
@@ -91,11 +96,45 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+export type OptionItemProps = {
+    action?: (React.Dispatch<React.SetStateAction<string | boolean>>)|((value: string | boolean) => void);
+    arrowStyle?: StyleProp<ViewStyle>;
+    containerStyle?: StyleProp<ViewStyle>;
+    description?: string;
+    destructive?: boolean;
+    icon?: string;
+    info?: string;
+    inline?: boolean;
+    label: string;
+    onRemove?: () => void;
+    optionDescriptionTextStyle?: StyleProp<TextStyle>;
+    optionLabelTextStyle?: StyleProp<TextStyle>;
+    radioItemProps?: Partial<RadioItemProps>;
+    selected?: boolean;
+    testID?: string;
+    type: OptionType;
+    value?: string;
+}
+
 const OptionItem = ({
-    action, description, destructive, icon,
-    info, inline = false, label, selected,
-    testID = 'optionItem', type, value, containerStyle,
-}: Props) => {
+    action,
+    arrowStyle,
+    containerStyle,
+    description,
+    destructive,
+    icon,
+    info,
+    inline = false,
+    label,
+    onRemove,
+    optionDescriptionTextStyle,
+    optionLabelTextStyle,
+    radioItemProps,
+    selected,
+    testID = 'optionItem',
+    type,
+    value,
+}: OptionItemProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -120,6 +159,7 @@ const OptionItem = ({
     }, [destructive, styles, isInLine]);
 
     let actionComponent;
+    let radioComponent;
     if (type === OptionType.SELECT && selected) {
         actionComponent = (
             <CompassIcon
@@ -127,6 +167,13 @@ const OptionItem = ({
                 name='check'
                 size={24}
                 testID={`${testID}.selected`}
+            />
+        );
+    } else if (type === OptionType.RADIO) {
+        radioComponent = (
+            <RadioItem
+                selected={Boolean(selected)}
+                {...radioItemProps}
             />
         );
     } else if (type === OptionType.TOGGLE) {
@@ -152,12 +199,28 @@ const OptionItem = ({
                 color={changeOpacity(theme.centerChannelColor, 0.32)}
                 name='chevron-right'
                 size={24}
+                style={arrowStyle}
             />
+        );
+    } else if (type === OptionType.REMOVE) {
+        actionComponent = (
+            <TouchableWithFeedback
+                hitSlop={hitSlop}
+                onPress={onRemove}
+                style={[styles.iconContainer]}
+                type='opacity'
+            >
+                <CompassIcon
+                    name={'close'}
+                    size={18}
+                    color={changeOpacity(theme.centerChannelColor, 0.64)}
+                />
+            </TouchableWithFeedback>
         );
     }
 
     const onPress = useCallback(() => {
-        action(value || '');
+        action?.(value || '');
     }, [value, action]);
 
     const component = (
@@ -176,16 +239,17 @@ const OptionItem = ({
                             />
                         </View>
                     )}
+                    {type === OptionType.RADIO && radioComponent}
                     <View style={labelStyle}>
                         <Text
-                            style={labelTextStyle}
+                            style={[labelTextStyle, optionLabelTextStyle]}
                             testID={`${testID}.label`}
                         >
                             {label}
                         </Text>
                         {Boolean(description) &&
                         <Text
-                            style={descriptionTextStyle}
+                            style={[descriptionTextStyle, optionDescriptionTextStyle]}
                             testID={`${testID}.description`}
                         >
                             {description}
@@ -196,10 +260,11 @@ const OptionItem = ({
             </View>
             {Boolean(actionComponent || info) &&
             <View style={styles.actionContainer}>
-                {Boolean(info) &&
-                <View style={styles.infoContainer}>
-                    <Text style={styles.info}>{info}</Text>
-                </View>
+                {
+                    Boolean(info) &&
+                    <View style={styles.infoContainer}>
+                        <Text style={[styles.info, destructive && {color: theme.dndIndicator}]}>{info}</Text>
+                    </View>
                 }
                 {actionComponent}
             </View>
@@ -207,7 +272,7 @@ const OptionItem = ({
         </View>
     );
 
-    if (type === OptionType.DEFAULT || type === OptionType.SELECT || type === OptionType.ARROW) {
+    if (Object.values(TouchableOptionTypes).includes(type)) {
         return (
             <TouchableOpacity onPress={onPress}>
                 {component}

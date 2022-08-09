@@ -12,10 +12,10 @@ import AutocompleteSelector from '@components/autocomplete_selector';
 import {AppBindingLocations, AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import {observeCurrentTeamId} from '@queries/servers/system';
-import {WithDatabaseArgs} from '@typings/database/database';
 import {createCallContext} from '@utils/apps';
 import {logDebug} from '@utils/log';
 
+import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 

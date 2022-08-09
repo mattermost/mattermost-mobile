@@ -41,12 +41,38 @@ extension Network {
             endpoint = "/posts/\(rootId)/thread\(queryParams)\(additionalParams)"
         } else {
             let queryParams = since == nil ?
-                "?page=0&per_page=\(POST_CHUNK_SIZE)" :
-                "?since=\(since!)"
+            "?page=0&per_page=\(POST_CHUNK_SIZE)" :
+            "?since=\(since!)"
             endpoint = "/channels/\(channelId)/posts\(queryParams)\(additionalParams)"
         }
         let url = buildApiUrl(serverUrl, endpoint)
         
         return request(url, withMethod: "GET", withServerUrl: serverUrl, completionHandler: completionHandler)
+    }
+    
+    public func createPost(serverUrl: String, channelId: String, message: String, fileIds: [String], completionHandler: @escaping ResponseHandler) {
+        do {
+            if !message.isEmpty || !fileIds.isEmpty {
+                let json: [String: Any] = [
+                    "channel_id": channelId,
+                    "message": message,
+                    "file_ids": fileIds
+                ]
+                let data = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+                let headers = ["Content-Type": "application/json; charset=utf-8"]
+                let endpoint = "/posts"
+                let url = buildApiUrl(serverUrl, endpoint)
+                request(
+                    url,
+                    withMethod: "POST",
+                    withBody: data,
+                    withHeaders: headers,
+                    withServerUrl: serverUrl,
+                    completionHandler: completionHandler
+                )
+            }
+        } catch {
+            
+        }
     }
 }

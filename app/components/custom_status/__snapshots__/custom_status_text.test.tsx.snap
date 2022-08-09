@@ -31,7 +31,5 @@ exports[`components/custom_status/custom_status_text should match snapshot with 
       undefined,
     ]
   }
->
-  
-</Text>
+/>
 `;

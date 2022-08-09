@@ -24,6 +24,7 @@ const DestructiveOptions = ({channelId, componentId, type}: Props) => {
             <LeaveChannelLabel
                 channelId={channelId}
                 isOptionItem={true}
+                testID='channel_info.options.leave_channel.option'
             />
             {type !== General.DM_CHANNEL && type !== General.GM_CHANNEL &&
             <Archive

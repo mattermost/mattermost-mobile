@@ -10,10 +10,10 @@ import {GestureResponderEvent, Keyboard, StyleProp, StyleSheet, Text, TextStyle,
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchUserOrGroupsByMentionsInBatch} from '@actions/remote/user';
-import {useServerUrl} from '@app/context/server';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import GroupModel from '@database/models/server/group';
 import UserModel from '@database/models/server/user';
@@ -22,6 +22,7 @@ import {bottomSheetSnapPoint} from '@utils/helpers';
 import {displayUsername, getUsersByUsername} from '@utils/user';
 
 import type GroupModelType from '@typings/database/models/servers/group';
+import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type UserModelType from '@typings/database/models/servers/user';
 
 type AtMentionProps = {
@@ -39,6 +40,7 @@ type AtMentionProps = {
     textStyle?: StyleProp<TextStyle>;
     users: UserModelType[];
     groups: GroupModel[];
+    groupMemberships: GroupMembershipModel[];
 }
 
 const {SERVER: {GROUP, USER}} = MM_TABLES;
@@ -62,6 +64,7 @@ const AtMention = ({
     textStyle,
     users,
     groups,
+    groupMemberships,
 }: AtMentionProps) => {
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
@@ -139,7 +142,9 @@ const AtMention = ({
     // Effects
     useEffect(() => {
         // Fetches and updates the local db store with the mention
-        fetchUserOrGroupsByMentionsInBatch(serverUrl, mentionName);
+        if (!user.username) {
+            fetchUserOrGroupsByMentionsInBatch(serverUrl, mentionName);
+        }
     }, []);
 
     const openUserProfile = () => {
@@ -223,6 +228,7 @@ const AtMention = ({
         canPress = true;
     } else if (group?.name) {
         mention = group.name;
+        highlighted = groupMemberships.some((gm) => gm.groupId === group.id);
         isMention = true;
         canPress = false;
     } else {

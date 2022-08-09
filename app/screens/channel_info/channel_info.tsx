@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect} from 'react';
+import React, {useCallback} from 'react';
 import {ScrollView, View} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import ChannelInfoEnableCalls from '@calls/components/channel_info_enable_calls';
 import ChannelActions from '@components/channel_actions';
 import {useTheme} from '@context/theme';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -21,6 +22,8 @@ type Props = {
     closeButtonId: string;
     componentId: string;
     type?: ChannelType;
+    canEnableDisableCalls: boolean;
+    isCallsEnabledInChannel: boolean;
 }
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -40,33 +43,34 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ChannelInfo = ({channelId, closeButtonId, componentId, type}: Props) => {
+const ChannelInfo = ({
+    channelId,
+    closeButtonId,
+    componentId,
+    type,
+    canEnableDisableCalls,
+    isCallsEnabledInChannel,
+}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    useEffect(() => {
-        const update = Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({buttonId}: {buttonId: string}) => {
-                if (buttonId === closeButtonId) {
-                    dismissModal({componentId});
-                }
-            },
-        }, componentId);
+    const onPressed = useCallback(() => {
+        dismissModal({componentId});
+    }, [componentId]);
 
-        return () => {
-            update.remove();
-        };
-    }, []);
+    useNavButtonPressed(closeButtonId, componentId, onPressed, []);
 
     return (
         <SafeAreaView
             edges={edges}
             style={styles.flex}
+            testID='channel_info.screen'
         >
             <ScrollView
                 bounces={true}
                 alwaysBounceVertical={false}
                 contentContainerStyle={styles.content}
+                testID='channel_info.scrollview'
             >
                 <Title
                     channelId={channelId}
@@ -75,14 +79,27 @@ const ChannelInfo = ({channelId, closeButtonId, componentId, type}: Props) => {
                 <ChannelActions
                     channelId={channelId}
                     inModal={true}
+                    dismissChannelInfo={onPressed}
+                    callsEnabled={isCallsEnabledInChannel}
+                    testID='channel_info.channel_actions'
                 />
                 <Extra channelId={channelId}/>
                 <View style={styles.separator}/>
                 <Options
                     channelId={channelId}
                     type={type}
+                    callsEnabled={isCallsEnabledInChannel}
                 />
                 <View style={styles.separator}/>
+                {canEnableDisableCalls &&
+                    <>
+                        <ChannelInfoEnableCalls
+                            channelId={channelId}
+                            enabled={isCallsEnabledInChannel}
+                        />
+                        <View style={styles.separator}/>
+                    </>
+                }
                 <DestructiveOptions
                     channelId={channelId}
                     componentId={componentId}

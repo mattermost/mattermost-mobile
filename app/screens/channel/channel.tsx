@@ -6,10 +6,14 @@ import {BackHandler, DeviceEventEmitter, NativeEventSubscription, StyleSheet, Vi
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import CurrentCallBar from '@calls/components/current_call_bar';
+import FloatingCallContainer from '@calls/components/floating_call_container';
+import JoinCallBanner from '@calls/components/join_call_banner';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import {Events} from '@constants';
 import {ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
+import {useChannelSwitch} from '@hooks/channel_switch';
 import {useAppState, useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
@@ -21,8 +25,14 @@ import ChannelPostList from './channel_post_list';
 import ChannelHeader from './header';
 
 type ChannelProps = {
+    serverUrl: string;
     channelId: string;
     componentId?: string;
+    isCallsPluginEnabled: boolean;
+    isCallInCurrentChannel: boolean;
+    isInACall: boolean;
+    isInCurrentChannelCall: boolean;
+    isCallsEnabledInChannel: boolean;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -33,14 +43,26 @@ const styles = StyleSheet.create({
     },
 });
 
-const Channel = ({channelId, componentId}: ChannelProps) => {
+const Channel = ({
+    serverUrl,
+    channelId,
+    componentId,
+    isCallsPluginEnabled,
+    isCallInCurrentChannel,
+    isInACall,
+    isInCurrentChannelCall,
+    isCallsEnabledInChannel,
+}: ChannelProps) => {
     const appState = useAppState();
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
     const [shouldRenderPosts, setShouldRenderPosts] = useState(false);
     const switchingTeam = useTeamSwitch();
+    const switchingChannels = useChannelSwitch();
     const defaultHeight = useDefaultHeaderHeight();
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
+
+    const shouldRender = !switchingTeam && !switchingChannels && shouldRenderPosts && Boolean(channelId);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.PAUSE_KEYBOARD_TRACKING_VIEW, (pause: boolean) => {
@@ -91,6 +113,22 @@ const Channel = ({channelId, componentId}: ChannelProps) => {
         };
     }, [channelId]);
 
+    let callsComponents: JSX.Element | null = null;
+    const showJoinCallBanner = isCallInCurrentChannel && !isInCurrentChannelCall;
+    if (isCallsPluginEnabled && (showJoinCallBanner || isInACall)) {
+        callsComponents = (
+            <FloatingCallContainer>
+                {showJoinCallBanner &&
+                    <JoinCallBanner
+                        serverUrl={serverUrl}
+                        channelId={channelId}
+                    />
+                }
+                {isInACall && <CurrentCallBar/>}
+            </FloatingCallContainer>
+        );
+    }
+
     return (
         <FreezeScreen>
             <SafeAreaView
@@ -99,14 +137,20 @@ const Channel = ({channelId, componentId}: ChannelProps) => {
                 edges={edges}
                 testID='channel.screen'
             >
-                <ChannelHeader componentId={componentId}/>
-                {!switchingTeam && shouldRenderPosts && Boolean(channelId) &&
+                <ChannelHeader
+                    channelId={channelId}
+                    componentId={componentId}
+                    callsEnabled={isCallsEnabledInChannel}
+                />
+                {shouldRender &&
                 <>
                     <View style={[styles.flex, {marginTop}]}>
                         <ChannelPostList
                             channelId={channelId}
                             forceQueryAfterAppState={appState}
                             nativeID={channelId}
+                            currentCallBarVisible={isInACall}
+                            joinCallBannerVisible={showJoinCallBanner}
                         />
                     </View>
                     <PostDraft
@@ -118,6 +162,7 @@ const Channel = ({channelId, componentId}: ChannelProps) => {
                     />
                 </>
                 }
+                {callsComponents}
             </SafeAreaView>
         </FreezeScreen>
     );

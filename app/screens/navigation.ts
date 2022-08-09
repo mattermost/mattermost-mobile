@@ -4,21 +4,24 @@
 /* eslint-disable max-lines */
 
 import merge from 'deepmerge';
-import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert} from 'react-native';
+import {Appearance, ScaledSize, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert} from 'react-native';
 import {ImageResource, Navigation, Options, OptionsModalPresentationStyle, OptionsTopBarButton} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
-import {Device, Events, Screens} from '@constants';
-import NavigationConstants from '@constants/navigation';
+import {ITEM_HEIGHT} from '@components/team_sidebar/add_team/team_list_item/team_list_item';
+import {Device, Events, Screens, Navigation as NavigationConstants, Launch} from '@constants';
 import {NOT_READY} from '@constants/screens';
 import {getDefaultThemeByAppearance} from '@context/theme';
+import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
-import {LaunchProps, LaunchType} from '@typings/launch';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
+import type TeamModel from '@typings/database/models/servers/team';
+import type {LaunchProps} from '@typings/launch';
 import type {NavButtons} from '@typings/screens/navigation';
 
 const {MattermostManaged} = NativeModules;
@@ -84,9 +87,6 @@ export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string) =>
         const closeButtonTestId = `${closeButtonId.replace('close-', 'close.').replace(/-/g, '_')}.button`;
         return {
             modalPresentationStyle: OptionsModalPresentationStyle.formSheet,
-            modal: {
-                swipeToDismiss: true,
-            },
             topBar: {
                 leftButtons: [{
                     id: closeButtonId,
@@ -117,7 +117,6 @@ export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string) =>
             ios: OptionsModalPresentationStyle.overFullScreen,
             default: OptionsModalPresentationStyle.overCurrentContext,
         }),
-        modal: {swipeToDismiss: true},
         statusBar: {
             backgroundColor: null,
             drawBehind: true,
@@ -187,16 +186,17 @@ function isScreenRegistered(screen: string) {
     return true;
 }
 
-export function resetToHome(passProps: LaunchProps = {launchType: LaunchType.Normal}) {
+export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}) {
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
-    if (passProps.launchType === LaunchType.AddServer) {
+    if (passProps.launchType === Launch.AddServer) {
         dismissModal({componentId: Screens.SERVER});
         dismissModal({componentId: Screens.LOGIN});
         dismissModal({componentId: Screens.SSO});
         dismissModal({componentId: Screens.BOTTOM_SHEET});
+        DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
         return;
     }
 
@@ -465,6 +465,7 @@ export function showModal(name: string, title: string, passProps = {}, options =
             leftButtonColor: theme.sidebarHeaderTextColor,
             rightButtonColor: theme.sidebarHeaderTextColor,
         },
+        modal: {swipeToDismiss: false},
     };
 
     NavigationStore.addNavigationModal(name);
@@ -542,25 +543,6 @@ export function showModalOverCurrentContext(name: string, passProps = {}, option
     };
     const mergeOptions = merge(defaultOptions, options);
     showModal(name, title, passProps, mergeOptions);
-}
-
-export function showSearchModal(initialValue = '') {
-    const name = 'Search';
-    const title = '';
-    const passProps = {initialValue};
-    const options = {
-        topBar: {
-            visible: false,
-            height: 0,
-        },
-        ...Platform.select({
-            ios: {
-                modalPresentationStyle: 'pageSheet',
-            },
-        }),
-    };
-
-    showModal(name, title, passProps, options);
 }
 
 export async function dismissModal(options?: Options & { componentId: string}) {
@@ -684,6 +666,34 @@ export async function bottomSheet({title, renderContent, snapPoints, initialSnap
     }
 }
 
+type BottomSheetWithTeamListArgs = {
+    teams: TeamModel[];
+    dimensions: ScaledSize;
+    renderContent: () => JSX.Element;
+    theme: Theme;
+    title: string;
+}
+
+export async function bottomSheetWithTeamList({title, teams, dimensions, renderContent, theme}: BottomSheetWithTeamListArgs) {
+    const NO_TEAMS_HEIGHT = 392;
+    const maxHeight = Math.round((dimensions.height * 0.9));
+
+    let height = NO_TEAMS_HEIGHT;
+    if (teams.length) {
+        const itemsHeight = bottomSheetSnapPoint(teams.length, ITEM_HEIGHT, 0);
+        const heightWithHeader = TITLE_HEIGHT + itemsHeight;
+        height = Math.min(maxHeight, heightWithHeader);
+    }
+
+    bottomSheet({
+        closeButtonId: 'close-team_list',
+        renderContent,
+        snapPoints: [height, 10],
+        theme,
+        title,
+    });
+}
+
 export async function dismissBottomSheet(alternativeScreen = Screens.BOTTOM_SHEET) {
     DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
     await NavigationStore.waitUntilScreensIsRemoved(alternativeScreen);
@@ -717,7 +727,7 @@ export const showAppForm = async (form: AppForm, call: AppCallRequest) => {
 };
 
 export async function findChannels(title: string, theme: Theme) {
-    const options: Options = {modal: {swipeToDismiss: false}};
+    const options: Options = {};
     const closeButtonId = 'close-find-channels';
     const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
     options.topBar = {

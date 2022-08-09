@@ -10,7 +10,6 @@
 import {
     Post,
     Setup,
-    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -36,12 +35,6 @@ describe('Threads - Open Thread in Channel', () => {
     let testChannel: any;
 
     beforeAll(async () => {
-        System.apiUpdateConfig(siteOneUrl, {
-            ServiceSettings: {
-                CollapsedThreads: 'default_on',
-            },
-        });
-
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
 
@@ -113,7 +106,7 @@ describe('Threads - Open Thread in Channel', () => {
         await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
 
         // # Open thread options for thread, tap on copy link option, go back to channel list screen, go to another channel, post the permalink, and tap on permalink
-        const permalinkLabel = `permalink-${Date.now().toString()}`;
+        const permalinkLabel = `permalink-${getRandomId()}`;
         const permalinkMessage = `[${permalinkLabel}](/_redirect/pl/${parentPost.id})`;
         await GlobalThreadsScreen.back();
         await ChannelScreen.open(channelsCategory, 'off-topic');

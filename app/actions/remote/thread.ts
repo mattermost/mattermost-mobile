@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {markTeamThreadsAsRead, processReceivedThreads, switchToThread, updateThread} from '@actions/local/thread';
+import {markTeamThreadsAsRead, markThreadAsViewed, processReceivedThreads, switchToThread, updateThread} from '@actions/local/thread';
 import {fetchPostThread} from '@actions/remote/post';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
+import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
-import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {getCommonSystemValues, getCurrentTeamId} from '@queries/servers/system';
 import {getIsCRTEnabled, getNewestThreadInTeam, getThreadById} from '@queries/servers/thread';
@@ -40,7 +40,6 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, 
     }
 
     // Load thread before we open to the thread modal
-    // @Todo: https://mattermost.atlassian.net/browse/MM-42232
     fetchPostThread(serverUrl, rootId);
 
     // Mark thread as read
@@ -50,10 +49,7 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, 
         if (post) {
             const thread = await getThreadById(database, rootId);
             if (thread?.isFollowing) {
-                const channel = await getChannelById(database, post.channelId);
-                if (channel) {
-                    markThreadAsRead(serverUrl, channel.teamId, thread.id);
-                }
+                markThreadAsViewed(serverUrl, thread.id);
             }
         }
     }
@@ -156,7 +152,7 @@ export const updateTeamThreadsAsRead = async (serverUrl: string, teamId: string)
     }
 };
 
-export const markThreadAsRead = async (serverUrl: string, teamId: string, threadId: string) => {
+export const markThreadAsRead = async (serverUrl: string, teamId: string | undefined, threadId: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
 
     if (!database) {
@@ -186,6 +182,12 @@ export const markThreadAsRead = async (serverUrl: string, teamId: string, thread
             unread_replies: 0,
             unread_mentions: 0,
         });
+
+        const isCRTEnabled = await getIsCRTEnabled(database);
+        const post = await getPostById(database, threadId);
+        if (post) {
+            PushNotifications.cancelChannelNotifications(post.channelId, threadId, isCRTEnabled);
+        }
 
         return {data};
     } catch (error) {
@@ -218,10 +220,11 @@ export const markThreadAsUnread = async (serverUrl: string, teamId: string, thre
         const data = await client.markThreadAsUnread('me', threadTeamId, threadId, postId);
 
         // Update locally
-        const post = await getPostById(database, threadId);
+        const post = await getPostById(database, postId);
         if (post) {
             await updateThread(serverUrl, threadId, {
                 last_viewed_at: post.createAt - 1,
+                viewed_at: post.createAt - 1,
             });
         }
 

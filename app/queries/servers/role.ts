@@ -37,7 +37,10 @@ export const queryRolesByNames = (database: Database, names: string[]) => {
     return database.get<RoleModel>(ROLE).query(Q.where('name', Q.oneOf(names)));
 };
 
-export function observePermissionForChannel(database: Database, channel: ChannelModel, user: UserModel, permission: string, defaultValue: boolean) {
+export function observePermissionForChannel(database: Database, channel: ChannelModel | null | undefined, user: UserModel | undefined, permission: string, defaultValue: boolean) {
+    if (!user || !channel) {
+        return of$(defaultValue);
+    }
     const myChannel = observeMyChannel(database, channel.id);
     const myTeam = channel.teamId ? observeMyTeam(database, channel.teamId) : of$(undefined);
 
@@ -57,7 +60,11 @@ export function observePermissionForChannel(database: Database, channel: Channel
     );
 }
 
-export function observePermissionForTeam(database: Database, team: TeamModel, user: UserModel, permission: string, defaultValue: boolean) {
+export function observePermissionForTeam(database: Database, team: TeamModel | undefined, user: UserModel | undefined, permission: string, defaultValue: boolean) {
+    if (!team || !user) {
+        return of$(defaultValue);
+    }
+
     return observeMyTeam(database, team.id).pipe(
         switchMap((myTeam) => {
             const rolesArray = [...user.roles.split(' ')];
@@ -74,9 +81,9 @@ export function observePermissionForTeam(database: Database, team: TeamModel, us
     );
 }
 
-export function observePermissionForPost(database: Database, post: PostModel, user: UserModel, permission: string, defaultValue: boolean) {
+export function observePermissionForPost(database: Database, post: PostModel, user: UserModel | undefined, permission: string, defaultValue: boolean) {
     return observeChannel(database, post.channelId).pipe(
-        switchMap((c) => (c ? observePermissionForChannel(database, c, user, permission, defaultValue) : of$(defaultValue))),
+        switchMap((c) => observePermissionForChannel(database, c, user, permission, defaultValue)),
         distinctUntilChanged(),
     );
 }

@@ -6,6 +6,7 @@ export const ACCOUNT = 'Account';
 export const APPS_FORM = 'AppForm';
 export const BOTTOM_SHEET = 'BottomSheet';
 export const BROWSE_CHANNELS = 'BrowseChannels';
+export const CALL = 'Call';
 export const CHANNEL = 'Channel';
 export const CHANNEL_ADD_PEOPLE = 'ChannelAddPeople';
 export const CHANNEL_INFO = 'ChannelInfo';
@@ -41,6 +42,7 @@ export const SEARCH = 'Search';
 export const SELECT_TEAM = 'SelectTeam';
 export const SERVER = 'Server';
 export const SETTINGS = 'Settings';
+export const SETTINGS_ADVANCED = 'SettingsAdvanced';
 export const SETTINGS_DISPLAY = 'SettingsDisplay';
 export const SETTINGS_DISPLAY_CLOCK = 'SettingsDisplayClock';
 export const SETTINGS_DISPLAY_THEME = 'SettingsDisplayTheme';
@@ -48,6 +50,7 @@ export const SETTINGS_DISPLAY_TIMEZONE = 'SettingsDisplayTimezone';
 export const SETTINGS_DISPLAY_TIMEZONE_SELECT = 'SettingsDisplayTimezoneSelect';
 export const SETTINGS_NOTIFICATION = 'SettingsNotification';
 export const SETTINGS_NOTIFICATION_AUTO_RESPONDER = 'SettingsNotificationAutoResponder';
+export const SETTINGS_NOTIFICATION_EMAIL = 'SettingsNotificationEmail';
 export const SETTINGS_NOTIFICATION_MENTION = 'SettingsNotificationMention';
 export const SETTINGS_NOTIFICATION_PUSH = 'SettingsNotificationPush';
 export const SNACK_BAR = 'SnackBar';
@@ -64,6 +67,7 @@ export default {
     APPS_FORM,
     BOTTOM_SHEET,
     BROWSE_CHANNELS,
+    CALL,
     CHANNEL,
     CHANNEL_ADD_PEOPLE,
     CHANNEL_INFO,
@@ -99,6 +103,7 @@ export default {
     SELECT_TEAM,
     SERVER,
     SETTINGS,
+    SETTINGS_ADVANCED,
     SETTINGS_DISPLAY,
     SETTINGS_DISPLAY_CLOCK,
     SETTINGS_DISPLAY_THEME,
@@ -106,6 +111,7 @@ export default {
     SETTINGS_DISPLAY_TIMEZONE_SELECT,
     SETTINGS_NOTIFICATION,
     SETTINGS_NOTIFICATION_AUTO_RESPONDER,
+    SETTINGS_NOTIFICATION_EMAIL,
     SETTINGS_NOTIFICATION_MENTION,
     SETTINGS_NOTIFICATION_PUSH,
     SNACK_BAR,
@@ -117,7 +123,7 @@ export default {
     USER_PROFILE,
 };
 
-export const MODAL_SCREENS_WITHOUT_BACK = [
+export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
     BROWSE_CHANNELS,
     CHANNEL_INFO,
     CREATE_DIRECT_MESSAGE,
@@ -131,7 +137,17 @@ export const MODAL_SCREENS_WITHOUT_BACK = [
     GALLERY,
     PERMALINK,
     REACTIONS,
-];
+]);
+
+export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
+    BOTTOM_SHEET,
+    POST_OPTIONS,
+    THREAD_OPTIONS,
+    PERMALINK,
+    REACTIONS,
+    SNACK_BAR,
+    USER_PROFILE,
+]);
 
 export const NOT_READY = [
     CHANNEL_ADD_PEOPLE,

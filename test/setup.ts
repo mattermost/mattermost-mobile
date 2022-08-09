@@ -18,7 +18,6 @@ jest.doMock('react-native', () => {
     const {
         Platform,
         StyleSheet,
-        ViewPropTypes,
         PermissionsAndroid,
         requireNativeComponent,
         Alert: RNAlert,
@@ -143,7 +142,6 @@ jest.doMock('react-native', () => {
             },
         },
         StyleSheet,
-        ViewPropTypes,
         PermissionsAndroid,
         requireNativeComponent,
         Alert,
@@ -225,6 +223,11 @@ jest.mock('react-native-device-info', () => {
         hasNotch: () => true,
         isTablet: () => false,
         getApplicationName: () => 'Mattermost',
+    };
+});
+
+jest.mock('react-native-user-agent', () => {
+    return {
         getUserAgent: () => 'user-agent',
     };
 });
@@ -332,7 +335,6 @@ jest.mock('@screens/navigation', () => ({
     popTopScreen: jest.fn(),
     showModal: jest.fn(),
     showModalOverCurrentContext: jest.fn(),
-    showSearchModal: jest.fn(),
     setButtons: jest.fn(),
     showOverlay: jest.fn(),
     mergeNavigationOptions: jest.fn(),

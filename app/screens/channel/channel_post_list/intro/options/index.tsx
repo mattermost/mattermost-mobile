@@ -46,27 +46,27 @@ const IntroOptions = ({channelId, header, favorite, people}: Props) => {
             <AddPeopleBox
                 channelId={channelId}
                 containerStyle={[styles.item, styles.margin]}
-                testID='channel_post_list.intro.option_item.add_people'
+                testID='channel_post_list.intro_options.add_people.action'
             />
             }
             {header &&
             <SetHeaderBox
                 channelId={channelId}
                 containerStyle={[styles.item, styles.margin]}
-                testID='channel_post_list.intro.option_item.set_header'
+                testID='channel_post_list.intro_options.set_header.action'
             />
             }
             {favorite &&
             <FavoriteBox
                 channelId={channelId}
                 containerStyle={[styles.item, styles.margin]}
-                testID='channel_post_list.intro.option_item.favorite'
+                testID='channel_post_list.intro_options'
             />
             }
             <InfoBox
                 channelId={channelId}
                 containerStyle={styles.item}
-                testID='channel_post_list.intro.option_item.channel_details'
+                testID='channel_post_list.intro_options.channel_info.action'
             />
         </View>
     );

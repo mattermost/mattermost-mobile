@@ -9,7 +9,7 @@ import {View, TouchableOpacity} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 import CustomStatusText from '@components/custom_status/custom_status_text';
-import {CustomStatusDuration, CST} from '@constants/custom_status';
+import {CST, CustomStatusDurationEnum} from '@constants/custom_status';
 import {useTheme} from '@context/theme';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -74,13 +74,13 @@ const ClearAfterMenuItem = ({currentUser, duration, expiryTime = '', handleItemC
     const style = getStyleSheet(theme);
 
     const expiryMenuItems: { [key in CustomStatusDuration]: string } = {
-        [CustomStatusDuration.DONT_CLEAR]: intl.formatMessage(CST[CustomStatusDuration.DONT_CLEAR]),
-        [CustomStatusDuration.THIRTY_MINUTES]: intl.formatMessage(CST[CustomStatusDuration.THIRTY_MINUTES]),
-        [CustomStatusDuration.ONE_HOUR]: intl.formatMessage(CST[CustomStatusDuration.ONE_HOUR]),
-        [CustomStatusDuration.FOUR_HOURS]: intl.formatMessage(CST[CustomStatusDuration.FOUR_HOURS]),
-        [CustomStatusDuration.TODAY]: intl.formatMessage(CST[CustomStatusDuration.TODAY]),
-        [CustomStatusDuration.THIS_WEEK]: intl.formatMessage(CST[CustomStatusDuration.THIS_WEEK]),
-        [CustomStatusDuration.DATE_AND_TIME]: intl.formatMessage({id: 'custom_status.expiry_dropdown.custom', defaultMessage: 'Custom'}),
+        [CustomStatusDurationEnum.DONT_CLEAR]: intl.formatMessage(CST[CustomStatusDurationEnum.DONT_CLEAR]),
+        [CustomStatusDurationEnum.THIRTY_MINUTES]: intl.formatMessage(CST[CustomStatusDurationEnum.THIRTY_MINUTES]),
+        [CustomStatusDurationEnum.ONE_HOUR]: intl.formatMessage(CST[CustomStatusDurationEnum.ONE_HOUR]),
+        [CustomStatusDurationEnum.FOUR_HOURS]: intl.formatMessage(CST[CustomStatusDurationEnum.FOUR_HOURS]),
+        [CustomStatusDurationEnum.TODAY]: intl.formatMessage(CST[CustomStatusDurationEnum.TODAY]),
+        [CustomStatusDurationEnum.THIS_WEEK]: intl.formatMessage(CST[CustomStatusDurationEnum.THIS_WEEK]),
+        [CustomStatusDurationEnum.DATE_AND_TIME]: intl.formatMessage({id: 'custom_status.expiry_dropdown.custom', defaultMessage: 'Custom'}),
     };
 
     const handleClick = preventDoubleTap(() => {

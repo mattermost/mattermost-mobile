@@ -169,7 +169,12 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
         const {data} = await this.doFetch(
             `${this.getUsersRoute()}/login`,
-            {method: 'post', body},
+            {
+                method: 'post',
+                body,
+                headers: {'Cache-Control': 'no-store'},
+            },
+            false,
         );
 
         return data;
@@ -341,14 +346,21 @@ const ClientUsers = (superclass: any) => class extends superclass {
     getSessions = async (userId: string) => {
         return this.doFetch(
             `${this.getUserRoute(userId)}/sessions`,
-            {method: 'get'},
+            {
+                method: 'get',
+                headers: {'Cache-Control': 'no-store'},
+            },
         );
     };
 
     checkUserMfa = async (loginId: string) => {
         return this.doFetch(
             `${this.getUsersRoute()}/mfa`,
-            {method: 'post', body: {login_id: loginId}},
+            {
+                method: 'post',
+                body: {login_id: loginId},
+                headers: {'Cache-Control': 'no-store'},
+            },
         );
     };
 

@@ -173,7 +173,7 @@ export const logout = async (serverUrl: string, skipServerLogout = false, remove
             await client.logout();
         } catch (error) {
             // We want to log the user even if logging out from the server failed
-            logWarning('An error ocurred loging out from the server', serverUrl, error);
+            logWarning('An error occurred logging out from the server', serverUrl, error);
         }
     }
 

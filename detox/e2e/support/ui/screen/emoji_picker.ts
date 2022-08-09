@@ -28,7 +28,7 @@ class EmojiPickerScreen {
     };
 
     open = async () => {
-        // # Open add reaction screen
+        // # Open emoji picker screen
         await PostOptionsScreen.pickReactionButton.tap();
 
         return this.toBeVisible();
