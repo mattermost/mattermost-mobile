@@ -67,7 +67,7 @@ function saveToEndpoint(url, data) {
         url,
         headers: {
             'Content-Type': 'application/json; charset=utf-8',
-            Authorization: process.env.TM4J_API_KEY,
+            Authorization: process.env.ZEPHYR_API_KEY,
         },
         data,
     }).catch((error) => {
@@ -81,18 +81,18 @@ async function createTestCycle(startDate, endDate) {
         BRANCH,
         BUILD_ID,
         JIRA_PROJECT_KEY,
-        TM4J_CYCLE_NAME,
-        TM4J_FOLDER_ID,
+        ZEPHYR_CYCLE_NAME,
+        ZEPHYR_FOLDER_ID,
     } = process.env;
 
     const testCycle = {
         projectKey: JIRA_PROJECT_KEY,
-        name: TM4J_CYCLE_NAME ? `${TM4J_CYCLE_NAME} (${BUILD_ID}-${BRANCH})` : `${BUILD_ID}-${BRANCH}`,
+        name: ZEPHYR_CYCLE_NAME ? `${ZEPHYR_CYCLE_NAME} (${BUILD_ID}-${BRANCH})` : `${BUILD_ID}-${BRANCH}`,
         description: `Detox automated test with ${BRANCH}`,
         plannedStartDate: startDate,
         plannedEndDate: endDate,
         statusName: 'Done',
-        folderId: TM4J_FOLDER_ID,
+        folderId: ZEPHYR_FOLDER_ID,
     };
 
     const response = await saveToEndpoint('https://api.zephyrscale.smartbear.com/v2/testcycles', testCycle);
@@ -103,7 +103,7 @@ async function createTestExecutions(allTests, testCycle) {
     const {
         IOS,
         JIRA_PROJECT_KEY,
-        TM4J_ENVIRONMENT_NAME,
+        ZEPHYR_ENVIRONMENT_NAME,
     } = process.env;
     const platform = IOS ? 'iOS' : 'Android';
 
@@ -131,7 +131,7 @@ async function createTestExecutions(allTests, testCycle) {
             testCycleKey: testCycle.key,
             statusName: stateResult.passed && stateResult.passed === steps.length ? 'Pass' : 'Fail',
             testScriptResults,
-            environmentName: TM4J_ENVIRONMENT_NAME || platform,
+            environmentName: ZEPHYR_ENVIRONMENT_NAME || platform,
             actualEndDate: testScriptResults[testScriptResults.length - 1].actualEndDate,
             executionTime: steps.reduce((acc, prev) => {
                 acc += prev.duration; // eslint-disable-line no-param-reassign
@@ -166,7 +166,7 @@ async function saveTestExecution(testExecution, index) {
         url: 'https://api.zephyrscale.smartbear.com/v2/testexecutions',
         headers: {
             'Content-Type': 'application/json; charset=utf-8',
-            Authorization: process.env.TM4J_API_KEY,
+            Authorization: process.env.ZEPHYR_API_KEY,
         },
         data: testExecution,
     }).then(() => {
