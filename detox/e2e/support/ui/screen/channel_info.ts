@@ -134,6 +134,29 @@ class ChannelInfoScreen {
         await this.archiveChannel(Alert.archivePublicChannelTitle, {confirm});
     };
 
+    convertToPrivateChannel = async (channelDisplayName: string, {confirm = true} = {}) => {
+        await this.scrollView.scrollTo('bottom');
+        await waitFor(this.convertPrivateOption).toExist().withTimeout(timeouts.TWO_SEC);
+        await this.convertPrivateOption.tap({x: 1, y: 1});
+        const {
+            convertToPrivateChannelTitle,
+            noButton,
+            yesButton,
+        } = Alert;
+        await expect(convertToPrivateChannelTitle(channelDisplayName)).toBeVisible();
+        await expect(noButton).toBeVisible();
+        await expect(yesButton).toBeVisible();
+        if (confirm) {
+            await yesButton.tap();
+            await wait(timeouts.ONE_SEC);
+            await expect(this.channelInfoScreen).not.toExist();
+        } else {
+            await noButton.tap();
+            await wait(timeouts.ONE_SEC);
+            await expect(this.channelInfoScreen).toExist();
+        }
+    };
+
     leaveChannel = async ({confirm = true} = {}) => {
         await this.scrollView.scrollTo('bottom');
         await waitFor(this.leaveChannelOption).toExist().withTimeout(timeouts.TWO_SEC);
