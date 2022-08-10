@@ -16,9 +16,9 @@ const {ARTIFACTS_DIR} = require('./constants');
 require('dotenv').config();
 
 const {
-    AWS_S3_BUCKET,
-    AWS_ACCESS_KEY_ID,
-    AWS_SECRET_ACCESS_KEY,
+    DETOX_AWS_S3_BUCKET,
+    DETOX_AWS_ACCESS_KEY_ID,
+    DETOX_AWS_SECRET_ACCESS_KEY,
     BUILD_ID,
     BRANCH,
     IOS,
@@ -27,8 +27,8 @@ const platform = IOS ? 'ios' : 'android';
 
 const s3 = new AWS.S3({
     signatureVersion: 'v4',
-    accessKeyId: AWS_ACCESS_KEY_ID,
-    secretAccessKey: AWS_SECRET_ACCESS_KEY,
+    accessKeyId: DETOX_AWS_ACCESS_KEY_ID,
+    secretAccessKey: DETOX_AWS_SECRET_ACCESS_KEY,
 });
 
 function getFiles(dirPath) {
@@ -36,7 +36,7 @@ function getFiles(dirPath) {
 }
 
 async function saveArtifacts() {
-    if (!AWS_S3_BUCKET || !AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
+    if (!DETOX_AWS_S3_BUCKET || !DETOX_AWS_ACCESS_KEY_ID || !DETOX_AWS_SECRET_ACCESS_KEY) {
         console.log('No AWS credentials found. Test artifacts not uploaded to S3.');
 
         return;
@@ -59,7 +59,7 @@ async function saveArtifacts() {
                     s3.upload(
                         {
                             Key,
-                            Bucket: AWS_S3_BUCKET,
+                            Bucket: DETOX_AWS_S3_BUCKET,
                             Body: fs.readFileSync(file),
                             ContentType: `${contentType}${charset ? '; charset=' + charset : ''}`,
                         },
@@ -79,7 +79,7 @@ async function saveArtifacts() {
                     return reject(new Error(err));
                 }
 
-                const reportLink = `https://${AWS_S3_BUCKET}.s3.amazonaws.com/${s3Folder}/${platform}-report.html`;
+                const reportLink = `https://${DETOX_AWS_S3_BUCKET}.s3.amazonaws.com/${s3Folder}/${platform}-report.html`;
                 resolve({success: true, reportLink});
             },
         );

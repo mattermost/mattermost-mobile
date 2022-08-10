@@ -14,7 +14,7 @@
  *   BUILD_ID=[build_id]        : Build identifier from CI
  *
  *   For saving artifacts to AWS S3
- *      - AWS_S3_BUCKET, AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
+ *      - DETOX_AWS_S3_BUCKET, DETOX_AWS_ACCESS_KEY_ID and DETOX_AWS_SECRET_ACCESS_KEY
  *   For saving test cases to Test Management
  *      - ZEPHYR_ENABLE=true|false
  *      - ZEPHYR_API_KEY=[api_key]
