@@ -4,13 +4,15 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {useWindowDimensions, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {bottomSheetWithTeamList} from '@screens/navigation';
+import {bottomSheet} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
+import {getTeamsSnapHeight} from '@utils/team_list';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import AddTeamSlideUp from './add_team_slide_up';
@@ -48,6 +50,7 @@ export default function AddTeam({otherTeams}: Props) {
     const styles = getStyleSheet(theme);
     const dimensions = useWindowDimensions();
     const intl = useIntl();
+    const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
 
     const onPress = useCallback(preventDoubleTap(() => {
@@ -62,12 +65,13 @@ export default function AddTeam({otherTeams}: Props) {
             );
         };
 
-        bottomSheetWithTeamList({
-            dimensions,
+        const height = getTeamsSnapHeight({dimensions, teams: otherTeams, insets});
+        bottomSheet({
+            closeButtonId: 'close-team_list',
             renderContent,
+            snapPoints: [height, 10],
             theme,
             title,
-            teams: otherTeams,
         });
     }), [otherTeams, intl, isTablet, dimensions, theme]);
 

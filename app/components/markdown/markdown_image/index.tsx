@@ -225,8 +225,6 @@ const MarkdownImage = ({
                     style={{flex: 1, backgroundColor: changeOpacity(theme.centerChannelColor, 0.06), borderRadius: 8}}
                     width={width}
                     height={height}
-
-                    // @ts-expect-error onError missing in type definition
                     onError={handleOnError}
                 />
             );

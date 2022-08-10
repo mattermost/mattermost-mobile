@@ -1,7 +1,33 @@
 diff --git a/node_modules/react-native-button/Button.js b/node_modules/react-native-button/Button.js
-index b248176..2ee35d5 100644
+index b248176..3d2455c 100644
 --- a/node_modules/react-native-button/Button.js
 +++ b/node_modules/react-native-button/Button.js
+@@ -7,8 +7,8 @@ import {
+   TouchableOpacity,
+   TouchableNativeFeedback,
+   View,
+-  ViewPropTypes
+ } from 'react-native';
++import {ViewPropTypes, TextPropTypes} from 'deprecated-react-native-prop-types';
+ 
+ import coalesceNonElementChildren from './coalesceNonElementChildren';
+ 
+@@ -18,12 +18,12 @@ export default class Button extends Component {
+   static propTypes = {
+     ...TouchableOpacity.propTypes,
+     accessibilityLabel: PropTypes.string,
+-    allowFontScaling: Text.propTypes.allowFontScaling,
++    allowFontScaling: TextPropTypes.allowFontScaling,
+     containerStyle: ViewPropTypes.style,
+     disabledContainerStyle: ViewPropTypes.style,
+     disabled: PropTypes.bool,
+-    style: Text.propTypes.style,
+-    styleDisabled: Text.propTypes.style,
++    style: TextPropTypes.style,
++    styleDisabled: TextPropTypes.style,
+     childGroupStyle: ViewPropTypes.style,
+     androidBackground: PropTypes.object,
+   };
 @@ -71,7 +71,6 @@ export default class Button extends Component {
        }
  

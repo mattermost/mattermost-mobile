@@ -4,23 +4,19 @@
 /* eslint-disable max-lines */
 
 import merge from 'deepmerge';
-import {Appearance, ScaledSize, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert} from 'react-native';
+import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert} from 'react-native';
 import {ImageResource, Navigation, Options, OptionsModalPresentationStyle, OptionsTopBarButton} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
-import {ITEM_HEIGHT} from '@components/team_sidebar/add_team/team_list_item/team_list_item';
 import {Device, Events, Screens, Navigation as NavigationConstants, Launch} from '@constants';
 import {NOT_READY} from '@constants/screens';
 import {getDefaultThemeByAppearance} from '@context/theme';
-import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
-import {bottomSheetSnapPoint} from '@utils/helpers';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
-import type TeamModel from '@typings/database/models/servers/team';
 import type {LaunchProps} from '@typings/launch';
 import type {NavButtons} from '@typings/screens/navigation';
 
@@ -664,34 +660,6 @@ export async function bottomSheet({title, renderContent, snapPoints, initialSnap
             snapPoints,
         }, bottomSheetModalOptions(theme));
     }
-}
-
-type BottomSheetWithTeamListArgs = {
-    teams: TeamModel[];
-    dimensions: ScaledSize;
-    renderContent: () => JSX.Element;
-    theme: Theme;
-    title: string;
-}
-
-export async function bottomSheetWithTeamList({title, teams, dimensions, renderContent, theme}: BottomSheetWithTeamListArgs) {
-    const NO_TEAMS_HEIGHT = 392;
-    const maxHeight = Math.round((dimensions.height * 0.9));
-
-    let height = NO_TEAMS_HEIGHT;
-    if (teams.length) {
-        const itemsHeight = bottomSheetSnapPoint(teams.length, ITEM_HEIGHT, 0);
-        const heightWithHeader = TITLE_HEIGHT + itemsHeight;
-        height = Math.min(maxHeight, heightWithHeader);
-    }
-
-    bottomSheet({
-        closeButtonId: 'close-team_list',
-        renderContent,
-        snapPoints: [height, 10],
-        theme,
-        title,
-    });
 }
 
 export async function dismissBottomSheet(alternativeScreen = Screens.BOTTOM_SHEET) {

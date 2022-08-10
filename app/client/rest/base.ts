@@ -256,6 +256,17 @@ export default class ClientBase {
             requestOptions.timeoutInterval = options.timeoutInterval;
         }
 
+        if (options.headers) {
+            if (requestOptions.headers) {
+                requestOptions.headers = {
+                    ...requestOptions.headers,
+                    ...options.headers,
+                };
+            } else {
+                requestOptions.headers = options.headers;
+            }
+        }
+
         let response: ClientResponse;
         try {
             response = await request!(url, requestOptions);

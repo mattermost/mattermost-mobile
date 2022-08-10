@@ -3,7 +3,7 @@
 
 import Fuse from 'fuse.js';
 import React, {useCallback, useMemo} from 'react';
-import {FlatList, StyleSheet, View} from 'react-native';
+import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {getEmojis, searchEmojis} from '@utils/emoji/helpers';
@@ -45,7 +45,7 @@ const EmojiFiltered = ({customEmojis, keyboardHeight, skinTone, searchTerm, onEm
         return searchEmojis(fuse, searchTerm);
     }, [fuse, searchTerm]);
 
-    const keyExtractor = useCallback((item) => item, []);
+    const keyExtractor = useCallback((item: string) => item, []);
 
     const renderEmpty = useCallback(() => {
         return (
@@ -55,7 +55,7 @@ const EmojiFiltered = ({customEmojis, keyboardHeight, skinTone, searchTerm, onEm
         );
     }, [searchTerm]);
 
-    const renderItem = useCallback(({item}) => {
+    const renderItem = useCallback(({item}: ListRenderItemInfo<string>) => {
         return (
             <EmojiItem
                 onEmojiPress={onEmojiPress}

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef} from 'react';
-import {StyleSheet} from 'react-native';
+import {ListRenderItemInfo, StyleSheet} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import Item from './item';
@@ -51,7 +51,7 @@ const EmojiBar = ({emojiSelected, reactionsByName, setIndex, sortedReactions}: P
         scrollToIndex(index);
     }, []);
 
-    const renderItem = useCallback(({item}) => {
+    const renderItem = useCallback(({item}: ListRenderItemInfo<string>) => {
         return (
             <Item
                 count={reactionsByName.get(item)?.length || 0}

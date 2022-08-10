@@ -27,8 +27,8 @@ const TITLE_MARGIN_TOP = 4;
 const TITLE_MARGIN_BOTTOM = 12;
 
 export const TITLE_HEIGHT = TITLE_MARGIN_TOP + TITLE_MARGIN_BOTTOM + 30; // typography 600 line height
-export const SEPARATOR_MARGIN = 12;
-export const SEPARATOR_MARGIN_TABLET = 20;
+export const TITLE_SEPARATOR_MARGIN = 12;
+export const TITLE_SEPARATOR_MARGIN_TABLET = 20;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -76,14 +76,14 @@ const BottomSheetContent = ({buttonText, buttonIcon, children, disableButton, on
                 </View>
             }
             {titleSeparator &&
-                <View style={[styles.separator, {width: separatorWidth, marginBottom: (isTablet ? SEPARATOR_MARGIN_TABLET : SEPARATOR_MARGIN)}]}/>
+                <View style={[styles.separator, {width: separatorWidth, marginBottom: (isTablet ? TITLE_SEPARATOR_MARGIN_TABLET : TITLE_SEPARATOR_MARGIN)}]}/>
             }
             <>
                 {children}
             </>
             {showButton && (
                 <>
-                    <View style={[styles.separator, {width: separatorWidth, marginBottom: (isTablet ? SEPARATOR_MARGIN_TABLET : SEPARATOR_MARGIN)}]}/>
+                    <View style={[styles.separator, {width: separatorWidth, marginBottom: (isTablet ? TITLE_SEPARATOR_MARGIN_TABLET : TITLE_SEPARATOR_MARGIN)}]}/>
                     <Button
                         disabled={disableButton}
                         onPress={onPress}

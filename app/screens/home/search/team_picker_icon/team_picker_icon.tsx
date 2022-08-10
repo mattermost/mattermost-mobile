@@ -4,13 +4,15 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {View, useWindowDimensions} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import TeamIcon from '@components/team_sidebar/team_list/team_item/team_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
-import {bottomSheetWithTeamList} from '@screens/navigation';
+import {bottomSheet} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
+import {getTeamsSnapHeight} from '@utils/team_list';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import SelectTeamSlideUp from './search_team_slideup';
@@ -52,6 +54,7 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
     const theme = useTheme();
     const dimensions = useWindowDimensions();
     const styles = getStyleFromTheme(theme);
+    const insets = useSafeAreaInsets();
 
     const selectedTeam = teams.find((t) => t.id === teamId);
 
@@ -69,12 +72,13 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
             );
         };
 
-        bottomSheetWithTeamList({
-            dimensions,
+        const height = getTeamsSnapHeight({dimensions, teams, insets});
+        bottomSheet({
+            closeButtonId: 'close-team_list',
             renderContent,
+            snapPoints: [height, 10],
             theme,
             title,
-            teams,
         });
     }), [theme, setTeamId, teamId, teams]);
 

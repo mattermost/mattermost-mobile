@@ -44,7 +44,7 @@ const Highlighter = ({code, language, textStyle, selectable = false}: Props) => 
     ],
     [theme, selectable, style]);
 
-    const nativeRenderer = useCallback(({rows, stylesheet}) => {
+    const nativeRenderer = useCallback(({rows, stylesheet}: rendererProps) => {
         const digits = rows.length.toString().length;
         return (
             <CodeHighlightRenderer
@@ -59,7 +59,7 @@ const Highlighter = ({code, language, textStyle, selectable = false}: Props) => 
         );
     }, [textStyle, theme, style]);
 
-    const preTag = useCallback((info) => (
+    const preTag = useCallback((info: any) => (
         <View
             style={preTagStyle}
         >

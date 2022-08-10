@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
 import Emm from '@mattermost/react-native-emm';
@@ -100,7 +100,7 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
                 if (result.error) {
                     Alert.alert(
                         'Error Upgrading',
-                        `An error ocurred while upgrading the app to the new version.\n\nDetails: ${result.error}\n\nThe app will now quit.`,
+                        `An error occurred while upgrading the app to the new version.\n\nDetails: ${result.error}\n\nThe app will now quit.`,
                         [{
                             text: 'OK',
                             onPress: async () => {

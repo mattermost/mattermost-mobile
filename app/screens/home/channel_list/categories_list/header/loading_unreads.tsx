@@ -35,7 +35,7 @@ const LoadingUnreads = () => {
         transform: [{
             rotateZ: `${rotation.value}deg`,
         }],
-    }), []);
+    }), [loading]);
 
     useEffect(() => {
         if (loading) {
@@ -54,8 +54,10 @@ const LoadingUnreads = () => {
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.FETCHING_POSTS, (value: boolean) => {
-            cancelAnimation(opacity);
             setLoading(value);
+            if (value) {
+                rotation.value = 0;
+            }
         });
 
         return () => listener.remove();
