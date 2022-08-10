@@ -27,6 +27,8 @@ type SlideUpPanelProps = {
     testID?: string;
 }
 
+export const PADDING_TOP_MOBILE = 20;
+
 const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderContent, snapPoints = ['90%', '50%', 50], testID}: SlideUpPanelProps) => {
     const sheetRef = useRef<RNBottomSheet>(null);
     const dimensions = useWindowDimensions();
@@ -116,7 +118,7 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
                 backgroundColor: theme.centerChannelBg,
                 opacity: 1,
                 paddingHorizontal: 20,
-                paddingTop: isTablet ? 0 : 20,
+                paddingTop: isTablet ? 0 : PADDING_TOP_MOBILE,
                 height: '100%',
                 width: isTablet ? '100%' : Math.min(dimensions.width, 450),
                 alignSelf: 'center',
