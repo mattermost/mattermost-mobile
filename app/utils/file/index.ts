@@ -14,8 +14,6 @@ import {Asset} from 'react-native-image-picker';
 import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
 import {Files} from '@constants';
-import DatabaseManager from '@database/manager';
-import {queryAllServers} from '@queries/app/servers';
 import {generateId} from '@utils/general';
 import keyMirror from '@utils/key_mirror';
 import {logError} from '@utils/log';
