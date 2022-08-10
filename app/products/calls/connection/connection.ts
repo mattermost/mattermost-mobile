@@ -14,11 +14,12 @@ import {
 
 import {CallsConnection} from '@calls/types/calls';
 import {WebsocketEvents} from '@constants';
+import {getServerCredentials} from '@init/credentials';
 import NetworkManager from '@managers/network_manager';
-import {logError} from '@utils/log';
+import {logError, logDebug} from '@utils/log';
 
 import Peer from './simple-peer';
-import WebSocketClient from './websocket_client';
+import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
 
 const websocketConnectTimeout = 3000;
 
@@ -46,15 +47,21 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
     // getClient can throw an error, which will be handled by the caller.
     const client = NetworkManager.getClient(serverUrl);
 
-    const ws = new WebSocketClient(serverUrl, client.getWebSocketUrl());
+    const credentials = await getServerCredentials(serverUrl);
+
+    const ws = new WebSocketClient(serverUrl, client.getWebSocketUrl(), credentials?.token);
 
     // Throws an error, to be caught by caller.
     await ws.initialize();
 
     const disconnect = () => {
-        if (!isClosed) {
-            ws.close();
+        if (isClosed) {
+            return;
         }
+        isClosed = true;
+
+        ws.send('leave');
+        ws.close();
 
         if (onCallEnd) {
             onCallEnd.remove();
@@ -143,13 +150,14 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
     };
 
     ws.on('error', (err: Event) => {
-        logError('WS (CALLS):', err);
-        ws.close();
+        logDebug('calls: ws error', err);
+        if (err === wsReconnectionTimeoutErr) {
+            disconnect();
+        }
     });
 
     ws.on('close', () => {
-        isClosed = true;
-        disconnect();
+        logDebug('calls: ws close');
     });
 
     ws.on('join', async () => {
@@ -184,14 +192,30 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
         });
 
         peer.on('error', (err: any) => {
-            logError('FROM PEER:', err);
+            logError('calls: peer error:', err);
+        });
+
+        peer.on('close', () => {
+            logDebug('calls: peer closed');
+            if (!isClosed) {
+                disconnect();
+            }
         });
     });
 
-    ws.on('open', async () => {
-        ws.send('join', {
-            channelID,
-        });
+    ws.on('open', (originalConnID: string, prevConnID: string, isReconnect: boolean) => {
+        if (isReconnect) {
+            logDebug('calls: ws reconnect, sending reconnect msg');
+            ws.send('reconnect', {
+                channelID,
+                originalConnID,
+                prevConnID,
+            });
+        } else {
+            ws.send('join', {
+                channelID,
+            });
+        }
     });
 
     ws.on('message', ({data}: { data: string }) => {
