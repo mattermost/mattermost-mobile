@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useRef, useState} from 'react';
-import {DeviceEventEmitter, StyleSheet, View} from 'react-native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {DeviceEventEmitter, LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -61,6 +61,10 @@ const Thread = ({componentId, rootPost}: ThreadProps) => {
         }
     }, [componentId, rootPost]);
 
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        setContainerHeight(e.nativeEvent.layout.height);
+    }, []);
+
     return (
         <FreezeScreen>
             <SafeAreaView
@@ -68,7 +72,7 @@ const Thread = ({componentId, rootPost}: ThreadProps) => {
                 mode='margin'
                 edges={edges}
                 testID='thread.screen'
-                onLayout={(e) => setContainerHeight(e.nativeEvent.layout.height)}
+                onLayout={onLayout}
             >
                 <RoundedHeaderContext/>
                 {Boolean(rootPost?.id) &&

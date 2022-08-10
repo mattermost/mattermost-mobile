@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Keyboard, KeyboardType, Platform, SafeAreaView, View} from 'react-native';
+import {Alert, Keyboard, KeyboardType, LayoutChangeEvent, Platform, SafeAreaView, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {deletePost, editPost} from '@actions/remote/post';
@@ -183,6 +183,10 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
         handleUIUpdates(res);
     }, [toggleSaveButton, serverUrl, post.id, postMessage, onClose]);
 
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        setContainerHeight(e.nativeEvent.layout.height);
+    }, []);
+
     useNavButtonPressed(RIGHT_BUTTON.id, componentId, onSavePostMessage, [postMessage]);
     useNavButtonPressed(closeButtonId, componentId, onClose, []);
 
@@ -202,7 +206,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             <SafeAreaView
                 testID='edit_post.screen'
                 style={styles.container}
-                onLayout={(e) => setContainerHeight(e.nativeEvent.layout.height)}
+                onLayout={onLayout}
             >
                 <View style={styles.body}>
                     {Boolean((errorLine || errorExtra)) &&

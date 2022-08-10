@@ -4,7 +4,7 @@
 import React, {useMemo, useState} from 'react';
 import {Platform, useWindowDimensions, View} from 'react-native';
 
-import {MAX_LIST_DIFF, MAX_LIST_HEIGHT, MAX_LIST_TABLET_DIFF} from '@constants/autocomplete';
+import {MAX_LIST_HEIGHT, MAX_LIST_TABLET_DIFF} from '@constants/autocomplete';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -124,8 +124,8 @@ const Autocomplete = ({
     }, [hasElements, position, growDown, style]);
 
     const isLandscape = dimensions.width > dimensions.height;
-    const postInputDiff = (isTablet && isLandscape) ? MAX_LIST_TABLET_DIFF : MAX_LIST_DIFF;
-    const defaultMaxHeight = MAX_LIST_HEIGHT - postInputDiff;
+    const maxHeightAdjust = (isTablet && isLandscape) ? MAX_LIST_TABLET_DIFF : 0;
+    const defaultMaxHeight = MAX_LIST_HEIGHT - maxHeightAdjust;
     const maxListHeight = Math.min(availableSpace, defaultMaxHeight);
 
     return (

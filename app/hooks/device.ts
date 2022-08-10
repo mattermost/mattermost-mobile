@@ -65,16 +65,14 @@ export function useKeyboardHeight(keyboardTracker?: React.RefObject<KeyboardTrac
     };
 
     useEffect(() => {
-        const show = Keyboard.addListener(Platform.select({ios: 'keyboardWillShow', default: 'keyboardDidShow'}), (event) => {
+        const show = Keyboard.addListener(Platform.select({ios: 'keyboardWillShow', default: 'keyboardDidShow'}), async (event) => {
             if (keyboardTracker?.current) {
-                // eslint-disable-next-line max-nested-callbacks
-                keyboardTracker.current.getNativeProps().then((x) => {
-                    if (x.keyboardHeight) {
-                        updateValue((x.trackingViewHeight + x.keyboardHeight) - KEYBOARD_TRACKINGVIEW_SEPARATION);
-                    } else {
-                        updateValue((x.trackingViewHeight + insets.bottom) - KEYBOARD_TRACKINGVIEW_SEPARATION);
-                    }
-                });
+                const props = await keyboardTracker.current.getNativeProps();
+                if (props.keyboardHeight) {
+                    updateValue((props.trackingViewHeight + props.keyboardHeight) - KEYBOARD_TRACKINGVIEW_SEPARATION);
+                } else {
+                    updateValue((props.trackingViewHeight + insets.bottom) - KEYBOARD_TRACKINGVIEW_SEPARATION);
+                }
             } else {
                 updateValue(event.endCoordinates.height);
             }

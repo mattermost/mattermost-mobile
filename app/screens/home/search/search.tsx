@@ -4,7 +4,7 @@
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, Platform, StyleSheet} from 'react-native';
+import {FlatList, LayoutChangeEvent, Platform, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -225,6 +225,10 @@ const SearchScreen = ({teamId}: Props) => {
         };
     }, [headerHeight.value, lastSearchedValue]);
 
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        setContainerHeight(e.nativeEvent.layout.height);
+    }, []);
+
     let header = null;
     if (lastSearchedValue && !loading) {
         header = (
@@ -283,7 +287,7 @@ const SearchScreen = ({teamId}: Props) => {
             <SafeAreaView
                 style={styles.flex}
                 edges={EDGES}
-                onLayout={(e) => setContainerHeight(e.nativeEvent.layout.height)}
+                onLayout={onLayout}
             >
                 <Animated.View style={animated}>
                     <Animated.View style={top}>

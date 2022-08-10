@@ -188,6 +188,9 @@ export default function ChannelInfoForm({
     const onLayoutError = useCallback((e: LayoutChangeEvent) => {
         setErrorHeight(e.nativeEvent.layout.height);
     }, []);
+    const onLayoutMakePrivate = useCallback((e: LayoutChangeEvent) => {
+        setMakePrivateHeight(e.nativeEvent.layout.height);
+    }, []);
     const onLayoutDisplayName = useCallback((e: LayoutChangeEvent) => {
         setDisplayNameFieldHeight(e.nativeEvent.layout.height);
     }, []);
@@ -274,7 +277,7 @@ export default function ChannelInfoForm({
                                 selected={isPrivate}
                                 icon={'lock-outline'}
                                 containerStyle={styles.makePrivateContainer}
-                                onLayout={(e) => setMakePrivateHeight(e.nativeEvent.layout.height)}
+                                onLayout={onLayoutMakePrivate}
                             />
                         )}
                         {!displayHeaderOnly && (

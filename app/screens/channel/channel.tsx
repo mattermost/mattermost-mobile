@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useRef, useState} from 'react';
-import {BackHandler, DeviceEventEmitter, NativeEventSubscription, StyleSheet, View} from 'react-native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {BackHandler, DeviceEventEmitter, LayoutChangeEvent, NativeEventSubscription, StyleSheet, View} from 'react-native';
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -114,6 +114,10 @@ const Channel = ({
         };
     }, [channelId]);
 
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        setContainerHeight(e.nativeEvent.layout.height);
+    }, []);
+
     let callsComponents: JSX.Element | null = null;
     const showJoinCallBanner = isCallInCurrentChannel && !isInCurrentChannelCall;
     if (isCallsPluginEnabled && (showJoinCallBanner || isInACall)) {
@@ -137,7 +141,7 @@ const Channel = ({
                 mode='margin'
                 edges={edges}
                 testID='channel.screen'
-                onLayout={(e) => setContainerHeight(e.nativeEvent.layout.height)}
+                onLayout={onLayout}
             >
                 <ChannelHeader
                     channelId={channelId}
