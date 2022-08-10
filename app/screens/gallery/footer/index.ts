@@ -16,6 +16,7 @@ import Footer from './footer';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type {GalleryItemType} from '@typings/screens/gallery';
 
 type FooterProps = WithDatabaseArgs & {
     item: GalleryItemType;

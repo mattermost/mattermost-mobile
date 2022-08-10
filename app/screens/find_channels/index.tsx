@@ -65,7 +65,7 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
         dismissModal({componentId});
     }, []);
 
-    const onChangeText = useCallback((text) => {
+    const onChangeText = useCallback((text: string) => {
         setTerm(text);
         if (!text) {
             setLoading(false);

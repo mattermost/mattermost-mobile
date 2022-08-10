@@ -14,6 +14,8 @@ import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {calculateDimensions, isGifTooLarge} from '@utils/images';
 
+import type {GalleryItemType} from '@typings/screens/gallery';
+
 type MarkdownTableImageProps = {
     disabled?: boolean;
     imagesMetadata: Record<string, PostImage>;

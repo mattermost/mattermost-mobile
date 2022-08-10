@@ -11,11 +11,18 @@ import {fetchStatusByIds} from '@actions/remote/user';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {
     handleCallChannelDisabled,
-    handleCallChannelEnabled, handleCallScreenOff, handleCallScreenOn, handleCallStarted,
+    handleCallChannelEnabled, handleCallEnded,
+    handleCallScreenOff,
+    handleCallScreenOn,
+    handleCallStarted,
     handleCallUserConnected,
     handleCallUserDisconnected,
-    handleCallUserMuted, handleCallUserRaiseHand,
-    handleCallUserUnmuted, handleCallUserUnraiseHand, handleCallUserVoiceOff, handleCallUserVoiceOn,
+    handleCallUserMuted,
+    handleCallUserRaiseHand,
+    handleCallUserUnmuted,
+    handleCallUserUnraiseHand,
+    handleCallUserVoiceOff,
+    handleCallUserVoiceOn,
 } from '@calls/connection/websocket_event_handlers';
 import {isSupportedServerCalls} from '@calls/utils';
 import {Events, Screens, WebsocketEvents} from '@constants';
@@ -49,7 +56,7 @@ import {handleChannelConvertedEvent, handleChannelCreatedEvent,
     handleDirectAddedEvent,
     handleUserAddedToChannelEvent,
     handleUserRemovedFromChannelEvent} from './channel';
-import {handleGroupMemberAddEvent, handleGroupMemberDeleteEvent, handleGroupReceivedEvent} from './group';
+import {handleGroupMemberAddEvent, handleGroupMemberDeleteEvent, handleGroupReceivedEvent, handleGroupTeamAssociatedEvent, handleGroupTeamDissociateEvent} from './group';
 import {handleOpenDialogEvent} from './integrations';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
@@ -402,6 +409,9 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
         case WebsocketEvents.CALLS_USER_UNRAISE_HAND:
             handleCallUserUnraiseHand(serverUrl, msg);
             break;
+        case WebsocketEvents.CALLS_CALL_END:
+            handleCallEnded(serverUrl, msg);
+            break;
 
         case WebsocketEvents.GROUP_RECEIVED:
             handleGroupReceivedEvent(serverUrl, msg);
@@ -411,6 +421,16 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
         case WebsocketEvents.GROUP_MEMBER_DELETE:
             handleGroupMemberDeleteEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.GROUP_ASSOCIATED_TO_TEAM:
+            handleGroupTeamAssociatedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.GROUP_DISSOCIATED_TO_TEAM:
+            handleGroupTeamDissociateEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.GROUP_ASSOCIATED_TO_CHANNEL:
+            break;
+        case WebsocketEvents.GROUP_DISSOCIATED_TO_CHANNEL:
             break;
     }
 }

@@ -277,7 +277,7 @@ const AtMention = ({
         runSearch.cancel();
     };
 
-    const completeMention = useCallback((mention) => {
+    const completeMention = useCallback((mention: string) => {
         const mentionPart = value.substring(0, localCursorPosition);
 
         let completedDraft;
@@ -347,7 +347,7 @@ const AtMention = ({
         }
     }, [renderSpecialMentions, renderGroupMentions, renderAtMentions]);
 
-    const renderSectionHeader = useCallback(({section}) => {
+    const renderSectionHeader = useCallback(({section}: SectionListRenderItemInfo<SpecialMention | GroupModel | UserProfile>) => {
         return (
             <AutocompleteSectionHeader
                 id={section.id}

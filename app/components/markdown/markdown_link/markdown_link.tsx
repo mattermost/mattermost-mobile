@@ -12,7 +12,7 @@ import urlParse from 'url-parse';
 import {switchToChannelByName} from '@actions/remote/channel';
 import {showPermalink} from '@actions/remote/permalink';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import DeepLinkTypes from '@constants/deep_linking';
+import DeepLinkType from '@constants/deep_linking';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
@@ -68,9 +68,9 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
         const match: DeepLinkWithData | null = matchDeepLink(url, serverUrl, siteURL);
 
         if (match && match.data?.teamName) {
-            if (match.type === DeepLinkTypes.CHANNEL) {
+            if (match.type === DeepLinkType.Channel) {
                 await switchToChannelByName(serverUrl, (match?.data as DeepLinkChannel).channelName, match.data?.teamName, errorBadChannel, intl);
-            } else if (match.type === DeepLinkTypes.PERMALINK) {
+            } else if (match.type === DeepLinkType.Permalink) {
                 showPermalink(serverUrl, match.data.teamName, (match.data as DeepLinkPermalink).postId, intl);
             }
         } else {

@@ -10,6 +10,7 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {addSearchToTeamSearchHistory} from '@actions/local/team';
 import {searchPosts, searchFiles} from '@actions/remote/search';
+import Autocomplete from '@components/autocomplete';
 import FreezeScreen from '@components/freeze_screen';
 import Loading from '@components/loading';
 import NavigationHeader from '@components/navigation_header';
@@ -32,6 +33,9 @@ const emptyPostResults: string[] = [];
 const emptyChannelIds: string[] = [];
 
 const dummyData = [1];
+
+const AutocompletePaddingTop = -4;
+const AutocompleteZindex = 11;
 
 type Props = {
     teamId: string;
@@ -69,6 +73,7 @@ const SearchScreen = ({teamId}: Props) => {
     const serverUrl = useServerUrl();
     const searchTerm = (nav.getState().routes[stateIndex].params as any)?.searchTerm;
 
+    const [cursorPosition, setCursorPosition] = useState(searchTerm?.length);
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
     const [searchTeamId, setSearchTeamId] = useState<string>(teamId);
     const [selectedTab, setSelectedTab] = useState<TabType>(TabTypes.MESSAGES);
@@ -88,21 +93,22 @@ const SearchScreen = ({teamId}: Props) => {
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight, hideHeader} = useCollapsibleHeader<FlatList>(true, onSnap);
 
-    const handleClearSearch = useCallback(() => {
+    const handleCancelAndClearSearch = useCallback(() => {
         setSearchValue('');
         setLastSearchedValue('');
         setFilter(FileFilters.ALL);
+        setShowResults(false);
     }, []);
 
-    const handleCancelSearch = useCallback(() => {
-        handleClearSearch();
-        setShowResults(false);
-    }, [handleClearSearch]);
+    const handleTextChange = useCallback((newValue: string) => {
+        setSearchValue(newValue);
+        setCursorPosition(newValue.length);
+    }, []);
 
     const handleSearch = useCallback(async (newSearchTeamId: string, term: string) => {
         const searchParams = getSearchParams(term);
         if (!searchParams.terms) {
-            handleClearSearch();
+            handleCancelAndClearSearch();
             return;
         }
         setLoading(true);
@@ -120,16 +126,16 @@ const SearchScreen = ({teamId}: Props) => {
 
         setShowResults(true);
         setLoading(false);
-    }, [handleClearSearch]);
+    }, [handleCancelAndClearSearch]);
 
     const onSubmit = useCallback(() => {
         handleSearch(searchTeamId, searchValue);
     }, [handleSearch, searchTeamId, searchValue]);
 
     const handleRecentSearch = useCallback((text: string) => {
-        setSearchValue(text);
+        handleTextChange(text);
         handleSearch(searchTeamId, text);
-    }, [handleSearch, searchTeamId]);
+    }, [handleSearch, handleTextChange, searchTeamId]);
 
     const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
         setLoading(true);
@@ -159,11 +165,11 @@ const SearchScreen = ({teamId}: Props) => {
         <Initial
             searchValue={searchValue}
             setRecentValue={handleRecentSearch}
-            setSearchValue={setSearchValue}
+            setSearchValue={handleTextChange}
             setTeamId={setSearchTeamId}
             teamId={searchTeamId}
         />
-    ), [searchValue, searchTeamId, handleRecentSearch]);
+    ), [searchValue, searchTeamId, handleRecentSearch, handleTextChange]);
 
     const resultsComponent = useMemo(() => (
         <Results
@@ -229,6 +235,17 @@ const SearchScreen = ({teamId}: Props) => {
             />
         );
     }
+    const autocomplete = useMemo(() => (
+        <Autocomplete
+            paddingTop={AutocompletePaddingTop}
+            postInputTop={0}
+            updateValue={handleTextChange}
+            cursorPosition={cursorPosition}
+            value={searchValue}
+            isSearch={true}
+            hasFilesAttached={false}
+        />
+    ), [cursorPosition, handleTextChange, searchValue]);
 
     return (
         <FreezeScreen freeze={!isFocused}>
@@ -239,14 +256,17 @@ const SearchScreen = ({teamId}: Props) => {
                 hasSearch={true}
                 scrollValue={scrollValue}
                 hideHeader={hideHeader}
-                onChangeText={setSearchValue}
+                onChangeText={handleTextChange}
                 onSubmitEditing={onSubmit}
                 blurOnSubmit={true}
                 placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
-                onClear={handleClearSearch}
-                onCancel={handleCancelSearch}
+                onClear={handleCancelAndClearSearch}
+                onCancel={handleCancelAndClearSearch}
                 defaultValue={searchValue}
             />
+            <Animated.View style={[top, {zIndex: AutocompleteZindex}]}>
+                {autocomplete}
+            </Animated.View>
             <SafeAreaView
                 style={styles.flex}
                 edges={EDGES}

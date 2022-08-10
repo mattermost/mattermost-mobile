@@ -1,15 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
-import {CallParticipant} from '@calls/types/calls';
 import {Post} from '@constants';
 import Calls from '@constants/calls';
-import PostModel from '@typings/database/models/servers/post';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {displayUsername} from '@utils/user';
+
+import type {CallParticipant, ServerCallsConfig} from '@calls/types/calls';
+import type PostModel from '@typings/database/models/servers/post';
+import type {IntlShape} from 'react-intl';
 
 export function sortParticipants(teammateNameDisplay: string, participants?: Dictionary<CallParticipant>, presenterID?: string): CallParticipant[] {
     if (!participants) {
@@ -103,4 +104,23 @@ export function errorAlert(error: string, intl: IntlShape) {
             defaultMessage: 'Error: {error}',
         }, {error}),
     );
+}
+
+export function getICEServersConfigs(config: ServerCallsConfig) {
+    // if ICEServersConfigs is set, we can trust this to be complete and
+    // coming from an updated API.
+    if (config.ICEServersConfigs && config.ICEServersConfigs.length > 0) {
+        return config.ICEServersConfigs;
+    }
+
+    // otherwise we revert to using the now deprecated field.
+    if (config.ICEServers && config.ICEServers.length > 0) {
+        return [
+            {
+                urls: config.ICEServers,
+            },
+        ];
+    }
+
+    return [];
 }

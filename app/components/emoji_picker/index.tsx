@@ -62,7 +62,7 @@ const EmojiPicker = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmo
     const [searchTerm, setSearchTerm] = useState<string|undefined>();
     const onLayout = useCallback(({nativeEvent}: LayoutChangeEvent) => setWidth(nativeEvent.layout.width), []);
     const onCancelSearch = useCallback(() => setSearchTerm(undefined), []);
-    const onChangeSearchTerm = useCallback((text) => {
+    const onChangeSearchTerm = useCallback((text: string) => {
         setSearchTerm(text);
         searchCustom(text);
     }, []);

@@ -3,7 +3,7 @@
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleProp, StyleSheet, ViewStyle} from 'react-native';
+import {DeviceEventEmitter, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleProp, StyleSheet, ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
@@ -103,7 +103,7 @@ const PostList = ({
     currentCallBarVisible,
     joinCallBannerVisible,
 }: Props) => {
-    const listRef = useRef<FlatList>(null);
+    const listRef = useRef<FlatList<string | PostModel>>(null);
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
     const scrolledToHighlighted = useRef(false);
@@ -149,10 +149,17 @@ const PostList = ({
         if (location === Screens.CHANNEL && channelId) {
             await fetchPosts(serverUrl, channelId);
         } else if (location === Screens.THREAD && rootId) {
-            await fetchPostThread(serverUrl, rootId);
+            const options: FetchPaginatedThreadOptions = {};
+            const lastPost = posts[0];
+            if (lastPost) {
+                options.fromCreateAt = lastPost.createAt;
+                options.fromPost = lastPost.id;
+                options.direction = 'down';
+            }
+            await fetchPostThread(serverUrl, rootId, options);
         }
         setRefreshing(false);
-    }, [channelId, location, rootId]);
+    }, [channelId, location, posts, rootId]);
 
     const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
         if (Platform.OS === 'android') {
@@ -191,7 +198,7 @@ const PostList = ({
         }
     }, [location]);
 
-    const registerScrollEndIndexListener = useCallback((listener) => {
+    const registerScrollEndIndexListener = useCallback((listener: onScrollEndIndexListenerEvent) => {
         onScrollEndIndexListener.current = listener;
         const removeListener = () => {
             onScrollEndIndexListener.current = undefined;
@@ -200,7 +207,7 @@ const PostList = ({
         return removeListener;
     }, []);
 
-    const registerViewableItemsListener = useCallback((listener) => {
+    const registerViewableItemsListener = useCallback((listener: ViewableItemsChangedListenerEvent) => {
         onViewableItemsChangedListener.current = listener;
         const removeListener = () => {
             onViewableItemsChangedListener.current = undefined;
@@ -209,7 +216,7 @@ const PostList = ({
         return removeListener;
     }, []);
 
-    const renderItem = useCallback(({item, index}) => {
+    const renderItem = useCallback(({item, index}: ListRenderItemInfo<string | PostModel>) => {
         if (typeof item === 'string') {
             if (isStartOfNewMessages(item)) {
                 // postIds includes a date item after the new message indicator so 2
@@ -260,6 +267,8 @@ const PostList = ({
 
                 return (<CombinedUserActivity {...postProps}/>);
             }
+
+            return null;
         }
 
         let previousPost: PostModel|undefined;
@@ -295,13 +304,14 @@ const PostList = ({
         }
 
         // Skip rendering Flag for the root post in the thread as it is visible in the `Thread Overview`
+        const post = item;
         const skipSaveddHeader = (
             location === Screens.THREAD &&
-            item.id === rootId
+            post.id === rootId
         );
 
         const postProps = {
-            highlight: highlightedId === item.id,
+            highlight: highlightedId === post.id,
             highlightPinnedOrSaved,
             location,
             nextPost,
@@ -313,8 +323,8 @@ const PostList = ({
         return (
             <Post
                 isCRTEnabled={isCRTEnabled}
-                key={item.id}
-                post={item}
+                key={post.id}
+                post={post}
                 rootId={rootId}
                 style={styles.scale}
                 testID={`${testID}.post`}

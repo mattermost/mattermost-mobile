@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {OperationType} from '@constants/database';
 import {
     transformChannelInfoRecord,
     transformChannelRecord,
@@ -9,7 +10,6 @@ import {
     transformChannelMembershipRecord,
 } from '@database/operator/server_data_operator/transformers/channel';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
-import {OperationType} from '@typings/database/enums';
 
 describe('*** CHANNEL Prepare Records Test ***', () => {
     it('=> transformChannelRecord: should return an array of type Channel', async () => {
