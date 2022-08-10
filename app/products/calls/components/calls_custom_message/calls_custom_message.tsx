@@ -9,6 +9,7 @@ import {Text, TouchableOpacity, View} from 'react-native';
 import leaveAndJoinWithAlert from '@calls/components/leave_and_join_alert';
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
+import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -115,7 +116,6 @@ export const CallsCustomMessage = ({
     };
 
     if (post.props.end_at) {
-        const endedAt = intl.formatMessage({id: 'mobile.calls_ended_at', defaultMessage: 'Ended at'});
         return (
             <View style={style.messageStyle}>
                 <CompassIcon
@@ -124,14 +124,18 @@ export const CallsCustomMessage = ({
                     style={style.phoneHangupIcon}
                 />
                 <View style={style.messageText}>
-                    <Text style={style.startedText}>
-                        {intl.formatMessage({
-                            id: 'mobile.calls_call_ended',
-                            defaultMessage: 'Call ended',
-                        })}
-                    </Text>
+                    <FormattedText
+                        id={'mobile.calls_call_ended'}
+                        defaultMessage={'Call ended'}
+                        style={style.startedText}
+                    />
                     <View style={style.endCallInfo}>
-                        <Text style={style.timeText}>{`${endedAt} `}</Text>
+                        <FormattedText
+                            id={'mobile.calls_ended_at'}
+                            defaultMessage={'Ended at'}
+                            style={style.timeText}
+                        />
+                        <Text>{' '}</Text>
                         {
                             <FormattedTime
                                 style={style.timeText}
@@ -141,12 +145,12 @@ export const CallsCustomMessage = ({
                             />
                         }
                         <Text style={style.separator}>{'•'}</Text>
-                        <Text style={style.timeText}>
-                            {intl.formatMessage({
-                                id: 'mobile.calls_lasted',
-                                defaultMessage: 'Lasted {duration}',
-                            }, {duration: moment.duration(post.props.end_at - post.props.start_at).humanize(false)})}
-                        </Text>
+                        <FormattedText
+                            id={'mobile.calls_lasted'}
+                            defaultMessage={'Lasted {duration}'}
+                            values={{duration: moment.duration(post.props.end_at - post.props.start_at).humanize(false)}}
+                            style={style.timeText}
+                        />
                     </View>
                 </View>
             </View>
@@ -161,12 +165,12 @@ export const CallsCustomMessage = ({
                 style={style.joinCallIcon}
             />
             <View style={style.messageText}>
-                <Text style={style.startedText}>
-                    {intl.formatMessage({
-                        id: 'mobile.calls_name_started_call',
-                        defaultMessage: '{name} started a call',
-                    }, {name: displayUsername(author, intl.locale, teammateNameDisplay)})}
-                </Text>
+                <FormattedText
+                    id={'mobile.calls_name_started_call'}
+                    defaultMessage={'{name} started a call'}
+                    values={{name: displayUsername(author, intl.locale, teammateNameDisplay)}}
+                    style={style.startedText}
+                />
                 <FormattedRelativeTime
                     value={post.props.start_at}
                     updateIntervalInSeconds={1}
@@ -185,15 +189,19 @@ export const CallsCustomMessage = ({
                 />
                 {
                     alreadyInTheCall &&
-                    <Text style={style.joinCallButtonText}>
-                        {intl.formatMessage({id: 'mobile.calls_current_call', defaultMessage: 'Current call'})}
-                    </Text>
+                    <FormattedText
+                        id={'mobile.calls_current_call'}
+                        defaultMessage={'Current call'}
+                        style={style.joinCallButtonText}
+                    />
                 }
                 {
                     !alreadyInTheCall &&
-                    <Text style={style.joinCallButtonText}>
-                        {intl.formatMessage({id: 'mobile.calls_join_call', defaultMessage: 'Join call'})}
-                    </Text>
+                    <FormattedText
+                        id={'mobile.calls_join_call'}
+                        defaultMessage={'Join call'}
+                        style={style.joinCallButtonText}
+                    />
                 }
             </TouchableOpacity>
         </View>
