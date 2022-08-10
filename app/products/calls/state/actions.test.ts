@@ -589,9 +589,18 @@ describe('useCallsState', () => {
 
     it('config', () => {
         const newConfig = {
-            ICEServers: ['google.com'],
+            ICEServers: [],
+            ICEServersConfigs: [
+                {
+                    urls: ['stun:stun.example.com:3478'],
+                },
+                {
+                    urls: ['turn:turn.example.com:3478'],
+                },
+            ],
             AllowEnableCalls: true,
             DefaultEnabled: true,
+            NeedsTURNCredentials: false,
             last_retrieved_at: 123,
         };
 

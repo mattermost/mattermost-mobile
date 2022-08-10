@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {ConfigurationParamWithUrls, ConfigurationParamWithUrl} from 'react-native-webrtc';
 
 export type CallsState = {
     serverUrl: string;
@@ -91,26 +92,29 @@ export type CallsConnection = {
 }
 
 export type ServerCallsConfig = {
-    ICEServers: string[];
+    ICEServers?: string[]; // deprecated
+    ICEServersConfigs?: ICEServersConfigs;
     AllowEnableCalls: boolean;
     DefaultEnabled: boolean;
+    NeedsTURNCredentials: boolean;
 }
 
-export type CallsConfig = {
+export type CallsConfig = ServerCallsConfig & {
     pluginEnabled: boolean;
-    ICEServers: string[];
-    AllowEnableCalls: boolean;
-    DefaultEnabled: boolean;
     last_retrieved_at: number;
 }
 
 export const DefaultCallsConfig = {
     pluginEnabled: false,
-    ICEServers: [],
+    ICEServers: [], // deprecated
+    ICEServersConfigs: [],
     AllowEnableCalls: false,
     DefaultEnabled: false,
+    NeedsTURNCredentials: false,
     last_retrieved_at: 0,
 } as CallsConfig;
+
+export type ICEServersConfigs = Array<ConfigurationParamWithUrls | ConfigurationParamWithUrl>;
 
 export type ApiResp = {
     message?: string;
