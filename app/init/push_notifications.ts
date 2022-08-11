@@ -20,7 +20,6 @@ import {backgroundNotification, openNotification} from '@actions/remote/notifica
 import {markThreadAsRead} from '@actions/remote/thread';
 import {Device, Events, Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
-import {getTotalMentionsForServer} from '@database/subscription/unreads';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import NativeNotifications from '@notifications';
 import {queryServerName} from '@queries/app/servers';
@@ -51,44 +50,6 @@ class PushNotifications {
         Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground);
         Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground);
     }
-
-    cancelNotificationsForChannel = (notifications: NotificationWithChannel[], channelId: string, rootId?: string, isCRTEnabled?: boolean) => {
-        if (Platform.OS === 'android') {
-            // NativeNotifications.removeDeliveredNotifications(channelId, rootId, isCRTEnabled);
-        } else {
-            const ids: string[] = [];
-            const clearThreads = Boolean(rootId);
-
-            for (const notification of notifications) {
-                if (notification.channel_id === channelId) {
-                    let doesNotificationMatch = true;
-                    if (clearThreads) {
-                        doesNotificationMatch = notification.thread === rootId;
-                    } else if (isCRTEnabled) {
-                        // Do not match when CRT is enabled BUT post is not a root post
-                        doesNotificationMatch = !notification.root_id;
-                    }
-                    if (doesNotificationMatch) {
-                        ids.push(notification.identifier);
-                    }
-                }
-            }
-
-            if (ids.length) {
-                // NativeNotifications.removeDeliveredNotifications(ids);
-            }
-
-            let badgeCount = notifications.length - ids.length;
-
-            const serversUrl = Object.keys(DatabaseManager.serverDatabases);
-            const mentionPromises = serversUrl.map((url) => getTotalMentionsForServer(url));
-            Promise.all(mentionPromises).then((result) => {
-                badgeCount += result.reduce((acc, count) => (acc + count), 0);
-                badgeCount = badgeCount <= 0 ? 0 : badgeCount;
-                Notifications.ios.setBadgeCount(badgeCount);
-            });
-        }
-    };
 
     createReplyCategory = () => {
         const replyTitle = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.title'));
