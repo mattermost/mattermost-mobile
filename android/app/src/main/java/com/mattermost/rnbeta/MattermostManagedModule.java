@@ -141,6 +141,11 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void isHwKeyboardActive(final Promise promise) {
+        promise.resolve(false);
+    }
+
+    @ReactMethod
     public void saveFile(String path, final Promise promise) {
         Uri contentUri;
         String filename = "";

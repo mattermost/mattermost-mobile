@@ -302,8 +302,14 @@ export default function PostInput({
      */
     useEffect(() => {
         (async () => {
+            if (Platform.OS !== 'ios') {
+                return;
+            }
+
             const isHwKeyboardActive = await MattermostManaged.isHwKeyboardActive();
-            if (isHwKeyboardActive && !input.current?.isFocused) {
+            const isInputAlreadyFocused = input.current?.isFocused;
+
+            if (isHwKeyboardActive && !isInputAlreadyFocused) {
                 input.current?.focus();
             }
         })();
