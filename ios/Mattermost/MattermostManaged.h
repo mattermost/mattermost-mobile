@@ -8,6 +8,7 @@
 
 #import <React/RCTBridgeModule.h>
 #import <React/RCTUtils.h>
+#import <GameController/GameController.h>
 
 @interface MattermostManaged : NSObject <RCTBridgeModule>
 @property (nonatomic) NSUserDefaults *sharedUserDefaults;

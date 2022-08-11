@@ -7,7 +7,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
 import {
     Alert, AppState, AppStateStatus, DeviceEventEmitter, EmitterSubscription, Keyboard,
-    KeyboardTypeOptions, NativeSyntheticEvent, Platform, TextInputSelectionChangeEventData,
+    KeyboardTypeOptions, NativeModules, NativeSyntheticEvent, Platform, TextInputSelectionChangeEventData,
 } from 'react-native';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 
@@ -22,6 +22,8 @@ import NavigationStore from '@store/navigation_store';
 import {extractFileInfo} from '@utils/file';
 import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
+
+const {MattermostManaged} = NativeModules;
 
 type Props = {
     testID?: string;
@@ -294,6 +296,18 @@ export default function PostInput({
             listener.remove();
         };
     }, [handleHardwareEnterPress]);
+
+    /**
+     * Auto-focus input if hardware keyboard is connected.
+     */
+    useEffect(() => {
+        (async () => {
+            const isHwKeyboardActive = await MattermostManaged.isHwKeyboardActive();
+            if (isHwKeyboardActive && !input.current?.isFocused) {
+                input.current?.focus();
+            }
+        })();
+    }, []);
 
     return (
         <PasteableTextInput

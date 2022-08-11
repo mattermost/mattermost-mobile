@@ -8,6 +8,7 @@
 
 #import "AppDelegate.h"
 #import "MattermostManaged.h"
+#import <GameController/GameController.h>
 
 @implementation MattermostManaged
 
@@ -57,6 +58,15 @@ RCT_EXPORT_METHOD(isRunningInSplitView:(RCTPromiseResolveBlock)resolve rejecter:
   resolve(@{
             @"isSplitView": @(!isRunningInFullScreen)
             });
+}
+
+RCT_EXPORT_METHOD(isHwKeyboardActive:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+  if (@available(iOS 14.0, *)) {
+    
+    resolve(@(GCKeyboard.coalescedKeyboard != nil));
+  } else {
+    resolve(@(NO));
+  }
 }
 
 RCT_EXPORT_METHOD(deleteDatabaseDirectory: (NSString *)databaseName  shouldRemoveDirectory: (BOOL) shouldRemoveDirectory callback: (RCTResponseSenderBlock)callback){
