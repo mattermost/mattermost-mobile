@@ -40,7 +40,7 @@ describe('Channels - Convert to Private Channel', () => {
     });
 
     it('MM-T4972_1 - should be able to convert public channel to private and confirm', async () => {
-        // # Create a public channel screen, open channel info screen, and tap on conver to private channel option and confirm
+        // # Create a public channel screen, open channel info screen, and tap on convert to private channel option and confirm
         const channelDisplayName = `Channel ${getRandomId()}`;
         await CreateOrEditChannelScreen.openCreateChannel();
         await CreateOrEditChannelScreen.displayNameInput.replaceText(channelDisplayName);
@@ -58,7 +58,7 @@ describe('Channels - Convert to Private Channel', () => {
     });
 
     it('MM-T4972_2 - should be able to convert public channel to private and cancel', async () => {
-        // # Create a public channel screen, open channel info screen, and tap on conver to private channel option and cancel
+        // # Create a public channel screen, open channel info screen, and tap on convert to private channel option and cancel
         const channelDisplayName = `Channel ${getRandomId()}`;
         await CreateOrEditChannelScreen.openCreateChannel();
         await CreateOrEditChannelScreen.displayNameInput.replaceText(channelDisplayName);
