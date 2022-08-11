@@ -68,11 +68,11 @@ export const handleCallStarted = (serverUrl: string, msg: WebSocketMessage) => {
 };
 
 export const handleCallEnded = (serverUrl: string, msg: WebSocketMessage) => {
-    callEnded(serverUrl, msg.broadcast.channel_id);
-
     DeviceEventEmitter.emit(WebsocketEvents.CALLS_CALL_END, {
         channelId: msg.broadcast.channel_id,
     });
+
+    callEnded(serverUrl, msg.broadcast.channel_id);
 };
 
 export const handleCallChannelEnabled = (serverUrl: string, msg: WebSocketMessage) => {
