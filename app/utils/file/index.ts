@@ -3,7 +3,6 @@
 
 import {PastedFile} from '@mattermost/react-native-paste-input';
 import Model from '@nozbe/watermelondb/Model';
-import base64 from 'base-64';
 import mimeDB from 'mime-db';
 import {IntlShape} from 'react-intl';
 import {Alert, Platform} from 'react-native';
@@ -19,6 +18,7 @@ import {generateId} from '@utils/general';
 import keyMirror from '@utils/key_mirror';
 import {logError} from '@utils/log';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
+import {hashCode_DEPRECATED, hashServerUrl} from '@utils/security';
 
 import type FileModel from '@typings/database/models/servers/file';
 
@@ -165,8 +165,17 @@ export async function deleteV1Data() {
 }
 
 export async function deleteFileCache(serverUrl: string) {
-    const serverDir = base64.encode(serverUrl);
-    const cacheDir = `${FileSystem.CachesDirectoryPath}/${serverDir}`;
+    const serverDir = hashServerUrl(serverUrl);
+    deleteFileCacheByDir(serverDir);
+}
+
+export async function deleteLegacyFileCache(serverUrl: string) {
+    const serverDir = hashCode_DEPRECATED(serverUrl);
+    deleteFileCacheByDir(serverDir);
+}
+
+async function deleteFileCacheByDir(dir: string) {
+    const cacheDir = `${FileSystem.CachesDirectoryPath}/${dir}`;
     if (cacheDir) {
         const cacheDirInfo = await FileSystem.exists(cacheDir);
         if (cacheDirInfo) {
@@ -340,9 +349,13 @@ export function getFileType(file: FileInfo): string {
 }
 
 export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | FileModel) {
+    if (file.id?.includes('/')) {
+        throw new Error('File path could not be set');
+    }
+
     if (serverUrl) {
-        const server = base64.encode(serverUrl);
-        if (file?.name) {
+        const server = hashServerUrl(serverUrl);
+        if (file?.name && !file.name.includes('/')) {
             let extension: string | undefined = file.extension;
             let filename = file.name;
 
@@ -504,7 +517,7 @@ export const getAllFilesInCachesDirectory = async (serverUrl: string) => {
     try {
         const files: FileSystem.ReadDirItem[][] = [];
 
-        const directoryFiles = await FileSystem.readDir(`${FileSystem.CachesDirectoryPath}/${base64.encode(serverUrl)}`);
+        const directoryFiles = await FileSystem.readDir(`${FileSystem.CachesDirectoryPath}/${hashServerUrl(serverUrl)}`);
         files.push(directoryFiles);
 
         const flattenedFiles = files.flat();

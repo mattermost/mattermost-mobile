@@ -4,7 +4,6 @@
 import {Database, Q} from '@nozbe/watermelondb';
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
 import logger from '@nozbe/watermelondb/utils/common/logger';
-import base64 from 'base-64';
 import {DeviceEventEmitter, Platform} from 'react-native';
 import FileSystem from 'react-native-fs';
 
@@ -24,6 +23,7 @@ import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
 import {queryActiveServer, queryServer, queryServerByIdentifier} from '@queries/app/servers';
 import {deleteIOSDatabase} from '@utils/mattermost_managed';
+import {hashServerUrl} from '@utils/security';
 import {removeProtocol} from '@utils/url';
 
 import type {AppDatabase, CreateServerDatabaseArgs, Models, RegisterServerDatabaseArgs, ServerDatabase, ServerDatabases} from '@typings/database/database';
@@ -132,7 +132,7 @@ class DatabaseManager {
     private initServerDatabase = async (serverUrl: string): Promise<void> => {
         await this.createServerDatabase({
             config: {
-                dbName: base64.encode(serverUrl),
+                dbName: hashServerUrl(serverUrl),
                 dbType: DatabaseType.SERVER,
                 serverUrl,
             },
@@ -306,7 +306,7 @@ class DatabaseManager {
     };
 
     private deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
-        const databaseName = base64.encode(serverUrl);
+        const databaseName = hashServerUrl(serverUrl);
 
         if (Platform.OS === 'ios') {
         // On iOS, we'll delete the *.db file under the shared app-group/databases folder

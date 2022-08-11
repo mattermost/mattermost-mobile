@@ -4,7 +4,6 @@
 import {Database, Q} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import logger from '@nozbe/watermelondb/utils/common/logger';
-import base64 from 'base-64';
 import {DeviceEventEmitter, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import FileSystem from 'react-native-fs';
@@ -24,9 +23,11 @@ import ServerDataOperator from '@database/operator/server_data_operator';
 import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
 import {queryActiveServer, queryServer, queryServerByIdentifier} from '@queries/app/servers';
+import {deleteLegacyFileCache} from '@utils/file';
 import {emptyFunction} from '@utils/general';
 import {logDebug, logError} from '@utils/log';
 import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
+import {hashCode_DEPRECATED, hashServerUrl} from '@utils/security';
 import {removeProtocol} from '@utils/url';
 
 import type {AppDatabase, CreateServerDatabaseArgs, RegisterServerDatabaseArgs, Models, ServerDatabase, ServerDatabases} from '@typings/database/database';
@@ -126,7 +127,11 @@ class DatabaseManager {
 
         if (serverUrl) {
             try {
-                const databaseName = base64.encode(serverUrl);
+                // Remove any legacy database we may already have.
+                this.deleteLegacyServerDatabaseFiles(serverUrl);
+                deleteLegacyFileCache(serverUrl);
+
+                const databaseName = hashServerUrl(serverUrl);
                 const databaseFilePath = this.getDatabaseFilePath(databaseName);
                 const migrations = ServerDatabaseMigrations;
                 const modelClasses = this.serverModels;
@@ -412,8 +417,26 @@ class DatabaseManager {
     * @returns {Promise<void>}
     */
     private deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
-        const databaseName = base64.encode(serverUrl);
+        const databaseName = hashServerUrl(serverUrl);
+        this.deleteServerDatabaseFilesByName(databaseName);
+    };
 
+    /**
+     * deleteLegacyServerDatabaseFiles: Removes the *.db file from the App-Group directory for iOS or the files directory on Android for legacy databases.
+     * @param {string} serverUrl
+     * @returns {Promise<void>}
+     */
+    private deleteLegacyServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
+        const databaseName = hashCode_DEPRECATED(serverUrl);
+        this.deleteServerDatabaseFilesByName(databaseName);
+    };
+
+    /**
+    * deleteServerDatabaseFilesByName: Removes the *.db file from the App-Group directory for iOS or the files directory for Android, given the database name
+    * @param {string} databaseName
+    * @returns {Promise<void>}
+    */
+    private deleteServerDatabaseFilesByName = async (databaseName: string): Promise<void> => {
         if (Platform.OS === 'ios') {
             // On iOS, we'll delete the *.db file under the shared app-group/databases folder
             deleteIOSDatabase({databaseName});
