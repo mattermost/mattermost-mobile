@@ -5,6 +5,7 @@ import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {TouchableOpacity} from 'react-native';
 
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {popTopScreen} from '@screens/navigation';
@@ -28,7 +29,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 const EMPTY_FILES: ReadDirItem[] = [];
-const EMPTY_SERVERS: string[] = [];
 
 type AdvancedSettingsProps = {
     componentId: string;
@@ -36,30 +36,25 @@ type AdvancedSettingsProps = {
 const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
     const theme = useTheme();
     const intl = useIntl();
+    const serverUrl = useServerUrl();
     const [dataSize, setDataSize] = useState<number|undefined>(0);
     const [files, setFiles] = useState<ReadDirItem[]>(EMPTY_FILES);
-    const [serverUrls, setServerUrls] = useState<string[]>(EMPTY_SERVERS);
     const styles = getStyleSheet(theme);
 
     const getAllCachedFiles = async () => {
-        const {totalSize, files: cachedFiles, serverUrls: allServerUrls} = await getAllFilesInCachesDirectory();
+        const {totalSize, files: cachedFiles} = await getAllFilesInCachesDirectory(serverUrl);
         setDataSize(totalSize);
         setFiles(cachedFiles || EMPTY_FILES);
-        setServerUrls(allServerUrls || EMPTY_SERVERS);
     };
 
     const onPressDeleteData = preventDoubleTap(async () => {
         try {
             if (files.length > 0) {
-                const deletePromises = [];
-                for (const server of serverUrls) {
-                    deletePromises.push(deleteFileCache(server));
-                }
-                await Promise.all(deletePromises);
+                await deleteFileCache(serverUrl);
+                await getAllCachedFiles();
             }
-            await getAllCachedFiles();
         } catch (e) {
-            //todo: show toast if error https://mattermost.atlassian.net/browse/MM-44926
+            //do nothing
         }
     });
 
@@ -70,14 +65,14 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
     const close = () => popTopScreen(componentId);
     useAndroidHardwareBackHandler(componentId, close);
 
-    const disabled = Boolean(dataSize && (dataSize > 0));
+    const hasData = Boolean(dataSize && (dataSize > 0));
 
     return (
         <SettingContainer>
             <TouchableOpacity
                 onPress={onPressDeleteData}
-                disabled={disabled}
-                activeOpacity={disabled ? 0 : 1}
+                disabled={!hasData}
+                activeOpacity={hasData ? 1 : 0}
             >
                 <SettingOption
                     containerStyle={styles.itemStyle}
