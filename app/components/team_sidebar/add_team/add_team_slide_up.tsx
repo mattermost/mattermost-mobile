@@ -64,7 +64,7 @@ export default function AddTeamSlideUp({otherTeams, title, showTitle = true}: Pr
         }
     }, [serverUrl]);
 
-    const hasOtherTeams = otherTeams.length;
+    const hasOtherTeams = Boolean(otherTeams.length);
 
     return (
         <BottomSheetContent
