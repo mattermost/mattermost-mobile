@@ -4,6 +4,7 @@
 import {Database, Q} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import logger from '@nozbe/watermelondb/utils/common/logger';
+import base64 from 'base-64';
 import {DeviceEventEmitter, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import FileSystem from 'react-native-fs';
@@ -26,7 +27,6 @@ import {queryActiveServer, queryServer, queryServerByIdentifier} from '@queries/
 import {emptyFunction} from '@utils/general';
 import {logDebug, logError} from '@utils/log';
 import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
-import {hashCode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
 
 import type {AppDatabase, CreateServerDatabaseArgs, RegisterServerDatabaseArgs, Models, ServerDatabase, ServerDatabases} from '@typings/database/database';
@@ -126,7 +126,7 @@ class DatabaseManager {
 
         if (serverUrl) {
             try {
-                const databaseName = hashCode(serverUrl);
+                const databaseName = base64.encode(serverUrl);
                 const databaseFilePath = this.getDatabaseFilePath(databaseName);
                 const migrations = ServerDatabaseMigrations;
                 const modelClasses = this.serverModels;
@@ -412,7 +412,7 @@ class DatabaseManager {
     * @returns {Promise<void>}
     */
     private deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
-        const databaseName = hashCode(serverUrl);
+        const databaseName = base64.encode(serverUrl);
 
         if (Platform.OS === 'ios') {
             // On iOS, we'll delete the *.db file under the shared app-group/databases folder

@@ -3,6 +3,7 @@
 
 import {PastedFile} from '@mattermost/react-native-paste-input';
 import Model from '@nozbe/watermelondb/Model';
+import base64 from 'base-64';
 import mimeDB from 'mime-db';
 import {IntlShape} from 'react-intl';
 import {Alert, Platform} from 'react-native';
@@ -20,7 +21,6 @@ import {generateId} from '@utils/general';
 import keyMirror from '@utils/key_mirror';
 import {logError} from '@utils/log';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
-import {hashCode} from '@utils/security';
 
 import type FileModel from '@typings/database/models/servers/file';
 
@@ -167,7 +167,7 @@ export async function deleteV1Data() {
 }
 
 export async function deleteFileCache(serverUrl: string) {
-    const serverDir = hashCode(serverUrl);
+    const serverDir = base64.encode(serverUrl);
     const cacheDir = `${FileSystem.CachesDirectoryPath}/${serverDir}`;
     if (cacheDir) {
         const cacheDirInfo = await FileSystem.exists(cacheDir);
@@ -343,7 +343,7 @@ export function getFileType(file: FileInfo): string {
 
 export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | FileModel) {
     if (serverUrl) {
-        const server = hashCode(serverUrl);
+        const server = base64.encode(serverUrl);
         if (file?.name) {
             let extension: string | undefined = file.extension;
             let filename = file.name;
@@ -364,7 +364,7 @@ export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | Fil
                 }
             }
 
-            return `${FileSystem.CachesDirectoryPath}/${server}/${filename}-${hashCode(file.id!)}.${extension}`;
+            return `${FileSystem.CachesDirectoryPath}/${server}/${filename}-${file.id!}.${extension}`;
         } else if (file?.id && file?.extension) {
             return `${FileSystem.CachesDirectoryPath}/${server}/${file.id}.${file.extension}`;
         }
@@ -514,7 +514,7 @@ export const getAllFilesInCachesDirectory = async () => {
         const files: FileSystem.ReadDirItem[][] = [];
 
         for await (const server of servers) {
-            const directoryFiles = await FileSystem.readDir(`${FileSystem.CachesDirectoryPath}/${hashCode(server.url)}`);
+            const directoryFiles = await FileSystem.readDir(`${FileSystem.CachesDirectoryPath}/${base64.encode(server.url)}`);
             files.push(directoryFiles);
             serverUrls.push(server.url);
         }
