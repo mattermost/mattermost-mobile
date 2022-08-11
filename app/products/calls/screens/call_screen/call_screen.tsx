@@ -13,6 +13,7 @@ import {
     useWindowDimensions,
     DeviceEventEmitter, Keyboard,
 } from 'react-native';
+import {Navigation} from 'react-native-navigation';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {RTCView} from 'react-native-webrtc';
 
@@ -37,6 +38,7 @@ import {WebsocketEvents, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {bottomSheet, dismissBottomSheet, goToScreen, popTopScreen} from '@screens/navigation';
+import NavigationStore from '@store/navigation_store';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {mergeNavigationOptions} from '@utils/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -358,8 +360,8 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_CALL_END, ({channelId}) => {
-            if (channelId === currentCall?.channelId) {
-                popTopScreen(componentId);
+            if (channelId === currentCall?.channelId && NavigationStore.getNavigationTopComponentId() === componentId) {
+                Navigation.pop(componentId);
             }
         });
 
@@ -367,8 +369,13 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
     }, []);
 
     if (!currentCall || !myParticipant) {
-        // TODO: will figure out a way to remove the need for this check: https://mattermost.atlassian.net/browse/MM-46050
-        popTopScreen(componentId);
+        // Note: this happens because the screen is "rendered", even after the screen has been popped, and the
+        // currentCall will have already been set to null when those extra renders run. We probably don't ever need
+        // to pop, but just in case.
+        if (NavigationStore.getNavigationTopComponentId() === componentId) {
+            // ignore the error because the call screen has likely already been popped async
+            Navigation.pop(componentId).catch(() => null);
+        }
         return null;
     }
 
