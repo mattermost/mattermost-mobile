@@ -7,38 +7,26 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {
-    Channel,
-    Setup,
-} from '@support/server_api';
-import {
-    serverOneUrl,
-    siteOneUrl,
-} from '@support/test_config';
+import {serverOneUrl} from '@support/test_config';
 import {
     ChannelScreen,
     ChannelListScreen,
+    CreateOrEditChannelScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
+import {getAdminAccount, getRandomId} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Convert to Private Channel', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
-    let testTeam: any;
-    let testUser: any;
 
     beforeAll(async () => {
-        const {team, user} = await Setup.apiInit(siteOneUrl);
-        testTeam = team;
-        testUser = user;
-
-        // # Log in to server
+        // # Log in to server as admin
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await LoginScreen.login(testUser);
+        await LoginScreen.login(getAdminAccount());
     });
 
     beforeEach(async () => {
@@ -52,21 +40,16 @@ describe('Channels - Convert to Private Channel', () => {
     });
 
     it('MM-T4972_1 - should be able to convert public channel to private and confirm', async () => {
-        // # Open a public channel screen, open channel info screen, and tap on convert to private channel option and confirm
-        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
-        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-        await device.reloadReactNative();
-        await ChannelScreen.open(channelsCategory, channel.name);
+        // # Create a public channel screen, open channel info screen, and tap on conver to private channel option and confirm
+        const channelDisplayName = `Channel ${getRandomId()}`;
+        await CreateOrEditChannelScreen.openCreateChannel();
+        await CreateOrEditChannelScreen.displayNameInput.replaceText(channelDisplayName);
+        await CreateOrEditChannelScreen.createButton.tap();
         await ChannelInfoScreen.open();
-        await ChannelInfoScreen.convertToPrivateChannel(channel.display_name, {confirm: true});
+        await ChannelInfoScreen.convertToPrivateChannel(channelDisplayName, {confirm: true});
 
-        // * Verify on channel screen
-        await ChannelScreen.toBeVisible();
-
-        // # Open channel info screen
-        await ChannelInfoScreen.open();
-
-        // * Verify convert to private channel option does not exist
+        // * Verify on channel info screen and convert to private channel option does not exist
+        await ChannelInfoScreen.toBeVisible();
         await expect(ChannelInfoScreen.convertPrivateOption).not.toExist();
 
         // # Go back to channel list screen
@@ -75,16 +58,17 @@ describe('Channels - Convert to Private Channel', () => {
     });
 
     it('MM-T4972_2 - should be able to convert public channel to private and cancel', async () => {
-        // # Open a public channel screen, open channel info screen, and tap on convert to private channel option and cancel
-        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
-        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-        await device.reloadReactNative();
-        await ChannelScreen.open(channelsCategory, channel.name);
+        // # Create a public channel screen, open channel info screen, and tap on conver to private channel option and cancel
+        const channelDisplayName = `Channel ${getRandomId()}`;
+        await CreateOrEditChannelScreen.openCreateChannel();
+        await CreateOrEditChannelScreen.displayNameInput.replaceText(channelDisplayName);
+        await CreateOrEditChannelScreen.createButton.tap();
         await ChannelInfoScreen.open();
-        await ChannelInfoScreen.convertToPrivateChannel(channel.display_name, {confirm: false});
+        await ChannelInfoScreen.convertToPrivateChannel(channelDisplayName, {confirm: false});
 
-        // * Verify still on channel info screen
+        // * Verify on channel info screen and convert to private channel option still exists
         await ChannelInfoScreen.toBeVisible();
+        await expect(ChannelInfoScreen.convertPrivateOption).toExist();
 
         // # Go back to channel list screen
         await ChannelInfoScreen.close();

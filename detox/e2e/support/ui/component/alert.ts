@@ -8,6 +8,11 @@ class Alert {
     confirmSendingNotificationsTitle = isAndroid() ? element(by.text('Confirm sending notifications to entire channel')) : element(by.label('Confirm sending notifications to entire channel')).atIndex(0);
     archivePrivateChannelTitle = isAndroid() ? element(by.text('Archive Private Channel')) : element(by.label('Archive Private Channel')).atIndex(0);
     archivePublicChannelTitle = isAndroid() ? element(by.text('Archive Public Channel')) : element(by.label('Archive Public Channel')).atIndex(0);
+    channelNowPrivateTitle = (channelDisplayName: string) => {
+        const title = `${channelDisplayName} is now a private channel.`;
+
+        return isAndroid() ? element(by.text(title)) : element(by.label(title)).atIndex(0);
+    };
     convertToPrivateChannelTitle = (channelDisplayName: string) => {
         const title = `Convert ${channelDisplayName} to a private channel?`;
 
@@ -38,9 +43,11 @@ class Alert {
     logoutButton = isAndroid() ? element(by.text('LOG OUT')) : element(by.label('Log out')).atIndex(1);
     markReadButton = isAndroid() ? element(by.text('MARK READ')) : element(by.label('Mark read')).atIndex(1);
     noButton = isAndroid() ? element(by.text('NO')) : element(by.label('No')).atIndex(0);
+    noButton2 = isAndroid() ? element(by.text('NO')) : element(by.label('No')).atIndex(1);
     okButton = isAndroid() ? element(by.text('OK')) : element(by.label('OK')).atIndex(1);
     removeButton = isAndroid() ? element(by.text('REMOVE')) : element(by.label('Remove')).atIndex(1);
     yesButton = isAndroid() ? element(by.text('YES')) : element(by.label('Yes')).atIndex(0);
+    yesButton2 = isAndroid() ? element(by.text('YES')) : element(by.label('Yes')).atIndex(1);
 }
 
 const alert = new Alert();

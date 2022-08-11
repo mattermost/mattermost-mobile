@@ -105,7 +105,6 @@ class ChannelInfoScreen {
     };
 
     archiveChannel = async (alertArchiveChannelTitle: Detox.NativeElement, {confirm = true} = {}) => {
-        await this.scrollView.scrollTo('bottom');
         await waitFor(this.archiveChannelOption).toExist().withTimeout(timeouts.TWO_SEC);
         await this.archiveChannelOption.tap({x: 1, y: 1});
         const {
@@ -135,30 +134,32 @@ class ChannelInfoScreen {
     };
 
     convertToPrivateChannel = async (channelDisplayName: string, {confirm = true} = {}) => {
-        await this.scrollView.scrollTo('bottom');
         await waitFor(this.convertPrivateOption).toExist().withTimeout(timeouts.TWO_SEC);
         await this.convertPrivateOption.tap({x: 1, y: 1});
         const {
+            channelNowPrivateTitle,
             convertToPrivateChannelTitle,
-            noButton,
-            yesButton,
+            noButton2,
+            okButton,
+            yesButton2,
         } = Alert;
         await expect(convertToPrivateChannelTitle(channelDisplayName)).toBeVisible();
-        await expect(noButton).toBeVisible();
-        await expect(yesButton).toBeVisible();
+        await expect(noButton2).toBeVisible();
+        await expect(yesButton2).toBeVisible();
         if (confirm) {
-            await yesButton.tap();
+            await yesButton2.tap();
+            await expect(channelNowPrivateTitle(channelDisplayName)).toBeVisible();
+            await okButton.tap();
             await wait(timeouts.ONE_SEC);
-            await expect(this.channelInfoScreen).not.toExist();
+            await expect(this.channelInfoScreen).toExist();
         } else {
-            await noButton.tap();
+            await noButton2.tap();
             await wait(timeouts.ONE_SEC);
             await expect(this.channelInfoScreen).toExist();
         }
     };
 
     leaveChannel = async ({confirm = true} = {}) => {
-        await this.scrollView.scrollTo('bottom');
         await waitFor(this.leaveChannelOption).toExist().withTimeout(timeouts.TWO_SEC);
         await this.leaveChannelOption.tap({x: 1, y: 1});
         const {
@@ -191,7 +192,6 @@ class ChannelInfoScreen {
     };
 
     unarchiveChannel = async (alertUnarchiveChannelTitle: Detox.NativeElement, {confirm = true} = {}) => {
-        await this.scrollView.scrollTo('bottom');
         await waitFor(this.unarchiveChannelOption).toExist().withTimeout(timeouts.TWO_SEC);
         await this.unarchiveChannelOption.tap({x: 1, y: 1});
         const {
