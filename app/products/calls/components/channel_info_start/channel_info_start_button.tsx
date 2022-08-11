@@ -44,9 +44,9 @@ const ChannelInfoStartButton = ({
     }, [alreadyInCall, dismissChannelInfo, intl, serverUrl, channelId, currentCallChannelName, displayName, confirmToJoin, isACallInCurrentChannel]);
     const [tryJoin, msgPostfix] = useTryCallsFunction(toggleJoinLeave);
 
-    const joinText = intl.formatMessage({id: 'mobile.calls_join_call', defaultMessage: 'Join Call'});
-    const startText = intl.formatMessage({id: 'mobile.calls_start_call', defaultMessage: 'Start Call'});
-    const leaveText = intl.formatMessage({id: 'mobile.calls_leave_call', defaultMessage: 'Leave Call'});
+    const joinText = intl.formatMessage({id: 'mobile.calls_join_call', defaultMessage: 'Join call'});
+    const startText = intl.formatMessage({id: 'mobile.calls_start_call', defaultMessage: 'Start call'});
+    const leaveText = intl.formatMessage({id: 'mobile.calls_leave_call', defaultMessage: 'Leave call'});
 
     return (
         <OptionBox

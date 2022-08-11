@@ -97,7 +97,7 @@ const JoinCallBanner = ({
             />
             <FormattedText
                 id={'mobile.calls_join_call'}
-                defaultMessage={'Join Call'}
+                defaultMessage={'Join call'}
                 style={style.joinCall}
             />
             <Text style={style.started}>
