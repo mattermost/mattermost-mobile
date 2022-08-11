@@ -52,25 +52,9 @@ class PushNotifications {
         Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground);
     }
 
-    cancelAllLocalNotifications = () => {
-        Notifications.cancelAllLocalNotifications();
-    };
-
-    cancelChannelNotifications = async (channelId: string, rootId?: string, isCRTEnabled?: boolean) => {
-        const notifications = await NativeNotifications.getDeliveredNotifications();
-        this.cancelNotificationsForChannel(notifications, channelId, rootId, isCRTEnabled);
-    };
-
-    cancelChannelsNotifications = async (channelIds: string[]) => {
-        const notifications = await NativeNotifications.getDeliveredNotifications();
-        for (const channelId of channelIds) {
-            this.cancelNotificationsForChannel(notifications, channelId);
-        }
-    };
-
     cancelNotificationsForChannel = (notifications: NotificationWithChannel[], channelId: string, rootId?: string, isCRTEnabled?: boolean) => {
         if (Platform.OS === 'android') {
-            NativeNotifications.removeDeliveredNotifications(channelId, rootId, isCRTEnabled);
+            // NativeNotifications.removeDeliveredNotifications(channelId, rootId, isCRTEnabled);
         } else {
             const ids: string[] = [];
             const clearThreads = Boolean(rootId);
@@ -91,7 +75,7 @@ class PushNotifications {
             }
 
             if (ids.length) {
-                NativeNotifications.removeDeliveredNotifications(ids);
+                // NativeNotifications.removeDeliveredNotifications(ids);
             }
 
             let badgeCount = notifications.length - ids.length;
@@ -286,6 +270,18 @@ class PushNotifications {
             this.requestNotificationReplyPermissions();
         }
         return null;
+    };
+
+    removeChannelNotifications = async (serverUrl: string, channelId: string) => {
+        NativeNotifications.removeChannelNotifications(serverUrl, channelId);
+    };
+
+    removeServerNotifications = (serverUrl: string) => {
+        NativeNotifications.removeServerNotifications(serverUrl);
+    };
+
+    removeThreadNotifications = async (serverUrl: string, threadId: string) => {
+        NativeNotifications.removeThreadNotifications(serverUrl, threadId);
     };
 
     requestNotificationReplyPermissions = () => {
