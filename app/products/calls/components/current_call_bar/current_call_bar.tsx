@@ -89,6 +89,7 @@ const CurrentCallBar = ({
     const theme = useTheme();
     const {formatMessage} = useIntl();
     const [speaker, setSpeaker] = useState<string | null>(null);
+    const [talkingMessage, setTalkingMessage] = useState('');
 
     const isCurrentCall = Boolean(currentCall);
     const handleVoiceOn = (data: VoiceEventData) => {
@@ -112,6 +113,20 @@ const CurrentCallBar = ({
             onVoiceOff.remove();
         };
     }, [isCurrentCall]);
+
+    useEffect(() => {
+        if (speaker) {
+            setTalkingMessage(formatMessage({
+                id: 'mobile.calls_name_is_talking',
+                defaultMessage: '{name} is talking',
+            }, {name: displayUsername(userModelsDict[speaker], teammateNameDisplay)}));
+        } else {
+            setTalkingMessage(formatMessage({
+                id: 'mobile.calls_noone_talking',
+                defaultMessage: 'No one is talking',
+            }));
+        }
+    }, [speaker, setTalkingMessage]);
 
     const goToCallScreen = useCallback(() => {
         const options: Options = {
@@ -142,6 +157,7 @@ const CurrentCallBar = ({
     };
 
     const style = getStyleSheet(theme);
+
     return (
         <View style={style.wrapper}>
             <View style={style.container}>
@@ -151,13 +167,8 @@ const CurrentCallBar = ({
                     serverUrl={currentCall?.serverUrl || ''}
                 />
                 <View style={style.userInfo}>
-                    <Text style={style.speakingUser}>
-                        {speaker && `${displayUsername(userModelsDict[speaker], teammateNameDisplay)} is talking`}
-                        {!speaker && 'No one is talking'}
-                    </Text>
-                    <Text style={style.currentChannel}>
-                        {`~${displayName}`}
-                    </Text>
+                    <Text style={style.speakingUser}>{talkingMessage}</Text>
+                    <Text style={style.currentChannel}>{`~${displayName}`}</Text>
                 </View>
                 <Pressable
                     onPressIn={goToCallScreen}

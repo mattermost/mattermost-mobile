@@ -33,6 +33,7 @@ import UnraisedHandIcon from '@calls/icons/unraised_hand_icon';
 import {CallParticipant, CurrentCall, VoiceEventData} from '@calls/types/calls';
 import {sortParticipants} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {WebsocketEvents, Screens} from '@constants';
 import {useTheme} from '@context/theme';
@@ -343,7 +344,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                     <SlideUpPanelItem
                         icon='message-text-outline'
                         onPress={switchToThread}
-                        text='Chat thread'
+                        text={intl.formatMessage({id: 'mobile.calls_chat_thread', defaultMessage: 'Chat thread'})}
                     />
                 </View>
             );
@@ -391,9 +392,12 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                     streamURL={currentCall.screenShareURL}
                     style={style.screenShareImage}
                 />
-                <Text style={style.screenShareText}>
-                    {`You are viewing ${displayUsername(participantsDict[currentCall.screenOn].userModel, teammateNameDisplay)}'s screen`}
-                </Text>
+                <FormattedText
+                    id={'mobile.calls_viewing_screen'}
+                    defaultMessage={'You are viewing {name}\'s screen'}
+                    values={{name: displayUsername(participantsDict[currentCall.screenOn].userModel, teammateNameDisplay)}}
+                    style={style.screenShareText}
+                />
             </Pressable>
         );
     }
@@ -429,7 +433,9 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                                 />
                                 <Text style={style.username}>
                                     {displayUsername(user.userModel, teammateNameDisplay)}
-                                    {user.id === myParticipant.id && ' (you)'}
+                                    {user.id === myParticipant.id &&
+                                        ` ${intl.formatMessage({id: 'mobile.calls_you', defaultMessage: '(you)'})}`
+                                    }
                                 </Text>
                             </View>
                         );
@@ -440,6 +446,30 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
     }
 
     const HandIcon = myParticipant.raisedHand ? UnraisedHandIcon : RaisedHandIcon;
+    const LowerHandText = (
+        <FormattedText
+            id={'mobile.calls_lower_hand'}
+            defaultMessage={'Lower hand'}
+            style={style.buttonText}
+        />);
+    const RaiseHandText = (
+        <FormattedText
+            id={'mobile.calls_raise_hand'}
+            defaultMessage={'Raise hand'}
+            style={style.buttonText}
+        />);
+    const MuteText = (
+        <FormattedText
+            id={'mobile.calls_mute'}
+            defaultMessage={'Mute'}
+            style={style.buttonText}
+        />);
+    const UnmuteText = (
+        <FormattedText
+            id={'mobile.calls_unmute'}
+            defaultMessage={'Unmute'}
+            style={style.buttonText}
+        />);
 
     return (
         <SafeAreaView style={style.wrapper}>
@@ -476,10 +506,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                                 size={24}
                                 style={style.muteIcon}
                             />
-                            {myParticipant.muted &&
-                                <Text style={style.buttonText}>{'Unmute'}</Text>}
-                            {!myParticipant.muted &&
-                                <Text style={style.buttonText}>{'Mute'}</Text>}
+                            {myParticipant.muted ? UnmuteText : MuteText}
                         </Pressable>}
                     <View style={style.otherButtons}>
                         <Pressable
@@ -492,7 +519,11 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                                 size={24}
                                 style={{...style.buttonIcon, ...style.hangUpIcon}}
                             />
-                            <Text style={style.buttonText}>{'Leave'}</Text>
+                            <FormattedText
+                                id={'mobile.calls_leave'}
+                                defaultMessage={'Leave'}
+                                style={style.buttonText}
+                            />
                         </Pressable>
                         <Pressable
                             testID={'toggle-speakerphone'}
@@ -504,7 +535,11 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                                 size={24}
                                 style={[style.buttonIcon, style.speakerphoneIcon, currentCall?.speakerphoneOn && style.speakerphoneIconOn]}
                             />
-                            <Text style={style.buttonText}>{'Speaker'}</Text>
+                            <FormattedText
+                                id={'mobile.calls_speaker'}
+                                defaultMessage={'Speaker'}
+                                style={style.buttonText}
+                            />
                         </Pressable>
                         <Pressable
                             style={style.button}
@@ -517,9 +552,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                                 style={[style.buttonIcon, style.handIcon, myParticipant.raisedHand && style.handIconRaisedHand]}
                                 svgStyle={style.handIconSvgStyle}
                             />
-                            <Text style={style.buttonText}>
-                                {myParticipant.raisedHand ? 'Lower hand' : 'Raise hand'}
-                            </Text>
+                            {myParticipant.raisedHand ? LowerHandText : RaiseHandText}
                         </Pressable>
                         <Pressable
                             style={style.button}
@@ -530,9 +563,11 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                                 size={24}
                                 style={style.buttonIcon}
                             />
-                            <Text
+                            <FormattedText
+                                id={'mobile.calls_more'}
+                                defaultMessage={'More'}
                                 style={style.buttonText}
-                            >{'More'}</Text>
+                            />
                         </Pressable>
                         {isLandscape &&
                             <Pressable
@@ -545,14 +580,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                                     size={24}
                                     style={[style.buttonIcon, style.muteIconLandscape, myParticipant?.muted && style.muteIconLandscapeMuted]}
                                 />
-                                {myParticipant.muted &&
-                                    <Text
-                                        style={style.buttonText}
-                                    >{'Unmute'}</Text>}
-                                {!myParticipant.muted &&
-                                    <Text
-                                        style={style.buttonText}
-                                    >{'Mute'}</Text>}
+                                {myParticipant.muted ? UnmuteText : MuteText}
                             </Pressable>}
                     </View>
                 </View>

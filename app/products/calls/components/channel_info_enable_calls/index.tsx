@@ -25,8 +25,8 @@ const ChannelInfoEnableCalls = ({channelId, enabled}: Props) => {
 
     const [tryOnPress, msgPostfix] = useTryCallsFunction(toggleCalls);
 
-    const disableText = formatMessage({id: 'mobile.calls_disable', defaultMessage: 'Disable Calls'});
-    const enableText = formatMessage({id: 'mobile.calls_enable', defaultMessage: 'Enable Calls'});
+    const disableText = formatMessage({id: 'mobile.calls_disable', defaultMessage: 'Disable calls'});
+    const enableText = formatMessage({id: 'mobile.calls_enable', defaultMessage: 'Enable calls'});
 
     return (
         <OptionItem
