@@ -11,8 +11,6 @@ const {ARTIFACTS_DIR} = require('./constants');
 
 const MAX_FAILED_TITLES = 5;
 
-let incrementalDuration = 0;
-
 function convertXmlToJson(xml) {
     const platform = process.env.IOS ? 'ios' : 'android';
     const jsonFile = `${ARTIFACTS_DIR}/${platform}-junit.json`;
@@ -38,6 +36,7 @@ function getAllTests(testSuites) {
     const tests = [];
     let skipped = 0;
     let firstTimestamp;
+    let incrementalDuration = 0;
     testSuites.testsuite.forEach((testSuite) => {
         skipped += parseInt(testSuite.skipped[0], 10);
         if (!firstTimestamp) {
@@ -347,27 +346,6 @@ function generateTitle() {
     return title;
 }
 
-function generateDiagnosticReport(summary, serverInfo) {
-    const {BRANCH, BUILD_ID, IOS} = process.env;
-    const platform = IOS ? 'iOS' : 'Android';
-
-    return {
-        username: 'Mobile Detox Test',
-        icon_url: 'https://mattermost.com/wp-content/uploads/2022/02/icon_WS.png',
-        attachments: [{
-            color: '#43A047',
-            author_name: 'Mobile Detox Test',
-            author_icon: 'https://mattermost.com/wp-content/uploads/2022/02/icon_WS.png',
-            author_link: 'https://community.mattermost.com/core/channels/mobile-test-automation',
-            title: `${platform} Mobile Detox Test Automation #${BUILD_ID}, **${BRANCH}** branch`,
-            fields: [{
-                short: false,
-                value: `Start: **${summary.stats.start}**\nEnd: **${summary.stats.end}**\nUser ID: **${serverInfo.userId}**\nTeam ID: **${serverInfo.teamId}**`,
-            }],
-        }],
-    };
-}
-
 async function sendReport(name, url, data) {
     const requestOptions = {method: 'POST', url, data};
 
@@ -386,7 +364,6 @@ async function sendReport(name, url, data) {
 
 module.exports = {
     convertXmlToJson,
-    generateDiagnosticReport,
     generateShortSummary,
     generateTestReport,
     getAllTests,

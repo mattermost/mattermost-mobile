@@ -34,7 +34,6 @@ const {saveArtifacts} = require('./utils/artifacts');
 const {ARTIFACTS_DIR} = require('./utils/constants');
 const {
     convertXmlToJson,
-    generateDiagnosticReport,
     generateShortSummary,
     generateTestReport,
     getAllTests,
@@ -49,9 +48,6 @@ require('dotenv').config();
 
 const saveReport = async () => {
     const {
-        DIAGNOSTIC_WEBHOOK_URL,
-        DIAGNOSTIC_USER_ID,
-        DIAGNOSTIC_TEAM_ID,
         FAILURE_MESSAGE,
         ZEPHYR_ENABLE,
         ZEPHYR_CYCLE_KEY,
@@ -90,13 +86,6 @@ const saveReport = async () => {
         const environment = readJsonFromFile(`${ARTIFACTS_DIR}/environment.json`);
         const data = generateTestReport(summary, result && result.success, result && result.reportLink, environment, testCycle.key);
         await sendReport('summary report to Community channel', WEBHOOK_URL, data);
-    }
-
-    // Send diagnostic report via webhook
-    // Send on "RELEASE" type only
-    if (TYPE === 'RELEASE' && DIAGNOSTIC_WEBHOOK_URL && DIAGNOSTIC_USER_ID && DIAGNOSTIC_TEAM_ID) {
-        const data = generateDiagnosticReport(summary, {userId: DIAGNOSTIC_USER_ID, teamId: DIAGNOSTIC_TEAM_ID});
-        await sendReport('test info for diagnostic analysis', DIAGNOSTIC_WEBHOOK_URL, data);
     }
 
     // Save test cases to Test Management
