@@ -24,7 +24,6 @@ import {
     setCallScreenOn,
     setCallScreenOff,
     setRaisedHand,
-    myselfJoinedCall,
     myselfLeftCall,
     setChannelEnabled,
     setScreenShareURL,
@@ -460,12 +459,25 @@ describe('useCallsState', () => {
             myUserId: 'myUserId',
             calls: {'channel-1': call1, 'channel-2': call2},
         };
+        const newCall1 = {
+            ...call1,
+            participants: {
+                ...call1.participants,
+                myUserId: {id: 'myUserId', muted: true, raisedHand: 0},
+            },
+        };
+        const expectedCallsState = {
+            ...initialCallsState,
+            calls: {...initialCallsState.calls,
+                'channel-1': newCall1,
+            },
+        };
         const expectedCurrentCallState = {
             serverUrl: 'server1',
             myUserId: 'myUserId',
             screenShareURL: '',
             speakerphoneOn: false,
-            ...call1,
+            ...newCall1,
         } as CurrentCall;
 
         // setup
@@ -477,10 +489,14 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], null);
 
         // test
-        act(() => myselfJoinedCall('server1', 'channel-1'));
-        assert.deepEqual(result.current[0], initialCallsState);
+        act(() => userJoinedCall('server1', 'channel-1', 'myUserId'));
+        assert.deepEqual(result.current[0], expectedCallsState);
         assert.deepEqual(result.current[1], expectedCurrentCallState);
-        act(() => myselfLeftCall());
+
+        act(() => {
+            myselfLeftCall();
+            userLeftCall('server1', 'channel-1', 'myUserId');
+        });
         assert.deepEqual(result.current[0], initialCallsState);
         assert.deepEqual(result.current[1], null);
     });
@@ -543,13 +559,14 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], null);
 
         // test joining a call and setting url:
-        act(() => myselfJoinedCall('server1', 'channel-1'));
+        act(() => userJoinedCall('server1', 'channel-1', 'myUserId'));
         assert.deepEqual((result.current[1] as CurrentCall | null)?.screenShareURL, '');
         act(() => setScreenShareURL('testUrl'));
         assert.deepEqual((result.current[1] as CurrentCall | null)?.screenShareURL, 'testUrl');
 
         act(() => {
             myselfLeftCall();
+            userLeftCall('server1', 'channel-1', 'myUserId');
             setScreenShareURL('test');
         });
         assert.deepEqual(result.current[0], initialCallsState);
@@ -562,6 +579,19 @@ describe('useCallsState', () => {
             myUserId: 'myUserId',
             calls: {'channel-1': call1, 'channel-2': call2},
         };
+        const newCall1 = {
+            ...call1,
+            participants: {
+                ...call1.participants,
+                myUserId: {id: 'myUserId', muted: true, raisedHand: 0},
+            },
+        };
+        const expectedCallsState = {
+            ...initialCallsState,
+            calls: {...initialCallsState.calls,
+                'channel-1': newCall1,
+            },
+        };
 
         // setup
         const {result} = renderHook(() => {
@@ -572,18 +602,18 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], null);
 
         // test
-        act(() => myselfJoinedCall('server1', 'channel-1'));
+        act(() => userJoinedCall('server1', 'channel-1', 'myUserId'));
         assert.deepEqual((result.current[1] as CurrentCall | null)?.speakerphoneOn, false);
         act(() => setSpeakerPhone(true));
         assert.deepEqual((result.current[1] as CurrentCall | null)?.speakerphoneOn, true);
         act(() => setSpeakerPhone(false));
         assert.deepEqual((result.current[1] as CurrentCall | null)?.speakerphoneOn, false);
-        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[0], expectedCallsState);
         act(() => {
             myselfLeftCall();
             setSpeakerPhone(true);
         });
-        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[0], expectedCallsState);
         assert.deepEqual(result.current[1], null);
     });
 
