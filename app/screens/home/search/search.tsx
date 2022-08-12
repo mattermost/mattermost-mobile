@@ -48,7 +48,6 @@ const styles = StyleSheet.create({
     },
     loading: {
         flex: 1,
-        alignItems: 'center',
         justifyContent: 'center',
     },
 });
@@ -127,6 +126,7 @@ const SearchScreen = ({teamId}: Props) => {
             handleCancelAndClearSearch();
             return;
         }
+        hideAndLock();
         handleLoading(true);
         setFilter(FileFilters.ALL);
         setLastSearchedValue(term);
@@ -140,9 +140,8 @@ const SearchScreen = ({teamId}: Props) => {
         setPostIds(postResults?.order?.length ? postResults.order : emptyPostResults);
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
 
-        setShowResults(true);
-        hideAndLock();
         handleLoading(false);
+        setShowResults(true);
     }, [handleCancelAndClearSearch, handleLoading, showResults]);
 
     const onSubmit = useCallback(() => {
@@ -167,9 +166,15 @@ const SearchScreen = ({teamId}: Props) => {
         handleSearch(newTeamId, lastSearchedValue);
     }, [lastSearchedValue, handleSearch]);
 
+    const containerStyle = useMemo(() => {
+        const padding = lockValue?.value ? lockValue.value : scrollPaddingTop;
+        const justify = (resultsLoading || loading) ? 'center' : 'flex-start';
+        return {paddingTop: padding, flexGrow: 1, justifyContent: justify} as ViewProps;
+    }, [scrollPaddingTop, loading, lockValue.value, resultsLoading]);
+
     const loadingComponent = useMemo(() => (
         <Loading
-            containerStyle={[styles.loading, {paddingTop: scrollPaddingTop}]}
+            containerStyle={[styles.loading, {padding: lockValue?.value || 0}]}
             color={theme.buttonBg}
             size='large'
         />
@@ -209,12 +214,6 @@ const SearchScreen = ({teamId}: Props) => {
         !loading && !showResults && initialComponent,
         !loading && showResults && resultsComponent,
     ]);
-
-    const containerStyle = useMemo(() => {
-        const padding = lockValue?.value ? lockValue.value : scrollPaddingTop;
-        const justify = resultsLoading ? 'center' : 'flex-start';
-        return {paddingTop: padding, flexGrow: 1, justifyContent: justify} as ViewProps;
-    }, [scrollPaddingTop, lockValue.value, resultsLoading]);
 
     const animated = useAnimatedStyle(() => {
         if (isFocused) {
