@@ -169,7 +169,7 @@ const Header = ({
         const height = lockValue?.value ? lockValue.value : defaultHeight + top;
         const paddingTop = lockValue?.value ? null : top;
         return [styles.container, {height, paddingTop}];
-    }, [defaultHeight, theme, top]);
+    }, [defaultHeight, lockValue?.value, theme, top]);
 
     const additionalTitleStyle = useMemo(() => ({
         marginLeft: Platform.select({android: showBackButton && !leftComponent ? 20 : 0}),
