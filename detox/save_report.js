@@ -25,7 +25,7 @@
  *      - JIRA_PROJECT_KEY=[project_key], e.g. "MM",
  *      - ZEPHYR_FOLDER_ID=[folder_id], e.g. 847997
  *   For sending hooks to Mattermost channels
- *      - FULL_REPORT, WEBHOOK_URL and DIAGNOSTIC_WEBHOOK_URL
+ *      - FULL_REPORT, WEBHOOK_URL and TEST_CYCLE_LINK_PREFIX
  *   Test type
  *      - TYPE=[type], e.g. "MASTER", "PR", "RELEASE", "GEKIDOU"
  */
