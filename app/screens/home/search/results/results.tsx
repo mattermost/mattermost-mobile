@@ -246,10 +246,8 @@ const SearchResults = ({
     let data;
     if (loading) {
         data = ['loading'];
-    } else if (selectedTab === TabTypes.MESSAGES) {
-        data = orderedPosts;
     } else {
-        data = orderedFilesForGallery;
+        data = selectedTab === TabTypes.MESSAGES ? orderedPosts : orderedFilesForGallery;
     }
 
     return (
