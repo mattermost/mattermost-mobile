@@ -7,6 +7,7 @@ import Animated from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import File from '@components/files/file';
+import Loading from '@components/loading';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {ITEM_HEIGHT} from '@components/option_item';
 import DateSeparator from '@components/post_list/date_separator';
@@ -46,6 +47,7 @@ type Props = {
     fileChannels: ChannelModel[];
     fileInfos: FileInfo[];
     isTimezoneEnabled: boolean;
+    loading: boolean;
     posts: PostModel[];
     publicLinkEnabled: boolean;
     searchValue: string;
@@ -60,6 +62,7 @@ const SearchResults = ({
     fileChannels,
     fileInfos,
     isTimezoneEnabled,
+    loading,
     posts,
     publicLinkEnabled,
     searchValue,
@@ -239,20 +242,30 @@ const SearchResults = ({
     }
 
     return (
-        <AnimatedFlatList
-            ListEmptyComponent={noResults}
-            data={data}
-            scrollToOverflowEnabled={true}
-            showsVerticalScrollIndicator={true}
-            scrollEventThrottle={16}
-            indicatorStyle='black'
-            refreshing={false}
-            renderItem={renderItem}
-            nestedScrollEnabled={true}
-            removeClippedSubviews={true}
-            style={containerStyle}
-            testID='search_results.post_list.flat_list'
-        />
+        <>
+            {loading && (
+                <Loading
+                    color={theme.buttonBg}
+                    size='large'
+                />
+            )}
+            {!loading && (
+                <AnimatedFlatList
+                    ListEmptyComponent={noResults}
+                    data={data}
+                    scrollToOverflowEnabled={true}
+                    showsVerticalScrollIndicator={true}
+                    scrollEventThrottle={16}
+                    indicatorStyle='black'
+                    refreshing={false}
+                    renderItem={renderItem}
+                    nestedScrollEnabled={true}
+                    removeClippedSubviews={true}
+                    style={containerStyle}
+                    testID='search_results.post_list.flat_list'
+                />
+            )}
+        </>
     );
 };
 

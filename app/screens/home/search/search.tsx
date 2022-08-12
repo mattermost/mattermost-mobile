@@ -4,7 +4,7 @@
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, StyleSheet} from 'react-native';
+import {FlatList, StyleSheet, ViewProps} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -82,6 +82,7 @@ const SearchScreen = ({teamId}: Props) => {
     const [showResults, setShowResults] = useState(false);
 
     const [loading, setLoading] = useState(false);
+    const [resultsLoading, setResultsLoading] = useState(false);
     const [lastSearchedValue, setLastSearchedValue] = useState('');
 
     const [postIds, setPostIds] = useState<string[]>(emptyPostResults);
@@ -116,15 +117,21 @@ const SearchScreen = ({teamId}: Props) => {
         setCursorPosition(newValue.length);
     }, []);
 
+    const handleLoading = useCallback((show: boolean) => {
+        if (showResults) {
+            setResultsLoading(show);
+        } else {
+            setLoading(show);
+        }
+    }, [showResults]);
+
     const handleSearch = useCallback(async (newSearchTeamId: string, term: string) => {
         const searchParams = getSearchParams(term);
         if (!searchParams.terms) {
             handleCancelAndClearSearch();
             return;
         }
-        if (!showResults) {
-            setLoading(true);
-        }
+        handleLoading(true);
         setFilter(FileFilters.ALL);
         setLastSearchedValue(term);
         addSearchToTeamSearchHistory(serverUrl, newSearchTeamId, term);
@@ -139,10 +146,8 @@ const SearchScreen = ({teamId}: Props) => {
 
         setShowResults(true);
         hideAndLock();
-        if (!showResults) {
-            setLoading(false);
-        }
-    }, [handleCancelAndClearSearch, showResults]);
+        handleLoading(false);
+    }, [handleCancelAndClearSearch, handleLoading, showResults]);
 
     const onSubmit = useCallback(() => {
         handleSearch(searchTeamId, searchValue);
@@ -164,7 +169,7 @@ const SearchScreen = ({teamId}: Props) => {
     const handleResultsTeamChange = useCallback((newTeamId: string) => {
         setSearchTeamId(newTeamId);
         handleSearch(newTeamId, lastSearchedValue);
-    }, [lastSearchedValue]);
+    }, [lastSearchedValue, handleSearch]);
 
     const loadingComponent = useMemo(() => (
         <Loading
@@ -186,13 +191,14 @@ const SearchScreen = ({teamId}: Props) => {
 
     const resultsComponent = useMemo(() => (
         <Results
+            loading={resultsLoading}
             selectedTab={selectedTab}
             searchValue={lastSearchedValue}
             postIds={postIds}
             fileInfos={fileInfos}
             fileChannelIds={fileChannelIds}
         />
-    ), [selectedTab, lastSearchedValue, postIds, fileInfos, fileChannelIds]);
+    ), [selectedTab, lastSearchedValue, postIds, resultsLoading, fileInfos, fileChannelIds]);
 
     const renderItem = useCallback(() => {
         if (loading) {
@@ -208,9 +214,11 @@ const SearchScreen = ({teamId}: Props) => {
         !loading && showResults && resultsComponent,
     ]);
 
-    const paddingTop = useMemo(() => (
-        {paddingTop: lockValue?.value ? lockValue.value : scrollPaddingTop, flexGrow: 1}
-    ), [scrollPaddingTop, lockValue.value]);
+    const containerStyle = useMemo(() => {
+        const padding = lockValue?.value ? lockValue.value : scrollPaddingTop;
+        const justify = resultsLoading ? 'center' : 'flex-start';
+        return {paddingTop: padding, flexGrow: 1, justifyContent: justify} as ViewProps;
+    }, [scrollPaddingTop, lockValue.value, resultsLoading]);
 
     const animated = useAnimatedStyle(() => {
         if (isFocused) {
@@ -296,7 +304,7 @@ const SearchScreen = ({teamId}: Props) => {
                     </Animated.View>
                     <AnimatedFlatList
                         data={dummyData}
-                        contentContainerStyle={paddingTop}
+                        contentContainerStyle={containerStyle}
                         keyboardShouldPersistTaps='handled'
                         keyboardDismissMode={'interactive'}
                         nestedScrollEnabled={true}
