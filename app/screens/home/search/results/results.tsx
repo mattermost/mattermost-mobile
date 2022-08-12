@@ -48,7 +48,6 @@ type Props = {
     isTimezoneEnabled: boolean;
     posts: PostModel[];
     publicLinkEnabled: boolean;
-    scrollPaddingTop: number;
     searchValue: string;
     selectedTab: TabType;
 }
@@ -63,7 +62,6 @@ const SearchResults = ({
     isTimezoneEnabled,
     posts,
     publicLinkEnabled,
-    scrollPaddingTop,
     searchValue,
     selectedTab,
 }: Props) => {
@@ -72,7 +70,6 @@ const SearchResults = ({
     const insets = useSafeAreaInsets();
     const [lastViewedIndex, setLastViewedIndex] = useState<number | undefined>(undefined);
 
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
     const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
     const channelNames = useMemo(() => fileChannels.reduce<{[id: string]: string | undefined}>((acc, v) => {
@@ -251,7 +248,6 @@ const SearchResults = ({
             indicatorStyle='black'
             refreshing={false}
             renderItem={renderItem}
-            contentContainerStyle={paddingTop}
             nestedScrollEnabled={true}
             removeClippedSubviews={true}
             style={containerStyle}

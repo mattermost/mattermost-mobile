@@ -30,6 +30,7 @@ type Props = {
     onTitlePress?: () => void;
     rightButtons?: HeaderRightButton[];
     scrollValue?: Animated.SharedValue<number>;
+    lockValue?: Animated.SharedValue<number | null>;
     showBackButton?: boolean;
     subtitle?: string;
     subtitleCompanion?: React.ReactElement;
@@ -133,6 +134,7 @@ const Header = ({
     onTitlePress,
     rightButtons,
     scrollValue,
+    lockValue,
     showBackButton = true,
     subtitle,
     subtitleCompanion,
@@ -164,8 +166,10 @@ const Header = ({
     }, [defaultHeight, largeHeight, isLargeTitle, hasSearch]);
 
     const containerStyle = useMemo(() => {
-        return [styles.container, {height: defaultHeight + top, paddingTop: top}];
-    }, [defaultHeight, theme]);
+        const height = lockValue?.value ? lockValue.value : defaultHeight + top;
+        const paddingTop = lockValue?.value ? null : top;
+        return [styles.container, {height, paddingTop}];
+    }, [defaultHeight, theme, top]);
 
     const additionalTitleStyle = useMemo(() => ({
         marginLeft: Platform.select({android: showBackButton && !leftComponent ? 20 : 0}),

@@ -15,6 +15,7 @@ type Props = SearchProps & {
     defaultHeight: number;
     largeHeight: number;
     scrollValue?: Animated.SharedValue<number>;
+    lockValue?: Animated.SharedValue<number | null>;
     hideHeader?: () => void;
     theme: Theme;
     top: number;
@@ -43,6 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const NavigationSearch = ({
     defaultHeight,
     largeHeight,
+    lockValue,
     scrollValue,
     hideHeader,
     theme,
@@ -61,7 +63,7 @@ const NavigationSearch = ({
     const searchTop = useAnimatedStyle(() => {
         const value = scrollValue?.value || 0;
         const min = (largeHeight - defaultHeight);
-        return {marginTop: Math.min(-Math.min((value), min), min)};
+        return {marginTop: lockValue?.value ? -lockValue?.value : Math.min(-Math.min((value), min), min)};
     }, [largeHeight, defaultHeight]);
 
     const onFocus = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => {
