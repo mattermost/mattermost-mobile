@@ -119,12 +119,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
     };
 
     convertChannelToPrivate = async (channelId: string) => {
-        analytics.trackAPI('api_channels_convert_to_private', {channel_id: channelId});
-
-        return this.doFetch(
-            `${this.getChannelRoute(channelId)}/convert`,
-            {method: 'post'},
-        );
+        return this.updateChannelPrivacy(channelId, 'P');
     };
 
     updateChannelPrivacy = async (channelId: string, privacy: any) => {

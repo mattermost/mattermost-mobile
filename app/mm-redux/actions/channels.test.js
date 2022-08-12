@@ -277,7 +277,7 @@ describe('Actions.Channels', () => {
     it('convertChannelToPrivate', async () => {
         const publicChannel = TestHelper.basicChannel;
         nock(Client4.getChannelRoute(publicChannel.id)).
-            post('/convert').
+            put('/privacy').
             reply(200, {...TestHelper.basicChannel, type: General.PRIVATE_CHANNEL});
 
         assert.equal(TestHelper.basicChannel.type, General.OPEN_CHANNEL);
