@@ -12,6 +12,7 @@ import {
     NativeSyntheticEvent,
     NativeScrollEvent,
     Platform,
+    useWindowDimensions,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -24,7 +25,7 @@ import Loading from '@components/loading';
 import OptionItem from '@components/option_item';
 import {General, Channel} from '@constants';
 import {useTheme} from '@context/theme';
-import {useKeyboardHeight} from '@hooks/device';
+import {useIsTablet, useKeyboardHeight, useModalPosition} from '@hooks/device';
 import {t} from '@i18n';
 import {
     changeOpacity,
@@ -35,7 +36,7 @@ import {typography} from '@utils/typography';
 
 const FIELD_MARGIN_BOTTOM = 24;
 const MAKE_PRIVATE_MARGIN_BOTTOM = 32;
-const BOTTOM_AUTOCOMPLETE_SEPARATION = Platform.select({ios: 1, default: 10});
+const BOTTOM_AUTOCOMPLETE_SEPARATION = Platform.select({ios: 10, default: 10});
 const LIST_PADDING = 32;
 const AUTOCOMPLETE_ADJUST = 5;
 
@@ -117,6 +118,12 @@ export default function ChannelInfoForm({
     const scrollViewRef = useRef<KeyboardAwareScrollView>(null);
 
     const updateScrollTimeout = useRef<NodeJS.Timeout>();
+
+    const mainView = useRef<View>(null);
+    const modalPosition = useModalPosition(mainView);
+
+    const dimensions = useWindowDimensions();
+    const isTablet = useIsTablet();
 
     const keyboardHeight = useKeyboardHeight();
     const [keyboardVisible, setKeyBoardVisible] = useState(false);
@@ -236,13 +243,26 @@ export default function ChannelInfoForm({
         );
     }
 
+    const bottomSpace = (dimensions.height - wrapperHeight - modalPosition);
     const otherElementsSize = LIST_PADDING + errorHeight +
         (showSelector ? makePrivateHeight + MAKE_PRIVATE_MARGIN_BOTTOM : 0) +
         (displayHeaderOnly ? 0 : purposeFieldHeight + FIELD_MARGIN_BOTTOM + displayNameFieldHeight + FIELD_MARGIN_BOTTOM);
-    const workingSpace = wrapperHeight - (keyboardHeight || insets.bottom);
+
+    const keyboardOverlap = Platform.select({
+        ios: isTablet ?
+            Math.max(0, keyboardHeight - bottomSpace) :
+            keyboardHeight || insets.bottom,
+        default: 0});
+    const workingSpace = wrapperHeight - keyboardOverlap;
     const spaceOnTop = otherElementsSize - scrollPosition - AUTOCOMPLETE_ADJUST;
     const spaceOnBottom = (workingSpace + scrollPosition) - (otherElementsSize + headerFieldHeight + BOTTOM_AUTOCOMPLETE_SEPARATION);
-    const keyboardAdjust = keyboardHeight - (keyboardHeight ? insets.bottom : 0);
+    const insetsAdjust = keyboardHeight - keyboardHeight ? insets.bottom : 0;
+    const keyboardAdjust = Platform.select({
+        ios: isTablet ?
+            keyboardOverlap :
+            insetsAdjust,
+        default: 0,
+    });
     const autocompletePosition = spaceOnTop > spaceOnBottom ? (workingSpace + scrollPosition + AUTOCOMPLETE_ADJUST + keyboardAdjust) - otherElementsSize : (workingSpace + scrollPosition + keyboardAdjust) - (otherElementsSize + headerFieldHeight);
     const autocompleteAvailableSpace = spaceOnTop > spaceOnBottom ? spaceOnTop : spaceOnBottom;
     const growUp = spaceOnTop > spaceOnBottom;
@@ -253,6 +273,7 @@ export default function ChannelInfoForm({
             style={styles.container}
             testID='create_or_edit_channel.screen'
             onLayout={onLayoutWrapper}
+            ref={mainView}
         >
             <KeyboardAwareScrollView
                 testID={'create_or_edit_channel.scrollview'}
@@ -336,7 +357,6 @@ export default function ChannelInfoForm({
                         )}
                         <View
                             style={styles.fieldContainer}
-                            onLayout={onLayoutHeader}
                         >
                             <FloatingTextInput
                                 autoCorrect={false}
@@ -357,6 +377,7 @@ export default function ChannelInfoForm({
                                 ref={headerInput}
                                 theme={theme}
                                 onFocus={scrollHeaderToTop}
+                                onLayout={onLayoutHeader}
                             />
                             <FormattedText
                                 style={styles.helpText}

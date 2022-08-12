@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Keyboard, KeyboardType, LayoutChangeEvent, Platform, SafeAreaView, View} from 'react-native';
+import {Alert, Keyboard, KeyboardType, LayoutChangeEvent, Platform, SafeAreaView, useWindowDimensions, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {deletePost, editPost} from '@actions/remote/post';
@@ -11,7 +11,7 @@ import Autocomplete from '@components/autocomplete';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useKeyboardHeight} from '@hooks/device';
+import {useIsTablet, useKeyboardHeight, useModalPosition} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import PostError from '@screens/edit_post/post_error';
@@ -22,6 +22,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import EditPostInput, {EditPostInputRef} from './edit_post_input';
 
 import type PostModel from '@typings/database/models/servers/post';
+
+const AUTOCOMPLETE_SEPARATION = 8;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -59,6 +61,9 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const [isUpdating, setIsUpdating] = useState(false);
     const [containerHeight, setContainerHeight] = useState(0);
 
+    const mainView = useRef<View>(null);
+    const modalPosition = useModalPosition(mainView);
+
     const postInputRef = useRef<EditPostInputRef>(null);
     const theme = useTheme();
     const intl = useIntl();
@@ -66,6 +71,8 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const styles = getStyleSheet(theme);
     const keyboardHeight = useKeyboardHeight();
     const insets = useSafeAreaInsets();
+    const dimensions = useWindowDimensions();
+    const isTablet = useIsTablet();
 
     useEffect(() => {
         setButtons(componentId, {
@@ -198,7 +205,12 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
         );
     }
 
-    const autocompletePosition = Platform.select({ios: keyboardHeight || insets.bottom, default: 0});
+    const bottomSpace = (dimensions.height - containerHeight - modalPosition);
+    const autocompletePosition = Platform.select({
+        ios: isTablet ?
+            Math.max(0, keyboardHeight - bottomSpace) :
+            keyboardHeight || insets.bottom,
+        default: 0}) + AUTOCOMPLETE_SEPARATION;
     const autocompleteAvailableSpace = containerHeight - autocompletePosition;
 
     return (
@@ -208,7 +220,10 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                 style={styles.container}
                 onLayout={onLayout}
             >
-                <View style={styles.body}>
+                <View
+                    style={styles.body}
+                    ref={mainView}
+                >
                     {Boolean((errorLine || errorExtra)) &&
                         <PostError
                             errorExtra={errorExtra}

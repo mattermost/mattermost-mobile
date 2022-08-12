@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useEffect, useRef, useState} from 'react';
-import {AppState, Keyboard, NativeModules, Platform, useWindowDimensions} from 'react-native';
+import React, {RefObject, useEffect, useRef, useState} from 'react';
+import {AppState, Keyboard, NativeModules, Platform, useWindowDimensions, View} from 'react-native';
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -93,4 +93,21 @@ export function useKeyboardHeight(keyboardTracker?: React.RefObject<KeyboardTrac
     }, [keyboardTracker && insets.bottom]);
 
     return keyboardHeight;
+}
+
+export function useModalPosition(viewRef: RefObject<View>, deps?: React.DependencyList) {
+    const [modalPosition, setModalPosition] = useState(0);
+    const isTablet = useIsTablet();
+
+    useEffect(() => {
+        if (Platform.OS === 'ios' && isTablet) {
+            viewRef.current?.measureInWindow((_, y) => {
+                if (y !== modalPosition) {
+                    setModalPosition(y);
+                }
+            });
+        }
+    }, deps);
+
+    return modalPosition;
 }
