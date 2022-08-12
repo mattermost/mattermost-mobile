@@ -172,6 +172,7 @@ function generateShortSummary(allTests) {
 function removeOldGeneratedReports() {
     const platform = process.env.IOS ? 'ios' : 'android';
     [
+        'environment.json',
         'summary.json',
         `${platform}-junit.json`,
     ].forEach((file) => fse.removeSync(`${ARTIFACTS_DIR}/${file}`));

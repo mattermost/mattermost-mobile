@@ -27,8 +27,9 @@
  */
 
 const assert = require('assert');
-
 const fse = require('fs-extra');
+const os = require('os');
+const shell = require('shelljs');
 
 const {saveArtifacts} = require('./utils/artifacts');
 const {ARTIFACTS_DIR} = require('./utils/constants');
@@ -48,15 +49,39 @@ require('dotenv').config();
 
 const saveReport = async () => {
     const {
+        DEVICE_NAME,
+        DEVICE_OS_VERSION,
         FAILURE_MESSAGE,
-        ZEPHYR_ENABLE,
-        ZEPHYR_CYCLE_KEY,
+        HEADLESS,
+        IOS,
         TYPE,
         WEBHOOK_URL,
+        ZEPHYR_ENABLE,
+        ZEPHYR_CYCLE_KEY,
     } = process.env;
 
     // Remove old generated reports
     removeOldGeneratedReports();
+
+    const detox_version = shell.exec('npm list detox').stdout.split('\n')[1].split('@')[1].trim();
+    const headless = IOS ? false : HEADLESS === 'true';
+    const os_name = os.platform();
+    const os_version = os.release();
+    const node_version = process.version;
+    const npm_version = shell.exec('npm --version').stdout.trim();
+
+    // Write environment details to file
+    const environmentDetails = {
+        detox_version,
+        device_name: DEVICE_NAME,
+        device_os_version: DEVICE_OS_VERSION,
+        headless,
+        os_name,
+        os_version,
+        node_version,
+        npm_version,
+    };
+    writeJsonToFile(environmentDetails, 'environment.json', ARTIFACTS_DIR);
 
     // Read XML from a file
     const platform = process.env.IOS ? 'ios' : 'android';
