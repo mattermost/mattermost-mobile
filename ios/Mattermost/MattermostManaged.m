@@ -113,7 +113,7 @@ RCT_EXPORT_METHOD(renameDatabase: (NSString *)databaseName  to: (NSString *) new
     NSFileManager *fileManager = [NSFileManager defaultManager];
     NSError *error = nil;
 
-    BOOL destinationHasFile = [fileManager fileExistsAtPath:newDBDir]
+    BOOL destinationHasFile = [fileManager fileExistsAtPath:newDBDir];
 
     if (!destinationHasFile && [fileManager fileExistsAtPath:[NSString stringWithFormat:@"%@-wal", databaseDir]]) {
       [fileManager moveItemAtPath:[NSString stringWithFormat:@"%@-wal", databaseDir] toPath:[NSString stringWithFormat:@"%@-wal", newDBDir] error:nil];
@@ -124,7 +124,7 @@ RCT_EXPORT_METHOD(renameDatabase: (NSString *)databaseName  to: (NSString *) new
     }
     
     BOOL  successCode  = destinationHasFile;
-    if (!destinationHasFile){
+    if (!destinationHasFile &&  [fileManager fileExistsAtPath:databaseDir]){
       successCode = [fileManager moveItemAtPath:databaseDir toPath: newDBDir error:&error];
     }
     NSNumber *success= [NSNumber numberWithBool:successCode];

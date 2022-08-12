@@ -50,7 +50,7 @@ export const deleteIOSDatabase = ({
  * @param {string} to new database name
  */
 export const renameIOSDatabase = (from: string, to: string) => {
-    MattermostManaged.renameIOSDatabase(from, to, () => null);
+    MattermostManaged.renameDatabase(from, to, () => null);
 };
 
 export const deleteEntititesFile = (callback?: (success: boolean) => void) => {

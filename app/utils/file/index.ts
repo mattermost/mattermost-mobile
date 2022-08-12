@@ -18,7 +18,7 @@ import {generateId} from '@utils/general';
 import keyMirror from '@utils/key_mirror';
 import {logError} from '@utils/log';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
-import {hashCode_DEPRECATED, hashServerUrl} from '@utils/security';
+import {hashCode_DEPRECATED, urlSafeBase64Encode} from '@utils/security';
 
 import type FileModel from '@typings/database/models/servers/file';
 
@@ -165,7 +165,7 @@ export async function deleteV1Data() {
 }
 
 export async function deleteFileCache(serverUrl: string) {
-    const serverDir = hashServerUrl(serverUrl);
+    const serverDir = urlSafeBase64Encode(serverUrl);
     deleteFileCacheByDir(serverDir);
 }
 
@@ -349,12 +349,9 @@ export function getFileType(file: FileInfo): string {
 }
 
 export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | FileModel) {
-    if (file.id?.includes('/')) {
-        throw new Error('File path could not be set');
-    }
-
+    const fileIdPath = file.id?.replace(/[^0-9a-z]/g, '');
     if (serverUrl) {
-        const server = hashServerUrl(serverUrl);
+        const server = urlSafeBase64Encode(serverUrl);
         if (file?.name && !file.name.includes('/')) {
             let extension: string | undefined = file.extension;
             let filename = file.name;
@@ -375,9 +372,9 @@ export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | Fil
                 }
             }
 
-            return `${FileSystem.CachesDirectoryPath}/${server}/${filename}-${file.id!}.${extension}`;
+            return `${FileSystem.CachesDirectoryPath}/${server}/${filename}-${fileIdPath}.${extension}`;
         } else if (file?.id && file?.extension) {
-            return `${FileSystem.CachesDirectoryPath}/${server}/${file.id}.${file.extension}`;
+            return `${FileSystem.CachesDirectoryPath}/${server}/${fileIdPath}.${file.extension}`;
         }
     }
 
@@ -517,7 +514,7 @@ export const getAllFilesInCachesDirectory = async (serverUrl: string) => {
     try {
         const files: FileSystem.ReadDirItem[][] = [];
 
-        const directoryFiles = await FileSystem.readDir(`${FileSystem.CachesDirectoryPath}/${hashServerUrl(serverUrl)}`);
+        const directoryFiles = await FileSystem.readDir(`${FileSystem.CachesDirectoryPath}/${urlSafeBase64Encode(serverUrl)}`);
         files.push(directoryFiles);
 
         const flattenedFiles = files.flat();

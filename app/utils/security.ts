@@ -26,6 +26,6 @@ export const hashCode_DEPRECATED = (str: string): string => {
     return hash.toString();
 };
 
-export const hashServerUrl = (str: string): string => {
+export const urlSafeBase64Encode = (str: string): string => {
     return base64.encode(str).replace(/\+/g, '-').replace(/\//g, '_');
 };

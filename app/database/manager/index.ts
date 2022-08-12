@@ -27,7 +27,7 @@ import {deleteLegacyFileCache} from '@utils/file';
 import {emptyFunction} from '@utils/general';
 import {logDebug, logError} from '@utils/log';
 import {deleteIOSDatabase, getIOSAppGroupDetails, renameIOSDatabase} from '@utils/mattermost_managed';
-import {hashCode_DEPRECATED, hashServerUrl} from '@utils/security';
+import {hashCode_DEPRECATED, urlSafeBase64Encode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
 
 import type {AppDatabase, CreateServerDatabaseArgs, RegisterServerDatabaseArgs, Models, ServerDatabase, ServerDatabases} from '@typings/database/database';
@@ -127,11 +127,11 @@ class DatabaseManager {
 
         if (serverUrl) {
             try {
-                const databaseName = hashServerUrl(serverUrl);
+                const databaseName = urlSafeBase64Encode(serverUrl);
                 const oldDatabaseName = hashCode_DEPRECATED(serverUrl);
 
                 // Remove any legacy database we may already have.
-                this.renameDatabase(oldDatabaseName, databaseName);
+                await this.renameDatabase(oldDatabaseName, databaseName);
                 deleteLegacyFileCache(serverUrl);
 
                 const databaseFilePath = this.getDatabaseFilePath(databaseName);
@@ -425,7 +425,7 @@ class DatabaseManager {
     * @returns {Promise<void>}
     */
     private deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
-        const databaseName = hashServerUrl(serverUrl);
+        const databaseName = urlSafeBase64Encode(serverUrl);
         this.deleteServerDatabaseFilesByName(databaseName);
     };
 
