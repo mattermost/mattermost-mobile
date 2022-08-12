@@ -156,6 +156,15 @@ const SearchResults = ({
     }, [canDownloadFiles, publicLinkEnabled]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<string|FileInfo | Post>) => {
+        if (item === 'loading') {
+            return (
+                <Loading
+                    color={theme.buttonBg}
+                    size='large'
+                />
+            );
+        }
+
         if (typeof item === 'string') {
             if (isDateLine(item)) {
                 return (
@@ -235,37 +244,29 @@ const SearchResults = ({
     }, [searchValue, selectedTab]);
 
     let data;
-    if (selectedTab === TabTypes.MESSAGES) {
+    if (loading) {
+        data = ['loading'];
+    } else if (selectedTab === TabTypes.MESSAGES) {
         data = orderedPosts;
     } else {
         data = orderedFilesForGallery;
     }
 
     return (
-        <>
-            {loading && (
-                <Loading
-                    color={theme.buttonBg}
-                    size='large'
-                />
-            )}
-            {!loading && (
-                <AnimatedFlatList
-                    ListEmptyComponent={noResults}
-                    data={data}
-                    scrollToOverflowEnabled={true}
-                    showsVerticalScrollIndicator={true}
-                    scrollEventThrottle={16}
-                    indicatorStyle='black'
-                    refreshing={false}
-                    renderItem={renderItem}
-                    nestedScrollEnabled={true}
-                    removeClippedSubviews={true}
-                    style={containerStyle}
-                    testID='search_results.post_list.flat_list'
-                />
-            )}
-        </>
+        <AnimatedFlatList
+            ListEmptyComponent={noResults}
+            data={data}
+            scrollToOverflowEnabled={true}
+            showsVerticalScrollIndicator={true}
+            scrollEventThrottle={16}
+            indicatorStyle='black'
+            refreshing={false}
+            renderItem={renderItem}
+            nestedScrollEnabled={true}
+            removeClippedSubviews={true}
+            style={containerStyle}
+            testID='search_results.post_list.flat_list'
+        />
     );
 };
 
