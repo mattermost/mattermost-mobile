@@ -122,7 +122,9 @@ const SearchScreen = ({teamId}: Props) => {
             handleCancelAndClearSearch();
             return;
         }
-        setLoading(true);
+        if (!showResults) {
+            setLoading(true);
+        }
         setFilter(FileFilters.ALL);
         setLastSearchedValue(term);
         addSearchToTeamSearchHistory(serverUrl, newSearchTeamId, term);
@@ -137,8 +139,10 @@ const SearchScreen = ({teamId}: Props) => {
 
         setShowResults(true);
         hideAndLock();
-        setLoading(false);
-    }, [handleCancelAndClearSearch]);
+        if (!showResults) {
+            setLoading(false);
+        }
+    }, [handleCancelAndClearSearch, showResults]);
 
     const onSubmit = useCallback(() => {
         handleSearch(searchTeamId, searchValue);
