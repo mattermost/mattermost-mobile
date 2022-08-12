@@ -7,7 +7,6 @@ import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {fetchUsersByIds} from '@actions/remote/user';
 import {
     getCallsConfig, getCallsState,
-    myselfJoinedCall,
     myselfLeftCall,
     setCalls,
     setChannelEnabled,
@@ -201,7 +200,6 @@ export const joinCall = async (serverUrl: string, channelId: string): Promise<{ 
 
     try {
         await connection.waitForReady();
-        myselfJoinedCall(serverUrl, channelId);
         return {data: channelId};
     } catch (e) {
         connection.disconnect();
