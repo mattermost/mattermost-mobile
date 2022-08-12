@@ -24,6 +24,40 @@ export const setCalls = (serverUrl: string, myUserId: string, calls: Dictionary<
     setCallsState(serverUrl, {serverUrl, myUserId, calls, enabled});
 };
 
+export const setCallForChannel = (serverUrl: string, channelId: string, enabled: boolean, call?: Call) => {
+    const callsState = getCallsState(serverUrl);
+    const nextEnabled = {...callsState.enabled, [channelId]: enabled};
+
+    const nextCalls = {...callsState.calls};
+    if (call) {
+        nextCalls[channelId] = call;
+
+        // In case we got a complete update on the currentCall
+        const currentCall = getCurrentCall();
+        if (currentCall?.channelId === channelId) {
+            setCurrentCall({
+                ...currentCall,
+                ...call,
+            });
+        }
+    } else {
+        delete nextCalls[channelId];
+    }
+
+    setCallsState(serverUrl, {...callsState, calls: nextCalls, enabled: nextEnabled});
+
+    const channelsWithCalls = getChannelsWithCalls(serverUrl);
+    if (call && !channelsWithCalls[channelId]) {
+        const nextChannelsWithCalls = {...channelsWithCalls};
+        nextChannelsWithCalls[channelId] = true;
+        setChannelsWithCalls(serverUrl, nextChannelsWithCalls);
+    } else if (!call && channelsWithCalls[channelId]) {
+        const nextChannelsWithCalls = {...channelsWithCalls};
+        delete nextChannelsWithCalls[channelId];
+        setChannelsWithCalls(serverUrl, nextChannelsWithCalls);
+    }
+};
+
 export const userJoinedCall = (serverUrl: string, channelId: string, userId: string) => {
     const callsState = getCallsState(serverUrl);
     if (!callsState.calls[channelId]) {
@@ -46,11 +80,11 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
     // Did the user join the current call? If so, update that too.
     const currentCall = getCurrentCall();
     if (currentCall && currentCall.channelId === channelId) {
-        const nextCall2 = {
+        const nextCurrentCall = {
             ...currentCall,
             participants: {...currentCall.participants, [userId]: nextCall.participants[userId]},
         };
-        setCurrentCall(nextCall2);
+        setCurrentCall(nextCurrentCall);
     }
 
     // Was it me that joined the call?
@@ -97,12 +131,12 @@ export const userLeftCall = (serverUrl: string, channelId: string, userId: strin
         return;
     }
 
-    const nextCall2 = {
+    const nextCurrentCall = {
         ...currentCall,
         participants: {...currentCall.participants},
     };
-    delete nextCall2.participants[userId];
-    setCurrentCall(nextCall2);
+    delete nextCurrentCall.participants[userId];
+    setCurrentCall(nextCurrentCall);
 };
 
 export const myselfLeftCall = () => {
