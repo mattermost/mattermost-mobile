@@ -11,7 +11,8 @@ import {fetchStatusByIds} from '@actions/remote/user';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {
     handleCallChannelDisabled,
-    handleCallChannelEnabled, handleCallEnded,
+    handleCallChannelEnabled,
+    handleCallEnded,
     handleCallScreenOff,
     handleCallScreenOn,
     handleCallStarted,
@@ -175,10 +176,6 @@ async function doReconnectRest(serverUrl: string, operator: ServerDataOperator, 
     const {locale: currentUserLocale} = (await getCurrentUser(database))!;
     await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchedToChannel ? initialChannelId : undefined);
 
-    if (isSupportedServerCalls(config?.Version)) {
-        loadConfigAndCalls(serverUrl, currentUserId);
-    }
-
     // https://mattermost.atlassian.net/browse/MM-41520
 }
 
@@ -206,6 +203,11 @@ async function doReconnect(serverUrl: string) {
         await graphQLCommon(serverUrl, true, system.currentTeamId, system.currentChannelId);
     } else {
         await doReconnectRest(serverUrl, operator, system.currentTeamId, system.currentUserId, config, license, lastDisconnectedAt);
+    }
+
+    // Calls is not set up for GraphQL yet
+    if (isSupportedServerCalls(config?.Version)) {
+        loadConfigAndCalls(serverUrl, system.currentUserId);
     }
 }
 
