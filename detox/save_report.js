@@ -27,8 +27,9 @@
  */
 
 const assert = require('assert');
-const fse = require('fs-extra');
 const os = require('os');
+
+const fse = require('fs-extra');
 const shell = require('shelljs');
 
 const {saveArtifacts} = require('./utils/artifacts');
