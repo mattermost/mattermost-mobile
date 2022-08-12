@@ -23,7 +23,7 @@ const {
     BRANCH,
     IOS,
 } = process.env;
-const platform = IOS ? 'ios' : 'android';
+const platform = IOS === 'true' ? 'ios' : 'android';
 
 const s3 = new AWS.S3({
     signatureVersion: 'v4',

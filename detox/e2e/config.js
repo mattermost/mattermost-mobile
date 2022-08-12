@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-const platform = process.env.IOS ? 'ios' : 'android';
+const platform = process.env.IOS === 'true' ? 'ios' : 'android';
 
 module.exports = {
     setupFilesAfterEnv: ['./test/setup.ts'],

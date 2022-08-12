@@ -12,7 +12,7 @@ const {ARTIFACTS_DIR} = require('./constants');
 const MAX_FAILED_TITLES = 5;
 
 function convertXmlToJson(xml) {
-    const platform = process.env.IOS ? 'ios' : 'android';
+    const platform = process.env.IOS === 'true' ? 'ios' : 'android';
     const jsonFile = `${ARTIFACTS_DIR}/${platform}-junit.json`;
 
     // Convert XML to JSON
@@ -170,7 +170,7 @@ function generateShortSummary(allTests) {
 }
 
 function removeOldGeneratedReports() {
-    const platform = process.env.IOS ? 'ios' : 'android';
+    const platform = process.env.IOS === 'true' ? 'ios' : 'android';
     [
         'environment.json',
         'summary.json',
@@ -205,7 +205,7 @@ function generateTestReport(summary, isUploadedToS3, reportLink, environment, te
         TEST_CYCLE_LINK_PREFIX,
         IOS,
     } = process.env;
-    const platform = IOS ? 'iOS' : 'Android';
+    const platform = IOS === 'true' ? 'iOS' : 'Android';
     const {statsFieldValue, stats} = summary;
     const {
         detox_version,
@@ -310,9 +310,9 @@ function generateTitle() {
         TYPE,
     } = process.env;
 
-    const platform = IOS ? 'iOS' : 'Android';
+    const platform = IOS === 'true' ? 'iOS' : 'Android';
     const lane = `${platform} Build`;
-    const appExtension = IOS ? 'ipa' : 'apk';
+    const appExtension = IOS === 'true' ? 'ipa' : 'apk';
     const appFileName = TYPE === 'GEKIDOU' ? `Mattermost_Beta.${appExtension}` : `Mattermost.${appExtension}`;
     let buildLink = ` with [${lane}](https://pr-builds.mattermost.com/mattermost-mobile/${BRANCH}/${appFileName})`;
     if (RELEASE_VERSION && RELEASE_BUILD_NUMBER) {

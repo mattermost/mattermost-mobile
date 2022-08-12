@@ -105,7 +105,7 @@ async function createTestExecutions(allTests, testCycle) {
         JIRA_PROJECT_KEY,
         ZEPHYR_ENVIRONMENT_NAME,
     } = process.env;
-    const platform = IOS ? 'iOS' : 'Android';
+    const platform = IOS === 'true' ? 'iOS' : 'Android';
 
     const testCases = getTM4JTestCases(allTests);
     const startDate = new Date(allTests.start);

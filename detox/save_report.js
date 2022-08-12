@@ -10,8 +10,12 @@
  * Usage: [ENV] node save_report.js
  *
  * Environment variables:
- *   BRANCH=[branch]            : Branch identifier from CI
- *   BUILD_ID=[build_id]        : Build identifier from CI
+ *   BRANCH=[branch]                 : Branch identifier from CI
+ *   BUILD_ID=[build_id]             : Build identifier from CI
+ *   DEVICE_NAME=[device_name]       : Name of the device used for testing
+ *   DEVICE_OS_NAME=[device_os_name] : OS of the device used for testing
+ *   HEADLESS=[boolean]              : Headed by default (false) or headless (true)
+ *   IOS=[boolean]                   : Android by default (false) or iOS (true)
  *
  *   For saving artifacts to AWS S3
  *      - DETOX_AWS_S3_BUCKET, DETOX_AWS_ACCESS_KEY_ID and DETOX_AWS_SECRET_ACCESS_KEY
@@ -65,7 +69,7 @@ const saveReport = async () => {
     removeOldGeneratedReports();
 
     const detox_version = shell.exec('npm list detox').stdout.split('\n')[1].split('@')[1].trim();
-    const headless = IOS ? false : HEADLESS === 'true';
+    const headless = IOS === 'true' ? false : HEADLESS === 'true';
     const os_name = os.platform();
     const os_version = os.release();
     const node_version = process.version;
@@ -85,7 +89,7 @@ const saveReport = async () => {
     writeJsonToFile(environmentDetails, 'environment.json', ARTIFACTS_DIR);
 
     // Read XML from a file
-    const platform = process.env.IOS ? 'ios' : 'android';
+    const platform = process.env.IOS === 'true' ? 'ios' : 'android';
     const xml = fse.readFileSync(`${ARTIFACTS_DIR}/${platform}-junit.xml`);
     const {testsuites} = convertXmlToJson(xml);
 
