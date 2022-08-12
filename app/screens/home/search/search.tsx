@@ -150,14 +150,11 @@ const SearchScreen = ({teamId}: Props) => {
     }, [handleSearch, handleTextChange, searchTeamId]);
 
     const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
-        setLoading(true);
         setFilter(filterValue);
         const searchParams = getSearchParams(lastSearchedValue, filterValue);
         const {files, channels} = await searchFiles(serverUrl, searchTeamId, searchParams);
         setFileInfos(files?.length ? files : emptyFileResults);
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
-
-        setLoading(false);
     }, [lastSearchedValue, searchTeamId]);
 
     const handleResultsTeamChange = useCallback((newTeamId: string) => {
