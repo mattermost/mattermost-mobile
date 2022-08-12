@@ -202,8 +202,8 @@ const result = [
 function generateTestReport(summary, isUploadedToS3, reportLink, environment, testCycleKey) {
     const {
         FULL_REPORT,
-        TEST_CYCLE_LINK_PREFIX,
         IOS,
+        TEST_CYCLE_LINK_PREFIX,
     } = process.env;
     const platform = IOS === 'true' ? 'iOS' : 'Android';
     const {statsFieldValue, stats} = summary;
@@ -303,10 +303,10 @@ function generateTitle() {
     const {
         BRANCH,
         IOS,
-        RELEASE_VERSION,
-        RELEASE_BUILD_NUMBER,
         PULL_REQUEST,
+        RELEASE_BUILD_NUMBER,
         RELEASE_DATE,
+        RELEASE_VERSION,
         TYPE,
     } = process.env;
 

@@ -16,11 +16,11 @@ const {ARTIFACTS_DIR} = require('./constants');
 require('dotenv').config();
 
 const {
+    BRANCH,
+    BUILD_ID,
     DETOX_AWS_S3_BUCKET,
     DETOX_AWS_ACCESS_KEY_ID,
     DETOX_AWS_SECRET_ACCESS_KEY,
-    BUILD_ID,
-    BRANCH,
     IOS,
 } = process.env;
 const platform = IOS === 'true' ? 'ios' : 'android';
