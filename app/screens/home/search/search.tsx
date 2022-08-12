@@ -118,11 +118,7 @@ const SearchScreen = ({teamId}: Props) => {
     }, []);
 
     const handleLoading = useCallback((show: boolean) => {
-        if (showResults) {
-            setResultsLoading(show);
-        } else {
-            setLoading(show);
-        }
+        (showResults ? setResultsLoading : setLoading)(show);
     }, [showResults]);
 
     const handleSearch = useCallback(async (newSearchTeamId: string, term: string) => {
