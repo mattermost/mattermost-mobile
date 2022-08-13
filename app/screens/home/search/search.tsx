@@ -105,19 +105,19 @@ const SearchScreen = ({teamId}: Props) => {
 
     const handleClearSearch = useCallback(() => {
         unlock(false);
+        setShowResults(false);
         setSearchValue('');
         setLastSearchedValue('');
         setFilter(FileFilters.ALL);
-        setShowResults(false);
-    }, []);
+    }, [unlock]);
 
     const handleCancelSearch = useCallback(() => {
         unlock(true);
+        setShowResults(false);
         setSearchValue('');
         setLastSearchedValue('');
         setFilter(FileFilters.ALL);
-        setShowResults(false);
-    }, [handleClearSearch, unlock]);
+    }, [unlock]);
 
     const handleTextChange = useCallback((newValue: string) => {
         setSearchValue(newValue);
