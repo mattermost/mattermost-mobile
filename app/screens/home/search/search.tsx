@@ -130,6 +130,7 @@ const SearchScreen = ({teamId}: Props) => {
             handleClearSearch();
             return;
         }
+        hideAndLock();
         if (!showResults) {
             setLoading(true);
         }
@@ -146,7 +147,6 @@ const SearchScreen = ({teamId}: Props) => {
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
 
         setShowResults(true);
-        hideAndLock();
         if (!showResults) {
             setLoading(false);
         }
