@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export const serverOneUrl = process.env.SITE_1_URL || (process.env.IOS ? 'http://127.0.0.1:8065' : 'http://10.0.2.2:8065');
+export const serverOneUrl = process.env.SITE_1_URL || (process.env.IOS === 'true' ? 'http://127.0.0.1:8065' : 'http://10.0.2.2:8065');
 export const siteOneUrl = process.env.SITE_1_URL || 'http://127.0.0.1:8065';
 export const serverTwoUrl = process.env.SITE_2_URL || 'https://mobile02.test.mattermost.cloud';
 export const siteTwoUrl = process.env.SITE_2_URL || 'https://mobile02.test.mattermost.cloud';
