@@ -141,7 +141,7 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
         lockValue.value = largeHeight - defaultHeight;
     }, [largeHeight, defaultHeight]);
 
-    const unlock = useCallback((showHeader = false) => {
+    const unlock = useCallback((showHeader: boolean) => {
         lockValue.value = null;
         if (showHeader) {
             (animatedRef.current as any).scrollToOffset({
