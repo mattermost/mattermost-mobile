@@ -103,13 +103,21 @@ const SearchScreen = ({teamId}: Props) => {
         showAndUnlock,
     } = useCollapsibleHeader<FlatList>(true, onSnap);
 
-    const handleCancelAndClearSearch = useCallback(() => {
-        showAndUnlock();
+    const handleClearSearch = useCallback(() => {
+        lockValue.value = null;
         setSearchValue('');
         setLastSearchedValue('');
         setFilter(FileFilters.ALL);
         setShowResults(false);
     }, []);
+
+    const handleCancelSearch = useCallback(() => {
+        showAndUnlock();
+        setSearchValue('');
+        setLastSearchedValue('');
+        setFilter(FileFilters.ALL);
+        setShowResults(false);
+    }, [handleClearSearch, showAndUnlock]);
 
     const handleTextChange = useCallback((newValue: string) => {
         setSearchValue(newValue);
@@ -119,7 +127,7 @@ const SearchScreen = ({teamId}: Props) => {
     const handleSearch = useCallback(async (newSearchTeamId: string, term: string) => {
         const searchParams = getSearchParams(term);
         if (!searchParams.terms) {
-            handleCancelAndClearSearch();
+            handleClearSearch();
             return;
         }
         if (!showResults) {
@@ -142,7 +150,7 @@ const SearchScreen = ({teamId}: Props) => {
         if (!showResults) {
             setLoading(false);
         }
-    }, [handleCancelAndClearSearch, showResults]);
+    }, [handleClearSearch, showResults]);
 
     const onSubmit = useCallback(() => {
         handleSearch(searchTeamId, searchValue);
@@ -278,8 +286,8 @@ const SearchScreen = ({teamId}: Props) => {
                 onSubmitEditing={onSubmit}
                 blurOnSubmit={true}
                 placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
-                onClear={handleCancelAndClearSearch}
-                onCancel={handleCancelAndClearSearch}
+                onClear={handleClearSearch}
+                onCancel={handleCancelSearch}
                 defaultValue={searchValue}
             />
             <Animated.View style={[top, {zIndex: AutocompleteZindex}]}>
