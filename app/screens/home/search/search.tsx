@@ -101,10 +101,11 @@ const SearchScreen = ({teamId}: Props) => {
         lockValue,
         hideAndLock,
         showAndUnlock,
+        unlock,
     } = useCollapsibleHeader<FlatList>(true, onSnap);
 
     const handleClearSearch = useCallback(() => {
-        lockValue.value = null;
+        unlock();
         setSearchValue('');
         setLastSearchedValue('');
         setFilter(FileFilters.ALL);
