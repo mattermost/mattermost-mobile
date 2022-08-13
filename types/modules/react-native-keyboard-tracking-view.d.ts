@@ -8,6 +8,13 @@ declare module 'react-native-keyboard-tracking-view' {
         resumeTracking: (id: string) => void;
         resetScrollView: (id: string) => void;
         setNativeProps(nativeProps: object): void;
+        getNativeProps: () => Promise<KeyboardTrackingViewNativeProps>;
+    }
+
+    type KeyboardTrackingViewNativeProps = {
+        contentTopInset: number;
+        keyboardHeight: number;
+        trackingViewHeight: number;
     }
 
     interface KeyboardTrackingViewProps extends ViewProps{

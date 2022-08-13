@@ -1,14 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useRef} from 'react';
-import {StyleSheet, View} from 'react-native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {DeviceEventEmitter, LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import RoundedHeaderContext from '@components/rounded_header_context';
+import {Events} from '@constants';
 import {THREAD_ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useAppState} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
@@ -33,6 +34,20 @@ const styles = StyleSheet.create({
 const Thread = ({componentId, rootPost}: ThreadProps) => {
     const appState = useAppState();
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
+    const [containerHeight, setContainerHeight] = useState(0);
+
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(Events.PAUSE_KEYBOARD_TRACKING_VIEW, (pause: boolean) => {
+            if (pause) {
+                postDraftRef.current?.pauseTracking(rootPost!.id);
+                return;
+            }
+
+            postDraftRef.current?.resumeTracking(rootPost!.id);
+        });
+
+        return () => listener.remove();
+    }, []);
 
     useEffect(() => {
         return () => {
@@ -46,6 +61,10 @@ const Thread = ({componentId, rootPost}: ThreadProps) => {
         }
     }, [componentId, rootPost]);
 
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        setContainerHeight(e.nativeEvent.layout.height);
+    }, []);
+
     return (
         <FreezeScreen>
             <SafeAreaView
@@ -53,6 +72,7 @@ const Thread = ({componentId, rootPost}: ThreadProps) => {
                 mode='margin'
                 edges={edges}
                 testID='thread.screen'
+                onLayout={onLayout}
             >
                 <RoundedHeaderContext/>
                 {Boolean(rootPost?.id) &&
@@ -71,6 +91,8 @@ const Thread = ({componentId, rootPost}: ThreadProps) => {
                         rootId={rootPost!.id}
                         keyboardTracker={postDraftRef}
                         testID='thread.post_draft'
+                        containerHeight={containerHeight}
+                        isChannelScreen={false}
                     />
                 </>
                 }
