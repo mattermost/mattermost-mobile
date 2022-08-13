@@ -14,7 +14,7 @@ import UIKit
   @objc func clearChannelOrThreadNotifications(userInfo: NSDictionary) {
     let channelId = userInfo["channel_id"] as? String
     let rootId = userInfo["root_id"] as? String ?? ""
-    let crtEnabled = userInfo["is_crt_enabled"] as? String == "true"
+    let crtEnabled = userInfo["is_crt_enabled"] as? Bool ?? false
     let skipThreadNotification = rootId.isEmpty && crtEnabled
     
     if skipThreadNotification && channelId != nil {
@@ -34,7 +34,7 @@ import UIKit
         let identifier = request.identifier
         let cId = content.userInfo["channel_id"] as? String
         let rootId = content.userInfo["root_id"] as? String ?? ""
-        let crtEnabled = content.userInfo["is_crt_enabled"] as? String == "true"
+        let crtEnabled = content.userInfo["is_crt_enabled"] as? Bool ?? false
         let skipThreadNotification = rootId.isEmpty && crtEnabled
         
         if cId == channelId && !skipThreadNotification {
