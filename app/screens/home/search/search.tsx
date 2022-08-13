@@ -100,12 +100,11 @@ const SearchScreen = ({teamId}: Props) => {
         hideHeader,
         lockValue,
         hideAndLock,
-        showAndUnlock,
         unlock,
     } = useCollapsibleHeader<FlatList>(true, onSnap);
 
     const handleClearSearch = useCallback(() => {
-        unlock();
+        unlock(false);
         setSearchValue('');
         setLastSearchedValue('');
         setFilter(FileFilters.ALL);
@@ -113,12 +112,12 @@ const SearchScreen = ({teamId}: Props) => {
     }, []);
 
     const handleCancelSearch = useCallback(() => {
-        showAndUnlock();
+        unlock(true);
         setSearchValue('');
         setLastSearchedValue('');
         setFilter(FileFilters.ALL);
         setShowResults(false);
-    }, [handleClearSearch, showAndUnlock]);
+    }, [handleClearSearch, unlock]);
 
     const handleTextChange = useCallback((newValue: string) => {
         setSearchValue(newValue);
