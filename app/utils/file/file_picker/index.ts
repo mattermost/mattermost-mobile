@@ -45,7 +45,7 @@ export default class FilePickerUtil {
                 text: formatMessage({
                     id: 'mobile.camera_photo_permission_denied_description',
                     defaultMessage:
-                        'Take photos and upload them to your server or save them to your device. Open Settings to grant {applicationName} Read and Write access to your camera.',
+                        'Take photos and upload them to your server or save them to your device. Open Settings to grant {applicationName} read and write access to your camera.',
                 }),
             },
             storage: {

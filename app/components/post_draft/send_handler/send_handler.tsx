@@ -141,7 +141,7 @@ export default function SendHandler({
                 }),
                 intl.formatMessage({
                     id: 'mobile.calls_end_permission_msg',
-                    defaultMessage: 'You do not have permission to end the call. Please ask the call owner to end the call.',
+                    defaultMessage: 'You don\'t have permission to end the call. Please ask the call owner to end the call.',
                 }));
             return;
         }
