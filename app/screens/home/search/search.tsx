@@ -36,7 +36,6 @@ const dummyData = [1];
 
 const AutocompletePaddingTop = -4;
 const AutocompleteZindex = 11;
-const marginFromRoundedHeaderContext = 7;
 
 type Props = {
     teamId: string;
@@ -92,19 +91,9 @@ const SearchScreen = ({teamId}: Props) => {
         scrollRef.current?.scrollToOffset({offset, animated: true});
     };
 
-    const {scrollPaddingTop,
-        scrollRef,
-        scrollValue,
-        onScroll,
-        headerHeight,
-        hideHeader,
-        lockValue,
-        hideAndLock,
-        showAndUnlock,
-    } = useCollapsibleHeader<FlatList>(true, onSnap);
+    const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight, hideHeader} = useCollapsibleHeader<FlatList>(true, onSnap);
 
     const handleCancelAndClearSearch = useCallback(() => {
-        showAndUnlock();
         setSearchValue('');
         setLastSearchedValue('');
         setFilter(FileFilters.ALL);
@@ -126,7 +115,6 @@ const SearchScreen = ({teamId}: Props) => {
             handleCancelAndClearSearch();
             return;
         }
-        hideAndLock();
         handleLoading(true);
         setFilter(FileFilters.ALL);
         setLastSearchedValue(term);
@@ -169,14 +157,14 @@ const SearchScreen = ({teamId}: Props) => {
     }, [lastSearchedValue, handleSearch]);
 
     const containerStyle = useMemo(() => {
-        const padding = lockValue?.value ? lockValue.value : scrollPaddingTop;
+        const padding = scrollPaddingTop;
         const justify = (resultsLoading || loading) ? 'center' : 'flex-start';
         return {paddingTop: padding, flexGrow: 1, justifyContent: justify} as ViewProps;
-    }, [scrollPaddingTop, loading, lockValue.value, resultsLoading]);
+    }, [scrollPaddingTop, loading, resultsLoading]);
 
     const loadingComponent = useMemo(() => (
         <Loading
-            containerStyle={[styles.loading, {padding: lockValue?.value || 0}]}
+            containerStyle={[styles.loading, {padding: scrollPaddingTop}]}
             color={theme.buttonBg}
             size='large'
         />
@@ -233,14 +221,11 @@ const SearchScreen = ({teamId}: Props) => {
     }, [isFocused, stateIndex]);
 
     const top = useAnimatedStyle(() => {
-        const topMarginLocked = lockValue?.value ? lockValue.value + marginFromRoundedHeaderContext : 0;
-        const topMarginScrollable = headerHeight.value;
-        const topMargin = lockValue.value ? topMarginLocked : topMarginScrollable;
         return {
-            top: topMargin,
+            top: headerHeight.value,
             zIndex: lastSearchedValue ? 10 : 0,
         };
-    }, [headerHeight.value, lastSearchedValue, lockValue.value]);
+    }, [headerHeight.value, lastSearchedValue]);
 
     let header = null;
     if (lastSearchedValue && !loading) {
@@ -277,7 +262,6 @@ const SearchScreen = ({teamId}: Props) => {
                 title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
                 hasSearch={true}
                 scrollValue={scrollValue}
-                lockValue={lockValue}
                 hideHeader={hideHeader}
                 onChangeText={handleTextChange}
                 onSubmitEditing={onSubmit}

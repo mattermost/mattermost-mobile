@@ -23,7 +23,6 @@ type Props = SearchProps & {
     onTitlePress?: () => void;
     rightButtons?: HeaderRightButton[];
     scrollValue?: Animated.SharedValue<number>;
-    lockValue?: Animated.SharedValue<number | null>;
     hideHeader?: () => void;
     showBackButton?: boolean;
     subtitle?: string;
@@ -48,7 +47,6 @@ const NavigationHeader = ({
     onTitlePress,
     rightButtons,
     scrollValue,
-    lockValue,
     showBackButton,
     subtitle,
     subtitleCompanion,
@@ -64,13 +62,11 @@ const NavigationHeader = ({
     const containerHeight = useAnimatedStyle(() => {
         const minHeight = defaultHeight + insets.top;
         const value = -(scrollValue?.value || 0);
-        const calculatedHeight = (isLargeTitle ? largeHeight : defaultHeight) + value;
-        const height = lockValue?.value ? lockValue.value : calculatedHeight;
-        const maxHeight = largeHeight + insets.top + MAX_OVERSCROLL;
+        const height = (isLargeTitle ? largeHeight : defaultHeight) + value + insets.top;
         return {
             height: Math.max(height, minHeight),
             minHeight,
-            maxHeight,
+            maxHeight: largeHeight + insets.top + MAX_OVERSCROLL,
         };
     });
 
@@ -86,7 +82,6 @@ const NavigationHeader = ({
                     onBackPress={onBackPress}
                     onTitlePress={onTitlePress}
                     rightButtons={rightButtons}
-                    lockValue={lockValue}
                     scrollValue={scrollValue}
                     showBackButton={showBackButton}
                     subtitle={subtitle}
@@ -100,7 +95,6 @@ const NavigationHeader = ({
                     defaultHeight={defaultHeight}
                     hasSearch={hasSearch}
                     largeHeight={largeHeight}
-                    lockValue={lockValue}
                     scrollValue={scrollValue}
                     subtitle={subtitle}
                     theme={theme}
@@ -112,7 +106,6 @@ const NavigationHeader = ({
                         {...searchProps}
                         defaultHeight={defaultHeight}
                         largeHeight={largeHeight}
-                        lockValue={lockValue}
                         scrollValue={scrollValue}
                         hideHeader={hideHeader}
                         theme={theme}
