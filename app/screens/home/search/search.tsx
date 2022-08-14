@@ -169,7 +169,7 @@ const SearchScreen = ({teamId}: Props) => {
 
     const loadingComponent = useMemo(() => (
         <Loading
-            containerStyle={[styles.loading, {padding: scrollPaddingTop}]}
+            containerStyle={[styles.loading, {paddingTop: scrollPaddingTop}]}
             color={theme.buttonBg}
             size='large'
         />
