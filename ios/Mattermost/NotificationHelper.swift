@@ -15,13 +15,16 @@ import UIKit
     let channelId = userInfo["channel_id"] as? String
     let rootId = userInfo["root_id"] as? String ?? ""
     let crtEnabled = userInfo["is_crt_enabled"] as? Bool ?? false
-    let skipThreadNotification = rootId.isEmpty && crtEnabled
+    let skipThreadNotification = !rootId.isEmpty && crtEnabled
     
-    if skipThreadNotification && channelId != nil {
+    if !skipThreadNotification && channelId != nil {
       removeChannelNotifications(serverUrl: "", channelId: channelId!)
     } else if !rootId.isEmpty {
       removeThreadNotifications(serverUrl: "", threadId: rootId)
     }
+    
+    // Update the app icon badge here
+    // UIApplication.shared.applicationIconBadgeNumber
   }
   
   @objc func removeChannelNotifications(serverUrl: String, channelId: String) {
@@ -35,7 +38,7 @@ import UIKit
         let cId = content.userInfo["channel_id"] as? String
         let rootId = content.userInfo["root_id"] as? String ?? ""
         let crtEnabled = content.userInfo["is_crt_enabled"] as? Bool ?? false
-        let skipThreadNotification = rootId.isEmpty && crtEnabled
+        let skipThreadNotification = !rootId.isEmpty && crtEnabled
         
         if cId == channelId && !skipThreadNotification {
           notificationIds.append(identifier)
@@ -43,9 +46,6 @@ import UIKit
       }
       
       self.notificationCenter.removeDeliveredNotifications(withIdentifiers: notificationIds)
-      
-      // Update the app icon badge here
-      // UIApplication.shared.applicationIconBadgeNumber
     })
   }
   
