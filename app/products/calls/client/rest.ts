@@ -6,6 +6,7 @@ import type {ServerChannelState, ServerCallsConfig, ApiResp, ICEServersConfigs} 
 export interface ClientCallsMix {
     getEnabled: () => Promise<Boolean>;
     getCalls: () => Promise<ServerChannelState[]>;
+    getCallForChannel: (channelId: string) => Promise<ServerChannelState>;
     getCallsConfig: () => Promise<ServerCallsConfig>;
     enableChannelCalls: (channelId: string, enable: boolean) => Promise<ServerChannelState>;
     endCall: (channelId: string) => Promise<ApiResp>;
@@ -28,6 +29,13 @@ const ClientCalls = (superclass: any) => class extends superclass {
     getCalls = async () => {
         return this.doFetch(
             `${this.getCallsRoute()}/channels`,
+            {method: 'get'},
+        );
+    };
+
+    getCallForChannel = async (channelId: string) => {
+        return this.doFetch(
+            `${this.getCallsRoute()}/${channelId}`,
             {method: 'get'},
         );
     };

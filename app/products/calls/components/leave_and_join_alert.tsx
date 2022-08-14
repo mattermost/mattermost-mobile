@@ -66,7 +66,7 @@ export const doJoinCall = async (serverUrl: string, channelId: string, intl: Int
     if (!hasPermission) {
         errorAlert(formatMessage({
             id: 'mobile.calls_error_permissions',
-            defaultMessage: 'no permissions to microphone, unable to start call',
+            defaultMessage: 'No permissions to microphone, unable to start call',
         }), intl);
         return;
     }
