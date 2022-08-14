@@ -162,10 +162,9 @@ const SearchScreen = ({teamId}: Props) => {
     }, [lastSearchedValue, handleSearch]);
 
     const containerStyle = useMemo(() => {
-        const padding = scrollPaddingTop;
         const justify = (resultsLoading || loading) ? 'center' : 'flex-start';
-        return {paddingTop: padding, flexGrow: 1, justifyContent: justify} as ViewProps;
-    }, [scrollPaddingTop, loading, resultsLoading]);
+        return {paddingTop: scrollPaddingTop, flexGrow: 1, justifyContent: justify} as ViewProps;
+    }, [loading, resultsLoading, scrollPaddingTop]);
 
     const loadingComponent = useMemo(() => (
         <Loading
@@ -194,7 +193,7 @@ const SearchScreen = ({teamId}: Props) => {
             fileInfos={fileInfos}
             fileChannelIds={fileChannelIds}
         />
-    ), [selectedTab, lastSearchedValue, postIds, resultsLoading, fileInfos, fileChannelIds]);
+    ), [selectedTab, lastSearchedValue, postIds, fileInfos, fileChannelIds, resultsLoading]);
 
     const renderItem = useCallback(() => {
         if (loading) {

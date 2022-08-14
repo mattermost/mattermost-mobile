@@ -62,7 +62,7 @@ const NavigationHeader = ({
     const containerHeight = useAnimatedStyle(() => {
         const minHeight = defaultHeight + insets.top;
         const value = -(scrollValue?.value || 0);
-        const height = (isLargeTitle ? largeHeight : defaultHeight) + value + insets.top;
+        const height = ((isLargeTitle ? largeHeight : defaultHeight)) + value + insets.top;
         return {
             height: Math.max(height, minHeight),
             minHeight,
