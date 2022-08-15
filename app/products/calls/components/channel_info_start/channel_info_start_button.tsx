@@ -5,6 +5,7 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
 import {leaveCall} from '@calls/actions';
+import {showLimitRestrictedAlert} from '@calls/alerts';
 import leaveAndJoinWithAlert from '@calls/components/leave_and_join_alert';
 import {useTryCallsFunction} from '@calls/hooks';
 import OptionBox from '@components/option_box';
@@ -19,6 +20,7 @@ export interface Props {
     alreadyInCall: boolean;
     currentCallChannelName: string;
     dismissChannelInfo: () => void;
+    isLimitRestricted: boolean;
 }
 
 const ChannelInfoStartButton = ({
@@ -30,18 +32,22 @@ const ChannelInfoStartButton = ({
     alreadyInCall,
     currentCallChannelName,
     dismissChannelInfo,
+    isLimitRestricted,
 }: Props) => {
     const intl = useIntl();
 
     const toggleJoinLeave = useCallback(() => {
         if (alreadyInCall) {
             leaveCall();
+        } else if (isLimitRestricted) {
+            showLimitRestrictedAlert(intl);
         } else {
             leaveAndJoinWithAlert(intl, serverUrl, channelId, currentCallChannelName, displayName, confirmToJoin, !isACallInCurrentChannel);
         }
 
         dismissChannelInfo();
-    }, [alreadyInCall, dismissChannelInfo, intl, serverUrl, channelId, currentCallChannelName, displayName, confirmToJoin, isACallInCurrentChannel]);
+    }, [isLimitRestricted, alreadyInCall, dismissChannelInfo, intl, serverUrl, channelId, currentCallChannelName, displayName, confirmToJoin, isACallInCurrentChannel]);
+
     const [tryJoin, msgPostfix] = useTryCallsFunction(toggleJoinLeave);
 
     const joinText = intl.formatMessage({id: 'mobile.calls_join_call', defaultMessage: 'Join call'});

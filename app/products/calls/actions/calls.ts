@@ -34,6 +34,7 @@ import type {
     ApiResp,
     Call,
     CallParticipant,
+    CallsConfig,
     CallsConnection,
     ServerCallState,
     ServerChannelState,
@@ -71,7 +72,7 @@ export const loadConfig = async (serverUrl: string, force = false) => {
         return {error};
     }
 
-    const nextConfig = {...config, ...data, last_retrieved_at: now};
+    const nextConfig = {...data, last_retrieved_at: now} as CallsConfig;
     setConfig(serverUrl, nextConfig);
     return {data: nextConfig};
 };
@@ -189,7 +190,10 @@ export const checkIsCallsPluginEnabled = async (serverUrl: string) => {
     }
 
     const enabled = data.findIndex((m) => m.id === Calls.PluginId) !== -1;
-    setPluginEnabled(serverUrl, enabled);
+    const curEnabled = getCallsConfig(serverUrl).pluginEnabled;
+    if (enabled !== curEnabled) {
+        setPluginEnabled(serverUrl, enabled);
+    }
 
     return {data: enabled};
 };

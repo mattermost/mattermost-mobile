@@ -13,6 +13,8 @@ describe('getICEServersConfigs', () => {
             DefaultEnabled: true,
             NeedsTURNCredentials: false,
             last_retrieved_at: 0,
+            sku_short_name: 'professional',
+            MaxCallParticipants: 8,
         };
         const iceConfigs = getICEServersConfigs(config);
 
@@ -37,6 +39,8 @@ describe('getICEServersConfigs', () => {
             DefaultEnabled: true,
             NeedsTURNCredentials: false,
             last_retrieved_at: 0,
+            sku_short_name: 'professional',
+            MaxCallParticipants: 8,
         };
         const iceConfigs = getICEServersConfigs(config);
 
@@ -65,6 +69,8 @@ describe('getICEServersConfigs', () => {
             DefaultEnabled: true,
             NeedsTURNCredentials: false,
             last_retrieved_at: 0,
+            sku_short_name: 'professional',
+            MaxCallParticipants: 8,
         };
         const iceConfigs = getICEServersConfigs(config);
 
