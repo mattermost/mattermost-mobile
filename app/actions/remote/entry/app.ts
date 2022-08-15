@@ -48,6 +48,9 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
         // Load data from other servers
         syncOtherServers(serverUrl);
     }
+
+    verifyPushProxy(serverUrl);
+
     return result;
 }
 
@@ -94,8 +97,6 @@ async function restAppEntry(serverUrl: string, since = 0, isUpgrade = false) {
     const {id: currentUserId, locale: currentUserLocale} = meData?.user || (await getCurrentUser(database))!;
     const {config, license} = await getCommonSystemValues(database);
     await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchToChannel ? initialChannelId : undefined);
-
-    verifyPushProxy(serverUrl);
 
     return {userId: currentUserId};
 }
