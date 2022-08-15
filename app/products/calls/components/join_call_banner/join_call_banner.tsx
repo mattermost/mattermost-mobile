@@ -8,6 +8,7 @@ import {View, Text, Pressable} from 'react-native';
 import leaveAndJoinWithAlert from '@calls/components/leave_and_join_alert';
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
+import FormattedText from '@components/formatted_text';
 import UserAvatarsStack from '@components/user_avatars_stack';
 import Screens from '@constants/screens';
 import {JOIN_CALL_BAR_HEIGHT} from '@constants/view';
@@ -94,7 +95,11 @@ const JoinCallBanner = ({
                 size={16}
                 style={style.joinCallIcon}
             />
-            <Text style={style.joinCall}>{'Join Call'}</Text>
+            <FormattedText
+                id={'mobile.calls_join_call'}
+                defaultMessage={'Join call'}
+                style={style.joinCall}
+            />
             <Text style={style.started}>
                 <FormattedRelativeTime
                     value={channelCallStartTime}

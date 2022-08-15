@@ -12,14 +12,16 @@ import {
     mediaDevices,
 } from 'react-native-webrtc';
 
-import {CallsConnection} from '@calls/types/calls';
+import {getICEServersConfigs} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
 import {getServerCredentials} from '@init/credentials';
 import NetworkManager from '@managers/network_manager';
-import {logError, logDebug} from '@utils/log';
+import {logError, logDebug, logWarning} from '@utils/log';
 
 import Peer from './simple-peer';
 import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
+
+import type {CallsConnection} from '@calls/types/calls';
 
 const websocketConnectTimeout = 3000;
 
@@ -169,9 +171,18 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
             return;
         }
 
+        const iceConfigs = getICEServersConfigs(config);
+        if (config.NeedsTURNCredentials) {
+            try {
+                iceConfigs.push(...await client.genTURNCredentials());
+            } catch (err) {
+                logWarning('failed to fetch TURN credentials:', err);
+            }
+        }
+
         InCallManager.start({media: 'audio'});
         InCallManager.stopProximitySensor();
-        peer = new Peer(null, config.ICEServers);
+        peer = new Peer(null, iceConfigs);
         peer.on('signal', (data: any) => {
             if (data.type === 'offer' || data.type === 'answer') {
                 ws.send('sdp', {

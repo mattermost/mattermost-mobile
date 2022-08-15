@@ -16,7 +16,7 @@ const doGQLQuery = async (serverUrl: string, query: string, variables: {[name: s
     }
 
     try {
-        const response = await client.doFetch('/api/v5/graphql', {method: 'post', body: JSON.stringify({query, variables, operationName})}) as GQLResponse;
+        const response = await client.doFetch('/api/v5/graphql', {method: 'post', body: {query, variables, operationName}}) as GQLResponse;
         return response;
     } catch (error) {
         return {error};

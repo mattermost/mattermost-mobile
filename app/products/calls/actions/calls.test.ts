@@ -19,6 +19,7 @@ import {
     useCallsState,
     useChannelsWithCalls,
     useCurrentCall,
+    userJoinedCall,
 } from '@calls/state';
 import {
     Call,
@@ -88,6 +89,7 @@ const addFakeCall = (serverUrl: string, channelId: string) => {
         ownerId: 'xohi8cki9787fgiryne716u84o',
     } as Call;
     act(() => {
+        State.setCallsState(serverUrl, {serverUrl, myUserId: 'myUserId', calls: {}, enabled: {}});
         State.callStarted(serverUrl, call);
     });
 };
@@ -138,6 +140,7 @@ describe('Actions.Calls', () => {
         let response: { data?: string };
         await act(async () => {
             response = await CallsActions.joinCall('server1', 'channel-id');
+            userJoinedCall('server1', 'channel-id', 'myUserId');
         });
 
         assert.equal(response!.data, 'channel-id');
@@ -161,6 +164,7 @@ describe('Actions.Calls', () => {
         let response: { data?: string };
         await act(async () => {
             response = await CallsActions.joinCall('server1', 'channel-id');
+            userJoinedCall('server1', 'channel-id', 'myUserId');
         });
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall | null)?.channelId, 'channel-id');
@@ -188,6 +192,7 @@ describe('Actions.Calls', () => {
         let response: { data?: string };
         await act(async () => {
             response = await CallsActions.joinCall('server1', 'channel-id');
+            userJoinedCall('server1', 'channel-id', 'myUserId');
         });
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall | null)?.channelId, 'channel-id');
@@ -214,6 +219,7 @@ describe('Actions.Calls', () => {
         let response: { data?: string };
         await act(async () => {
             response = await CallsActions.joinCall('server1', 'channel-id');
+            userJoinedCall('server1', 'channel-id', 'myUserId');
         });
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall | null)?.channelId, 'channel-id');

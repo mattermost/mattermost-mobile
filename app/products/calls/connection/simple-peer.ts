@@ -21,6 +21,8 @@ import {
 } from 'react-native-webrtc';
 import stream from 'readable-stream';
 
+import type {ICEServersConfigs} from '@calls/types/calls';
+
 const queueMicrotask = (callback: any) => {
     Promise.resolve().then(callback).catch((e) => setTimeout(() => {
         throw e;
@@ -94,7 +96,7 @@ export default class Peer extends stream.Duplex {
     private pc: RTCPeerConnection|null = null;
     private onFinishBound?: () => void;
 
-    constructor(localStream: MediaStream | null, iceServers?: string[]) {
+    constructor(localStream: MediaStream | null, iceServers: ICEServersConfigs) {
         super({allowHalfOpen: false});
 
         this.streams = localStream ? [localStream] : [];
@@ -104,20 +106,9 @@ export default class Peer extends stream.Duplex {
         };
 
         const connConfig = {
-            iceServers: [
-                {
-                    urls: [
-                        'stun:stun.l.google.com:19302',
-                        'stun:global.stun.twilio.com:3478',
-                    ],
-                },
-            ],
+            iceServers,
             sdpSemantics: 'unified-plan',
         };
-
-        if (iceServers && iceServers.length > 0) {
-            connConfig.iceServers[0].urls = iceServers;
-        }
 
         try {
             this.pc = new RTCPeerConnection(connConfig);
@@ -539,11 +530,9 @@ export default class Peer extends stream.Duplex {
         };
         this.channel.onerror = (e: any) => {
             const err =
-                e.error instanceof Error ?
-                    e.error :
-                    new Error(
-                        `Datachannel error: ${e.message} ${e.filename}:${e.lineno}:${e.colno}`,
-                    );
+                e.error instanceof Error ? e.error : new Error(
+                    `Datachannel error: ${e.message} ${e.filename}:${e.lineno}:${e.colno}`,
+                );
             this.destroy(errCode(err, 'ERR_DATA_CHANNEL'));
         };
 
