@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
-import {combineLatest, Observable, of as of$} from 'rxjs';
-import {distinctUntilChanged, switchMap} from 'rxjs/dist/types/operators';
+import {distinctUntilChanged, switchMap, combineLatest, Observable, of as of$} from 'rxjs';
 
 import {observeCallsConfig, observeCallsState} from '@calls/state';
 import {General} from '@constants';
