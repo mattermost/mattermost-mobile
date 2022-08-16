@@ -90,7 +90,7 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
     const onClear = useCallback(() => {
         setValue('');
         props.onClear?.();
-    }, []);
+    }, [props.onClear]);
 
     const onChangeText = useCallback((text: string) => {
         setValue(text);
