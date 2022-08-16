@@ -10,6 +10,7 @@ import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-cont
 
 import {addSearchToTeamSearchHistory} from '@actions/local/team';
 import {searchPosts, searchFiles} from '@actions/remote/search';
+import {queryPostsById} from '@app/queries/servers/post';
 import Autocomplete from '@components/autocomplete';
 import FreezeScreen from '@components/freeze_screen';
 import Loading from '@components/loading';
@@ -18,6 +19,7 @@ import RoundedHeaderContext from '@components/rounded_header_context';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import DatabaseManager from '@database/manager';
 import {useKeyboardHeight} from '@hooks/device';
 import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
@@ -27,11 +29,13 @@ import Initial from './initial';
 import Results from './results';
 import Header from './results/header';
 
+import type PostModel from '@typings/database/models/servers/post';
+
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 const emptyFileResults: FileInfo[] = [];
-const emptyPostResults: string[] = [];
+const emptyPosts: PostModel[] = [];
 const emptyChannelIds: string[] = [];
 
 const dummyData = [1];
@@ -63,6 +67,15 @@ const getSearchParams = (terms: string, filterValue?: FileFilter) => {
     };
 };
 
+const getPosts = async (serverUrl: string, ids: string[]) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return [];
+    }
+
+    return queryPostsById(database, ids).fetch();
+};
+
 const searchScreenIndex = 1;
 
 const SearchScreen = ({teamId}: Props) => {
@@ -87,8 +100,7 @@ const SearchScreen = ({teamId}: Props) => {
 
     const [loading, setLoading] = useState(false);
     const [lastSearchedValue, setLastSearchedValue] = useState('');
-
-    const [postIds, setPostIds] = useState<string[]>(emptyPostResults);
+    const [posts, setPosts] = useState<PostModel[]>(emptyPosts);
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
     const [fileChannelIds, setFileChannelIds] = useState<string[]>([]);
 
@@ -126,7 +138,7 @@ const SearchScreen = ({teamId}: Props) => {
         ]);
 
         setFileInfos(files?.length ? files : emptyFileResults);
-        setPostIds(postResults?.order?.length ? postResults.order : emptyPostResults);
+        setPosts(postResults?.order?.length ? await getPosts(serverUrl, postResults.order) : emptyPosts);
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
 
         setShowResults(true);
@@ -180,12 +192,12 @@ const SearchScreen = ({teamId}: Props) => {
         <Results
             selectedTab={selectedTab}
             searchValue={lastSearchedValue}
-            postIds={postIds}
+            posts={posts}
             fileInfos={fileInfos}
             scrollPaddingTop={scrollPaddingTop}
             fileChannelIds={fileChannelIds}
         />
-    ), [selectedTab, lastSearchedValue, postIds, fileInfos, scrollPaddingTop, fileChannelIds]);
+    ), [selectedTab, lastSearchedValue, fileInfos, scrollPaddingTop, fileChannelIds, posts]);
 
     const renderItem = useCallback(() => {
         if (loading) {
@@ -237,7 +249,7 @@ const SearchScreen = ({teamId}: Props) => {
                 setTeamId={handleResultsTeamChange}
                 onTabSelect={setSelectedTab}
                 onFilterChanged={handleFilterChange}
-                numberMessages={postIds.length}
+                numberMessages={posts.length}
                 selectedTab={selectedTab}
                 numberFiles={fileInfos.length}
                 selectedFilter={filter}
