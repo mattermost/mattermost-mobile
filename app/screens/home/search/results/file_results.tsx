@@ -152,36 +152,36 @@ const FileResults = ({
                 key={item.id}
             >
                 <File
-                    channelName={channelNames[item.channel_id!]}
-                    galleryIdentifier={galleryIdentifier}
-                    key={item.id}
-                    canDownloadFiles={canDownloadFiles}
-                    file={item}
-                    index={filesForGalleryIndexes[item.id!] || 0}
-                    onPress={handlePreviewPress}
-                    onOptionsPress={handleOptionsPress}
-                    isSingleImage={isSingleImage}
-                    showDate={true}
-                    publicLinkEnabled={publicLinkEnabled}
-                    updateFileForGallery={updateFileForGallery}
-                    inViewPort={true}
-                    wrapperWidth={(getViewPortWidth(isReplyPost, isTablet) - 6)}
-                    nonVisibleImagesCount={0}
                     asCard={true}
+                    canDownloadFiles={canDownloadFiles}
+                    channelName={channelNames[item.channel_id!]}
+                    file={item}
+                    galleryIdentifier={galleryIdentifier}
+                    inViewPort={true}
+                    index={filesForGalleryIndexes[item.id!] || 0}
+                    isSingleImage={isSingleImage}
+                    key={item.id}
+                    nonVisibleImagesCount={0}
+                    onOptionsPress={handleOptionsPress}
+                    onPress={handlePreviewPress}
+                    publicLinkEnabled={publicLinkEnabled}
+                    showDate={true}
+                    updateFileForGallery={updateFileForGallery}
+                    wrapperWidth={(getViewPortWidth(isReplyPost, isTablet) - 6)}
                 />
             </View>
         );
     }, [
-        theme,
         (orderedFilesForGallery.length === 1) && orderedFilesForGallery[0].mime_type,
-        handleOptionsPress,
-        channelNames,
-        filesForGalleryIndexes,
         canDownloadFiles,
-        handlePreviewPress,
-        publicLinkEnabled,
-        isTablet,
+        channelNames,
         fileInfos.length > 1,
+        filesForGalleryIndexes,
+        handleOptionsPress,
+        handlePreviewPress,
+        isTablet,
+        publicLinkEnabled,
+        theme,
     ]);
 
     const noResults = useMemo(() => {
@@ -196,16 +196,16 @@ const FileResults = ({
     return (
         <AnimatedFlatList
             ListEmptyComponent={noResults}
+            contentContainerStyle={paddingTop}
             data={fileInfos}
+            indicatorStyle='black'
+            nestedScrollEnabled={true}
+            refreshing={false}
+            removeClippedSubviews={true}
+            renderItem={renderItem}
+            scrollEventThrottle={16}
             scrollToOverflowEnabled={true}
             showsVerticalScrollIndicator={true}
-            scrollEventThrottle={16}
-            indicatorStyle='black'
-            refreshing={false}
-            renderItem={renderItem}
-            contentContainerStyle={paddingTop}
-            nestedScrollEnabled={true}
-            removeClippedSubviews={true}
             style={containerStyle}
             testID='search_results.post_list.flat_list'
         />

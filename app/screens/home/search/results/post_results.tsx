@@ -75,16 +75,16 @@ const PostResults = ({
     return (
         <AnimatedFlatList
             ListEmptyComponent={noResults}
+            contentContainerStyle={paddingTop}
             data={orderedPosts}
+            indicatorStyle='black'
+            nestedScrollEnabled={true}
+            refreshing={false}
+            removeClippedSubviews={true}
+            renderItem={renderItem}
+            scrollEventThrottle={16}
             scrollToOverflowEnabled={true}
             showsVerticalScrollIndicator={true}
-            scrollEventThrottle={16}
-            indicatorStyle='black'
-            refreshing={false}
-            renderItem={renderItem}
-            contentContainerStyle={paddingTop}
-            nestedScrollEnabled={true}
-            removeClippedSubviews={true}
             style={containerStyle}
             testID='search_results.post_list.flat_list'
         />
