@@ -92,7 +92,7 @@ const Notifications = ({
     const goToEmailSettings = useCallback(() => {
         const screen = Screens.SETTINGS_NOTIFICATION_EMAIL;
         const title = intl.formatMessage({id: 'notification_settings.email', defaultMessage: 'Email Notifications'});
-        goToScreen(screen, title);
+        goToScreen(screen, title, passProps, options);
     }, []);
 
     return (
