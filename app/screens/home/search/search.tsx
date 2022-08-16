@@ -162,8 +162,8 @@ const SearchScreen = ({teamId}: Props) => {
     }, [lastSearchedValue, handleSearch]);
 
     const containerStyle = useMemo(() => {
-        const justify = (resultsLoading || loading) ? 'center' : 'flex-start';
-        return {paddingTop: scrollPaddingTop, flexGrow: 1, justifyContent: justify} as ViewProps;
+        const justifyContent = (resultsLoading || loading) ? 'center' : 'flex-start';
+        return {paddingTop: scrollPaddingTop, flexGrow: 1, justifyContent} as ViewProps;
     }, [loading, resultsLoading, scrollPaddingTop]);
 
     const loadingComponent = useMemo(() => (
