@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Text} from 'react-native';
 
@@ -10,14 +10,13 @@ import FloatingTextInput from '@components/floating_text_input_label';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import useBackNavigation from '@hooks/navigate_back';
 import {t} from '@i18n';
-import {popTopScreen, setButtons} from '@screens/navigation';
+import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
 
-import {getSaveButton} from '../config';
 import SettingBlock from '../setting_block';
 import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
@@ -28,8 +27,6 @@ const mentionHeaderText = {
     id: t('notification_settings.mentions.keywords_mention'),
     defaultMessage: 'Keywords that trigger mentions',
 };
-
-const SAVE_MENTION_BUTTON_ID = 'SAVE_MENTION_BUTTON_ID';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -63,7 +60,7 @@ const getMentionProps = (currentUser: UserModel) => {
     }
 
     return {
-        mentionKeys: mKeys.join(','),
+        mentionKeywords: mKeys.join(','),
         usernameMention: usernameMentionIndex > -1,
         notifyProps,
     };
@@ -75,70 +72,74 @@ type MentionSectionProps = {
 }
 const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
     const serverUrl = useServerUrl();
-    const mentionProps = useMemo(() => getMentionProps(currentUser), [currentUser.notifyProps]);
+    const mentionProps = useMemo(() => getMentionProps(currentUser), []);
+    const notifyProps = mentionProps.notifyProps;
 
-    const notifyProps = currentUser.notifyProps || mentionProps.notifyProps;
-    const [tglFirstName, setTglFirstName] = useState(notifyProps.first_name === 'true');
-    const [tglChannel, setTglChannel] = useState(notifyProps.channel === 'true');
-
-    const [tglUserName, setTglUserName] = useState(mentionProps.usernameMention);
-    const [mentionKeys, setMentionKeys] = useState(mentionProps.mentionKeys);
+    const [mentionKeywords, setMentionKeywords] = useState(mentionProps.mentionKeywords);
+    const [channelMentionOn, setChannelMentionOn] = useState(notifyProps.channel === 'true');
+    const [firstNameMentionOn, setFirstNameMentionOn] = useState(notifyProps.first_name === 'true');
+    const [usernameMentionOn, setUsernameMentionOn] = useState(mentionProps.usernameMention);
 
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
 
-    const saveButton = useMemo(() => getSaveButton(SAVE_MENTION_BUTTON_ID, intl, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
-
     const close = () => popTopScreen(componentId);
 
+    const canSaveSettings = useCallback(() => {
+        const channelChanged = channelMentionOn !== Boolean(notifyProps.channel);
+        const fNameChanged = firstNameMentionOn !== Boolean(notifyProps.first_name);
+        const mnKeysChanged = mentionProps.mentionKeywords !== mentionKeywords;
+        const userNameChanged = usernameMentionOn !== mentionProps.usernameMention;
+
+        const enabled = fNameChanged || userNameChanged || channelChanged || mnKeysChanged;
+        return enabled;
+    }, [firstNameMentionOn, channelMentionOn, usernameMentionOn, mentionKeywords, notifyProps]);
+
     const saveMention = useCallback(() => {
+        const canSave = canSaveSettings();
+        const mention_keys = [];
+        if (mentionKeywords.length > 0) {
+            mentionKeywords.split(',').forEach((m) => mention_keys.push(m.replace(/\s/g, '')));
+        }
+
+        if (usernameMentionOn) {
+            mention_keys.push(`${currentUser.username}`);
+        }
+
         const notify_props: UserNotifyProps = {
             ...notifyProps,
-            first_name: `${tglFirstName}`,
-            channel: `${tglChannel}`,
-            mention_keys: mentionKeys};
-        updateMe(serverUrl, {notify_props});
+            first_name: `${firstNameMentionOn}`,
+            channel: `${channelMentionOn}`,
+            mention_keys: mention_keys.join(','),
+        };
+
+        if (canSave) {
+            updateMe(serverUrl, {notify_props});
+        }
+
         close();
-    }, [serverUrl, notifyProps, tglFirstName, tglChannel, mentionKeys]);
+    }, [serverUrl, notifyProps, firstNameMentionOn, channelMentionOn, mentionKeywords, canSaveSettings]);
 
     const onToggleFirstName = useCallback(() => {
-        setTglFirstName((prev) => !prev);
+        setFirstNameMentionOn((prev) => !prev);
     }, []);
 
     const onToggleUserName = useCallback(() => {
-        setTglUserName((prev) => !prev);
+        setUsernameMentionOn((prev) => !prev);
     }, []);
 
     const onToggleChannel = useCallback(() => {
-        setTglChannel((prev) => !prev);
+        setChannelMentionOn((prev) => !prev);
     }, []);
 
     const onChangeText = useCallback((text: string) => {
-        setMentionKeys(text);
+        setMentionKeywords(text);
     }, []);
 
-    useEffect(() => {
-        const fNameChanged = tglFirstName !== Boolean(notifyProps.first_name);
-        const channelChanged = tglChannel !== Boolean(notifyProps.channel);
+    useBackNavigation(saveMention);
 
-        const usnChanged = tglUserName !== mentionProps.usernameMention;
-        const kwsChanged = mentionProps.mentionKeys !== mentionKeys;
-
-        const enabled = fNameChanged || usnChanged || channelChanged || kwsChanged;
-
-        const buttons = {
-            rightButtons: [{
-                ...saveButton,
-                enabled,
-            }],
-        };
-        setButtons(componentId, buttons);
-    }, [componentId, saveButton, tglFirstName, tglChannel, tglUserName, mentionKeys, notifyProps]);
-
-    useNavButtonPressed(SAVE_MENTION_BUTTON_ID, componentId, saveMention, [saveMention]);
-
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(componentId, saveMention);
 
     return (
         <SettingBlock
@@ -150,7 +151,7 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
                         action={onToggleFirstName}
                         description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveName', defaultMessage: 'Your case sensitive first name'})}
                         label={currentUser.firstName}
-                        selected={tglFirstName}
+                        selected={firstNameMentionOn}
                         type='toggle'
                     />
                     <SettingSeparator/>
@@ -162,7 +163,7 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
                     action={onToggleUserName}
                     description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveUsername', defaultMessage: 'Your non-case sensitive username'})}
                     label={currentUser.username}
-                    selected={tglUserName}
+                    selected={usernameMentionOn}
                     type='toggle'
                 />
             )}
@@ -171,7 +172,7 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
                 action={onToggleChannel}
                 description={intl.formatMessage({id: 'notification_settings.mentions.channelWide', defaultMessage: 'Channel-wide mentions'})}
                 label='@channel, @all, @here'
-                selected={tglChannel}
+                selected={channelMentionOn}
                 type='toggle'
             />
             <SettingSeparator/>
@@ -192,7 +193,7 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
                 textAlignVertical='top'
                 theme={theme}
                 underlineColorAndroid='transparent'
-                value={mentionKeys}
+                value={mentionKeywords}
             />
             <Text
                 style={styles.keywordLabelStyle}

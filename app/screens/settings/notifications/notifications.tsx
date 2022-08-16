@@ -58,8 +58,15 @@ const Notifications = ({
         const id = isCRTEnabled ? t('notification_settings.mentions') : t('notification_settings.mentions_replies');
         const defaultMessage = isCRTEnabled ? 'Mentions' : 'Mentions and Replies';
         const title = intl.formatMessage({id, defaultMessage});
-
-        goToScreen(screen, title);
+        const passProps = {};
+        const options = {
+            topBar: {
+                backButton: {
+                    popStackOnPress: false,
+                },
+            },
+        };
+        goToScreen(screen, title, passProps, options);
     }, [isCRTEnabled]);
 
     const goToNotificationSettingsPush = useCallback(() => {
