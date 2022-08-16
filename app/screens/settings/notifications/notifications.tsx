@@ -25,6 +25,15 @@ const mentionTexts = {
     },
 };
 
+const passProps = {};
+const options = {
+    topBar: {
+        backButton: {
+            popStackOnPress: false,
+        },
+    },
+};
+
 type NotificationsProps = {
     currentUser: UserModel;
     emailInterval: string;
@@ -58,14 +67,6 @@ const Notifications = ({
         const id = isCRTEnabled ? t('notification_settings.mentions') : t('notification_settings.mentions_replies');
         const defaultMessage = isCRTEnabled ? 'Mentions' : 'Mentions and Replies';
         const title = intl.formatMessage({id, defaultMessage});
-        const passProps = {};
-        const options = {
-            topBar: {
-                backButton: {
-                    popStackOnPress: false,
-                },
-            },
-        };
         goToScreen(screen, title, passProps, options);
     }, [isCRTEnabled]);
 
@@ -76,7 +77,7 @@ const Notifications = ({
             defaultMessage: 'Push Notifications',
         });
 
-        goToScreen(screen, title);
+        goToScreen(screen, title, passProps, options);
     }, []);
 
     const goToNotificationAutoResponder = useCallback(() => {

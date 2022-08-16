@@ -92,29 +92,27 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
         const mnKeysChanged = mentionProps.mentionKeywords !== mentionKeywords;
         const userNameChanged = usernameMentionOn !== mentionProps.usernameMention;
 
-        const enabled = fNameChanged || userNameChanged || channelChanged || mnKeysChanged;
-        return enabled;
+        return fNameChanged || userNameChanged || channelChanged || mnKeysChanged;
     }, [firstNameMentionOn, channelMentionOn, usernameMentionOn, mentionKeywords, notifyProps]);
 
     const saveMention = useCallback(() => {
         const canSave = canSaveSettings();
-        const mention_keys = [];
-        if (mentionKeywords.length > 0) {
-            mentionKeywords.split(',').forEach((m) => mention_keys.push(m.replace(/\s/g, '')));
-        }
-
-        if (usernameMentionOn) {
-            mention_keys.push(`${currentUser.username}`);
-        }
-
-        const notify_props: UserNotifyProps = {
-            ...notifyProps,
-            first_name: `${firstNameMentionOn}`,
-            channel: `${channelMentionOn}`,
-            mention_keys: mention_keys.join(','),
-        };
 
         if (canSave) {
+            const mention_keys = [];
+            if (mentionKeywords.length > 0) {
+                mentionKeywords.split(',').forEach((m) => mention_keys.push(m.replace(/\s/g, '')));
+            }
+
+            if (usernameMentionOn) {
+                mention_keys.push(`${currentUser.username}`);
+            }
+            const notify_props: UserNotifyProps = {
+                ...notifyProps,
+                first_name: `${firstNameMentionOn}`,
+                channel: `${channelMentionOn}`,
+                mention_keys: mention_keys.join(','),
+            };
             updateMe(serverUrl, {notify_props});
         }
 
