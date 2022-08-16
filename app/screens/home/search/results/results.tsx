@@ -55,7 +55,7 @@ type Props = {
 
 const galleryIdentifier = 'search-files-location';
 
-const SearchResults = ({
+const Results = ({
     canDownloadFiles,
     currentTimezone,
     fileChannels,
@@ -260,4 +260,4 @@ const SearchResults = ({
     );
 };
 
-export default SearchResults;
+export default Results;
