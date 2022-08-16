@@ -88,7 +88,7 @@ const Notifications = ({
     }, []);
 
     return (
-        <SettingContainer>
+        <SettingContainer testID='notifications'>
             <SettingItem
                 onPress={goToNotificationSettingsMentions}
                 optionName='mentions'

@@ -167,7 +167,7 @@ const About = ({config, license}: AboutProps) => {
     }, [config]);
 
     return (
-        <SettingContainer>
+        <SettingContainer testID='about'>
             <View style={styles.logoContainer}>
                 <CompassIcon
                     color={theme.centerChannelColor}

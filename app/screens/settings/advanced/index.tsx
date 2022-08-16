@@ -68,7 +68,7 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
     const hasData = Boolean(dataSize && (dataSize > 0));
 
     return (
-        <SettingContainer>
+        <SettingContainer testID='advanced'>
             <TouchableOpacity
                 onPress={onPressDeleteData}
                 disabled={!hasData}

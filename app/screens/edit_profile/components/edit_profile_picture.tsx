@@ -103,7 +103,7 @@ const EditProfilePicture = ({user, onUpdateProfilePicture}: ChangeProfilePicture
     return (
         <View
             style={styles.container}
-            testID={`${EditProfilePicture}.${user.id}`}
+            testID={`edit_profile.${user.id}.profile_picture`}
         >
             <ProfileImage
                 size={SIZE}

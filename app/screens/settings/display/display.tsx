@@ -70,7 +70,7 @@ const Display = ({currentUser, hasMilitaryTimeFormat, isThemeSwitchingEnabled, i
     });
 
     return (
-        <SettingContainer>
+        <SettingContainer testID='display'>
             {isThemeSwitchingEnabled && (
                 <SettingItem
                     optionName='theme'

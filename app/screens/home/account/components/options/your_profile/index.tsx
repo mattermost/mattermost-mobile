@@ -33,7 +33,7 @@ const YourProfile = ({isTablet, theme}: Props) => {
         <OptionItem
             icon={ACCOUNT_OUTLINE_IMAGE}
             label={intl.formatMessage({id: 'account.your_profile', defaultMessage: 'Your Profile'})}
-            testID='account.your_profile.action'
+            testID='account.your_profile.option'
             type='default'
             action={openProfile}
         />

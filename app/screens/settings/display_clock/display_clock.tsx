@@ -70,7 +70,7 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
     useNavButtonPressed(SAVE_CLOCK_BUTTON_ID, componentId, saveClockDisplayPreference, [isMilitaryTimeFormat]);
 
     return (
-        <SettingContainer>
+        <SettingContainer testID='display_clock'>
             <SettingBlock
                 disableHeader={true}
             >
