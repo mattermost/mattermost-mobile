@@ -634,7 +634,6 @@ describe('useCallsState', () => {
             last_retrieved_at: 123,
             sku_short_name: 'professional',
             MaxCallParticipants: 8,
-            pluginEnabled: false,
         };
 
         // setup

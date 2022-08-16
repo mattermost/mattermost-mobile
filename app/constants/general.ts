@@ -36,4 +36,11 @@ export default {
     AUTOCOMPLETE_SPLIT_CHARACTERS: ['.', '-', '_'],
     CHANNEL_USER_ROLE: 'channel_user',
     RESTRICT_DIRECT_MESSAGE_ANY: 'any',
+    LICENSE_SKUS: {
+        E10: 'E10',
+        E20: 'E20',
+        Starter: 'starter',
+        Professional: 'professional',
+        Enterprise: 'enterprise',
+    },
 };

@@ -23,7 +23,7 @@ export const observeIsCallsFeatureRestricted = (database: Database, serverUrl: s
         distinctUntilChanged(),
     );
     return combineLatest([isCloud, skuShortName, isDMChannel]).pipe(
-        switchMap(([cloud, sku, dm]) => of$(cloud && sku === 'starter' && !dm)), // are you restricted from making a call because of your subscription?
+        switchMap(([cloud, sku, dm]) => of$(cloud && sku === General.LICENSE_SKUS.Starter && !dm)), // are you restricted from making a call because of your subscription?
         distinctUntilChanged(),
     ) as Observable<boolean>;
 };

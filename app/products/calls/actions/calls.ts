@@ -34,7 +34,6 @@ import type {
     ApiResp,
     Call,
     CallParticipant,
-    CallsConfig,
     CallsConnection,
     ServerCallState,
     ServerChannelState,
@@ -72,7 +71,7 @@ export const loadConfig = async (serverUrl: string, force = false) => {
         return {error};
     }
 
-    const nextConfig = {...data, last_retrieved_at: now} as CallsConfig;
+    const nextConfig = {...data, last_retrieved_at: now};
     setConfig(serverUrl, nextConfig);
     return {data: nextConfig};
 };

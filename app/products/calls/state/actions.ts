@@ -303,7 +303,7 @@ export const setSpeakerPhone = (speakerphoneOn: boolean) => {
     }
 };
 
-export const setConfig = (serverUrl: string, config: CallsConfig) => {
+export const setConfig = (serverUrl: string, config: Partial<CallsConfig>) => {
     const callsConfig = getCallsConfig(serverUrl);
     setCallsConfig(serverUrl, {...callsConfig, ...config});
 };
