@@ -40,16 +40,16 @@ const Results = ({
         <FileResults
             canDownloadFiles={canDownloadFiles}
             fileChannels={fileChannels}
-            publicLinkEnabled={publicLinkEnabled}
             fileInfos={fileInfos}
+            publicLinkEnabled={publicLinkEnabled}
             scrollPaddingTop={scrollPaddingTop}
             searchValue={searchValue}
         />
     ), [
         canDownloadFiles,
         fileChannels,
-        publicLinkEnabled,
         fileInfos,
+        publicLinkEnabled,
         scrollPaddingTop,
         searchValue,
     ]);
