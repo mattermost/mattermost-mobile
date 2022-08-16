@@ -67,8 +67,7 @@ const FileResults = ({
     }, {}), [fileChannels]);
 
     const containerStyle = useMemo(() => {
-        const padding = fileInfos.length ? 8 : 0;
-        return {top: padding};
+        return {top: fileInfos.length ? 8 : 0};
     }, [fileInfos]);
 
     const filesForGallery = useMemo(() => imageAttachments.concat(nonImageAttachments),
@@ -197,7 +196,7 @@ const FileResults = ({
         <AnimatedFlatList
             ListEmptyComponent={noResults}
             contentContainerStyle={paddingTop}
-            data={fileInfos}
+            data={orderedFilesForGallery}
             indicatorStyle='black'
             initialNumToRender={10}
             maxToRenderPerBatch={5}
