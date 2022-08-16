@@ -9,12 +9,12 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
-    height: Animated.DerivedValue<number>;
+    heightOffset: Animated.DerivedValue<number>;
     hasSearch: boolean;
     subtitle?: string;
     theme: Theme;
     title: string;
-    yValue: Animated.DerivedValue<number>;
+    translateY: Animated.DerivedValue<number>;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -33,24 +33,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const NavigationHeaderLargeTitle = ({
-    height,
+    heightOffset,
     hasSearch,
     subtitle,
     theme,
     title,
-    yValue,
+    translateY,
 }: Props) => {
     const styles = getStyleSheet(theme);
 
     const transform = useAnimatedStyle(() => {
         return {
-            transform: [{translateY: yValue.value}],
+            transform: [{translateY: translateY.value}],
         };
     });
 
     const containerStyle = useMemo(() => {
-        return [{height: height.value}, styles.container];
-    }, [height.value, theme]);
+        return [{height: heightOffset.value}, styles.container];
+    }, [heightOffset.value, theme]);
 
     return (
         <Animated.View style={[containerStyle, transform]}>

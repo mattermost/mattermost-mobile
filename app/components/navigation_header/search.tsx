@@ -12,7 +12,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = SearchProps & {
-    yValueMargin: AnimatedStyleProp<ViewStyle>;
+    topMargin: AnimatedStyleProp<ViewStyle>;
     hideHeader?: () => void;
     theme: Theme;
     top: number;
@@ -41,7 +41,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const NavigationSearch = ({
     hideHeader,
     theme,
-    yValueMargin,
+    topMargin,
     ...searchProps
 }: Props) => {
     const styles = getStyleSheet(theme);
@@ -79,7 +79,7 @@ const NavigationSearch = ({
     }, []);
 
     return (
-        <Animated.View style={[styles.container, yValueMargin]}>
+        <Animated.View style={[styles.container, topMargin]}>
             <Search
                 {...searchProps}
                 cancelButtonProps={cancelButtonProps}

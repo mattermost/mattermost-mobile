@@ -78,18 +78,18 @@ const NavigationHeader = ({
         return scrollValue?.value || 0;
     });
 
-    const minYValue = useDerivedValue(() => {
+    const heightOffset = useDerivedValue(() => {
         return largeHeight - defaultHeight;
+    }, [largeHeight, defaultHeight]);
+
+    const translateY = useDerivedValue(() => {
+        return lockValue?.value ? -lockValue.value : Math.min(-minScrollValue.value, heightOffset.value);
     }, [lockValue?.value]);
 
-    const yValue = useDerivedValue(() => {
-        return lockValue?.value ? -lockValue.value : Math.min(-minScrollValue.value, minYValue.value);
-    }, [lockValue?.value]);
-
-    const yValueMargin = useAnimatedStyle(() => {
-        const min = minYValue.value;
+    const topMargin = useAnimatedStyle(() => {
+        const min = heightOffset.value;
         return {marginTop: lockValue?.value ? -lockValue?.value : Math.min(-Math.min((minScrollValue.value), min), min)};
-    }, [lockValue?.value]);
+    }, [lockValue?.value, heightOffset.value]);
 
     return (
         <>
@@ -98,7 +98,7 @@ const NavigationHeader = ({
                     defaultHeight={defaultHeight}
                     hasSearch={hasSearch}
                     isLargeTitle={isLargeTitle}
-                    height={minYValue}
+                    heightOffset={heightOffset}
                     leftComponent={leftComponent}
                     onBackPress={onBackPress}
                     onTitlePress={onTitlePress}
@@ -114,12 +114,12 @@ const NavigationHeader = ({
                 />
                 {isLargeTitle &&
                 <NavigationHeaderLargeTitle
-                    height={minYValue}
+                    heightOffset={heightOffset}
                     hasSearch={hasSearch}
                     subtitle={subtitle}
                     theme={theme}
                     title={title}
-                    yValue={yValue}
+                    translateY={translateY}
                 />
                 }
                 {hasSearch &&
@@ -128,7 +128,7 @@ const NavigationHeader = ({
                         hideHeader={hideHeader}
                         theme={theme}
                         top={0}
-                        yValueMargin={yValueMargin}
+                        topMargin={topMargin}
                     />
                 }
             </Animated.View>

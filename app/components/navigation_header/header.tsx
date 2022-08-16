@@ -24,7 +24,7 @@ type Props = {
     defaultHeight: number;
     hasSearch: boolean;
     isLargeTitle: boolean;
-    height: Animated.DerivedValue<number>;
+    heightOffset: Animated.DerivedValue<number>;
     leftComponent?: React.ReactElement;
     onBackPress?: () => void;
     onTitlePress?: () => void;
@@ -128,7 +128,7 @@ const Header = ({
     defaultHeight,
     hasSearch,
     isLargeTitle,
-    height,
+    heightOffset,
     leftComponent,
     onBackPress,
     onTitlePress,
@@ -154,7 +154,7 @@ const Header = ({
         }
 
         const largeTitleLabelHeight = 60;
-        const barHeight = height.value - largeTitleLabelHeight;
+        const barHeight = heightOffset.value - largeTitleLabelHeight;
         const val = (scrollValue?.value ?? 0);
         const showDuration = 200;
         const hideDuration = 50;
@@ -163,7 +163,7 @@ const Header = ({
         return {
             opacity: withTiming(opacityValue, {duration}),
         };
-    }, [height.value, isLargeTitle, hasSearch]);
+    }, [heightOffset.value, isLargeTitle, hasSearch]);
 
     const containerStyle = useMemo(() => {
         const containerHeight = lockValue?.value || defaultHeight + top;
