@@ -241,9 +241,10 @@ const SearchScreen = ({teamId}: Props) => {
     }, [isFocused, stateIndex]);
 
     const top = useAnimatedStyle(() => {
-        const topMarginLocked = lockValue?.value ? lockValue.value + marginFromRoundedHeaderContext : 0;
-        const topMarginScrollable = headerHeight.value;
-        const topMargin = lockValue.value ? topMarginLocked : topMarginScrollable;
+        let topMargin = headerHeight.value;
+        if (lockValue?.value) {
+            topMargin = lockValue.value + marginFromRoundedHeaderContext;
+        }
         return {
             top: topMargin,
             zIndex: lastSearchedValue ? 10 : 0,
