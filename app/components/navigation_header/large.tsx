@@ -9,19 +9,17 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
-    defaultHeight: number;
+    height: Animated.DerivedValue<number>;
     hasSearch: boolean;
-    largeHeight: number;
-    lockValue?: Animated.SharedValue<number | null>;
-    scrollValue?: Animated.SharedValue<number>;
     subtitle?: string;
     theme: Theme;
     title: string;
+    yValue: Animated.DerivedValue<number>;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        backgroundColor: theme.sidebarBg,
+        backgroundColor: 'yellow',
         paddingHorizontal: 20,
     },
     heading: {
@@ -35,28 +33,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const NavigationHeaderLargeTitle = ({
-    defaultHeight,
-    largeHeight,
+    height,
     hasSearch,
-    scrollValue,
-    lockValue,
     subtitle,
     theme,
     title,
+    yValue,
 }: Props) => {
     const styles = getStyleSheet(theme);
 
     const transform = useAnimatedStyle(() => {
-        const value = scrollValue?.value || 0;
-        const translateY = lockValue?.value ? -lockValue.value : Math.min(-value, largeHeight - defaultHeight);
         return {
-            transform: [{translateY}],
+            transform: [{translateY: yValue.value}],
         };
     });
 
     const containerStyle = useMemo(() => {
-        return [{height: largeHeight - defaultHeight}, styles.container];
-    }, [defaultHeight, largeHeight, theme]);
+        return [{height: height.value}, styles.container];
+    }, [height.value, theme]);
 
     return (
         <Animated.View style={[containerStyle, transform]}>

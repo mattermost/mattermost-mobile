@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import Animated, {useAnimatedStyle} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
@@ -74,6 +74,23 @@ const NavigationHeader = ({
         };
     });
 
+    const minScrollValue = useDerivedValue(() => {
+        return scrollValue?.value || 0;
+    });
+
+    const minYValue = useDerivedValue(() => {
+        return largeHeight - defaultHeight;
+    }, [lockValue?.value]);
+
+    const yValue = useDerivedValue(() => {
+        return lockValue?.value ? -lockValue.value : Math.min(-minScrollValue.value, minYValue.value);
+    }, [lockValue?.value]);
+
+    const yValueMargin = useAnimatedStyle(() => {
+        const min = minYValue.value;
+        return {marginTop: lockValue?.value ? -lockValue?.value : Math.min(-Math.min((minScrollValue.value), min), min)};
+    }, [lockValue?.value]);
+
     return (
         <>
             <Animated.View style={[styles.container, containerHeight]}>
@@ -81,7 +98,7 @@ const NavigationHeader = ({
                     defaultHeight={defaultHeight}
                     hasSearch={hasSearch}
                     isLargeTitle={isLargeTitle}
-                    largeHeight={largeHeight}
+                    height={minYValue}
                     leftComponent={leftComponent}
                     onBackPress={onBackPress}
                     onTitlePress={onTitlePress}
@@ -97,26 +114,21 @@ const NavigationHeader = ({
                 />
                 {isLargeTitle &&
                 <NavigationHeaderLargeTitle
-                    defaultHeight={defaultHeight}
+                    height={minYValue}
                     hasSearch={hasSearch}
-                    largeHeight={largeHeight}
-                    lockValue={lockValue}
-                    scrollValue={scrollValue}
                     subtitle={subtitle}
                     theme={theme}
                     title={title}
+                    yValue={yValue}
                 />
                 }
                 {hasSearch &&
                     <NavigationSearch
                         {...searchProps}
-                        defaultHeight={defaultHeight}
-                        largeHeight={largeHeight}
-                        lockValue={lockValue}
-                        scrollValue={scrollValue}
                         hideHeader={hideHeader}
                         theme={theme}
                         top={0}
+                        yValueMargin={yValueMargin}
                     />
                 }
             </Animated.View>
