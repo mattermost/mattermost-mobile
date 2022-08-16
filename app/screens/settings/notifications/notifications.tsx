@@ -86,7 +86,7 @@ const Notifications = ({
             id: 'notification_settings.auto_responder',
             defaultMessage: 'Automatic Replies',
         });
-        goToScreen(screen, title);
+        goToScreen(screen, title, passProps, options);
     }, []);
 
     const goToEmailSettings = useCallback(() => {
