@@ -374,7 +374,7 @@
   "mobile.calls_lasted": "Lasted {duration}",
   "mobile.calls_leave": "Leave",
   "mobile.calls_leave_call": "Leave call",
-  "mobile.calls_limit_msg": "Please contact your System Admin to increase the maximum number of participants per call.",
+  "mobile.calls_limit_msg": "Maximum number of participants per call is currently limited to {maxParticipants}. Please contact your system admin to increase the limit.",
   "mobile.calls_limit_reached": "Participant limit reached",
   "mobile.calls_lower_hand": "Lower hand",
   "mobile.calls_more": "More",
