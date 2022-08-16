@@ -38,7 +38,7 @@ const PostResults = ({
         return {top: posts.length ? 4 : 8};
     }, [posts]);
 
-    const renderItem = useCallback(({item}: ListRenderItemInfo<string|FileInfo | Post>) => {
+    const renderItem = useCallback(({item}: ListRenderItemInfo<string| Post>) => {
         if (typeof item === 'string') {
             if (isDateLine(item)) {
                 return (
@@ -77,6 +77,8 @@ const PostResults = ({
             ListEmptyComponent={noResults}
             contentContainerStyle={paddingTop}
             data={orderedPosts}
+            initialNumToRender={5}
+            maxToRenderPerBatch={5}
             indicatorStyle='black'
             nestedScrollEnabled={true}
             refreshing={false}
