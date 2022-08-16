@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 
 import {TabTypes, TabType} from '@utils/search';
 
@@ -36,29 +36,41 @@ const Results = ({
     searchValue,
     selectedTab,
 }: Props) => {
-    return (
-        <>
-            {(selectedTab === TabTypes.FILES) && (
-                <FileResults
-                    canDownloadFiles={canDownloadFiles}
-                    fileChannels={fileChannels}
-                    publicLinkEnabled={publicLinkEnabled}
-                    fileInfos={fileInfos}
-                    scrollPaddingTop={scrollPaddingTop}
-                    searchValue={searchValue}
-                />
-            )}
-            {(selectedTab === TabTypes.MESSAGES) && (
-                <PostResults
-                    currentTimezone={currentTimezone}
-                    isTimezoneEnabled={isTimezoneEnabled}
-                    posts={posts}
-                    scrollPaddingTop={scrollPaddingTop}
-                    searchValue={searchValue}
-                />
-            )}
-        </>
-    );
+    const fResults = useMemo(() => (
+        <FileResults
+            canDownloadFiles={canDownloadFiles}
+            fileChannels={fileChannels}
+            publicLinkEnabled={publicLinkEnabled}
+            fileInfos={fileInfos}
+            scrollPaddingTop={scrollPaddingTop}
+            searchValue={searchValue}
+        />
+    ), [
+        canDownloadFiles,
+        fileChannels,
+        publicLinkEnabled,
+        fileInfos,
+        scrollPaddingTop,
+        searchValue,
+    ]);
+
+    const pResults = useMemo(() => (
+        <PostResults
+            currentTimezone={currentTimezone}
+            isTimezoneEnabled={isTimezoneEnabled}
+            posts={posts}
+            scrollPaddingTop={scrollPaddingTop}
+            searchValue={searchValue}
+        />
+    ), [
+        currentTimezone,
+        isTimezoneEnabled,
+        posts,
+        scrollPaddingTop,
+        searchValue,
+    ]);
+
+    return (selectedTab === TabTypes.FILES) ? fResults : pResults;
 };
 
 export default Results;
