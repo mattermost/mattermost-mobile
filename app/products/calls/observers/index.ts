@@ -28,6 +28,11 @@ export const observeIsCallsFeatureRestricted = (database: Database, serverUrl: s
     ) as Observable<boolean>;
 };
 
+export type LimitRestrictedInfo = {
+    limitRestricted: boolean;
+    maxParticipants: number;
+}
+
 export const observeIsCallLimitRestricted = (serverUrl: string, channelId: string) => {
     const maxParticipants = observeCallsConfig(serverUrl).pipe(
         switchMap((c) => of$(c.MaxCallParticipants)),
@@ -38,7 +43,11 @@ export const observeIsCallLimitRestricted = (serverUrl: string, channelId: strin
         distinctUntilChanged(),
     );
     return combineLatest([maxParticipants, callNumOfParticipants]).pipe(
-        switchMap(([max, numParticipants]) => of$(max !== 0 && numParticipants >= max)),
-        distinctUntilChanged(),
-    );
+        switchMap(([max, numParticipants]) => of$({
+            limitRestricted: max !== 0 && numParticipants >= max,
+            maxParticipants: max,
+        })),
+        distinctUntilChanged((prev, curr) =>
+            prev.limitRestricted === curr.limitRestricted && prev.maxParticipants === curr.maxParticipants),
+    ) as Observable<LimitRestrictedInfo>;
 };

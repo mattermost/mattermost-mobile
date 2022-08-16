@@ -11,6 +11,8 @@ import {useTryCallsFunction} from '@calls/hooks';
 import OptionBox from '@components/option_box';
 import {preventDoubleTap} from '@utils/tap';
 
+import type {LimitRestrictedInfo} from '@calls/observers';
+
 export interface Props {
     serverUrl: string;
     displayName: string;
@@ -20,7 +22,7 @@ export interface Props {
     alreadyInCall: boolean;
     currentCallChannelName: string;
     dismissChannelInfo: () => void;
-    isLimitRestricted: boolean;
+    limitRestrictedInfo: LimitRestrictedInfo;
 }
 
 const ChannelInfoStartButton = ({
@@ -32,15 +34,16 @@ const ChannelInfoStartButton = ({
     alreadyInCall,
     currentCallChannelName,
     dismissChannelInfo,
-    isLimitRestricted,
+    limitRestrictedInfo,
 }: Props) => {
     const intl = useIntl();
+    const isLimitRestricted = limitRestrictedInfo.limitRestricted;
 
     const toggleJoinLeave = useCallback(() => {
         if (alreadyInCall) {
             leaveCall();
         } else if (isLimitRestricted) {
-            showLimitRestrictedAlert(intl);
+            showLimitRestrictedAlert(limitRestrictedInfo.maxParticipants, intl);
         } else {
             leaveAndJoinWithAlert(intl, serverUrl, channelId, currentCallChannelName, displayName, confirmToJoin, !isACallInCurrentChannel);
         }

@@ -17,6 +17,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername, getUserTimezone} from '@utils/user';
 
+import type {LimitRestrictedInfo} from '@calls/observers';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -29,7 +30,7 @@ type Props = {
     currentCallChannelId?: string;
     leaveChannelName?: string;
     joinChannelName?: string;
-    isLimitRestricted?: boolean;
+    limitRestrictedInfo?: LimitRestrictedInfo;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -107,7 +108,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 export const CallsCustomMessage = ({
     post, currentUser, author, isMilitaryTime, teammateNameDisplay,
-    currentCallChannelId, leaveChannelName, joinChannelName, isLimitRestricted,
+    currentCallChannelId, leaveChannelName, joinChannelName, limitRestrictedInfo,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -117,6 +118,7 @@ export const CallsCustomMessage = ({
 
     const confirmToJoin = Boolean(currentCallChannelId && currentCallChannelId !== post.channelId);
     const alreadyInTheCall = Boolean(currentCallChannelId && currentCallChannelId === post.channelId);
+    const isLimitRestricted = Boolean(limitRestrictedInfo?.limitRestricted);
 
     const joinHandler = () => {
         if (alreadyInTheCall) {
@@ -124,7 +126,7 @@ export const CallsCustomMessage = ({
         }
 
         if (isLimitRestricted) {
-            showLimitRestrictedAlert(intl);
+            showLimitRestrictedAlert(limitRestrictedInfo!.maxParticipants, intl);
             return;
         }
 

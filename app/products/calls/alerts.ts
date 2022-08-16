@@ -5,18 +5,18 @@ import {Alert} from 'react-native';
 
 import type {IntlShape} from 'react-intl';
 
-export const showLimitRestrictedAlert = (intl: IntlShape) => {
+export const showLimitRestrictedAlert = (maxParticipants: number, intl: IntlShape) => {
     const title = intl.formatMessage({
         id: 'mobile.calls_participant_limit_title',
         defaultMessage: 'Participant limit reached',
     });
     const message = intl.formatMessage({
         id: 'mobile.calls_limit_msg',
-        defaultMessage: 'Please contact your System Admin to increase the maximum number of participants per call.',
-    });
+        defaultMessage: 'Maximum number of participants per call is currently limited to {maxParticipants}. Please contact your system admin to increase the limit.',
+    }, {maxParticipants});
     const ok = intl.formatMessage({
         id: 'mobile.calls_ok',
-        defaultMessage: 'OK',
+        defaultMessage: 'Okay',
     });
 
     Alert.alert(

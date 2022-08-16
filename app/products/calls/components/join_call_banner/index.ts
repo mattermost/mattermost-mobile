@@ -61,7 +61,7 @@ const enhanced = withObservables(['serverUrl', 'channelId'], ({
         inACall,
         currentCallChannelName,
         channelCallStartTime,
-        isLimitRestricted: observeIsCallLimitRestricted(serverUrl, channelId),
+        limitRestrictedInfo: observeIsCallLimitRestricted(serverUrl, channelId),
     };
 });
 

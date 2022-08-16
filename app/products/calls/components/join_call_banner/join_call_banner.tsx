@@ -16,6 +16,7 @@ import {JOIN_CALL_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import type {LimitRestrictedInfo} from '@calls/observers';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
@@ -26,7 +27,7 @@ type Props = {
     participants: UserModel[];
     currentCallChannelName: string;
     channelCallStartTime: number;
-    isLimitRestricted: boolean;
+    limitRestrictedInfo: LimitRestrictedInfo;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -90,15 +91,16 @@ const JoinCallBanner = ({
     inACall,
     currentCallChannelName,
     channelCallStartTime,
-    isLimitRestricted,
+    limitRestrictedInfo,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
+    const isLimitRestricted = limitRestrictedInfo.limitRestricted;
 
     const joinHandler = async () => {
         if (isLimitRestricted) {
-            showLimitRestrictedAlert(intl);
+            showLimitRestrictedAlert(limitRestrictedInfo.maxParticipants, intl);
             return;
         }
         leaveAndJoinWithAlert(intl, serverUrl, channelId, currentCallChannelName, displayName, inACall, false);
