@@ -5,7 +5,7 @@ import {Database} from '@nozbe/watermelondb';
 import {distinctUntilChanged, switchMap, combineLatest, Observable, of as of$} from 'rxjs';
 
 import {observeCallsConfig, observeCallsState} from '@calls/state';
-import {General} from '@constants';
+import {General, License} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
 import {observeLicense} from '@queries/servers/system';
 
@@ -23,7 +23,7 @@ export const observeIsCallsFeatureRestricted = (database: Database, serverUrl: s
         distinctUntilChanged(),
     );
     return combineLatest([isCloud, skuShortName, isDMChannel]).pipe(
-        switchMap(([cloud, sku, dm]) => of$(cloud && sku === General.LICENSE_SKUS.Starter && !dm)), // are you restricted from making a call because of your subscription?
+        switchMap(([cloud, sku, dm]) => of$(cloud && sku === License.SKU_SHORT_NAME.Starter && !dm)), // are you restricted from making a call because of your subscription?
         distinctUntilChanged(),
     ) as Observable<boolean>;
 };

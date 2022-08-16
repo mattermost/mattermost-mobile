@@ -3,6 +3,8 @@
 
 import assert from 'assert';
 
+import {License} from '@constants';
+
 import {getICEServersConfigs} from './utils';
 
 describe('getICEServersConfigs', () => {
@@ -13,7 +15,7 @@ describe('getICEServersConfigs', () => {
             DefaultEnabled: true,
             NeedsTURNCredentials: false,
             last_retrieved_at: 0,
-            sku_short_name: 'professional',
+            sku_short_name: License.SKU_SHORT_NAME.Professional,
             MaxCallParticipants: 8,
         };
         const iceConfigs = getICEServersConfigs(config);
@@ -39,7 +41,7 @@ describe('getICEServersConfigs', () => {
             DefaultEnabled: true,
             NeedsTURNCredentials: false,
             last_retrieved_at: 0,
-            sku_short_name: 'professional',
+            sku_short_name: License.SKU_SHORT_NAME.Professional,
             MaxCallParticipants: 8,
         };
         const iceConfigs = getICEServersConfigs(config);
@@ -69,7 +71,7 @@ describe('getICEServersConfigs', () => {
             DefaultEnabled: true,
             NeedsTURNCredentials: false,
             last_retrieved_at: 0,
-            sku_short_name: 'professional',
+            sku_short_name: License.SKU_SHORT_NAME.Professional,
             MaxCallParticipants: 8,
         };
         const iceConfigs = getICEServersConfigs(config);
