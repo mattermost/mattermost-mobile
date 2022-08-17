@@ -64,12 +64,12 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const intl = useIntl();
-    const notifyProps = useMemo(() => getNotificationProps(currentUser), []); // dependency array should remain empty
+    const notifyProps = useMemo(() => getNotificationProps(currentUser), [/* dependency array should remain empty */]);
 
-    const initialAutoResponderActive = useMemo(() => Boolean(currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active === 'true'), []); // dependency array should remain empty
+    const initialAutoResponderActive = useMemo(() => Boolean(currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active === 'true'), [/* dependency array should remain empty */]);
     const [autoResponderActive, setAutoResponderActive] = useState<boolean>(initialAutoResponderActive);
 
-    const initialOOOMsg = useMemo(() => notifyProps.auto_responder_message || intl.formatMessage(OOO), []); // dependency array should remain empty
+    const initialOOOMsg = useMemo(() => notifyProps.auto_responder_message || intl.formatMessage(OOO), [/* dependency array should remain empty */]);
     const [autoResponderMessage, setAutoResponderMessage] = useState<string>(initialOOOMsg);
 
     const styles = getStyleSheet(theme);

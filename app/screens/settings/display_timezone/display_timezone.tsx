@@ -31,7 +31,7 @@ type DisplayTimezoneProps = {
 const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const initialTimezone = useMemo(() => getUserTimezoneProps(currentUser), []); // deps array should remain empty
+    const initialTimezone = useMemo(() => getUserTimezoneProps(currentUser), [/* dependency array should remain empty */]);
     const [userTimezone, setUserTimezone] = useState(initialTimezone);
     const theme = useTheme();
 

@@ -8,6 +8,7 @@ import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {goToScreen} from '@screens/navigation';
+import {gotoSettingsScreen} from '@screens/settings/config';
 import {preventDoubleTap} from '@utils/tap';
 import {getUserTimezoneProps} from '@utils/user';
 
@@ -52,21 +53,19 @@ const Display = ({currentUser, hasMilitaryTimeFormat, isThemeSwitchingEnabled, i
     const goToThemeSettings = preventDoubleTap(() => {
         const screen = Screens.SETTINGS_DISPLAY_THEME;
         const title = intl.formatMessage({id: 'display_settings.theme', defaultMessage: 'Theme'});
-
         goToScreen(screen, title);
     });
 
     const goToClockDisplaySettings = preventDoubleTap(() => {
         const screen = Screens.SETTINGS_DISPLAY_CLOCK;
         const title = intl.formatMessage({id: 'display_settings.clockDisplay', defaultMessage: 'Clock Display'});
-        goToScreen(screen, title);
+        gotoSettingsScreen(screen, title);
     });
 
     const goToTimezoneSettings = preventDoubleTap(() => {
         const screen = Screens.SETTINGS_DISPLAY_TIMEZONE;
         const title = intl.formatMessage({id: 'display_settings.timezone', defaultMessage: 'Timezone'});
-
-        goToScreen(screen, title);
+        gotoSettingsScreen(screen, title);
     });
 
     return (
