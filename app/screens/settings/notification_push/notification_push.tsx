@@ -50,7 +50,6 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
 
     const saveNotificationSettings = useCallback(() => {
         const canSave = canSaveSettings();
-        console.log('>>>  canSave', canSave);
         if (canSave) {
             const notify_props = {...notifyProps, push: pushSend, push_status: pushStatus, push_threads: pushThread};
             updateMe(serverUrl, {notify_props} as unknown as UserNotifyProps);
