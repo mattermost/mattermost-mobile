@@ -188,29 +188,14 @@ const SearchScreen = ({teamId}: Props) => {
         />
     ), [searchValue, searchTeamId, handleRecentSearch, handleTextChange]);
 
-    const resultsComponent = useMemo(() => (
-        <Results
-            selectedTab={selectedTab}
-            searchValue={lastSearchedValue}
-            posts={posts}
-            fileInfos={fileInfos}
-            scrollPaddingTop={scrollPaddingTop}
-            fileChannelIds={fileChannelIds}
-        />
-    ), [selectedTab, lastSearchedValue, fileInfos, scrollPaddingTop, fileChannelIds, posts]);
-
     const renderItem = useCallback(() => {
         if (loading) {
             return loadingComponent;
         }
-        if (!showResults) {
-            return initialComponent;
-        }
-        return resultsComponent;
+        return initialComponent;
     }, [
         loading && loadingComponent,
-        !loading && !showResults && initialComponent,
-        !loading && showResults && resultsComponent,
+        initialComponent,
     ]);
 
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
@@ -306,21 +291,33 @@ const SearchScreen = ({teamId}: Props) => {
                         <RoundedHeaderContext/>
                         {header}
                     </Animated.View>
-                    <AnimatedFlatList
-                        data={dummyData}
-                        contentContainerStyle={paddingTop}
-                        keyboardShouldPersistTaps='handled'
-                        keyboardDismissMode={'interactive'}
-                        nestedScrollEnabled={true}
-                        indicatorStyle='black'
-                        onScroll={onScroll}
-                        scrollEventThrottle={16}
-                        removeClippedSubviews={false}
-                        scrollToOverflowEnabled={true}
-                        overScrollMode='always'
-                        ref={scrollRef}
-                        renderItem={renderItem}
-                    />
+                    {!showResults &&
+                        <AnimatedFlatList
+                            data={dummyData}
+                            contentContainerStyle={paddingTop}
+                            keyboardShouldPersistTaps='handled'
+                            keyboardDismissMode={'interactive'}
+                            nestedScrollEnabled={true}
+                            indicatorStyle='black'
+                            onScroll={onScroll}
+                            scrollEventThrottle={16}
+                            removeClippedSubviews={false}
+                            scrollToOverflowEnabled={true}
+                            overScrollMode='always'
+                            ref={scrollRef}
+                            renderItem={renderItem}
+                        />
+                    }
+                    {showResults &&
+                        <Results
+                            selectedTab={selectedTab}
+                            searchValue={lastSearchedValue}
+                            posts={posts}
+                            fileInfos={fileInfos}
+                            scrollPaddingTop={scrollPaddingTop}
+                            fileChannelIds={fileChannelIds}
+                        />
+                    }
                 </Animated.View>
             </SafeAreaView>
         </FreezeScreen>

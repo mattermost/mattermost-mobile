@@ -3,7 +3,6 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {StyleSheet, FlatList, ListRenderItemInfo, StyleProp, View, ViewStyle} from 'react-native';
-import Animated from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import File from '@components/files/file';
@@ -32,8 +31,6 @@ const styles = StyleSheet.create({
         marginHorizontal: 20,
     },
 });
-
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 type Props = {
     canDownloadFiles: boolean;
@@ -193,7 +190,7 @@ const FileResults = ({
     }, [searchValue]);
 
     return (
-        <AnimatedFlatList
+        <FlatList
             ListEmptyComponent={noResults}
             contentContainerStyle={paddingTop}
             data={orderedFilesForGallery}

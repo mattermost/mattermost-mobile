@@ -3,7 +3,6 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {FlatList, ListRenderItemInfo} from 'react-native';
-import Animated from 'react-native-reanimated';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
 import DateSeparator from '@components/post_list/date_separator';
@@ -13,8 +12,6 @@ import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_li
 import {TabTypes} from '@utils/search';
 
 import type PostModel from '@typings/database/models/servers/post';
-
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 type Props = {
     currentTimezone: string;
@@ -38,7 +35,7 @@ const PostResults = ({
         return {top: posts.length ? 4 : 8};
     }, [posts]);
 
-    const renderItem = useCallback(({item}: ListRenderItemInfo<string| Post>) => {
+    const renderItem = useCallback(({item}: ListRenderItemInfo<string|PostModel>) => {
         if (typeof item === 'string') {
             if (isDateLine(item)) {
                 return (
@@ -73,7 +70,7 @@ const PostResults = ({
     }, [searchValue]);
 
     return (
-        <AnimatedFlatList
+        <FlatList
             ListEmptyComponent={noResults}
             contentContainerStyle={paddingTop}
             data={orderedPosts}

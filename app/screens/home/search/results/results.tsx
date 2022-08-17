@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {ScaledSize, StyleSheet, useWindowDimensions} from 'react-native';
+import {ScaledSize, StyleSheet, useWindowDimensions, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import {TabTypes, TabType} from '@utils/search';
@@ -90,7 +90,7 @@ const Results = ({
     ]);
 
     const duration = 150;
-    const transformP = useAnimatedStyle(() => {
+    const transform = useAnimatedStyle(() => {
         const translateX = selectedTab === TabTypes.MESSAGES ? 0 : -dimensions.width;
         return {
             transform: [
@@ -100,19 +100,13 @@ const Results = ({
     }, [selectedTab, dimensions.width]);
 
     return (
-        <Animated.View
-            style={[styles.container, transformP]}
-        >
-            <Animated.View
-                style={styles.result}
-            >
+        <Animated.View style={[styles.container, transform]}>
+            <View style={styles.result} >
                 {pResults}
-            </Animated.View>
-            <Animated.View
-                style={styles.result}
-            >
+            </View>
+            <View style={styles.result} >
                 {fResults}
-            </Animated.View>
+            </View>
         </Animated.View>
     );
 };
