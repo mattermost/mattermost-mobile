@@ -54,7 +54,7 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, 
         }
     }
 
-    switchToThread(serverUrl, rootId, isFromNotification);
+    await switchToThread(serverUrl, rootId, isFromNotification);
 
     return {};
 };
