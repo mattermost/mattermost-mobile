@@ -267,9 +267,14 @@ export const isImage = (file?: FileInfo | FileModel) => {
         return false;
     }
 
-    const mimeType = 'mime_type' in file ? file.mime_type : file.mimeType;
+    let mimeType = 'mime_type' in file ? file.mime_type : file.mimeType;
+    if (!mimeType && file.extension) {
+        mimeType = lookupMimeType(file.extension);
+    } else if (!mimeType && file.name) {
+        mimeType = lookupMimeType(file.name);
+    }
 
-    return (isGif(file) || mimeType.startsWith('image/'));
+    return (isGif(file) || mimeType?.startsWith('image/'));
 };
 
 export const isDocument = (file?: FileInfo | FileModel) => {
