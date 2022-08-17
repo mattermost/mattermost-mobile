@@ -12,8 +12,6 @@ import java.io.IOException
 import java.util.concurrent.Executors
 import kotlin.coroutines.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 
 class PushNotificationDataHelper(private val context: Context) {
     private var scope = Executors.newSingleThreadExecutor()
@@ -28,79 +26,77 @@ class PushNotificationDataHelper(private val context: Context) {
 
 class PushNotificationDataRunnable {
     companion object {
-        private val mutex = Mutex()
         private val specialMentions = listOf("all", "here", "channel")
 
+        @Synchronized
         suspend fun start(context: Context, initialData: Bundle) {
-            mutex.withLock {
-                try {
-                    val serverUrl: String = initialData.getString("server_url") ?: return
-                    val channelId = initialData.getString("channel_id")
-                    val rootId = initialData.getString("root_id")
-                    val isCRTEnabled = initialData.getString("is_crt_enabled") == "true"
-                    val db = DatabaseHelper.instance!!.getDatabaseForServer(context, serverUrl)
-                    Log.i("ReactNative", "Start fetching notification data in server="+serverUrl+" for channel="+channelId)
+            try {
+                val serverUrl: String = initialData.getString("server_url") ?: return
+                val channelId = initialData.getString("channel_id")
+                val rootId = initialData.getString("root_id")
+                val isCRTEnabled = initialData.getString("is_crt_enabled") == "true"
+                val db = DatabaseHelper.instance!!.getDatabaseForServer(context, serverUrl)
+                Log.i("ReactNative", "Start fetching notification data in server="+serverUrl+" for channel="+channelId)
 
-                    if (db != null) {
-                        var postData: ReadableMap?
-                        var posts: ReadableMap? = null
-                        var userIdsToLoad: ReadableArray? = null
-                        var usernamesToLoad: ReadableArray? = null
+                if (db != null) {
+                    var postData: ReadableMap?
+                    var posts: ReadableMap? = null
+                    var userIdsToLoad: ReadableArray? = null
+                    var usernamesToLoad: ReadableArray? = null
 
-                        var threads: ReadableArray? = null
-                        var usersFromThreads: ReadableArray? = null
-                        val receivingThreads = isCRTEnabled && !rootId.isNullOrEmpty()
+                    var threads: ReadableArray? = null
+                    var usersFromThreads: ReadableArray? = null
+                    val receivingThreads = isCRTEnabled && !rootId.isNullOrEmpty()
 
-                        coroutineScope {
-                            if (channelId != null) {
-                                postData = fetchPosts(db, serverUrl, channelId, isCRTEnabled, rootId)
+                    coroutineScope {
+                        if (channelId != null) {
+                            postData = fetchPosts(db, serverUrl, channelId, isCRTEnabled, rootId)
 
-                                posts = postData?.getMap("posts")
-                                userIdsToLoad = postData?.getArray("userIdsToLoad")
-                                usernamesToLoad = postData?.getArray("usernamesToLoad")
-                                threads = postData?.getArray("threads")
-                                usersFromThreads = postData?.getArray("usersFromThreads")
-
-                                if (userIdsToLoad != null && userIdsToLoad!!.size() > 0) {
-                                    val users = fetchUsersById(serverUrl, userIdsToLoad!!)
-                                    userIdsToLoad = users?.getArray("data")
-                                }
-
-                                if (usernamesToLoad != null && usernamesToLoad!!.size() > 0) {
-                                    val users = fetchUsersByUsernames(serverUrl, usernamesToLoad!!)
-                                    usernamesToLoad = users?.getArray("data")
-                                }
-                            }
-                        }
-
-                        db.transaction {
-                            if (posts != null && channelId != null) {
-                                DatabaseHelper.instance!!.handlePosts(db, posts!!.getMap("data"), channelId, receivingThreads)
-                            }
-
-                            if (threads != null) {
-                                DatabaseHelper.instance!!.handleThreads(db, threads!!)
-                            }
+                            posts = postData?.getMap("posts")
+                            userIdsToLoad = postData?.getArray("userIdsToLoad")
+                            usernamesToLoad = postData?.getArray("usernamesToLoad")
+                            threads = postData?.getArray("threads")
+                            usersFromThreads = postData?.getArray("usersFromThreads")
 
                             if (userIdsToLoad != null && userIdsToLoad!!.size() > 0) {
-                                DatabaseHelper.instance!!.handleUsers(db, userIdsToLoad!!)
+                                val users = fetchUsersById(serverUrl, userIdsToLoad!!)
+                                userIdsToLoad = users?.getArray("data")
                             }
 
                             if (usernamesToLoad != null && usernamesToLoad!!.size() > 0) {
-                                DatabaseHelper.instance!!.handleUsers(db, usernamesToLoad!!)
-                            }
-
-                            if (usersFromThreads != null) {
-                                DatabaseHelper.instance!!.handleUsers(db, usersFromThreads!!)
+                                val users = fetchUsersByUsernames(serverUrl, usernamesToLoad!!)
+                                usernamesToLoad = users?.getArray("data")
                             }
                         }
-
-                        db.close()
-                        Log.i("ReactNative", "Done processing push notification="+serverUrl+" for channel="+channelId)
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
+
+                    db.transaction {
+                        if (posts != null && channelId != null) {
+                            DatabaseHelper.instance!!.handlePosts(db, posts!!.getMap("data"), channelId, receivingThreads)
+                        }
+
+                        if (threads != null) {
+                            DatabaseHelper.instance!!.handleThreads(db, threads!!)
+                        }
+
+                        if (userIdsToLoad != null && userIdsToLoad!!.size() > 0) {
+                            DatabaseHelper.instance!!.handleUsers(db, userIdsToLoad!!)
+                        }
+
+                        if (usernamesToLoad != null && usernamesToLoad!!.size() > 0) {
+                            DatabaseHelper.instance!!.handleUsers(db, usernamesToLoad!!)
+                        }
+
+                        if (usersFromThreads != null) {
+                            DatabaseHelper.instance!!.handleUsers(db, usersFromThreads!!)
+                        }
+                    }
+
+                    db.close()
+                    Log.i("ReactNative", "Done processing push notification="+serverUrl+" for channel="+channelId)
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
 
