@@ -352,6 +352,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                             bounces={false}
                             keyboardDismissMode='none'
                             keyboardShouldPersistTaps='always'
+                            testID='custom_status.scroll_view'
                         >
                             <View style={style.scrollView}>
                                 <View style={style.block}>

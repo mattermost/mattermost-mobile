@@ -13,35 +13,38 @@ class EditProfileScreen {
         closeButton: 'close.edit_profile.button',
         saveButton: 'edit_profile.save.button',
         scrollView: 'edit_profile.scroll_view',
-        systemAdminTag: 'edit_profile.system_admin.tag',
-        teamAdminTag: 'edit_profile.team_admin.tag',
-        channelAdminTag: 'edit_profile.channel_admin.tag',
-        userDisplayName: 'edit_profile.display_name',
-        username: 'edit_profile.username',
-        sendMessageProfileOption: 'edit_profile_options.send_message.option',
-        mentionProfileOption: 'edit_profile_options.mention.option',
-        userNicknameTitle: 'edit_profile.nickname.title',
-        userNicknameDescription: 'edit_profile.nickname.description',
-        userPositionTitle: 'edit_profile.position.title',
-        userPositionDescription: 'edit_profile.position.description',
-        userLocalTimeTitle: 'edit_profile.local_time.title',
-        userLocalTimeDescription: 'edit_profile.local_time.description',
+        firstNameInput: 'edit_profile_form.first_name.input',
+        firstNameInputDisabled: 'edit_profile_form.first_name.input.disabled',
+        lastNameInput: 'edit_profile_form.last_name.input',
+        lastNameInputDisabled: 'edit_profile_form.last_name.input.disabled',
+        usernameInput: 'edit_profile_form.username.input',
+        usernameInputDisabled: 'edit_profile_form.username.input.disabled',
+        emailInput: 'edit_profile_form.email.input',
+        emailInputDisabled: 'edit_profile_form.email.input.disabled',
+        emailInputDescription: 'edit_profile_form.email.input.description',
+        nicknameInput: 'edit_profile_form.nickname.input',
+        nicknameInputDisabled: 'edit_profile_form.nickname.input.disabled',
+        positionInput: 'edit_profile_form.position.input',
+        positionInputDisabled: 'edit_profile_form.position.input.disabled',
     };
 
     editProfileScreen = element(by.id(this.testID.editProfileScreen));
     closeButton = element(by.id(this.testID.closeButton));
     saveButton = element(by.id(this.testID.saveButton));
     scrollView = element(by.id(this.testID.scrollView));
-    userDisplayName = element(by.id(this.testID.userDisplayName));
-    username = element(by.id(this.testID.username));
-    sendMessageProfileOption = element(by.id(this.testID.sendMessageProfileOption));
-    mentionProfileOption = element(by.id(this.testID.mentionProfileOption));
-    userNicknameTitle = element(by.id(this.testID.userNicknameTitle));
-    userNicknameDescription = element(by.id(this.testID.userNicknameDescription));
-    userPositionTitle = element(by.id(this.testID.userPositionTitle));
-    userPositionDescription = element(by.id(this.testID.userPositionDescription));
-    userLocalTimeTitle = element(by.id(this.testID.userLocalTimeTitle));
-    userLocalTimeDescription = element(by.id(this.testID.userLocalTimeDescription));
+    firstNameInput = element(by.id(this.testID.firstNameInput));
+    firstNameInputDisabled = element(by.id(this.testID.firstNameInputDisabled));
+    lastNameInput = element(by.id(this.testID.lastNameInput));
+    lastNameInputDisabled = element(by.id(this.testID.lastNameInputDisabled));
+    usernameInput = element(by.id(this.testID.usernameInput));
+    usernameInputDisabled = element(by.id(this.testID.usernameInputDisabled));
+    emailInput = element(by.id(this.testID.emailInput));
+    emailInputDisabled = element(by.id(this.testID.emailInputDisabled));
+    emailInputDescription = element(by.id(this.testID.emailInputDescription));
+    nicknameInput = element(by.id(this.testID.nicknameInput));
+    nicknameInputDisabled = element(by.id(this.testID.nicknameInputDisabled));
+    positionInput = element(by.id(this.testID.positionInput));
+    positionInputDisabled = element(by.id(this.testID.positionInputDisabled));
 
     getEditProfilePicture = (userId: string) => {
         return element(ProfilePicture.getProfilePictureItemMatcher(this.testID.editProfilePrefix, userId));

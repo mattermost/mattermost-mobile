@@ -10,7 +10,7 @@ class SettingsScreen {
         settingsScreen: 'settings.screen',
         closeButton: 'close.settings.button',
         scrollView: 'settings.scroll_view',
-        notificationOption: 'settings.notification.option',
+        notificationsOption: 'settings.notifications.option',
         displayOption: 'settings.display.option',
         advancedSettingsOption: 'settings.advanced_settings.option',
         aboutOption: 'settings.about.option',
@@ -20,7 +20,7 @@ class SettingsScreen {
     settingsScreen = element(by.id(this.testID.settingsScreen));
     closeButton = element(by.id(this.testID.closeButton));
     scrollView = element(by.id(this.testID.scrollView));
-    notificationOption = element(by.id(this.testID.notificationOption));
+    notificationsOption = element(by.id(this.testID.notificationsOption));
     displayOption = element(by.id(this.testID.displayOption));
     advancedSettingsOption = element(by.id(this.testID.advancedSettingsOption));
     aboutOption = element(by.id(this.testID.aboutOption));

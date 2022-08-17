@@ -125,7 +125,7 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
             <SettingItem
                 onPress={goToNotifications}
                 optionName='notification'
-                testID='settings.notification.option'
+                testID='settings.notifications.option'
             />
             <SettingItem
                 onPress={goToDisplaySettings}
