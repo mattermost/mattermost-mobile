@@ -12,7 +12,7 @@ export const showLimitRestrictedAlert = (maxParticipants: number, intl: IntlShap
     });
     const message = intl.formatMessage({
         id: 'mobile.calls_limit_msg',
-        defaultMessage: 'Maximum number of participants per call is currently limited to {maxParticipants}. Please contact your system admin to increase the limit.',
+        defaultMessage: 'The maximum number of participants per call is {maxParticipants}. Contact your System Admin to increase the limit.',
     }, {maxParticipants});
     const ok = intl.formatMessage({
         id: 'mobile.calls_ok',
