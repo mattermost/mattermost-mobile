@@ -199,6 +199,7 @@ const FileResults = ({
             data={orderedFilesForGallery}
             indicatorStyle='black'
             initialNumToRender={10}
+            listKey={'files'}
             maxToRenderPerBatch={5}
             nestedScrollEnabled={true}
             refreshing={false}
