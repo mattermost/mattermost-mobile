@@ -47,7 +47,7 @@ describe('Account - Account Menu', () => {
         await HomeScreen.logout();
     });
 
-    it('should match elements on account screen', async () => {
+    it('MM-T4988_1 - should match elements on account screen', async () => {
         // * Verify basic elements on account screen
         const {userInfoProfilePicture, userInfoUserDisplayName, userInfoUsername} = AccountScreen.getUserInfo(testUser.id);
         await expect(userInfoProfilePicture).toBeVisible();
@@ -60,7 +60,7 @@ describe('Account - Account Menu', () => {
         await expect(AccountScreen.logoutOption).toBeVisible();
     });
 
-    it('should be able to set user presence', async () => {
+    it('MM-T4988_2 - should be able to set user presence', async () => {
         // # Tap on user presence option and tap on offline user status option
         await AccountScreen.userPresenceOption.tap();
         await AccountScreen.offlineUserStatusOption.tap();
@@ -98,7 +98,7 @@ describe('Account - Account Menu', () => {
         await expect(AccountScreen.getUserPresenceLabel('online')).toHaveText('Online');
     });
 
-    it('should be able to go to custom status screen', async () => {
+    it('MM-T4988_3 - should be able to go to custom status screen', async () => {
         // # Tap on set status option
         await AccountScreen.setStatusOption.tap();
 
@@ -109,7 +109,7 @@ describe('Account - Account Menu', () => {
         await CustomStatusScreen.close();
     });
 
-    it('should be able to go to edit profile screen', async () => {
+    it('MM-T4988_4 - should be able to go to edit profile screen', async () => {
         // # Tap on your profile option
         await AccountScreen.yourProfileOption.tap();
 
@@ -120,7 +120,7 @@ describe('Account - Account Menu', () => {
         await EditProfileScreen.close();
     });
 
-    it('should be able to go to settings screen', async () => {
+    it('MM-T4988_5 - should be able to go to settings screen', async () => {
         // # Tap on settings option
         await AccountScreen.settingsOption.tap();
 
