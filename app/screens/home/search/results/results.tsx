@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React from 'react';
 import {ScaledSize, StyleSheet, useWindowDimensions, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
@@ -12,6 +12,8 @@ import PostResults from './post_results';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
+
+const duration = 250;
 
 const getStyles = (dimensions: ScaledSize) => {
     return StyleSheet.create({
@@ -55,41 +57,6 @@ const Results = ({
     const dimensions = useWindowDimensions();
     const styles = getStyles(dimensions);
 
-    const fResults = useMemo(() => (
-        <FileResults
-            canDownloadFiles={canDownloadFiles}
-            fileChannels={fileChannels}
-            fileInfos={fileInfos}
-            publicLinkEnabled={publicLinkEnabled}
-            scrollPaddingTop={scrollPaddingTop}
-            searchValue={searchValue}
-        />
-    ), [
-        canDownloadFiles,
-        fileChannels,
-        fileInfos,
-        publicLinkEnabled,
-        scrollPaddingTop,
-        searchValue,
-    ]);
-
-    const pResults = useMemo(() => (
-        <PostResults
-            currentTimezone={currentTimezone}
-            isTimezoneEnabled={isTimezoneEnabled}
-            posts={posts}
-            scrollPaddingTop={scrollPaddingTop}
-            searchValue={searchValue}
-        />
-    ), [
-        currentTimezone,
-        isTimezoneEnabled,
-        posts,
-        scrollPaddingTop,
-        searchValue,
-    ]);
-
-    const duration = 150;
     const transform = useAnimatedStyle(() => {
         const translateX = selectedTab === TabTypes.MESSAGES ? 0 : -dimensions.width;
         return {
@@ -102,10 +69,23 @@ const Results = ({
     return (
         <Animated.View style={[styles.container, transform]}>
             <View style={styles.result} >
-                {pResults}
+                <PostResults
+                    currentTimezone={currentTimezone}
+                    isTimezoneEnabled={isTimezoneEnabled}
+                    posts={posts}
+                    scrollPaddingTop={scrollPaddingTop}
+                    searchValue={searchValue}
+                />
             </View>
             <View style={styles.result} >
-                {fResults}
+                <FileResults
+                    canDownloadFiles={canDownloadFiles}
+                    fileChannels={fileChannels}
+                    fileInfos={fileInfos}
+                    publicLinkEnabled={publicLinkEnabled}
+                    scrollPaddingTop={scrollPaddingTop}
+                    searchValue={searchValue}
+                />
             </View>
         </Animated.View>
     );

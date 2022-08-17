@@ -308,7 +308,7 @@ const SearchScreen = ({teamId}: Props) => {
                             renderItem={renderItem}
                         />
                     }
-                    {showResults &&
+                    {showResults && !loading &&
                         <Results
                             selectedTab={selectedTab}
                             searchValue={lastSearchedValue}
