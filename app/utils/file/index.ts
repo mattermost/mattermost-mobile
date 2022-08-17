@@ -174,7 +174,7 @@ export async function deleteLegacyFileCache(serverUrl: string) {
     deleteFileCacheByDir(serverDir);
 }
 
-async function deleteFileCacheByDir(dir: string) {
+export async function deleteFileCacheByDir(dir: string) {
     const cacheDir = `${FileSystem.CachesDirectoryPath}/${dir}`;
     if (cacheDir) {
         const cacheDirInfo = await FileSystem.exists(cacheDir);
