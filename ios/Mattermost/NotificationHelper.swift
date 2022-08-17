@@ -15,16 +15,22 @@ import UIKit
     let channelId = userInfo["channel_id"] as? String
     let rootId = userInfo["root_id"] as? String ?? ""
     let crtEnabled = userInfo["is_crt_enabled"] as? Bool ?? false
+    let serverId = userInfo["server_id"] as? String ?? ""
     let skipThreadNotification = !rootId.isEmpty && crtEnabled
+
+    guard let serverUrl = try? Gekidou.Database.default.getServerUrlForServer(serverId)
+    else { return }
     
     if !skipThreadNotification && channelId != nil {
-      removeChannelNotifications(serverUrl: "", channelId: channelId!)
+      removeChannelNotifications(serverUrl: serverUrl, channelId: channelId!)
+      try? Gekidou.Database.default.resetMyChannelMentions(serverUrl, channelId!)
     } else if !rootId.isEmpty {
-      removeThreadNotifications(serverUrl: "", threadId: rootId)
+      removeThreadNotifications(serverUrl: serverUrl, threadId: rootId)
+      try? Gekidou.Database.default.resetThreadMentions(serverUrl, rootId)
     }
     
-    // Update the app icon badge here
-    // UIApplication.shared.applicationIconBadgeNumber
+    let mentions = Gekidou.Database.default.getTotalMentions()
+    UIApplication.shared.applicationIconBadgeNumber = mentions
   }
   
   @objc func removeChannelNotifications(serverUrl: String, channelId: String) {
@@ -66,9 +72,6 @@ import UIKit
       }
       
       self.notificationCenter.removeDeliveredNotifications(withIdentifiers: notificationIds)
-      
-      // Update the app icon badge here
-      // UIApplication.shared.applicationIconBadgeNumber
     })
   }
   
@@ -88,9 +91,6 @@ import UIKit
       }
       
       self.notificationCenter.removeDeliveredNotifications(withIdentifiers: notificationIds)
-      
-      // Update the app icon badge here
-      // UIApplication.shared.applicationIconBadgeNumber
     })
   }
 }
