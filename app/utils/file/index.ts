@@ -277,8 +277,6 @@ export const isImage = (file?: FileInfo | FileModel) => {
     }
 
     return Boolean(mimeType?.startsWith('image/'));
-
-    return (isGif(file) || mimeType?.startsWith('image/'));
 };
 
 export const isDocument = (file?: FileInfo | FileModel) => {
