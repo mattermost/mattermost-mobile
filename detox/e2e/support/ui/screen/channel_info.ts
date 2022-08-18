@@ -14,7 +14,7 @@ class ChannelInfoScreen {
         directMessageTitlePrefix: 'channel_info.title.direct_message.',
         channelInfoScreen: 'channel_info.screen',
         closeButton: 'close.channel_info.button',
-        scrollView: 'channel_info.scrollview',
+        scrollView: 'channel_info.scroll_view',
         groupMessageTitleDisplayName: 'channel_info.title.group_message.display_name',
         publicPrivateTitleDisplayName: 'channel_info.title.public_private.display_name',
         publicPrivateTitlePurpose: 'channel_info.title.public_private.purpose',
@@ -67,7 +67,7 @@ class ChannelInfoScreen {
     archiveChannelOption = element(by.id(this.testID.archiveChannelOption));
     unarchiveChannelOption = element(by.id(this.testID.unarchiveChannelOption));
 
-    getDirectMessageTitle = async (userId: string) => {
+    getDirectMessageTitle = (userId: string) => {
         const directMessageTitleTestId = `${this.testID.directMessageTitlePrefix}${userId}`;
         const directMessageTitleProfilePictureMatcher = ProfilePicture.getProfilePictureItemMatcher(this.testID.directMessageTitlePrefix, userId);
         const directMessageTitleUserDisplayNameMatcher = by.id(`${directMessageTitleTestId}.display_name`);
