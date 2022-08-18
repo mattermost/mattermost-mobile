@@ -78,8 +78,6 @@ const SelectTimezones = ({componentId, onBack, currentTimezone}: SelectTimezones
     const [initialScrollIndex, setInitialScrollIndex] = useState<number|undefined>();
     const [searchRegion, setSearchRegion] = useState<string|undefined>(undefined);
 
-    // const [manualTimezone, setManualTimezone] = useState(currentTimezone);
-
     const filteredTimezones = useCallback(() => {
         if (!searchRegion) {
             return timezones;

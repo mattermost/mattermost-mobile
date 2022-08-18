@@ -38,8 +38,7 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
     const close = () => popTopScreen(componentId);
 
     const saveClockDisplayPreference = useCallback(() => {
-        const canSave = hasMilitaryTimeFormat !== isMilitaryTimeFormat;
-        if (canSave) {
+        if (hasMilitaryTimeFormat !== isMilitaryTimeFormat) {
             const timePreference: PreferenceType = {
                 category: Preferences.CATEGORY_DISPLAY_SETTINGS,
                 name: 'use_military_time',
