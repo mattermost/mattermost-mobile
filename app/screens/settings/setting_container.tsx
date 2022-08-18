@@ -24,8 +24,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 type SettingContainerProps = {
    children: React.ReactNode;
+   testID?: string;
 }
-const SettingContainer = ({children}: SettingContainerProps) => {
+const SettingContainer = ({children, testID}: SettingContainerProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -33,10 +34,12 @@ const SettingContainer = ({children}: SettingContainerProps) => {
         <SafeAreaView
             edges={edges}
             style={styles.container}
+            testID={`${testID}.screen`}
         >
             <ScrollView
                 contentContainerStyle={styles.contentContainerStyle}
                 alwaysBounceVertical={false}
+                testID={`${testID}.scroll_view`}
             >
                 {children}
             </ScrollView>

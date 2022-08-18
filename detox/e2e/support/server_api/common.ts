@@ -3,9 +3,31 @@
 
 import fs from 'fs';
 
+import {AxiosRequestConfig} from 'axios';
 import FormData from 'form-data';
 
 import client from './client';
+
+export const getCookiesFromConfig = (config: AxiosRequestConfig<any>) => {
+    let mmAuthToken = '';
+    let mmUserId = '';
+    let mmCsrf = '';
+    config.jar?.toJSON().cookies.forEach((cookie: any) => {
+        if (cookie.key === 'MMAUTHTOKEN') {
+            mmAuthToken = cookie.value;
+        } else if (cookie.key === 'MMUSERID') {
+            mmUserId = cookie.value;
+        } else if (cookie.key === 'MMCSRF') {
+            mmCsrf = cookie.value;
+        }
+    });
+
+    return {
+        mmAuthToken,
+        mmUserId,
+        mmCsrf,
+    };
+};
 
 export const getResponseFromError = (err: any) => {
     const {response} = err;

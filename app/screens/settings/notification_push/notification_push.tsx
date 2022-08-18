@@ -62,7 +62,7 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
     useAndroidHardwareBackHandler(componentId, saveNotificationSettings);
 
     return (
-        <SettingContainer>
+        <SettingContainer testID='notification_push'>
             <MobileSendPush
                 pushStatus={pushSend}
                 sendPushNotifications={sendPushNotifications}

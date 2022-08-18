@@ -92,7 +92,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
     }, [userTimezone.useAutomaticTimezone]);
 
     return (
-        <SettingContainer>
+        <SettingContainer testID='display_timezone'>
             <SettingOption
                 action={updateAutomaticTimezone}
                 description={toggleDesc}

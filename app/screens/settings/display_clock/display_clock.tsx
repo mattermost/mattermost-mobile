@@ -58,7 +58,7 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
     useAndroidHardwareBackHandler(componentId, saveClockDisplayPreference);
 
     return (
-        <SettingContainer>
+        <SettingContainer testID='display_clock'>
             <SettingBlock
                 disableHeader={true}
             >

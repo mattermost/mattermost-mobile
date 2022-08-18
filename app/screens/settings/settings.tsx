@@ -59,7 +59,7 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
         return {
             id: CLOSE_BUTTON_ID,
             icon: CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor),
-            testID: CLOSE_BUTTON_ID,
+            testID: 'close.settings.button',
         };
     }, [theme.centerChannelColor]);
 
@@ -121,25 +121,28 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
     });
 
     return (
-        <SettingContainer>
+        <SettingContainer testID='settings'>
             <SettingItem
                 onPress={goToNotifications}
                 optionName='notification'
+                testID='settings.notifications.option'
             />
             <SettingItem
                 onPress={goToDisplaySettings}
                 optionName='display'
+                testID='settings.display.option'
             />
             <SettingItem
                 onPress={goToAdvancedSettings}
                 optionName='advanced_settings'
+                testID='settings.advanced_settings.option'
             />
             <SettingItem
                 icon='information-outline'
                 label={intl.formatMessage({id: 'settings.about', defaultMessage: 'About {appTitle}'}, {appTitle: serverName})}
                 onPress={goToAbout}
                 optionName='about'
-                testID='general_settings.about'
+                testID='settings.about.option'
             />
             {Platform.OS === 'android' && <View style={styles.helpGroup}/>}
             {showHelp &&
@@ -148,6 +151,7 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
                 onPress={openHelp}
                 optionName='help'
                 separator={false}
+                testID='settings.help.option'
                 type='default'
             />
             }

@@ -9,7 +9,7 @@ exports[`UserStatus should match snapshot, away status 1`] = `
       "fontSize": 32,
     }
   }
-  testID="user_status.icon.away"
+  testID="user_status.indicator.away"
 />
 `;
 
@@ -22,7 +22,7 @@ exports[`UserStatus should match snapshot, dnd status 1`] = `
       "fontSize": 32,
     }
   }
-  testID="user_status.icon.dnd"
+  testID="user_status.indicator.dnd"
 />
 `;
 
@@ -35,7 +35,7 @@ exports[`UserStatus should match snapshot, online status 1`] = `
       "fontSize": 32,
     }
   }
-  testID="user_status.icon.online"
+  testID="user_status.indicator.online"
 />
 `;
 
@@ -48,6 +48,6 @@ exports[`UserStatus should match snapshot, should default to offline status 1`] 
       "fontSize": 32,
     }
   }
-  testID="user_status.icon.offline"
+  testID="user_status.indicator.offline"
 />
 `;

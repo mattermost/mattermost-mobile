@@ -70,7 +70,7 @@ const ChannelInfo = ({
                 bounces={true}
                 alwaysBounceVertical={false}
                 contentContainerStyle={styles.content}
-                testID='channel_info.scrollview'
+                testID='channel_info.scroll_view'
             >
                 <Title
                     channelId={channelId}

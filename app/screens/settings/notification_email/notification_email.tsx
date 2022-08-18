@@ -112,7 +112,7 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
     useBackNavigation(saveEmail);
 
     return (
-        <SettingContainer>
+        <SettingContainer testID='notification_email'>
             <SettingBlock
                 disableFooter={!sendEmailNotifications}
                 footerText={emailFooterText}

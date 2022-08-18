@@ -97,7 +97,7 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
     useAndroidHardwareBackHandler(componentId, saveAutoResponder);
 
     return (
-        <SettingContainer>
+        <SettingContainer testID='notification_auto_responder'>
             <SettingOption
                 label={intl.formatMessage({id: 'notification_settings.auto_responder.to.enable', defaultMessage: 'Enable automatic replies'})}
                 action={setAutoResponderActive}
