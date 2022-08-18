@@ -35,26 +35,27 @@ extension Database {
     }
     
     public func getChannelMentions(_ db: Connection) -> Int {
-        let mentionsCol = Expression<Int>("mentions_count")
+        let mentionsCol = Expression<Int?>("mentions_count")
         let mentions = try? db.scalar(myChannelTable.select(mentionsCol.total))
         return Int(mentions ?? 0)
     }
     
     public func getThreadMentions(_ db: Connection) -> Int {
-        let mentionsCol = Expression<Int>("unread_mentions")
+        let mentionsCol = Expression<Int?>("unread_mentions")
         let mentions = try? db.scalar(threadTable.select(mentionsCol.total))
         return Int(mentions ?? 0)
     }
     
-    public func handleMyChannelMentions(_ db: Connection, _ channelMemberData: ChannelMemberData) throws {
+    public func handleMyChannelMentions(_ db: Connection, _ channelMemberData: ChannelMemberData, withCRTEnabled crtEnabled: Bool) throws {
         let idCol = Expression<String>("id")
         let mentionsCol = Expression<Int>("mentions_count")
         let isUnreadCol = Expression<Bool>("is_unread")
+        let mentions = crtEnabled ? channelMemberData.mention_count_root : channelMemberData.mention_count
         
         if hasMyChannel(db, channelId: channelMemberData.channel_id) {
             let updateQuery = myChannelTable
                 .where(idCol == channelMemberData.channel_id)
-                .update(mentionsCol <- channelMemberData.mention_count,
+                .update(mentionsCol <- mentions,
                         isUnreadCol <- true
                 )
             let _ = try db.run(updateQuery)
@@ -70,8 +71,8 @@ extension Database {
 
             let setters: [Setter] = [
                 idCol <- channelMemberData.channel_id,
-                mentionsCol <- channelMemberData.mention_count,
-                msgCol <- channelMemberData.mention_count,
+                mentionsCol <- mentions,
+                msgCol <- mentions,
                 lastPostAtCol <- channelMemberData.last_update_at,
                 lastViewedAtCol <- channelMemberData.last_viewed_at,
                 viewedAtCol <- 0,

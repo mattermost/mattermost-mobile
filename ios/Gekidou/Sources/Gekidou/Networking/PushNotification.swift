@@ -278,7 +278,7 @@ extension Network {
                         }
                         
                         if myChannelData != nil {
-                            try? Database.default.handleMyChannelMentions(db, myChannelData!)
+                            try? Database.default.handleMyChannelMentions(db, myChannelData!, withCRTEnabled: isCRTEnabled)
                         }
                         
                         if threadData != nil {
