@@ -13,6 +13,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
 import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
+import ReplySettings from '@screens/settings/notification_mention/reply_settings';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
@@ -69,8 +70,9 @@ const getMentionProps = (currentUser: UserModel) => {
 type MentionSectionProps = {
     componentId: string;
     currentUser: UserModel;
+    isCRTEnabled: boolean;
 }
-const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
+const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectionProps) => {
     const serverUrl = useServerUrl();
     const mentionProps = useMemo(() => getMentionProps(currentUser), []);
     const notifyProps = mentionProps.notifyProps;
@@ -79,6 +81,7 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
     const [channelMentionOn, setChannelMentionOn] = useState(notifyProps.channel === 'true');
     const [firstNameMentionOn, setFirstNameMentionOn] = useState(notifyProps.first_name === 'true');
     const [usernameMentionOn, setUsernameMentionOn] = useState(mentionProps.usernameMention);
+    const [replyNotificationType, setReplyNotificationType] = useState(notifyProps.comments);
 
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -88,12 +91,13 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
 
     const canSaveSettings = useCallback(() => {
         const channelChanged = channelMentionOn !== Boolean(notifyProps.channel);
+        const replyChanged = replyNotificationType !== notifyProps.comments;
         const fNameChanged = firstNameMentionOn !== Boolean(notifyProps.first_name);
         const mnKeysChanged = mentionProps.mentionKeywords !== mentionKeywords;
         const userNameChanged = usernameMentionOn !== mentionProps.usernameMention;
 
-        return fNameChanged || userNameChanged || channelChanged || mnKeysChanged;
-    }, [firstNameMentionOn, channelMentionOn, usernameMentionOn, mentionKeywords, notifyProps]);
+        return fNameChanged || userNameChanged || channelChanged || mnKeysChanged || replyChanged;
+    }, [firstNameMentionOn, channelMentionOn, usernameMentionOn, mentionKeywords, notifyProps, replyNotificationType]);
 
     const saveMention = useCallback(() => {
         const canSave = canSaveSettings();
@@ -112,12 +116,21 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
                 first_name: `${firstNameMentionOn}`,
                 channel: `${channelMentionOn}`,
                 mention_keys: mention_keys.join(','),
+                comments: replyNotificationType,
             };
             updateMe(serverUrl, {notify_props});
         }
 
         close();
-    }, [serverUrl, notifyProps, firstNameMentionOn, channelMentionOn, mentionKeywords, canSaveSettings]);
+    }, [
+        canSaveSettings,
+        channelMentionOn,
+        firstNameMentionOn,
+        mentionKeywords,
+        notifyProps,
+        replyNotificationType,
+        serverUrl,
+    ]);
 
     const onToggleFirstName = useCallback(() => {
         setFirstNameMentionOn((prev) => !prev);
@@ -140,65 +153,73 @@ const MentionSettings = ({componentId, currentUser}: MentionSectionProps) => {
     useAndroidHardwareBackHandler(componentId, saveMention);
 
     return (
-        <SettingBlock
-            headerText={mentionHeaderText}
-        >
-            {Boolean(currentUser?.firstName) && (
-                <>
+        <>
+            <SettingBlock
+                headerText={mentionHeaderText}
+            >
+                {Boolean(currentUser?.firstName) && (
+                    <>
+                        <SettingOption
+                            action={onToggleFirstName}
+                            description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveName', defaultMessage: 'Your case sensitive first name'})}
+                            label={currentUser.firstName}
+                            selected={firstNameMentionOn}
+                            type='toggle'
+                        />
+                        <SettingSeparator/>
+                    </>
+                )
+                }
+                {Boolean(currentUser?.username) && (
                     <SettingOption
-                        action={onToggleFirstName}
-                        description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveName', defaultMessage: 'Your case sensitive first name'})}
-                        label={currentUser.firstName}
-                        selected={firstNameMentionOn}
+                        action={onToggleUserName}
+                        description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveUsername', defaultMessage: 'Your non-case sensitive username'})}
+                        label={currentUser.username}
+                        selected={usernameMentionOn}
                         type='toggle'
                     />
-                    <SettingSeparator/>
-                </>
-            )
-            }
-            {Boolean(currentUser?.username) && (
+                )}
+                <SettingSeparator/>
                 <SettingOption
-                    action={onToggleUserName}
-                    description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveUsername', defaultMessage: 'Your non-case sensitive username'})}
-                    label={currentUser.username}
-                    selected={usernameMentionOn}
+                    action={onToggleChannel}
+                    description={intl.formatMessage({id: 'notification_settings.mentions.channelWide', defaultMessage: 'Channel-wide mentions'})}
+                    label='@channel, @all, @here'
+                    selected={channelMentionOn}
                     type='toggle'
                 />
+                <SettingSeparator/>
+                <FloatingTextInput
+                    allowFontScaling={true}
+                    autoCapitalize='none'
+                    autoCorrect={false}
+                    blurOnSubmit={true}
+                    containerStyle={styles.containerStyle}
+                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                    label={intl.formatMessage({id: 'notification_settings.mentions.keywords', defaultMessage: 'Enter other keywords'})}
+                    multiline={true}
+                    onChangeText={onChangeText}
+                    placeholder={intl.formatMessage({id: 'notification_settings.mentions..keywordsDescription', defaultMessage: 'Other words that trigger a mention'})}
+                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
+                    returnKeyType='done'
+                    textInputStyle={styles.input}
+                    textAlignVertical='top'
+                    theme={theme}
+                    underlineColorAndroid='transparent'
+                    value={mentionKeywords}
+                />
+                <Text
+                    style={styles.keywordLabelStyle}
+                >
+                    {intl.formatMessage({id: 'notification_settings.mentions.keywordsLabel', defaultMessage: 'Keywords are not case-sensitive. Separate keywords with commas.'})}
+                </Text>
+            </SettingBlock>
+            {!isCRTEnabled && (
+                <ReplySettings
+                    replyNotificationType={replyNotificationType}
+                    setReplyNotificationType={setReplyNotificationType}
+                />
             )}
-            <SettingSeparator/>
-            <SettingOption
-                action={onToggleChannel}
-                description={intl.formatMessage({id: 'notification_settings.mentions.channelWide', defaultMessage: 'Channel-wide mentions'})}
-                label='@channel, @all, @here'
-                selected={channelMentionOn}
-                type='toggle'
-            />
-            <SettingSeparator/>
-            <FloatingTextInput
-                allowFontScaling={true}
-                autoCapitalize='none'
-                autoCorrect={false}
-                blurOnSubmit={true}
-                containerStyle={styles.containerStyle}
-                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                label={intl.formatMessage({id: 'notification_settings.mentions.keywords', defaultMessage: 'Enter other keywords'})}
-                multiline={true}
-                onChangeText={onChangeText}
-                placeholder={intl.formatMessage({id: 'notification_settings.mentions..keywordsDescription', defaultMessage: 'Other words that trigger a mention'})}
-                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
-                returnKeyType='done'
-                textInputStyle={styles.input}
-                textAlignVertical='top'
-                theme={theme}
-                underlineColorAndroid='transparent'
-                value={mentionKeywords}
-            />
-            <Text
-                style={styles.keywordLabelStyle}
-            >
-                {intl.formatMessage({id: 'notification_settings.mentions.keywordsLabel', defaultMessage: 'Keywords are not case-sensitive. Separate keywords with commas.'})}
-            </Text>
-        </SettingBlock>
+        </>
     );
 };
 
