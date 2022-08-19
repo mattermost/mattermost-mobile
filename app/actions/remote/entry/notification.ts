@@ -111,6 +111,8 @@ const restNotificationEntry = async (serverUrl: string, teamId: string, channelI
     const isCRTEnabled = await getIsCRTEnabled(database);
     const isThreadNotification = isCRTEnabled && Boolean(rootId);
 
+    await operator.batchRecords(models);
+
     let switchedToScreen = false;
     let switchedToChannel = false;
     if (myChannel && myTeam) {
@@ -129,15 +131,15 @@ const restNotificationEntry = async (serverUrl: string, teamId: string, channelI
             // Make switch again to get the missing data and make sure the team is the correct one
             switchedToScreen = true;
             if (isThreadNotification) {
-                fetchAndSwitchToThread(serverUrl, rootId, true);
+                await fetchAndSwitchToThread(serverUrl, rootId, true);
             } else {
                 switchedToChannel = true;
-                switchToChannelById(serverUrl, selectedChannelId, selectedTeamId);
+                await switchToChannelById(serverUrl, selectedChannelId, selectedTeamId);
             }
         } else if (selectedTeamId !== teamId || selectedChannelId !== channelId) {
             // If in the end the selected team or channel is different than the one from the notification
             // we switch again
-            setCurrentTeamAndChannelId(operator, selectedTeamId, selectedChannelId);
+            await setCurrentTeamAndChannelId(operator, selectedTeamId, selectedChannelId);
         }
     }
 
@@ -147,13 +149,19 @@ const restNotificationEntry = async (serverUrl: string, teamId: string, channelI
         emitNotificationError('Channel');
     }
 
-    await operator.batchRecords(models);
-
     const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(operator.database))!;
     const {config, license} = await getCommonSystemValues(operator.database);
 
     const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
-    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, selectedTeamId, switchedToChannel ? selectedChannelId : undefined);
+
+    // Waiting for the screen to display fixes a race condition when fetching and storing data
+    if (switchedToChannel) {
+        await NavigationStore.waitUntilScreenHasLoaded(Screens.CHANNEL);
+    } else if (switchedToScreen && isThreadNotification) {
+        await NavigationStore.waitUntilScreenHasLoaded(Screens.THREAD);
+    }
+
+    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, selectedTeamId, selectedChannelId);
 
     return {userId: currentUserId};
 };

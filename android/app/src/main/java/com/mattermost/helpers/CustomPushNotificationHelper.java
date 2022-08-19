@@ -71,23 +71,19 @@ public class CustomPushNotificationHelper {
         }
 
         long timestamp = new Date().getTime();
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
-            messagingStyle.addMessage(message, timestamp, senderName);
-        } else {
-            Person.Builder sender = new Person.Builder()
-                    .setKey(senderId)
-                    .setName(senderName);
+        Person.Builder sender = new Person.Builder()
+                .setKey(senderId)
+                .setName(senderName);
 
-            if (serverUrl != null) {
-                try {
-                    sender.setIcon(IconCompat.createWithBitmap(Objects.requireNonNull(userAvatar(context, serverUrl, senderId))));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        if (serverUrl != null) {
+            try {
+                sender.setIcon(IconCompat.createWithBitmap(Objects.requireNonNull(userAvatar(context, serverUrl, senderId))));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-
-            messagingStyle.addMessage(message, timestamp, sender.build());
         }
+
+        messagingStyle.addMessage(message, timestamp, sender.build());
     }
 
     private static void addNotificationExtras(NotificationCompat.Builder notification, Bundle bundle) {
@@ -109,6 +105,16 @@ public class CustomPushNotificationHelper {
         String rootId = bundle.getString("root_id");
         if (rootId != null) {
             userInfoBundle.putString("root_id", rootId);
+        }
+
+        String crtEnabled = bundle.getString("is_crt_enabled");
+        if (crtEnabled != null) {
+            userInfoBundle.putString("is_crt_enabled", crtEnabled);
+        }
+
+        String serverUrl = bundle.getString("server_url");
+        if (serverUrl != null) {
+            userInfoBundle.putString("server_url", serverUrl);
         }
 
         notification.addExtras(userInfoBundle);
@@ -166,7 +172,7 @@ public class CustomPushNotificationHelper {
         String rootId = bundle.getString("root_id");
         int notificationId = postId != null ? postId.hashCode() : MESSAGE_NOTIFICATION_ID;
 
-        Boolean is_crt_enabled = bundle.getString("is_crt_enabled") != null && bundle.getString("is_crt_enabled").equals("true");
+        boolean is_crt_enabled = bundle.containsKey("is_crt_enabled") && bundle.getString("is_crt_enabled").equals("true");
         String groupId = is_crt_enabled && !android.text.TextUtils.isEmpty(rootId) ? rootId : channelId;
 
         addNotificationExtras(notification, bundle);
@@ -256,23 +262,19 @@ public class CustomPushNotificationHelper {
         String senderId = "me";
         final String serverUrl = bundle.getString("server_url");
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
-            messagingStyle = new NotificationCompat.MessagingStyle("Me");
-        } else {
-            Person.Builder sender = new Person.Builder()
-                    .setKey(senderId)
-                    .setName("Me");
+        Person.Builder sender = new Person.Builder()
+                .setKey(senderId)
+                .setName("Me");
 
-            if (serverUrl != null) {
-                try {
-                    sender.setIcon(IconCompat.createWithBitmap(Objects.requireNonNull(userAvatar(context, serverUrl, "me"))));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        if (serverUrl != null) {
+            try {
+                sender.setIcon(IconCompat.createWithBitmap(Objects.requireNonNull(userAvatar(context, serverUrl, "me"))));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-
-            messagingStyle = new NotificationCompat.MessagingStyle(sender.build());
         }
+
+        messagingStyle = new NotificationCompat.MessagingStyle(sender.build());
 
         String conversationTitle = getConversationTitle(bundle);
         setMessagingStyleConversationTitle(messagingStyle, conversationTitle, bundle);
