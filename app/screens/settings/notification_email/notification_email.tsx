@@ -87,7 +87,7 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
                 notify_props: {
                     ...notifyProps,
                     email: `${sendEmailNotifications && notifyInterval !== Preferences.INTERVAL_NEVER.toString()}`,
-                    email_threads: emailThreads ? 'all' : 'mention',
+                    ...(isCRTEnabled && {email_threads: emailThreads ? 'all' : 'mention'}),
                 },
             });
             promises.push(updatePromise);
