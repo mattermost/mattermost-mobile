@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {DeviceEventEmitter, FlatList, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchPinnedPosts} from '@actions/remote/post';
@@ -114,13 +114,12 @@ function SavedMessages({
         </View>
     ), [loading, theme.buttonBg]);
 
-    const renderItem = useCallback(({item}) => {
+    const renderItem = useCallback(({item}: ListRenderItemInfo<string | PostModel>) => {
         if (typeof item === 'string') {
             if (isDateLine(item)) {
                 return (
                     <DateSeparator
                         date={getDateForDateLine(item)}
-                        theme={theme}
                         timezone={isTimezoneEnabled ? currentTimezone : null}
                     />
                 );

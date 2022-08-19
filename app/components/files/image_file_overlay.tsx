@@ -4,11 +4,11 @@
 import React, {useMemo} from 'react';
 import {PixelRatio, StyleSheet, Text, useWindowDimensions, View} from 'react-native';
 
+import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type ImageFileOverlayProps = {
-    theme: Theme;
     value: number;
 }
 
@@ -27,9 +27,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ImageFileOverlay = ({theme, value}: ImageFileOverlayProps) => {
+const ImageFileOverlay = ({value}: ImageFileOverlayProps) => {
     const dimensions = useWindowDimensions();
     const isTablet = useIsTablet();
+    const theme = useTheme();
     const style = getStyleSheet(theme);
     const textStyles = useMemo(() => {
         const scale = isTablet ? dimensions.scale : 1;

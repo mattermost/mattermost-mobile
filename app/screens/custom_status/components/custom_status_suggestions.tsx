@@ -6,7 +6,6 @@ import {IntlShape} from 'react-intl';
 import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
-import {CustomStatusDuration} from '@constants/custom_status';
 import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -24,7 +23,7 @@ type DefaultUserCustomStatus = {
     emoji: string;
     message: string;
     messageDefault: string;
-    durationDefault: string;
+    durationDefault: CustomStatusDuration;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -49,11 +48,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const defaultCustomStatusSuggestions: DefaultUserCustomStatus[] = [
-    {emoji: 'calendar', message: t('custom_status.suggestions.in_a_meeting'), messageDefault: 'In a meeting', durationDefault: CustomStatusDuration.ONE_HOUR},
-    {emoji: 'hamburger', message: t('custom_status.suggestions.out_for_lunch'), messageDefault: 'Out for lunch', durationDefault: CustomStatusDuration.THIRTY_MINUTES},
-    {emoji: 'sneezing_face', message: t('custom_status.suggestions.out_sick'), messageDefault: 'Out sick', durationDefault: CustomStatusDuration.TODAY},
-    {emoji: 'house', message: t('custom_status.suggestions.working_from_home'), messageDefault: 'Working from home', durationDefault: CustomStatusDuration.TODAY},
-    {emoji: 'palm_tree', message: t('custom_status.suggestions.on_a_vacation'), messageDefault: 'On a vacation', durationDefault: CustomStatusDuration.THIS_WEEK},
+    {emoji: 'calendar', message: t('custom_status.suggestions.in_a_meeting'), messageDefault: 'In a meeting', durationDefault: 'one_hour'},
+    {emoji: 'hamburger', message: t('custom_status.suggestions.out_for_lunch'), messageDefault: 'Out for lunch', durationDefault: 'thirty_minutes'},
+    {emoji: 'sneezing_face', message: t('custom_status.suggestions.out_sick'), messageDefault: 'Out sick', durationDefault: 'today'},
+    {emoji: 'house', message: t('custom_status.suggestions.working_from_home'), messageDefault: 'Working from home', durationDefault: 'today'},
+    {emoji: 'palm_tree', message: t('custom_status.suggestions.on_a_vacation'), messageDefault: 'On a vacation', durationDefault: 'this_week'},
 ];
 
 const CustomStatusSuggestions = ({
@@ -72,11 +71,11 @@ const CustomStatusSuggestions = ({
             text: intl.formatMessage({id: status.message, defaultMessage: status.messageDefault}),
             duration: status.durationDefault,
         })).
-        filter((status: UserCustomStatus) => !recentCustomStatusTexts.has(status.text)).
-        map((status: UserCustomStatus, index: number, arr: UserCustomStatus[]) => (
+        filter((status) => !recentCustomStatusTexts.has(status.text)).
+        map((status, index, arr) => (
             <CustomStatusSuggestion
                 key={status.text}
-                handleSuggestionClick={onHandleCustomStatusSuggestionClick} // this.handleCustomStatusSuggestionClick
+                handleSuggestionClick={onHandleCustomStatusSuggestionClick}
                 emoji={status.emoji}
                 text={status.text}
                 theme={theme}

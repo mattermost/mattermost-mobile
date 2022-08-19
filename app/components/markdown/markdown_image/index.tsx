@@ -31,6 +31,8 @@ import {getMarkdownImageSize} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {normalizeProtocol, tryOpenURL} from '@utils/url';
 
+import type {GalleryItemType} from '@typings/screens/gallery';
+
 type MarkdownImageProps = {
     disabled?: boolean;
     errorTextStyle: StyleProp<TextStyle>;
@@ -223,8 +225,6 @@ const MarkdownImage = ({
                     style={{flex: 1, backgroundColor: changeOpacity(theme.centerChannelColor, 0.06), borderRadius: 8}}
                     width={width}
                     height={height}
-
-                    // @ts-expect-error onError missing in type definition
                     onError={handleOnError}
                 />
             );

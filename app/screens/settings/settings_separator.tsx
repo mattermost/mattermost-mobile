@@ -8,32 +8,39 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    const groupSeparator = {
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.12),
+        width: '91%',
+        alignSelf: 'center',
+        height: 1,
+    };
     return {
         separator: {
             ...Platform.select({
                 ios: {
-                    backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-                    width: '91%',
-                    alignSelf: 'center',
-                    height: 1,
-                    marginTop: 12,
+                    ...groupSeparator,
                 },
                 default: {
                     display: 'none',
                 },
             }),
         },
+        groupSeparator: {
+            ...groupSeparator,
+            marginBottom: 16,
+        },
     };
 });
 type SettingSeparatorProps = {
     lineStyles?: StyleProp<ViewStyle>;
+    isGroupSeparator?: boolean;
 }
 
-const SettingSeparator = ({lineStyles}: SettingSeparatorProps) => {
+const SettingSeparator = ({lineStyles, isGroupSeparator = false}: SettingSeparatorProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    return (<View style={[styles.separator, lineStyles]}/>);
+    return (<View style={[styles.separator, isGroupSeparator && styles.groupSeparator, lineStyles]}/>);
 };
 
 export default SettingSeparator;

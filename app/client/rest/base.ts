@@ -3,7 +3,7 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {Events} from '@constants';
+import {Events, Calls} from '@constants';
 import {t} from '@i18n';
 import {setServerCredentials} from '@init/credentials';
 import {Analytics, create} from '@managers/analytics';
@@ -201,8 +201,16 @@ export default class ClientBase {
         return `${this.getThreadsRoute(userId, teamId)}/${threadId}`;
     }
 
+    getPluginsRoute() {
+        return `${this.urlVersion}/plugins`;
+    }
+
     getAppsProxyRoute() {
         return '/plugins/com.mattermost.apps';
+    }
+
+    getCallsRoute() {
+        return `/plugins/${Calls.PluginId}`;
     }
 
     doFetch = async (url: string, options: ClientOptions, returnDataOnly = true) => {
@@ -246,6 +254,17 @@ export default class ClientBase {
         }
         if (options.timeoutInterval) {
             requestOptions.timeoutInterval = options.timeoutInterval;
+        }
+
+        if (options.headers) {
+            if (requestOptions.headers) {
+                requestOptions.headers = {
+                    ...requestOptions.headers,
+                    ...options.headers,
+                };
+            } else {
+                requestOptions.headers = options.headers;
+            }
         }
 
         let response: ClientResponse;

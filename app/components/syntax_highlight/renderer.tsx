@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {FlatList, ScrollView, StyleSheet, Text} from 'react-native';
+import {FlatList, ListRenderItemInfo, ScrollView, StyleSheet, Text} from 'react-native';
 import {createStyleObject} from 'react-syntax-highlighter/create-element';
 
 import {generateId} from '@utils/general';
@@ -115,7 +115,7 @@ function createNativeElement({node, stylesheet, key, defaultColor, fontFamily, f
 }
 
 const CodeHighlightRenderer = ({defaultColor, digits, fontFamily, fontSize, rows, selectable, stylesheet}: Props) => {
-    const renderItem = useCallback(({item, index}) => {
+    const renderItem = useCallback(({item, index}: ListRenderItemInfo<any>) => {
         return createNativeElement({
             node: item,
             stylesheet,

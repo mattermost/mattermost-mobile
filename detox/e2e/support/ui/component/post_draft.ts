@@ -17,6 +17,10 @@ class PostDraft {
         return element(by.id(`${screenPrefix}${this.testID.postDraftArchivedSuffix}`));
     };
 
+    getPostDraftArchivedCloseChannelButton = (screenPrefix: string) => {
+        return element(by.id(`${screenPrefix}${this.testID.postDraftArchivedSuffix}.close_channel.button`));
+    };
+
     getPostDraftReadOnly = (screenPrefix: string) => {
         return element(by.id(`${screenPrefix}${this.testID.postDraftReadOnlySuffix}`));
     };

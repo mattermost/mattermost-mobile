@@ -5,7 +5,8 @@ import {Model} from '@nozbe/watermelondb';
 import {field} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
-import InfoModelInterface from '@typings/database/models/app/info';
+
+import type InfoModelInterface from '@typings/database/models/app/info';
 
 const {INFO} = MM_TABLES.APP;
 

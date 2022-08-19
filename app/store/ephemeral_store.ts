@@ -18,7 +18,7 @@ class EphemeralStore {
     private archivingChannels = new Set<string>();
     private convertingChannels = new Set<string>();
     private switchingToChannel = new Set<string>();
-    private lastViewedThreadId = '';
+    private currentThreadId = '';
 
     // Ephemeral control when (un)archiving a channel locally
     addArchivingChannel = (channelId: string) => {
@@ -95,12 +95,12 @@ class EphemeralStore {
     };
 
     // Ephemeral for the last viewed thread
-    getLastViewedThreadId = () => {
-        return this.lastViewedThreadId;
+    getCurrentThreadId = () => {
+        return this.currentThreadId;
     };
 
-    setLastViewedThreadId = (id: string) => {
-        this.lastViewedThreadId = id;
+    setCurrentThreadId = (id: string) => {
+        this.currentThreadId = id;
     };
 
     // Ephemeral control when (un)archiving a channel locally

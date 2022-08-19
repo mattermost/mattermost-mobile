@@ -9,8 +9,6 @@
 
 #import <RNKeychain/RNKeychainManager.h>
 #import <ReactNativeNavigation/ReactNativeNavigation.h>
-#import <UploadAttachments/UploadAttachments-Swift.h>
-#import <UploadAttachments/MattermostBucket.h>
 #import <UserNotifications/UserNotifications.h>
 #import <RNHWKeyboardEvent.h>
 
@@ -25,6 +23,9 @@
 #import <React/RCTSurfacePresenterBridgeAdapter.h>
 #import <ReactCommon/RCTTurboModuleManager.h>
 #import <react/config/ReactNativeConfig.h>
+
+static NSString *const kRNConcurrentRoot = @"concurrentRoot";
+
 @interface AppDelegate () <RCTCxxBridgeDelegate, RCTTurboModuleManagerDelegate> {
   RCTTurboModuleManager *_turboModuleManager;
   RCTSurfacePresenterBridgeAdapter *_bridgeAdapter;
@@ -40,31 +41,17 @@ NSString* const NOTIFICATION_MESSAGE_ACTION = @"message";
 NSString* const NOTIFICATION_CLEAR_ACTION = @"clear";
 NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
 NSString* const NOTIFICATION_TEST_ACTION = @"test";
-MattermostBucket* bucket = nil;
 
 -(void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)(void))completionHandler {
   os_log(OS_LOG_DEFAULT, "Mattermost will attach session from handleEventsForBackgroundURLSession!! identifier=%{public}@", identifier);
-  [[UploadSession shared] attachSessionWithIdentifier:identifier completionHandler:completionHandler];
+  [[GekidouWrapper default] attachSession:identifier completionHandler:completionHandler];
   os_log(OS_LOG_DEFAULT, "Mattermost session ATTACHED from handleEventsForBackgroundURLSession!! identifier=%{public}@", identifier);
-}
-
-- (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
-{
-  #if DEBUG
-    return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
-  #else
-    return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
-  #endif
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
   RCTAppSetupPrepareApp(application);
 
-  if (bucket == nil) {
-    bucket = [[MattermostBucket alloc] init];
-  }
-  
   if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
   {
     _allowRotation = YES;
@@ -102,7 +89,8 @@ MattermostBucket* bucket = nil;
   //    bridge.surfacePresenter = _bridgeAdapter.surfacePresenter;
   //  #endif
   //
-  //  UIView *rootView = RCTAppSetupDefaultRootView(bridge, @"Mattermost", nil);
+  //  NSDictionary *initProps = [self prepareInitialProps];
+  //  UIView *rootView = RCTAppSetupDefaultRootView(bridge, @"Mattermost", initProps);
   //    if (@available(iOS 13.0, *)) {
   //      rootView.backgroundColor = [UIColor systemBackgroundColor];
   //    } else {
@@ -176,19 +164,19 @@ MattermostBucket* bucket = nil;
 }
 
 -(void)applicationDidBecomeActive:(UIApplication *)application {
-  [bucket setPreference:@"ApplicationIsForeground" value:@"true"];
+  [[GekidouWrapper default] setPreference:@"true" forKey:@"ApplicationIsForeground"];
 }
 
 -(void)applicationWillResignActive:(UIApplication *)application {
-  [bucket setPreference:@"ApplicationIsForeground" value:@"false"];
+  [[GekidouWrapper default] setPreference:@"false" forKey:@"ApplicationIsForeground"];
 }
 
 -(void)applicationDidEnterBackground:(UIApplication *)application {
-  [bucket setPreference:@"ApplicationIsForeground" value:@"false"];
+  [[GekidouWrapper default] setPreference:@"false" forKey:@"ApplicationIsForeground"];
 }
 
 -(void)applicationWillTerminate:(UIApplication *)application {
-  [bucket setPreference:@"ApplicationIsForeground" value:@"false"];
+  [[GekidouWrapper default] setPreference:@"false" forKey:@"ApplicationIsForeground"];
 }
 
 - (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window {
@@ -295,6 +283,34 @@ RNHWKeyboardEvent *hwKeyEvent = nil;
 - (void)sendFindChannels:(UIKeyCommand *)sender {
   NSString *selected = sender.input;
   [hwKeyEvent sendHWKeyEvent:@"find-channels"];
+}
+
+/// This method controls whether the `concurrentRoot`feature of React18 is turned on or off.
+///
+/// @see: https://reactjs.org/blog/2022/03/29/react-v18.html
+/// @note: This requires to be rendering on Fabric (i.e. on the New Architecture).
+/// @return: `true` if the `concurrentRoot` feture is enabled. Otherwise, it returns `false`.
+- (BOOL)concurrentRootEnabled
+{
+  // Switch this bool to turn on and off the concurrent root
+  return false;
+}
+- (NSDictionary *)prepareInitialProps
+{
+  NSMutableDictionary *initProps = [NSMutableDictionary new];
+#ifdef RCT_NEW_ARCH_ENABLED
+  initProps[kRNConcurrentRoot] = @([self concurrentRootEnabled]);
+#endif
+  return initProps;
+}
+
+- (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
+{
+  #if DEBUG
+    return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
+  #else
+    return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
+  #endif
 }
 
 #if RCT_NEW_ARCH_ENABLED

@@ -27,6 +27,7 @@ import {showMuteChannelSnackbar} from '@utils/snack_bar';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
+import {fetchGroupsForChannelIfConstrained} from './groups';
 import {fetchPostsForChannel} from './post';
 import {setDirectChannelVisible} from './preference';
 import {fetchRolesIfNeeded} from './role';
@@ -1109,6 +1110,7 @@ export async function switchToChannelById(serverUrl: string, channelId: string, 
     setDirectChannelVisible(serverUrl, channelId);
     markChannelAsRead(serverUrl, channelId);
     fetchChannelStats(serverUrl, channelId);
+    fetchGroupsForChannelIfConstrained(serverUrl, channelId);
 
     DeviceEventEmitter.emit(Events.CHANNEL_SWITCH, false);
 
@@ -1145,7 +1147,7 @@ export async function switchToLastChannel(serverUrl: string, teamId?: string) {
     }
 }
 
-export async function searchChannels(serverUrl: string, term: string) {
+export async function searchChannels(serverUrl: string, term: string, isSearch = false) {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -1160,7 +1162,8 @@ export async function searchChannels(serverUrl: string, term: string) {
 
     try {
         const currentTeamId = await getCurrentTeamId(database);
-        const channels = await client.autocompleteChannels(currentTeamId, term);
+        const autoCompleteFunc = isSearch ? client.autocompleteChannelsForSearch : client.autocompleteChannels;
+        const channels = await autoCompleteFunc(currentTeamId, term);
         return {channels};
     } catch (error) {
         return {error};

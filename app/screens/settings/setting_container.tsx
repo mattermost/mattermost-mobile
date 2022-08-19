@@ -17,7 +17,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.centerChannelBg,
         },
         contentContainerStyle: {
-            marginTop: 20,
+            marginTop: 8,
         },
     };
 });

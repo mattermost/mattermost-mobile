@@ -25,7 +25,6 @@ type FilesProps = {
     isReplyPost: boolean;
     postId: string;
     publicLinkEnabled: boolean;
-    theme: Theme;
 }
 
 const MAX_VISIBLE_ROW_IMAGES = 4;
@@ -46,7 +45,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, location, postId, publicLinkEnabled, theme}: FilesProps) => {
+const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, location, postId, publicLinkEnabled}: FilesProps) => {
     const galleryIdentifier = `${postId}-fileAttachments-${location}`;
     const [inViewPort, setInViewPort] = useState(false);
     const isTablet = useIsTablet();
@@ -99,7 +98,6 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
                         file={file}
                         index={attachmentIndex(file.id!)}
                         onPress={handlePreviewPress}
-                        theme={theme}
                         isSingleImage={singleImage}
                         nonVisibleImagesCount={nonVisibleImagesCount}
                         publicLinkEnabled={publicLinkEnabled}

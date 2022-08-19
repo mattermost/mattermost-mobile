@@ -6,6 +6,7 @@ export const ACCOUNT = 'Account';
 export const APPS_FORM = 'AppForm';
 export const BOTTOM_SHEET = 'BottomSheet';
 export const BROWSE_CHANNELS = 'BrowseChannels';
+export const CALL = 'Call';
 export const CHANNEL = 'Channel';
 export const CHANNEL_ADD_PEOPLE = 'ChannelAddPeople';
 export const CHANNEL_INFO = 'ChannelInfo';
@@ -66,6 +67,7 @@ export default {
     APPS_FORM,
     BOTTOM_SHEET,
     BROWSE_CHANNELS,
+    CALL,
     CHANNEL,
     CHANNEL_ADD_PEOPLE,
     CHANNEL_INFO,

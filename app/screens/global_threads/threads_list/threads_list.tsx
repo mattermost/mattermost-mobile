@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState, useRef} from 'react';
-import {FlatList, StyleSheet} from 'react-native';
+import {FlatList, ListRenderItemInfo, StyleSheet} from 'react-native';
 
 import {fetchRefreshThreads, fetchThreads} from '@actions/remote/thread';
 import Loading from '@components/loading';
@@ -139,7 +139,7 @@ const ThreadsList = ({
         });
     }, [endReached, lastThread?.id, serverUrl, tab, teamId]);
 
-    const renderItem = useCallback(({item}) => (
+    const renderItem = useCallback(({item}: ListRenderItemInfo<ThreadModel>) => (
         <Thread
             location={Screens.GLOBAL_THREADS}
             testID={testID}

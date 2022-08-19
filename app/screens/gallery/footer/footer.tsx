@@ -20,6 +20,7 @@ import DownloadWithAction from './download_with_action';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
+import type {GalleryAction, GalleryItemType} from '@typings/screens/gallery';
 
 type Props = {
     author?: UserModel;

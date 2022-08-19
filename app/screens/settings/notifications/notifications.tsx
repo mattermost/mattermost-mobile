@@ -7,7 +7,6 @@ import {useIntl} from 'react-intl';
 import {General, Screens} from '@constants';
 import {t} from '@i18n';
 import {goToScreen} from '@screens/navigation';
-import SettingRowLabel from '@screens/settings/setting_row_label';
 import {getEmailInterval, getEmailIntervalTexts, getNotificationProps} from '@utils/user';
 
 import SettingContainer from '../setting_container';
@@ -91,10 +90,12 @@ const Notifications = ({
     return (
         <SettingContainer>
             <SettingItem
-                defaultMessage={isCRTEnabled ? mentionTexts.crtOn.defaultMessage : mentionTexts.crtOff.defaultMessage}
-                i18nId={isCRTEnabled ? mentionTexts.crtOn.id : mentionTexts.crtOff.id}
                 onPress={goToNotificationSettingsMentions}
                 optionName='mentions'
+                label={intl.formatMessage({
+                    id: isCRTEnabled ? mentionTexts.crtOn.id : mentionTexts.crtOff.id,
+                    defaultMessage: isCRTEnabled ? mentionTexts.crtOn.defaultMessage : mentionTexts.crtOff.defaultMessage,
+                })}
             />
             <SettingItem
                 optionName='push_notification'
@@ -103,21 +104,13 @@ const Notifications = ({
             <SettingItem
                 optionName='email'
                 onPress={goToEmailSettings}
-                rightComponent={
-                    <SettingRowLabel
-                        text={intl.formatMessage(getEmailIntervalTexts(emailIntervalPref))}
-                    />
-                }
+                info={intl.formatMessage(getEmailIntervalTexts(emailIntervalPref))}
             />
             {enableAutoResponder && (
                 <SettingItem
                     onPress={goToNotificationAutoResponder}
                     optionName='automatic_dm_replies'
-                    rightComponent={
-                        <SettingRowLabel
-                            text={currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active === 'true' ? 'On' : 'Off'}
-                        />
-                    }
+                    info={currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active === 'true' ? 'On' : 'Off'}
                 />
             )}
         </SettingContainer>

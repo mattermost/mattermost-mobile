@@ -186,9 +186,7 @@ exports[`Server Icon Server Icon Component should match snapshot with unreads 1`
         }
       }
       testID="server_icon.badge"
-    >
-      
-    </Text>
+    />
   </View>
 </View>
 `;

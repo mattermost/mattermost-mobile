@@ -34,6 +34,7 @@ function Typing({
     const typingHeight = useSharedValue(0);
     const typing = useRef<Array<{id: string; now: number; username: string}>>([]);
     const timeoutToDisappear = useRef<NodeJS.Timeout>();
+    const mounted = useRef(false);
     const [refresh, setRefresh] = useState(0);
 
     const theme = useTheme();
@@ -63,7 +64,9 @@ function Typing({
             clearTimeout(timeoutToDisappear.current);
             timeoutToDisappear.current = undefined;
         }
-        setRefresh(Date.now());
+        if (mounted.current) {
+            setRefresh(Date.now());
+        }
     }, [channelId, rootId]);
 
     const onUserStopTyping = useCallback((msg: any) => {
@@ -85,12 +88,21 @@ function Typing({
 
         if (typing.current.length === 0) {
             timeoutToDisappear.current = setTimeout(() => {
-                setRefresh(Date.now());
+                if (mounted.current) {
+                    setRefresh(Date.now());
+                }
                 timeoutToDisappear.current = undefined;
             }, 500);
-        } else {
+        } else if (mounted.current) {
             setRefresh(Date.now());
         }
+    }, [channelId, rootId]);
+
+    useEffect(() => {
+        mounted.current = true;
+        return () => {
+            mounted.current = false;
+        };
     }, []);
 
     useEffect(() => {
@@ -110,6 +122,15 @@ function Typing({
     useEffect(() => {
         typingHeight.value = typing.current.length ? TYPING_HEIGHT : 0;
     }, [refresh]);
+
+    useEffect(() => {
+        typing.current = [];
+        typingHeight.value = 0;
+        if (timeoutToDisappear.current) {
+            clearTimeout(timeoutToDisappear.current);
+            timeoutToDisappear.current = undefined;
+        }
+    }, [channelId, rootId]);
 
     const renderTyping = () => {
         const nextTyping = typing.current.map(({username}) => username);

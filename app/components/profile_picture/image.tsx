@@ -21,6 +21,7 @@ type Props = {
     iconSize?: number;
     size: number;
     source?: Source | string;
+    url?: string;
 };
 
 // @ts-expect-error FastImage does work with Animated.createAnimatedComponent
@@ -34,9 +35,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Image = ({author, forwardRef, iconSize, size, source}: Props) => {
+const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
     const theme = useTheme();
-    const serverUrl = useServerUrl();
+    let serverUrl = useServerUrl();
+    serverUrl = url || serverUrl;
+
     const style = getStyleSheet(theme);
     const fIStyle = useMemo(() => ({
         borderRadius: size / 2,
@@ -68,7 +71,7 @@ const Image = ({author, forwardRef, iconSize, size, source}: Props) => {
         if (isBot) {
             lastPictureUpdate = ('isBot' in author) ? author.props?.bot_last_icon_update : author.bot_last_icon_update || 0;
         } else {
-            lastPictureUpdate = ('lastPictureUpdate' in author) ? author.lastPictureUpdate : author.last_picture_update;
+            lastPictureUpdate = ('lastPictureUpdate' in author) ? author.lastPictureUpdate : author.last_picture_update || 0;
         }
 
         const pictureUrl = client.getProfilePictureUrl(author.id, lastPictureUpdate);

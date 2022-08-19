@@ -9,6 +9,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {observeMyChannel, observeChannel} from '@queries/servers/channel';
 import {queryPostsChunk, queryPostsInThread} from '@queries/servers/post';
+import {observeConfigValue} from '@queries/servers/system';
 import {observeIsCRTEnabled, observeThreadById} from '@queries/servers/thread';
 
 import ThreadPostList from './thread_post_list';
@@ -24,7 +25,7 @@ type Props = WithDatabaseArgs & {
 const enhanced = withObservables(['forceQueryAfterAppState', 'rootPost'], ({database, rootPost}: Props) => {
     return {
         isCRTEnabled: observeIsCRTEnabled(database),
-        lastViewedAt: observeMyChannel(database, rootPost.channelId).pipe(
+        channelLastViewedAt: observeMyChannel(database, rootPost.channelId).pipe(
             switchMap((myChannel) => of$(myChannel?.viewedAt)),
         ),
         posts: queryPostsInThread(database, rootPost.id, true, true).observeWithColumns(['earliest', 'latest']).pipe(
@@ -41,6 +42,7 @@ const enhanced = withObservables(['forceQueryAfterAppState', 'rootPost'], ({data
             switchMap((channel) => of$(channel?.teamId)),
         ),
         thread: observeThreadById(database, rootPost.id),
+        version: observeConfigValue(database, 'Version'),
     };
 });
 

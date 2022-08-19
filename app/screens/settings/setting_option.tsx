@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {Platform} from 'react-native';
 
 import OptionItem, {OptionItemProps} from '@components/option_item';
 import {useTheme} from '@context/theme';
@@ -29,12 +30,15 @@ const SettingOption = ({...props}: OptionItemProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
+    const useRadioButton = props.type === 'select' && Platform.OS === 'android';
+
     return (
         <OptionItem
             optionDescriptionTextStyle={styles.optionDescriptionTextStyle}
             optionLabelTextStyle={styles.optionLabelTextStyle}
-            containerStyle={[styles.container, props.description && {marginTop: 16}]}
+            containerStyle={[styles.container, props.description && {marginVertical: 12}]}
             {...props}
+            type={useRadioButton ? 'radio' : props.type}
         />
     );
 };

@@ -75,7 +75,7 @@ type Props = {
     nestedScrollEnabled: boolean;
     skinTone: string;
     hasFilesAttached?: boolean;
-    inPost?: boolean;
+    inPost: boolean;
 }
 const EmojiSuggestion = ({
     cursorPosition,
@@ -88,7 +88,7 @@ const EmojiSuggestion = ({
     nestedScrollEnabled,
     skinTone,
     hasFilesAttached = false,
-    inPost = true,
+    inPost,
 }: Props) => {
     const insets = useSafeAreaInsets();
     const theme = useTheme();

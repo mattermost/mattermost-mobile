@@ -13,7 +13,6 @@ import {getUserTimezoneProps} from '@utils/user';
 
 import SettingContainer from '../setting_container';
 import SettingItem from '../setting_item';
-import SettingRowLabel from '../setting_row_label';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -76,31 +75,19 @@ const Display = ({currentUser, hasMilitaryTimeFormat, isThemeSwitchingEnabled, i
                 <SettingItem
                     optionName='theme'
                     onPress={goToThemeSettings}
-                    rightComponent={
-                        <SettingRowLabel
-                            text={theme.type || ''}
-                        />
-                    }
+                    info={theme.type!}
                 />
             )}
             <SettingItem
                 optionName='clock'
                 onPress={goToClockDisplaySettings}
-                rightComponent={
-                    <SettingRowLabel
-                        text={intl.formatMessage(hasMilitaryTimeFormat ? TIME_FORMAT[1] : TIME_FORMAT[0])}
-                    />
-                }
+                info={intl.formatMessage(hasMilitaryTimeFormat ? TIME_FORMAT[1] : TIME_FORMAT[0])}
             />
             {isTimezoneEnabled && (
                 <SettingItem
                     optionName='timezone'
                     onPress={goToTimezoneSettings}
-                    rightComponent={
-                        <SettingRowLabel
-                            text={intl.formatMessage(timezone.useAutomaticTimezone ? TIMEZONE_FORMAT[0] : TIMEZONE_FORMAT[1])}
-                        />
-                    }
+                    info={intl.formatMessage(timezone.useAutomaticTimezone ? TIMEZONE_FORMAT[0] : TIMEZONE_FORMAT[1])}
                 />
             )}
         </SettingContainer>

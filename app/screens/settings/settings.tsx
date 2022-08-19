@@ -25,14 +25,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         containerStyle: {
             paddingLeft: 8,
-            marginTop: 20,
+            marginTop: 12,
         },
         helpGroup: {
             width: '91%',
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             height: 1,
             alignSelf: 'center',
-            marginTop: 20,
+
+            // marginTop: 20,
         },
     };
 });
@@ -120,7 +121,7 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
     });
 
     return (
-        <SettingContainer >
+        <SettingContainer>
             <SettingItem
                 onPress={goToNotifications}
                 optionName='notification'
@@ -134,18 +135,20 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
                 optionName='advanced_settings'
             />
             <SettingItem
-                messageValues={{appTitle: serverName}}
+                icon='information-outline'
+                label={intl.formatMessage({id: 'settings.about', defaultMessage: 'About {appTitle}'}, {appTitle: serverName})}
                 onPress={goToAbout}
                 optionName='about'
+                testID='general_settings.about'
             />
             {Platform.OS === 'android' && <View style={styles.helpGroup}/>}
             {showHelp &&
             <SettingItem
-                containerStyle={styles.containerStyle}
-                isLink={true}
+                optionLabelTextStyle={{color: theme.linkColor}}
                 onPress={openHelp}
                 optionName='help'
                 separator={false}
+                type='default'
             />
             }
         </SettingContainer>

@@ -38,11 +38,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 type TimezoneRowProps = {
+    isSelected: boolean;
     onPressTimezone: (timezone: string) => void;
-    selectedTimezone: string;
     timezone: string;
 }
-const TimezoneRow = ({onPressTimezone, selectedTimezone, timezone}: TimezoneRowProps) => {
+const TimezoneRow = ({onPressTimezone, isSelected, timezone}: TimezoneRowProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -64,7 +64,7 @@ const TimezoneRow = ({onPressTimezone, selectedTimezone, timezone}: TimezoneRowP
                         {timezone}
                     </Text>
                 </View>
-                {timezone === selectedTimezone && (
+                {isSelected && (
                     <CompassIcon
                         color={theme.linkColor}
                         name='check'

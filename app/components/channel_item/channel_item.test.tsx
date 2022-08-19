@@ -42,6 +42,7 @@ describe('components/channel_list/categories/body/channel_item', () => {
                 isUnread={myChannel.isUnread}
                 mentionsCount={myChannel.mentionsCount}
                 hasMember={Boolean(myChannel)}
+                hasCall={false}
             />,
         );
 
@@ -62,6 +63,28 @@ describe('components/channel_list/categories/body/channel_item', () => {
                 isUnread={myChannel.isUnread}
                 mentionsCount={myChannel.mentionsCount}
                 hasMember={Boolean(myChannel)}
+                hasCall={false}
+            />,
+        );
+
+        expect(wrapper.toJSON()).toMatchSnapshot();
+    });
+
+    it('should match snapshot when it has a call', () => {
+        const wrapper = renderWithIntlAndTheme(
+            <ChannelItem
+                channel={{displayName: 'Hello!', type: 'G', shared: false, name: 'hello', deleteAt: 0} as ChannelModel}
+                hasDraft={true}
+                isActive={false}
+                membersCount={3}
+                isMuted={false}
+                currentUserId={'id'}
+                testID='channel_item'
+                onPress={() => undefined}
+                isUnread={myChannel.isUnread}
+                mentionsCount={myChannel.mentionsCount}
+                hasMember={Boolean(myChannel)}
+                hasCall={true}
             />,
         );
 

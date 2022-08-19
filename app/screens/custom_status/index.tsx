@@ -16,8 +16,8 @@ import {updateLocalCustomStatus} from '@actions/local/user';
 import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import TabletTitle from '@components/tablet_title';
-import {CustomStatusDuration, Events, Screens} from '@constants';
-import {SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
+import {Events, Screens} from '@constants';
+import {CustomStatusDurationEnum, SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
 import {withServerUrl} from '@context/server';
 import {withTheme} from '@context/theme';
 import {observeConfig, observeRecentCustomStatus} from '@queries/servers/system';
@@ -25,6 +25,7 @@ import {observeCurrentUser} from '@queries/servers/user';
 import {dismissModal, goToScreen, showModal} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {getCurrentMomentForTimezone, getRoundedTime, isCustomStatusExpirySupported} from '@utils/helpers';
+import {logDebug} from '@utils/log';
 import {mergeNavigationOptions} from '@utils/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -60,8 +61,7 @@ type State = {
     expires_at: Moment;
 };
 
-const {DONT_CLEAR, THIRTY_MINUTES, ONE_HOUR, FOUR_HOURS, TODAY, THIS_WEEK, DATE_AND_TIME} = CustomStatusDuration;
-const DEFAULT_DURATION: CustomStatusDuration = TODAY;
+const DEFAULT_DURATION: CustomStatusDuration = 'today';
 const BTN_UPDATE_STATUS = 'update-custom-status';
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
@@ -129,12 +129,12 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
         let initialCustomExpiryTime: Moment = getRoundedTime(currentTime);
         const isCurrentCustomStatusSet = !this.isCustomStatusExpired && (customStatus?.text || customStatus?.emoji);
-        if (isCurrentCustomStatusSet && customStatus?.duration === DATE_AND_TIME && customStatus?.expires_at) {
+        if (isCurrentCustomStatusSet && customStatus?.duration === 'date_and_time' && customStatus?.expires_at) {
             initialCustomExpiryTime = moment(customStatus?.expires_at);
         }
 
         this.state = {
-            duration: isCurrentCustomStatusSet ? customStatus?.duration ?? DONT_CLEAR : DEFAULT_DURATION,
+            duration: isCurrentCustomStatusSet ? customStatus?.duration ?? CustomStatusDurationEnum.DONT_CLEAR : DEFAULT_DURATION,
             emoji: isCurrentCustomStatusSet ? customStatus?.emoji : '',
             expires_at: initialCustomExpiryTime,
             text: isCurrentCustomStatusSet ? customStatus?.text : '',
@@ -186,7 +186,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         if (isStatusSet) {
             let isStatusSame = customStatus?.emoji === emoji && customStatus?.text === text && customStatus?.duration === duration;
             const expiresAt = this.calculateExpiryTime(duration);
-            if (isStatusSame && duration === DATE_AND_TIME) {
+            if (isStatusSame && duration === 'date_and_time') {
                 isStatusSame = customStatus?.expires_at === expiresAt;
             }
 
@@ -194,7 +194,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 const status: UserCustomStatus = {
                     emoji: emoji || 'speech_balloon',
                     text: text?.trim(),
-                    duration: DONT_CLEAR,
+                    duration: CustomStatusDurationEnum.DONT_CLEAR,
                 };
 
                 if (customStatusExpirySupported) {
@@ -210,7 +210,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 updateLocalCustomStatus(serverUrl, currentUser, status);
 
                 this.setState({
-                    duration: status.duration,
+                    duration: status.duration!,
                     emoji: status.emoji,
                     expires_at: moment(status.expires_at),
                     text: status.text,
@@ -238,19 +238,19 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
         const {expires_at} = this.state;
         switch (duration) {
-            case THIRTY_MINUTES:
+            case 'thirty_minutes':
                 return currentTime.add(30, 'minutes').seconds(0).milliseconds(0).toISOString();
-            case ONE_HOUR:
+            case 'one_hour':
                 return currentTime.add(1, 'hour').seconds(0).milliseconds(0).toISOString();
-            case FOUR_HOURS:
+            case 'four_hours':
                 return currentTime.add(4, 'hours').seconds(0).milliseconds(0).toISOString();
-            case TODAY:
+            case 'today':
                 return currentTime.endOf('day').toISOString();
-            case THIS_WEEK:
+            case 'this_week':
                 return currentTime.endOf('week').toISOString();
-            case DATE_AND_TIME:
+            case 'date_and_time':
                 return expires_at.toISOString();
-            case DONT_CLEAR:
+            case CustomStatusDurationEnum.DONT_CLEAR:
             default:
                 return '';
         }
@@ -266,13 +266,18 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     handleCustomStatusSuggestionClick = (status: UserCustomStatus) => {
         const {emoji, text, duration} = status;
+        if (!duration) {
+            // This should never happen, but we add a safeguard here
+            logDebug('clicked on a custom status with no duration');
+            return;
+        }
         this.setState({emoji, text, duration});
     };
 
     handleRecentCustomStatusSuggestionClick = (status: UserCustomStatus) => {
         const {emoji, text, duration} = status;
-        this.setState({emoji, text, duration: duration || DONT_CLEAR});
-        if (duration === DATE_AND_TIME) {
+        this.setState({emoji, text, duration: duration || CustomStatusDurationEnum.DONT_CLEAR});
+        if (duration === 'date_and_time') {
             this.openClearAfterModal();
         }
     };
@@ -295,7 +300,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     handleClearAfterClick = (duration: CustomStatusDuration, expires_at: string) =>
         this.setState({
             duration,
-            expires_at: duration === DATE_AND_TIME && expires_at ? moment(expires_at) : this.state.expires_at,
+            expires_at: duration === 'date_and_time' && expires_at ? moment(expires_at) : this.state.expires_at,
         });
 
     openClearAfterModal = async () => {

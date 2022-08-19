@@ -42,7 +42,7 @@ const {
     MY_CHANNEL,
 } = MM_TABLES.SERVER;
 
-export async function prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData, isCRTEnabled}: PrepareModelsArgs): Promise<Array<Promise<Model[]>>> {
+export async function prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData, isCRTEnabled}: PrepareModelsArgs, isGraphQL = false): Promise<Array<Promise<Model[]>>> {
     const modelPromises: Array<Promise<Model[]>> = [];
 
     if (removeTeams?.length) {
@@ -66,8 +66,12 @@ export async function prepareModels({operator, initialTeamId, removeTeams, remov
         modelPromises.push(prepareCategoryChannels(operator, chData.categories));
     }
 
-    if (initialTeamId && chData?.channels?.length && chData.memberships?.length) {
-        modelPromises.push(...await prepareMyChannelsForTeam(operator, initialTeamId, chData.channels, chData.memberships, isCRTEnabled));
+    if (chData?.channels?.length && chData.memberships?.length) {
+        if (isGraphQL) {
+            modelPromises.push(...await prepareMyChannelsForTeam(operator, '', chData.channels, chData.memberships, isCRTEnabled, true));
+        } else if (initialTeamId) {
+            modelPromises.push(...await prepareMyChannelsForTeam(operator, initialTeamId, chData.channels, chData.memberships, isCRTEnabled, false));
+        }
     }
 
     if (prefData?.preferences?.length) {

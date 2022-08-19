@@ -7,7 +7,7 @@ import logger from '@nozbe/watermelondb/utils/common/logger';
 import {DeviceEventEmitter, Platform} from 'react-native';
 import FileSystem from 'react-native-fs';
 
-import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
+import {DatabaseType, MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
 import ServerDatabaseMigrations from '@database/migration/server';
 import {InfoModel, GlobalModel, ServersModel} from '@database/models/app';
@@ -22,7 +22,6 @@ import ServerDataOperator from '@database/operator/server_data_operator';
 import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
 import {queryActiveServer, queryServer, queryServerByIdentifier} from '@queries/app/servers';
-import {DatabaseType} from '@typings/database/enums';
 import {deleteIOSDatabase} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
 import {removeProtocol} from '@utils/url';

@@ -3,7 +3,7 @@
 
 import React, {forwardRef, useCallback, useImperativeHandle, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {KeyboardType, Platform, TextInput, useWindowDimensions, View} from 'react-native';
+import {KeyboardType, NativeSyntheticEvent, Platform, TextInput, TextInputSelectionChangeEventData, useWindowDimensions, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
@@ -51,7 +51,7 @@ const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
         return [styles.input, {height: textInputHeight}];
     }, [textInputHeight, styles]);
 
-    const onSelectionChange = useCallback((event) => {
+    const onSelectionChange = useCallback((event: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
         const curPos = event.nativeEvent.selection.end;
         onTextSelectionChange(curPos);
     }, [onTextSelectionChange]);
