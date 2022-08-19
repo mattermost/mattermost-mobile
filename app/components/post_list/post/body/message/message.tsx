@@ -7,7 +7,6 @@ import Animated from 'react-native-reanimated';
 
 import Markdown from '@components/markdown';
 import {SEARCH} from '@constants/screens';
-import {useTheme} from '@context/theme';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -28,6 +27,7 @@ type MessageProps = {
     location: string;
     post: PostModel;
     searchPatterns?: SearchPattern[];
+    theme: Theme;
 }
 
 const SHOW_MORE_HEIGHT = 54;
@@ -52,13 +52,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPost, layoutWidth, location, post, searchPatterns}: MessageProps) => {
+const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPost, layoutWidth, location, post, searchPatterns, theme}: MessageProps) => {
     const [open, setOpen] = useState(false);
     const [height, setHeight] = useState<number|undefined>();
     const dimensions = useWindowDimensions();
     const maxHeight = Math.round((dimensions.height * 0.5) + SHOW_MORE_HEIGHT);
     const animatedStyle = useShowMoreAnimatedStyle(height, maxHeight, open);
-    const theme = useTheme();
     const style = getStyleSheet(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
     const textStyles = getMarkdownTextStyles(theme);

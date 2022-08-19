@@ -153,6 +153,7 @@ const Body = ({
                 location={location}
                 post={post}
                 searchPatterns={searchPatterns}
+                theme={theme}
             />
         );
     }
