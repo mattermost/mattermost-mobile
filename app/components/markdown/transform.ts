@@ -250,8 +250,6 @@ function convertSearchTermToRegex(term: string): SearchPattern {
 }
 
 export function searchTermsToPatterns(terms: string) {
-    const hasPhrases = (/"([^"]*)"/).test(terms || '');
-
     const searchPatterns = parseSearchTerms(terms || '').map(convertSearchTermToRegex).sort((a, b) => {
         return b.term.length - a.term.length;
     });
@@ -297,7 +295,7 @@ export function highlightSearchPatterns(ast: Node, searchPatterns: SearchPattern
 
             // Resume processing on the next node after the match node which may include any remaining text
             // that was part of this one
-            walker.resumeAt(matchNode, false);
+            walker.resumeAt(matchNode, true);
         }
     }
 
