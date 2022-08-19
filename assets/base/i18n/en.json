@@ -764,7 +764,7 @@
   "settings.about.database": "Database:",
   "settings.about.licensed": "Licensed to: {company}",
   "settings.about.powered_by": "{site} is powered by Mattermost",
-  "settings.about.serverVersion": "{version} (Build {number})",
+  "settings.about.server.version": "Server Version:",
   "settings.about.serverVersionNoBuild": "{version}",
   "settings.about.version": "App Version:",
   "settings.advanced_settings": "Advanced Settings",
