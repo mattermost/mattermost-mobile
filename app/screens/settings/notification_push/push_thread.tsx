@@ -17,7 +17,7 @@ const headerText = {
 
 type MobilePushThreadProps = {
     onMobilePushThreadChanged: (status: string) => void;
-    pushThread: PushStatus;
+    pushThread: UserNotifyPropsPushThreads;
 }
 
 const MobilePushThread = ({pushThread, onMobilePushThreadChanged}: MobilePushThreadProps) => {

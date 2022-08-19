@@ -31,9 +31,9 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
 
     const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
 
-    const [pushSend, setPushSend] = useState<PushStatus>(notifyProps.push);
-    const [pushStatus, setPushStatus] = useState<PushStatus>(notifyProps.push_status);
-    const [pushThread, setPushThreadPref] = useState<PushStatus>(notifyProps?.push_threads || 'all');
+    const [pushSend, setPushSend] = useState<UserNotifyPropsPush>(notifyProps.push);
+    const [pushStatus, setPushStatus] = useState<UserNotifyPropsPushStatus>(notifyProps.push_status);
+    const [pushThread, setPushThreadPref] = useState<UserNotifyPropsPushThreads>(notifyProps?.push_threads || 'all');
 
     const onMobilePushThreadChanged = useCallback(() => {
         setPushThreadPref(pushThread === 'all' ? 'mention' : 'all');
@@ -51,8 +51,13 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
     const saveNotificationSettings = useCallback(() => {
         const canSave = canSaveSettings();
         if (canSave) {
-            const notify_props = {...notifyProps, push: pushSend, push_status: pushStatus, push_threads: pushThread};
-            updateMe(serverUrl, {notify_props} as unknown as UserNotifyProps);
+            const notify_props: UserNotifyProps = {
+                ...notifyProps,
+                push: pushSend,
+                push_status: pushStatus,
+                push_threads: pushThread,
+            };
+            updateMe(serverUrl, {notify_props});
         }
         close();
     }, [canSaveSettings, close, notifyProps, pushSend, pushStatus, pushThread, serverUrl]);
