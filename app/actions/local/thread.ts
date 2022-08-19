@@ -3,13 +3,11 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {ActionType, General, Navigation, Preferences, Screens} from '@constants';
-import {getDefaultThemeByAppearance} from '@context/theme';
+import {ActionType, General, Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getTranslations, t} from '@i18n';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCommonSystemValues, getCurrentTeamId, getCurrentUserId, prepareCommonSystemValues, PrepareCommonSystemValuesArgs, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory} from '@queries/servers/team';
 import {getIsCRTEnabled, getThreadById, prepareThreadsFromReceivedPosts, queryThreadsInTeam} from '@queries/servers/thread';
@@ -18,7 +16,8 @@ import {dismissAllModalsAndPopToRoot, goToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
-import {changeOpacity, setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
+import {logError} from '@utils/log';
+import {changeOpacity} from '@utils/theme';
 
 import type Model from '@nozbe/watermelondb/Model';
 
@@ -53,8 +52,7 @@ export const switchToGlobalThreads = async (serverUrl: string, teamId?: string, 
 
         return {models};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed switchToGlobalThreads', error);
+        logError('Failed switchToGlobalThreads', error);
         return {error};
     }
 };
@@ -95,20 +93,6 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
             }
         }
 
-        let theme = EphemeralStore.theme;
-        if (!theme) {
-            theme = getDefaultThemeByAppearance();
-
-            // When opening the app from a push notification the theme may not be set in the EphemeralStore
-            // causing the goToScreen to use the Appearance theme instead and that causes the screen background color to potentially
-            // not match the theme
-            const themes = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_THEME, teamId).fetch();
-            if (themes.length) {
-                theme = setThemeDefaults(JSON.parse(themes[0].value) as Theme);
-            }
-            updateThemeIfNeeded(theme!, true);
-        }
-
         // Modal right buttons
         const rightButtons = [];
 
@@ -143,7 +127,7 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
             subtitle = subtitle.replace('{channelName}', channel.displayName);
         }
 
-        EphemeralStore.setLastViewedThreadId(rootId);
+        EphemeralStore.setCurrentThreadId(rootId);
 
         if (isFromNotification) {
             await dismissAllModalsAndPopToRoot();
@@ -158,7 +142,7 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
                     text: title,
                 },
                 subtitle: {
-                    color: changeOpacity(theme!.sidebarHeaderTextColor, 0.72),
+                    color: changeOpacity(EphemeralStore.theme!.sidebarHeaderTextColor, 0.72),
                     text: subtitle,
                 },
                 noBorder: true,
@@ -171,8 +155,7 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
 
         return {};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed switchToThread', error);
+        logError('Failed switchToThread', error);
         return {error};
     }
 };
@@ -205,7 +188,7 @@ export async function createThreadFromNewPost(serverUrl: string, post: Post, pre
             });
             models.push(...threadParticipantModels);
         } else { // If the post is a root post, then we need to add it to the thread table
-            const threadModels = await prepareThreadsFromReceivedPosts(operator, [post]);
+            const threadModels = await prepareThreadsFromReceivedPosts(operator, [post], false);
             models.push(...threadModels);
         }
 
@@ -215,8 +198,7 @@ export async function createThreadFromNewPost(serverUrl: string, post: Post, pre
 
         return {models};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed createThreadFromNewPost', error);
+        logError('Failed createThreadFromNewPost', error);
         return {error};
     }
 }
@@ -229,6 +211,7 @@ export async function processReceivedThreads(serverUrl: string, threads: Thread[
 
         const posts: Post[] = [];
         const users: UserProfile[] = [];
+        const threadsToHandle: ThreadWithLastFetchedAt[] = [];
 
         // Extract posts & users from the received threads
         for (let i = 0; i < threads.length; i++) {
@@ -239,6 +222,7 @@ export async function processReceivedThreads(serverUrl: string, threads: Thread[
                     users.push(participant);
                 }
             });
+            threadsToHandle.push({...threads[i], lastFetchedAt: post.create_at});
         }
 
         const postModels = await operator.handlePosts({
@@ -249,7 +233,7 @@ export async function processReceivedThreads(serverUrl: string, threads: Thread[
         });
 
         const threadModels = await operator.handleThreads({
-            threads,
+            threads: threadsToHandle,
             teamId,
             prepareRecordsOnly: true,
             loadedInGlobalThreads,
@@ -270,8 +254,7 @@ export async function processReceivedThreads(serverUrl: string, threads: Thread[
         }
         return {models};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed processReceivedThreads', error);
+        logError('Failed processReceivedThreads', error);
         return {error};
     }
 }
@@ -284,19 +267,43 @@ export async function markTeamThreadsAsRead(serverUrl: string, teamId: string, p
             record.unreadMentions = 0;
             record.unreadReplies = 0;
             record.lastViewedAt = Date.now();
+            record.viewedAt = Date.now();
         }));
         if (!prepareRecordsOnly) {
             await operator.batchRecords(models);
         }
         return {models};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed markTeamThreadsAsRead', error);
+        logError('Failed markTeamThreadsAsRead', error);
         return {error};
     }
 }
 
-export async function updateThread(serverUrl: string, threadId: string, updatedThread: Partial<Thread>, prepareRecordsOnly = false) {
+export async function markThreadAsViewed(serverUrl: string, threadId: string, prepareRecordsOnly = false) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const thread = await getThreadById(database, threadId);
+        if (!thread) {
+            return {error: 'Thread not found'};
+        }
+
+        thread.prepareUpdate((th) => {
+            th.viewedAt = thread.lastViewedAt;
+            th.lastViewedAt = Date.now();
+        });
+
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords([thread]);
+        }
+
+        return {model: thread};
+    } catch (error) {
+        logError('Failed markThreadAsViewed', error);
+        return {error};
+    }
+}
+
+export async function updateThread(serverUrl: string, threadId: string, updatedThread: Partial<ThreadWithViewedAt>, prepareRecordsOnly = false) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const thread = await getThreadById(database, threadId);
@@ -307,8 +314,8 @@ export async function updateThread(serverUrl: string, threadId: string, updatedT
         const model = thread.prepareUpdate((record) => {
             record.isFollowing = updatedThread.is_following ?? record.isFollowing;
             record.replyCount = updatedThread.reply_count ?? record.replyCount;
-
             record.lastViewedAt = updatedThread.last_viewed_at ?? record.lastViewedAt;
+            record.viewedAt = updatedThread.viewed_at ?? record.viewedAt;
             record.unreadMentions = updatedThread.unread_mentions ?? record.unreadMentions;
             record.unreadReplies = updatedThread.unread_replies ?? record.unreadReplies;
         });
@@ -317,8 +324,7 @@ export async function updateThread(serverUrl: string, threadId: string, updatedT
         }
         return {model};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('Failed markTeamThreadsAsRead', error);
+        logError('Failed updateThread', error);
         return {error};
     }
 }

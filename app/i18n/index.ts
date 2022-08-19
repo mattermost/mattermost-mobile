@@ -1,29 +1,37 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import moment from 'moment-timezone';
+import moment from 'moment';
 import {getLocales} from 'react-native-localize';
+import 'moment/min/locales';
 
 import en from '@assets/i18n/en.json';
+import {logError} from '@utils/log';
 
 import availableLanguages from './languages';
 
 const deviceLocale = getLocales()[0].languageTag;
+const PRIMARY_LOCALE = 'en';
 export const DEFAULT_LOCALE = getLocaleFromLanguage(deviceLocale);
 
 function loadTranslation(locale?: string) {
     try {
         let translations: Record<string, string>;
-        let momentData;
 
         switch (locale) {
+            case 'bg':
+                require('@formatjs/intl-pluralrules/locale-data/bg');
+                require('@formatjs/intl-numberformat/locale-data/bg');
+                require('@formatjs/intl-datetimeformat/locale-data/bg');
+
+                translations = require('@assets/i18n/bg.json');
+                break;
             case 'de':
                 require('@formatjs/intl-pluralrules/locale-data/de');
                 require('@formatjs/intl-numberformat/locale-data/de');
                 require('@formatjs/intl-datetimeformat/locale-data/de');
 
                 translations = require('@assets/i18n/de.json');
-                momentData = require('moment/locale/de');
                 break;
             case 'en-AU':
                 require('@formatjs/intl-pluralrules/locale-data/en');
@@ -31,7 +39,6 @@ function loadTranslation(locale?: string) {
                 require('@formatjs/intl-datetimeformat/locale-data/en');
 
                 translations = require('@assets/i18n/en_AU.json');
-                momentData = require('moment/locale/en-au');
                 break;
             case 'es':
                 require('@formatjs/intl-pluralrules/locale-data/es');
@@ -39,7 +46,13 @@ function loadTranslation(locale?: string) {
                 require('@formatjs/intl-datetimeformat/locale-data/es');
 
                 translations = require('@assets/i18n/es.json');
-                momentData = require('moment/locale/es');
+                break;
+            case 'fa':
+                require('@formatjs/intl-pluralrules/locale-data/fa');
+                require('@formatjs/intl-numberformat/locale-data/fa');
+                require('@formatjs/intl-datetimeformat/locale-data/fa');
+
+                translations = require('@assets/i18n/fa.json');
                 break;
             case 'fr':
                 require('@formatjs/intl-pluralrules/locale-data/fr');
@@ -47,7 +60,13 @@ function loadTranslation(locale?: string) {
                 require('@formatjs/intl-datetimeformat/locale-data/fr');
 
                 translations = require('@assets/i18n/fr.json');
-                momentData = require('moment/locale/fr');
+                break;
+            case 'hu':
+                require('@formatjs/intl-pluralrules/locale-data/hu');
+                require('@formatjs/intl-numberformat/locale-data/hu');
+                require('@formatjs/intl-datetimeformat/locale-data/hu');
+
+                translations = require('@assets/i18n/hu.json');
                 break;
             case 'it':
                 require('@formatjs/intl-pluralrules/locale-data/it');
@@ -55,7 +74,6 @@ function loadTranslation(locale?: string) {
                 require('@formatjs/intl-datetimeformat/locale-data/it');
 
                 translations = require('@assets/i18n/it.json');
-                momentData = require('moment/locale/it');
                 break;
             case 'ja':
                 require('@formatjs/intl-pluralrules/locale-data/ja');
@@ -63,7 +81,6 @@ function loadTranslation(locale?: string) {
                 require('@formatjs/intl-datetimeformat/locale-data/ja');
 
                 translations = require('@assets/i18n/ja.json');
-                momentData = require('moment/locale/ja');
                 break;
             case 'ko':
                 require('@formatjs/intl-pluralrules/locale-data/ko');
@@ -71,7 +88,6 @@ function loadTranslation(locale?: string) {
                 require('@formatjs/intl-datetimeformat/locale-data/ko');
 
                 translations = require('@assets/i18n/ko.json');
-                momentData = require('moment/locale/ko');
                 break;
             case 'nl':
                 require('@formatjs/intl-pluralrules/locale-data/nl');
@@ -79,7 +95,6 @@ function loadTranslation(locale?: string) {
                 require('@formatjs/intl-datetimeformat/locale-data/nl');
 
                 translations = require('@assets/i18n/nl.json');
-                momentData = require('moment/locale/nl');
                 break;
             case 'pl':
                 require('@formatjs/intl-pluralrules/locale-data/pl');
@@ -87,7 +102,6 @@ function loadTranslation(locale?: string) {
                 require('@formatjs/intl-datetimeformat/locale-data/pl');
 
                 translations = require('@assets/i18n/pl.json');
-                momentData = require('moment/locale/pl');
                 break;
             case 'pt-BR':
                 require('@formatjs/intl-pluralrules/locale-data/pt');
@@ -95,7 +109,6 @@ function loadTranslation(locale?: string) {
                 require('@formatjs/intl-datetimeformat/locale-data/pt');
 
                 translations = require('@assets/i18n/pt-BR.json');
-                momentData = require('moment/locale/pt-br');
                 break;
             case 'ro':
                 require('@formatjs/intl-pluralrules/locale-data/ro');
@@ -103,7 +116,6 @@ function loadTranslation(locale?: string) {
                 require('@formatjs/intl-datetimeformat/locale-data/ro');
 
                 translations = require('@assets/i18n/ro.json');
-                momentData = require('moment/locale/ro');
                 break;
             case 'ru':
                 require('@formatjs/intl-pluralrules/locale-data/ru');
@@ -111,7 +123,13 @@ function loadTranslation(locale?: string) {
                 require('@formatjs/intl-datetimeformat/locale-data/ru');
 
                 translations = require('@assets/i18n/ru.json');
-                momentData = require('moment/locale/ru');
+                break;
+            case 'sv':
+                require('@formatjs/intl-pluralrules/locale-data/sv');
+                require('@formatjs/intl-numberformat/locale-data/sv');
+                require('@formatjs/intl-datetimeformat/locale-data/sv');
+
+                translations = require('@assets/i18n/sv.json');
                 break;
             case 'tr':
                 require('@formatjs/intl-pluralrules/locale-data/tr');
@@ -119,7 +137,6 @@ function loadTranslation(locale?: string) {
                 require('@formatjs/intl-datetimeformat/locale-data/tr');
 
                 translations = require('@assets/i18n/tr.json');
-                momentData = require('moment/locale/tr');
                 break;
             case 'uk':
                 require('@formatjs/intl-pluralrules/locale-data/uk');
@@ -127,17 +144,14 @@ function loadTranslation(locale?: string) {
                 require('@formatjs/intl-datetimeformat/locale-data/uk');
 
                 translations = require('@assets/i18n/uk.json');
-                momentData = require('moment/locale/uk');
                 break;
             case 'zh-CN':
                 loadChinesePolyfills();
                 translations = require('@assets/i18n/zh-CN.json');
-                momentData = require('moment/locale/zh-cn');
                 break;
             case 'zh-TW':
                 loadChinesePolyfills();
                 translations = require('@assets/i18n/zh-TW.json');
-                momentData = require('moment/locale/zh-tw');
                 break;
             default:
                 require('@formatjs/intl-pluralrules/locale-data/en');
@@ -148,15 +162,9 @@ function loadTranslation(locale?: string) {
                 break;
         }
 
-        if (momentData && locale) {
-            const lang = getLocaleFromLanguage(locale).toLowerCase();
-            moment.updateLocale(lang, momentData);
-        } else {
-            resetMomentLocale();
-        }
         return translations;
     } catch (e) {
-        console.error('NO Translation found', e); //eslint-disable-line no-console
+        logError('NO Translation found', e);
         return en;
     }
 }
@@ -169,7 +177,7 @@ function loadChinesePolyfills() {
 
 export function getLocaleFromLanguage(lang: string) {
     const languageCode = lang.split('-')[0];
-    const locale = availableLanguages[lang] || languageCode;
+    const locale = availableLanguages[lang] || availableLanguages[languageCode] || PRIMARY_LOCALE;
     return locale;
 }
 

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, useRef, useCallback} from 'react';
+import React, {useState, useRef, useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {
     LayoutChangeEvent,
@@ -12,9 +12,10 @@ import {
     NativeSyntheticEvent,
     NativeScrollEvent,
     Platform,
+    useWindowDimensions,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
 import ErrorText from '@components/error_text';
@@ -24,8 +25,7 @@ import Loading from '@components/loading';
 import OptionItem from '@components/option_item';
 import {General, Channel} from '@constants';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
-import useHeaderHeight from '@hooks/header';
+import {useIsTablet, useKeyboardHeight, useModalPosition} from '@hooks/device';
 import {t} from '@i18n';
 import {
     changeOpacity,
@@ -34,12 +34,18 @@ import {
 } from '@utils/theme';
 import {typography} from '@utils/typography';
 
+const FIELD_MARGIN_BOTTOM = 24;
+const MAKE_PRIVATE_MARGIN_BOTTOM = 32;
+const BOTTOM_AUTOCOMPLETE_SEPARATION = Platform.select({ios: 10, default: 10});
+const LIST_PADDING = 32;
+const AUTOCOMPLETE_ADJUST = 5;
+
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
         flex: 1,
     },
     scrollView: {
-        paddingVertical: 30,
+        paddingVertical: LIST_PADDING,
         paddingHorizontal: 20,
     },
     errorContainer: {
@@ -49,29 +55,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    input: {
-        color: theme.centerChannelColor,
-        fontSize: 14,
-        height: 40,
-        paddingHorizontal: 15,
-    },
     loading: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
     },
-    textInput: {
-        marginTop: 30,
+    makePrivateContainer: {
+        marginBottom: MAKE_PRIVATE_MARGIN_BOTTOM,
+    },
+    fieldContainer: {
+        marginBottom: FIELD_MARGIN_BOTTOM,
     },
     helpText: {
-        ...typography('Body', 400, 'Regular'),
-        fontSize: 12,
-        lineHeight: 16,
+        ...typography('Body', 75, 'Regular'),
         color: changeOpacity(theme.centerChannelColor, 0.5),
-        marginTop: 10,
-    },
-    headerHelpText: {
-        zIndex: -1,
+        marginTop: 8,
     },
 }));
 
@@ -108,8 +106,7 @@ export default function ChannelInfoForm({
 }: Props) {
     const intl = useIntl();
     const {formatMessage} = intl;
-    const isTablet = useIsTablet();
-    const headerHeight = useHeaderHeight();
+    const insets = useSafeAreaInsets();
 
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -122,11 +119,23 @@ export default function ChannelInfoForm({
 
     const updateScrollTimeout = useRef<NodeJS.Timeout>();
 
-    const [keyboardVisible, setKeyBoardVisible] = useState<boolean>(false);
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const mainView = useRef<View>(null);
+    const modalPosition = useModalPosition(mainView);
+
+    const dimensions = useWindowDimensions();
+    const isTablet = useIsTablet();
+
+    const keyboardHeight = useKeyboardHeight();
+    const [keyboardVisible, setKeyBoardVisible] = useState(false);
     const [scrollPosition, setScrollPosition] = useState(0);
 
-    const [headerPosition, setHeaderPosition] = useState<number>(0);
+    const [wrapperHeight, setWrapperHeight] = useState(0);
+    const [errorHeight, setErrorHeight] = useState(0);
+    const [displayNameFieldHeight, setDisplayNameFieldHeight] = useState(0);
+    const [makePrivateHeight, setMakePrivateHeight] = useState(0);
+    const [purposeFieldHeight, setPurposeFieldHeight] = useState(0);
+    const [headerFieldHeight, setHeaderFieldHeight] = useState(0);
+    const [headerPosition, setHeaderPosition] = useState(0);
 
     const optionalText = formatMessage({id: t('channel_modal.optional'), defaultMessage: '(optional)'});
     const labelDisplayName = formatMessage({id: t('channel_modal.name'), defaultMessage: 'Name'});
@@ -157,27 +166,11 @@ export default function ChannelInfoForm({
         scrollViewRef.current?.scrollToPosition(0, 0, true);
     }, []);
 
-    const onHeaderLayout = useCallback(({nativeEvent}: LayoutChangeEvent) => {
-        setHeaderPosition(nativeEvent.layout.y);
-    }, []);
-
     const scrollHeaderToTop = useCallback(() => {
         if (scrollViewRef?.current) {
             scrollViewRef.current?.scrollToPosition(0, headerPosition);
         }
-    }, []);
-
-    const onKeyboardDidShow = useCallback((frames: any) => {
-        setKeyBoardVisible(true);
-        if (Platform.OS === 'android') {
-            setKeyboardHeight(frames.endCoordinates.height);
-        }
-    }, [scrollHeaderToTop]);
-
-    const onKeyboardDidHide = useCallback(() => {
-        setKeyBoardVisible(false);
-        setKeyboardHeight(0);
-    }, []);
+    }, [headerPosition]);
 
     const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
         const pos = e.nativeEvent.contentOffset.y;
@@ -188,6 +181,35 @@ export default function ChannelInfoForm({
             setScrollPosition(pos);
             updateScrollTimeout.current = undefined;
         }, 200);
+    }, []);
+
+    useEffect(() => {
+        if (keyboardVisible && !keyboardHeight) {
+            setKeyBoardVisible(false);
+        }
+        if (!keyboardVisible && keyboardHeight) {
+            setKeyBoardVisible(true);
+        }
+    }, [keyboardHeight]);
+
+    const onLayoutError = useCallback((e: LayoutChangeEvent) => {
+        setErrorHeight(e.nativeEvent.layout.height);
+    }, []);
+    const onLayoutMakePrivate = useCallback((e: LayoutChangeEvent) => {
+        setMakePrivateHeight(e.nativeEvent.layout.height);
+    }, []);
+    const onLayoutDisplayName = useCallback((e: LayoutChangeEvent) => {
+        setDisplayNameFieldHeight(e.nativeEvent.layout.height);
+    }, []);
+    const onLayoutPurpose = useCallback((e: LayoutChangeEvent) => {
+        setPurposeFieldHeight(e.nativeEvent.layout.height);
+    }, []);
+    const onLayoutHeader = useCallback((e: LayoutChangeEvent) => {
+        setHeaderFieldHeight(e.nativeEvent.layout.height);
+        setHeaderPosition(e.nativeEvent.layout.y);
+    }, []);
+    const onLayoutWrapper = useCallback((e: LayoutChangeEvent) => {
+        setWrapperHeight(e.nativeEvent.layout.height);
     }, []);
 
     if (saving) {
@@ -209,6 +231,7 @@ export default function ChannelInfoForm({
             <SafeAreaView
                 edges={['bottom', 'left', 'right']}
                 style={styles.errorContainer}
+                onLayout={onLayoutError}
             >
                 <View style={styles.errorWrapper}>
                     <ErrorText
@@ -219,21 +242,43 @@ export default function ChannelInfoForm({
             </SafeAreaView>
         );
     }
-    const platformHeaderHeight = headerHeight.defaultHeight + Platform.select({ios: 10, default: headerHeight.defaultHeight + 10});
-    const postInputTop = (headerPosition + scrollPosition + platformHeaderHeight) - keyboardHeight;
+
+    const bottomSpace = (dimensions.height - wrapperHeight - modalPosition);
+    const otherElementsSize = LIST_PADDING + errorHeight +
+        (showSelector ? makePrivateHeight + MAKE_PRIVATE_MARGIN_BOTTOM : 0) +
+        (displayHeaderOnly ? 0 : purposeFieldHeight + FIELD_MARGIN_BOTTOM + displayNameFieldHeight + FIELD_MARGIN_BOTTOM);
+
+    const keyboardOverlap = Platform.select({
+        ios: isTablet ?
+            Math.max(0, keyboardHeight - bottomSpace) :
+            keyboardHeight || insets.bottom,
+        default: 0});
+    const workingSpace = wrapperHeight - keyboardOverlap;
+    const spaceOnTop = otherElementsSize - scrollPosition - AUTOCOMPLETE_ADJUST;
+    const spaceOnBottom = (workingSpace + scrollPosition) - (otherElementsSize + headerFieldHeight + BOTTOM_AUTOCOMPLETE_SEPARATION);
+    const insetsAdjust = keyboardHeight - keyboardHeight ? insets.bottom : 0;
+    const keyboardAdjust = Platform.select({
+        ios: isTablet ?
+            keyboardOverlap :
+            insetsAdjust,
+        default: 0,
+    });
+    const autocompletePosition = spaceOnTop > spaceOnBottom ? (workingSpace + scrollPosition + AUTOCOMPLETE_ADJUST + keyboardAdjust) - otherElementsSize : (workingSpace + scrollPosition + keyboardAdjust) - (otherElementsSize + headerFieldHeight);
+    const autocompleteAvailableSpace = spaceOnTop > spaceOnBottom ? spaceOnTop : spaceOnBottom;
+    const growUp = spaceOnTop > spaceOnBottom;
 
     return (
         <SafeAreaView
             edges={['bottom', 'left', 'right']}
             style={styles.container}
             testID='create_or_edit_channel.screen'
+            onLayout={onLayoutWrapper}
+            ref={mainView}
         >
             <KeyboardAwareScrollView
-                testID={'create_or_edit_channel.scrollview'}
+                testID={'create_or_edit_channel.scroll_view'}
                 ref={scrollViewRef}
                 keyboardShouldPersistTaps={'always'}
-                onKeyboardDidShow={onKeyboardDidShow}
-                onKeyboardDidHide={onKeyboardDidHide}
                 enableAutomaticScroll={!keyboardVisible}
                 contentContainerStyle={styles.scrollView}
                 onScroll={onScroll}
@@ -252,6 +297,8 @@ export default function ChannelInfoForm({
                                 type={'toggle'}
                                 selected={isPrivate}
                                 icon={'lock-outline'}
+                                containerStyle={styles.makePrivateContainer}
+                                onLayout={onLayoutMakePrivate}
                             />
                         )}
                         {!displayHeaderOnly && (
@@ -273,76 +320,86 @@ export default function ChannelInfoForm({
                                     testID='channel_info_form.display_name.input'
                                     value={displayName}
                                     ref={nameInput}
-                                    containerStyle={styles.textInput}
+                                    containerStyle={styles.fieldContainer}
                                     theme={theme}
+                                    onLayout={onLayoutDisplayName}
                                 />
-                                <FloatingTextInput
-                                    autoCorrect={false}
-                                    autoCapitalize={'none'}
-                                    blurOnSubmit={false}
-                                    disableFullscreenUI={true}
-                                    enablesReturnKeyAutomatically={true}
-                                    label={labelPurpose}
-                                    placeholder={placeholderPurpose}
-                                    onChangeText={onPurposeChange}
-                                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                                    returnKeyType='next'
-                                    showErrorIcon={false}
-                                    spellCheck={false}
-                                    testID='channel_info_form.purpose.input'
-                                    value={purpose}
-                                    ref={purposeInput}
-                                    containerStyle={styles.textInput}
-                                    theme={theme}
-                                />
-                                <FormattedText
-                                    style={styles.helpText}
-                                    id='channel_modal.descriptionHelp'
-                                    defaultMessage='Describe how this channel should be used.'
-                                    testID='channel_info_form.purpose.description'
-                                />
+                                <View
+                                    style={styles.fieldContainer}
+                                    onLayout={onLayoutPurpose}
+                                >
+                                    <FloatingTextInput
+                                        autoCorrect={false}
+                                        autoCapitalize={'none'}
+                                        blurOnSubmit={false}
+                                        disableFullscreenUI={true}
+                                        enablesReturnKeyAutomatically={true}
+                                        label={labelPurpose}
+                                        placeholder={placeholderPurpose}
+                                        onChangeText={onPurposeChange}
+                                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                                        returnKeyType='next'
+                                        showErrorIcon={false}
+                                        spellCheck={false}
+                                        testID='channel_info_form.purpose.input'
+                                        value={purpose}
+                                        ref={purposeInput}
+                                        theme={theme}
+                                    />
+                                    <FormattedText
+                                        style={styles.helpText}
+                                        id='channel_modal.descriptionHelp'
+                                        defaultMessage='Describe how this channel should be used.'
+                                        testID='channel_info_form.purpose.description'
+                                    />
+                                </View>
                             </>
                         )}
-                        <FloatingTextInput
-                            autoCorrect={false}
-                            autoCapitalize={'none'}
-                            blurOnSubmit={false}
-                            disableFullscreenUI={true}
-                            enablesReturnKeyAutomatically={true}
-                            label={labelHeader}
-                            placeholder={placeholderHeader}
-                            onChangeText={onHeaderChange}
-                            multiline={true}
-                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                            returnKeyType='next'
-                            showErrorIcon={false}
-                            spellCheck={false}
-                            testID='channel_info_form.header.input'
-                            value={header}
-                            onLayout={onHeaderLayout}
-                            ref={headerInput}
-                            containerStyle={styles.textInput}
-                            theme={theme}
-                        />
-                        <FormattedText
-                            style={styles.helpText}
-                            id='channel_modal.headerHelp'
-                            defaultMessage={'Specify text to appear in the channel header beside the channel name. For example, include frequently used links by typing link text [Link Title](http://example.com).'}
-                            testID='channel_info_form.header.description'
-                        />
+                        <View
+                            style={styles.fieldContainer}
+                        >
+                            <FloatingTextInput
+                                autoCorrect={false}
+                                autoCapitalize={'none'}
+                                blurOnSubmit={false}
+                                disableFullscreenUI={true}
+                                enablesReturnKeyAutomatically={true}
+                                label={labelHeader}
+                                placeholder={placeholderHeader}
+                                onChangeText={onHeaderChange}
+                                multiline={true}
+                                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                                returnKeyType='next'
+                                showErrorIcon={false}
+                                spellCheck={false}
+                                testID='channel_info_form.header.input'
+                                value={header}
+                                ref={headerInput}
+                                theme={theme}
+                                onFocus={scrollHeaderToTop}
+                                onLayout={onLayoutHeader}
+                            />
+                            <FormattedText
+                                style={styles.helpText}
+                                id='channel_modal.headerHelp'
+                                defaultMessage={'Specify text to appear in the channel header beside the channel name. For example, include frequently used links by typing link text [Link Title](http://example.com).'}
+                                testID='channel_info_form.header.description'
+
+                            />
+                        </View>
                     </View>
                 </TouchableWithoutFeedback>
             </KeyboardAwareScrollView>
             <View>
                 <Autocomplete
-                    postInputTop={postInputTop}
+                    position={autocompletePosition}
                     updateValue={onHeaderChange}
                     cursorPosition={header.length}
                     value={header}
                     nestedScrollEnabled={true}
-                    maxHeightOverride={isTablet ? 200 : undefined}
+                    availableSpace={autocompleteAvailableSpace}
                     inPost={false}
-                    fixedBottomPosition={false}
+                    growDown={!growUp}
                 />
             </View>
         </SafeAreaView>

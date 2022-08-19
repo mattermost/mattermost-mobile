@@ -16,6 +16,7 @@ import {
     transformTeamSearchHistoryRecord,
 } from '@database/operator/server_data_operator/transformers/team';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
+import {logWarning} from '@utils/log';
 
 import type {
     HandleMyTeamArgs, HandleTeamArgs,
@@ -49,13 +50,11 @@ const TeamHandler = (superclass: any) => class extends superclass {
      * @param {HandleTeamMembershipArgs} teamMembershipsArgs
      * @param {TeamMembership[]} teamMembershipsArgs.teamMemberships
      * @param {boolean} teamMembershipsArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<TeamMembershipModel[]>}
      */
     handleTeamMemberships = async ({teamMemberships, prepareRecordsOnly = true}: HandleTeamMembershipArgs): Promise<TeamMembershipModel[]> => {
         if (!teamMemberships?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "teamMemberships" array has been passed to the handleTeamMemberships method',
             );
             return [];
@@ -106,13 +105,11 @@ const TeamHandler = (superclass: any) => class extends superclass {
      * @param {HandleTeamArgs} teamsArgs
      * @param {Team[]} teamsArgs.teams
      * @param {boolean} teamsArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<TeamModel[]>}
      */
     handleTeam = async ({teams, prepareRecordsOnly = true}: HandleTeamArgs): Promise<TeamModel[]> => {
         if (!teams?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "teams" array has been passed to the handleTeam method',
             );
             return [];
@@ -157,13 +154,11 @@ const TeamHandler = (superclass: any) => class extends superclass {
      * @param {HandleTeamChannelHistoryArgs} teamChannelHistoriesArgs
      * @param {TeamChannelHistory[]} teamChannelHistoriesArgs.teamChannelHistories
      * @param {boolean} teamChannelHistoriesArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<TeamChannelHistoryModel[]>}
      */
     handleTeamChannelHistory = async ({teamChannelHistories, prepareRecordsOnly = true}: HandleTeamChannelHistoryArgs): Promise<TeamChannelHistoryModel[]> => {
         if (!teamChannelHistories?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "teamChannelHistories" array has been passed to the handleTeamChannelHistory method',
             );
             return [];
@@ -185,13 +180,11 @@ const TeamHandler = (superclass: any) => class extends superclass {
      * @param {HandleTeamSearchHistoryArgs} teamSearchHistoriesArgs
      * @param {TeamSearchHistory[]} teamSearchHistoriesArgs.teamSearchHistories
      * @param {boolean} teamSearchHistoriesArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<TeamSearchHistoryModel[]>}
      */
     handleTeamSearchHistory = async ({teamSearchHistories, prepareRecordsOnly = true}: HandleTeamSearchHistoryArgs): Promise<TeamSearchHistoryModel[]> => {
         if (!teamSearchHistories?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "teamSearchHistories" array has been passed to the handleTeamSearchHistory method',
             );
             return [];
@@ -214,13 +207,11 @@ const TeamHandler = (superclass: any) => class extends superclass {
      * @param {HandleMyTeamArgs} myTeamsArgs
      * @param {MyTeam[]} myTeamsArgs.myTeams
      * @param {boolean} myTeamsArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<MyTeamModel[]>}
      */
     handleMyTeam = async ({myTeams, prepareRecordsOnly = true}: HandleMyTeamArgs): Promise<MyTeamModel[]> => {
         if (!myTeams?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "myTeams" array has been passed to the handleMyTeam method',
             );
             return [];

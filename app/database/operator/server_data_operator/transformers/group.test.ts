@@ -1,11 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {
-    transformGroupRecord,
-} from '@database/operator/server_data_operator/transformers/group';
+import {OperationType} from '@constants/database';
+import {transformGroupRecord} from '@database/operator/server_data_operator/transformers/group';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
-import {OperationType} from '@typings/database/enums';
 
 describe('*** GROUP Prepare Records Test ***', () => {
     it('=> transformGroupRecord: should return an array of type GroupModel', async () => {
@@ -25,6 +23,7 @@ describe('*** GROUP Prepare Records Test ***', () => {
                     name: 'recent',
                     source: 'custom',
                     remote_id: 'custom',
+                    member_count: 10,
                 } as Group,
             },
         });

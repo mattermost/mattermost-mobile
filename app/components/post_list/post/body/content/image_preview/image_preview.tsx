@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Animated, StyleSheet, TouchableWithoutFeedback, View} from 'react-native';
 
 import {getRedirectLocation} from '@actions/remote/general';
-import FileIcon from '@components/post_list/post/body/files/file_icon';
+import FileIcon from '@components/files/file_icon';
 import ProgressiveImage from '@components/progressive_image';
 import {GalleryInit} from '@context/gallery';
 import {useServerUrl} from '@context/server';
@@ -18,6 +18,8 @@ import {generateId} from '@utils/general';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
 import {changeOpacity} from '@utils/theme';
 import {extractFilenameFromUrl, isImageLink, isValidUrl} from '@utils/url';
+
+import type {GalleryItemType} from '@typings/screens/gallery';
 
 type ImagePreviewProps = {
     expandedLink?: string;

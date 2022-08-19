@@ -10,6 +10,7 @@ import FileViewer from 'react-native-file-viewer';
 import FileSystem from 'react-native-fs';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Share from 'react-native-share';
 
 import {downloadFile} from '@actions/remote/file';
@@ -24,6 +25,7 @@ import {galleryItemToFileInfo} from '@utils/gallery';
 import {typography} from '@utils/typography';
 
 import type {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
+import type {GalleryAction, GalleryItemType} from '@typings/screens/gallery';
 
 type Props = {
     action: GalleryAction;
@@ -66,6 +68,7 @@ const styles = StyleSheet.create({
 const DownloadWithAction = ({action, item, onDownloadSuccess, setAction}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
+    const insets = useSafeAreaInsets();
     const [showToast, setShowToast] = useState<boolean|undefined>();
     const [error, setError] = useState('');
     const [saved, setSaved] = useState(false);
@@ -110,7 +113,7 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction}: Props)
 
     const animatedStyle = useAnimatedStyle(() => ({
         position: 'absolute',
-        bottom: GALLERY_FOOTER_HEIGHT + 8,
+        bottom: GALLERY_FOOTER_HEIGHT + 8 + insets.bottom,
         opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
     }));
 

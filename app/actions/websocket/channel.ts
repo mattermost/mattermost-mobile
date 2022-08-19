@@ -9,11 +9,13 @@ import {
     markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt,
     storeMyChannelsForTeam, updateChannelInfoFromChannel, updateMyChannelFromWebsocket,
 } from '@actions/local/channel';
+import {storePostsForChannel} from '@actions/local/post';
 import {switchToGlobalThreads} from '@actions/local/thread';
 import {fetchMissingDirectChannelsInfo, fetchMyChannel, fetchChannelStats, fetchChannelById, switchToChannelById} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
+import {loadCallForChannel} from '@calls/actions/calls';
 import {Events, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
@@ -281,19 +283,19 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
             }
 
             const {posts, order, authors, actionType, previousPostId} = await fetchPostsForChannel(serverUrl, channelId, true);
-            if (actionType) {
-                models.push(...await operator.handlePosts({
-                    actionType,
-                    order,
-                    posts,
-                    previousPostId,
-                    prepareRecordsOnly: true,
-                }));
+            if (posts?.length && order?.length) {
+                const {models: prepared} = await storePostsForChannel(
+                    serverUrl, channelId,
+                    posts, order, previousPostId ?? '',
+                    actionType, authors, true,
+                );
+
+                if (prepared?.length) {
+                    models.push(...prepared);
+                }
             }
 
-            if (authors?.length) {
-                models.push(...await operator.handleUsers({users: authors, prepareRecordsOnly: true}));
-            }
+            loadCallForChannel(serverUrl, channelId);
         } else {
             const addedUser = getUserById(database, userId);
             if (!addedUser) {

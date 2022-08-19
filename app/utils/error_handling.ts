@@ -14,6 +14,8 @@ import {
     LOGGER_NATIVE,
 } from '@utils/sentry';
 
+import {logWarning} from './log';
+
 class JavascriptAndNativeErrorHandler {
     initializeErrorHandling = () => {
         initializeSentry();
@@ -22,8 +24,7 @@ class JavascriptAndNativeErrorHandler {
     };
 
     nativeErrorHandler = (e: string) => {
-        // eslint-disable-next-line no-console
-        console.warn('Handling native error ' + e);
+        logWarning('Handling native error ' + e);
         captureException(e, LOGGER_NATIVE);
     };
 
@@ -35,8 +36,7 @@ class JavascriptAndNativeErrorHandler {
             return;
         }
 
-        // eslint-disable-next-line no-console
-        console.warn('Handling Javascript error', e, isFatal);
+        logWarning('Handling Javascript error', e, isFatal);
         captureJSException(e, isFatal);
 
         if (isFatal && e instanceof Error) {

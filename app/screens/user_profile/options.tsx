@@ -6,7 +6,6 @@ import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, StyleSheet, TouchableOpacity, View} from 'react-native';
 
 import {createDirectChannel, switchToChannelById} from '@actions/remote/channel';
-import {buttonBackgroundStyle, buttonTextStyle} from '@app/utils/buttonStyles';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import OptionBox, {OPTIONS_HEIGHT} from '@components/option_box';
@@ -14,6 +13,7 @@ import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissBottomSheet} from '@screens/navigation';
+import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 
 export type OptionsType = 'all' | 'message';
 
@@ -77,12 +77,14 @@ const UserProfileOptions = ({location, type, userId, username}: Props) => {
                 <OptionBox
                     iconName='send'
                     onPress={openChannel}
+                    testID='user_profile_options.send_message.option'
                     text={intl.formatMessage({id: 'channel_info.send_mesasge', defaultMessage: 'Send message'})}
                 />
                 <View style={styles.divider}/>
                 <OptionBox
                     iconName='at'
                     onPress={mentionUser}
+                    testID='user_profile_options.mention.option'
                     text={intl.formatMessage({id: 'channel_info.mention', defaultMessage: 'Mention'})}
                 />
             </View>
@@ -94,6 +96,7 @@ const UserProfileOptions = ({location, type, userId, username}: Props) => {
             <TouchableOpacity
                 style={[buttonStyle, styles.singleButton]}
                 onPress={openChannel}
+                testID='user_profile_options.send_message.option'
             >
                 <CompassIcon
                     color={theme.buttonBg}

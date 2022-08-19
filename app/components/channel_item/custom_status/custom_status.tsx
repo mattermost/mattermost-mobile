@@ -35,7 +35,7 @@ const CustomStatus = ({customStatus, customStatusExpired, isCustomStatusEnabled,
         <CustomStatusEmoji
             customStatus={customStatus!}
             style={[style.customStatusEmoji, isInfo && style.info]}
-            testID={`channel_list_item.custom_status.${customStatus!.emoji}-${customStatus!.text}`}
+            testID={`channel_item.custom_status.${customStatus!.emoji}-${customStatus!.text}`}
         />
     );
 };

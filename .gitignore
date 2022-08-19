@@ -36,6 +36,7 @@ DerivedData
 project.xcworkspace
 ios/Pods
 .podinstall
+ios/.xcode.env.local
 
 # Android/IntelliJ
 #
@@ -80,11 +81,11 @@ tags
 # For more information about the recommended setup visit:
 # https://docs.fastlane.tools/best-practices/source-control/
 
-*/fastlane/report.xml
-*/fastlane/Preview.html
-*/fastlane/screenshots
-fastlane/.env
-fastlane/report.xml
+**/fastlane/report.xml
+**/fastlane/Preview.html
+**/fastlane/screenshots
+**/fastlane/test_output
+**/fastlane/.env
 
 # Sentry
 android/sentry.properties
@@ -107,7 +108,7 @@ detox/detox_pixel_4_xl_api_30
 #editor-settings
 .vscode
 .scannerwork
+launch.json
 
 # Notice.txt generation
 !build/notice-file
-

@@ -15,4 +15,16 @@ import Gekidou
   @objc func postNotificationReceipt(_ userInfo: [AnyHashable:Any]) {
     Network.default.postNotificationReceipt(userInfo)
   }
+  
+  @objc func attachSession(_ id: String, completionHandler: @escaping () -> Void) {
+    let shareExtension = ShareExtension()
+    shareExtension.attachSession(
+      id: id,
+      completionHandler: completionHandler
+    )
+  }
+  
+  @objc func setPreference(_ value: Any?, forKey name: String) {
+    Preferences.default.set(value, forKey: name)
+  }
 }

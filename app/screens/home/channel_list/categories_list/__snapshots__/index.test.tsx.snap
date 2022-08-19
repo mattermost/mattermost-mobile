@@ -170,9 +170,7 @@ exports[`components/categories_list should render channels error 1`] = `
           }
         }
         testID="channel_list_header.server_display_name"
-      >
-        
-      </Text>
+      />
       <View
         animatedStyle={
           Object {
@@ -190,7 +188,7 @@ exports[`components/categories_list should render channels error 1`] = `
         style={
           Object {
             "borderBottomColor": "rgba(255,255,255,0.16)",
-            "borderLeftColor": "#1c58d9",
+            "borderLeftColor": "#ffffff",
             "borderRadius": 7,
             "borderRightColor": "rgba(255,255,255,0.16)",
             "borderTopColor": "rgba(255,255,255,0.16)",
@@ -409,9 +407,7 @@ exports[`components/categories_list should render team error 1`] = `
             }
           }
           testID="channel_list_header.team_display_name"
-        >
-          
-        </Text>
+        />
       </View>
       <View
         accessible={true}
@@ -537,6 +533,7 @@ exports[`components/categories_list should render team error 1`] = `
           "padding": 8,
         }
       }
+      testID="channel_list_subheader.search_field.button"
     >
       <Icon
         name="magnify"

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {ProfilePicture} from '@support/ui/component';
 import {ChannelListScreen} from '@support/ui/screen';
 import {timeouts} from '@support/utils';
 import {expect} from 'detox';
@@ -45,7 +46,7 @@ class CreateDirectMessageScreen {
     };
 
     getUserItemProfilePicture = (userId: string) => {
-        return element(by.id(`create_direct_message.user_list.user_item.${userId}.profile_picture`));
+        return element(ProfilePicture.getProfilePictureItemMatcher('create_direct_message.user_list.user_item.', userId));
     };
 
     getUserItemDisplayName = (userId: string) => {

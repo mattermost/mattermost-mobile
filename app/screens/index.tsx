@@ -55,7 +55,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     let extraStyles: StyleProp<ViewStyle>;
     switch (screenName) {
         case Screens.ABOUT:
-            screen = withServerDatabase(require('@screens/about').default);
+            screen = withServerDatabase(require('@screens/settings/about').default);
             break;
         case Screens.APPS_FORM:
             screen = withServerDatabase(require('@screens/apps_form').default);
@@ -151,6 +151,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.SETTINGS:
             screen = withServerDatabase(require('@screens/settings').default);
             break;
+        case Screens.SETTINGS_ADVANCED:
+            screen = withServerDatabase(require('@screens/settings/advanced').default);
+            break;
         case Screens.SETTINGS_DISPLAY:
             screen = withServerDatabase(require('@screens/settings/display').default);
             break;
@@ -160,11 +163,20 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.SETTINGS_DISPLAY_THEME:
             screen = withServerDatabase(require('@screens/settings/display_theme').default);
             break;
+        case Screens.SETTINGS_DISPLAY_TIMEZONE:
+            screen = withServerDatabase(require('@screens/settings/display_timezone').default);
+            break;
+        case Screens.SETTINGS_DISPLAY_TIMEZONE_SELECT:
+            screen = withServerDatabase(require('@screens/settings/display_timezone_select').default);
+            break;
         case Screens.SETTINGS_NOTIFICATION:
             screen = withServerDatabase(require('@screens/settings/notifications').default);
             break;
         case Screens.SETTINGS_NOTIFICATION_AUTO_RESPONDER:
             screen = withServerDatabase(require('@screens/settings/notification_auto_responder').default);
+            break;
+        case Screens.SETTINGS_NOTIFICATION_EMAIL:
+            screen = withServerDatabase(require('@screens/settings/notification_email').default);
             break;
         case Screens.SETTINGS_NOTIFICATION_MENTION:
             screen = withServerDatabase(require('@screens/settings/notification_mention').default);
@@ -201,6 +213,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.USER_PROFILE:
             screen = withServerDatabase(require('@screens/user_profile').default);
+            break;
+        case Screens.CALL:
+            screen = withServerDatabase(require('@calls/screens/call_screen').default);
             break;
     }
 

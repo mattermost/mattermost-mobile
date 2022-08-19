@@ -11,7 +11,7 @@ export interface ClientPostsMix {
     getPost: (postId: string) => Promise<Post>;
     patchPost: (postPatch: Partial<Post> & {id: string}) => Promise<Post>;
     deletePost: (postId: string) => Promise<any>;
-    getPostThread: (postId: string, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<any>;
+    getPostThread: (postId: string, options: FetchPaginatedThreadOptions) => Promise<PostResponse>;
     getPosts: (channelId: string, page?: number, perPage?: number, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<PostResponse>;
     getPostsSince: (channelId: string, since: number, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<PostResponse>;
     getPostsBefore: (channelId: string, postId: string, page?: number, perPage?: number, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<PostResponse>;
@@ -79,9 +79,18 @@ const ClientPosts = (superclass: any) => class extends superclass {
         );
     };
 
-    getPostThread = async (postId: string, collapsedThreads = false, collapsedThreadsExtended = false) => {
+    getPostThread = (postId: string, options: FetchPaginatedThreadOptions): Promise<PostResponse> => {
+        const {
+            fetchThreads = true,
+            collapsedThreads = false,
+            collapsedThreadsExtended = false,
+            direction = 'up',
+            fetchAll = false,
+            perPage = fetchAll ? undefined : PER_PAGE_DEFAULT,
+            ...rest
+        } = options;
         return this.doFetch(
-            `${this.getPostRoute(postId)}/thread${buildQueryString({collapsedThreads, collapsedThreadsExtended})}`,
+            `${this.getPostRoute(postId)}/thread${buildQueryString({skipFetchThreads: !fetchThreads, collapsedThreads, collapsedThreadsExtended, direction, perPage, ...rest})}`,
             {method: 'get'},
         );
     };

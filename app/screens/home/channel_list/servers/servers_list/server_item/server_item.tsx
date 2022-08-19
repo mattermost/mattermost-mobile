@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Platform, Text, View} from 'react-native';
+import {Animated, DeviceEventEmitter, Platform, Text, View} from 'react-native';
 import {RectButton} from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 
@@ -165,9 +165,9 @@ const ServerItem = ({
         displayName = intl.formatMessage({id: 'servers.default', defaultMessage: 'Default Server'});
     }
 
-    const unreadsSubscription = ({myChannels, settings, threadMentionCount}: UnreadObserverArgs) => {
+    const unreadsSubscription = ({myChannels, settings, threadMentionCount, threadUnreads}: UnreadObserverArgs) => {
         let mentions = 0;
-        let isUnread = false;
+        let isUnread = Boolean(threadUnreads);
         for (const myChannel of myChannels) {
             const isMuted = settings?.[myChannel.id]?.mark_unread === 'mention';
             mentions += myChannel.mentionsCount;
@@ -202,8 +202,11 @@ const ServerItem = ({
                 endX: x + w + 20,
                 endY: y + h,
             };
-            setShowTutorial(true);
-            setItemBounds(bounds);
+
+            if (viewRef.current) {
+                setShowTutorial(true);
+                setItemBounds(bounds);
+            }
         });
     };
 
@@ -308,7 +311,7 @@ const ServerItem = ({
         DeviceEventEmitter.emit(Events.SWIPEABLE, server.url);
     }, [server]);
 
-    const renderActions = useCallback((progress) => {
+    const renderActions = useCallback((progress: Animated.AnimatedInterpolation) => {
         return (
             <Options
                 onEdit={handleEdit}
@@ -463,7 +466,7 @@ const ServerItem = ({
 
             {Boolean(database) && server.lastActiveAt > 0 &&
             <WebSocket
-                database={database}
+                database={database!}
             />
             }
             {showTutorial &&

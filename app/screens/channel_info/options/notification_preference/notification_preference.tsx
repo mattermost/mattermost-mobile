@@ -59,6 +59,7 @@ const NotificationPreference = ({channelId, notifyLevel}: Props) => {
             icon='cellphone'
             type={Platform.select({ios: 'arrow', default: 'default'})}
             info={notificationLevelToText()}
+            testID='channel_info.options.notification_preference.option'
         />
     );
 };

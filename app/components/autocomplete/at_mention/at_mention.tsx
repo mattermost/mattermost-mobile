@@ -277,7 +277,7 @@ const AtMention = ({
         runSearch.cancel();
     };
 
-    const completeMention = useCallback((mention) => {
+    const completeMention = useCallback((mention: string) => {
         const mentionPart = value.substring(0, localCursorPosition);
 
         let completedDraft;
@@ -308,6 +308,7 @@ const AtMention = ({
                 defaultMessage={item.defaultMessage}
                 id={item.id}
                 onPress={completeMention}
+                testID='autocomplete.special_mention_item'
             />
         );
     }, [completeMention]);
@@ -318,7 +319,9 @@ const AtMention = ({
                 key={`autocomplete-group-${item.name}`}
                 name={item.name}
                 displayName={item.displayName}
+                memberCount={item.memberCount}
                 onPress={completeMention}
+                testID='autocomplete.group_mention_item'
             />
         );
     }, [completeMention]);
@@ -326,9 +329,9 @@ const AtMention = ({
     const renderAtMentions = useCallback((item: UserProfile | UserModel) => {
         return (
             <AtMentionItem
-                testID={`autocomplete.at_mention.item.${item}`}
-                onPress={completeMention}
                 user={item}
+                onPress={completeMention}
+                testID='autocomplete.at_mention_item'
             />
         );
     }, [completeMention]);
@@ -344,7 +347,7 @@ const AtMention = ({
         }
     }, [renderSpecialMentions, renderGroupMentions, renderAtMentions]);
 
-    const renderSectionHeader = useCallback(({section}) => {
+    const renderSectionHeader = useCallback(({section}: SectionListRenderItemInfo<SpecialMention | GroupModel | UserProfile>) => {
         return (
             <AutocompleteSectionHeader
                 id={section.id}
@@ -443,7 +446,7 @@ const AtMention = ({
             renderSectionHeader={renderSectionHeader}
             style={[style.listView, {maxHeight: maxListHeight}]}
             sections={sections}
-            testID='at_mention_suggestion.list'
+            testID='autocomplete.at_mention.section_list'
         />
     );
 };

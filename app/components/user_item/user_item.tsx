@@ -14,7 +14,7 @@ import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {getUserCustomStatus, isBot, isGuest, isShared} from '@utils/user';
+import {getUserCustomStatus, isBot, isCustomStatusExpired, isGuest, isShared} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -107,27 +107,33 @@ const UserItem = ({
     const isCurrentUser = currentUserId === user?.id;
     const name = getName(user, showFullName, isCurrentUser, intl);
     const customStatus = getUserCustomStatus(user);
+    const customStatusExpired = isCustomStatusExpired(user);
+
+    const userItemTestId = `${testID}.${user?.id}`;
 
     return (
-        <View style={[style.row, containerStyle]}>
+        <View
+            style={[style.row, containerStyle]}
+            testID={userItemTestId}
+        >
             <View style={style.rowPicture}>
                 <ProfilePicture
                     author={user}
                     size={24}
                     showStatus={false}
-                    testID={`${testID}.profile_picture`}
+                    testID={`${userItemTestId}.profile_picture`}
                 />
             </View>
             <View
                 style={[style.rowInfo, {maxWidth: shared ? '75%' : '80%'}]}
             >
-                {bot && <BotTag/>}
-                {guest && <GuestTag/>}
+                {bot && <BotTag testID={`${userItemTestId}.bot.tag`}/>}
+                {guest && <GuestTag testID={`${userItemTestId}.guest.tag`}/>}
                 {Boolean(name.length) &&
                     <Text
                         style={style.rowFullname}
                         numberOfLines={1}
-                        testID={`${testID}.name`}
+                        testID={`${userItemTestId}.display_name`}
                     >
                         {name}
                     </Text>
@@ -137,22 +143,24 @@ const UserItem = ({
                         id='suggestion.mention.you'
                         defaultMessage=' (you)'
                         style={style.rowUsername}
+                        testID={`${userItemTestId}.current_user_indicator`}
                     />
                 }
                 {Boolean(user) &&
                 <Text
                     style={style.rowUsername}
                     numberOfLines={1}
-                    testID='at_mention_item.username'
+                    testID={`${userItemTestId}.username`}
                 >
                     {` @${user!.username}`}
                 </Text>
                 }
             </View>
-            {Boolean(isCustomStatusEnabled && !bot && customStatus?.emoji) && (
+            {Boolean(isCustomStatusEnabled && !bot && customStatus?.emoji && !customStatusExpired) && (
                 <CustomStatusEmoji
                     customStatus={customStatus!}
                     style={style.icon}
+                    testID={testID}
                 />
             )}
             {shared && (

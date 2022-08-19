@@ -43,14 +43,14 @@ const QuickOptions = ({canCreateChannels, canJoinChannels, close}: Props) => {
         await close();
         showModal(Screens.BROWSE_CHANNELS, title, {
             closeButton,
-        }, {modal: {swipeToDismiss: false}});
+        });
     }, [intl, theme]);
 
     const createNewChannel = useCallback(async () => {
         const title = intl.formatMessage({id: 'mobile.create_channel.title', defaultMessage: 'New channel'});
 
         await close();
-        showModal(Screens.CREATE_OR_EDIT_CHANNEL, title, undefined, {modal: {swipeToDismiss: false}});
+        showModal(Screens.CREATE_OR_EDIT_CHANNEL, title);
     }, [intl]);
 
     const openDirectMessage = useCallback(async () => {
@@ -60,13 +60,13 @@ const QuickOptions = ({canCreateChannels, canJoinChannels, close}: Props) => {
         await close();
         showModal(Screens.CREATE_DIRECT_MESSAGE, title, {
             closeButton,
-        }, {modal: {swipeToDismiss: false}});
+        });
     }, [intl, theme]);
 
     return (
         <Animated.View
             entering={FadeInDown.duration(200)}
-            exiting={FadeOutUp.duration(200)}
+            exiting={FadeOutUp.duration(100)}
             style={styles.container}
         >
             <Animated.View style={styles.wrapper}>
@@ -76,6 +76,7 @@ const QuickOptions = ({canCreateChannels, canJoinChannels, close}: Props) => {
                         iconName='globe'
                         onPress={browseChannels}
                         text={intl.formatMessage({id: 'find_channels.directory', defaultMessage: 'Directory'})}
+                        testID='find_channels.quick_options.directory.option'
                     />
                     <View style={styles.separator}/>
                 </>
@@ -84,6 +85,7 @@ const QuickOptions = ({canCreateChannels, canJoinChannels, close}: Props) => {
                     iconName='account-outline'
                     onPress={openDirectMessage}
                     text={intl.formatMessage({id: 'find_channels.open_dm', defaultMessage: 'Open a DM'})}
+                    testID='find_channels.quick_options.open_dm.option'
                 />
                 {canCreateChannels &&
                 <>
@@ -92,6 +94,7 @@ const QuickOptions = ({canCreateChannels, canJoinChannels, close}: Props) => {
                         iconName='plus'
                         onPress={createNewChannel}
                         text={intl.formatMessage({id: 'find_channels.new_channel', defaultMessage: 'New Channel'})}
+                        testID='find_channels.quick_options.new_channel.option'
                     />
                 </>
                 }

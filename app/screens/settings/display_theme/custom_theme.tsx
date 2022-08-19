@@ -4,47 +4,32 @@
 import React from 'react';
 import {useIntl} from 'react-intl';
 
-import Block from '@components/block';
-import OptionItem from '@components/option_item';
 import {useTheme} from '@context/theme';
-import {makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
+import SettingSeparator from '@screens/settings/settings_separator';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        label: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 200),
-        },
-        containerStyles: {
-            paddingHorizontal: 16,
-        },
-    };
-});
+import SettingOption from '../setting_option';
+
+const radioItemProps = {checkedBody: true};
 
 type CustomThemeProps = {
-    customTheme: Theme;
     setTheme: (themeKey: string) => void;
+    displayTheme: string | undefined;
 }
-
-const CustomTheme = ({customTheme, setTheme}: CustomThemeProps) => {
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
+const CustomTheme = ({setTheme, displayTheme}: CustomThemeProps) => {
     const intl = useIntl();
-
+    const theme = useTheme();
     return (
-        <Block
-            containerStyles={styles.containerStyles}
-            disableHeader={true}
-        >
-            <OptionItem
+        <>
+            <SettingSeparator isGroupSeparator={true}/>
+            <SettingOption
                 action={setTheme}
                 type='select'
-                value={customTheme.type}
+                value={theme.type}
                 label={intl.formatMessage({id: 'settings_display.custom_theme', defaultMessage: 'Custom Theme'})}
-                selected={theme.type?.toLowerCase() === customTheme.type?.toLowerCase()}
+                selected={theme.type?.toLowerCase() === displayTheme?.toLowerCase()}
+                radioItemProps={radioItemProps}
             />
-        </Block>
+        </>
     );
 };
 

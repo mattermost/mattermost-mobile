@@ -15,8 +15,10 @@ import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
 import {Files} from '@constants';
 import {generateId} from '@utils/general';
+import keyMirror from '@utils/key_mirror';
+import {logError} from '@utils/log';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
-import {hashCode} from '@utils/security';
+import {hashCode_DEPRECATED, urlSafeBase64Encode} from '@utils/security';
 
 import type FileModel from '@typings/database/models/servers/file';
 
@@ -24,7 +26,17 @@ const EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
 const CONTENT_DISPOSITION_REGEXP = /inline;filename=".*\.([a-z]+)";/i;
 const DEFAULT_SERVER_MAX_FILE_SIZE = 50 * 1024 * 1024;// 50 Mb
 
-export type FileFilter = 'all' | 'documents' | 'spreadsheets'| 'presentations' | 'code' | 'images' | 'audio' | 'videos'
+export const FileFilters = keyMirror({
+    ALL: null,
+    DOCUMENTS: null,
+    SPREADSHEETS: null,
+    PRESENTATIONS: null,
+    CODE: null,
+    IMAGES: null,
+    AUDIO: null,
+    VIDEOS: null,
+});
+export type FileFilter = keyof typeof FileFilters
 
 export const GENERAL_SUPPORTED_DOCS_FORMAT = [
     'application/json',
@@ -60,20 +72,36 @@ const SUPPORTED_VIDEO_FORMAT = Platform.select({
 const types: Record<string, string> = {};
 const extensions: Record<string, readonly string[]> = {};
 
-export function filterFiles<T extends FileModel | FileInfo>(files: T[], filter: FileFilter) {
+export function filterFileExtensions(filter?: FileFilter): string {
+    let searchTerms: string[] = [];
     switch (filter) {
-        case 'all':
-            return files;
-        case 'videos':
-            return files.filter((f) => isVideo(f));
-        case 'documents':
-            return files.filter((f) => isDocument(f));
-        case 'images':
-            return files.filter((f) => isImage(f));
+        case FileFilters.ALL:
+            return '';
+        case FileFilters.DOCUMENTS:
+            searchTerms = Files.DOCUMENT_TYPES;
+            break;
+        case FileFilters.SPREADSHEETS:
+            searchTerms = Files.SPREADSHEET_TYPES;
+            break;
+        case FileFilters.PRESENTATIONS:
+            searchTerms = Files.PRESENTATION_TYPES;
+            break;
+        case FileFilters.CODE:
+            searchTerms = Files.CODE_TYPES;
+            break;
+        case FileFilters.IMAGES:
+            searchTerms = Files.IMAGE_TYPES;
+            break;
+        case FileFilters.AUDIO:
+            searchTerms = Files.AUDIO_TYPES;
+            break;
+        case FileFilters.VIDEOS:
+            searchTerms = Files.VIDEO_TYPES;
+            break;
         default:
-            // TODO create the rest of the filters
-            return files.filter((f) => !isVideo(f) && !isDocument(f) && !isImage(f));
+            return '';
     }
+    return 'ext:' + searchTerms.join(' ext:');
 }
 
 /**
@@ -137,8 +165,17 @@ export async function deleteV1Data() {
 }
 
 export async function deleteFileCache(serverUrl: string) {
-    const serverDir = hashCode(serverUrl);
-    const cacheDir = `${FileSystem.CachesDirectoryPath}/${serverDir}`;
+    const serverDir = urlSafeBase64Encode(serverUrl);
+    deleteFileCacheByDir(serverDir);
+}
+
+export async function deleteLegacyFileCache(serverUrl: string) {
+    const serverDir = hashCode_DEPRECATED(serverUrl);
+    deleteFileCacheByDir(serverDir);
+}
+
+async function deleteFileCacheByDir(dir: string) {
+    const cacheDir = `${FileSystem.CachesDirectoryPath}/${dir}`;
     if (cacheDir) {
         const cacheDirInfo = await FileSystem.exists(cacheDir);
         if (cacheDirInfo) {
@@ -230,9 +267,16 @@ export const isImage = (file?: FileInfo | FileModel) => {
         return false;
     }
 
-    const mimeType = 'mime_type' in file ? file.mime_type : file.mimeType;
+    if (isGif(file)) {
+        return true;
+    }
 
-    return (isGif(file) || mimeType.startsWith('image/'));
+    let mimeType = 'mime_type' in file ? file.mime_type : file.mimeType;
+    if (!mimeType) {
+        mimeType = lookupMimeType(file.extension) || lookupMimeType(file.name);
+    }
+
+    return Boolean(mimeType?.startsWith('image/'));
 };
 
 export const isDocument = (file?: FileInfo | FileModel) => {
@@ -312,9 +356,10 @@ export function getFileType(file: FileInfo): string {
 }
 
 export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | FileModel) {
+    const fileIdPath = file.id?.replace(/[^0-9a-z]/g, '');
     if (serverUrl) {
-        const server = hashCode(serverUrl);
-        if (file?.name) {
+        const server = urlSafeBase64Encode(serverUrl);
+        if (file?.name && !file.name.includes('/')) {
             let extension: string | undefined = file.extension;
             let filename = file.name;
 
@@ -334,9 +379,9 @@ export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | Fil
                 }
             }
 
-            return `${FileSystem.CachesDirectoryPath}/${server}/${filename}-${hashCode(file.id!)}.${extension}`;
+            return `${FileSystem.CachesDirectoryPath}/${server}/${filename}-${fileIdPath}.${extension}`;
         } else if (file?.id && file?.extension) {
-            return `${FileSystem.CachesDirectoryPath}/${server}/${file.id}.${file.extension}`;
+            return `${FileSystem.CachesDirectoryPath}/${server}/${fileIdPath}.${file.extension}`;
         }
     }
 
@@ -347,7 +392,8 @@ export async function extractFileInfo(files: Array<Asset | DocumentPickerRespons
     const out: ExtractedFileInfo[] = [];
 
     await Promise.all(files.map(async (file) => {
-        if (!file) {
+        if (!file || !file.uri) {
+            logError('extractFileInfo no file or url');
             return;
         }
 
@@ -362,16 +408,16 @@ export async function extractFileInfo(files: Array<Asset | DocumentPickerRespons
             outFile.size = file.fileSize || 0;
             outFile.name = file.fileName || '';
         } else {
-            const path = Platform.select({
+            const localPath = Platform.select({
                 ios: (file.uri || '').replace('file://', ''),
                 default: file.uri || '',
             });
-            let fileInfo;
             try {
-                fileInfo = await FileSystem.stat(path);
+                const fileInfo = await FileSystem.stat(decodeURIComponent(localPath));
                 outFile.size = fileInfo.size || 0;
-                outFile.name = path.substring(path.lastIndexOf('/') + 1);
+                outFile.name = localPath.substring(localPath.lastIndexOf('/') + 1);
             } catch (e) {
+                logError('extractFileInfo', e);
                 return;
             }
         }
@@ -468,5 +514,24 @@ export const hasWriteStoragePermission = async (intl: IntlShape) => {
             return false;
         }
         default: return true;
+    }
+};
+
+export const getAllFilesInCachesDirectory = async (serverUrl: string) => {
+    try {
+        const files: FileSystem.ReadDirItem[][] = [];
+
+        const directoryFiles = await FileSystem.readDir(`${FileSystem.CachesDirectoryPath}/${urlSafeBase64Encode(serverUrl)}`);
+        files.push(directoryFiles);
+
+        const flattenedFiles = files.flat();
+        const totalSize = flattenedFiles.reduce((acc, file) => acc + file.size, 0);
+        return {
+            files: flattenedFiles,
+            totalSize,
+        };
+    } catch (error) {
+        logError('Failed getAllFilesInCachesDirectory', error);
+        return {error};
     }
 };

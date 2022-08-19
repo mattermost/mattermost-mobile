@@ -75,7 +75,7 @@ function TeamList({
                 textColor={theme.sidebarText}
                 iconBackgroundColor={changeOpacity(theme.sidebarText, 0.16)}
                 iconTextColor={theme.sidebarText}
-                onTeamAdded={onTeamAdded}
+                onPress={onTeamAdded}
             />
         </View>
     );

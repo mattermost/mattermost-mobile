@@ -22,6 +22,7 @@ const STATUS_BUFFER = Platform.select({
 
 type ProfilePictureProps = {
     author?: UserModel | UserProfile;
+    forwardRef?: React.RefObject<any>;
     iconSize?: number;
     showStatus?: boolean;
     size: number;
@@ -29,6 +30,7 @@ type ProfilePictureProps = {
     statusStyle?: StyleProp<ViewProps>;
     testID?: string;
     source?: Source | string;
+    url?: string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -60,6 +62,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const ProfilePicture = ({
     author,
+    forwardRef,
     iconSize,
     showStatus = true,
     size = 64,
@@ -67,9 +70,11 @@ const ProfilePicture = ({
     statusStyle,
     testID,
     source,
+    url,
 }: ProfilePictureProps) => {
     const theme = useTheme();
-    const serverUrl = useServerUrl();
+    let serverUrl = useServerUrl();
+    serverUrl = url || serverUrl;
 
     const style = getStyleSheet(theme);
     const buffer = showStatus ? STATUS_BUFFER || 0 : 0;
@@ -101,13 +106,15 @@ const ProfilePicture = ({
     return (
         <View
             style={containerStyle}
-            testID={`${testID}.${author?.id}`}
+            testID={testID}
         >
             <Image
                 author={author}
+                forwardRef={forwardRef}
                 iconSize={iconSize}
                 size={size}
                 source={source}
+                url={serverUrl}
             />
             {showStatus && !isBot &&
             <Status

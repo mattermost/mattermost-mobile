@@ -17,6 +17,7 @@ export default tableSchema({
         {name: 'unread_mentions', type: 'number'},
         {name: 'unread_replies', type: 'number'},
         {name: 'viewed_at', type: 'number'},
+        {name: 'last_fetched_at', type: 'number', isIndexed: true},
     ],
 });
 

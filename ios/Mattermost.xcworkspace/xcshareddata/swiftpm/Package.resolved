@@ -2,12 +2,21 @@
   "object": {
     "pins": [
       {
+        "package": "OpenGraph",
+        "repositoryURL": "https://github.com/satoshi-takano/OpenGraph.git",
+        "state": {
+          "branch": null,
+          "revision": "382972f1963580eeabafd88ad012e66576b4d213",
+          "version": "1.4.1"
+        }
+      },
+      {
         "package": "SQLite.swift",
         "repositoryURL": "https://github.com/stephencelis/SQLite.swift.git",
         "state": {
           "branch": null,
-          "revision": "9af51e2edf491c0ea632e369a6566e09b65aa333",
-          "version": "0.13.0"
+          "revision": "4d543d811ee644fa4cc4bfa0be996b4dd6ba0f54",
+          "version": "0.13.3"
         }
       }
     ]

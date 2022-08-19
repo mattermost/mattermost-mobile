@@ -116,7 +116,7 @@ type RawValue =
   | TeamChannelHistory
   | TeamMembership
   | TeamSearchHistory
-  | Thread
+  | ThreadWithLastFetchedAt
   | ThreadInTeam
   | ThreadParticipant
   | UserProfile

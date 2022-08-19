@@ -4,7 +4,7 @@
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, FlatList, Platform, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, FlatList, ListRenderItemInfo, Platform, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -140,13 +140,12 @@ function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
         </View>
     ), [loading, theme.buttonBg]);
 
-    const renderItem = useCallback(({item}) => {
+    const renderItem = useCallback(({item}: ListRenderItemInfo<string | PostModel>) => {
         if (typeof item === 'string') {
             if (isDateLine(item)) {
                 return (
                     <DateSeparator
                         date={getDateForDateLine(item)}
-                        theme={theme}
                         timezone={isTimezoneEnabled ? currentTimezone : null}
                     />
                 );
@@ -158,6 +157,7 @@ function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
             <PostWithChannelInfo
                 location={Screens.SAVED_MESSAGES}
                 post={item}
+                testID='saved_messages.post_list'
             />
         );
     }, [currentTimezone, isTimezoneEnabled, theme]);
@@ -175,6 +175,7 @@ function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
             <SafeAreaView
                 edges={edges}
                 style={styles.flex}
+                testID='saved_messages.screen'
             >
                 <Animated.View style={[styles.container, animated]}>
                     <Animated.View style={top}>
@@ -197,6 +198,7 @@ function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
                         removeClippedSubviews={true}
                         onViewableItemsChanged={onViewableItemsChanged}
                         style={scrollViewStyle}
+                        testID='saved_messages.post_list.flat_list'
                     />
                 </Animated.View>
             </SafeAreaView>

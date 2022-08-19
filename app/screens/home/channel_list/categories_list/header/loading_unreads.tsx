@@ -14,7 +14,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         height: 14,
         borderRadius: 7,
         borderBottomColor: changeOpacity(theme.sidebarText, 0.16),
-        borderLeftColor: theme.buttonBg,
+        borderLeftColor: theme.sidebarText,
         borderRightColor: changeOpacity(theme.sidebarText, 0.16),
         borderTopColor: changeOpacity(theme.sidebarText, 0.16),
         borderWidth: 2,
@@ -35,15 +35,12 @@ const LoadingUnreads = () => {
         transform: [{
             rotateZ: `${rotation.value}deg`,
         }],
-    }), []);
+    }), [loading]);
 
     useEffect(() => {
         if (loading) {
             opacity.value = 1;
-            rotation.value = withRepeat(
-                withTiming(360, {duration: 750, easing: Easing.ease}),
-                -1,
-            );
+            rotation.value = withRepeat(withTiming(360, {duration: 750, easing: Easing.ease}), -1);
         } else {
             opacity.value = withTiming(0, {duration: 300, easing: Easing.ease});
             cancelAnimation(rotation);
@@ -57,12 +54,14 @@ const LoadingUnreads = () => {
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.FETCHING_POSTS, (value: boolean) => {
-            cancelAnimation(opacity);
             setLoading(value);
+            if (value) {
+                rotation.value = 0;
+            }
         });
 
         return () => listener.remove();
-    }, [loading]);
+    }, []);
 
     if (!loading) {
         return null;

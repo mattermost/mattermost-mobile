@@ -60,7 +60,7 @@ describe('Messaging - Message Delete', () => {
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toExist();
+        await expect(postListPostItem).toBeVisible();
 
         // # Open post options for the message that was just posted, tap delete option and confirm
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -82,14 +82,14 @@ describe('Messaging - Message Delete', () => {
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toExist();
+        await expect(postListPostItem).toBeVisible();
 
         // # Open post options for the message that was just posted, tap delete option and cancel
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.deletePost({confirm: false});
 
         // * Verify post message is not deleted
-        await expect(postListPostItem).toExist();
+        await expect(postListPostItem).toBeVisible();
 
         // # Go back to channel list screen
         await ChannelScreen.back();

@@ -1,58 +1,61 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
+import {TITLE_SEPARATOR_MARGIN, TITLE_SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
-import {FileFilter} from '@utils/file';
+import {FileFilter, FileFilters} from '@utils/file';
+import {bottomSheetSnapPoint} from '@utils/helpers';
+import {TabTypes, TabType} from '@utils/search';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import Filter from './filter';
+import TeamPickerIcon from '../team_picker_icon';
+
+import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, NUMBER_FILTER_ITEMS} from './filter';
 import SelectButton from './header_button';
 
-export type SelectTab = 'files' | 'messages'
-
 type Props = {
-    onTabSelect: (tab: SelectTab) => void;
+    onTabSelect: (tab: TabType) => void;
     onFilterChanged: (filter: FileFilter) => void;
-    selectedTab: SelectTab;
+    selectedTab: TabType;
     selectedFilter: FileFilter;
     numberMessages: number;
     numberFiles: number;
+    setTeamId: (id: string) => void;
+    teamId: string;
 }
-
-export const HEADER_HEIGHT = 64;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
-        flex: {
-            flex: 1,
-        },
         container: {
+            marginTop: 10,
             backgroundColor: theme.centerChannelBg,
-            marginHorizontal: 12,
+            borderBottomWidth: 1,
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
+        },
+        buttonsContainer: {
+            marginBottom: 12,
+            paddingHorizontal: 12,
             flexDirection: 'row',
-            paddingVertical: 12,
-            flexGrow: 0,
-            height: HEADER_HEIGHT,
-            alignItems: 'center',
         },
         filter: {
-            marginRight: 12,
+            alignItems: 'center',
+            flexDirection: 'row',
             marginLeft: 'auto',
-        },
-        divider: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-            height: 1,
         },
     };
 });
 
 const Header = ({
+    teamId,
+    setTeamId,
     onTabSelect,
     onFilterChanged,
     numberMessages,
@@ -63,20 +66,33 @@ const Header = ({
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
     const intl = useIntl();
+    const {bottom} = useSafeAreaInsets();
+    const isTablet = useIsTablet();
 
     const messagesText = intl.formatMessage({id: 'screen.search.header.messages', defaultMessage: 'Messages'});
     const filesText = intl.formatMessage({id: 'screen.search.header.files', defaultMessage: 'Files'});
+    const title = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
 
-    const showFilterIcon = selectedTab === 'files';
-    const hasFilters = selectedFilter !== 'all';
+    const showFilterIcon = selectedTab === TabTypes.FILES;
+    const hasFilters = selectedFilter !== FileFilters.ALL;
 
     const handleMessagesPress = useCallback(() => {
-        onTabSelect('messages');
+        onTabSelect(TabTypes.MESSAGES);
     }, [onTabSelect]);
 
     const handleFilesPress = useCallback(() => {
-        onTabSelect('files');
+        onTabSelect(TabTypes.FILES);
     }, [onTabSelect]);
+
+    const snapPoints = useMemo(() => {
+        return [
+            bottomSheetSnapPoint(
+                NUMBER_FILTER_ITEMS,
+                FILTER_ITEM_HEIGHT,
+                bottom,
+            ) + TITLE_HEIGHT + DIVIDERS_HEIGHT + (isTablet ? TITLE_SEPARATOR_MARGIN_TABLET : TITLE_SEPARATOR_MARGIN),
+            10];
+    }, []);
 
     const handleFilterPress = useCallback(() => {
         const renderContent = () => {
@@ -84,28 +100,29 @@ const Header = ({
                 <Filter
                     initialFilter={selectedFilter}
                     setFilter={onFilterChanged}
+                    title={title}
                 />
             );
         };
         bottomSheet({
             closeButtonId: 'close-search-filters',
             renderContent,
-            snapPoints: [700, 10],
+            snapPoints,
             theme,
-            title: intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'}),
+            title,
         });
     }, [selectedFilter]);
 
     return (
-        <>
-            <View style={styles.container}>
+        <View style={styles.container}>
+            <View style={styles.buttonsContainer}>
                 <SelectButton
-                    selected={selectedTab === 'messages'}
+                    selected={selectedTab === TabTypes.MESSAGES}
                     onPress={handleMessagesPress}
                     text={`${messagesText} (${numberMessages})`}
                 />
                 <SelectButton
-                    selected={selectedTab === 'files'}
+                    selected={selectedTab === TabTypes.FILES}
                     onPress={handleFilesPress}
                     text={`${filesText} (${numberFiles})`}
                 />
@@ -129,11 +146,15 @@ const Header = ({
                         />
                     </>
                     }
+                    <TeamPickerIcon
+                        size={32}
+                        divider={true}
+                        setTeamId={setTeamId}
+                        teamId={teamId}
+                    />
                 </View>
             </View>
-            <View style={styles.divider}/>
-        </>
-
+        </View>
     );
 };
 

@@ -123,6 +123,7 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header}: Props) =
                     id='channel_info.header'
                     defaultMessage='Header:'
                     style={styles.extraHeading}
+                    testID='channel_info.extra.header'
                 />
                 <Markdown
                     channelId={channelId}
@@ -150,6 +151,7 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header}: Props) =
                     defaultMessage='Created by {user} on {date}'
                     style={styles.created}
                     values={created}
+                    testID='channel_info.extra.created_by'
                 />
             </View>
             }
@@ -160,6 +162,7 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header}: Props) =
                     defaultMessage='Created on {date}'
                     style={styles.created}
                     values={created}
+                    testID='channel_info.extra.created_on'
                 />
             </View>
             }

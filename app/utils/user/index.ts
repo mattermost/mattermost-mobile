@@ -5,7 +5,7 @@ import moment from 'moment-timezone';
 import {Alert} from 'react-native';
 
 import {General, Permissions, Preferences} from '@constants';
-import {CustomStatusDuration} from '@constants/custom_status';
+import {CustomStatusDurationEnum} from '@constants/custom_status';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import {toTitleCase} from '@utils/helpers';
 
@@ -116,11 +116,11 @@ export const getUserTimezoneProps = (currentUser: UserModel) => {
     };
 };
 
-export const getUserTimezone = (user: UserModel) => {
+export const getUserTimezone = (user: UserModel | UserProfile) => {
     return getTimezone(user.timezone);
 };
 
-export const getTimezone = (timezone: UserTimezone | null) => {
+export const getTimezone = (timezone?: UserTimezone | null) => {
     if (!timezone) {
         return '';
     }
@@ -138,6 +138,17 @@ export const getTimezone = (timezone: UserTimezone | null) => {
     return timezone.manualTimezone;
 };
 
+export const getTimezoneRegion = (timezone: string): string => {
+    if (timezone) {
+        const split = timezone.split('/');
+        if (split.length > 1) {
+            return split.pop()!.replace(/_/g, ' ');
+        }
+    }
+
+    return timezone;
+};
+
 export const getUserCustomStatus = (user?: UserModel | UserProfile): UserCustomStatus | undefined => {
     try {
         if (typeof user?.props?.customStatus === 'string') {
@@ -150,7 +161,7 @@ export const getUserCustomStatus = (user?: UserModel | UserProfile): UserCustomS
     }
 };
 
-export function isCustomStatusExpired(user?: UserModel) {
+export function isCustomStatusExpired(user?: UserModel | UserProfile) {
     if (!user) {
         return true;
     }
@@ -161,7 +172,7 @@ export function isCustomStatusExpired(user?: UserModel) {
         return true;
     }
 
-    if (customStatus.duration === CustomStatusDuration.DONT_CLEAR || !customStatus.duration) {
+    if (customStatus.duration === CustomStatusDurationEnum.DONT_CLEAR || !customStatus.duration) {
         return false;
     }
 
@@ -212,7 +223,7 @@ export function confirmOutOfOfficeDisabled(intl: IntlShape, status: string, upda
 }
 
 export function isBot(user: UserProfile | UserModel): boolean {
-    return 'is_bot' in user ? Boolean(user.is_bot) : Boolean(user.isBot);
+    return 'isBot' in user ? Boolean(user.isBot) : Boolean(user.is_bot);
 }
 
 export function isShared(user: UserProfile | UserModel): boolean {
@@ -318,7 +329,45 @@ export function getNotificationProps(user: UserModel) {
         push: 'mention',
         push_status: 'online',
         push_threads: 'all',
+        email_threads: 'all',
     };
 
     return props;
 }
+
+export function getEmailInterval(enableEmailNotification: boolean, enableEmailBatching: boolean, emailIntervalPreference: number): number {
+    const {
+        INTERVAL_NEVER,
+        INTERVAL_IMMEDIATE,
+        INTERVAL_FIFTEEN_MINUTES,
+        INTERVAL_HOUR,
+    } = Preferences;
+
+    const validValuesWithEmailBatching = [INTERVAL_IMMEDIATE, INTERVAL_NEVER, INTERVAL_FIFTEEN_MINUTES, INTERVAL_HOUR];
+    const validValuesWithoutEmailBatching = [INTERVAL_IMMEDIATE, INTERVAL_NEVER];
+
+    if (!enableEmailNotification) {
+        return INTERVAL_NEVER;
+    } else if (enableEmailBatching && validValuesWithEmailBatching.indexOf(emailIntervalPreference) === -1) {
+        // When email batching is enabled, the default interval is 15 minutes
+        return INTERVAL_FIFTEEN_MINUTES;
+    } else if (!enableEmailBatching && validValuesWithoutEmailBatching.indexOf(emailIntervalPreference) === -1) {
+        // When email batching is not enabled, the default interval is immediately
+        return INTERVAL_IMMEDIATE;
+    } else if (enableEmailNotification && emailIntervalPreference === INTERVAL_NEVER) {
+        // When email notification is enabled, the default interval is immediately
+        return INTERVAL_IMMEDIATE;
+    }
+
+    return emailIntervalPreference;
+}
+
+export const getEmailIntervalTexts = (interval: string) => {
+    const intervalTexts: Record<string, any> = {
+        [Preferences.INTERVAL_FIFTEEN_MINUTES]: {id: 'notification_settings.email.fifteenMinutes', defaultMessage: 'Every 15 minutes'},
+        [Preferences.INTERVAL_HOUR]: {id: 'notification_settings.email.everyHour', defaultMessage: 'Every hour'},
+        [Preferences.INTERVAL_IMMEDIATE]: {id: 'notification_settings.email.immediately', defaultMessage: 'Immediately'},
+        [Preferences.INTERVAL_NEVER]: {id: 'notification_settings.email.never', defaultMessage: 'Never'},
+    };
+    return intervalTexts[interval];
+};

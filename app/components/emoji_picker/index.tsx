@@ -15,6 +15,7 @@ import {Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
+import {useKeyboardHeight} from '@hooks/device';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeConfigBooleanValue, observeRecentReactions} from '@queries/servers/system';
@@ -56,11 +57,12 @@ type Props = {
 const EmojiPicker = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis, skinTone, testID = ''}: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
+    const keyboardHeight = useKeyboardHeight();
     const [width, setWidth] = useState(0);
     const [searchTerm, setSearchTerm] = useState<string|undefined>();
     const onLayout = useCallback(({nativeEvent}: LayoutChangeEvent) => setWidth(nativeEvent.layout.width), []);
     const onCancelSearch = useCallback(() => setSearchTerm(undefined), []);
-    const onChangeSearchTerm = useCallback((text) => {
+    const onChangeSearchTerm = useCallback((text: string) => {
         setSearchTerm(text);
         searchCustom(text);
     }, []);
@@ -75,6 +77,7 @@ const EmojiPicker = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmo
         EmojiList = (
             <EmojiFiltered
                 customEmojis={customEmojis}
+                keyboardHeight={keyboardHeight}
                 skinTone={skinTone}
                 searchTerm={searchTerm}
                 onEmojiPress={onEmojiPress}
@@ -97,11 +100,9 @@ const EmojiPicker = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmo
         <SafeAreaView
             style={styles.flex}
             edges={edges}
+            testID={`${testID}.screen`}
         >
-            <View
-                style={styles.searchBar}
-                testID={testID}
-            >
+            <View style={styles.searchBar}>
                 <SearchBar
                     autoCapitalize='none'
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}

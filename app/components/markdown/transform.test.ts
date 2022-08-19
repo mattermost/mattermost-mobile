@@ -14,10 +14,11 @@ import {
     mentionKeysToPatterns,
     pullOutImages,
 } from '@components/markdown/transform';
+import {logError} from '@utils/log';
 
 import type {UserMentionKey} from '@typings/global/markdown';
 
-/* eslint-disable max-lines, no-console, no-underscore-dangle */
+/* eslint-disable max-lines, no-underscore-dangle */
 
 describe('Components.Markdown.transform', () => {
     const parser = new Parser();
@@ -2827,28 +2828,28 @@ describe('Components.Markdown.transform', () => {
 // Confirms that all parent, child, and sibling linkages are correct and go both ways.
 function verifyAst(node: Node) {
     if (node.prev && node.prev.next !== node) {
-        console.error('node is not linked properly to prev'); //eslint-disable-line no-console
+        logError('node is not linked properly to prev');
         return false;
     }
 
     if (node.next && node.next.prev !== node) {
-        console.error('node is not linked properly to next'); //eslint-disable-line no-console
+        logError('node is not linked properly to next');
         return false;
     }
 
     if (!node.firstChild && node.lastChild) {
-        console.error('node has children, but is not linked to first child'); //eslint-disable-line no-console
+        logError('node has children, but is not linked to first child');
         return false;
     }
 
     if (node.firstChild && !node.lastChild) {
-        console.error('node has children, but is not linked to last child'); //eslint-disable-line no-console
+        logError('node has children, but is not linked to last child');
         return false;
     }
 
     for (let child = node.firstChild; child; child = child.next) {
         if (child.parent !== node) {
-            console.error('node is not linked properly to child'); //eslint-disable-line no-console
+            logError('node is not linked properly to child');
             return false;
         }
 
@@ -2857,25 +2858,25 @@ function verifyAst(node: Node) {
         }
 
         if (!child.next && child !== node.lastChild) {
-            console.error('node children are not linked correctly'); //eslint-disable-line no-console
+            logError('node children are not linked correctly');
             return false;
         }
     }
 
     if (node.firstChild && node.firstChild.prev) {
-        console.error('node\'s first child has previous sibling'); //eslint-disable-line no-console
+        logError('node\'s first child has previous sibling');
         return false;
     }
 
     if (node.lastChild && node.lastChild.next) {
-        console.error('node\'s last child has next sibling'); //eslint-disable-line no-console
+        logError('node\'s last child has next sibling');
         return false;
     }
 
     return true;
 }
 
-function astToString(node: Node, indent = '') { // eslint-disable-line no-unused-vars
+function astToString(node: Node, indent = '') {
     if (!node) {
         return '';
     }
@@ -2911,51 +2912,6 @@ function nodeToString(node: any) {
             out += ' ' + field + '=`' + node[field] + '`';
         }
     }
-
-    return out;
-}
-
-const ignoredKeys = {_sourcepos: true, _lastLineBlank: true, _open: true, _string_content: true, _info: true, _isFenced: true, _fenceChar: true, _fenceLength: true, _fenceOffset: true, _onEnter: true, _onExit: true};
-function astToJson(node: any, visited = [], indent = '') {
-    let out = '{';
-
-    const myVisited: any[] = [...visited];
-    myVisited.push(node);
-
-    // @ts-expect-error keys
-    const keys = Object.keys(node).filter((key) => !ignoredKeys[key]);
-    if (keys.length > 0) {
-        out += '\n';
-    }
-
-    for (const [i, key] of keys.entries()) {
-        out += indent + '  "' + key + '":';
-
-        const value = node[key];
-        if (myVisited.indexOf(value) !== -1) {
-            out += '[Circular]';
-        } else if (value === null) {
-            out += 'null';
-        } else if (typeof value === 'number') {
-            out += value;
-        } else if (typeof value === 'string') {
-            out += '"' + value + '"';
-        } else if (typeof value === 'boolean') {
-            out += String(value);
-        } else if (typeof value === 'object') {
-            out += astToJson(value, myVisited as never[], indent + '  '); // eslint-disable-line @typescript-eslint/no-unused-vars
-        }
-
-        if (i !== keys.length - 1) {
-            out += ',\n';
-        }
-    }
-
-    if (keys.length > 0) {
-        out += '\n' + indent;
-    }
-
-    out += '}';
 
     return out;
 }

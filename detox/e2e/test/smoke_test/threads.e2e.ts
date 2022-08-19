@@ -10,7 +10,6 @@
 import {
     Post,
     Setup,
-    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -37,12 +36,6 @@ describe('Smoke Test - Threads', () => {
     let testChannel: any;
 
     beforeAll(async () => {
-        System.apiUpdateConfig(siteOneUrl, {
-            ServiceSettings: {
-                CollapsedThreads: 'default_on',
-            },
-        });
-
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
 
@@ -83,6 +76,7 @@ describe('Smoke Test - Threads', () => {
         // # Go back to channel list screen, then go to global threads screen, tap on all your threads button, open thread options for thread, tap on mark as unread option, and tap on unread threads button
         await ThreadScreen.back();
         await ChannelScreen.back();
+        await device.reloadReactNative();
         await GlobalThreadsScreen.open();
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);

@@ -13,6 +13,7 @@ import {
 } from '@database/operator/server_data_operator/transformers/post';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {createPostsChain} from '@database/operator/utils/post';
+import {logWarning} from '@utils/log';
 
 import type Database from '@nozbe/watermelondb/Database';
 import type Model from '@nozbe/watermelondb/Model';
@@ -30,6 +31,8 @@ const {
     POST,
 } = MM_TABLES.SERVER;
 
+type PostActionType = keyof typeof ActionType.POSTS;
+
 export interface PostHandlerMix {
     handleDraft: ({drafts, prepareRecordsOnly}: HandleDraftArgs) => Promise<DraftModel[]>;
     handleFiles: ({files, prepareRecordsOnly}: HandleFilesArgs) => Promise<FileModel[]>;
@@ -44,13 +47,11 @@ const PostHandler = (superclass: any) => class extends superclass {
      * @param {HandleDraftArgs} draftsArgs
      * @param {RawDraft[]} draftsArgs.drafts
      * @param {boolean} draftsArgs.prepareRecordsOnly
-     * @throws DataOperatorException
      * @returns {Promise<DraftModel[]>}
      */
     handleDraft = async ({drafts, prepareRecordsOnly = true}: HandleDraftArgs): Promise<DraftModel[]> => {
         if (!drafts?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "drafts" array has been passed to the handleDraft method',
             );
             return [];
@@ -83,8 +84,7 @@ const PostHandler = (superclass: any) => class extends superclass {
 
         // We rely on the posts array; if it is empty, we stop processing
         if (!posts?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "posts" array has been passed to the handlePosts method',
             );
             return [];
@@ -235,8 +235,7 @@ const PostHandler = (superclass: any) => class extends superclass {
      */
     handleFiles = async ({files, prepareRecordsOnly}: HandleFilesArgs): Promise<FileModel[]> => {
         if (!files?.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "files" array has been passed to the handleFiles method',
             );
             return [];
@@ -268,13 +267,14 @@ const PostHandler = (superclass: any) => class extends superclass {
 
     /**
      * handlePostsInThread: Handler responsible for the Create/Update operations occurring on the PostsInThread table from the 'Server' schema
-     * @param {PostsInThread[]} rootPosts
+     * @param {Record<string, Post[]>} postsMap
+     * @param {PostActionType} actionType
+     * @param {boolean} prepareRecordsOnly
      * @returns {Promise<void>}
      */
-    handlePostsInThread = async (postsMap: Record<string, Post[]>, actionType: never, prepareRecordsOnly = false): Promise<PostsInThreadModel[]> => {
+    handlePostsInThread = async (postsMap: Record<string, Post[]>, actionType: PostActionType, prepareRecordsOnly = false): Promise<PostsInThreadModel[]> => {
         if (!postsMap || !Object.keys(postsMap).length) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "postsMap" object has been passed to the handlePostsInThread method',
             );
             return [];
@@ -295,17 +295,18 @@ const PostHandler = (superclass: any) => class extends superclass {
     /**
      * handlePostsInChannel: Handler responsible for the Create/Update operations occurring on the PostsInChannel table from the 'Server' schema
      * @param {Post[]} posts
+     * @param {PostActionType} actionType
+     * @param {boolean} prepareRecordsOnly
      * @returns {Promise<void>}
      */
-    handlePostsInChannel = async (posts: Post[], actionType: never, prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
+    handlePostsInChannel = async (posts: Post[], actionType: PostActionType, prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
         // At this point, the parameter 'posts' is already a chain of posts.  Now, we have to figure out how to plug it
         // into existing chains in the PostsInChannel table
 
         const permittedActions = Object.values(ActionType.POSTS);
 
         if (!posts.length || !permittedActions.includes(actionType)) {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logWarning(
                 'An empty or undefined "posts" array or an non-supported actionType has been passed to the handlePostsInChannel method',
             );
             return [];

@@ -16,8 +16,8 @@ export interface ClientFilesMix {
         onError: (response: ClientResponseError) => void,
         skipBytes?: number,
     ) => () => void;
-    searchFiles: (teamId: string, terms: string) => Promise<any>;
-    searchFilesWithParams: (teamId: string, FileSearchParams: string) => Promise<any>;
+    searchFiles: (teamId: string, terms: string) => Promise<FileSearchRequest>;
+    searchFilesWithParams: (teamId: string, FileSearchParams: string) => Promise<FileSearchRequest>;
 }
 
 const ClientFiles = (superclass: any) => class extends superclass {
@@ -55,7 +55,7 @@ const ClientFiles = (superclass: any) => class extends superclass {
         );
     };
 
-    uploadPostAttachment = async (
+    uploadPostAttachment = (
         file: FileInfo,
         channelId: string,
         onProgress: (fractionCompleted: number, bytesRead?: number | null | undefined) => void,
@@ -72,6 +72,7 @@ const ClientFiles = (superclass: any) => class extends superclass {
                     channel_id: channelId,
                 },
             },
+            timeoutInterval: 3 * 60 * 1000, // 3 minutes
         };
         const promise = this.apiClient.upload(url, file.localPath, options) as ProgressPromise<ClientResponse>;
         promise.progress!(onProgress).then(onComplete).catch(onError);

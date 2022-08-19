@@ -21,9 +21,11 @@ import {
 import {
     BrowseChannelsScreen,
     ChannelScreen,
+    ChannelInfoScreen,
     ChannelListScreen,
     CreateDirectMessageScreen,
     CreateOrEditChannelScreen,
+    FindChannelsScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
@@ -36,15 +38,17 @@ describe('Smoke Test - Channels', () => {
     const channelsCategory = 'channels';
     let testChannel: any;
     let testTeam: any;
+    let testUser: any;
 
     beforeAll(async () => {
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testTeam = team;
+        testUser = user;
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await LoginScreen.login(user);
+        await LoginScreen.login(testUser);
     });
 
     beforeEach(async () => {
@@ -123,9 +127,84 @@ describe('Smoke Test - Channels', () => {
         // * Verify message is posted
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toExist();
+        await expect(postListPostItem).toBeVisible();
 
         // # Go back to channel list screen
         await ChannelScreen.back();
+    });
+
+    it('MM-T4774_4 - should be able to find and edit a channel', async () => {
+        // # Open find channels screen, search for the channel to navigate to, and tap on the target channel item
+        await FindChannelsScreen.open();
+        await FindChannelsScreen.searchInput.replaceText(testChannel.name);
+        await FindChannelsScreen.getFilteredChannelItem(testChannel.name).tap();
+
+        // * Verify on target channel screen
+        await ChannelScreen.toBeVisible();
+        await expect(ChannelScreen.headerTitle).toHaveText(testChannel.display_name);
+
+        // # Open channel info screen, open edit channel screen, edit channel info, and save changes
+        await ChannelInfoScreen.open();
+        await CreateOrEditChannelScreen.openEditChannel();
+        await CreateOrEditChannelScreen.headerInput.tapReturnKey();
+        await CreateOrEditChannelScreen.headerInput.typeText('header1');
+        await CreateOrEditChannelScreen.headerInput.tapReturnKey();
+        await CreateOrEditChannelScreen.headerInput.typeText('header2');
+        await CreateOrEditChannelScreen.saveButton.tap();
+
+        // * Verify on channel info screen and changes have been saved
+        await ChannelInfoScreen.toBeVisible();
+        await expect(element(by.text(`Channel header: ${testChannel.display_name.toLowerCase()}\nheader1\nheader2`))).toBeVisible();
+
+        // # Go back to channel list screen
+        await ChannelInfoScreen.close();
+        await ChannelScreen.back();
+    });
+
+    it('MM-T4774_5 - should be able to favorite and mute a channel', async () => {
+        // # Open a channel screen, open channel info screen, tap on favorite action to favorite the channel, and tap on mute action to mute the channel
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelInfoScreen.open();
+        await ChannelInfoScreen.favoriteAction.tap();
+        await ChannelInfoScreen.muteAction.tap();
+
+        // * Verify channel is favorited and muted
+        await expect(ChannelInfoScreen.unfavoriteAction).toBeVisible();
+        await expect(ChannelInfoScreen.unmuteAction).toBeVisible();
+
+        // # Tap on favorited action to unfavorite the channel and tap on muted action to unmute the channel
+        await ChannelInfoScreen.unfavoriteAction.tap();
+        await ChannelInfoScreen.unmuteAction.tap();
+
+        // * Verify channel is unfavorited and unmuted
+        await expect(ChannelInfoScreen.favoriteAction).toBeVisible();
+        await expect(ChannelInfoScreen.muteAction).toBeVisible();
+
+        // # Go back to channel list screen
+        await ChannelInfoScreen.close();
+        await ChannelScreen.back();
+    });
+
+    it('MM-T4774_6 - should be able to archive and leave a channel', async () => {
+        // # Open a channel screen, open channel info screen, and tap on archive channel option and confirm
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
+        await device.reloadReactNative();
+        await ChannelScreen.open(channelsCategory, channel.name);
+        await ChannelInfoScreen.open();
+        await ChannelInfoScreen.archivePublicChannel({confirm: true});
+
+        // * Verify on channel screen and post draft archived message is displayed
+        await ChannelScreen.toBeVisible();
+        await expect(ChannelScreen.postDraftArchived).toBeVisible();
+        await expect(element(by.text('You are viewing an archived channel. New messages cannot be posted.'))).toBeVisible();
+
+        // # Open channel info screen, and tap on leave channel option and confirm
+        await ChannelInfoScreen.open();
+        await ChannelInfoScreen.leaveChannel({confirm: true});
+
+        // * Verify on channel list screen and the channel left by the user does not appear on the list
+        await ChannelListScreen.toBeVisible();
+        await expect(ChannelListScreen.getChannelItem(channelsCategory, channel.name)).not.toExist();
     });
 });
