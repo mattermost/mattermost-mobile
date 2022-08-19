@@ -63,6 +63,9 @@ const getMentionProps = (currentUser: UserModel) => {
     return {
         mentionKeywords: mKeys.join(','),
         usernameMention: usernameMentionIndex > -1,
+        channel: notifyProps.channel === 'true',
+        first_name: notifyProps.first_name === 'true',
+        comments: notifyProps.comments,
         notifyProps,
     };
 };
@@ -78,10 +81,10 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
     const notifyProps = mentionProps.notifyProps;
 
     const [mentionKeywords, setMentionKeywords] = useState(mentionProps.mentionKeywords);
-    const [channelMentionOn, setChannelMentionOn] = useState(notifyProps.channel === 'true');
-    const [firstNameMentionOn, setFirstNameMentionOn] = useState(notifyProps.first_name === 'true');
+    const [channelMentionOn, setChannelMentionOn] = useState(mentionProps.channel);
+    const [firstNameMentionOn, setFirstNameMentionOn] = useState(mentionProps.first_name);
     const [usernameMentionOn, setUsernameMentionOn] = useState(mentionProps.usernameMention);
-    const [replyNotificationType, setReplyNotificationType] = useState(notifyProps.comments);
+    const [replyNotificationType, setReplyNotificationType] = useState(mentionProps.comments);
 
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -90,9 +93,9 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
     const close = () => popTopScreen(componentId);
 
     const canSaveSettings = useCallback(() => {
-        const channelChanged = channelMentionOn !== Boolean(notifyProps.channel);
-        const replyChanged = replyNotificationType !== notifyProps.comments;
-        const fNameChanged = firstNameMentionOn !== Boolean(notifyProps.first_name);
+        const channelChanged = channelMentionOn !== mentionProps.channel;
+        const replyChanged = replyNotificationType !== mentionProps.comments;
+        const fNameChanged = firstNameMentionOn !== mentionProps.first_name;
         const mnKeysChanged = mentionProps.mentionKeywords !== mentionKeywords;
         const userNameChanged = usernameMentionOn !== mentionProps.usernameMention;
 
