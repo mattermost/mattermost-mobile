@@ -202,14 +202,5 @@
     "test:watch": "npm test -- --watch",
     "tsc": "NODE_OPTIONS=--max_old_space_size=12000 tsc --noEmit",
     "updatesnapshot": "jest --updateSnapshot"
-  },
-  "config": {
-    "react-native-storybook-loader": {
-      "searchDir": [
-        "./app/components"
-      ],
-      "pattern": "**/*.stories.@(js|jsx|ts|tsx)",
-      "outputFile": "./storybook/storyLoader.js"
-    }
   }
 }
