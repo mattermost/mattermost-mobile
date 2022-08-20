@@ -8,13 +8,13 @@
       {
         "rule": "cli",
         "binary": "node",
-        "semver": ">=16.0.0 <17.0.0",
+        "semver": ">=16.0.0",
         "error": "install node using nvm https://github.com/nvm-sh/nvm#installing-and-updating"
       },
       {
         "rule": "cli",
         "binary": "npm",
-        "semver": "8.5.5",
+        "semver": ">=8.5.5 <9.0.0",
         "error": "install npm 8.5.5 `npm i -g npm@8.5.5"
       }
     ],
