@@ -7,6 +7,7 @@ import {of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import JoinCallBanner from '@calls/components/join_call_banner/join_call_banner';
+import {observeIsCallLimitRestricted} from '@calls/observers';
 import {observeCallsState, observeCurrentCall} from '@calls/state';
 import {idsAreEqual} from '@calls/utils';
 import {observeChannel} from '@queries/servers/channel';
@@ -60,6 +61,7 @@ const enhanced = withObservables(['serverUrl', 'channelId'], ({
         inACall,
         currentCallChannelName,
         channelCallStartTime,
+        limitRestrictedInfo: observeIsCallLimitRestricted(serverUrl, channelId),
     };
 });
 

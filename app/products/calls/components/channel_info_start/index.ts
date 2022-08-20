@@ -7,6 +7,7 @@ import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import ChannelInfoStartButton from '@calls/components/channel_info_start/channel_info_start_button';
+import {observeIsCallLimitRestricted} from '@calls/observers';
 import {observeChannelsWithCalls, observeCurrentCall} from '@calls/state';
 import DatabaseManager from '@database/manager';
 import {observeChannel} from '@queries/servers/channel';
@@ -52,6 +53,7 @@ const enhanced = withObservables([], ({serverUrl, channelId, database}: EnhanceP
         alreadyInCall,
         currentCall,
         currentCallChannelName,
+        limitRestrictedInfo: observeIsCallLimitRestricted(serverUrl, channelId),
     };
 });
 

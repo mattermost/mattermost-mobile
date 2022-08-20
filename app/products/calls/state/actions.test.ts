@@ -31,6 +31,7 @@ import {
     setConfig,
     setPluginEnabled,
 } from '@calls/state/actions';
+import {License} from '@constants';
 
 import {CallsState, CurrentCall, DefaultCallsConfig, DefaultCallsState} from '../types/calls';
 
@@ -632,6 +633,8 @@ describe('useCallsState', () => {
             DefaultEnabled: true,
             NeedsTURNCredentials: false,
             last_retrieved_at: 123,
+            sku_short_name: License.SKU_SHORT_NAME.Professional,
+            MaxCallParticipants: 8,
         };
 
         // setup
