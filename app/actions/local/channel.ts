@@ -17,7 +17,6 @@ import {
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, removeChannelFromTeamHistory} from '@queries/servers/team';
-import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser, queryUsersById} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -176,8 +175,7 @@ export async function markChannelAsViewed(serverUrl: string, channelId: string, 
             m.viewedAt = member.lastViewedAt;
             m.lastViewedAt = Date.now();
         });
-        const isCRTEnabled = await getIsCRTEnabled(database);
-        PushNotifications.cancelChannelNotifications(channelId, undefined, isCRTEnabled);
+        PushNotifications.removeChannelNotifications(serverUrl, channelId);
         if (!prepareRecordsOnly) {
             await operator.batchRecords([member]);
         }

@@ -277,6 +277,7 @@ const Post = ({
     } else if (isCallsPost && !hasBeenDeleted) {
         body = (
             <CallsCustomMessage
+                serverUrl={serverUrl}
                 post={post}
             />
         );

@@ -120,9 +120,6 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
 -(void)application:(UIApplication *)application didReceiveRemoteNotification:(nonnull NSDictionary *)userInfo fetchCompletionHandler:(nonnull void (^)(UIBackgroundFetchResult))completionHandler {
   UIApplicationState state = [UIApplication sharedApplication].applicationState;
   NSString* action = [userInfo objectForKey:@"type"];
-  NSString* channelId = [userInfo objectForKey:@"channel_id"];
-  NSString* rootId = [userInfo objectForKey:@"root_id"];
-  BOOL isCRTEnabled = [userInfo objectForKey:@"is_crt_enabled"];
   BOOL isClearAction = (action && [action isEqualToString: NOTIFICATION_CLEAR_ACTION]);
   BOOL isTestAction = (action && [action isEqualToString: NOTIFICATION_TEST_ACTION]);
   
@@ -136,7 +133,7 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
     // If received a notification that a channel was read, remove all notifications from that channel (only with app in foreground/background)
     // When CRT is ON:
     // When rootId is nil, clear channel's root post notifications or else clear all thread notifications
-    [self cleanNotificationsFromChannel:channelId :rootId :isCRTEnabled];
+    [[NotificationHelper default] clearChannelOrThreadNotificationsWithUserInfo:userInfo];
     [[GekidouWrapper default] postNotificationReceipt:userInfo];
   }
   
@@ -195,42 +192,6 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
   // You can inject any extra modules that you would like here, more information at:
   // https://facebook.github.io/react-native/docs/native-modules-ios.html#dependency-injection
   return extraModules;
-}
-
--(void)cleanNotificationsFromChannel:(NSString *)channelId :(NSString *)rootId :(BOOL)isCRTEnabled {
-  if ([UNUserNotificationCenter class]) {
-    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-    [center getDeliveredNotificationsWithCompletionHandler:^(NSArray<UNNotification *> * _Nonnull notifications) {
-      NSMutableArray<NSString *> *notificationIds = [NSMutableArray new];
-
-      for (UNNotification *prevNotification in notifications) {
-        UNNotificationRequest *notificationRequest = [prevNotification request];
-        UNNotificationContent *notificationContent = [notificationRequest content];
-        NSString *identifier = [notificationRequest identifier];
-        NSString* cId = [[notificationContent userInfo] objectForKey:@"channel_id"];
-        NSString* pId = [[notificationContent userInfo] objectForKey:@"post_id"];
-        NSString* rId = [[notificationContent userInfo] objectForKey:@"root_id"];
-
-        if ([cId isEqualToString: channelId]) {
-          BOOL doesNotificationMatch = true;
-          if (isCRTEnabled) {
-            // Check if it is a thread notification
-            if (rootId != nil) {
-              doesNotificationMatch = [pId isEqualToString: rootId] || [rId isEqualToString: rootId];
-            } else {
-              // With CRT ON, remove notifications without rootId
-              doesNotificationMatch = rId == nil;
-            }
-          }
-          if (doesNotificationMatch) {
-            [notificationIds addObject:identifier];
-          }
-        }
-      }
-
-      [center removeDeliveredNotificationsWithIdentifiers:notificationIds];
-    }];
-  }
 }
 
 /*
