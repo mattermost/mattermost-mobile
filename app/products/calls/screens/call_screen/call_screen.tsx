@@ -257,6 +257,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
     const myParticipant = currentCall?.participants[currentCall.myUserId];
     const style = getStyleSheet(theme);
     const showControls = !isLandscape || showControlsInLandscape;
+    const [speakers, setSpeakers] = useState<Dictionary<boolean>>({});
 
     useEffect(() => {
         mergeNavigationOptions('Call', {
@@ -269,16 +270,19 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
         });
     }, []);
 
-    const [speaker, setSpeaker] = useState('');
     useEffect(() => {
         const handleVoiceOn = (data: VoiceEventData) => {
             if (data.channelId === currentCall?.channelId) {
-                setSpeaker(data.userId);
+                setSpeakers((prev) => ({...prev, [data.userId]: true}));
             }
         };
         const handleVoiceOff = (data: VoiceEventData) => {
-            if (data.channelId === currentCall?.channelId && ((speaker === data.userId) || !speaker)) {
-                setSpeaker('');
+            if (data.channelId === currentCall?.channelId && speakers.hasOwnProperty(data.userId) && speakers[data.userId]) {
+                setSpeakers((prev) => {
+                    const next = {...prev};
+                    delete next[data.userId];
+                    return next;
+                });
             }
         };
 
@@ -424,7 +428,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                             >
                                 <CallAvatar
                                     userModel={user.userModel}
-                                    volume={speaker === user.id ? 1 : 0}
+                                    volume={speakers[user.id] ? 1 : 0}
                                     muted={user.muted}
                                     sharingScreen={user.id === currentCall.screenOn}
                                     raisedHand={Boolean(user.raisedHand)}
