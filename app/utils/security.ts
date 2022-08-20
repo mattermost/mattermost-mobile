@@ -2,13 +2,15 @@
 // See LICENSE.txt for license information.
 
 import CookieManager from '@react-native-cookies/cookies';
+import base64 from 'base-64';
 
 export async function getCSRFFromCookie(url: string) {
     const cookies = await CookieManager.get(url, false);
     return cookies.MMCSRF?.value;
 }
 
-export const hashCode = (str: string): string => {
+// This has been deprecated and is only used for migrations
+export const hashCode_DEPRECATED = (str: string): string => {
     let hash = 0;
     let i;
     let chr;
@@ -22,4 +24,8 @@ export const hashCode = (str: string): string => {
         hash |= 0; // Convert to 32bit integer
     }
     return hash.toString();
+};
+
+export const urlSafeBase64Encode = (str: string): string => {
+    return base64.encode(str).replace(/\+/g, '-').replace(/\//g, '_');
 };

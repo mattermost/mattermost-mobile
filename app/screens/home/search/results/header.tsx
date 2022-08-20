@@ -40,6 +40,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             borderBottomWidth: 1,
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
+        badge: {
+            backgroundColor: theme.buttonBg,
+            borderColor: theme.centerChannelBg,
+            marginTop: 8,
+        },
         buttonsContainer: {
             marginBottom: 12,
             paddingHorizontal: 12,
@@ -138,8 +143,7 @@ const Header = ({
                             onPress={handleFilterPress}
                         />
                         <Badge
-                            borderColor={theme.buttonBg}
-                            backgroundColor={theme.buttonBg}
+                            style={styles.badge}
                             visible={hasFilters}
                             testID={'search.filters.badge'}
                             value={-1}

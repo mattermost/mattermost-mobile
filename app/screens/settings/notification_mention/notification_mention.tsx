@@ -17,7 +17,7 @@ type NotificationMentionProps = {
 }
 const NotificationMention = ({componentId, currentUser, isCRTEnabled}: NotificationMentionProps) => {
     return (
-        <SettingContainer>
+        <SettingContainer testID='notification_mention'>
             <MentionSettings
                 currentUser={currentUser}
                 componentId={componentId}

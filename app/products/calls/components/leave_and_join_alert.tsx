@@ -73,7 +73,7 @@ export const doJoinCall = async (serverUrl: string, channelId: string, intl: Int
 
     const res = await joinCall(serverUrl, channelId);
     if (res.error) {
-        const seeLogs = formatMessage({id: 'mobile.calls_see_logs', defaultMessage: 'see server logs'});
+        const seeLogs = formatMessage({id: 'mobile.calls_see_logs', defaultMessage: 'See server logs'});
         errorAlert(res.error?.toString() || seeLogs, intl);
     }
 };

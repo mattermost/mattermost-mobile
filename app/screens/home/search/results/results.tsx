@@ -5,6 +5,8 @@ import React from 'react';
 import {ScaledSize, StyleSheet, useWindowDimensions, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
+import Loading from '@app/components/loading';
+import {useTheme} from '@context/theme';
 import {TabTypes, TabType} from '@utils/search';
 
 import FileResults from './file_results';
@@ -26,6 +28,12 @@ const getStyles = (dimensions: ScaledSize) => {
             flex: 1,
             width: dimensions.width,
         },
+        loading: {
+            justifyContent: 'center',
+            flex: 1,
+            width: dimensions.width,
+        },
+
     });
 };
 
@@ -35,6 +43,7 @@ type Props = {
     fileChannels: ChannelModel[];
     fileInfos: FileInfo[];
     isTimezoneEnabled: boolean;
+    loading: boolean;
     posts: PostModel[];
     publicLinkEnabled: boolean;
     scrollPaddingTop: number;
@@ -48,6 +57,7 @@ const Results = ({
     fileChannels,
     fileInfos,
     isTimezoneEnabled,
+    loading,
     posts,
     publicLinkEnabled,
     scrollPaddingTop,
@@ -55,6 +65,7 @@ const Results = ({
     selectedTab,
 }: Props) => {
     const dimensions = useWindowDimensions();
+    const theme = useTheme();
     const styles = getStyles(dimensions);
 
     const transform = useAnimatedStyle(() => {
@@ -67,27 +78,38 @@ const Results = ({
     }, [selectedTab, dimensions.width]);
 
     return (
-        <Animated.View style={[styles.container, transform]}>
-            <View style={styles.result} >
-                <PostResults
-                    currentTimezone={currentTimezone}
-                    isTimezoneEnabled={isTimezoneEnabled}
-                    posts={posts}
-                    scrollPaddingTop={scrollPaddingTop}
-                    searchValue={searchValue}
+        <>
+            {loading &&
+                <Loading
+                    color={theme.buttonBg}
+                    size='large'
+                    containerStyle={[styles.loading, {paddingTop: scrollPaddingTop}]}
                 />
-            </View>
-            <View style={styles.result} >
-                <FileResults
-                    canDownloadFiles={canDownloadFiles}
-                    fileChannels={fileChannels}
-                    fileInfos={fileInfos}
-                    publicLinkEnabled={publicLinkEnabled}
-                    scrollPaddingTop={scrollPaddingTop}
-                    searchValue={searchValue}
-                />
-            </View>
-        </Animated.View>
+            }
+            {!loading &&
+            <Animated.View style={[styles.container, transform]}>
+                <View style={styles.result} >
+                    <PostResults
+                        currentTimezone={currentTimezone}
+                        isTimezoneEnabled={isTimezoneEnabled}
+                        posts={posts}
+                        scrollPaddingTop={scrollPaddingTop}
+                        searchValue={searchValue}
+                    />
+                </View>
+                <View style={styles.result} >
+                    <FileResults
+                        canDownloadFiles={canDownloadFiles}
+                        fileChannels={fileChannels}
+                        fileInfos={fileInfos}
+                        publicLinkEnabled={publicLinkEnabled}
+                        scrollPaddingTop={scrollPaddingTop}
+                        searchValue={searchValue}
+                    />
+                </View>
+            </Animated.View>
+            }
+        </>
     );
 };
 

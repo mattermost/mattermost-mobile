@@ -88,7 +88,7 @@ const Notifications = ({
     }, []);
 
     return (
-        <SettingContainer>
+        <SettingContainer testID='notification_settings'>
             <SettingItem
                 onPress={goToNotificationSettingsMentions}
                 optionName='mentions'
@@ -96,21 +96,25 @@ const Notifications = ({
                     id: isCRTEnabled ? mentionTexts.crtOn.id : mentionTexts.crtOff.id,
                     defaultMessage: isCRTEnabled ? mentionTexts.crtOn.defaultMessage : mentionTexts.crtOff.defaultMessage,
                 })}
+                testID='notification_settings.mentions.option'
             />
             <SettingItem
                 optionName='push_notification'
                 onPress={goToNotificationSettingsPush}
+                testID='notification_settings.push_notifications.option'
             />
             <SettingItem
                 optionName='email'
                 onPress={goToEmailSettings}
                 info={intl.formatMessage(getEmailIntervalTexts(emailIntervalPref))}
+                testID='notification_settings.email_notifications.option'
             />
             {enableAutoResponder && (
                 <SettingItem
                     onPress={goToNotificationAutoResponder}
                     optionName='automatic_dm_replies'
                     info={currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active === 'true' ? 'On' : 'Off'}
+                    testID='notification_settings.automatic_replies.option'
                 />
             )}
         </SettingContainer>
