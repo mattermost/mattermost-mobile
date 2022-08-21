@@ -3,6 +3,7 @@ import UserNotifications
 
 class NotificationService: UNNotificationServiceExtension {
   let preferences = Gekidou.Preferences.default
+  let fibonacciBackoffsInSeconds = [1.0, 2.0, 3.0, 5.0, 8.0]
   var contentHandler: ((UNNotificationContent) -> Void)?
   var bestAttemptContent: UNMutableNotificationContent?
 
@@ -10,38 +11,6 @@ class NotificationService: UNNotificationServiceExtension {
   
   override func didReceive(_ request: UNNotificationRequest, withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void) {
     self.contentHandler = contentHandler
-
-    let fibonacciBackoffsInSeconds = [1.0, 2.0, 3.0, 5.0, 8.0]
-
-    func fetchReceipt(_ ackNotification: AckNotification) -> Void {
-      if (self.retryIndex >= fibonacciBackoffsInSeconds.count) {
-        contentHandler(self.bestAttemptContent!)
-        return
-      }
-
-      Network.default.postNotificationReceipt(ackNotification) { data, response, error in
-          if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
-            contentHandler(self.bestAttemptContent!)
-            return
-          }
-
-          guard let data = data, error == nil else {
-            if (ackNotification.isIdLoaded) {
-              // Receipt retrieval failed. Kick off retries.
-              let backoffInSeconds = fibonacciBackoffsInSeconds[self.retryIndex]
-
-              DispatchQueue.main.asyncAfter(deadline: .now() + backoffInSeconds, execute: {
-                fetchReceipt(ackNotification)
-              })
- 
-              self.retryIndex += 1
-            }
-            return
-          }
-        
-          self.processResponse(serverUrl: ackNotification.serverUrl, data: data, bestAttemptContent: self.bestAttemptContent!, contentHandler: contentHandler)
-        }
-    }
 
     bestAttemptContent = (request.content.mutableCopy() as? UNMutableNotificationContent)
     if let bestAttemptContent = bestAttemptContent,
@@ -87,6 +56,37 @@ class NotificationService: UNNotificationServiceExtension {
       contentHandler(bestAttemptContent)
     }
   }
+  
+  func fetchReceipt(_ ackNotification: AckNotification) -> Void {
+    if (self.retryIndex >= self.fibonacciBackoffsInSeconds.count) {
+      self.contentHandler?(self.bestAttemptContent!)
+      return
+    }
+
+    Network.default.postNotificationReceipt(ackNotification) { data, response, error in
+        if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+          self.contentHandler?(self.bestAttemptContent!)
+          return
+        }
+
+        guard let data = data, error == nil else {
+          if (ackNotification.isIdLoaded) {
+            // Receipt retrieval failed. Kick off retries.
+            let backoffInSeconds = self.fibonacciBackoffsInSeconds[self.retryIndex]
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + backoffInSeconds, execute: {
+              self.fetchReceipt(ackNotification)
+            })
+
+            self.retryIndex += 1
+          }
+          return
+        }
+      
+      self.processResponse(serverUrl: ackNotification.serverUrl, data: data, bestAttemptContent: self.bestAttemptContent!, contentHandler: self.contentHandler)
+      }
+  }
+
 }
 
 extension Date {

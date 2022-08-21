@@ -6,17 +6,27 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {combineLatestWith, switchMap} from 'rxjs/operators';
 
+import {observeIsCallsFeatureRestricted} from '@calls/observers';
 import {General} from '@constants';
 import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
 import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
-import {getUserCustomStatus, getUserIdFromChannelName, isCustomStatusExpired as checkCustomStatusIsExpired} from '@utils/user';
+import {
+    getUserCustomStatus,
+    getUserIdFromChannelName,
+    isCustomStatusExpired as checkCustomStatusIsExpired,
+} from '@utils/user';
 
 import ChannelHeader from './header';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enhanced = withObservables(['channelId'], ({channelId, database}: WithDatabaseArgs & {channelId: string}) => {
+type OwnProps = {
+    serverUrl: string;
+    channelId: string;
+};
+
+const enhanced = withObservables(['channelId'], ({serverUrl, channelId, database}: OwnProps & WithDatabaseArgs) => {
     const currentUserId = observeCurrentUserId(database);
     const teamId = observeCurrentTeamId(database);
 
@@ -77,6 +87,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: WithData
         memberCount,
         searchTerm,
         teamId,
+        callsFeatureRestricted: observeIsCallsFeatureRestricted(database, serverUrl, channelId),
     };
 });
 

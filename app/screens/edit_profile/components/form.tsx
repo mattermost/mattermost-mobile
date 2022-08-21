@@ -169,7 +169,7 @@ const ProfileForm = ({
                 fieldRef={firstNameRef}
                 isDisabled={userProfileFields.firstName.isDisabled}
                 label={formatMessage(FIELDS.firstName)}
-                testID='edit_profile.text_setting.firstName'
+                testID='edit_profile_form.first_name'
                 value={userInfo.firstName}
                 {...fieldConfig}
             />
@@ -179,7 +179,7 @@ const ProfileForm = ({
                 fieldRef={lastNameRef}
                 isDisabled={userProfileFields.lastName.isDisabled}
                 label={formatMessage(FIELDS.lastName)}
-                testID='edit_profile.text_setting.lastName'
+                testID='edit_profile_form.last_name'
                 value={userInfo.lastName}
                 {...fieldConfig}
             />
@@ -190,7 +190,7 @@ const ProfileForm = ({
                 isDisabled={userProfileFields.username.isDisabled}
                 label={formatMessage(FIELDS.username)}
                 maxLength={22}
-                testID='edit_profile.text_setting.username'
+                testID='edit_profile_form.username'
                 value={userInfo.username}
                 {...fieldConfig}
             />
@@ -215,7 +215,7 @@ const ProfileForm = ({
                 isDisabled={userProfileFields.nickname.isDisabled}
                 label={formatMessage(FIELDS.nickname)}
                 maxLength={22}
-                testID='edit_profile.text_setting.nickname'
+                testID='edit_profile_form.nickname'
                 value={userInfo.nickname}
                 {...fieldConfig}
             />
@@ -229,7 +229,7 @@ const ProfileForm = ({
                 maxLength={128}
                 {...fieldConfig}
                 returnKeyType='done'
-                testID='edit_profile.text_setting.position'
+                testID='edit_profile_form.position'
                 value={userInfo.position}
             />
             <View style={styles.footer}/>

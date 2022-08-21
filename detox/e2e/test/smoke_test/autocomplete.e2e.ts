@@ -25,7 +25,7 @@ import {
 } from '@support/ui/screen';
 import {expect} from 'detox';
 
-describe('Autocomplete - At-Mention', () => {
+describe('Smoke Test - Autocomplete', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;

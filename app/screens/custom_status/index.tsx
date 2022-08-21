@@ -333,7 +333,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     <TabletTitle
                         action={intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'})}
                         onPress={this.handleSetStatus}
-                        testID='custom_status.done.button'
+                        testID='custom_status'
                         title={intl.formatMessage({id: 'mobile.routes.custom_status', defaultMessage: 'Set a Status'})}
                     />
                 }
@@ -352,6 +352,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                             bounces={false}
                             keyboardDismissMode='none'
                             keyboardShouldPersistTaps='always'
+                            testID='custom_status.scroll_view'
                         >
                             <View style={style.scrollView}>
                                 <View style={style.block}>

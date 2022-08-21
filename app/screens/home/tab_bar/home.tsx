@@ -2,13 +2,15 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {Platform, StyleSheet, View} from 'react-native';
+import {Notifications} from 'react-native-notifications';
 
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {BOTTOM_TAB_ICON_SIZE} from '@constants/view';
 import {subscribeAllServers} from '@database/subscription/servers';
 import {subscribeUnreadAndMentionsByServer, UnreadObserverArgs} from '@database/subscription/unreads';
+import NativeNotification from '@notifications';
 import {changeOpacity} from '@utils/theme';
 
 import type ServersModel from '@typings/database/models/app/servers';
@@ -48,6 +50,16 @@ const Home = ({isFocused, theme}: Props) => {
             mentions += value.mentions;
         });
         setTotal({mentions, unread});
+
+        if (Platform.OS === 'ios') {
+            NativeNotification.getDeliveredNotifications().then((delivered) => {
+                if (mentions === 0 && delivered.length > 0) {
+                    return;
+                }
+
+                Notifications.ios.setBadgeCount(mentions);
+            });
+        }
     };
 
     const unreadsSubscription = (serverUrl: string, {myChannels, settings, threadMentionCount}: UnreadObserverArgs) => {
