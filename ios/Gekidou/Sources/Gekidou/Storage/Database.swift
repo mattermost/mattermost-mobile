@@ -153,6 +153,24 @@ public class Database: NSObject {
         }
     }
     
+    public func getAllActiveServerUrls() -> [String] {
+        guard let db = try? Connection(DEFAULT_DB_PATH) else {return []}
+        let lastActiveAt = Expression<Int64>("last_active_at")
+        let identifier = Expression<String>("identifier")
+        let url = Expression<String>("url")
+        let query = serversTable.filter(lastActiveAt > 0 && identifier != "").order(lastActiveAt.desc)
+        do {
+            let rows = try db.prepare(query)
+            let servers: [String] = try rows.map { row in
+                return try row.get(url)
+            }
+
+            return servers
+        } catch {
+            return []
+        }
+    }
+    
     public func getCurrentServerDatabase<T: Codable>() -> T? {
         guard let db = try? Connection(DEFAULT_DB_PATH) else {return nil}
         do {

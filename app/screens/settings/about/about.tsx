@@ -145,7 +145,7 @@ const About = ({config, license}: AboutProps) => {
         const buildNumber = config.BuildNumber;
         const version = config.Version;
 
-        let id = t('settings.about.serverVersion');
+        let id = t('settings.about.server.version.value');
         let defaultMessage = '{version} (Build {number})';
         let values: {version: string; number?: string} = {
             version,
@@ -194,7 +194,7 @@ const About = ({config, license}: AboutProps) => {
                 </View>
                 <View style={styles.group}>
                     <Text style={styles.leftHeading}>
-                        {intl.formatMessage({id: 'settings.about.serverVersion', defaultMessage: 'Server Version:'})}
+                        {intl.formatMessage({id: 'settings.about.server.version.desc', defaultMessage: 'Server Version:'})}
                     </Text>
                     <Text style={styles.rightHeading}>
                         {intl.formatMessage({id: serverVersion.id, defaultMessage: serverVersion.defaultMessage}, serverVersion.values)}
@@ -206,6 +206,17 @@ const About = ({config, license}: AboutProps) => {
                     </Text>
                     <Text style={styles.rightHeading}>
                         {intl.formatMessage({id: 'settings.about.database.value', defaultMessage: `${config.SQLDriverName}`})}
+                    </Text>
+                </View>
+                <View style={styles.group}>
+                    <Text style={styles.leftHeading}>
+                        {intl.formatMessage({id: 'settings.about.database.schema', defaultMessage: 'Database Schema Version:'})}
+                    </Text>
+                    <Text style={styles.rightHeading}>
+                        {intl.formatMessage({
+                            id: 'settings.about.database.schema.value',
+                            defaultMessage: `${config.SchemaVersion}`,
+                        })}
                     </Text>
                 </View>
                 {license.IsLicensed === 'true' && (

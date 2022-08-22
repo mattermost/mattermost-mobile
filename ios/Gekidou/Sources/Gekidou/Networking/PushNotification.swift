@@ -108,7 +108,6 @@ extension Network {
     }
     
     public func fetchAndStoreDataForPushNotification(_ notification: UNMutableNotificationContent, withContentHandler contentHandler: ((UNNotificationContent) -> Void)?) {
-
         let operation = BlockOperation {
             let group = DispatchGroup()
             
@@ -121,11 +120,38 @@ extension Network {
             let currentUsername = currentUser?[Expression<String>("username")]
             
             var postData: PostData? = nil
+            var myChannelData: ChannelMemberData? = nil
+            var threadData: ThreadData? = nil
             var threads: [Post] = []
             var userIdsToLoad: Set<String> = Set()
             var usernamesToLoad: Set<String> = Set()
             var users: Set<User> = Set()
 
+            if isCRTEnabled && !rootId.isEmpty {
+                // Fetch the thread mentions
+                let teamId = Gekidou.Database.default.queryTeamIdForChannel(withId: channelId, withServerUrl: serverUrl) ?? ""
+
+                if !teamId.isEmpty {
+                    group.enter()
+                    self.fetchThreadMentions(teamId: teamId, threadId: rootId, withServerUrl: serverUrl, completionHandler: {data, response, error in
+                        if self.responseOK(response), let data = data {
+                            threadData = try? JSONDecoder().decode(ThreadData.self, from: data)
+                        }
+                        group.leave()
+                    })
+                }
+            } else {
+                // Fetch the channel mentions
+                group.enter()
+                self.fetchChannelMentions(channelId: channelId, withServerUrl: serverUrl, completionHandler: { data, response, error in
+                    if self.responseOK(response), let data = data {
+                        myChannelData = try? JSONDecoder().decode(ChannelMemberData.self, from: data)
+                    }
+                    group.leave()
+                })
+            }
+            
+            
             group.enter()
             let since = try? Database.default.queryPostsSinceForChannel(withId: channelId, withServerUrl: serverUrl)
             self.fetchPostsForChannel(withId: channelId, withSince: since, withServerUrl: serverUrl, withIsCRTEnabled: isCRTEnabled, withRootId: rootId) { data, response, error in
@@ -242,11 +268,21 @@ extension Network {
                     let receivingThreads = isCRTEnabled && !rootId.isEmpty
                     try? db.transaction {
                         try? Database.default.handlePostData(db, postData!, channelId, since != nil, receivingThreads)
-                        if (threads.count > 0) {
+                        
+                        if threads.count > 0 {
                             try? Database.default.handleThreads(db, threads)
                         }
-                        if (users.count > 0) {
+                        
+                        if users.count > 0 {
                             try? Database.default.insertUsers(db, users)
+                        }
+                        
+                        if myChannelData != nil {
+                            try? Database.default.handleMyChannelMentions(db, myChannelData!, withCRTEnabled: isCRTEnabled)
+                        }
+                        
+                        if threadData != nil {
+                            try? Database.default.handleThreadMentions(db, threadData!)
                         }
                     }
                 }
@@ -254,6 +290,8 @@ extension Network {
             group.leave()
 
             if let contentHandler = contentHandler {
+                // Get the total mentions from all databases and set the badge icon
+                notification.badge = Gekidou.Database.default.getTotalMentions() as NSNumber
                 contentHandler(notification)
             }
         }

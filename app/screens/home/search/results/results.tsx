@@ -7,6 +7,7 @@ import Animated from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import File from '@components/files/file';
+import Loading from '@components/loading';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {ITEM_HEIGHT} from '@components/option_item';
 import DateSeparator from '@components/post_list/date_separator';
@@ -46,9 +47,9 @@ type Props = {
     fileChannels: ChannelModel[];
     fileInfos: FileInfo[];
     isTimezoneEnabled: boolean;
+    loading: boolean;
     posts: PostModel[];
     publicLinkEnabled: boolean;
-    scrollPaddingTop: number;
     searchValue: string;
     selectedTab: TabType;
 }
@@ -61,9 +62,9 @@ const SearchResults = ({
     fileChannels,
     fileInfos,
     isTimezoneEnabled,
+    loading,
     posts,
     publicLinkEnabled,
-    scrollPaddingTop,
     searchValue,
     selectedTab,
 }: Props) => {
@@ -72,7 +73,6 @@ const SearchResults = ({
     const insets = useSafeAreaInsets();
     const [lastViewedIndex, setLastViewedIndex] = useState<number | undefined>(undefined);
 
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
     const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
     const channelNames = useMemo(() => fileChannels.reduce<{[id: string]: string | undefined}>((acc, v) => {
@@ -156,6 +156,15 @@ const SearchResults = ({
     }, [canDownloadFiles, publicLinkEnabled]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<string|FileInfo | Post>) => {
+        if (item === 'loading') {
+            return (
+                <Loading
+                    color={theme.buttonBg}
+                    size='large'
+                />
+            );
+        }
+
         if (typeof item === 'string') {
             if (isDateLine(item)) {
                 return (
@@ -235,10 +244,10 @@ const SearchResults = ({
     }, [searchValue, selectedTab]);
 
     let data;
-    if (selectedTab === TabTypes.MESSAGES) {
-        data = orderedPosts;
+    if (loading) {
+        data = ['loading'];
     } else {
-        data = orderedFilesForGallery;
+        data = selectedTab === TabTypes.MESSAGES ? orderedPosts : orderedFilesForGallery;
     }
 
     return (
@@ -251,7 +260,6 @@ const SearchResults = ({
             indicatorStyle='black'
             refreshing={false}
             renderItem={renderItem}
-            contentContainerStyle={paddingTop}
             nestedScrollEnabled={true}
             removeClippedSubviews={true}
             style={containerStyle}

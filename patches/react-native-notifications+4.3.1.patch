@@ -21,10 +21,10 @@ index 24cd226..4bfacba 100644
  
  </manifest>
 diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java
-index db9eaba..af65d0e 100644
+index 90969b2..778cb29 100644
 --- a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java
 +++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java
-@@ -100,7 +100,12 @@ public class RNNotificationsModule extends ReactContextBaseJavaModule implements
+@@ -102,7 +102,12 @@ public class RNNotificationsModule extends ReactContextBaseJavaModule implements
          if(BuildConfig.DEBUG) Log.d(LOGTAG, "Native method invocation: postLocalNotification");
          final Bundle notificationProps = Arguments.toBundle(notificationPropsMap);
          final IPushNotification pushNotification = PushNotification.get(getReactApplicationContext().getApplicationContext(), notificationProps);
@@ -38,19 +38,6 @@ index db9eaba..af65d0e 100644
      }
  
      @ReactMethod
-@@ -109,6 +114,12 @@ public class RNNotificationsModule extends ReactContextBaseJavaModule implements
-         notificationsDrawer.onNotificationClearRequest(notificationId);
-     }
- 
-+    @ReactMethod
-+    public void cancelAllLocalNotifications() {
-+        IPushNotificationsDrawer notificationDrawer = PushNotificationsDrawer.get(getReactApplicationContext().getApplicationContext());
-+        notificationDrawer.onCancelAllLocalNotifications();
-+    }
-+
-     @ReactMethod
-     public void setCategories(ReadableArray categories) {
-     
 diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/helpers/ScheduleNotificationHelper.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/helpers/ScheduleNotificationHelper.java
 new file mode 100644
 index 0000000..dde4a2c
@@ -173,7 +160,7 @@ index 0d70024..b9e6c88 100644
      PushNotificationProps asProps();
  }
 diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
-index b93f762..400e086 100644
+index 54a5fb8..f38881e 100644
 --- a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
 +++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
 @@ -8,6 +8,10 @@ import android.content.Context;
@@ -338,18 +325,8 @@ index 0000000..58ff887
 +        pushNotification.onPostScheduledRequest(notificationId);
 +    }
 +}
-diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/IPushNotificationsDrawer.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/IPushNotificationsDrawer.java
-index e22cd62..48aa1cd 100644
---- a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/IPushNotificationsDrawer.java
-+++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/IPushNotificationsDrawer.java
-@@ -11,4 +11,5 @@ public interface IPushNotificationsDrawer {
-     void onNotificationClearRequest(int id);
-     void onNotificationClearRequest(String tag, int id);
-     void onAllNotificationsClearRequest();
-+    void onCancelAllLocalNotifications();
- }
 diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/PushNotificationsDrawer.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/PushNotificationsDrawer.java
-index a14089f..1262e6d 100644
+index a14089f..a339934 100644
 --- a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/PushNotificationsDrawer.java
 +++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/PushNotificationsDrawer.java
 @@ -2,9 +2,15 @@ package com.wix.reactnativenotifications.core.notificationdrawer;
@@ -368,16 +345,10 @@ index a14089f..1262e6d 100644
  
  public class PushNotificationsDrawer implements IPushNotificationsDrawer {
  
-@@ -62,4 +68,37 @@ public class PushNotificationsDrawer implements IPushNotificationsDrawer {
+@@ -62,4 +68,31 @@ public class PushNotificationsDrawer implements IPushNotificationsDrawer {
          final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
          notificationManager.cancelAll();
      }
-+
-+    @Override
-+    public void onCancelAllLocalNotifications() {
-+        onAllNotificationsClearRequest();
-+        cancelAllScheduledNotifications();
-+    }
 +
 +    protected void cancelAllScheduledNotifications() {
 +        Log.i(LOGTAG, "Cancelling all scheduled notifications");
@@ -428,43 +399,11 @@ index ad7fc1a..a04ec6b 100644
      }
      get title() {
          return this.payload.title;
-diff --git a/node_modules/react-native-notifications/lib/dist/Notifications.d.ts b/node_modules/react-native-notifications/lib/dist/Notifications.d.ts
-index 6e49fd4..1d94217 100644
---- a/node_modules/react-native-notifications/lib/dist/Notifications.d.ts
-+++ b/node_modules/react-native-notifications/lib/dist/Notifications.d.ts
-@@ -37,6 +37,10 @@ export declare class NotificationsRoot {
-      * cancelLocalNotification
-     */
-     cancelLocalNotification(notificationId: number): void;
-+    /**
-+     * cancelAllLocalNotifications
-+    */
-+    cancelAllLocalNotifications(): void;
-     /**
-      * removeAllDeliveredNotifications
-      */
-diff --git a/node_modules/react-native-notifications/lib/dist/Notifications.js b/node_modules/react-native-notifications/lib/dist/Notifications.js
-index 44ab53f..8000701 100644
---- a/node_modules/react-native-notifications/lib/dist/Notifications.js
-+++ b/node_modules/react-native-notifications/lib/dist/Notifications.js
-@@ -55,6 +55,12 @@ class NotificationsRoot {
-     cancelLocalNotification(notificationId) {
-         return this.commands.cancelLocalNotification(notificationId);
-     }
-+    /**
-+     * cancelAllLocalNotifications
-+    */
-+    cancelAllLocalNotifications() {
-+        this.commands.cancelAllLocalNotifications();
-+    }
-     /**
-      * removeAllDeliveredNotifications
-      */
 diff --git a/node_modules/react-native-notifications/lib/ios/RNNotificationCenter.m b/node_modules/react-native-notifications/lib/ios/RNNotificationCenter.m
-index 4b33656..0f189d6 100644
+index afd5c73..6036dda 100644
 --- a/node_modules/react-native-notifications/lib/ios/RNNotificationCenter.m
 +++ b/node_modules/react-native-notifications/lib/ios/RNNotificationCenter.m
-@@ -83,7 +83,7 @@
+@@ -87,7 +87,7 @@
          for (UNNotification *notification in notifications) {
              [formattedNotifications addObject:[RCTConvert UNNotificationPayload:notification]];
          }
@@ -473,39 +412,3 @@ index 4b33656..0f189d6 100644
      }];
  }
  
-diff --git a/node_modules/react-native-notifications/lib/src/Notifications.ts b/node_modules/react-native-notifications/lib/src/Notifications.ts
-index 0848f6d..ceb271d 100644
---- a/node_modules/react-native-notifications/lib/src/Notifications.ts
-+++ b/node_modules/react-native-notifications/lib/src/Notifications.ts
-@@ -80,6 +80,13 @@ export class NotificationsRoot {
-     return this.commands.cancelLocalNotification(notificationId);
-   }
- 
-+  /**
-+   * cancelAllLocalNotifications
-+  */
-+  public cancelAllLocalNotifications() {
-+    this.commands.cancelAllLocalNotifications();
-+  }
-+
-   /**
-    * removeAllDeliveredNotifications
-    */
-diff --git a/node_modules/react-native-notifications/lib/src/NotificationsIOS.ts b/node_modules/react-native-notifications/lib/src/NotificationsIOS.ts
-index 98fc19d..0c8ea3d 100644
---- a/node_modules/react-native-notifications/lib/src/NotificationsIOS.ts
-+++ b/node_modules/react-native-notifications/lib/src/NotificationsIOS.ts
-@@ -52,13 +52,6 @@ export class NotificationsIOS {
-     return this.commands.setBadgeCount(count);
-   }
- 
--  /**
--   * cancelAllLocalNotifications
--   */
--  public cancelAllLocalNotifications() {
--    this.commands.cancelAllLocalNotifications();
--  }
--
-   /**
-    * checkPermissions
-    */
