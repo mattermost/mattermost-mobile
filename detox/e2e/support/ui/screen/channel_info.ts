@@ -14,7 +14,7 @@ class ChannelInfoScreen {
         directMessageTitlePrefix: 'channel_info.title.direct_message.',
         channelInfoScreen: 'channel_info.screen',
         closeButton: 'close.channel_info.button',
-        scrollView: 'channel_info.scrollview',
+        scrollView: 'channel_info.scroll_view',
         groupMessageTitleDisplayName: 'channel_info.title.group_message.display_name',
         publicPrivateTitleDisplayName: 'channel_info.title.public_private.display_name',
         publicPrivateTitlePurpose: 'channel_info.title.public_private.purpose',
@@ -67,7 +67,7 @@ class ChannelInfoScreen {
     archiveChannelOption = element(by.id(this.testID.archiveChannelOption));
     unarchiveChannelOption = element(by.id(this.testID.unarchiveChannelOption));
 
-    getDirectMessageTitle = async (userId: string) => {
+    getDirectMessageTitle = (userId: string) => {
         const directMessageTitleTestId = `${this.testID.directMessageTitlePrefix}${userId}`;
         const directMessageTitleProfilePictureMatcher = ProfilePicture.getProfilePictureItemMatcher(this.testID.directMessageTitlePrefix, userId);
         const directMessageTitleUserDisplayNameMatcher = by.id(`${directMessageTitleTestId}.display_name`);
@@ -105,7 +105,6 @@ class ChannelInfoScreen {
     };
 
     archiveChannel = async (alertArchiveChannelTitle: Detox.NativeElement, {confirm = true} = {}) => {
-        await this.scrollView.scrollTo('bottom');
         await waitFor(this.archiveChannelOption).toExist().withTimeout(timeouts.TWO_SEC);
         await this.archiveChannelOption.tap({x: 1, y: 1});
         const {
@@ -134,8 +133,33 @@ class ChannelInfoScreen {
         await this.archiveChannel(Alert.archivePublicChannelTitle, {confirm});
     };
 
+    convertToPrivateChannel = async (channelDisplayName: string, {confirm = true} = {}) => {
+        await waitFor(this.convertPrivateOption).toExist().withTimeout(timeouts.TWO_SEC);
+        await this.convertPrivateOption.tap({x: 1, y: 1});
+        const {
+            channelNowPrivateTitle,
+            convertToPrivateChannelTitle,
+            noButton2,
+            okButton,
+            yesButton2,
+        } = Alert;
+        await expect(convertToPrivateChannelTitle(channelDisplayName)).toBeVisible();
+        await expect(noButton2).toBeVisible();
+        await expect(yesButton2).toBeVisible();
+        if (confirm) {
+            await yesButton2.tap();
+            await expect(channelNowPrivateTitle(channelDisplayName)).toBeVisible();
+            await okButton.tap();
+            await wait(timeouts.ONE_SEC);
+            await expect(this.channelInfoScreen).toExist();
+        } else {
+            await noButton2.tap();
+            await wait(timeouts.ONE_SEC);
+            await expect(this.channelInfoScreen).toExist();
+        }
+    };
+
     leaveChannel = async ({confirm = true} = {}) => {
-        await this.scrollView.scrollTo('bottom');
         await waitFor(this.leaveChannelOption).toExist().withTimeout(timeouts.TWO_SEC);
         await this.leaveChannelOption.tap({x: 1, y: 1});
         const {
@@ -168,7 +192,6 @@ class ChannelInfoScreen {
     };
 
     unarchiveChannel = async (alertUnarchiveChannelTitle: Detox.NativeElement, {confirm = true} = {}) => {
-        await this.scrollView.scrollTo('bottom');
         await waitFor(this.unarchiveChannelOption).toExist().withTimeout(timeouts.TWO_SEC);
         await this.unarchiveChannelOption.tap({x: 1, y: 1});
         const {

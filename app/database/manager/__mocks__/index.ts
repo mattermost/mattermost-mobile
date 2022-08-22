@@ -23,7 +23,7 @@ import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
 import {queryActiveServer, queryServer, queryServerByIdentifier} from '@queries/app/servers';
 import {deleteIOSDatabase} from '@utils/mattermost_managed';
-import {hashCode} from '@utils/security';
+import {urlSafeBase64Encode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
 
 import type {AppDatabase, CreateServerDatabaseArgs, Models, RegisterServerDatabaseArgs, ServerDatabase, ServerDatabases} from '@typings/database/database';
@@ -132,7 +132,7 @@ class DatabaseManager {
     private initServerDatabase = async (serverUrl: string): Promise<void> => {
         await this.createServerDatabase({
             config: {
-                dbName: hashCode(serverUrl),
+                dbName: urlSafeBase64Encode(serverUrl),
                 dbType: DatabaseType.SERVER,
                 serverUrl,
             },
@@ -306,7 +306,7 @@ class DatabaseManager {
     };
 
     private deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
-        const databaseName = hashCode(serverUrl);
+        const databaseName = urlSafeBase64Encode(serverUrl);
 
         if (Platform.OS === 'ios') {
         // On iOS, we'll delete the *.db file under the shared app-group/databases folder

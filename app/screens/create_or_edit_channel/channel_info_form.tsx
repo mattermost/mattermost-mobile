@@ -276,7 +276,7 @@ export default function ChannelInfoForm({
             ref={mainView}
         >
             <KeyboardAwareScrollView
-                testID={'create_or_edit_channel.scrollview'}
+                testID={'create_or_edit_channel.scroll_view'}
                 ref={scrollViewRef}
                 keyboardShouldPersistTaps={'always'}
                 enableAutomaticScroll={!keyboardVisible}

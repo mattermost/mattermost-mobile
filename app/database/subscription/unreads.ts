@@ -35,12 +35,13 @@ export const subscribeServerUnreadAndMentions = (serverUrl: string, observer: Un
     let subscription: Subscription|undefined;
 
     if (server?.database) {
-        subscription = server.database.get<MyChannelModel>(MY_CHANNEL).
+        subscription = server.database.
+            get<MyChannelModel>(MY_CHANNEL).
             query(Q.on(CHANNEL, Q.where('delete_at', Q.eq(0)))).
             observeWithColumns(['is_unread', 'mentions_count']).
             pipe(
                 combineLatestWith(observeAllMyChannelNotifyProps(server.database)),
-                combineLatestWith(observeUnreadsAndMentionsInTeam(server.database, undefined, false)),
+                combineLatestWith(observeUnreadsAndMentionsInTeam(server.database, undefined, true)),
                 map$(([[myChannels, settings], {unreads, mentions}]) => ({myChannels, settings, threadUnreads: unreads, threadMentionCount: mentions})),
             ).
             subscribe(observer);
@@ -59,7 +60,7 @@ export const subscribeMentionsByServer = (serverUrl: string, observer: ServerUnr
             query(Q.on(CHANNEL, Q.where('delete_at', Q.eq(0)))).
             observeWithColumns(['mentions_count']).
             pipe(
-                combineLatestWith(observeThreadMentionCount(server.database, undefined, false)),
+                combineLatestWith(observeThreadMentionCount(server.database, undefined, true)),
                 map$(([myChannels, threadMentionCount]) => ({myChannels, threadMentionCount})),
             ).
             subscribe(observer.bind(undefined, serverUrl));
@@ -78,7 +79,7 @@ export const subscribeUnreadAndMentionsByServer = (serverUrl: string, observer: 
             observeWithColumns(['mentions_count', 'is_unread']).
             pipe(
                 combineLatestWith(observeAllMyChannelNotifyProps(server.database)),
-                combineLatestWith(observeUnreadsAndMentionsInTeam(server.database, undefined, false)),
+                combineLatestWith(observeUnreadsAndMentionsInTeam(server.database, undefined, true)),
                 map$(([[myChannels, settings], {unreads, mentions}]) => ({myChannels, settings, threadUnreads: unreads, threadMentionCount: mentions})),
             ).
             subscribe(observer.bind(undefined, serverUrl));

@@ -38,7 +38,8 @@ type ChannelProps = {
     memberCount?: number;
     searchTerm: string;
     teamId: string;
-    callsEnabled: boolean;
+    callsEnabledInChannel: boolean;
+    callsFeatureRestricted: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -66,7 +67,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const ChannelHeader = ({
     channelId, channelType, componentId, customStatus, displayName,
     isCustomStatusExpired, isOwnDirectMessage, memberCount,
-    searchTerm, teamId, callsEnabled,
+    searchTerm, teamId, callsEnabledInChannel, callsFeatureRestricted,
 }: ChannelProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -74,6 +75,7 @@ const ChannelHeader = ({
     const styles = getStyleSheet(theme);
     const defaultHeight = useDefaultHeaderHeight();
     const insets = useSafeAreaInsets();
+    const callsAvailable = callsEnabledInChannel && !callsFeatureRestricted;
 
     const isDMorGM = isTypeDMorGM(channelType);
     const contextStyle = useMemo(() => ({
@@ -129,13 +131,13 @@ const ChannelHeader = ({
         }
 
         // When calls is enabled, we need space to move the "Copy Link" from a button to an option
-        const height = QUICK_OPTIONS_HEIGHT + (callsEnabled && !isDMorGM ? ITEM_HEIGHT : 0);
+        const height = QUICK_OPTIONS_HEIGHT + (callsAvailable && !isDMorGM ? ITEM_HEIGHT : 0);
 
         const renderContent = () => {
             return (
                 <QuickActions
                     channelId={channelId}
-                    callsEnabled={callsEnabled}
+                    callsEnabled={callsAvailable}
                     isDMorGM={isDMorGM}
                 />
             );
@@ -148,7 +150,7 @@ const ChannelHeader = ({
             theme,
             closeButtonId: 'close-channel-quick-actions',
         });
-    }, [channelId, isDMorGM, isTablet, onTitlePress, theme, callsEnabled]);
+    }, [channelId, isDMorGM, isTablet, onTitlePress, theme, callsAvailable]);
 
     const rightButtons: HeaderRightButton[] = useMemo(() => ([
 

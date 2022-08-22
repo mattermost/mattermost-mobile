@@ -6,6 +6,7 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
+import {observeIsCallsFeatureRestricted} from '@calls/observers';
 import {observeCallsConfig, observeCallsState} from '@calls/state';
 import {General} from '@constants';
 import {withServerUrl} from '@context/server';
@@ -69,11 +70,15 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         }),
         distinctUntilChanged(),
     );
+    const isCallsFeatureRestricted = channelId.pipe(
+        switchMap((id) => observeIsCallsFeatureRestricted(database, serverUrl, id)),
+    );
 
     return {
         type,
         canEnableDisableCalls,
         isCallsEnabledInChannel,
+        isCallsFeatureRestricted,
     };
 });
 

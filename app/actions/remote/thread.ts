@@ -54,7 +54,7 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, 
         }
     }
 
-    switchToThread(serverUrl, rootId, isFromNotification);
+    await switchToThread(serverUrl, rootId, isFromNotification);
 
     return {};
 };
@@ -186,7 +186,11 @@ export const markThreadAsRead = async (serverUrl: string, teamId: string | undef
         const isCRTEnabled = await getIsCRTEnabled(database);
         const post = await getPostById(database, threadId);
         if (post) {
-            PushNotifications.cancelChannelNotifications(post.channelId, threadId, isCRTEnabled);
+            if (isCRTEnabled) {
+                PushNotifications.removeThreadNotifications(serverUrl, threadId);
+            } else {
+                PushNotifications.removeChannelNotifications(serverUrl, post.channelId);
+            }
         }
 
         return {data};

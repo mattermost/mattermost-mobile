@@ -7,6 +7,7 @@ import Animated from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import File from '@components/files/file';
+import Loading from '@components/loading';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {ITEM_HEIGHT} from '@components/option_item';
 import DateSeparator from '@components/post_list/date_separator';
@@ -46,6 +47,7 @@ type Props = {
     fileChannels: ChannelModel[];
     fileInfos: FileInfo[];
     isTimezoneEnabled: boolean;
+    loading: boolean;
     posts: PostModel[];
     publicLinkEnabled: boolean;
     searchValue: string;
@@ -60,6 +62,7 @@ const SearchResults = ({
     fileChannels,
     fileInfos,
     isTimezoneEnabled,
+    loading,
     posts,
     publicLinkEnabled,
     searchValue,
@@ -153,6 +156,15 @@ const SearchResults = ({
     }, [canDownloadFiles, publicLinkEnabled]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<string|FileInfo | Post>) => {
+        if (item === 'loading') {
+            return (
+                <Loading
+                    color={theme.buttonBg}
+                    size='large'
+                />
+            );
+        }
+
         if (typeof item === 'string') {
             if (isDateLine(item)) {
                 return (
@@ -232,10 +244,10 @@ const SearchResults = ({
     }, [searchValue, selectedTab]);
 
     let data;
-    if (selectedTab === TabTypes.MESSAGES) {
-        data = orderedPosts;
+    if (loading) {
+        data = ['loading'];
     } else {
-        data = orderedFilesForGallery;
+        data = selectedTab === TabTypes.MESSAGES ? orderedPosts : orderedFilesForGallery;
     }
 
     return (
