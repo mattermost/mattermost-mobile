@@ -118,7 +118,7 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
                 backgroundColor: theme.centerChannelBg,
                 opacity: 1,
                 paddingHorizontal: 20,
-                paddingTop: isTablet ? 0 : PADDING_TOP_MOBILE,
+                paddingTop: isTablet ? 8 : PADDING_TOP_MOBILE,
                 height: '100%',
                 width: isTablet ? '100%' : Math.min(dimensions.width, 450),
                 alignSelf: 'center',
