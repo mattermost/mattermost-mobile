@@ -30,6 +30,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         disabled: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75, 'Regular'),
+            marginHorizontal: 20,
         },
     };
 });
@@ -170,7 +171,7 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
                 </Text>
                 }
             </SettingBlock>
-            {isCRTEnabled && notifyProps.email === 'true' && (
+            {isCRTEnabled && notifyInterval !== Preferences.INTERVAL_NEVER.toString() && (
                 <SettingBlock
                     footerText={emailFooterCRTText}
                     headerText={emailHeaderCRTText}
