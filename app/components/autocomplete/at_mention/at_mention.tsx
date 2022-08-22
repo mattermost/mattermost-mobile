@@ -17,6 +17,7 @@ import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
 import {queryAllUsers} from '@queries/servers/user';
+import {hasTrailingSpaces} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type GroupModel from '@typings/database/models/servers/group';
@@ -85,13 +86,16 @@ const keyExtractor = (item: UserProfile) => {
     return item.id;
 };
 
-const filterLocalResults = (users: UserModel[], term: string) => {
-    return users.filter((u) =>
-        u.username.toLowerCase().startsWith(term) ||
-        u.nickname.toLowerCase().startsWith(term) ||
-        u.firstName.toLowerCase().startsWith(term) ||
-        u.lastName.toLowerCase().startsWith(term),
-    );
+const filterResults = (users: Array<UserModel | UserProfile>, term: string) => {
+    return users.filter((u) => {
+        const firstName = ('firstName' in u ? u.firstName : u.first_name).toLowerCase();
+        const lastName = ('lastName' in u ? u.lastName : u.last_name).toLowerCase();
+        const fullName = `${firstName} ${lastName}`;
+        return u.username.toLowerCase().includes(term) ||
+            u.nickname.toLowerCase().includes(term) ||
+            fullName.includes(term) ||
+            u.email.toLowerCase().includes(term);
+    });
 };
 
 const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersInChannel: Array<UserProfile | UserModel>, usersOutOfChannel: Array<UserProfile | UserModel>, groups: GroupModel[], showSpecialMentions: boolean, isLocal = false, isSearch = false) => {
@@ -198,8 +202,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const emptyProfileList: UserProfile[] = [];
-const emptyModelList: UserModel[] = [];
+const emptyUserlList: Array<UserModel | UserProfile> = [];
 const emptySectionList: UserMentionSections = [];
 const emptyGroupList: GroupModel[] = [];
 
@@ -232,15 +235,15 @@ const AtMention = ({
     const style = getStyleFromTheme(theme);
 
     const [sections, setSections] = useState<UserMentionSections>(emptySectionList);
-    const [usersInChannel, setUsersInChannel] = useState<UserProfile[]>(emptyProfileList);
-    const [usersOutOfChannel, setUsersOutOfChannel] = useState<UserProfile[]>(emptyProfileList);
+    const [usersInChannel, setUsersInChannel] = useState<Array<UserProfile | UserModel>>(emptyUserlList);
+    const [usersOutOfChannel, setUsersOutOfChannel] = useState<Array<UserProfile | UserModel>>(emptyUserlList);
     const [groups, setGroups] = useState<GroupModel[]>(emptyGroupList);
     const [loading, setLoading] = useState(false);
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
     const [localCursorPosition, setLocalCursorPosition] = useState(cursorPosition); // To avoid errors due to delay between value changes and cursor position changes.
     const [useLocal, setUseLocal] = useState(true);
     const [localUsers, setLocalUsers] = useState<UserModel[]>();
-    const [filteredLocalUsers, setFilteredLocalUsers] = useState(emptyModelList);
+    const [filteredLocalUsers, setFilteredLocalUsers] = useState(emptyUserlList);
 
     const runSearch = useMemo(() => debounce(async (sUrl: string, term: string, cId?: string) => {
         setLoading(true);
@@ -253,11 +256,19 @@ const AtMention = ({
                 fallbackUsers = await getAllUsers(sUrl);
                 setLocalUsers(fallbackUsers);
             }
-            const filteredUsers = filterLocalResults(fallbackUsers, term);
-            setFilteredLocalUsers(filteredUsers.length ? filteredUsers : emptyModelList);
+            const filteredUsers = filterResults(fallbackUsers, term);
+            setFilteredLocalUsers(filteredUsers.length ? filteredUsers : emptyUserlList);
         } else if (receivedUsers) {
-            setUsersInChannel(receivedUsers.users.length ? receivedUsers.users : emptyProfileList);
-            setUsersOutOfChannel(receivedUsers.out_of_channel?.length ? receivedUsers.out_of_channel : emptyProfileList);
+            if (hasTrailingSpaces(term)) {
+                const filteredReceivedUsers = filterResults(receivedUsers.users, term);
+                const filteredReceivedOutOfChannelUsers = filterResults(receivedUsers.out_of_channel || [], term);
+
+                setUsersInChannel(filteredReceivedUsers.length ? filteredReceivedUsers : emptyUserlList);
+                setUsersOutOfChannel(filteredReceivedOutOfChannelUsers.length ? filteredReceivedOutOfChannelUsers : emptyUserlList);
+            } else {
+                setUsersInChannel(receivedUsers.users.length ? receivedUsers.users : emptyUserlList);
+                setUsersOutOfChannel(receivedUsers.out_of_channel?.length ? receivedUsers.out_of_channel : emptyUserlList);
+            }
         }
 
         setLoading(false);
@@ -270,9 +281,9 @@ const AtMention = ({
 
     const matchTerm = getMatchTermForAtMention(value.substring(0, localCursorPosition), isSearch);
     const resetState = () => {
-        setUsersInChannel(emptyProfileList);
-        setUsersOutOfChannel(emptyProfileList);
-        setFilteredLocalUsers(emptyModelList);
+        setUsersInChannel(emptyUserlList);
+        setUsersOutOfChannel(emptyUserlList);
+        setFilteredLocalUsers(emptyUserlList);
         setSections(emptySectionList);
         runSearch.cancel();
     };
@@ -424,6 +435,10 @@ const AtMention = ({
 
         if (!loading && !nSections && noResultsTerm == null) {
             setNoResultsTerm(matchTerm);
+        }
+
+        if (nSections && noResultsTerm) {
+            setNoResultsTerm(null);
         }
         setSections(nSections ? newSections : emptySectionList);
         onShowingChange(Boolean(nSections));
