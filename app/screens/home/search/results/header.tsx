@@ -9,7 +9,7 @@ import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {SEPARATOR_MARGIN, SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
+import {TITLE_SEPARATOR_MARGIN, TITLE_SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
 import {FileFilter, FileFilters} from '@utils/file';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -39,6 +39,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: theme.centerChannelBg,
             borderBottomWidth: 1,
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
+        },
+        badge: {
+            backgroundColor: theme.buttonBg,
+            borderColor: theme.centerChannelBg,
+            marginTop: 8,
         },
         buttonsContainer: {
             marginBottom: 12,
@@ -90,7 +95,7 @@ const Header = ({
                 NUMBER_FILTER_ITEMS,
                 FILTER_ITEM_HEIGHT,
                 bottom,
-            ) + TITLE_HEIGHT + DIVIDERS_HEIGHT + (isTablet ? SEPARATOR_MARGIN_TABLET : SEPARATOR_MARGIN),
+            ) + TITLE_HEIGHT + DIVIDERS_HEIGHT + (isTablet ? TITLE_SEPARATOR_MARGIN_TABLET : TITLE_SEPARATOR_MARGIN),
             10];
     }, []);
 
@@ -138,8 +143,7 @@ const Header = ({
                             onPress={handleFilterPress}
                         />
                         <Badge
-                            borderColor={theme.buttonBg}
-                            backgroundColor={theme.buttonBg}
+                            style={styles.badge}
                             visible={hasFilters}
                             testID={'search.filters.badge'}
                             value={-1}

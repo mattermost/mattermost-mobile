@@ -5,7 +5,6 @@ import CookieManager, {Cookie} from '@react-native-cookies/cookies';
 import {Alert, DeviceEventEmitter, Linking, Platform} from 'react-native';
 import semver from 'semver';
 
-import {selectAllMyChannelIds} from '@actions/local/channel';
 import LocalConfig from '@assets/config.json';
 import {Events, Sso, Launch} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -92,8 +91,7 @@ class GlobalEventHandler {
 
     onLogout = async ({serverUrl, removeServer}: LogoutCallbackArg) => {
         await removeServerCredentials(serverUrl);
-        const channelIds = await selectAllMyChannelIds(serverUrl);
-        PushNotifications.cancelChannelsNotifications(channelIds);
+        PushNotifications.removeServerNotifications(serverUrl);
 
         NetworkManager.invalidateClient(serverUrl);
         WebsocketManager.invalidateClient(serverUrl);

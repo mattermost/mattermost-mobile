@@ -45,7 +45,7 @@ export const useTryCallsFunction = (fn: () => void) => {
         });
         const message = intl.formatMessage({
             id: 'mobile.calls_not_available_msg',
-            defaultMessage: 'Please contact your system administrator to enable the feature.',
+            defaultMessage: 'Please contact your System Admin to enable the feature.',
         });
         const ok = intl.formatMessage({
             id: 'mobile.calls_ok',
@@ -53,7 +53,7 @@ export const useTryCallsFunction = (fn: () => void) => {
         });
         const notAvailable = intl.formatMessage({
             id: 'mobile.calls_not_available_option',
-            defaultMessage: '(Not Available)',
+            defaultMessage: '(Not available)',
         });
 
         Alert.alert(

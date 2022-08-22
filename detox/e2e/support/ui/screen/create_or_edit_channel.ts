@@ -16,7 +16,7 @@ class CreateOrEditChannelScreen {
         backButton: 'screen.back.button',
         createButton: 'create_or_edit_channel.create.button',
         saveButton: 'create_or_edit_channel.save.button',
-        scrollView: 'create_or_edit_channel.scrollview',
+        scrollView: 'create_or_edit_channel.scroll_view',
         makePrivateToggledOff: 'channel_info_form.make_private.toggled.false',
         makePrivateToggledOn: 'channel_info_form.make_private.toggled.true',
         makePrivateDescription: 'channel_info_form.make_private.description',

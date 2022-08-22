@@ -6,15 +6,18 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, View} from 'react-native';
 
+import {showLimitRestrictedAlert} from '@calls/alerts';
 import leaveAndJoinWithAlert from '@calls/components/leave_and_join_alert';
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
+import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername, getUserTimezone} from '@utils/user';
 
+import type {LimitRestrictedInfo} from '@calls/observers';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -27,6 +30,7 @@ type Props = {
     currentCallChannelId?: string;
     leaveChannelName?: string;
     joinChannelName?: string;
+    limitRestrictedInfo?: LimitRestrictedInfo;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -61,9 +65,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         joinCallButtonText: {
             color: 'white',
         },
+        joinCallButtonTextRestricted: {
+            color: changeOpacity(theme.centerChannelColor, 0.32),
+        },
         joinCallButtonIcon: {
             color: 'white',
             marginRight: 5,
+        },
+        joinCallButtonIconRestricted: {
+            color: changeOpacity(theme.centerChannelColor, 0.32),
         },
         startedText: {
             color: theme.centerChannelColor,
@@ -76,6 +86,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderRadius: 8,
             alignItems: 'center',
             alignContent: 'center',
+        },
+        joinCallButtonRestricted: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         },
         timeText: {
             color: theme.centerChannelColor,
@@ -95,7 +108,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 export const CallsCustomMessage = ({
     post, currentUser, author, isMilitaryTime, teammateNameDisplay,
-    currentCallChannelId, leaveChannelName, joinChannelName,
+    currentCallChannelId, leaveChannelName, joinChannelName, limitRestrictedInfo,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -105,9 +118,15 @@ export const CallsCustomMessage = ({
 
     const confirmToJoin = Boolean(currentCallChannelId && currentCallChannelId !== post.channelId);
     const alreadyInTheCall = Boolean(currentCallChannelId && currentCallChannelId === post.channelId);
+    const isLimitRestricted = Boolean(limitRestrictedInfo?.limitRestricted);
 
     const joinHandler = () => {
         if (alreadyInTheCall) {
+            return;
+        }
+
+        if (isLimitRestricted) {
+            showLimitRestrictedAlert(limitRestrictedInfo!.maxParticipants, intl);
             return;
         }
 
@@ -123,26 +142,40 @@ export const CallsCustomMessage = ({
                     style={style.phoneHangupIcon}
                 />
                 <View style={style.messageText}>
-                    <Text style={style.startedText}>{'Call ended'}</Text>
+                    <FormattedText
+                        id={'mobile.calls_call_ended'}
+                        defaultMessage={'Call ended'}
+                        style={style.startedText}
+                    />
                     <View style={style.endCallInfo}>
-                        <Text style={style.timeText}>{'Ended at '}</Text>
+                        <FormattedText
+                            id={'mobile.calls_ended_at'}
+                            defaultMessage={'Ended at'}
+                            style={style.timeText}
+                        />
+                        <Text>{' '}</Text>
                         {
                             <FormattedTime
+                                style={style.timeText}
                                 value={post.props.end_at}
                                 isMilitaryTime={isMilitaryTime}
                                 timezone={timezone}
                             />
                         }
                         <Text style={style.separator}>{'•'}</Text>
-                        <Text style={style.timeText}>
-                            {`Lasted ${moment.duration(post.props.end_at - post.props.start_at).humanize(false)}`}
-                        </Text>
+                        <FormattedText
+                            id={'mobile.calls_lasted'}
+                            defaultMessage={'Lasted {duration}'}
+                            values={{duration: moment.duration(post.props.end_at - post.props.start_at).humanize(false)}}
+                            style={style.timeText}
+                        />
                     </View>
                 </View>
             </View>
         );
     }
 
+    const joinTextStyle = [style.joinCallButtonText, isLimitRestricted && style.joinCallButtonTextRestricted];
     return (
         <View style={style.messageStyle}>
             <CompassIcon
@@ -151,9 +184,12 @@ export const CallsCustomMessage = ({
                 style={style.joinCallIcon}
             />
             <View style={style.messageText}>
-                <Text style={style.startedText}>
-                    {`${displayUsername(author, intl.locale, teammateNameDisplay)} started a call`}
-                </Text>
+                <FormattedText
+                    id={'mobile.calls_name_started_call'}
+                    defaultMessage={'{name} started a call'}
+                    values={{name: displayUsername(author, intl.locale, teammateNameDisplay)}}
+                    style={style.startedText}
+                />
                 <FormattedRelativeTime
                     value={post.props.start_at}
                     updateIntervalInSeconds={1}
@@ -162,21 +198,29 @@ export const CallsCustomMessage = ({
             </View>
 
             <TouchableOpacity
-                style={style.joinCallButton}
+                style={[style.joinCallButton, isLimitRestricted && style.joinCallButtonRestricted]}
                 onPress={joinHandler}
             >
                 <CompassIcon
                     name='phone-outline'
                     size={16}
-                    style={style.joinCallButtonIcon}
+                    style={[style.joinCallButtonIcon, isLimitRestricted && style.joinCallButtonIconRestricted]}
                 />
                 {
                     alreadyInTheCall &&
-                    <Text style={style.joinCallButtonText}>{'Current call'}</Text>
+                    <FormattedText
+                        id={'mobile.calls_current_call'}
+                        defaultMessage={'Current call'}
+                        style={joinTextStyle}
+                    />
                 }
                 {
                     !alreadyInTheCall &&
-                    <Text style={style.joinCallButtonText}>{'Join call'}</Text>
+                    <FormattedText
+                        id={'mobile.calls_join_call'}
+                        defaultMessage={'Join call'}
+                        style={joinTextStyle}
+                    />
                 }
             </TouchableOpacity>
         </View>

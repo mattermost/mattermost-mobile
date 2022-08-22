@@ -3,7 +3,7 @@
 
 import React, {useCallback, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, NativeScrollEvent, NativeSyntheticEvent, PanResponder, StyleProp, StyleSheet, TouchableOpacity, ViewStyle} from 'react-native';
+import {Keyboard, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, PanResponder, StyleProp, StyleSheet, TouchableOpacity, ViewStyle} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import UserItem from '@components/user_item';
@@ -82,7 +82,7 @@ const UsersList = ({channelId, location, users}: Props) => {
         }
     }, [enabled, direction]);
 
-    const renderItem = useCallback(({item}) => (
+    const renderItem = useCallback(({item}: ListRenderItemInfo<UserModel>) => (
         <Item
             channelId={channelId}
             location={location}

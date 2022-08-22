@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useRef, useState} from 'react';
-import {BackHandler, DeviceEventEmitter, NativeEventSubscription, StyleSheet, View} from 'react-native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {BackHandler, DeviceEventEmitter, LayoutChangeEvent, NativeEventSubscription, StyleSheet, View} from 'react-native';
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -61,6 +61,7 @@ const Channel = ({
     const switchingChannels = useChannelSwitch();
     const defaultHeight = useDefaultHeaderHeight();
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
+    const [containerHeight, setContainerHeight] = useState(0);
 
     const shouldRender = !switchingTeam && !switchingChannels && shouldRenderPosts && Boolean(channelId);
 
@@ -113,6 +114,10 @@ const Channel = ({
         };
     }, [channelId]);
 
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        setContainerHeight(e.nativeEvent.layout.height);
+    }, []);
+
     let callsComponents: JSX.Element | null = null;
     const showJoinCallBanner = isCallInCurrentChannel && !isInCurrentChannelCall;
     if (isCallsPluginEnabled && (showJoinCallBanner || isInACall)) {
@@ -136,11 +141,13 @@ const Channel = ({
                 mode='margin'
                 edges={edges}
                 testID='channel.screen'
+                onLayout={onLayout}
             >
                 <ChannelHeader
+                    serverUrl={serverUrl}
                     channelId={channelId}
                     componentId={componentId}
-                    callsEnabled={isCallsEnabledInChannel}
+                    callsEnabledInChannel={isCallsEnabledInChannel}
                 />
                 {shouldRender &&
                 <>
@@ -159,6 +166,8 @@ const Channel = ({
                         scrollViewNativeID={channelId}
                         accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
                         testID='channel.post_draft'
+                        containerHeight={containerHeight}
+                        isChannelScreen={true}
                     />
                 </>
                 }

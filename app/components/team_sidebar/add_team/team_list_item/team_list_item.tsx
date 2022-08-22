@@ -22,22 +22,16 @@ type Props = {
     onPress: (teamId: string) => void;
 }
 
-const CONTAINER_HEIGHT = 40;
-const CONTAINER_VERTICAL_MARGIN = 8;
-export const ITEM_HEIGHT = CONTAINER_HEIGHT + (CONTAINER_VERTICAL_MARGIN * 2);
+export const ITEM_HEIGHT = 56;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
-        container: {
-            height: CONTAINER_HEIGHT,
-            marginVertical: CONTAINER_VERTICAL_MARGIN,
-        },
         touchable: {
+            height: ITEM_HEIGHT,
             display: 'flex',
             flexDirection: 'row',
             borderRadius: 4,
             alignItems: 'center',
-            height: '100%',
             width: '100%',
         },
         text: {
@@ -69,39 +63,37 @@ export default function TeamListItem({team, textColor, iconTextColor, iconBackgr
     }, [team.id, onPress]);
 
     return (
-        <View style={styles.container}>
-            <TouchableWithFeedback
-                onPress={handlePress}
-                type='opacity'
-                style={styles.touchable}
+        <TouchableWithFeedback
+            onPress={handlePress}
+            type='opacity'
+            style={styles.touchable}
+        >
+            <View style={styles.icon_container}>
+                <TeamIcon
+                    id={team.id}
+                    displayName={displayName}
+                    lastIconUpdate={lastTeamIconUpdateAt}
+                    selected={false}
+                    textColor={iconTextColor || theme.centerChannelColor}
+                    backgroundColor={iconBackgroundColor || changeOpacity(theme.centerChannelColor, 0.16)}
+                    testID={`${teamListItemTestId}.team_icon`}
+                />
+            </View>
+            <Text
+                style={[styles.text, textColor && {color: textColor}]}
+                numberOfLines={1}
             >
-                <View style={styles.icon_container}>
-                    <TeamIcon
-                        id={team.id}
-                        displayName={displayName}
-                        lastIconUpdate={lastTeamIconUpdateAt}
-                        selected={false}
-                        textColor={iconTextColor || theme.centerChannelColor}
-                        backgroundColor={iconBackgroundColor || changeOpacity(theme.centerChannelColor, 0.16)}
-                        testID={`${teamListItemTestId}.team_icon`}
-                    />
-                </View>
-                <Text
-                    style={[styles.text, textColor && {color: textColor}]}
-                    numberOfLines={1}
-                >
-                    {displayName}
-                </Text>
-                {(team.id === selectedTeamId) &&
-                    <View style={styles.compassContainer}>
-                        <CompassIcon
-                            color={theme.buttonBg}
-                            name='check'
-                            size={24}
-                        />
-                    </View>
-                }
-            </TouchableWithFeedback>
-        </View>
+                {displayName}
+            </Text>
+            {(team.id === selectedTeamId) &&
+            <View style={styles.compassContainer}>
+                <CompassIcon
+                    color={theme.buttonBg}
+                    name='check'
+                    size={24}
+                />
+            </View>
+            }
+        </TouchableWithFeedback>
     );
 }

@@ -141,7 +141,7 @@ export default function SendHandler({
                 }),
                 intl.formatMessage({
                     id: 'mobile.calls_end_permission_msg',
-                    defaultMessage: 'You do not have permission to end the call. Please ask the call owner to end the call.',
+                    defaultMessage: 'You don\'t have permission to end the call. Please ask the call owner to end the call.',
                 }));
             return;
         }
@@ -175,8 +175,9 @@ export default function SendHandler({
     const sendCommand = useCallback(async () => {
         if (value.trim() === '/call end') {
             await handleEndCall();
-
-            // NOTE: fallthrough because the server may want to handle the command as well
+            setSendingMessage(false);
+            clearDraft();
+            return;
         }
 
         const status = DraftUtils.getStatusFromSlashCommand(value);

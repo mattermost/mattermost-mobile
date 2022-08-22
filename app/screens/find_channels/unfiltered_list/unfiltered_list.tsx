@@ -69,7 +69,7 @@ const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, un
         switchToChannelById(serverUrl, channelId);
     }, [serverUrl, close]);
 
-    const renderSectionHeader = useCallback(({section}) => (
+    const renderSectionHeader = useCallback(({section}: SectionListRenderItemInfo<ChannelModel>) => (
         <FindChannelsHeader sectionName={intl.formatMessage({id: section.id, defaultMessage: section.defaultMessage})}/>
     ), [intl.locale]);
 

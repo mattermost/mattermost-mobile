@@ -11,7 +11,7 @@ import {
     setChannelsWithCalls,
     setCurrentCall,
 } from '@calls/state';
-import {Call, ChannelsWithCalls, ServerCallsConfig} from '@calls/types/calls';
+import {Call, CallsConfig, ChannelsWithCalls} from '@calls/types/calls';
 
 export const setCalls = (serverUrl: string, myUserId: string, calls: Dictionary<Call>, enabled: Dictionary<boolean>) => {
     const channelsWithCalls = Object.keys(calls).reduce(
@@ -22,6 +22,40 @@ export const setCalls = (serverUrl: string, myUserId: string, calls: Dictionary<
     setChannelsWithCalls(serverUrl, channelsWithCalls);
 
     setCallsState(serverUrl, {serverUrl, myUserId, calls, enabled});
+};
+
+export const setCallForChannel = (serverUrl: string, channelId: string, enabled: boolean, call?: Call) => {
+    const callsState = getCallsState(serverUrl);
+    const nextEnabled = {...callsState.enabled, [channelId]: enabled};
+
+    const nextCalls = {...callsState.calls};
+    if (call) {
+        nextCalls[channelId] = call;
+
+        // In case we got a complete update on the currentCall
+        const currentCall = getCurrentCall();
+        if (currentCall?.channelId === channelId) {
+            setCurrentCall({
+                ...currentCall,
+                ...call,
+            });
+        }
+    } else {
+        delete nextCalls[channelId];
+    }
+
+    setCallsState(serverUrl, {...callsState, calls: nextCalls, enabled: nextEnabled});
+
+    const channelsWithCalls = getChannelsWithCalls(serverUrl);
+    if (call && !channelsWithCalls[channelId]) {
+        const nextChannelsWithCalls = {...channelsWithCalls};
+        nextChannelsWithCalls[channelId] = true;
+        setChannelsWithCalls(serverUrl, nextChannelsWithCalls);
+    } else if (!call && channelsWithCalls[channelId]) {
+        const nextChannelsWithCalls = {...channelsWithCalls};
+        delete nextChannelsWithCalls[channelId];
+        setChannelsWithCalls(serverUrl, nextChannelsWithCalls);
+    }
 };
 
 export const userJoinedCall = (serverUrl: string, channelId: string, userId: string) => {
@@ -45,15 +79,25 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
 
     // Did the user join the current call? If so, update that too.
     const currentCall = getCurrentCall();
-    if (!currentCall || currentCall.channelId !== channelId) {
-        return;
+    if (currentCall && currentCall.channelId === channelId) {
+        const nextCurrentCall = {
+            ...currentCall,
+            participants: {...currentCall.participants, [userId]: nextCall.participants[userId]},
+        };
+        setCurrentCall(nextCurrentCall);
     }
 
-    const nextCall2 = {
-        ...currentCall,
-        participants: {...currentCall.participants, [userId]: nextCall.participants[userId]},
-    };
-    setCurrentCall(nextCall2);
+    // Was it me that joined the call?
+    if (callsState.myUserId === userId) {
+        setCurrentCall({
+            ...nextCall,
+            participants: {...nextCall.participants},
+            serverUrl,
+            myUserId: userId,
+            screenShareURL: '',
+            speakerphoneOn: false,
+        });
+    }
 };
 
 export const userLeftCall = (serverUrl: string, channelId: string, userId: string) => {
@@ -87,27 +131,12 @@ export const userLeftCall = (serverUrl: string, channelId: string, userId: strin
         return;
     }
 
-    const nextCall2 = {
+    const nextCurrentCall = {
         ...currentCall,
         participants: {...currentCall.participants},
     };
-    delete nextCall2.participants[userId];
-    setCurrentCall(nextCall2);
-};
-
-export const myselfJoinedCall = (serverUrl: string, channelId: string) => {
-    const callsState = getCallsState(serverUrl);
-
-    const participants = callsState.calls[channelId]?.participants || {};
-    setCurrentCall({
-        ...callsState.calls[channelId],
-        serverUrl,
-        myUserId: callsState.myUserId,
-        participants,
-        channelId,
-        screenShareURL: '',
-        speakerphoneOn: false,
-    });
+    delete nextCurrentCall.participants[userId];
+    setCurrentCall(nextCurrentCall);
 };
 
 export const myselfLeftCall = () => {
@@ -122,18 +151,6 @@ export const callStarted = (serverUrl: string, call: Call) => {
 
     const nextChannelsWithCalls = {...getChannelsWithCalls(serverUrl), [call.channelId]: true};
     setChannelsWithCalls(serverUrl, nextChannelsWithCalls);
-
-    // Was it the current call? If so, we started it, and need to fill in the currentCall's details.
-    const currentCall = getCurrentCall();
-    if (!currentCall || currentCall.channelId !== call.channelId) {
-        return;
-    }
-
-    const nextCurrentCall = {
-        ...currentCall,
-        ...call,
-    };
-    setCurrentCall(nextCurrentCall);
 };
 
 export const callEnded = (serverUrl: string, channelId: string) => {
@@ -286,7 +303,7 @@ export const setSpeakerPhone = (speakerphoneOn: boolean) => {
     }
 };
 
-export const setConfig = (serverUrl: string, config: ServerCallsConfig) => {
+export const setConfig = (serverUrl: string, config: Partial<CallsConfig>) => {
     const callsConfig = getCallsConfig(serverUrl);
     setCallsConfig(serverUrl, {...callsConfig, ...config});
 };

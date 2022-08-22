@@ -23,6 +23,9 @@
 #import <React/RCTSurfacePresenterBridgeAdapter.h>
 #import <ReactCommon/RCTTurboModuleManager.h>
 #import <react/config/ReactNativeConfig.h>
+
+static NSString *const kRNConcurrentRoot = @"concurrentRoot";
+
 @interface AppDelegate () <RCTCxxBridgeDelegate, RCTTurboModuleManagerDelegate> {
   RCTTurboModuleManager *_turboModuleManager;
   RCTSurfacePresenterBridgeAdapter *_bridgeAdapter;
@@ -43,15 +46,6 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
   os_log(OS_LOG_DEFAULT, "Mattermost will attach session from handleEventsForBackgroundURLSession!! identifier=%{public}@", identifier);
   [[GekidouWrapper default] attachSession:identifier completionHandler:completionHandler];
   os_log(OS_LOG_DEFAULT, "Mattermost session ATTACHED from handleEventsForBackgroundURLSession!! identifier=%{public}@", identifier);
-}
-
-- (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
-{
-  #if DEBUG
-    return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
-  #else
-    return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
-  #endif
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -95,7 +89,8 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
   //    bridge.surfacePresenter = _bridgeAdapter.surfacePresenter;
   //  #endif
   //
-  //  UIView *rootView = RCTAppSetupDefaultRootView(bridge, @"Mattermost", nil);
+  //  NSDictionary *initProps = [self prepareInitialProps];
+  //  UIView *rootView = RCTAppSetupDefaultRootView(bridge, @"Mattermost", initProps);
   //    if (@available(iOS 13.0, *)) {
   //      rootView.backgroundColor = [UIColor systemBackgroundColor];
   //    } else {
@@ -125,9 +120,6 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
 -(void)application:(UIApplication *)application didReceiveRemoteNotification:(nonnull NSDictionary *)userInfo fetchCompletionHandler:(nonnull void (^)(UIBackgroundFetchResult))completionHandler {
   UIApplicationState state = [UIApplication sharedApplication].applicationState;
   NSString* action = [userInfo objectForKey:@"type"];
-  NSString* channelId = [userInfo objectForKey:@"channel_id"];
-  NSString* rootId = [userInfo objectForKey:@"root_id"];
-  BOOL isCRTEnabled = [userInfo objectForKey:@"is_crt_enabled"];
   BOOL isClearAction = (action && [action isEqualToString: NOTIFICATION_CLEAR_ACTION]);
   BOOL isTestAction = (action && [action isEqualToString: NOTIFICATION_TEST_ACTION]);
   
@@ -141,7 +133,7 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
     // If received a notification that a channel was read, remove all notifications from that channel (only with app in foreground/background)
     // When CRT is ON:
     // When rootId is nil, clear channel's root post notifications or else clear all thread notifications
-    [self cleanNotificationsFromChannel:channelId :rootId :isCRTEnabled];
+    [[NotificationHelper default] clearChannelOrThreadNotificationsWithUserInfo:userInfo];
     [[GekidouWrapper default] postNotificationReceipt:userInfo];
   }
   
@@ -202,42 +194,6 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
   return extraModules;
 }
 
--(void)cleanNotificationsFromChannel:(NSString *)channelId :(NSString *)rootId :(BOOL)isCRTEnabled {
-  if ([UNUserNotificationCenter class]) {
-    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-    [center getDeliveredNotificationsWithCompletionHandler:^(NSArray<UNNotification *> * _Nonnull notifications) {
-      NSMutableArray<NSString *> *notificationIds = [NSMutableArray new];
-
-      for (UNNotification *prevNotification in notifications) {
-        UNNotificationRequest *notificationRequest = [prevNotification request];
-        UNNotificationContent *notificationContent = [notificationRequest content];
-        NSString *identifier = [notificationRequest identifier];
-        NSString* cId = [[notificationContent userInfo] objectForKey:@"channel_id"];
-        NSString* pId = [[notificationContent userInfo] objectForKey:@"post_id"];
-        NSString* rId = [[notificationContent userInfo] objectForKey:@"root_id"];
-
-        if ([cId isEqualToString: channelId]) {
-          BOOL doesNotificationMatch = true;
-          if (isCRTEnabled) {
-            // Check if it is a thread notification
-            if (rootId != nil) {
-              doesNotificationMatch = [pId isEqualToString: rootId] || [rId isEqualToString: rootId];
-            } else {
-              // With CRT ON, remove notifications without rootId
-              doesNotificationMatch = rId == nil;
-            }
-          }
-          if (doesNotificationMatch) {
-            [notificationIds addObject:identifier];
-          }
-        }
-      }
-
-      [center removeDeliveredNotificationsWithIdentifiers:notificationIds];
-    }];
-  }
-}
-
 /*
   https://mattermost.atlassian.net/browse/MM-10601
   Required by react-native-hw-keyboard-event
@@ -288,6 +244,34 @@ RNHWKeyboardEvent *hwKeyEvent = nil;
 - (void)sendFindChannels:(UIKeyCommand *)sender {
   NSString *selected = sender.input;
   [hwKeyEvent sendHWKeyEvent:@"find-channels"];
+}
+
+/// This method controls whether the `concurrentRoot`feature of React18 is turned on or off.
+///
+/// @see: https://reactjs.org/blog/2022/03/29/react-v18.html
+/// @note: This requires to be rendering on Fabric (i.e. on the New Architecture).
+/// @return: `true` if the `concurrentRoot` feture is enabled. Otherwise, it returns `false`.
+- (BOOL)concurrentRootEnabled
+{
+  // Switch this bool to turn on and off the concurrent root
+  return false;
+}
+- (NSDictionary *)prepareInitialProps
+{
+  NSMutableDictionary *initProps = [NSMutableDictionary new];
+#ifdef RCT_NEW_ARCH_ENABLED
+  initProps[kRNConcurrentRoot] = @([self concurrentRootEnabled]);
+#endif
+  return initProps;
+}
+
+- (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
+{
+  #if DEBUG
+    return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
+  #else
+    return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
+  #endif
 }
 
 #if RCT_NEW_ARCH_ENABLED

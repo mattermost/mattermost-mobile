@@ -19,7 +19,7 @@ type Props = {
     isCRTEnabled: boolean;
 }
 
-const ComponentsList: Record<string, React.ReactNode> = {
+const ComponentsList: Record<string, React.ComponentType<any>> = {
     [Screens.CHANNEL]: Channel,
     [Screens.GLOBAL_THREADS]: GlobalThreads,
 };

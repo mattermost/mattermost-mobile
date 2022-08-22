@@ -66,14 +66,14 @@ export const doJoinCall = async (serverUrl: string, channelId: string, intl: Int
     if (!hasPermission) {
         errorAlert(formatMessage({
             id: 'mobile.calls_error_permissions',
-            defaultMessage: 'no permissions to microphone, unable to start call',
+            defaultMessage: 'No permissions to microphone, unable to start call',
         }), intl);
         return;
     }
 
     const res = await joinCall(serverUrl, channelId);
     if (res.error) {
-        const seeLogs = formatMessage({id: 'mobile.calls_see_logs', defaultMessage: 'see server logs'});
+        const seeLogs = formatMessage({id: 'mobile.calls_see_logs', defaultMessage: 'See server logs'});
         errorAlert(res.error?.toString() || seeLogs, intl);
     }
 };

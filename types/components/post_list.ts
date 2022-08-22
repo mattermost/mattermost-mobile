@@ -9,3 +9,6 @@ export type ViewableItemsChanged = {
 }
 
 export type ViewableItemsChangedListenerEvent = (viewableItms: ViewToken[]) => void;
+
+export type ScrollEndIndexListener = (fn: (endIndex: number) => void) => () => void;
+export type ViewableItemsListener = (fn: (viewableItems: ViewToken[]) => void) => () => void;

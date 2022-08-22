@@ -70,24 +70,27 @@ const Display = ({currentUser, hasMilitaryTimeFormat, isThemeSwitchingEnabled, i
     });
 
     return (
-        <SettingContainer>
+        <SettingContainer testID='display_settings'>
             {isThemeSwitchingEnabled && (
                 <SettingItem
                     optionName='theme'
                     onPress={goToThemeSettings}
                     info={theme.type!}
+                    testID='display_settings.theme.option'
                 />
             )}
             <SettingItem
                 optionName='clock'
                 onPress={goToClockDisplaySettings}
                 info={intl.formatMessage(hasMilitaryTimeFormat ? TIME_FORMAT[1] : TIME_FORMAT[0])}
+                testID='display_settings.clock_display.option'
             />
             {isTimezoneEnabled && (
                 <SettingItem
                     optionName='timezone'
                     onPress={goToTimezoneSettings}
                     info={intl.formatMessage(timezone.useAutomaticTimezone ? TIMEZONE_FORMAT[0] : TIMEZONE_FORMAT[1])}
+                    testID='display_settings.timezone.option'
                 />
             )}
         </SettingContainer>

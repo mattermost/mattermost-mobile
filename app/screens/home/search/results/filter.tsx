@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
+import {ListRenderItemInfo, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
@@ -93,7 +93,7 @@ const Filter = ({initialFilter, setFilter, title}: FilterProps) => {
 
     const separator = useCallback(() => <View style={style.divider}/>, [style]);
 
-    const renderFilterItem = useCallback(({item}) => {
+    const renderFilterItem = useCallback(({item}: ListRenderItemInfo<FilterItem>) => {
         return (
             <OptionItem
                 label={intl.formatMessage({id: item.id, defaultMessage: item.defaultMessage})}

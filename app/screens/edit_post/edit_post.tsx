@@ -4,14 +4,14 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Keyboard, KeyboardType, LayoutChangeEvent, Platform, SafeAreaView, useWindowDimensions, View} from 'react-native';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {deletePost, editPost} from '@actions/remote/post';
 import Autocomplete from '@components/autocomplete';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
+import {useIsTablet, useKeyboardHeight, useModalPosition} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import PostError from '@screens/edit_post/post_error';
@@ -22,6 +22,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import EditPostInput, {EditPostInputRef} from './edit_post_input';
 
 import type PostModel from '@typings/database/models/servers/post';
+
+const AUTOCOMPLETE_SEPARATION = 8;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -57,17 +59,20 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const [errorLine, setErrorLine] = useState<string | undefined>();
     const [errorExtra, setErrorExtra] = useState<string | undefined>();
     const [isUpdating, setIsUpdating] = useState(false);
-    const layoutHeight = useSharedValue(0);
-    const keyboardHeight = useSharedValue(0);
+    const [containerHeight, setContainerHeight] = useState(0);
+
+    const mainView = useRef<View>(null);
+    const modalPosition = useModalPosition(mainView);
 
     const postInputRef = useRef<EditPostInputRef>(null);
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const isTablet = useIsTablet();
-    const {width, height} = useWindowDimensions();
-    const isLandscape = width > height;
     const styles = getStyleSheet(theme);
+    const keyboardHeight = useKeyboardHeight();
+    const insets = useSafeAreaInsets();
+    const dimensions = useWindowDimensions();
+    const isTablet = useIsTablet();
 
     useEffect(() => {
         setButtons(componentId, {
@@ -79,31 +84,6 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             }],
         });
     }, []);
-
-    useEffect(() => {
-        const showListener = Keyboard.addListener('keyboardWillShow', (e) => {
-            const {height: end} = e.endCoordinates;
-
-            // on iPad if we use the hardware keyboard multiply its height by 2
-            // otherwise use the software keyboard height
-            const minKeyboardHeight = end < 100 ? end * 2 : end;
-            keyboardHeight.value = minKeyboardHeight;
-        });
-        const hideListener = Keyboard.addListener('keyboardWillHide', () => {
-            if (isTablet) {
-                const offset = isLandscape ? 60 : 0;
-                keyboardHeight.value = ((height - (layoutHeight.value + offset)) / 2);
-                return;
-            }
-
-            keyboardHeight.value = 0;
-        });
-
-        return () => {
-            showListener.remove();
-            hideListener.remove();
-        };
-    }, [isTablet, height]);
 
     useEffect(() => {
         const t = setTimeout(() => {
@@ -126,10 +106,6 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
         Keyboard.dismiss();
         dismissModal({componentId});
     }, []);
-
-    const onLayout = useCallback((e: LayoutChangeEvent) => {
-        layoutHeight.value = e.nativeEvent.layout.height;
-    }, [height]);
 
     const onTextSelectionChange = useCallback((curPos: number = cursorPosition) => {
         if (Platform.OS === 'ios') {
@@ -162,8 +138,8 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
         toggleSaveButton(post.message !== message);
     }, [intl, maxPostSize, toggleSaveButton]);
 
-    const handleUIUpdates = useCallback((res) => {
-        if (res?.error) {
+    const handleUIUpdates = useCallback((res: {error?: unknown}) => {
+        if (res.error) {
             setIsUpdating(false);
             const errorMessage = intl.formatMessage({id: 'mobile.edit_post.error', defaultMessage: 'There was a problem editing this message. Please try again.'});
             setErrorLine(errorMessage);
@@ -214,25 +190,9 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
         handleUIUpdates(res);
     }, [toggleSaveButton, serverUrl, post.id, postMessage, onClose]);
 
-    const animatedStyle = useAnimatedStyle(() => {
-        if (Platform.OS === 'android') {
-            return {bottom: 0};
-        }
-
-        let bottom = 0;
-        if (isTablet) {
-            // 60 is the size of the navigation header
-            const offset = isLandscape ? 60 : 0;
-
-            bottom = keyboardHeight.value - ((height - (layoutHeight.value + offset)) / 2);
-        } else {
-            bottom = keyboardHeight.value;
-        }
-
-        return {
-            bottom: withTiming(bottom, {duration: 250}),
-        };
-    });
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        setContainerHeight(e.nativeEvent.layout.height);
+    }, []);
 
     useNavButtonPressed(RIGHT_BUTTON.id, componentId, onSavePostMessage, [postMessage]);
     useNavButtonPressed(closeButtonId, componentId, onClose, []);
@@ -245,6 +205,14 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
         );
     }
 
+    const bottomSpace = (dimensions.height - containerHeight - modalPosition);
+    const autocompletePosition = Platform.select({
+        ios: isTablet ?
+            Math.max(0, keyboardHeight - bottomSpace) :
+            keyboardHeight || insets.bottom,
+        default: 0}) + AUTOCOMPLETE_SEPARATION;
+    const autocompleteAvailableSpace = containerHeight - autocompletePosition;
+
     return (
         <>
             <SafeAreaView
@@ -252,7 +220,10 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                 style={styles.container}
                 onLayout={onLayout}
             >
-                <View style={styles.body}>
+                <View
+                    style={styles.body}
+                    ref={mainView}
+                >
                     {Boolean((errorLine || errorExtra)) &&
                         <PostError
                             errorExtra={errorExtra}
@@ -269,22 +240,18 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                     />
                 </View>
             </SafeAreaView>
-            <Animated.View style={animatedStyle}>
-                <Autocomplete
-                    channelId={post.channelId}
-                    hasFilesAttached={hasFilesAttached}
-                    nestedScrollEnabled={true}
-                    rootId={post.rootId}
-                    updateValue={onChangeText}
-                    value={postMessage}
-                    cursorPosition={cursorPosition}
-                    postInputTop={1}
-                    fixedBottomPosition={true}
-                    maxHeightOverride={isTablet ? 200 : undefined}
-                    inPost={false}
-                />
-            </Animated.View>
-
+            <Autocomplete
+                channelId={post.channelId}
+                hasFilesAttached={hasFilesAttached}
+                nestedScrollEnabled={true}
+                rootId={post.rootId}
+                updateValue={onChangeText}
+                value={postMessage}
+                cursorPosition={cursorPosition}
+                position={autocompletePosition}
+                availableSpace={autocompleteAvailableSpace}
+                inPost={false}
+            />
         </>
     );
 };

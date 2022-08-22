@@ -4,7 +4,7 @@
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, FlatList, Platform, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, FlatList, ListRenderItemInfo, Platform, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -140,7 +140,7 @@ function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
         </View>
     ), [loading, theme.buttonBg]);
 
-    const renderItem = useCallback(({item}) => {
+    const renderItem = useCallback(({item}: ListRenderItemInfo<string | PostModel>) => {
         if (typeof item === 'string') {
             if (isDateLine(item)) {
                 return (

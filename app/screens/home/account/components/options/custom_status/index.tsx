@@ -87,6 +87,7 @@ const CustomStatus = ({isCustomStatusExpirySupported, isTablet, currentUser}: Cu
     return (
         <TouchableOpacity
             onPress={goToCustomStatusScreen}
+            testID='account.custom_status.option'
         >
             <View style={styles.body}>
                 <CustomStatusEmoji

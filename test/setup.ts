@@ -18,7 +18,6 @@ jest.doMock('react-native', () => {
     const {
         Platform,
         StyleSheet,
-        ViewPropTypes,
         PermissionsAndroid,
         requireNativeComponent,
         Alert: RNAlert,
@@ -93,6 +92,12 @@ jest.doMock('react-native', () => {
                 },
             }),
         },
+        Notifications: {
+            getDeliveredNotifications: jest.fn().mockResolvedValue([]),
+            removeChannelNotifications: jest.fn().mockImplementation(),
+            removeThreadNotifications: jest.fn().mockImplementation(),
+            removeServerNotifications: jest.fn().mockImplementation(),
+        },
         APIClient: {
             getConstants: () => ({
                 EVENTS: {
@@ -143,7 +148,6 @@ jest.doMock('react-native', () => {
             },
         },
         StyleSheet,
-        ViewPropTypes,
         PermissionsAndroid,
         requireNativeComponent,
         Alert,
@@ -303,7 +307,6 @@ jest.mock('react-native-notifications', () => {
             setDeliveredNotifications: jest.fn((notifications) => {
                 deliveredNotifications = notifications;
             }),
-            cancelAllLocalNotifications: jest.fn(),
             NotificationAction: jest.fn(),
             NotificationCategory: jest.fn(),
             events: () => ({
