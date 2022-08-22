@@ -153,10 +153,8 @@ const SearchScreen = ({teamId}: Props) => {
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
 
         handleLoading(false);
-        if (!showResults) {
-            setLoading(false);
-        }
-    }, [handleClearSearch, handleLoading, showResults]);
+        setShowResults(true);
+    }, [handleClearSearch, handleLoading]);
 
     const onSubmit = useCallback(() => {
         handleSearch(searchTeamId, searchValue);
