@@ -4,7 +4,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useState} from 'react';
-import {LayoutChangeEvent, Platform, StyleSheet, View} from 'react-native';
+import {LayoutChangeEvent, NativeSyntheticEvent, StyleSheet, TextInputFocusEventData, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
@@ -36,12 +36,9 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        marginHorizontal: 12,
     },
     searchBar: {
         paddingVertical: 5,
-        marginLeft: 12,
-        marginRight: Platform.select({ios: 4, default: 12}),
     },
 });
 
@@ -49,12 +46,13 @@ type Props = {
     customEmojis: CustomEmojiModel[];
     customEmojisEnabled: boolean;
     onEmojiPress: (emoji: string) => void;
+    onSearchFocus?: ((e: NativeSyntheticEvent<TextInputFocusEventData>) => void) | undefined;
     recentEmojis: string[];
     skinTone: string;
     testID?: string;
 }
 
-const EmojiPicker = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis, skinTone, testID = ''}: Props) => {
+const EmojiPicker = ({customEmojis, customEmojisEnabled, onEmojiPress, onSearchFocus, recentEmojis, skinTone, testID = ''}: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const keyboardHeight = useKeyboardHeight();
@@ -107,6 +105,7 @@ const EmojiPicker = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmo
                     autoCapitalize='none'
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     onCancel={onCancelSearch}
+                    onFocus={onSearchFocus}
                     onChangeText={onChangeSearchTerm}
                     testID={`${testID}.search_bar`}
                     value={searchTerm}

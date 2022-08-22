@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactNode, useCallback, useEffect, useRef} from 'react';
+import React, {ReactNode, useCallback, useEffect, useImperativeHandle, useRef, forwardRef} from 'react';
 import {DeviceEventEmitter, Keyboard, StyleSheet, useWindowDimensions, View} from 'react-native';
 import {State, TapGestureHandler} from 'react-native-gesture-handler';
 import {Navigation as RNN} from 'react-native-navigation';
@@ -27,9 +27,13 @@ type SlideUpPanelProps = {
     testID?: string;
 }
 
+export interface BottomSheetRef {
+    snapTo: (index: number) => void;
+}
+
 export const PADDING_TOP_MOBILE = 20;
 
-const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderContent, snapPoints = ['90%', '50%', 50], testID}: SlideUpPanelProps) => {
+const BottomSheet = forwardRef<BottomSheetRef, SlideUpPanelProps>(({closeButtonId, componentId, initialSnapIndex = 0, renderContent, snapPoints = ['90%', '50%', 50], testID}: SlideUpPanelProps, ref) => {
     const sheetRef = useRef<RNBottomSheet>(null);
     const dimensions = useWindowDimensions();
     const isTablet = useIsTablet();
@@ -44,17 +48,22 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
         }
     }, [componentId]);
 
-    useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(Events.CLOSE_BOTTOM_SHEET, () => {
-            if (sheetRef.current) {
-                sheetRef.current.snapTo(lastSnap);
-            } else {
-                close();
-            }
-        });
+    const closeBottomSheetEventHandler = () => {
+        if (sheetRef.current) {
+            sheetRef.current.snapTo(lastSnap);
+        } else {
+            close();
+        }
+    };
 
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(Events.CLOSE_BOTTOM_SHEET, closeBottomSheetEventHandler);
         return () => listener.remove();
     }, [close]);
+
+    useImperativeHandle(ref, () => ({
+        snapTo: (index: number) => sheetRef.current?.snapTo(index),
+    }), [sheetRef.current]);
 
     const handleClose = useCallback(() => {
         if (sheetRef.current) {
@@ -165,7 +174,7 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
             {renderBackdrop()}
         </>
     );
-};
+});
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -177,4 +186,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+BottomSheet.displayName = 'BottomSheet';
 export default BottomSheet;

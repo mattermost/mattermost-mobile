@@ -19,8 +19,9 @@ import TouchableEmoji from './touchable_emoji';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 
-export const EMOJI_SIZE = 30;
+export const EMOJI_SIZE = 32;
 export const EMOJI_GUTTER = 8;
+export const EMOJI_FULL_SIZE = EMOJI_SIZE + EMOJI_GUTTER;
 
 const ICONS: Record<string, string> = {
     recent: 'clock-outline',
@@ -48,9 +49,8 @@ const styles = StyleSheet.create(({
         marginBottom: EMOJI_GUTTER,
     },
     emoji: {
-        height: EMOJI_SIZE + EMOJI_GUTTER,
-        marginHorizontal: 7,
-        width: EMOJI_SIZE + EMOJI_GUTTER,
+        height: EMOJI_FULL_SIZE,
+        minWidth: EMOJI_FULL_SIZE,
     },
 }));
 
@@ -81,11 +81,12 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
     const [fetchingCustomEmojis, setFetchingCustomEmojis] = useState(false);
     const [loadedAllCustomEmojis, setLoadedAllCustomEmojis] = useState(false);
 
+    const chunkSize = Math.floor(width / EMOJI_FULL_SIZE);
+
     const sections: EmojiSection[] = useMemo(() => {
         if (!width) {
             return [];
         }
-        const chunkSize = Math.floor(width / (EMOJI_SIZE + EMOJI_GUTTER));
 
         return CategoryNames.map((category) => {
             const emojiIndices = EmojiIndicesByCategory.get(skinTone)?.get(category);
@@ -193,7 +194,7 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
     const renderItem = useCallback(({item}: ListRenderItemInfo<EmojiAlias[]>) => {
         return (
             <View style={styles.row}>
-                {item.map((emoji: EmojiAlias) => {
+                {item.map((emoji) => {
                     return (
                         <TouchableEmoji
                             key={emoji.name}

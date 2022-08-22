@@ -132,7 +132,6 @@ export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
     EDIT_POST,
     EDIT_PROFILE,
     EDIT_SERVER,
-    EMOJI_PICKER,
     FIND_CHANNELS,
     GALLERY,
     PERMALINK,

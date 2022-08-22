@@ -3,8 +3,8 @@
 
 import React from 'react';
 import {View} from 'react-native';
-import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
+import {Device} from '@app/constants';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -14,23 +14,16 @@ export const SCROLLVIEW_NATIVE_ID = 'emojiSelector';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        bottom: 10,
-        height: 35,
-        position: 'absolute',
-        width: '100%',
-    },
-    background: {
+        alignItems: 'center',
         backgroundColor: theme.centerChannelBg,
-    },
-    pane: {
+        borderColor: changeOpacity(theme.centerChannelColor, 0.08),
+        borderTopWidth: 1,
+        bottom: 0,
         flexDirection: 'row',
-        borderRadius: 10,
-        paddingHorizontal: 10,
-        width: '100%',
-        borderColor: changeOpacity(theme.centerChannelColor, 0.3),
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-        borderWidth: 1,
+        height: Device.IS_TABLET ? 55 : 43,
         justifyContent: 'space-between',
+        width: '100%',
+        position: 'absolute',
     },
 }));
 
@@ -49,27 +42,22 @@ const EmojiSectionBar = ({currentIndex, sections, scrollToIndex}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     return (
-        <KeyboardTrackingView
-            scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
-            normalList={true}
+        <View
+            nativeID={SCROLLVIEW_NATIVE_ID}
             style={styles.container}
             testID='emoji_picker.emoji_sections.section_bar'
         >
-            <View style={styles.background}>
-                <View style={styles.pane}>
-                    {sections.map((section, index) => (
-                        <SectionIcon
-                            currentIndex={currentIndex}
-                            key={section.key}
-                            icon={section.icon}
-                            index={index}
-                            scrollToIndex={scrollToIndex}
-                            theme={theme}
-                        />
-                    ))}
-                </View>
-            </View>
-        </KeyboardTrackingView>
+            {sections.map((section, index) => (
+                <SectionIcon
+                    currentIndex={currentIndex}
+                    key={section.key}
+                    icon={section.icon}
+                    index={index}
+                    scrollToIndex={scrollToIndex}
+                    theme={theme}
+                />
+            ))}
+        </View>
     );
 };
 

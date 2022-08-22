@@ -20,15 +20,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         alignItems: 'center',
         flex: 1,
-        height: 35,
         justifyContent: 'center',
         zIndex: 10,
     },
     icon: {
+        fontSize: 18,
         color: changeOpacity(theme.centerChannelColor, 0.4),
+        padding: 8,
     },
     selected: {
-        color: theme.centerChannelColor,
+        borderRadius: 4,
+        borderWidth: 1,
+        borderColor: changeOpacity(theme.buttonBg, 0.08),
+        backgroundColor: changeOpacity(theme.buttonBg, 0.08),
+        color: theme.buttonBg,
     },
 }));
 
@@ -43,7 +48,6 @@ const SectionIcon = ({currentIndex, icon, index, scrollToIndex, theme}: Props) =
         >
             <CompassIcon
                 name={icon}
-                size={20}
                 style={[style.icon, currentIndex === index ? style.selected : undefined]}
             />
         </TouchableOpacity>

@@ -18,7 +18,7 @@ import {
 } from '@constants/reaction_picker';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {dismissBottomSheet, showModal} from '@screens/navigation';
+import {openAsBottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import PickReaction from './pick_reaction';
@@ -58,11 +58,11 @@ const ReactionBar = ({recentEmojis = [], postId}: QuickReactionProps) => {
         await dismissBottomSheet(Screens.POST_OPTIONS);
 
         const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        const screen = Screens.EMOJI_PICKER;
         const title = intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
         const passProps = {closeButton, onEmojiPress: handleEmojiPress};
-
-        showModal(screen, title, passProps);
+        const closeButtonId = 'close-emoji-picker';
+        const screen = Screens.EMOJI_PICKER;
+        openAsBottomSheet({closeButtonId, screen, props: passProps, title, theme});
     }, [intl, theme]);
 
     let containerSize = LARGE_CONTAINER_SIZE;

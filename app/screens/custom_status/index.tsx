@@ -22,7 +22,7 @@ import {withServerUrl} from '@context/server';
 import {withTheme} from '@context/theme';
 import {observeConfig, observeRecentCustomStatus} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
-import {dismissModal, goToScreen, showModal} from '@screens/navigation';
+import {dismissModal, goToScreen, openAsBottomSheet, showModal} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {getCurrentMomentForTimezone, getRoundedTime, isCustomStatusExpirySupported} from '@utils/helpers';
 import {logDebug} from '@utils/log';
@@ -286,10 +286,10 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         const {theme, intl} = this.props;
         CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor).then((source) => {
             const screen = Screens.EMOJI_PICKER;
+            const closeButtonId = 'close-emoji-picker';
             const title = intl.formatMessage({id: 'mobile.custom_status.choose_emoji', defaultMessage: 'Choose an emoji'});
             const passProps = {closeButton: source, onEmojiPress: this.handleEmojiClick};
-
-            showModal(screen, title, passProps);
+            openAsBottomSheet({closeButtonId, screen, props: passProps, title, theme});
         });
     });
 
