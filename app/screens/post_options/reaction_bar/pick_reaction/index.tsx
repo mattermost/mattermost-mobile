@@ -4,8 +4,6 @@
 import React, {useCallback, useMemo} from 'react';
 import {Pressable, PressableStateCallbackType, View} from 'react-native';
 
-// import style from 'react-syntax-highlighter/dist/esm/styles/hljs/a11y-dark';
-
 import CompassIcon from '@components/compass_icon';
 import {
     LARGE_ICON_SIZE,
