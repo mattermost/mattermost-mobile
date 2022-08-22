@@ -31,7 +31,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderRadius: 4,
         flex: 1,
         maxHeight: OPTIONS_HEIGHT,
-        minWidth: 80,
+        minWidth: 60,
     },
     background: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
