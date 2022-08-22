@@ -17,8 +17,8 @@ import {
     SMALL_ICON_SIZE,
 } from '@constants/reaction_picker';
 import {useServerUrl} from '@context/server';
-import {useIsTablet} from '@hooks/device';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -31,7 +31,7 @@ type QuickReactionProps = {
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-   return {
+    return {
         container: {
             backgroundColor: theme.centerChannelBg,
             flexDirection: 'row',

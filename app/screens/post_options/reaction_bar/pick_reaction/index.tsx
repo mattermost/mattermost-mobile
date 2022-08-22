@@ -3,7 +3,8 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {Pressable, PressableStateCallbackType, View} from 'react-native';
-import style from 'react-syntax-highlighter/dist/esm/styles/hljs/a11y-dark';
+
+// import style from 'react-syntax-highlighter/dist/esm/styles/hljs/a11y-dark';
 
 import CompassIcon from '@components/compass_icon';
 import {
@@ -11,7 +12,6 @@ import {
 } from '@constants/reaction_picker';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
