@@ -8,9 +8,9 @@ import {FlatList, LayoutChangeEvent, Platform, StyleSheet, ViewProps} from 'reac
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {getPosts} from '@actions/local/post';
 import {addSearchToTeamSearchHistory} from '@actions/local/team';
 import {searchPosts, searchFiles} from '@actions/remote/search';
-import {queryPostsById} from '@app/queries/servers/post';
 import Autocomplete from '@components/autocomplete';
 import FreezeScreen from '@components/freeze_screen';
 import Loading from '@components/loading';
@@ -19,7 +19,6 @@ import RoundedHeaderContext from '@components/rounded_header_context';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import DatabaseManager from '@database/manager';
 import {useKeyboardHeight} from '@hooks/device';
 import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
@@ -64,15 +63,6 @@ const getSearchParams = (terms: string, filterValue?: FileFilter) => {
         terms: terms + extensionTerms,
         is_or_search: true,
     };
-};
-
-const getPosts = async (serverUrl: string, ids: string[]) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return [];
-    }
-
-    return queryPostsById(database, ids).fetch();
 };
 
 const searchScreenIndex = 1;
@@ -142,9 +132,11 @@ const SearchScreen = ({teamId}: Props) => {
         ]);
 
         setFileInfos(files?.length ? files : emptyFileResults);
-        setPosts(postResults?.order?.length ? await getPosts(serverUrl, postResults.order) : emptyPosts);
+        if (postResults.order) {
+            const postModels = await getPosts(serverUrl, postResults.order);
+            setPosts(postModels.length ? postModels : emptyPosts);
+        }
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
-
         handleLoading(false);
         setShowResults(true);
     }, [handleCancelAndClearSearch, handleLoading, showResults]);
