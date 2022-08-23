@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
 import {PostActionOption} from '@mm-redux/types/integration_actions';
@@ -28,13 +28,13 @@ const ActionMenu = ({dataSource, defaultOption, disabled, id, name, options, pos
         isSelected = selected;
     }
 
-    const handleSelect = (selectedItem?: PostActionOption) => {
+    const handleSelect = useCallback((selectedItem?: PostActionOption) => {
         if (!selectedItem) {
             return;
         }
 
         selectAttachmentMenuAction(postId, id, selectedItem.text, selectedItem.value);
-    };
+    }, [postId, id]);
 
     return (
         <AutocompleteSelector

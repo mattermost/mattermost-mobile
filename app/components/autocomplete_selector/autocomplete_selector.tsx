@@ -32,12 +32,13 @@ type Props = {
     placeholder?: string;
     dataSource?: string;
     options?: DialogOption[];
-    selected?: DialogOption | DialogOption[];
+    selected?: DialogOption | DialogOption[] | null;
     optional?: boolean;
     showRequiredAsterisk?: boolean;
     teammateNameDisplay?: string;
     theme: Theme;
     onSelected?: ((item: DialogOption) => void) | ((item: DialogOption[]) => void);
+    onClear?: () => void;
     helpText?: string;
     errorText?: string;
     roundedBorders?: boolean;
@@ -47,7 +48,7 @@ type Props = {
 
 type State = {
     selectedText: string;
-    selected?: DialogOption | DialogOption[];
+    selected?: DialogOption | DialogOption[] | null;
 }
 
 export default class AutocompleteSelector extends PureComponent<Props, State> {
@@ -70,7 +71,15 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
     }
 
     static getDerivedStateFromProps(props: Props, state: State) {
-        if (!props.selected || props.selected === state.selected) {
+        if (props.selected === state.selected) {
+            return null;
+        }
+
+        if (!props.selected) {
+            if (state.selected) {
+                return {selected: props.selected};
+            }
+
             return null;
         }
 
@@ -98,6 +107,11 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
             selected,
         };
     }
+
+    handleClear = () => {
+        this.setState({selectedText: ''});
+        this.props.onClear?.();
+    };
 
     handleSelect = (selected: Selection) => {
         if (!selected) {
@@ -230,13 +244,13 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
             showRequiredAsterisk,
             roundedBorders,
             disabled,
+            selected,
+            onClear,
         } = this.props;
         const {selectedText} = this.state;
         const style = getStyleSheet(theme);
         const textStyles = getMarkdownTextStyles(theme);
         const blockStyles = getMarkdownBlockStyles(theme);
-
-        const chevron = Platform.select({ios: 'chevron-right', default: 'chevron-down'});
 
         let text = placeholder || intl.formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'});
         let selectedStyle = style.dropdownPlaceholder;
@@ -326,11 +340,21 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
                         >
                             {text}
                         </Text>
-                        <CompassIcon
-                            name={chevron}
-                            color={changeOpacity(theme.centerChannelColor, 0.32)}
-                            style={style.icon}
-                        />
+                        {!disabled && onClear && selected && (
+                            <TouchableWithFeedback
+                                type={'opacity'}
+                                onPress={this.handleClear}
+                                disabled={disabled}
+                                style={style.clearx}
+                                hitSlop={clearXHitSlop}
+                            >
+                                <CompassIcon
+                                    name='close-circle'
+                                    color={changeOpacity(theme.centerChannelColor, 0.5)}
+                                    size={20}
+                                />
+                            </TouchableWithFeedback>
+                        )}
                     </View>
                 </TouchableWithFeedback>
                 {helpTextContent}
@@ -366,18 +390,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         dropdownPlaceholder: {
             top: 3,
             marginLeft: 5,
+            paddingRight: 55,
             color: changeOpacity(theme.centerChannelColor, 0.5),
         },
         dropdownSelected: {
             top: 3,
             marginLeft: 5,
+            paddingRight: 55,
             color: theme.centerChannelColor,
         },
-        icon: {
+        clearx: {
             position: 'absolute',
-            top: 6,
-            right: 12,
-            fontSize: 28,
+            top: 1,
+            right: 5,
+            padding: 8,
+            marginRight: 7,
         },
         labelContainer: {
             flexDirection: 'row',
@@ -419,3 +446,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
     };
 });
+
+const clearXHitSlop = {
+    left: 30,
+    right: 20,
+    top: 20,
+    bottom: 20,
+};
