@@ -62,6 +62,64 @@ export const queryUsersByUsername = (database: Database, usernames: string[]) =>
     return database.get<UserModel>(USER).query(Q.where('username', Q.oneOf(usernames)));
 };
 
+const getUserSearchClauses = (term: string) => {
+    const likeTerm = `%${Q.sanitizeLikeString(term)}%`;
+    return [
+        Q.or(
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore: condition type error
+            Q.unsafeSqlExpr(`first_name || ' ' || last_name LIKE '${likeTerm}'`),
+            Q.where('nickname', Q.like(likeTerm)),
+            Q.where('email', Q.like(likeTerm)),
+            Q.where('username', Q.like(likeTerm)),
+        ),
+    ];
+};
+
+const userOrderClauses = [
+    Q.sortBy('first_name', Q.asc),
+    Q.sortBy('last_name', Q.asc),
+    Q.take(25),
+];
+
+export const queryUsersInChannel = (database: Database, channelId: string, term?: string) => {
+    const clauses: Q.Clause[] = [
+        Q.on(CHANNEL_MEMBERSHIP, Q.where('channel_id', channelId)),
+    ];
+    if (term) {
+        clauses.push(...getUserSearchClauses(term));
+    }
+
+    clauses.push(...userOrderClauses);
+    return database.get<UserModel>(USER).query(...clauses);
+};
+
+export const queryUsersInTeam = (database: Database, teamId: string, term?: string) => {
+    const clauses: Q.Clause[] = [
+        Q.experimentalJoinTables([TEAM_MEMBERSHIP]),
+        Q.on(TEAM_MEMBERSHIP, Q.where('team_id', Q.eq(teamId))),
+    ];
+    if (term) {
+        clauses.push(...getUserSearchClauses(term));
+    }
+
+    clauses.push(...userOrderClauses);
+
+    return database.get<UserModel>(USER).query(...clauses);
+};
+
+export const observeUsersForAutocomplete = (database: Database, teamId: string, channelId?: string, term?: string) => {
+    const inChannel = channelId ? queryUsersInChannel(database, channelId, term).observe() : of$([]);
+    const inTeam = queryUsersInTeam(database, teamId, term).observe();
+    return combineLatest([inChannel, inTeam]).pipe(
+        switchMap(([inC, inT]) => {
+            const idSet = new Set(inC.map((u) => u.id));
+            const outC = inT.filter((u) => !idSet.has(u.id));
+            return of$({inChannel: inC, outOfChannel: outC});
+        }),
+    );
+};
+
 export async function prepareUsers(operator: ServerDataOperator, users: UserProfile[]): Promise<UserModel[]> {
     return operator.handleUsers({users, prepareRecordsOnly: true});
 }

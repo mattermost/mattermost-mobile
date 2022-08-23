@@ -3,7 +3,9 @@
 
 import React, {useCallback} from 'react';
 
+import {getAllTeamMembers} from '@actions/remote/team';
 import TeamList from '@components/team_sidebar/add_team/team_list';
+import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import {dismissBottomSheet} from '@screens/navigation';
@@ -20,9 +22,11 @@ type Props = {
 export default function SelectTeamSlideUp({teams, title, setTeamId, teamId}: Props) {
     const isTablet = useIsTablet();
     const showTitle = !isTablet && Boolean(teams.length);
+    const serverUrl = useServerUrl();
 
     const onPress = useCallback((newTeamId: string) => {
         setTeamId(newTeamId);
+        getAllTeamMembers(serverUrl, newTeamId);
         dismissBottomSheet();
     }, [setTeamId]);
 

@@ -19,9 +19,11 @@ import {getCurrentUser} from './user';
 
 import type {MyChannelModel} from '@database/models/server';
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
 import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
+import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
 import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
 
 const {
@@ -30,6 +32,9 @@ const {
     TEAM,
     TEAM_CHANNEL_HISTORY,
     TEAM_SEARCH_HISTORY,
+    TEAM_MEMBERSHIP,
+    CHANNEL,
+    CHANNEL_MEMBERSHIP,
 } = DatabaseConstants.MM_TABLES.SERVER;
 
 export const getCurrentTeam = async (database: Database) => {
@@ -423,4 +428,33 @@ export function observeMentionCount(database: Database, teamId?: string, include
         map$(([ccount, tcount]) => ccount + tcount),
         distinctUntilChanged(),
     );
+}
+
+export async function deleteTeamMembership(operator: ServerDataOperator, userId: string, teamId: string, prepareRecordsOnly = false) {
+    try {
+        const teamMembership = await operator.database.get<TeamMembershipModel>(TEAM_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('team_id', Q.eq(teamId))).fetch();
+        const models: Model[] = [];
+        for (const membership of teamMembership) {
+            models.push(membership.prepareDestroyPermanently());
+        }
+        const channelMembership = await operator.database.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.on(CHANNEL, 'team_id', teamId)).fetch();
+        for (const membership of channelMembership) {
+            models.push(membership.prepareDestroyPermanently());
+        }
+        if (models.length && !prepareRecordsOnly) {
+            await operator.batchRecords(models);
+        }
+        return {models};
+    } catch (error) {
+        return {error};
+    }
+}
+
+export async function getTeamMembership(operator: ServerDataOperator, userId: string, teamId: string) {
+    try {
+        const teamMembership = await operator.database.get<TeamMembershipModel>(TEAM_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('team_id', Q.eq(teamId))).fetch();
+        return teamMembership[0];
+    } catch (error) {
+        return undefined;
+    }
 }

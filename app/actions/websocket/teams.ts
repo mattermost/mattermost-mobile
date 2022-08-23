@@ -14,7 +14,7 @@ import DatabaseManager from '@database/manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
-import {getCurrentTeam, getLastTeam, prepareMyTeams} from '@queries/servers/team';
+import {deleteTeamMembership, getCurrentTeam, getLastTeam, prepareMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot, resetToTeams} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -60,6 +60,8 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
                 resetToTeams();
             }
         }
+    } else {
+        deleteTeamMembership(database.operator, userId, teamId, false);
     }
 }
 

@@ -3,10 +3,10 @@
 
 import {Database} from '@nozbe/watermelondb';
 
-import {markChannelAsRead, MyChannelsRequest} from '@actions/remote/channel';
+import {getAllChannelMembers, markChannelAsRead, MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForChannel, fetchPostsForUnreadChannels} from '@actions/remote/post';
-import {MyTeamsRequest} from '@actions/remote/team';
+import {getAllTeamMembers, MyTeamsRequest} from '@actions/remote/team';
 import {fetchNewThreads} from '@actions/remote/thread';
 import {MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
 import {gqlEntry, gqlEntryChannels, gqlOtherChannels} from '@client/graphQL/entry';
@@ -90,12 +90,17 @@ export async function deferredAppEntryGraphQLActions(
         const models = (await Promise.all(modelPromises)).flat();
         operator.batchRecords(models);
 
+        getAllTeamMembers(serverUrl, initialTeamId);
         setTimeout(() => {
             if (result.chData?.channels?.length && result.chData.memberships?.length) {
                 // defer fetching posts for unread channels on other teams
                 fetchPostsForUnreadChannels(serverUrl, result.chData.channels, result.chData.memberships, initialChannelId);
             }
         }, FETCH_UNREADS_TIMEOUT);
+    }
+
+    if (initialChannelId) {
+        getAllChannelMembers(serverUrl, initialChannelId);
     }
 
     if (meData.user?.id) {

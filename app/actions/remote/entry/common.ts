@@ -3,12 +3,12 @@
 
 import {Model} from '@nozbe/watermelondb';
 
-import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, MyChannelsRequest} from '@actions/remote/channel';
+import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, getAllChannelMembers, MyChannelsRequest} from '@actions/remote/channel';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
-import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
+import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, getAllTeamMembers, MyTeamsRequest} from '@actions/remote/team';
 import {fetchNewThreads} from '@actions/remote/thread';
 import {fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
 import {gqlAllChannels} from '@client/graphQL/entry';
@@ -316,6 +316,14 @@ export async function deferredAppEntryActions(
 
     // Fetch groups for current user
     fetchGroupsForMember(serverUrl, currentUserId);
+
+    if (initialTeamId) {
+        getAllTeamMembers(serverUrl, initialTeamId);
+    }
+
+    if (initialChannelId) {
+        getAllChannelMembers(serverUrl, initialChannelId);
+    }
 
     setTimeout(async () => {
         if (channelsToFetchProfiles?.size) {

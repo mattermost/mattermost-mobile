@@ -37,7 +37,7 @@ const {
 } = MM_TABLES.SERVER;
 
 export interface TeamHandlerMix {
-  handleTeamMemberships: ({teamMemberships, prepareRecordsOnly}: HandleTeamMembershipArgs) => Promise<TeamMembershipModel[]>;
+  handleTeamMemberships: ({teamMemberships, sync, prepareRecordsOnly}: HandleTeamMembershipArgs) => Promise<TeamMembershipModel[]>;
   handleTeam: ({teams, prepareRecordsOnly}: HandleTeamArgs) => Promise<TeamModel[]>;
   handleTeamChannelHistory: ({teamChannelHistories, prepareRecordsOnly}: HandleTeamChannelHistoryArgs) => Promise<TeamChannelHistoryModel[]>;
   handleTeamSearchHistory: ({teamSearchHistories, prepareRecordsOnly}: HandleTeamSearchHistoryArgs) => Promise<TeamSearchHistoryModel[]>;
@@ -52,7 +52,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
      * @param {boolean} teamMembershipsArgs.prepareRecordsOnly
      * @returns {Promise<TeamMembershipModel[]>}
      */
-    handleTeamMemberships = async ({teamMemberships, prepareRecordsOnly = true}: HandleTeamMembershipArgs): Promise<TeamMembershipModel[]> => {
+    handleTeamMemberships = async ({teamMemberships, sync, prepareRecordsOnly = true}: HandleTeamMembershipArgs): Promise<TeamMembershipModel[]> => {
         if (!teamMemberships?.length) {
             logWarning(
                 'An empty or undefined "teamMemberships" array has been passed to the handleTeamMemberships method',
@@ -72,19 +72,43 @@ const TeamHandler = (superclass: any) => class extends superclass {
             Q.where('id', Q.oneOf(ids)),
         ).fetch();
         const membershipMap = new Map<String, TeamMembershipModel>(existing.map((e) => [e.id, e]));
-        const createOrUpdateRawValues = uniqueRaws.reduce((res: TeamMembership[], t) => {
+        const [createOrUpdateRawValues, deleteRawValues] = uniqueRaws.reduce(([res, del]: [TeamMembership[], TeamMembership[]], t) => {
             const e = membershipMap.get(t.id!);
             if (!e && !t.delete_at) {
                 res.push(t);
-                return res;
+                return [res, del];
+            }
+
+            if (sync && e && t.delete_at) {
+                del.push(t);
+                return [res, del];
             }
 
             if (e && e.schemeAdmin !== t.scheme_admin) {
                 res.push(t);
             }
 
-            return res;
-        }, []);
+            return [res, del];
+        }, [[], []]);
+
+        if (sync) {
+            const idsSet = new Set(ids);
+            deleteRawValues.push(...existing.reduce((res: TeamMembership[], tm) => {
+                if (!idsSet.has(tm.teamId)) {
+                    res.push({
+                        team_id: tm.teamId,
+                        user_id: tm.userId,
+                        mention_count: 0,
+                        delete_at: 0,
+                        msg_count: 0,
+                        roles: '',
+                        scheme_admin: false,
+                        scheme_user: false,
+                    });
+                }
+                return res;
+            }, []));
+        }
 
         if (!createOrUpdateRawValues.length) {
             return [];
@@ -95,6 +119,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
             buildKeyRecordBy: buildTeamMembershipKey,
             transformer: transformTeamMembershipRecord,
             createOrUpdateRawValues,
+            deleteRawValues,
             tableName: TEAM_MEMBERSHIP,
             prepareRecordsOnly,
         });

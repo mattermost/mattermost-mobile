@@ -257,10 +257,12 @@ export type HandleTeamArgs = PrepareOnly & {
 
 export type HandleChannelMembershipArgs = PrepareOnly & {
   channelMemberships?: Array<Pick<ChannelMembership, 'user_id' | 'channel_id' | 'scheme_admin'>>;
+  sync?: boolean;
 };
 
 export type HandleTeamMembershipArgs = PrepareOnly & {
   teamMemberships?: TeamMembership[];
+  sync?: boolean;
 };
 
 export type HandlePreferencesArgs = PrepareOnly & {

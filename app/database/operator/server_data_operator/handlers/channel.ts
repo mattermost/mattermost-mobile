@@ -36,7 +36,7 @@ const {
 
 export interface ChannelHandlerMix {
   handleChannel: ({channels, prepareRecordsOnly}: HandleChannelArgs) => Promise<ChannelModel[]>;
-  handleChannelMembership: ({channelMemberships, prepareRecordsOnly}: HandleChannelMembershipArgs) => Promise<ChannelMembershipModel[]>;
+  handleChannelMembership: ({channelMemberships, sync, prepareRecordsOnly}: HandleChannelMembershipArgs) => Promise<ChannelMembershipModel[]>;
   handleMyChannelSettings: ({settings, prepareRecordsOnly}: HandleMyChannelSettingsArgs) => Promise<MyChannelSettingsModel[]>;
   handleChannelInfo: ({channelInfos, prepareRecordsOnly}: HandleChannelInfoArgs) => Promise<ChannelInfoModel[]>;
   handleMyChannel: ({channels, myChannels, isCRTEnabled, prepareRecordsOnly}: HandleMyChannelArgs) => Promise<MyChannelModel[]>;
@@ -302,7 +302,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
      * @param {boolean} channelMembershipsArgs.prepareRecordsOnly
      * @returns {Promise<ChannelMembershipModel[]>}
      */
-    handleChannelMembership = async ({channelMemberships, prepareRecordsOnly = true}: HandleChannelMembershipArgs): Promise<ChannelMembershipModel[]> => {
+    handleChannelMembership = async ({channelMemberships, sync, prepareRecordsOnly = true}: HandleChannelMembershipArgs): Promise<ChannelMembershipModel[]> => {
         if (!channelMemberships?.length) {
             logWarning(
                 'An empty "channelMemberships" array has been passed to the handleChannelMembership method',
@@ -337,6 +337,17 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             return res;
         }, []);
 
+        const deleteRawValues: ChannelMember[] = [];
+        if (sync) {
+            const idsSet = new Set(ids);
+            deleteRawValues.push(...existing.reduce((res: ChannelMember[], cm) => {
+                if (!idsSet.has(cm.channelId)) {
+                    res.push({channel_id: cm.channelId, user_id: cm.userId});
+                }
+                return res;
+            }, []));
+        }
+
         if (!createOrUpdateRawValues.length) {
             return [];
         }
@@ -346,6 +357,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             buildKeyRecordBy: buildChannelMembershipKey,
             transformer: transformChannelMembershipRecord,
             prepareRecordsOnly,
+            deleteRawValues,
             createOrUpdateRawValues,
             tableName: CHANNEL_MEMBERSHIP,
         });

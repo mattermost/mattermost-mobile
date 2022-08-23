@@ -18,10 +18,11 @@ import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user'
 import {loadCallForChannel} from '@calls/actions/calls';
 import {Events, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
+import NetworkManager from '@managers/network_manager';
 import {queryActiveServer} from '@queries/app/servers';
 import {deleteChannelMembership, getChannelById, prepareMyChannelsForTeam, getCurrentChannel} from '@queries/servers/channel';
 import {prepareCommonSystemValues, getConfig, setCurrentChannelId, getCurrentChannelId, getCurrentTeamId} from '@queries/servers/system';
-import {getNthLastChannelFromTeam} from '@queries/servers/team';
+import {getNthLastChannelFromTeam, getTeamMembership} from '@queries/servers/team';
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -309,6 +310,21 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
                     channelMemberships: [{channel_id: channelId, user_id: userId}],
                     prepareRecordsOnly: true,
                 }));
+            }
+            if (channel?.teamId) {
+                const member = getTeamMembership(operator, userId, teamId);
+                if (!member) {
+                    try {
+                        const client = NetworkManager.getClient(serverUrl);
+                        const remoteMember = await client.getTeamMember(teamId, userId);
+                        models.push(...await operator.handleTeamMemberships({
+                            teamMemberships: [remoteMember],
+                            prepareRecordsOnly: true,
+                        }));
+                    } catch {
+                        // Do nothing
+                    }
+                }
             }
         }
 

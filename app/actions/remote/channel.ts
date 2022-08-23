@@ -1111,6 +1111,7 @@ export async function switchToChannelById(serverUrl: string, channelId: string, 
     markChannelAsRead(serverUrl, channelId);
     fetchChannelStats(serverUrl, channelId);
     fetchGroupsForChannelIfConstrained(serverUrl, channelId);
+    getAllChannelMembers(serverUrl, channelId);
 
     DeviceEventEmitter.emit(Events.CHANNEL_SWITCH, false);
 
@@ -1362,3 +1363,38 @@ export const convertChannelToPrivate = async (serverUrl: string, channelId: stri
         EphemeralStore.removeConvertingChannel(channelId);
     }
 };
+
+export async function getAllChannelMembers(serverUrl: string, channelId: string) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const members: ChannelMember[] = [];
+        let page = 0;
+        let hasNext = true;
+        while (hasNext) {
+            // eslint-disable-next-line no-await-in-loop
+            const thisPage = await client.getChannelMembers(channelId, page);
+            page += 1;
+            members.push(...thisPage);
+            if (!thisPage.length) {
+                hasNext = false;
+            }
+        }
+
+        operator.handleChannelMembership({channelMemberships: members, sync: true, prepareRecordsOnly: false});
+        return {error: undefined};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+}

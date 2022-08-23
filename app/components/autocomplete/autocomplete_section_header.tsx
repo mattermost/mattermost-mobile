@@ -34,7 +34,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 type Props = {
     defaultMessage: string;
     id: string;
-    loading: boolean;
+    loading?: boolean;
 }
 
 const AutocompleteSectionHeader = ({

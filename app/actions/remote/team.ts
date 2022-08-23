@@ -308,8 +308,46 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     if (models.length) {
         await operator.batchRecords(models);
     }
+
+    getAllTeamMembers(serverUrl, teamId);
+
     DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);
 
     // Fetch Groups + GroupTeams
     fetchGroupsForTeamIfConstrained(serverUrl, teamId);
+}
+
+export async function getAllTeamMembers(serverUrl: string, teamId: string) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const members: TeamMembership[] = [];
+        let page = 0;
+        let hasNext = true;
+        while (hasNext) {
+            // eslint-disable-next-line no-await-in-loop
+            const thisPage = await client.getTeamMembers(teamId, page);
+            page += 1;
+            members.push(...thisPage);
+            if (!thisPage.length) {
+                hasNext = false;
+            }
+        }
+
+        operator.handleTeamMemberships({teamMemberships: members, sync: true, prepareRecordsOnly: false});
+        return {error: undefined};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
+    }
 }

@@ -7,19 +7,51 @@ import {of as of$, combineLatest, Observable} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
+import {AT_MENTION_REGEX, AT_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
 import {observeChannel} from '@queries/servers/channel';
 import {observePermissionForChannel} from '@queries/servers/role';
 import {observeLicense} from '@queries/servers/system';
 import {observeCurrentTeam, observeTeam} from '@queries/servers/team';
-import {observeCurrentUser} from '@queries/servers/user';
+import {observeCurrentUser, observeUsersForAutocomplete} from '@queries/servers/user';
 
 import AtMention from './at_mention';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type TeamModel from '@typings/database/models/servers/team';
 
-type OwnProps = {channelId?: string}
-const enhanced = withObservables([], ({database, channelId}: WithDatabaseArgs & OwnProps) => {
+type OwnProps = {
+    channelId?: string;
+    value: string;
+    cursorPosition: number;
+    isSearch: boolean;
+}
+
+const getMatchTermForAtMention = (() => {
+    let lastMatchTerm: string | null = null;
+    let lastValue: string;
+    let lastIsSearch: boolean;
+    return (value: string, isSearch: boolean) => {
+        if (value !== lastValue || isSearch !== lastIsSearch) {
+            const regex = isSearch ? AT_MENTION_SEARCH_REGEX : AT_MENTION_REGEX;
+            let term = value;
+            if (term.startsWith('from: @') || term.startsWith('from:@')) {
+                term = term.replace('@', '');
+            }
+
+            const match = term.match(regex);
+            lastValue = value;
+            lastIsSearch = isSearch;
+            if (match) {
+                lastMatchTerm = (isSearch ? match[1] : match[2]).toLowerCase();
+            } else {
+                lastMatchTerm = null;
+            }
+        }
+        return lastMatchTerm;
+    };
+})();
+
+const enhanced = withObservables(['value', 'cursorPosition', 'isSearch'], ({database, channelId, value, cursorPosition, isSearch}: WithDatabaseArgs & OwnProps) => {
     const currentUser = observeCurrentUser(database);
 
     const hasLicense = observeLicense(database).pipe(
@@ -59,12 +91,24 @@ const enhanced = withObservables([], ({database, channelId}: WithDatabaseArgs & 
     );
     const teamId = team.pipe(switchMap((t) => of$(t?.id)));
 
+    const matchTerm = getMatchTermForAtMention(value.substring(0, cursorPosition), isSearch);
+    const users = teamId.pipe(
+        switchMap((tId) => {
+            if (matchTerm === null) {
+                return of$({inChannel: [], outOfChannel: []});
+            }
+            return observeUsersForAutocomplete(database, tId!, channelId, matchTerm);
+        }),
+    );
+
     return {
         isChannelConstrained,
         isTeamConstrained,
         useChannelMentions,
         useGroupMentions,
         teamId,
+        users,
+        matchTerm: of$(matchTerm),
     };
 });
 
