@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useMemo, useState, useRef} from 'react';
 import {FlatList, ListRenderItemInfo, StyleSheet} from 'react-native';
 
-import {fetchRefreshThreads, fetchThreads} from '@actions/remote/thread';
+import {fetchNewThreads, fetchRefreshThreads, fetchThreads} from '@actions/remote/thread';
 import Loading from '@components/loading';
 import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -66,7 +66,7 @@ const ThreadsList = ({
     const lastThread = threads?.length > 0 ? threads[threads.length - 1] : null;
 
     useEffect(() => {
-        // this is to be called only when there are no threads
+        // This is to be called only when there are no threads
         if (tab === 'all' && noThreads && !hasFetchedOnce.current) {
             setIsLoading(true);
             fetchThreads(serverUrl, teamId).finally(() => {
@@ -74,7 +74,14 @@ const ThreadsList = ({
                 setIsLoading(false);
             });
         }
-    }, [noThreads, tab]);
+    }, [noThreads, serverUrl, tab]);
+
+    useEffect(() => {
+        // This is to be called when threads already exist locally and to fetch the latest threads
+        if (!noThreads) {
+            fetchNewThreads(serverUrl, teamId);
+        }
+    }, [noThreads, serverUrl, teamId]);
 
     const listEmptyComponent = useMemo(() => {
         if (isLoading) {
