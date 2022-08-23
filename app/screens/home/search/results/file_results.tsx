@@ -88,7 +88,8 @@ const FileResults = ({
         openGalleryAtIndex(galleryIdentifier, idx, items);
     }), [orderedFilesForGallery]);
 
-    const snapPoints = useMemo(() => {
+    const handleOptionsPress = useCallback((item: number) => {
+        setLastViewedIndex(item);
         let numberOptions = 1;
         if (canDownloadFiles) {
             numberOptions += 1;
@@ -96,11 +97,6 @@ const FileResults = ({
         if (publicLinkEnabled) {
             numberOptions += 1;
         }
-        return [bottomSheetSnapPoint(numberOptions, ITEM_HEIGHT, insets.bottom) + HEADER_HEIGHT, 10];
-    }, [canDownloadFiles, publicLinkEnabled]);
-
-    const handleOptionsPress = useCallback((item: number) => {
-        setLastViewedIndex(item);
         const renderContent = () => {
             return (
                 <FileOptions
@@ -111,11 +107,11 @@ const FileResults = ({
         bottomSheet({
             closeButtonId: 'close-search-file-options',
             renderContent,
-            snapPoints,
+            snapPoints: [bottomSheetSnapPoint(numberOptions, ITEM_HEIGHT, insets.bottom) + HEADER_HEIGHT, 10],
             theme,
             title: '',
         });
-    }, [orderedFilesForGallery, snapPoints, theme]);
+    }, [canDownloadFiles, publicLinkEnabled, orderedFilesForGallery, theme]);
 
     // This effect handles the case where a user has the FileOptions Modal
     // open and the server changes the ability to download files or copy public
