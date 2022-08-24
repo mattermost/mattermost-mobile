@@ -310,6 +310,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'user_id',
             createOrUpdateRawValues: channelMemberships,
+            deleteRawValues: [],
             tableName: 'ChannelMembership',
             prepareRecordsOnly: false,
             buildKeyRecordBy: buildChannelMembershipKey,

@@ -94,6 +94,7 @@ describe('*** Operator: Team Handlers tests ***', () => {
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'user_id',
             createOrUpdateRawValues: memberships,
+            deleteRawValues: [],
             tableName: 'TeamMembership',
             prepareRecordsOnly: false,
             buildKeyRecordBy: buildTeamMembershipKey,
