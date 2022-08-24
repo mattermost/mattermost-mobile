@@ -142,6 +142,10 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
         }
     }, [isTablet, theme, thread]);
 
+    if (!post || !channel) {
+        return null;
+    }
+
     const threadStarterName = displayUsername(author, intl.locale, teammateNameDisplay);
     const threadItemTestId = `${testID}.thread_item.${thread.id}`;
 
@@ -219,7 +223,7 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
                     <View style={styles.header}>
                         <View style={styles.headerInfoContainer}>
                             {name}
-                            {channel && threadStarterName !== channel?.displayName && (
+                            {threadStarterName !== channel?.displayName && (
                                 <View style={styles.channelNameContainer}>
                                     <Text
                                         style={styles.channelName}
