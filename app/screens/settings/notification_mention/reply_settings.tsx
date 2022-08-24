@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState} from 'react';
+import React, {Dispatch, SetStateAction} from 'react';
 import {useIntl} from 'react-intl';
 
 import {t} from '@i18n';
@@ -14,9 +14,11 @@ const replyHeaderText = {
     id: t('notification_settings.mention.reply'),
     defaultMessage: 'Send reply notifications for',
 };
-
-const ReplySettings = () => {
-    const [replyNotificationType, setReplyNotificationType] = useState('any');
+type ReplySettingsProps = {
+    replyNotificationType: string;
+    setReplyNotificationType: Dispatch<SetStateAction<string>>;
+}
+const ReplySettings = ({replyNotificationType, setReplyNotificationType}: ReplySettingsProps) => {
     const intl = useIntl();
 
     return (

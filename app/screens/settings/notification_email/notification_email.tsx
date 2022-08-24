@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Text} from 'react-native';
 
@@ -11,14 +11,13 @@ import {Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import useBackNavigation from '@hooks/navigate_back';
 import {t} from '@i18n';
-import {popTopScreen, setButtons} from '@screens/navigation';
+import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getEmailInterval, getNotificationProps} from '@utils/user';
 
-import {getSaveButton} from '../config';
 import SettingBlock from '../setting_block';
 import SettingContainer from '../setting_container';
 import SettingOption from '../setting_option';
@@ -31,6 +30,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         disabled: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75, 'Regular'),
+            marginHorizontal: 20,
         },
     };
 });
@@ -53,8 +53,6 @@ const emailFooterCRTText = {
     defaultMessage: "When enabled, any reply to a thread you're following will send an email notification",
 };
 
-const SAVE_EMAIL_BUTTON_ID = 'settings_notification.email.save.button';
-
 type NotificationEmailProps = {
     componentId: string;
     currentUser: UserModel;
@@ -66,12 +64,11 @@ type NotificationEmailProps = {
 
 const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmailBatching, isCRTEnabled, sendEmailNotifications}: NotificationEmailProps) => {
     const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
-    const initialInterval = useMemo(() => getEmailInterval(
-        sendEmailNotifications && notifyProps?.email === 'true',
-        enableEmailBatching,
-        parseInt(emailInterval, 10),
-    ).toString(), []); // dependency array should remain empty
-    const initialEmailThreads = useMemo(() => Boolean(notifyProps?.email_threads === 'all'), []); // dependency array should remain empty
+    const initialInterval = useMemo(
+        () => getEmailInterval(sendEmailNotifications && notifyProps?.email === 'true', enableEmailBatching, parseInt(emailInterval, 10)).toString(),
+        [/* dependency array should remain empty */],
+    );
+    const initialEmailThreads = useMemo(() => Boolean(notifyProps?.email_threads === 'all'), [/* dependency array should remain empty */]);
 
     const [notifyInterval, setNotifyInterval] = useState<string>(initialInterval);
     const [emailThreads, setEmailThreads] = useState(initialEmailThreads);
@@ -81,47 +78,39 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const saveButton = useMemo(() => getSaveButton(SAVE_EMAIL_BUTTON_ID, intl, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
-
     const close = () => popTopScreen(componentId);
 
-    const saveEmail = useCallback(async () => {
-        const promises = [];
-        const updatePromise = updateMe(serverUrl, {
-            notify_props: {
-                ...notifyProps,
-                email: `${sendEmailNotifications && notifyInterval !== Preferences.INTERVAL_NEVER.toString()}`,
-                email_threads: emailThreads ? 'all' : 'mention',
-            },
-        });
-        promises.push(updatePromise);
+    const saveEmail = useCallback(() => {
+        const canSaveSetting = notifyInterval !== initialInterval || emailThreads !== initialEmailThreads;
+        if (canSaveSetting) {
+            const promises = [];
+            const updatePromise = updateMe(serverUrl, {
+                notify_props: {
+                    ...notifyProps,
+                    email: `${sendEmailNotifications && notifyInterval !== Preferences.INTERVAL_NEVER.toString()}`,
+                    ...(isCRTEnabled && {email_threads: emailThreads ? 'all' : 'mention'}),
+                },
+            });
+            promises.push(updatePromise);
 
-        if (notifyInterval !== initialInterval) {
-            const emailIntervalPreference = {
-                category: Preferences.CATEGORY_NOTIFICATIONS,
-                name: Preferences.EMAIL_INTERVAL,
-                user_id: currentUser.id,
-                value: notifyInterval,
-            };
-            const savePrefPromise = savePreference(serverUrl, [emailIntervalPreference]);
-            promises.push(savePrefPromise);
+            if (notifyInterval !== initialInterval) {
+                const emailIntervalPreference = {
+                    category: Preferences.CATEGORY_NOTIFICATIONS,
+                    name: Preferences.EMAIL_INTERVAL,
+                    user_id: currentUser.id,
+                    value: notifyInterval,
+                };
+                const savePrefPromise = savePreference(serverUrl, [emailIntervalPreference]);
+                promises.push(savePrefPromise);
+            }
+            Promise.all(promises);
         }
-        await Promise.all(promises);
         close();
     }, [notifyProps, notifyInterval, emailThreads, serverUrl, currentUser.id, sendEmailNotifications]);
 
-    useEffect(() => {
-        const buttons = {
-            rightButtons: [{
-                ...saveButton,
-                enabled: notifyInterval !== initialInterval || emailThreads !== initialEmailThreads,
-            }],
-        };
-        setButtons(componentId, buttons);
-    }, [componentId, saveButton, notifyInterval, emailThreads]);
+    useAndroidHardwareBackHandler(componentId, saveEmail);
 
-    useAndroidHardwareBackHandler(componentId, close);
-    useNavButtonPressed(SAVE_EMAIL_BUTTON_ID, componentId, saveEmail, [saveEmail]);
+    useBackNavigation(saveEmail);
 
     return (
         <SettingContainer testID='notification_email'>
@@ -182,7 +171,7 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
                 </Text>
                 }
             </SettingBlock>
-            {isCRTEnabled && notifyProps.email === 'true' && (
+            {isCRTEnabled && notifyInterval !== Preferences.INTERVAL_NEVER.toString() && (
                 <SettingBlock
                     footerText={emailFooterCRTText}
                     headerText={emailHeaderCRTText}

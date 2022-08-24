@@ -30,9 +30,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 type MobileSendPushProps = {
-    pushStatus: PushStatus;
+    pushStatus: UserNotifyPropsPushStatus;
     sendPushNotifications: boolean;
-    setMobilePushPref: (status: PushStatus) => void;
+    setMobilePushPref: (status: UserNotifyPropsPushStatus) => void;
 }
 const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: MobileSendPushProps) => {
     const theme = useTheme();

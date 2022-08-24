@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 
 import {General, Screens} from '@constants';
 import {t} from '@i18n';
-import {goToScreen} from '@screens/navigation';
+import {gotoSettingsScreen} from '@screens/settings/config';
 import {getEmailInterval, getEmailIntervalTexts, getNotificationProps} from '@utils/user';
 
 import SettingContainer from '../setting_container';
@@ -58,8 +58,7 @@ const Notifications = ({
         const id = isCRTEnabled ? t('notification_settings.mentions') : t('notification_settings.mentions_replies');
         const defaultMessage = isCRTEnabled ? 'Mentions' : 'Mentions and Replies';
         const title = intl.formatMessage({id, defaultMessage});
-
-        goToScreen(screen, title);
+        gotoSettingsScreen(screen, title);
     }, [isCRTEnabled]);
 
     const goToNotificationSettingsPush = useCallback(() => {
@@ -69,7 +68,7 @@ const Notifications = ({
             defaultMessage: 'Push Notifications',
         });
 
-        goToScreen(screen, title);
+        gotoSettingsScreen(screen, title);
     }, []);
 
     const goToNotificationAutoResponder = useCallback(() => {
@@ -78,13 +77,13 @@ const Notifications = ({
             id: 'notification_settings.auto_responder',
             defaultMessage: 'Automatic Replies',
         });
-        goToScreen(screen, title);
+        gotoSettingsScreen(screen, title);
     }, []);
 
     const goToEmailSettings = useCallback(() => {
         const screen = Screens.SETTINGS_NOTIFICATION_EMAIL;
         const title = intl.formatMessage({id: 'notification_settings.email', defaultMessage: 'Email Notifications'});
-        goToScreen(screen, title);
+        gotoSettingsScreen(screen, title);
     }, []);
 
     return (
