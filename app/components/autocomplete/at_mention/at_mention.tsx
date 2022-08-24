@@ -179,7 +179,7 @@ const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersInChanne
 
 type Props = {
     channelId?: string;
-    teamId?: string;
+    teamId: string;
     cursorPosition: number;
     isSearch: boolean;
     maxListHeight: number;
@@ -245,9 +245,9 @@ const AtMention = ({
     const [localUsers, setLocalUsers] = useState<UserModel[]>();
     const [filteredLocalUsers, setFilteredLocalUsers] = useState(emptyUserlList);
 
-    const runSearch = useMemo(() => debounce(async (sUrl: string, term: string, cId?: string) => {
+    const runSearch = useMemo(() => debounce(async (sUrl: string, term: string, tId: string, cId?: string) => {
         setLoading(true);
-        const {users: receivedUsers, error} = await searchUsers(sUrl, term, cId);
+        const {users: receivedUsers, error} = await searchUsers(sUrl, term, tId, cId);
 
         setUseLocal(Boolean(error));
         if (error) {
@@ -405,7 +405,7 @@ const AtMention = ({
         } else {
             setGroups(emptyGroupList);
         }
-    }, [matchTerm, useGroupMentions]);
+    }, [matchTerm, useGroupMentions, teamId]);
 
     useEffect(() => {
         if (matchTerm === null) {
@@ -419,8 +419,8 @@ const AtMention = ({
         }
 
         setNoResultsTerm(null);
-        runSearch(serverUrl, matchTerm, channelId);
-    }, [matchTerm]);
+        runSearch(serverUrl, matchTerm, teamId, channelId);
+    }, [matchTerm, teamId]);
 
     useEffect(() => {
         const showSpecialMentions = useChannelMentions && matchTerm != null && checkSpecialMentions(matchTerm);

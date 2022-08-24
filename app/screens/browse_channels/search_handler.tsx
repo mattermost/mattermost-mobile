@@ -218,7 +218,7 @@ export default function SearchHandler(props: Props) {
                 clearTimeout(searchTimeout.current);
             }
             searchTimeout.current = setTimeout(async () => {
-                const results = await searchChannels(serverUrl, text);
+                const results = await searchChannels(serverUrl, text, currentTeamId);
                 if (results.channels) {
                     setSearchResults(results.channels);
                 }

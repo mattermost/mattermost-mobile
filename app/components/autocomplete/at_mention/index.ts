@@ -18,8 +18,11 @@ import AtMention from './at_mention';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type TeamModel from '@typings/database/models/servers/team';
 
-type OwnProps = {channelId?: string}
-const enhanced = withObservables([], ({database, channelId}: WithDatabaseArgs & OwnProps) => {
+type OwnProps = {
+    channelId?: string;
+    teamId?: string;
+}
+const enhanced = withObservables(['teamId'], ({database, channelId, teamId}: WithDatabaseArgs & OwnProps) => {
     const currentUser = observeCurrentUser(database);
 
     const hasLicense = observeLicense(database).pipe(
@@ -51,20 +54,19 @@ const enhanced = withObservables([], ({database, channelId}: WithDatabaseArgs & 
         useGroupMentions = of$(false);
         isChannelConstrained = of$(false);
         isTeamConstrained = of$(false);
-        team = observeCurrentTeam(database);
+        team = teamId ? observeTeam(database, teamId) : observeCurrentTeam(database);
     }
 
     isTeamConstrained = team.pipe(
         switchMap((t) => of$(Boolean(t?.isGroupConstrained))),
     );
-    const teamId = team.pipe(switchMap((t) => of$(t?.id)));
 
     return {
         isChannelConstrained,
         isTeamConstrained,
         useChannelMentions,
         useGroupMentions,
-        teamId,
+        teamId: team.pipe(switchMap((t) => of$(t?.id))),
     };
 });
 

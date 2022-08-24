@@ -267,8 +267,9 @@ const SearchScreen = ({teamId}: Props) => {
             availableSpace={autocompleteMaxHeight}
             position={autocompletePosition}
             growDown={true}
+            teamId={searchTeamId}
         />
-    ), [cursorPosition, handleTextChange, searchValue, autocompleteMaxHeight, autocompletePosition]);
+    ), [cursorPosition, handleTextChange, searchValue, autocompleteMaxHeight, autocompletePosition, searchTeamId]);
 
     return (
         <FreezeScreen freeze={!isFocused}>

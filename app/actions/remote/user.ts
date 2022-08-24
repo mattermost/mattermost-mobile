@@ -15,7 +15,7 @@ import {debounce} from '@helpers/api/general';
 import NetworkManager from '@managers/network_manager';
 import {getMembersCountByChannelsId, queryChannelsByTypes} from '@queries/servers/channel';
 import {queryGroupsByNames} from '@queries/servers/group';
-import {getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
+import {getCurrentUserId} from '@queries/servers/system';
 import {getCurrentUser, getUserById, prepareUsers, queryAllUsers, queryUsersById, queryUsersByIdsOrUsernames, queryUsersByUsername} from '@queries/servers/user';
 import {logError} from '@utils/log';
 import {getUserTimezoneProps, removeUserFromList} from '@utils/user';
@@ -817,7 +817,7 @@ export const uploadUserProfileImage = async (serverUrl: string, localPath: strin
     return {error: undefined};
 };
 
-export const searchUsers = async (serverUrl: string, term: string, channelId?: string) => {
+export const searchUsers = async (serverUrl: string, term: string, teamId: string, channelId?: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -831,8 +831,7 @@ export const searchUsers = async (serverUrl: string, term: string, channelId?: s
     }
 
     try {
-        const currentTeamId = await getCurrentTeamId(database);
-        const users = await client.autocompleteUsers(term, currentTeamId, channelId);
+        const users = await client.autocompleteUsers(term, teamId, channelId);
         return {users};
     } catch (error) {
         return {error};

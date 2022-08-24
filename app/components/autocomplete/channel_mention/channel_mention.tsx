@@ -12,11 +12,8 @@ import {General} from '@constants';
 import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import DatabaseManager from '@database/manager';
 import useDidUpdate from '@hooks/did_update';
 import {t} from '@i18n';
-import {queryAllChannelsForTeam} from '@queries/servers/channel';
-import {getCurrentTeamId} from '@queries/servers/system';
 import {hasTrailingSpaces} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -26,32 +23,6 @@ import type MyChannelModel from '@typings/database/models/servers/my_channel';
 const keyExtractor = (item: Channel) => {
     return item.id;
 };
-
-const getMatchTermForChannelMention = (() => {
-    let lastMatchTerm: string | null = null;
-    let lastValue: string;
-    let lastIsSearch: boolean;
-    return (value: string, isSearch: boolean) => {
-        if (value !== lastValue || isSearch !== lastIsSearch) {
-            const regex = isSearch ? CHANNEL_MENTION_SEARCH_REGEX : CHANNEL_MENTION_REGEX;
-            const match = value.match(regex);
-            lastValue = value;
-            lastIsSearch = isSearch;
-            if (match) {
-                if (isSearch) {
-                    lastMatchTerm = match[1].toLowerCase();
-                } else if (match.index && match.index > 0 && value[match.index - 1] === '~') {
-                    lastMatchTerm = null;
-                } else {
-                    lastMatchTerm = match[2].toLowerCase();
-                }
-            } else {
-                lastMatchTerm = null;
-            }
-        }
-        return lastMatchTerm;
-    };
-})();
 
 const reduceChannelsForSearch = (channels: Array<Channel | ChannelModel>, members: MyChannelModel[]) => {
     const memberIds = new Set(members.map((m) => m.id));
@@ -166,6 +137,9 @@ type Props = {
     onShowingChange: (c: boolean) => void;
     value: string;
     nestedScrollEnabled: boolean;
+    matchTerm: string;
+    localChannels: ChannelModel[];
+    teamId: string;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -176,16 +150,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-
-const getAllChannels = async (serverUrl: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return [];
-    }
-
-    const teamId = await getCurrentTeamId(database);
-    return queryAllChannelsForTeam(database, teamId).fetch();
-};
 
 const emptySections: Array<SectionListData<Channel>> = [];
 const emptyChannels: Array<Channel | ChannelModel> = [];
@@ -199,51 +163,39 @@ const ChannelMention = ({
     onShowingChange,
     value,
     nestedScrollEnabled,
+    matchTerm,
+    localChannels,
+    teamId,
 }: Props) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
     const [sections, setSections] = useState<Array<SectionListData<(Channel | ChannelModel)>>>(emptySections);
-    const [channels, setChannels] = useState<Array<ChannelModel | Channel>>(emptyChannels);
+    const [remoteChannels, setRemoteChannels] = useState<Array<ChannelModel | Channel>>(emptyChannels);
     const [loading, setLoading] = useState(false);
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
     const [localCursorPosition, setLocalCursorPosition] = useState(cursorPosition); // To avoid errors due to delay between value changes and cursor position changes.
-    const [useLocal, setUseLocal] = useState(true);
-    const [localChannels, setlocalChannels] = useState<ChannelModel[]>();
-    const [filteredLocalChannels, setFilteredLocalChannels] = useState(emptyChannels);
 
     const listStyle = useMemo(() =>
         [style.listView, {maxHeight: maxListHeight}]
     , [style, maxListHeight]);
 
-    const runSearch = useMemo(() => debounce(async (sUrl: string, term: string) => {
+    const runSearch = useMemo(() => debounce(async (sUrl: string, term: string, tId: string) => {
         setLoading(true);
-        const {channels: receivedChannels, error} = await searchChannels(sUrl, term, isSearch);
-        setUseLocal(Boolean(error));
+        const {channels: receivedChannels} = await searchChannels(sUrl, term, tId, isSearch);
 
-        if (error) {
-            let fallbackChannels = localChannels;
-            if (!fallbackChannels) {
-                fallbackChannels = await getAllChannels(sUrl);
-                setlocalChannels(fallbackChannels);
-            }
-            const filteredChannels = filterResults(fallbackChannels, term);
-            setFilteredLocalChannels(filteredChannels.length ? filteredChannels : emptyChannels);
-        } else if (receivedChannels) {
-            let channelsToStore: Array<Channel | ChannelModel> = receivedChannels;
-            if (hasTrailingSpaces(term)) {
-                channelsToStore = filterResults(receivedChannels, term);
-            }
-            setChannels(channelsToStore.length ? channelsToStore : emptyChannels);
+        let channelsToStore: Array<Channel | ChannelModel> = receivedChannels || [];
+        if (hasTrailingSpaces(term)) {
+            channelsToStore = filterResults(receivedChannels || [], term);
         }
+        setRemoteChannels(channelsToStore.length ? channelsToStore : emptyChannels);
+
         setLoading(false);
     }, 200), []);
 
-    const matchTerm = getMatchTermForChannelMention(value.substring(0, localCursorPosition), isSearch);
     const resetState = () => {
-        setFilteredLocalChannels(emptyChannels);
-        setChannels(emptyChannels);
+        setRemoteChannels(emptyChannels);
         setSections(emptySections);
         runSearch.cancel();
     };
@@ -323,18 +275,31 @@ const ChannelMention = ({
         }
 
         setNoResultsTerm(null);
-        runSearch(serverUrl, matchTerm);
-    }, [matchTerm]);
+        runSearch(serverUrl, matchTerm, teamId);
+    }, [matchTerm, teamId]);
+
+    const channels = useMemo(() => {
+        const ids = new Set(localChannels.map((c) => c.id));
+        return [...localChannels, ...remoteChannels.filter((c) => !ids.has(c.id))].sort((a, b) => {
+            const aDisplay = 'display_name' in a ? a.display_name : a.displayName;
+            const bDisplay = 'display_name' in b ? b.display_name : b.displayName;
+            const displayResult = aDisplay.localeCompare(bDisplay);
+            if (displayResult === 0) {
+                return a.name.localeCompare(b.name);
+            }
+            return displayResult;
+        });
+    }, [localChannels, remoteChannels]);
 
     useDidUpdate(() => {
-        const newSections = makeSections(useLocal ? filteredLocalChannels : channels, myMembers, isSearch);
+        const newSections = makeSections(channels, myMembers, isSearch);
         const nSections = newSections.length;
 
         if (!loading && !nSections && noResultsTerm == null) {
             setNoResultsTerm(matchTerm);
         }
         setSections(newSections.length ? newSections : emptySections);
-        onShowingChange(Boolean(nSections));
+        onShowingChange(Boolean(nSections && !noResultsTerm));
     }, [channels, myMembers, loading]);
 
     if (sections.length === 0 || noResultsTerm != null) {

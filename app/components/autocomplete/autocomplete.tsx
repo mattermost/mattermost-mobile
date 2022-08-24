@@ -66,6 +66,7 @@ type Props = {
     availableSpace: number;
     inPost?: boolean;
     growDown?: boolean;
+    teamId?: string;
 }
 
 const Autocomplete = ({
@@ -84,6 +85,7 @@ const Autocomplete = ({
     hasFilesAttached,
     inPost = false,
     growDown = false,
+    teamId,
 }: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -157,6 +159,7 @@ const Autocomplete = ({
                         nestedScrollEnabled={nestedScrollEnabled}
                         isSearch={isSearch}
                         channelId={channelId}
+                        teamId={teamId}
                     />
                     <ChannelMention
                         cursorPosition={cursorPosition}
@@ -166,6 +169,8 @@ const Autocomplete = ({
                         value={value || ''}
                         nestedScrollEnabled={nestedScrollEnabled}
                         isSearch={isSearch}
+                        channelId={channelId}
+                        teamId={teamId}
                     />
                     {!isSearch &&
                     <EmojiSuggestion
