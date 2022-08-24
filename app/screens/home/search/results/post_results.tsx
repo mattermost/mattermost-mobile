@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {FlatList, ListRenderItemInfo} from 'react-native';
+import {FlatList, ListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
 import DateSeparator from '@components/post_list/date_separator';
@@ -17,7 +17,7 @@ type Props = {
     currentTimezone: string;
     isTimezoneEnabled: boolean;
     posts: PostModel[];
-    scrollPaddingTop: number;
+    paddingTop: StyleProp<ViewStyle>;
     searchValue: string;
 }
 
@@ -25,15 +25,11 @@ const PostResults = ({
     currentTimezone,
     isTimezoneEnabled,
     posts,
-    scrollPaddingTop,
+    paddingTop,
     searchValue,
 }: Props) => {
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
-
-    const containerStyle = useMemo(() => {
-        return {top: posts.length ? 4 : 8};
-    }, [posts]);
+    const containerStyle = useMemo(() => ({top: posts.length ? 4 : 8}), [posts]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<string|PostModel>) => {
         if (typeof item === 'string') {
@@ -60,19 +56,17 @@ const PostResults = ({
         return null;
     }, []);
 
-    const noResults = useMemo(() => {
-        return (
-            <NoResultsWithTerm
-                term={searchValue}
-                type={TabTypes.MESSAGES}
-            />
-        );
-    }, [searchValue]);
+    const noResults = useMemo(() => (
+        <NoResultsWithTerm
+            term={searchValue}
+            type={TabTypes.MESSAGES}
+        />
+    ), [searchValue]);
 
     return (
         <FlatList
             ListEmptyComponent={noResults}
-            contentContainerStyle={paddingTop}
+            contentContainerStyle={[paddingTop, containerStyle]}
             data={orderedPosts}
             indicatorStyle='black'
             initialNumToRender={5}

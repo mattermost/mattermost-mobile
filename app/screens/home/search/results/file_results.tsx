@@ -38,7 +38,7 @@ type Props = {
     fileChannels: ChannelModel[];
     fileInfos: FileInfo[];
     publicLinkEnabled: boolean;
-    scrollPaddingTop: number;
+    paddingTop: StyleProp<ViewStyle>;
     searchValue: string;
 }
 
@@ -49,33 +49,27 @@ const FileResults = ({
     fileChannels,
     fileInfos,
     publicLinkEnabled,
-    scrollPaddingTop,
+    paddingTop,
     searchValue,
 }: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
     const [lastViewedIndex, setLastViewedIndex] = useState<number | undefined>(undefined);
+    const containerStyle = useMemo(() => ({top: fileInfos.length ? 8 : 0}), [fileInfos]);
 
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
     const channelNames = useMemo(() => fileChannels.reduce<{[id: string]: string | undefined}>((acc, v) => {
         acc[v.id] = v.displayName;
         return acc;
     }, {}), [fileChannels]);
 
-    const containerStyle = useMemo(() => {
-        return {top: fileInfos.length ? 8 : 0};
-    }, [fileInfos]);
-
-    const filesForGallery = useMemo(() => imageAttachments.concat(nonImageAttachments),
-        [imageAttachments, nonImageAttachments]);
-
-    const orderedFilesForGallery = useMemo(() => (
-        filesForGallery.sort((a: FileInfo, b: FileInfo) => {
+    const orderedFilesForGallery = useMemo(() => {
+        const filesForGallery = imageAttachments.concat(nonImageAttachments);
+        return filesForGallery.sort((a: FileInfo, b: FileInfo) => {
             return (b.create_at || 0) - (a.create_at || 0);
-        })
-    ), [filesForGallery]);
+        });
+    }, [imageAttachments, nonImageAttachments]);
 
     const filesForGalleryIndexes = useMemo(() => orderedFilesForGallery.reduce<{[id: string]: number | undefined}>((acc, v, idx) => {
         if (v.id) {
@@ -92,19 +86,13 @@ const FileResults = ({
     const handleOptionsPress = useCallback((item: number) => {
         setLastViewedIndex(item);
         let numberOptions = 1;
-        if (canDownloadFiles) {
-            numberOptions += 1;
-        }
-        if (publicLinkEnabled) {
-            numberOptions += 1;
-        }
-        const renderContent = () => {
-            return (
-                <FileOptions
-                    fileInfo={orderedFilesForGallery[item]}
-                />
-            );
-        };
+        numberOptions += canDownloadFiles ? 1 : 0;
+        numberOptions += publicLinkEnabled ? 1 : 0;
+        const renderContent = () => (
+            <FileOptions
+                fileInfo={orderedFilesForGallery[item]}
+            />
+        );
         bottomSheet({
             closeButtonId: 'close-search-file-options',
             renderContent,
@@ -129,12 +117,12 @@ const FileResults = ({
         }
     }, [canDownloadFiles, publicLinkEnabled]);
 
-    const renderItem = useCallback(({item}: ListRenderItemInfo<FileInfo>) => {
-        const updateFileForGallery = (idx: number, file: FileInfo) => {
-            'worklet';
-            orderedFilesForGallery[idx] = file;
-        };
+    const updateFileForGallery = (idx: number, file: FileInfo) => {
+        'worklet';
+        orderedFilesForGallery[idx] = file;
+    };
 
+    const renderItem = useCallback(({item}: ListRenderItemInfo<FileInfo>) => {
         const container: StyleProp<ViewStyle> = fileInfos.length > 1 ? styles.container : undefined;
         const isSingleImage = orderedFilesForGallery.length === 1 && (isImage(orderedFilesForGallery[0]) || isVideo(orderedFilesForGallery[0]));
         const isReplyPost = false;
@@ -177,19 +165,17 @@ const FileResults = ({
         theme,
     ]);
 
-    const noResults = useMemo(() => {
-        return (
-            <NoResultsWithTerm
-                term={searchValue}
-                type={TabTypes.FILES}
-            />
-        );
-    }, [searchValue]);
+    const noResults = useMemo(() => (
+        <NoResultsWithTerm
+            term={searchValue}
+            type={TabTypes.FILES}
+        />
+    ), [searchValue]);
 
     return (
         <FlatList
             ListEmptyComponent={noResults}
-            contentContainerStyle={paddingTop}
+            contentContainerStyle={[paddingTop, containerStyle]}
             data={orderedFilesForGallery}
             indicatorStyle='black'
             initialNumToRender={10}
@@ -202,7 +188,6 @@ const FileResults = ({
             scrollEventThrottle={16}
             scrollToOverflowEnabled={true}
             showsVerticalScrollIndicator={true}
-            style={containerStyle}
             testID='search_results.post_list.flat_list'
         />
     );

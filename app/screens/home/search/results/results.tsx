@@ -77,13 +77,17 @@ const Results = ({
         };
     }, [selectedTab, dimensions.width]);
 
+    const paddingTop = useMemo(() => (
+        {paddingTop: scrollPaddingTop, flexGrow: 1}
+    ), [scrollPaddingTop]);
+
     return (
         <>
             {loading &&
                 <Loading
                     color={theme.buttonBg}
                     size='large'
-                    containerStyle={[styles.loading, {paddingTop: scrollPaddingTop}]}
+                    containerStyle={[styles.loading, paddingTop]}
                 />
             }
             {!loading &&
@@ -93,7 +97,7 @@ const Results = ({
                         currentTimezone={currentTimezone}
                         isTimezoneEnabled={isTimezoneEnabled}
                         posts={posts}
-                        scrollPaddingTop={scrollPaddingTop}
+                        paddingTop={paddingTop}
                         searchValue={searchValue}
                     />
                 </View>
@@ -103,7 +107,7 @@ const Results = ({
                         fileChannels={fileChannels}
                         fileInfos={fileInfos}
                         publicLinkEnabled={publicLinkEnabled}
-                        scrollPaddingTop={scrollPaddingTop}
+                        paddingTop={paddingTop}
                         searchValue={searchValue}
                     />
                 </View>
