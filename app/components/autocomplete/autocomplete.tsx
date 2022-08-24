@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo, useState} from 'react';
-import {Platform, useWindowDimensions, View} from 'react-native';
+import {Platform, StyleProp, useWindowDimensions, View, ViewStyle} from 'react-native';
 
 import {MAX_LIST_HEIGHT, MAX_LIST_TABLET_DIFF} from '@constants/autocomplete';
 import {useTheme} from '@context/theme';
@@ -66,6 +66,7 @@ type Props = {
     availableSpace: number;
     inPost?: boolean;
     growDown?: boolean;
+    containerStyle?: StyleProp<ViewStyle>;
 }
 
 const Autocomplete = ({
@@ -84,6 +85,7 @@ const Autocomplete = ({
     hasFilesAttached,
     inPost = false,
     growDown = false,
+    containerStyle,
 }: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -120,8 +122,9 @@ const Autocomplete = ({
         if (hasElements) {
             s.push(style.borders);
         }
+        s.push(containerStyle);
         return s;
-    }, [hasElements, position, growDown, style]);
+    }, [hasElements, position, growDown, style, containerStyle]);
 
     const isLandscape = dimensions.width > dimensions.height;
     const maxHeightAdjust = (isTablet && isLandscape) ? MAX_LIST_TABLET_DIFF : 0;

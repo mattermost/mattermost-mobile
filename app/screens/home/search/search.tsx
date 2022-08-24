@@ -37,7 +37,6 @@ const emptyChannelIds: string[] = [];
 const dummyData = [1];
 
 const AutocompletePaddingTop = 4;
-const AutocompleteZindex = 11;
 
 type Props = {
     teamId: string;
@@ -50,6 +49,9 @@ const styles = StyleSheet.create({
     loading: {
         flex: 1,
         justifyContent: 'center',
+    },
+    autocompleteContainer: {
+        zIndex: 11,
     },
 });
 
@@ -256,7 +258,7 @@ const SearchScreen = ({teamId}: Props) => {
         default: 0,
     });
     const autocompleteMaxHeight = containerHeight - autocompleteRemoveFromHeight;
-    const autocompletePosition = AutocompletePaddingTop;
+    const autocompletePosition = AutocompletePaddingTop + autocompleteMaxHeight;
     const autocomplete = useMemo(() => (
         <Autocomplete
             updateValue={handleTextChange}
@@ -267,6 +269,7 @@ const SearchScreen = ({teamId}: Props) => {
             availableSpace={autocompleteMaxHeight}
             position={autocompletePosition}
             growDown={true}
+            containerStyle={styles.autocompleteContainer}
         />
     ), [cursorPosition, handleTextChange, searchValue, autocompleteMaxHeight, autocompletePosition]);
 
@@ -287,9 +290,6 @@ const SearchScreen = ({teamId}: Props) => {
                 onCancel={handleCancelAndClearSearch}
                 defaultValue={searchValue}
             />
-            <Animated.View style={[top, {zIndex: AutocompleteZindex}]}>
-                {autocomplete}
-            </Animated.View>
             <SafeAreaView
                 style={styles.flex}
                 edges={EDGES}
@@ -317,6 +317,7 @@ const SearchScreen = ({teamId}: Props) => {
                     />
                 </Animated.View>
             </SafeAreaView>
+            {autocomplete}
         </FreezeScreen>
     );
 };
