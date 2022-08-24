@@ -258,7 +258,7 @@ const SearchScreen = ({teamId}: Props) => {
         default: 0,
     });
     const autocompleteMaxHeight = containerHeight - autocompleteRemoveFromHeight;
-    const autocompletePosition = AutocompletePaddingTop + containerHeight - headerHeight.value;
+    const autocompletePosition = AutocompletePaddingTop + (containerHeight - headerHeight.value);
     const autocomplete = useMemo(() => (
         <Autocomplete
             updateValue={handleTextChange}
