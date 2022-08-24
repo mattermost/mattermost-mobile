@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import {ScaledSize, StyleSheet, useWindowDimensions, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
@@ -66,7 +66,7 @@ const Results = ({
 }: Props) => {
     const dimensions = useWindowDimensions();
     const theme = useTheme();
-    const styles = getStyles(dimensions);
+    const styles = useMemo(() => getStyles(dimensions), [dimensions]);
 
     const transform = useAnimatedStyle(() => {
         const translateX = selectedTab === TabTypes.MESSAGES ? 0 : -dimensions.width;
