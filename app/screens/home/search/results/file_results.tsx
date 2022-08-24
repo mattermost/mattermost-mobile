@@ -8,6 +8,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import File from '@components/files/file';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {ITEM_HEIGHT} from '@components/option_item';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useImageAttachments} from '@hooks/files';
@@ -121,7 +122,7 @@ const FileResults = ({
         if (lastViewedIndex === undefined) {
             return;
         }
-        if (NavigationStore.getNavigationTopComponentId() === 'BottomSheet') {
+        if (NavigationStore.getNavigationTopComponentId() === Screens.BOTTOM_SHEET) {
             dismissBottomSheet().then(() => {
                 handleOptionsPress(lastViewedIndex);
             });

@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {queryPostsById} from '@app/queries/servers/post';
 import {ActionType, Post} from '@constants';
 import DatabaseManager from '@database/manager';
-import {getPostById, prepareDeletePost} from '@queries/servers/post';
+import {getPostById, prepareDeletePost, queryPostsById} from '@queries/servers/post';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {generateId} from '@utils/general';
