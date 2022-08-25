@@ -31,6 +31,7 @@ export interface BottomSheetRef {
     snapTo: (index: number) => void;
 }
 
+export const CONTAINER_PADDING_HORIZONTAL = 20;
 export const PADDING_TOP_MOBILE = 20;
 
 const BottomSheet = forwardRef<BottomSheetRef, SlideUpPanelProps>(({closeButtonId, componentId, initialSnapIndex = 0, renderContent, snapPoints = ['90%', '50%', 50], testID}: SlideUpPanelProps, ref) => {
@@ -135,7 +136,7 @@ const BottomSheet = forwardRef<BottomSheetRef, SlideUpPanelProps>(({closeButtonI
             style={{
                 backgroundColor: theme.centerChannelBg,
                 opacity: 1,
-                paddingHorizontal: 20,
+                paddingHorizontal: CONTAINER_PADDING_HORIZONTAL,
                 paddingTop: isTablet ? 0 : PADDING_TOP_MOBILE,
                 height: '100%',
                 width: isTablet ? '100%' : Math.min(dimensions.width, 450),

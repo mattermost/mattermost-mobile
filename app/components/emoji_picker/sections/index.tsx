@@ -3,10 +3,12 @@
 
 import {chunk} from 'lodash';
 import React, {useCallback, useMemo, useRef, useState} from 'react';
-import {ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, SectionList, SectionListData, StyleSheet, View} from 'react-native';
+import {Dimensions, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, SectionList, SectionListData, StyleSheet, View} from 'react-native';
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
 import {fetchCustomEmojis} from '@actions/remote/custom_emoji';
+import {Device} from '@app/constants';
+import {CONTAINER_PADDING_HORIZONTAL} from '@app/screens/bottom_sheet';
 import {EMOJIS_PER_PAGE} from '@constants/emoji';
 import {useServerUrl} from '@context/server';
 import {CategoryNames, EmojiIndicesByCategory, CategoryTranslations, CategoryMessage} from '@utils/emoji';
@@ -16,12 +18,16 @@ import EmojiSectionBar, {SCROLLVIEW_NATIVE_ID, SectionIconType} from './icons_ba
 import SectionFooter from './section_footer';
 import SectionHeader, {SECTION_HEADER_HEIGHT} from './section_header';
 import TouchableEmoji from './touchable_emoji';
+const {width: windowWidth} = Dimensions.get('window');
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 
-export const EMOJI_SIZE = 32;
 export const EMOJI_GUTTER = 8;
+export const EMOJI_SIZE = 32;
 export const EMOJI_FULL_SIZE = EMOJI_SIZE + EMOJI_GUTTER;
+export const ITEM_HEIGHT = EMOJI_SIZE + (EMOJI_GUTTER * 2);
+export const CONTAINER_WIDTH = windowWidth - (2 * CONTAINER_PADDING_HORIZONTAL);
+export const MOBILE_EMOJI_WIDTH = CONTAINER_WIDTH / Math.floor(CONTAINER_WIDTH / EMOJI_FULL_SIZE);
 
 const ICONS: Record<string, string> = {
     recent: 'clock-outline',
@@ -39,7 +45,7 @@ const ICONS: Record<string, string> = {
 
 const categoryToI18n: Record<string, CategoryTranslation> = {};
 const getItemLayout = sectionListGetItemLayout({
-    getItemHeight: () => (EMOJI_SIZE + (EMOJI_GUTTER * 2)),
+    getItemHeight: () => ITEM_HEIGHT,
     getSectionHeaderHeight: () => SECTION_HEADER_HEIGHT,
 });
 
@@ -50,7 +56,8 @@ const styles = StyleSheet.create(({
     },
     emoji: {
         height: EMOJI_FULL_SIZE,
-        minWidth: EMOJI_FULL_SIZE,
+        width: Device.IS_TABLET ? EMOJI_FULL_SIZE : MOBILE_EMOJI_WIDTH,
+
     },
 }));
 
@@ -81,12 +88,12 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
     const [fetchingCustomEmojis, setFetchingCustomEmojis] = useState(false);
     const [loadedAllCustomEmojis, setLoadedAllCustomEmojis] = useState(false);
 
-    const chunkSize = Math.floor(width / EMOJI_FULL_SIZE);
-
     const sections: EmojiSection[] = useMemo(() => {
         if (!width) {
             return [];
         }
+
+        const chunkSize = Math.floor(width / EMOJI_FULL_SIZE);
 
         return CategoryNames.map((category) => {
             const emojiIndices = EmojiIndicesByCategory.get(skinTone)?.get(category);
@@ -138,7 +145,7 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
         let lastOffset = 0;
         return sections.map((s) => {
             const start = lastOffset;
-            const nextOffset = s.data.length * (EMOJI_SIZE + (EMOJI_GUTTER * 2));
+            const nextOffset = s.data.length * ITEM_HEIGHT;
             lastOffset += nextOffset;
             return start;
         });
@@ -192,6 +199,7 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
     }, [fetchingCustomEmojis]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<EmojiAlias[]>) => {
+        // const itemWidth = width / Math.floor(width / EMOJI_FULL_SIZE);
         return (
             <View style={styles.row}>
                 {item.map((emoji) => {
