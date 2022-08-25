@@ -3,7 +3,8 @@
 
 import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {Platform, SectionList, SectionListData, SectionListRenderItemInfo} from 'react-native';
+import {Platform, SectionList, SectionListData, SectionListRenderItemInfo, ViewStyle} from 'react-native';
+import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
 
 import {searchChannels} from '@actions/remote/channel';
 import AutocompleteSectionHeader from '@components/autocomplete/autocomplete_section_header';
@@ -11,14 +12,12 @@ import ChannelMentionItem from '@components/autocomplete/channel_mention_item';
 import {General} from '@constants';
 import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import useDidUpdate from '@hooks/did_update';
 import {t} from '@i18n';
 import {queryAllChannelsForTeam} from '@queries/servers/channel';
 import {getCurrentTeamId} from '@queries/servers/system';
 import {hasTrailingSpaces} from '@utils/helpers';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -157,25 +156,18 @@ const filterResults = (channels: Array<Channel | ChannelModel>, term: string) =>
     });
 };
 
+const AnimatedSectionList = Animated.createAnimatedComponent(SectionList<Channel | ChannelModel>);
+
 type Props = {
     cursorPosition: number;
     isSearch: boolean;
-    maxListHeight: number;
     myMembers: MyChannelModel[];
     updateValue: (v: string) => void;
     onShowingChange: (c: boolean) => void;
     value: string;
     nestedScrollEnabled: boolean;
+    listStyle: AnimatedStyleProp<ViewStyle>;
 }
-
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        listView: {
-            backgroundColor: theme.centerChannelBg,
-            borderRadius: 4,
-        },
-    };
-});
 
 const getAllChannels = async (serverUrl: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -193,16 +185,14 @@ const emptyChannels: Array<Channel | ChannelModel> = [];
 const ChannelMention = ({
     cursorPosition,
     isSearch,
-    maxListHeight,
     myMembers,
     updateValue,
     onShowingChange,
     value,
     nestedScrollEnabled,
+    listStyle,
 }: Props) => {
     const serverUrl = useServerUrl();
-    const theme = useTheme();
-    const style = getStyleFromTheme(theme);
 
     const [sections, setSections] = useState<Array<SectionListData<(Channel | ChannelModel)>>>(emptySections);
     const [channels, setChannels] = useState<Array<ChannelModel | Channel>>(emptyChannels);
@@ -212,10 +202,6 @@ const ChannelMention = ({
     const [useLocal, setUseLocal] = useState(true);
     const [localChannels, setlocalChannels] = useState<ChannelModel[]>();
     const [filteredLocalChannels, setFilteredLocalChannels] = useState(emptyChannels);
-
-    const listStyle = useMemo(() =>
-        [style.listView, {maxHeight: maxListHeight}]
-    , [style, maxListHeight]);
 
     const runSearch = useMemo(() => debounce(async (sUrl: string, term: string) => {
         setLoading(true);
@@ -344,7 +330,7 @@ const ChannelMention = ({
     }
 
     return (
-        <SectionList
+        <AnimatedSectionList
             keyboardShouldPersistTaps='always'
             keyExtractor={keyExtractor}
             initialNumToRender={10}

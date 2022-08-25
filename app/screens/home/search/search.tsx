@@ -5,7 +5,7 @@ import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, LayoutChangeEvent, Platform, StyleSheet, ViewProps} from 'react-native';
-import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useDerivedValue, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {addSearchToTeamSearchHistory} from '@actions/local/team';
@@ -253,12 +253,16 @@ const SearchScreen = ({teamId}: Props) => {
         );
     }
 
-    const autocompleteRemoveFromHeight = headerHeight.value + Platform.select({
-        ios: keyboardHeight ? keyboardHeight - BOTTOM_TAB_HEIGHT : insets.bottom,
-        default: 0,
-    });
-    const autocompleteMaxHeight = containerHeight - autocompleteRemoveFromHeight;
-    const autocompletePosition = AutocompletePaddingTop + (containerHeight - headerHeight.value);
+    const autocompleteMaxHeight = useDerivedValue(() => {
+        const iosAdjust = keyboardHeight ? keyboardHeight - BOTTOM_TAB_HEIGHT : insets.bottom;
+        const autocompleteRemoveFromHeight = headerHeight.value + (Platform.OS === 'ios' ? iosAdjust : 0);
+        return containerHeight - autocompleteRemoveFromHeight;
+    }, [keyboardHeight, insets.bottom, containerHeight]);
+
+    const autocompletePosition = useDerivedValue(() => {
+        return AutocompletePaddingTop + (containerHeight - headerHeight.value);
+    }, [containerHeight]);
+
     const autocomplete = useMemo(() => (
         <Autocomplete
             updateValue={handleTextChange}

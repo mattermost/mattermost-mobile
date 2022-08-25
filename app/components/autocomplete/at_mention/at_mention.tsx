@@ -3,7 +3,8 @@
 
 import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {Platform, SectionList, SectionListData, SectionListRenderItemInfo} from 'react-native';
+import {Platform, SectionList, SectionListData, SectionListRenderItemInfo, ViewStyle} from 'react-native';
+import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
 
 import {searchGroupsByName, searchGroupsByNameInChannel, searchGroupsByNameInTeam} from '@actions/local/group';
 import {searchUsers} from '@actions/remote/user';
@@ -13,12 +14,10 @@ import AutocompleteSectionHeader from '@components/autocomplete/autocomplete_sec
 import SpecialMentionItem from '@components/autocomplete/special_mention_item';
 import {AT_MENTION_REGEX, AT_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
 import {queryAllUsers} from '@queries/servers/user';
 import {hasTrailingSpaces} from '@utils/helpers';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type GroupModel from '@typings/database/models/servers/group';
 import type UserModel from '@typings/database/models/servers/user';
@@ -36,6 +35,8 @@ type SpecialMention = {
 }
 
 type UserMentionSections = Array<SectionListData<UserProfile|UserModel|GroupModel|SpecialMention>>
+
+const AnimatedSectionList = Animated.createAnimatedComponent(SectionList<UserProfile|UserModel|GroupModel|SpecialMention>);
 
 const getMatchTermForAtMention = (() => {
     let lastMatchTerm: string | null = null;
@@ -182,7 +183,6 @@ type Props = {
     teamId?: string;
     cursorPosition: number;
     isSearch: boolean;
-    maxListHeight: number;
     updateValue: (v: string) => void;
     onShowingChange: (c: boolean) => void;
     value: string;
@@ -191,16 +191,8 @@ type Props = {
     useGroupMentions: boolean;
     isChannelConstrained: boolean;
     isTeamConstrained: boolean;
+    listStyle: AnimatedStyleProp<ViewStyle>;
 }
-
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        listView: {
-            backgroundColor: theme.centerChannelBg,
-            borderRadius: 4,
-        },
-    };
-});
 
 const emptyUserlList: Array<UserModel | UserProfile> = [];
 const emptySectionList: UserMentionSections = [];
@@ -220,7 +212,6 @@ const AtMention = ({
     teamId,
     cursorPosition,
     isSearch,
-    maxListHeight,
     updateValue,
     onShowingChange,
     value,
@@ -229,10 +220,9 @@ const AtMention = ({
     useGroupMentions,
     isChannelConstrained,
     isTeamConstrained,
+    listStyle,
 }: Props) => {
     const serverUrl = useServerUrl();
-    const theme = useTheme();
-    const style = getStyleFromTheme(theme);
 
     const [sections, setSections] = useState<UserMentionSections>(emptySectionList);
     const [usersInChannel, setUsersInChannel] = useState<Array<UserProfile | UserModel>>(emptyUserlList);
@@ -451,7 +441,7 @@ const AtMention = ({
     }
 
     return (
-        <SectionList
+        <AnimatedSectionList
             keyboardShouldPersistTaps='always'
             keyExtractor={keyExtractor}
             initialNumToRender={10}
@@ -459,7 +449,7 @@ const AtMention = ({
             removeClippedSubviews={Platform.OS === 'android'}
             renderItem={renderItem}
             renderSectionHeader={renderSectionHeader}
-            style={[style.listView, {maxHeight: maxListHeight}]}
+            style={listStyle}
             sections={sections}
             testID='autocomplete.at_mention.section_list'
         />

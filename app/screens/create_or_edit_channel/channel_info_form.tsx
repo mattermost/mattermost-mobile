@@ -25,6 +25,7 @@ import Loading from '@components/loading';
 import OptionItem from '@components/option_item';
 import {General, Channel} from '@constants';
 import {useTheme} from '@context/theme';
+import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useIsTablet, useKeyboardHeight, useModalPosition} from '@hooks/device';
 import {t} from '@i18n';
 import {
@@ -212,6 +213,34 @@ export default function ChannelInfoForm({
         setWrapperHeight(e.nativeEvent.layout.height);
     }, []);
 
+    const bottomSpace = (dimensions.height - wrapperHeight - modalPosition);
+    const otherElementsSize = LIST_PADDING + errorHeight +
+        (showSelector ? makePrivateHeight + MAKE_PRIVATE_MARGIN_BOTTOM : 0) +
+        (displayHeaderOnly ? 0 : purposeFieldHeight + FIELD_MARGIN_BOTTOM + displayNameFieldHeight + FIELD_MARGIN_BOTTOM);
+
+    const keyboardOverlap = Platform.select({
+        ios: isTablet ?
+            Math.max(0, keyboardHeight - bottomSpace) :
+            keyboardHeight || insets.bottom,
+        default: 0});
+    const workingSpace = wrapperHeight - keyboardOverlap;
+    const spaceOnTop = otherElementsSize - scrollPosition - AUTOCOMPLETE_ADJUST;
+    const spaceOnBottom = (workingSpace + scrollPosition) - (otherElementsSize + headerFieldHeight + BOTTOM_AUTOCOMPLETE_SEPARATION);
+    const insetsAdjust = keyboardHeight - keyboardHeight ? insets.bottom : 0;
+    const keyboardAdjust = Platform.select({
+        ios: isTablet ?
+            keyboardOverlap :
+            insetsAdjust,
+        default: 0,
+    });
+    const autocompletePosition = spaceOnTop > spaceOnBottom ?
+        (workingSpace + scrollPosition + AUTOCOMPLETE_ADJUST + keyboardAdjust) - otherElementsSize :
+        (workingSpace + scrollPosition + keyboardAdjust) - (otherElementsSize + headerFieldHeight);
+    const autocompleteAvailableSpace = spaceOnTop > spaceOnBottom ? spaceOnTop : spaceOnBottom;
+    const growUp = spaceOnTop > spaceOnBottom;
+
+    const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
+
     if (saving) {
         return (
             <View style={styles.container}>
@@ -242,30 +271,6 @@ export default function ChannelInfoForm({
             </SafeAreaView>
         );
     }
-
-    const bottomSpace = (dimensions.height - wrapperHeight - modalPosition);
-    const otherElementsSize = LIST_PADDING + errorHeight +
-        (showSelector ? makePrivateHeight + MAKE_PRIVATE_MARGIN_BOTTOM : 0) +
-        (displayHeaderOnly ? 0 : purposeFieldHeight + FIELD_MARGIN_BOTTOM + displayNameFieldHeight + FIELD_MARGIN_BOTTOM);
-
-    const keyboardOverlap = Platform.select({
-        ios: isTablet ?
-            Math.max(0, keyboardHeight - bottomSpace) :
-            keyboardHeight || insets.bottom,
-        default: 0});
-    const workingSpace = wrapperHeight - keyboardOverlap;
-    const spaceOnTop = otherElementsSize - scrollPosition - AUTOCOMPLETE_ADJUST;
-    const spaceOnBottom = (workingSpace + scrollPosition) - (otherElementsSize + headerFieldHeight + BOTTOM_AUTOCOMPLETE_SEPARATION);
-    const insetsAdjust = keyboardHeight - keyboardHeight ? insets.bottom : 0;
-    const keyboardAdjust = Platform.select({
-        ios: isTablet ?
-            keyboardOverlap :
-            insetsAdjust,
-        default: 0,
-    });
-    const autocompletePosition = spaceOnTop > spaceOnBottom ? (workingSpace + scrollPosition + AUTOCOMPLETE_ADJUST + keyboardAdjust) - otherElementsSize : (workingSpace + scrollPosition + keyboardAdjust) - (otherElementsSize + headerFieldHeight);
-    const autocompleteAvailableSpace = spaceOnTop > spaceOnBottom ? spaceOnTop : spaceOnBottom;
-    const growUp = spaceOnTop > spaceOnBottom;
 
     return (
         <SafeAreaView
@@ -392,12 +397,12 @@ export default function ChannelInfoForm({
             </KeyboardAwareScrollView>
             <View>
                 <Autocomplete
-                    position={autocompletePosition}
+                    position={animatedAutocompletePosition}
                     updateValue={onHeaderChange}
                     cursorPosition={header.length}
                     value={header}
                     nestedScrollEnabled={true}
-                    availableSpace={autocompleteAvailableSpace}
+                    availableSpace={animatedAutocompleteAvailableSpace}
                     inPost={false}
                     growDown={!growUp}
                 />

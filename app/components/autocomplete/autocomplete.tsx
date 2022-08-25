@@ -3,6 +3,7 @@
 
 import React, {useMemo, useState} from 'react';
 import {Platform, StyleProp, useWindowDimensions, View, ViewStyle} from 'react-native';
+import Animated, {SharedValue, useAnimatedStyle} from 'react-native-reanimated';
 
 import {MAX_LIST_HEIGHT, MAX_LIST_TABLET_DIFF} from '@constants/autocomplete';
 import {useTheme} from '@context/theme';
@@ -53,7 +54,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 
 type Props = {
     cursorPosition: number;
-    position: number;
+    position: SharedValue<number>;
     rootId?: string;
     channelId?: string;
     isSearch?: boolean;
@@ -63,7 +64,7 @@ type Props = {
     nestedScrollEnabled?: boolean;
     updateValue: (v: string) => void;
     hasFilesAttached?: boolean;
-    availableSpace: number;
+    availableSpace: SharedValue<number>;
     inPost?: boolean;
     growDown?: boolean;
     containerStyle?: StyleProp<ViewStyle>;
@@ -112,36 +113,42 @@ const Autocomplete = ({
         return s;
     }, [style]);
 
+    const containerAnimatedStyle = useAnimatedStyle(() => {
+        return growDown ? {top: -position.value, bottom: undefined} : {top: undefined, bottom: position.value};
+    });
+
     const containerStyles = useMemo(() => {
-        const s = [style.base];
-        if (growDown) {
-            s.push({top: -position});
-        } else {
-            s.push({bottom: position});
-        }
+        const s = [style.base, containerAnimatedStyle];
         if (hasElements) {
             s.push(style.borders);
         }
         s.push(containerStyle);
         return s;
-    }, [hasElements, position, growDown, style, containerStyle]);
+    }, [hasElements, position, growDown, style, containerStyle, containerAnimatedStyle]);
 
     const isLandscape = dimensions.width > dimensions.height;
     const maxHeightAdjust = (isTablet && isLandscape) ? MAX_LIST_TABLET_DIFF : 0;
     const defaultMaxHeight = MAX_LIST_HEIGHT - maxHeightAdjust;
-    const maxListHeight = Math.min(availableSpace, defaultMaxHeight);
+
+    const listStyle = useAnimatedStyle(() => {
+        return {
+            backgroundColor: theme.centerChannelBg,
+            borderRadius: 4,
+            maxHeight: Math.min(availableSpace.value, defaultMaxHeight),
+        };
+    }, [theme.centerChannelBg]);
 
     return (
         <View
             style={wrapperStyles}
         >
-            <View
+            <Animated.View
                 testID='autocomplete'
-                style={containerStyles}
+                style={[containerStyles]}
             >
                 {isAppsEnabled && channelId && (
                     <AppSlashSuggestion
-                        maxListHeight={maxListHeight}
+                        listStyle={listStyle}
                         updateValue={updateValue}
                         onShowingChange={setShowingAppCommand}
                         value={value || ''}
@@ -153,7 +160,7 @@ const Autocomplete = ({
                 {(!appsTakeOver || !isAppsEnabled) && (<>
                     <AtMention
                         cursorPosition={cursorPosition}
-                        maxListHeight={maxListHeight}
+                        listStyle={listStyle}
                         updateValue={updateValue}
                         onShowingChange={setShowingAtMention}
                         value={value || ''}
@@ -163,7 +170,7 @@ const Autocomplete = ({
                     />
                     <ChannelMention
                         cursorPosition={cursorPosition}
-                        maxListHeight={maxListHeight}
+                        listStyle={listStyle}
                         updateValue={updateValue}
                         onShowingChange={setShowingChannelMention}
                         value={value || ''}
@@ -173,7 +180,7 @@ const Autocomplete = ({
                     {!isSearch &&
                     <EmojiSuggestion
                         cursorPosition={cursorPosition}
-                        maxListHeight={maxListHeight}
+                        listStyle={listStyle}
                         updateValue={updateValue}
                         onShowingChange={setShowingEmoji}
                         value={value || ''}
@@ -185,7 +192,7 @@ const Autocomplete = ({
                     }
                     {showCommands && channelId &&
                     <SlashSuggestion
-                        maxListHeight={maxListHeight}
+                        listStyle={listStyle}
                         updateValue={updateValue}
                         onShowingChange={setShowingCommand}
                         value={value || ''}
@@ -203,7 +210,7 @@ const Autocomplete = ({
                     />
                     } */}
                 </>)}
-            </View>
+            </Animated.View>
         </View>
     );
 };
