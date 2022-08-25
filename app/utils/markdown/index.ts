@@ -98,7 +98,6 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             fontFamily: 'OpenSans-Bold',
         },
         mention_highlight: {
-            backgroundColor: theme.mentionHighlightBg,
             color: theme.mentionHighlightLink,
         },
         search_highlight: {
@@ -242,6 +241,7 @@ export const getMarkdownImageSize = (
     sourceSize?: SourceSize,
     knownSize?: PostImage,
     layoutWidth?: number,
+    layoutHeight?: number,
 ) => {
     let ratioW;
     let ratioH;
@@ -277,5 +277,5 @@ export const getMarkdownImageSize = (
 
     // When no metadata and source size is not specified (full size svg's)
     const width = layoutWidth || getViewPortWidth(isReplyPost, isTablet);
-    return {width, height: width};
+    return {width, height: layoutHeight || width};
 };

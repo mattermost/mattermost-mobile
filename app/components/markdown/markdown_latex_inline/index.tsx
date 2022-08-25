@@ -24,6 +24,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         mathStyle: {
             marginBottom: Platform.select({default: -10, ios: 2.5}),
+            color: theme.centerChannelColor,
         },
         viewStyle: {
             flexDirection: 'row',
@@ -56,6 +57,7 @@ const LatexInline = ({content, maxMathWidth, theme}: Props) => {
             <View
                 style={style.viewStyle}
                 key={content}
+                testID='markdown_latex_inline'
             >
                 <MathView
                     style={[style.mathStyle, {maxWidth: maxMathWidth || '100%'}]}

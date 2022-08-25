@@ -4,7 +4,7 @@
 import {DeviceEventEmitter, LogBox} from 'react-native';
 import {RUNNING_E2E} from 'react-native-dotenv';
 import 'react-native-gesture-handler';
-import {ComponentDidAppearEvent, ComponentDidDisappearEvent, Navigation} from 'react-native-navigation';
+import {ComponentDidAppearEvent, ComponentDidDisappearEvent, ModalDismissedEvent, Navigation, ScreenPoppedEvent} from 'react-native-navigation';
 
 import {Events, Screens} from './app/constants';
 import DatabaseManager from './app/database/manager';
@@ -16,9 +16,9 @@ import GlobalEventHandler from './app/managers/global_event_handler';
 import NetworkManager from './app/managers/network_manager';
 import WebsocketManager from './app/managers/websocket_manager';
 import {registerScreens} from './app/screens';
-import EphemeralStore from './app/store/ephemeral_store';
+import NavigationStore from './app/store/navigation_store';
 import setFontFamily from './app/utils/font_family';
-import './app/utils/emoji'; // Imported to ensure it is loaded when used
+import {logInfo} from './app/utils/log';
 
 declare const global: { HermesInternal: null | {} };
 
@@ -28,13 +28,11 @@ if (__DEV__) {
         'scaleY',
         "[react-native-gesture-handler] Seems like you're using an old API with gesture components, check out new Gestures system!",
         'new NativeEventEmitter',
-        'ViewPropTypes will be removed from React Native',
     ]);
 
     // Ignore all notifications if running e2e
     const isRunningE2e = RUNNING_E2E === 'true';
-    // eslint-disable-next-line no-console
-    console.log(`RUNNING_E2E: ${RUNNING_E2E}, isRunningE2e: ${isRunningE2e}`);
+    logInfo(`RUNNING_E2E: ${RUNNING_E2E}, isRunningE2e: ${isRunningE2e}`);
     if (isRunningE2e) {
         LogBox.ignoreAllLogs(true);
     }
@@ -75,12 +73,14 @@ Navigation.events().registerAppLaunchedListener(async () => {
 });
 
 const registerNavigationListeners = () => {
-    Navigation.events().registerComponentDidAppearListener(componentDidAppearListener);
-    Navigation.events().registerComponentDidDisappearListener(componentDidDisappearListener);
-    Navigation.events().registerComponentWillAppearListener(componentWillAppear);
+    Navigation.events().registerComponentDidAppearListener(screenDidAppearListener);
+    Navigation.events().registerComponentDidDisappearListener(screenDidDisappearListener);
+    Navigation.events().registerComponentWillAppearListener(screenWillAppear);
+    Navigation.events().registerScreenPoppedListener(screenPoppedListener);
+    Navigation.events().registerModalDismissedListener(modalDismissedListener);
 };
 
-function componentWillAppear({componentId}: ComponentDidAppearEvent) {
+function screenWillAppear({componentId}: ComponentDidAppearEvent) {
     if (componentId === Screens.HOME) {
         DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
     } else if ([Screens.EDIT_POST, Screens.THREAD].includes(componentId)) {
@@ -88,22 +88,37 @@ function componentWillAppear({componentId}: ComponentDidAppearEvent) {
     }
 }
 
-function componentDidAppearListener({componentId, passProps}: ComponentDidAppearEvent) {
-    if (!(passProps as any)?.overlay) {
-        EphemeralStore.addNavigationComponentId(componentId);
+function screenDidAppearListener({componentId, passProps, componentType}: ComponentDidAppearEvent) {
+    if (!(passProps as any)?.overlay && componentType === 'Component') {
+        NavigationStore.addNavigationComponentId(componentId);
     }
 }
 
-function componentDidDisappearListener({componentId}: ComponentDidDisappearEvent) {
+function screenDidDisappearListener({componentId}: ComponentDidDisappearEvent) {
     if (componentId !== Screens.HOME) {
-        EphemeralStore.removeNavigationComponentId(componentId);
-
         if ([Screens.EDIT_POST, Screens.THREAD].includes(componentId)) {
             DeviceEventEmitter.emit(Events.PAUSE_KEYBOARD_TRACKING_VIEW, false);
         }
 
-        if (EphemeralStore.getNavigationTopComponentId() === Screens.HOME) {
+        if (NavigationStore.getNavigationTopComponentId() === Screens.HOME) {
             DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
         }
+    }
+}
+
+function screenPoppedListener({componentId}: ScreenPoppedEvent) {
+    NavigationStore.removeNavigationComponentId(componentId);
+    if (NavigationStore.getNavigationTopComponentId() === Screens.HOME) {
+        DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
+    }
+}
+
+function modalDismissedListener({componentId}: ModalDismissedEvent) {
+    const topScreen = NavigationStore.getNavigationTopComponentId();
+    const topModal = NavigationStore.getNavigationTopModalId();
+    const toRemove = topScreen === topModal ? topModal : componentId;
+    NavigationStore.removeNavigationModal(toRemove);
+    if (NavigationStore.getNavigationTopComponentId() === Screens.HOME) {
+        DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
     }
 }

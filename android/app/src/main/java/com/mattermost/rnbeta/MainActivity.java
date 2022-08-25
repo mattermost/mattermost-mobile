@@ -10,13 +10,34 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableMap;
-// import com.facebook.react.ReactActivityDelegate;
-// import com.facebook.react.ReactRootView;
+import com.facebook.react.ReactActivityDelegate;
+import com.facebook.react.ReactRootView;
 import com.reactnativenavigation.NavigationActivity;
 import com.github.emilioicai.hwkeyboardevent.HWKeyboardEventModule;
 
 public class MainActivity extends NavigationActivity {
     private boolean HWKeyboardConnected = false;
+
+    public static class MainActivityDelegate extends ReactActivityDelegate {
+        public MainActivityDelegate(NavigationActivity activity, String mainComponentName) {
+            super(activity, mainComponentName);
+        }
+
+        @Override
+        protected ReactRootView createRootView() {
+            ReactRootView reactRootView = new ReactRootView(getContext());
+            // If you opted-in for the New Architecture, we enable the Fabric Renderer.
+            reactRootView.setIsFabric(BuildConfig.IS_NEW_ARCHITECTURE_ENABLED);
+            return reactRootView;
+        }
+
+        @Override
+        protected boolean isConcurrentRootEnabled() {
+            // If you opted-in for the New Architecture, we enable Concurrent Root (i.e. React 18).
+            // More on this on https://reactjs.org/blog/2022/03/29/react-v18.html
+            return BuildConfig.IS_NEW_ARCHITECTURE_ENABLED;
+        }
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -63,25 +84,4 @@ public class MainActivity extends NavigationActivity {
     private void setHWKeyboardConnected() {
         HWKeyboardConnected = getResources().getConfiguration().keyboard == Configuration.KEYBOARD_QWERTY;
     }
-
-    /**
-   * Returns the instance of the {@link ReactActivityDelegate}. There the RootView is created and
-   * you can specify the rendered you wish to use (Fabric or the older renderer).
-   */
-    // @Override
-    // protected ReactActivityDelegate createReactActivityDelegate() {
-    //     return new MainActivityDelegate(this, getMainComponentName());
-    // }
-    // public static class MainActivityDelegate extends ReactActivityDelegate {
-    //     public MainActivityDelegate(ReactActivity activity, String mainComponentName) {
-    //     super(activity, mainComponentName);
-    //     }
-    //     @Override
-    //     protected ReactRootView createRootView() {
-    //     ReactRootView reactRootView = new ReactRootView(getContext());
-    //     // If you opted-in for the New Architecture, we enable the Fabric Renderer.
-    //     reactRootView.setIsFabric(BuildConfig.IS_NEW_ARCHITECTURE_ENABLED);
-    //     return reactRootView;
-    //     }
-    // }
 }

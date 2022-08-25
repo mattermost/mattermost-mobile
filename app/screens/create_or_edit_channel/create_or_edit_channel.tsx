@@ -1,18 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, useEffect, useReducer, useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useReducer, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard} from 'react-native';
-import {ImageResource, Navigation} from 'react-native-navigation';
+import {ImageResource} from 'react-native-navigation';
 
-import {patchChannel as handlePatchChannel, createChannel, switchToChannelById} from '@actions/remote/channel';
+import {createChannel, patchChannel as handlePatchChannel, switchToChannelById} from '@actions/remote/channel';
 import CompassIcon from '@components/compass_icon';
 import {General} from '@constants';
 import {MIN_CHANNEL_NAME_LENGTH} from '@constants/channel';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {buildNavigationButton, dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {validateDisplayName} from '@utils/channel';
 
 import ChannelInfoForm from './channel_info_form';
@@ -48,9 +49,13 @@ interface RequestAction {
     error?: string;
 }
 
-const close = (componentId: string): void => {
+const close = (componentId: string, isModal: boolean): void => {
     Keyboard.dismiss();
-    dismissModal({componentId});
+    if (isModal) {
+        dismissModal({componentId});
+    } else {
+        popTopScreen(componentId);
+    }
 };
 
 const isDirect = (channel?: ChannelModel): boolean => {
@@ -181,9 +186,9 @@ const CreateOrEditChannel = ({
         }
 
         dispatch({type: RequestActions.COMPLETE});
-        close(componentId);
+        close(componentId, isModal);
         switchToChannelById(serverUrl, createdChannel.channel!.id, createdChannel.channel!.team_id);
-    }, [serverUrl, type, displayName, header, purpose, isValidDisplayName]);
+    }, [serverUrl, type, displayName, header, isModal, purpose, isValidDisplayName]);
 
     const onUpdateChannel = useCallback(async () => {
         if (!channel) {
@@ -198,7 +203,7 @@ const CreateOrEditChannel = ({
         const patchChannel = {
             id: channel.id,
             type: channel.type,
-            display_name: isDirect(channel) ? '' : displayName,
+            display_name: isDirect(channel) ? channel.displayName : displayName,
             purpose,
             header,
         } as Channel;
@@ -213,30 +218,16 @@ const CreateOrEditChannel = ({
             return;
         }
         dispatch({type: RequestActions.COMPLETE});
-        close(componentId);
-    }, [channel?.id, channel?.type, displayName, header, purpose, isValidDisplayName]);
+        close(componentId, isModal);
+    }, [channel?.id, channel?.type, displayName, header, isModal, purpose, isValidDisplayName]);
 
-    useEffect(() => {
-        const update = Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({buttonId}: {buttonId: string}) => {
-                switch (buttonId) {
-                    case CLOSE_BUTTON_ID:
-                        close(componentId);
-                        break;
-                    case CREATE_BUTTON_ID:
-                        onCreateChannel();
-                        break;
-                    case EDIT_BUTTON_ID:
-                        onUpdateChannel();
-                        break;
-                }
-            },
-        }, componentId);
+    const handleClose = useCallback(() => {
+        close(componentId, isModal);
+    }, [isModal]);
 
-        return () => {
-            update.remove();
-        };
-    }, [onCreateChannel, onUpdateChannel]);
+    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, handleClose, [handleClose]);
+    useNavButtonPressed(CREATE_BUTTON_ID, componentId, onCreateChannel, [onCreateChannel]);
+    useNavButtonPressed(EDIT_BUTTON_ID, componentId, onUpdateChannel, [onUpdateChannel]);
 
     return (
         <ChannelInfoForm

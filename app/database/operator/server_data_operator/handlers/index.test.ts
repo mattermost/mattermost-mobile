@@ -9,13 +9,12 @@ import {
 } from '@database/operator/server_data_operator/transformers/general';
 
 import type ServerDataOperator from '..';
-import type {Model} from '@nozbe/watermelondb';
 
 describe('*** DataOperator: Base Handlers tests ***', () => {
     let operator: ServerDataOperator;
     beforeAll(async () => {
         await DatabaseManager.init(['baseHandler.test.com']);
-        operator = DatabaseManager.serverDatabases['baseHandler.test.com'].operator;
+        operator = DatabaseManager.serverDatabases['baseHandler.test.com']!.operator;
     });
 
     it('=> HandleRole: should write to the ROLE table', async () => {
@@ -104,13 +103,11 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
         expect(appDatabase).toBeTruthy();
         expect(appOperator).toBeTruthy();
 
-        const transformer = async (model: Model) => model;
-
         await expect(
             operator?.handleRecords({
                 fieldName: 'invalidField',
                 tableName: 'INVALID_TABLE_NAME',
-                transformer,
+                transformer: transformSystemRecord,
                 createOrUpdateRawValues: [{id: 'tos-1', value: '1'}],
                 prepareRecordsOnly: false,
             }),

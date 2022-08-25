@@ -6,20 +6,19 @@ import PasteableTextInput, {PastedFile, PasteInputRef} from '@mattermost/react-n
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
 import {
-    Alert, AppState, AppStateStatus, EmitterSubscription, Keyboard,
+    Alert, AppState, AppStateStatus, DeviceEventEmitter, EmitterSubscription, Keyboard,
     KeyboardTypeOptions, NativeSyntheticEvent, Platform, TextInputSelectionChangeEventData,
 } from 'react-native';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 
 import {updateDraftMessage} from '@actions/local/draft';
 import {userTyping} from '@actions/websocket/users';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import useDidUpdate from '@hooks/did_update';
 import {t} from '@i18n';
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {extractFileInfo} from '@utils/file';
 import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
@@ -129,7 +128,7 @@ export default function PostInput({
     const maxHeight = isTablet ? 150 : 88;
     const pasteInputStyle = useMemo(() => {
         return {...style.input, maxHeight};
-    }, [maxHeight]);
+    }, [maxHeight, style.input]);
 
     const blur = () => {
         input.current?.blur();
@@ -219,7 +218,7 @@ export default function PostInput({
     }, [addFiles, intl]);
 
     const handleHardwareEnterPress = useCallback((keyEvent: {pressedKey: string}) => {
-        const topScreen = EphemeralStore.getNavigationTopComponentId();
+        const topScreen = NavigationStore.getNavigationTopComponentId();
         let sourceScreen = Screens.CHANNEL;
         if (rootId) {
             sourceScreen = Screens.THREAD;
@@ -267,6 +266,19 @@ export default function PostInput({
     }, [onAppStateChange]);
 
     useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(Events.SEND_TO_POST_DRAFT, ({text, location}: {text: string; location: string}) => {
+            const sourceScreen = channelId && rootId ? Screens.THREAD : Screens.CHANNEL;
+            if (location === sourceScreen) {
+                const draft = value ? `${value} ${text} ` : `${text} `;
+                updateValue(draft);
+                updateCursorPosition(draft.length);
+                input.current?.focus();
+            }
+        });
+        return () => listener.remove();
+    }, [updateValue, value, channelId, rootId]);
+
+    useEffect(() => {
         if (value !== lastNativeValue.current) {
             // May change when we implement Fabric
             input.current?.setNativeProps({
@@ -282,22 +294,6 @@ export default function PostInput({
             listener.remove();
         };
     }, [handleHardwareEnterPress]);
-
-    useDidUpdate(() => {
-        if (!value) {
-            if (Platform.OS === 'android') {
-                // Fixes the issue where Android predictive text would prepend suggestions to the post draft when messages
-                // are typed successively without blurring the input
-                setKeyboardType('email-address');
-            }
-        }
-    }, [value]);
-
-    useDidUpdate(() => {
-        if (Platform.OS === 'android' && keyboardType === 'email-address') {
-            setKeyboardType('default');
-        }
-    }, [keyboardType]);
 
     return (
         <PasteableTextInput

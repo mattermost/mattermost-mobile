@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Platform, Text, View} from 'react-native';
+import {Animated, DeviceEventEmitter, Platform, Text, View} from 'react-native';
 import {RectButton} from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 
@@ -23,10 +23,11 @@ import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {subscribeServerUnreadAndMentions, UnreadObserverArgs} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
+import {queryServerByIdentifier} from '@queries/app/servers';
 import {dismissBottomSheet} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {alertPushProxyError, alertPushProxyUnknown} from '@utils/push_proxy';
-import {alertServerError, alertServerLogout, alertServerRemove, editServer, loginToServer} from '@utils/server';
+import {alertServerAlreadyConnected, alertServerError, alertServerLogout, alertServerRemove, editServer, loginToServer} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {removeProtocol, stripTrailingSlashes} from '@utils/url';
@@ -164,9 +165,9 @@ const ServerItem = ({
         displayName = intl.formatMessage({id: 'servers.default', defaultMessage: 'Default Server'});
     }
 
-    const unreadsSubscription = ({myChannels, settings, threadMentionCount}: UnreadObserverArgs) => {
+    const unreadsSubscription = ({myChannels, settings, threadMentionCount, threadUnreads}: UnreadObserverArgs) => {
         let mentions = 0;
-        let isUnread = false;
+        let isUnread = Boolean(threadUnreads);
         for (const myChannel of myChannels) {
             const isMuted = settings?.[myChannel.id]?.mark_unread === 'mention';
             mentions += myChannel.mentionsCount;
@@ -201,8 +202,11 @@ const ServerItem = ({
                 endX: x + w + 20,
                 endY: y + h,
             };
-            setShowTutorial(true);
-            setItemBounds(bounds);
+
+            if (viewRef.current) {
+                setShowTutorial(true);
+                setItemBounds(bounds);
+            }
         });
     };
 
@@ -234,6 +238,19 @@ const ServerItem = ({
             return;
         }
 
+        const data = await fetchConfigAndLicense(server.url, true);
+        if (data.error) {
+            alertServerError(intl, data.error as ClientErrorProps);
+            setSwitching(false);
+            return;
+        }
+        const existingServer = await queryServerByIdentifier(DatabaseManager.appDatabase!.database, data.config!.DiagnosticId);
+        if (existingServer && existingServer.lastActiveAt > 0) {
+            alertServerAlreadyConnected(intl);
+            setSwitching(false);
+            return;
+        }
+
         switch (result.canReceiveNotifications) {
             case PUSH_PROXY_RESPONSE_NOT_AVAILABLE:
                 EphemeralStore.setPushProxyVerificationState(server.url, PUSH_PROXY_STATUS_NOT_AVAILABLE);
@@ -247,12 +264,6 @@ const ServerItem = ({
                 EphemeralStore.setPushProxyVerificationState(server.url, PUSH_PROXY_STATUS_VERIFIED);
         }
 
-        const data = await fetchConfigAndLicense(server.url, true);
-        if (data.error) {
-            alertServerError(intl, data.error as ClientErrorProps);
-            setSwitching(false);
-            return;
-        }
         loginToServer(theme, server.url, displayName, data.config!, data.license!);
     }, [server, theme, intl]);
 
@@ -287,9 +298,9 @@ const ServerItem = ({
 
         if (server.lastActiveAt) {
             setSwitching(true);
-            await appEntry(server.url, Date.now());
             await dismissBottomSheet();
             DatabaseManager.setActiveServerDatabase(server.url);
+            await appEntry(server.url, Date.now());
             return;
         }
 
@@ -300,7 +311,7 @@ const ServerItem = ({
         DeviceEventEmitter.emit(Events.SWIPEABLE, server.url);
     }, [server]);
 
-    const renderActions = useCallback((progress) => {
+    const renderActions = useCallback((progress: Animated.AnimatedInterpolation) => {
         return (
             <Options
                 onEdit={handleEdit}
@@ -455,7 +466,7 @@ const ServerItem = ({
 
             {Boolean(database) && server.lastActiveAt > 0 &&
             <WebSocket
-                database={database}
+                database={database!}
             />
             }
             {showTutorial &&

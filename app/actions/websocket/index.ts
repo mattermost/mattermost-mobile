@@ -5,18 +5,47 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import {deferredAppEntryActions, entry} from '@actions/remote/entry/common';
+import {graphQLCommon} from '@actions/remote/entry/gql_common';
+import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchStatusByIds} from '@actions/remote/user';
+import {loadConfigAndCalls} from '@calls/actions/calls';
+import {
+    handleCallChannelDisabled,
+    handleCallChannelEnabled,
+    handleCallEnded,
+    handleCallScreenOff,
+    handleCallScreenOn,
+    handleCallStarted,
+    handleCallUserConnected,
+    handleCallUserDisconnected,
+    handleCallUserMuted,
+    handleCallUserRaiseHand,
+    handleCallUserUnmuted,
+    handleCallUserUnraiseHand,
+    handleCallUserVoiceOff,
+    handleCallUserVoiceOn,
+} from '@calls/connection/websocket_event_handlers';
+import {isSupportedServerCalls} from '@calls/utils';
 import {Events, Screens, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {queryActiveServer} from '@queries/app/servers';
+import ServerDataOperator from '@database/operator/server_data_operator';
+import {getActiveServerUrl, queryActiveServer} from '@queries/app/servers';
 import {getCurrentChannel} from '@queries/servers/channel';
-import {getCommonSystemValues, getConfig, getWebSocketLastDisconnected, resetWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {
+    getCommonSystemValues,
+    getConfig,
+    getCurrentUserId,
+    getWebSocketLastDisconnected,
+    resetWebSocketLastDisconnected,
+    setCurrentTeamAndChannelId,
+} from '@queries/servers/system';
 import {getCurrentTeam} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
+import {logInfo} from '@utils/log';
 
 import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
 import {handleChannelConvertedEvent, handleChannelCreatedEvent,
@@ -28,6 +57,7 @@ import {handleChannelConvertedEvent, handleChannelCreatedEvent,
     handleDirectAddedEvent,
     handleUserAddedToChannelEvent,
     handleUserRemovedFromChannelEvent} from './channel';
+import {handleGroupMemberAddEvent, handleGroupMemberDeleteEvent, handleGroupReceivedEvent, handleGroupTeamAssociatedEvent, handleGroupTeamDissociateEvent} from './group';
 import {handleOpenDialogEvent} from './integrations';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
@@ -59,6 +89,11 @@ export async function handleFirstConnect(serverUrl: string) {
     alreadyConnected.add(serverUrl);
     resetWebSocketLastDisconnected(operator);
     fetchStatusByIds(serverUrl, ['me']);
+
+    if (isSupportedServerCalls(config?.Version)) {
+        const currentUserId = await getCurrentUserId(database);
+        loadConfigAndCalls(serverUrl, currentUserId);
+    }
 }
 
 export function handleReconnect(serverUrl: string) {
@@ -81,26 +116,25 @@ export async function handleClose(serverUrl: string, lastDisconnect: number) {
     });
 }
 
-async function doReconnect(serverUrl: string) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
-
+async function doReconnectRest(serverUrl: string, operator: ServerDataOperator, currentTeamId: string, currentUserId: string, config: ClientConfig, license: ClientLicense, lastDisconnectedAt: number) {
     const appDatabase = DatabaseManager.appDatabase?.database;
     if (!appDatabase) {
         return;
     }
 
     const {database} = operator;
-    const tabletDevice = await isTablet();
-    const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
-    resetWebSocketLastDisconnected(operator);
     const currentTeam = await getCurrentTeam(database);
     const currentChannel = await getCurrentChannel(database);
+    const currentActiveServerUrl = await getActiveServerUrl(DatabaseManager.appDatabase!.database);
 
+    if (serverUrl === currentActiveServerUrl) {
+        DeviceEventEmitter.emit(Events.FETCHING_POSTS, true);
+    }
     const entryData = await entry(serverUrl, currentTeam?.id, currentChannel?.id, lastDisconnectedAt);
     if ('error' in entryData) {
+        if (serverUrl === currentActiveServerUrl) {
+            DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
+        }
         return;
     }
     const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
@@ -110,7 +144,7 @@ async function doReconnect(serverUrl: string) {
     // if no longer a member of the current team or the current channel
     if (initialTeamId !== currentTeam?.id || initialChannelId !== currentChannel?.id) {
         const currentServer = await queryActiveServer(appDatabase);
-        const isChannelScreenMounted = EphemeralStore.getNavigationComponents().includes(Screens.CHANNEL);
+        const isChannelScreenMounted = NavigationStore.getNavigationComponents().includes(Screens.CHANNEL);
         if (serverUrl === currentServer?.url) {
             if (currentTeam && initialTeamId !== currentTeam.id) {
                 DeviceEventEmitter.emit(Events.LEAVE_TEAM, {displayName: currentTeam.displayName});
@@ -121,6 +155,8 @@ async function doReconnect(serverUrl: string) {
                 await dismissAllModals();
                 await popToRoot();
             }
+
+            const tabletDevice = await isTablet();
 
             if (tabletDevice && initialChannelId) {
                 switchedToChannel = true;
@@ -133,13 +169,46 @@ async function doReconnect(serverUrl: string) {
         }
     }
 
+    const dt = Date.now();
     await operator.batchRecords(models);
+    logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
 
-    const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
-    const {config, license} = await getCommonSystemValues(database);
+    const {locale: currentUserLocale} = (await getCurrentUser(database))!;
     await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchedToChannel ? initialChannelId : undefined);
 
     // https://mattermost.atlassian.net/browse/MM-41520
+}
+
+async function doReconnect(serverUrl: string) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return;
+    }
+
+    const {database} = operator;
+    const system = await getCommonSystemValues(database);
+    const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
+
+    resetWebSocketLastDisconnected(operator);
+    let {config, license} = await fetchConfigAndLicense(serverUrl);
+    if (!config) {
+        config = system.config;
+    }
+
+    if (!license) {
+        license = system.license;
+    }
+
+    if (config.FeatureFlagGraphQL === 'true') {
+        await graphQLCommon(serverUrl, true, system.currentTeamId, system.currentChannelId);
+    } else {
+        await doReconnectRest(serverUrl, operator, system.currentTeamId, system.currentUserId, config, license, lastDisconnectedAt);
+    }
+
+    // Calls is not set up for GraphQL yet
+    if (isSupportedServerCalls(config?.Version)) {
+        loadConfigAndCalls(serverUrl, system.currentUserId);
+    }
 }
 
 export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
@@ -300,6 +369,70 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
         case WebsocketEvents.APPS_FRAMEWORK_REFRESH_BINDINGS:
             break;
 
-        // return dispatch(handleRefreshAppsBindings());
+            // return dispatch(handleRefreshAppsBindings());
+
+        // Calls ws events:
+        case WebsocketEvents.CALLS_CHANNEL_ENABLED:
+            handleCallChannelEnabled(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_CHANNEL_DISABLED:
+            handleCallChannelDisabled(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_USER_CONNECTED:
+            handleCallUserConnected(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_USER_DISCONNECTED:
+            handleCallUserDisconnected(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_USER_MUTED:
+            handleCallUserMuted(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_USER_UNMUTED:
+            handleCallUserUnmuted(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_USER_VOICE_ON:
+            handleCallUserVoiceOn(msg);
+            break;
+        case WebsocketEvents.CALLS_USER_VOICE_OFF:
+            handleCallUserVoiceOff(msg);
+            break;
+        case WebsocketEvents.CALLS_CALL_START:
+            handleCallStarted(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_SCREEN_ON:
+            handleCallScreenOn(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_SCREEN_OFF:
+            handleCallScreenOff(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_USER_RAISE_HAND:
+            handleCallUserRaiseHand(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_USER_UNRAISE_HAND:
+            handleCallUserUnraiseHand(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_CALL_END:
+            handleCallEnded(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.GROUP_RECEIVED:
+            handleGroupReceivedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.GROUP_MEMBER_ADD:
+            handleGroupMemberAddEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.GROUP_MEMBER_DELETE:
+            handleGroupMemberDeleteEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.GROUP_ASSOCIATED_TO_TEAM:
+            handleGroupTeamAssociatedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.GROUP_DISSOCIATED_TO_TEAM:
+            handleGroupTeamDissociateEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.GROUP_ASSOCIATED_TO_CHANNEL:
+            break;
+        case WebsocketEvents.GROUP_DISSOCIATED_TO_CHANNEL:
+            break;
     }
 }

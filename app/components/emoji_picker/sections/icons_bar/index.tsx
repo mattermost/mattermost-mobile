@@ -53,6 +53,7 @@ const EmojiSectionBar = ({currentIndex, sections, scrollToIndex}: Props) => {
             scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
             normalList={true}
             style={styles.container}
+            testID='emoji_picker.emoji_sections.section_bar'
         >
             <View style={styles.background}>
                 <View style={styles.pane}>

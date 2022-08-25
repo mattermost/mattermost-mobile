@@ -5,7 +5,7 @@ import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {Platform, SectionList, SectionListData, SectionListRenderItemInfo} from 'react-native';
 
-import {fetchFilteredChannelGroups, fetchFilteredTeamGroups, fetchGroupsForAutocomplete} from '@actions/remote/groups';
+import {searchGroupsByName, searchGroupsByNameInChannel, searchGroupsByNameInTeam} from '@actions/local/group';
 import {searchUsers} from '@actions/remote/user';
 import GroupMentionItem from '@components/autocomplete/at_mention_group/at_mention_group';
 import AtMentionItem from '@components/autocomplete/at_mention_item';
@@ -17,8 +17,10 @@ import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
 import {queryAllUsers} from '@queries/servers/user';
+import {hasTrailingSpaces} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+import type GroupModel from '@typings/database/models/servers/group';
 import type UserModel from '@typings/database/models/servers/user';
 
 const SECTION_KEY_TEAM_MEMBERS = 'teamMembers';
@@ -33,7 +35,7 @@ type SpecialMention = {
     defaultMessage: string;
 }
 
-type UserMentionSections = Array<SectionListData<UserProfile|UserModel|Group|SpecialMention>>
+type UserMentionSections = Array<SectionListData<UserProfile|UserModel|GroupModel|SpecialMention>>
 
 const getMatchTermForAtMention = (() => {
     let lastMatchTerm: string | null = null;
@@ -84,16 +86,19 @@ const keyExtractor = (item: UserProfile) => {
     return item.id;
 };
 
-const filterLocalResults = (users: UserModel[], term: string) => {
-    return users.filter((u) =>
-        u.username.toLowerCase().startsWith(term) ||
-        u.nickname.toLowerCase().startsWith(term) ||
-        u.firstName.toLowerCase().startsWith(term) ||
-        u.lastName.toLowerCase().startsWith(term),
-    );
+const filterResults = (users: Array<UserModel | UserProfile>, term: string) => {
+    return users.filter((u) => {
+        const firstName = ('firstName' in u ? u.firstName : u.first_name).toLowerCase();
+        const lastName = ('lastName' in u ? u.lastName : u.last_name).toLowerCase();
+        const fullName = `${firstName} ${lastName}`;
+        return u.username.toLowerCase().includes(term) ||
+            u.nickname.toLowerCase().includes(term) ||
+            fullName.includes(term) ||
+            u.email.toLowerCase().includes(term);
+    });
 };
 
-const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersInChannel: Array<UserProfile | UserModel>, usersOutOfChannel: Array<UserProfile | UserModel>, groups: Group[], showSpecialMentions: boolean, isLocal = false, isSearch = false) => {
+const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersInChannel: Array<UserProfile | UserModel>, usersOutOfChannel: Array<UserProfile | UserModel>, groups: GroupModel[], showSpecialMentions: boolean, isLocal = false, isSearch = false) => {
     const newSections: UserMentionSections = [];
 
     if (isSearch) {
@@ -197,10 +202,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const emptyProfileList: UserProfile[] = [];
-const emptyModelList: UserModel[] = [];
+const emptyUserlList: Array<UserModel | UserProfile> = [];
 const emptySectionList: UserMentionSections = [];
-const emptyGroupList: Group[] = [];
+const emptyGroupList: GroupModel[] = [];
 
 const getAllUsers = async (serverUrl: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -231,15 +235,15 @@ const AtMention = ({
     const style = getStyleFromTheme(theme);
 
     const [sections, setSections] = useState<UserMentionSections>(emptySectionList);
-    const [usersInChannel, setUsersInChannel] = useState<UserProfile[]>(emptyProfileList);
-    const [usersOutOfChannel, setUsersOutOfChannel] = useState<UserProfile[]>(emptyProfileList);
-    const [groups, setGroups] = useState<Group[]>(emptyGroupList);
+    const [usersInChannel, setUsersInChannel] = useState<Array<UserProfile | UserModel>>(emptyUserlList);
+    const [usersOutOfChannel, setUsersOutOfChannel] = useState<Array<UserProfile | UserModel>>(emptyUserlList);
+    const [groups, setGroups] = useState<GroupModel[]>(emptyGroupList);
     const [loading, setLoading] = useState(false);
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
     const [localCursorPosition, setLocalCursorPosition] = useState(cursorPosition); // To avoid errors due to delay between value changes and cursor position changes.
     const [useLocal, setUseLocal] = useState(true);
     const [localUsers, setLocalUsers] = useState<UserModel[]>();
-    const [filteredLocalUsers, setFilteredLocalUsers] = useState(emptyModelList);
+    const [filteredLocalUsers, setFilteredLocalUsers] = useState(emptyUserlList);
 
     const runSearch = useMemo(() => debounce(async (sUrl: string, term: string, cId?: string) => {
         setLoading(true);
@@ -252,11 +256,19 @@ const AtMention = ({
                 fallbackUsers = await getAllUsers(sUrl);
                 setLocalUsers(fallbackUsers);
             }
-            const filteredUsers = filterLocalResults(fallbackUsers, term);
-            setFilteredLocalUsers(filteredUsers.length ? filteredUsers : emptyModelList);
+            const filteredUsers = filterResults(fallbackUsers, term);
+            setFilteredLocalUsers(filteredUsers.length ? filteredUsers : emptyUserlList);
         } else if (receivedUsers) {
-            setUsersInChannel(receivedUsers.users.length ? receivedUsers.users : emptyProfileList);
-            setUsersOutOfChannel(receivedUsers.out_of_channel?.length ? receivedUsers.out_of_channel : emptyProfileList);
+            if (hasTrailingSpaces(term)) {
+                const filteredReceivedUsers = filterResults(receivedUsers.users, term);
+                const filteredReceivedOutOfChannelUsers = filterResults(receivedUsers.out_of_channel || [], term);
+
+                setUsersInChannel(filteredReceivedUsers.length ? filteredReceivedUsers : emptyUserlList);
+                setUsersOutOfChannel(filteredReceivedOutOfChannelUsers.length ? filteredReceivedOutOfChannelUsers : emptyUserlList);
+            } else {
+                setUsersInChannel(receivedUsers.users.length ? receivedUsers.users : emptyUserlList);
+                setUsersOutOfChannel(receivedUsers.out_of_channel?.length ? receivedUsers.out_of_channel : emptyUserlList);
+            }
         }
 
         setLoading(false);
@@ -269,14 +281,14 @@ const AtMention = ({
 
     const matchTerm = getMatchTermForAtMention(value.substring(0, localCursorPosition), isSearch);
     const resetState = () => {
-        setUsersInChannel(emptyProfileList);
-        setUsersOutOfChannel(emptyProfileList);
-        setFilteredLocalUsers(emptyModelList);
+        setUsersInChannel(emptyUserlList);
+        setUsersOutOfChannel(emptyUserlList);
+        setFilteredLocalUsers(emptyUserlList);
         setSections(emptySectionList);
         runSearch.cancel();
     };
 
-    const completeMention = useCallback((mention) => {
+    const completeMention = useCallback((mention: string) => {
         const mentionPart = value.substring(0, localCursorPosition);
 
         let completedDraft;
@@ -307,17 +319,20 @@ const AtMention = ({
                 defaultMessage={item.defaultMessage}
                 id={item.id}
                 onPress={completeMention}
+                testID='autocomplete.special_mention_item'
             />
         );
     }, [completeMention]);
 
-    const renderGroupMentions = useCallback((item: Group) => {
+    const renderGroupMentions = useCallback((item: GroupModel) => {
         return (
             <GroupMentionItem
                 key={`autocomplete-group-${item.name}`}
                 name={item.name}
-                displayName={item.display_name}
+                displayName={item.displayName}
+                memberCount={item.memberCount}
                 onPress={completeMention}
+                testID='autocomplete.group_mention_item'
             />
         );
     }, [completeMention]);
@@ -325,25 +340,25 @@ const AtMention = ({
     const renderAtMentions = useCallback((item: UserProfile | UserModel) => {
         return (
             <AtMentionItem
-                testID={`autocomplete.at_mention.item.${item}`}
-                onPress={completeMention}
                 user={item}
+                onPress={completeMention}
+                testID='autocomplete.at_mention_item'
             />
         );
     }, [completeMention]);
 
-    const renderItem = useCallback(({item, section}: SectionListRenderItemInfo<SpecialMention | Group | UserProfile>) => {
+    const renderItem = useCallback(({item, section}: SectionListRenderItemInfo<SpecialMention | GroupModel | UserProfile>) => {
         switch (section.key) {
             case SECTION_KEY_SPECIAL:
                 return renderSpecialMentions(item as SpecialMention);
             case SECTION_KEY_GROUPS:
-                return renderGroupMentions(item as Group);
+                return renderGroupMentions(item as GroupModel);
             default:
                 return renderAtMentions(item as UserProfile);
         }
     }, [renderSpecialMentions, renderGroupMentions, renderAtMentions]);
 
-    const renderSectionHeader = useCallback(({section}) => {
+    const renderSectionHeader = useCallback(({section}: SectionListRenderItemInfo<SpecialMention | GroupModel | UserProfile>) => {
         return (
             <AutocompleteSectionHeader
                 id={section.id}
@@ -363,7 +378,7 @@ const AtMention = ({
         if (useGroupMentions && matchTerm && matchTerm !== '') {
             // If the channel is constrained, we only show groups for that channel
             if (isChannelConstrained && channelId) {
-                fetchFilteredChannelGroups(serverUrl, channelId, matchTerm).then((g) => {
+                searchGroupsByNameInChannel(serverUrl, matchTerm, channelId).then((g) => {
                     setGroups(g.length ? g : emptyGroupList);
                 }).catch(() => {
                     setGroups(emptyGroupList);
@@ -372,7 +387,7 @@ const AtMention = ({
 
             // If there is no channel constraint, but a team constraint - only show groups for team
             if (isTeamConstrained && !isChannelConstrained) {
-                fetchFilteredTeamGroups(serverUrl, teamId!, matchTerm).then((g) => {
+                searchGroupsByNameInTeam(serverUrl, matchTerm, teamId!).then((g) => {
                     setGroups(g.length ? g : emptyGroupList);
                 }).catch(() => {
                     setGroups(emptyGroupList);
@@ -381,7 +396,7 @@ const AtMention = ({
 
             // No constraints? Search all groups
             if (!isTeamConstrained && !isChannelConstrained) {
-                fetchGroupsForAutocomplete(serverUrl, matchTerm || '').then((g) => {
+                searchGroupsByName(serverUrl, matchTerm || '').then((g) => {
                     setGroups(Array.isArray(g) ? g : emptyGroupList);
                 }).catch(() => {
                     setGroups(emptyGroupList);
@@ -421,6 +436,10 @@ const AtMention = ({
         if (!loading && !nSections && noResultsTerm == null) {
             setNoResultsTerm(matchTerm);
         }
+
+        if (nSections && noResultsTerm) {
+            setNoResultsTerm(null);
+        }
         setSections(nSections ? newSections : emptySectionList);
         onShowingChange(Boolean(nSections));
     }, [!useLocal && usersInChannel, !useLocal && usersOutOfChannel, teamMembers, groups, loading, channelId, useLocal && filteredLocalUsers]);
@@ -442,7 +461,7 @@ const AtMention = ({
             renderSectionHeader={renderSectionHeader}
             style={[style.listView, {maxHeight: maxListHeight}]}
             sections={sections}
-            testID='at_mention_suggestion.list'
+            testID='autocomplete.at_mention.section_list'
         />
     );
 };

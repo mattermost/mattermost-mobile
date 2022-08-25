@@ -7,6 +7,7 @@ import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
 import Badge from '@components/badge';
 import ChannelIcon from '@components/channel_icon';
+import CompassIcon from '@components/compass_icon';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -32,6 +33,7 @@ type Props = {
     hasMember: boolean;
     teamDisplayName?: string;
     testID?: string;
+    hasCall: boolean;
 }
 
 export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -60,7 +62,7 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingRight: 20,
     },
     highlight: {
-        color: theme.sidebarText,
+        color: theme.sidebarUnreadText,
     },
     textInfo: {
         color: theme.centerChannelColor,
@@ -113,6 +115,11 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingBottom: 0,
         top: 5,
     },
+    hasCall: {
+        flex: 1,
+        textAlign: 'right',
+        marginRight: 20,
+    },
 }));
 
 export const textStyle = StyleSheet.create({
@@ -123,7 +130,7 @@ export const textStyle = StyleSheet.create({
 const ChannelListItem = ({
     channel, currentUserId, hasDraft,
     isActive, isInfo, isMuted, membersCount, hasMember,
-    isUnread, mentionsCount, onPress, teamDisplayName, testID}: Props) => {
+    isUnread, mentionsCount, onPress, teamDisplayName, testID, hasCall}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -179,7 +186,7 @@ const ChannelListItem = ({
             <>
                 <View
                     style={containerStyle}
-                    testID={`${testID}.${channel.name}.collapsed.${!isActive}`}
+                    testID={`${testID}.${channel.name}`}
                 >
                     <View style={styles.wrapper}>
                         <ChannelIcon
@@ -208,8 +215,8 @@ const ChannelListItem = ({
                             <Text
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
-                                testID={`${testID}.${teamDisplayName}.display_name`}
                                 style={[styles.teamName, isMuted && styles.teamNameMuted]}
+                                testID={`${testID}.${channel.name}.team_display_name`}
                             >
                                 {teamDisplayName}
                             </Text>
@@ -225,8 +232,8 @@ const ChannelListItem = ({
                         <Text
                             ellipsizeMode='tail'
                             numberOfLines={1}
-                            testID={`${testID}.${teamDisplayName}.display_name`}
                             style={[styles.teamName, styles.teamNameTablet, isMuted && styles.teamNameMuted]}
+                            testID={`${testID}.${channel.name}.team_display_name`}
                         >
                             {teamDisplayName}
                         </Text>
@@ -237,6 +244,13 @@ const ChannelListItem = ({
                         value={mentionsCount}
                         style={[styles.badge, isMuted && styles.mutedBadge, isInfo && styles.infoBadge]}
                     />
+                    {hasCall &&
+                        <CompassIcon
+                            name='phone-in-talk'
+                            size={16}
+                            style={[...textStyles, styles.hasCall]}
+                        />
+                    }
                 </View>
             </>
         </TouchableOpacity>

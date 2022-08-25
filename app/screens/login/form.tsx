@@ -242,14 +242,14 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
         preSignIn();
     }, [loginId, password, theme]);
 
-    const onLoginChange = useCallback((text) => {
+    const onLoginChange = useCallback((text: string) => {
         setLoginId(text);
         if (error) {
             setError(undefined);
         }
     }, [error]);
 
-    const onPasswordChange = useCallback((text) => {
+    const onPasswordChange = useCallback((text: string) => {
         setPassword(text);
         if (error) {
             setError(undefined);

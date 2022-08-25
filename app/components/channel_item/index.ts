@@ -7,25 +7,33 @@ import React from 'react';
 import {of as of$} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
+import {observeChannelsWithCalls} from '@calls/state';
 import {General} from '@constants';
+import {withServerUrl} from '@context/server';
 import {observeMyChannel} from '@queries/servers/channel';
 import {queryDraft} from '@queries/servers/drafts';
 import {observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
-import ChannelModel from '@typings/database/models/servers/channel';
-import MyChannelModel from '@typings/database/models/servers/my_channel';
 
 import ChannelItem from './channel_item';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
 type EnhanceProps = WithDatabaseArgs & {
     channel: ChannelModel;
     showTeamName?: boolean;
+    serverUrl?: string;
 }
 
 const observeIsMutedSetting = (mc: MyChannelModel) => mc.settings.observe().pipe(switchMap((s) => of$(s?.notifyProps?.mark_unread === General.MENTION)));
 
-const enhance = withObservables(['channel', 'showTeamName'], ({channel, database, showTeamName}: EnhanceProps) => {
+const enhance = withObservables(['channel', 'showTeamName'], ({
+    channel,
+    database,
+    showTeamName,
+    serverUrl,
+}: EnhanceProps) => {
     const currentUserId = observeCurrentUserId(database);
     const myChannel = observeMyChannel(database, channel.id);
 
@@ -58,7 +66,7 @@ const enhance = withObservables(['channel', 'showTeamName'], ({channel, database
 
     let membersCount = of$(0);
     if (channel.type === General.GM_CHANNEL) {
-        membersCount = channel.members.observeCount();
+        membersCount = channel.members.observeCount(false);
     }
 
     const isUnread = myChannel.pipe(
@@ -76,6 +84,11 @@ const enhance = withObservables(['channel', 'showTeamName'], ({channel, database
         distinctUntilChanged(),
     );
 
+    const hasCall = observeChannelsWithCalls(serverUrl || '').pipe(
+        switchMap((calls) => of$(Boolean(calls[channel.id]))),
+        distinctUntilChanged(),
+    );
+
     return {
         channel: channel.observe(),
         currentUserId,
@@ -87,7 +100,8 @@ const enhance = withObservables(['channel', 'showTeamName'], ({channel, database
         mentionsCount,
         teamDisplayName,
         hasMember,
+        hasCall,
     };
 });
 
-export default React.memo(withDatabase(enhance(ChannelItem)));
+export default React.memo(withDatabase(withServerUrl(enhance(ChannelItem))));

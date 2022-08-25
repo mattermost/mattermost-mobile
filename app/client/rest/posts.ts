@@ -11,14 +11,14 @@ export interface ClientPostsMix {
     getPost: (postId: string) => Promise<Post>;
     patchPost: (postPatch: Partial<Post> & {id: string}) => Promise<Post>;
     deletePost: (postId: string) => Promise<any>;
-    getPostThread: (postId: string, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<any>;
+    getPostThread: (postId: string, options: FetchPaginatedThreadOptions) => Promise<PostResponse>;
     getPosts: (channelId: string, page?: number, perPage?: number, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<PostResponse>;
     getPostsSince: (channelId: string, since: number, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<PostResponse>;
     getPostsBefore: (channelId: string, postId: string, page?: number, perPage?: number, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<PostResponse>;
     getPostsAfter: (channelId: string, postId: string, page?: number, perPage?: number, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<PostResponse>;
     getFileInfosForPost: (postId: string) => Promise<FileInfo[]>;
     getSavedPosts: (userId: string, channelId?: string, teamId?: string, page?: number, perPage?: number) => Promise<PostResponse>;
-    getPinnedPosts: (channelId: string) => Promise<any>;
+    getPinnedPosts: (channelId: string) => Promise<PostResponse>;
     markPostAsUnread: (userId: string, postId: string) => Promise<any>;
     pinPost: (postId: string) => Promise<any>;
     unpinPost: (postId: string) => Promise<any>;
@@ -26,7 +26,7 @@ export interface ClientPostsMix {
     removeReaction: (userId: string, postId: string, emojiName: string) => Promise<any>;
     getReactionsForPost: (postId: string) => Promise<any>;
     searchPostsWithParams: (teamId: string, params: PostSearchParams) => Promise<any>;
-    searchPosts: (teamId: string, terms: string, isOrSearch: boolean) => Promise<any>;
+    searchPosts: (teamId: string, terms: string, isOrSearch: boolean) => Promise<PostResponse>;
     doPostAction: (postId: string, actionId: string, selectedOption?: string) => Promise<any>;
     doPostActionWithCookie: (postId: string, actionId: string, actionCookie: string, selectedOption?: string) => Promise<any>;
 }
@@ -79,9 +79,18 @@ const ClientPosts = (superclass: any) => class extends superclass {
         );
     };
 
-    getPostThread = async (postId: string, collapsedThreads = false, collapsedThreadsExtended = false) => {
+    getPostThread = (postId: string, options: FetchPaginatedThreadOptions): Promise<PostResponse> => {
+        const {
+            fetchThreads = true,
+            collapsedThreads = false,
+            collapsedThreadsExtended = false,
+            direction = 'up',
+            fetchAll = false,
+            perPage = fetchAll ? undefined : PER_PAGE_DEFAULT,
+            ...rest
+        } = options;
         return this.doFetch(
-            `${this.getPostRoute(postId)}/thread${buildQueryString({collapsedThreads, collapsedThreadsExtended})}`,
+            `${this.getPostRoute(postId)}/thread${buildQueryString({skipFetchThreads: !fetchThreads, collapsedThreads, collapsedThreadsExtended, direction, perPage, ...rest})}`,
             {method: 'get'},
         );
     };

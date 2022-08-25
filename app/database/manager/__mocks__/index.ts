@@ -7,7 +7,7 @@ import logger from '@nozbe/watermelondb/utils/common/logger';
 import {DeviceEventEmitter, Platform} from 'react-native';
 import FileSystem from 'react-native-fs';
 
-import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
+import {DatabaseType, MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
 import ServerDatabaseMigrations from '@database/migration/server';
 import {InfoModel, GlobalModel, ServersModel} from '@database/models/app';
@@ -22,9 +22,8 @@ import ServerDataOperator from '@database/operator/server_data_operator';
 import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
 import {queryActiveServer, queryServer, queryServerByIdentifier} from '@queries/app/servers';
-import {DatabaseType} from '@typings/database/enums';
 import {deleteIOSDatabase} from '@utils/mattermost_managed';
-import {hashCode} from '@utils/security';
+import {urlSafeBase64Encode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
 
 import type {AppDatabase, CreateServerDatabaseArgs, Models, RegisterServerDatabaseArgs, ServerDatabase, ServerDatabases} from '@typings/database/database';
@@ -133,7 +132,7 @@ class DatabaseManager {
     private initServerDatabase = async (serverUrl: string): Promise<void> => {
         await this.createServerDatabase({
             config: {
-                dbName: hashCode(serverUrl),
+                dbName: urlSafeBase64Encode(serverUrl),
                 dbType: DatabaseType.SERVER,
                 serverUrl,
             },
@@ -229,12 +228,30 @@ class DatabaseManager {
         return undefined;
     };
 
+    public getAppDatabaseAndOperator = () => {
+        const app = this.appDatabase;
+        if (!app) {
+            throw new Error('App database not found');
+        }
+
+        return app;
+    };
+
+    public getServerDatabaseAndOperator = (serverUrl: string) => {
+        const server = this.serverDatabases[serverUrl];
+        if (!server) {
+            throw new Error(`${serverUrl} database not found`);
+        }
+
+        return server;
+    };
+
     public getActiveServerDatabase = async (): Promise<Database|undefined> => {
         const database = this.appDatabase?.database;
         if (database) {
             const server = await queryActiveServer(database);
             if (server?.url) {
-                return this.serverDatabases[server.url].database;
+                return this.serverDatabases[server.url]!.database;
             }
         }
 
@@ -289,7 +306,7 @@ class DatabaseManager {
     };
 
     private deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
-        const databaseName = hashCode(serverUrl);
+        const databaseName = urlSafeBase64Encode(serverUrl);
 
         if (Platform.OS === 'ios') {
         // On iOS, we'll delete the *.db file under the shared app-group/databases folder

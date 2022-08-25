@@ -52,6 +52,7 @@ const AccountUserInfo = ({user, showFullName, theme}: Props) => {
     const nickName = user.nickname ? ` (${user.nickname})` : '';
     const title = `${user.firstName} ${user.lastName}${nickName}`;
     const userName = `@${user.username}`;
+    const accountUserInfoTestId = `account.user_info.${user.id}`;
 
     return (
         <View style={styles.container}>
@@ -60,12 +61,24 @@ const AccountUserInfo = ({user, showFullName, theme}: Props) => {
                 iconSize={28}
                 showStatus={true}
                 author={user}
-                testID={'account.profile_picture'}
                 statusStyle={styles.statusStyle}
                 statusSize={24}
+                testID={`${accountUserInfoTestId}.profile_picture`}
             />
-            {showFullName && <Text style={styles.textFullName}>{title}</Text>}
-            <Text style={showFullName ? styles.textUserName : styles.textFullName}>{`${userName}`}</Text>
+            {showFullName &&
+            <Text
+                style={styles.textFullName}
+                testID={`${accountUserInfoTestId}.display_name`}
+            >
+                {title}
+            </Text>
+            }
+            <Text
+                style={showFullName ? styles.textUserName : styles.textFullName}
+                testID={`${accountUserInfoTestId}.username`}
+            >
+                {`${userName}`}
+            </Text>
         </View>
     );
 };

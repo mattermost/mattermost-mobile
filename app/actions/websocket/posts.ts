@@ -7,7 +7,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed, updateLastPostAt} from '@actions/local/channel';
 import {markPostAsDeleted} from '@actions/local/post';
 import {createThreadFromNewPost, updateThread} from '@actions/local/thread';
-import {fetchMyChannel, markChannelAsRead} from '@actions/remote/channel';
+import {fetchChannelStats, fetchMyChannel, markChannelAsRead} from '@actions/remote/channel';
 import {fetchPostAuthors, fetchPostById} from '@actions/remote/post';
 import {fetchThread} from '@actions/remote/thread';
 import {ActionType, Events, Screens} from '@constants';
@@ -16,7 +16,7 @@ import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {getCurrentChannelId, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
 
@@ -52,23 +52,9 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         return;
     }
 
-    const models: Model[] = [];
-
-    const postModels = await operator.handlePosts({
-        actionType: ActionType.POSTS.RECEIVED_NEW,
-        order: [post.id],
-        posts: [post],
-        prepareRecordsOnly: true,
-    });
-
-    models.push(...postModels);
-
     const isCRTEnabled = await getIsCRTEnabled(database);
     if (isCRTEnabled) {
-        const {models: threadModels} = await createThreadFromNewPost(serverUrl, post, true);
-        if (threadModels?.length) {
-            models.push(...threadModels);
-        }
+        await createThreadFromNewPost(serverUrl, post, false);
     }
 
     // Ensure the channel membership
@@ -122,6 +108,8 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         DeviceEventEmitter.emit(Events.USER_STOP_TYPING, data);
     }
 
+    const models: Model[] = [];
+
     const {authors} = await fetchPostAuthors(serverUrl, [post], true);
     if (authors?.length) {
         const authorsModels = await operator.handleUsers({users: authors, prepareRecordsOnly: true});
@@ -144,7 +132,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
                 // Don't mark as read if we're in global threads screen
                 // the currentChannelId still refers to previously viewed channel
 
-                const isChannelScreenMounted = EphemeralStore.getNavigationComponents().includes(Screens.CHANNEL);
+                const isChannelScreenMounted = NavigationStore.getNavigationComponents().includes(Screens.CHANNEL);
 
                 const isTabletDevice = await isTablet();
                 if (isChannelScreenMounted || isTabletDevice) {
@@ -179,6 +167,15 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         }
     }
 
+    const postModels = await operator.handlePosts({
+        actionType: ActionType.POSTS.RECEIVED_NEW,
+        order: [post.id],
+        posts: [post],
+        prepareRecordsOnly: true,
+    });
+
+    models.push(...postModels);
+
     operator.batchRecords(models);
 }
 
@@ -196,6 +193,12 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     }
 
     const models: Model[] = [];
+    const {database} = operator;
+
+    const oldPost = await getPostById(database, post.id);
+    if (oldPost && oldPost.isPinned !== post.is_pinned) {
+        fetchChannelStats(serverUrl, post.channel_id);
+    }
 
     const {authors} = await fetchPostAuthors(serverUrl, [post], true);
     if (authors?.length) {

@@ -6,28 +6,34 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {combineLatestWith, switchMap} from 'rxjs/operators';
 
+import {observeIsCallsFeatureRestricted} from '@calls/observers';
 import {General} from '@constants';
 import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
-import {observeCurrentChannelId, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
+import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
-import {getUserCustomStatus, getUserIdFromChannelName, isCustomStatusExpired as checkCustomStatusIsExpired} from '@utils/user';
+import {
+    getUserCustomStatus,
+    getUserIdFromChannelName,
+    isCustomStatusExpired as checkCustomStatusIsExpired,
+} from '@utils/user';
 
 import ChannelHeader from './header';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+type OwnProps = {
+    serverUrl: string;
+    channelId: string;
+};
+
+const enhanced = withObservables(['channelId'], ({serverUrl, channelId, database}: OwnProps & WithDatabaseArgs) => {
     const currentUserId = observeCurrentUserId(database);
-    const channelId = observeCurrentChannelId(database);
     const teamId = observeCurrentTeamId(database);
 
-    const channel = channelId.pipe(
-        switchMap((id) => observeChannel(database, id)),
-    );
+    const channel = observeChannel(database, channelId);
 
-    const channelInfo = channelId.pipe(
-        switchMap((id) => observeChannelInfo(database, id)),
-    );
+    const channelType = channel.pipe(switchMap((c) => of$(c?.type)));
+    const channelInfo = observeChannelInfo(database, channelId);
 
     const dmUser = currentUserId.pipe(
         combineLatestWith(channel),
@@ -73,7 +79,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         switchMap(([ci, dm]) => of$(dm ? undefined : ci?.memberCount)));
 
     return {
-        channelId,
+        channelType,
         customStatus,
         displayName,
         isCustomStatusExpired,
@@ -81,6 +87,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         memberCount,
         searchTerm,
         teamId,
+        callsFeatureRestricted: observeIsCallsFeatureRestricted(database, serverUrl, channelId),
     };
 });
 

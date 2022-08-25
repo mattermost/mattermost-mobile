@@ -7,7 +7,7 @@ class ProfilePicture {
     };
 
     getProfilePictureItemMatcher = (profilePictureSourcePrefix: string, userId: string) => {
-        const profilePictureTestID = `${profilePictureSourcePrefix}${userId}`;
+        const profilePictureTestID = `${profilePictureSourcePrefix}${userId}.profile_picture`;
         return by.id(profilePictureTestID);
     };
 

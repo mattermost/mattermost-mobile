@@ -3,7 +3,6 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {getDeviceTimezone, isTimezoneEnabled} from '@actions/local/timezone';
 import {Database, Events} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -13,7 +12,9 @@ import WebsocketManager from '@managers/websocket_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getCurrentUserId, getCommonSystemValues} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
+import {logWarning} from '@utils/log';
 import {getCSRFFromCookie} from '@utils/security';
+import {getDeviceTimezone, isTimezoneEnabled} from '@utils/timezone';
 
 import {loginEntry} from './entry';
 import {fetchDataRetentionPolicy} from './systems';
@@ -172,8 +173,7 @@ export const logout = async (serverUrl: string, skipServerLogout = false, remove
             await client.logout();
         } catch (error) {
             // We want to log the user even if logging out from the server failed
-            // eslint-disable-next-line no-console
-            console.warn('An error ocurred loging out from the server', serverUrl, error);
+            logWarning('An error occurred logging out from the server', serverUrl, error);
         }
     }
 

@@ -8,7 +8,7 @@ import {DeviceEventEmitter, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import FileSystem from 'react-native-fs';
 
-import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
+import {DatabaseType, MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
 import ServerDatabaseMigrations from '@database/migration/server';
 import {InfoModel, GlobalModel, ServersModel} from '@database/models/app';
@@ -23,10 +23,11 @@ import ServerDataOperator from '@database/operator/server_data_operator';
 import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
 import {queryActiveServer, queryServer, queryServerByIdentifier} from '@queries/app/servers';
-import {DatabaseType} from '@typings/database/enums';
+import {deleteLegacyFileCache} from '@utils/file';
 import {emptyFunction} from '@utils/general';
-import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
-import {hashCode} from '@utils/security';
+import {logDebug, logError} from '@utils/log';
+import {deleteIOSDatabase, getIOSAppGroupDetails, renameIOSDatabase} from '@utils/mattermost_managed';
+import {hashCode_DEPRECATED, urlSafeBase64Encode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
 
 import type {AppDatabase, CreateServerDatabaseArgs, RegisterServerDatabaseArgs, Models, ServerDatabase, ServerDatabases} from '@typings/database/database';
@@ -126,7 +127,13 @@ class DatabaseManager {
 
         if (serverUrl) {
             try {
-                const databaseName = hashCode(serverUrl);
+                const databaseName = urlSafeBase64Encode(serverUrl);
+                const oldDatabaseName = hashCode_DEPRECATED(serverUrl);
+
+                // Remove any legacy database we may already have.
+                await this.renameDatabase(oldDatabaseName, databaseName);
+                deleteLegacyFileCache(serverUrl);
+
                 const databaseFilePath = this.getDatabaseFilePath(databaseName);
                 const migrations = ServerDatabaseMigrations;
                 const modelClasses = this.serverModels;
@@ -157,6 +164,8 @@ class DatabaseManager {
                 return serverDatabase;
             } catch (e) {
                 // TODO : report to sentry? Show something on the UI ?
+
+                logError('Error initializing database', e);
             }
         }
 
@@ -190,9 +199,9 @@ class DatabaseManager {
         try {
             const appDatabase = this.appDatabase?.database;
             if (appDatabase) {
-                const isServerPresent = await this.isServerPresent(serverUrl);
+                const serverModel = await queryServer(appDatabase, serverUrl);
 
-                if (!isServerPresent) {
+                if (!serverModel) {
                     await appDatabase.write(async () => {
                         const serversCollection = appDatabase.collections.get(SERVERS);
                         await serversCollection.create((server: ServersModel) => {
@@ -201,6 +210,12 @@ class DatabaseManager {
                             server.url = serverUrl;
                             server.identifier = identifier;
                             server.lastActiveAt = 0;
+                        });
+                    });
+                } else if (serverModel.dbPath !== databaseFilePath) {
+                    await appDatabase.write(async () => {
+                        await serverModel.update((s) => {
+                            s.dbPath = databaseFilePath;
                         });
                     });
                 } else if (identifier) {
@@ -308,6 +323,38 @@ class DatabaseManager {
     };
 
     /**
+     * getAppDatabaseAndOperator: Helper function that returns App the database and operator.
+     * use within a try/catch block
+     * @returns AppDatabase
+     * @throws Error
+     */
+    public getAppDatabaseAndOperator = () => {
+        const app = this.appDatabase;
+        if (!app) {
+            throw new Error('App database not found');
+        }
+
+        return app;
+    };
+
+    /**
+     * getServerDatabaseAndOperator: Helper function that returns the database and operator
+     * for a specific server.
+     * use within a try/catch block
+     * @param serverUrl the url of the server
+     * @returns ServerDatabase
+     * @throws Error
+     */
+    public getServerDatabaseAndOperator = (serverUrl: string) => {
+        const server = this.serverDatabases[serverUrl];
+        if (!server) {
+            throw new Error(`${serverUrl} database not found`);
+        }
+
+        return server;
+    };
+
+    /**
     * setActiveServerDatabase: Set the new active server database.
     * This method should be called when switching to another server.
     * @param {string} serverUrl
@@ -378,8 +425,16 @@ class DatabaseManager {
     * @returns {Promise<void>}
     */
     private deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
-        const databaseName = hashCode(serverUrl);
+        const databaseName = urlSafeBase64Encode(serverUrl);
+        this.deleteServerDatabaseFilesByName(databaseName);
+    };
 
+    /**
+    * deleteServerDatabaseFilesByName: Removes the *.db file from the App-Group directory for iOS or the files directory for Android, given the database name
+    * @param {string} databaseName
+    * @returns {Promise<void>}
+    */
+    private deleteServerDatabaseFilesByName = async (databaseName: string): Promise<void> => {
         if (Platform.OS === 'ios') {
             // On iOS, we'll delete the *.db file under the shared app-group/databases folder
             deleteIOSDatabase({databaseName});
@@ -395,6 +450,47 @@ class DatabaseManager {
         FileSystem.unlink(databaseFile).catch(emptyFunction);
         FileSystem.unlink(databaseShm).catch(emptyFunction);
         FileSystem.unlink(databaseWal).catch(emptyFunction);
+    };
+
+    /**
+    * deleteServerDatabaseFilesByName: Removes the *.db file from the App-Group directory for iOS or the files directory for Android, given the database name
+    * @param {string} databaseName
+    * @returns {Promise<void>}
+    */
+    private renameDatabase = async (databaseName: string, newDBName: string): Promise<void> => {
+        if (Platform.OS === 'ios') {
+            // On iOS, we'll move the *.db file under the shared app-group/databases folder
+            renameIOSDatabase(databaseName, newDBName);
+            return;
+        }
+
+        // On Android, we'll move the *.db, the *.db-shm and *.db-wal files
+        const androidFilesDir = this.databaseDirectory;
+        const databaseFile = `${androidFilesDir}${databaseName}.db`;
+        const databaseShm = `${androidFilesDir}${databaseName}.db-shm`;
+        const databaseWal = `${androidFilesDir}${databaseName}.db-wal`;
+
+        const newDatabaseFile = `${androidFilesDir}${newDBName}.db`;
+        const newDatabaseShm = `${androidFilesDir}${newDBName}.db-shm`;
+        const newDatabaseWal = `${androidFilesDir}${newDBName}.db-wal`;
+
+        if (await FileSystem.exists(newDatabaseFile)) {
+            // Already renamed, do not try
+            return;
+        }
+
+        if (!await FileSystem.exists(databaseFile)) {
+            // Nothing to rename, do not try
+            return;
+        }
+
+        try {
+            await FileSystem.moveFile(databaseFile, newDatabaseFile);
+            await FileSystem.moveFile(databaseShm, newDatabaseShm);
+            await FileSystem.moveFile(databaseWal, newDatabaseWal);
+        } catch (error) {
+            // Do nothing
+        }
     };
 
     /**
@@ -429,16 +525,19 @@ class DatabaseManager {
     private buildMigrationCallbacks = (dbName: string) => {
         const migrationEvents = {
             onSuccess: () => {
+                logDebug('DB Migration success', dbName);
                 return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_SUCCESS, {
                     dbName,
                 });
             },
             onStart: () => {
+                logDebug('DB Migration start', dbName);
                 return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_STARTED, {
                     dbName,
                 });
             },
             onError: (error: Error) => {
+                logDebug('DB Migration error', dbName);
                 return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_ERROR, {
                     dbName,
                     error,
@@ -460,7 +559,7 @@ class DatabaseManager {
     * @returns {string}
     */
     private getDatabaseFilePath = (dbName: string): string => {
-        return Platform.OS === 'ios' ? `${this.databaseDirectory}/${dbName}.db` : `${this.databaseDirectory}/${dbName}.db`;
+        return Platform.OS === 'ios' ? `${this.databaseDirectory}/${dbName}.db` : `${this.databaseDirectory}${dbName}.db`;
     };
 
     /**

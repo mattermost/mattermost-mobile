@@ -24,7 +24,7 @@ export const getIOSAppGroupDetails = (): IOSAppGroupDetails => {
         appGroupDatabase: databasePath,
     };
 
-    // console.log('appGroup => ', appGroup.appGroupDatabase);
+    // logInfo('appGroup => ', appGroup.appGroupDatabase);
     return appGroup;
 };
 
@@ -42,6 +42,15 @@ export const deleteIOSDatabase = ({
 }: IOSDeleteDatabase) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     MattermostManaged.deleteDatabaseDirectory(databaseName, shouldRemoveDirectory, () => null);
+};
+
+/**
+ * renameIOSDatabase renames the .db and any other related file to the new name.
+ * @param {string} from original database name
+ * @param {string} to new database name
+ */
+export const renameIOSDatabase = (from: string, to: string) => {
+    MattermostManaged.renameDatabase(from, to, () => null);
 };
 
 export const deleteEntititesFile = (callback?: (success: boolean) => void) => {

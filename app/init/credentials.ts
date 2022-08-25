@@ -6,9 +6,8 @@ import * as KeyChain from 'react-native-keychain';
 
 import DatabaseManager from '@database/manager';
 import * as analytics from '@managers/analytics';
+import {logWarning} from '@utils/log';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
-
-import type {ServerCredential} from '@typings/credentials';
 
 export const getAllServerCredentials = async (): Promise<ServerCredential[]> => {
     const serverCredentials: ServerCredential[] = [];
@@ -64,7 +63,7 @@ export const setServerCredentials = (serverUrl: string, token: string) => {
         };
         KeyChain.setInternetCredentials(serverUrl, token, token, options);
     } catch (e) {
-        console.warn('could not set credentials', e); //eslint-disable-line no-console
+        logWarning('could not set credentials', e);
     }
 };
 

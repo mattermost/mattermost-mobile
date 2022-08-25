@@ -3,13 +3,15 @@
 
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter} from 'react-native';
+import {Alert, DeviceEventEmitter} from 'react-native';
 
 import {getChannelTimezones} from '@actions/remote/channel';
 import {executeCommand, handleGotoLocation} from '@actions/remote/command';
 import {createPost} from '@actions/remote/post';
 import {handleReactionToLatestPost} from '@actions/remote/reactions';
 import {setStatus} from '@actions/remote/user';
+import {canEndCall, endCall, getEndCallMessage} from '@calls/actions/calls';
+import ClientError from '@client/rest/error';
 import {Events, Screens} from '@constants';
 import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
 import {useServerUrl} from '@context/server';
@@ -128,7 +130,56 @@ export default function SendHandler({
         DraftUtils.alertChannelWideMention(intl, notifyAllMessage, doSubmitMessage, cancel);
     }, [intl, isTimezoneEnabled, channelTimezoneCount, doSubmitMessage]);
 
+    const handleEndCall = useCallback(async () => {
+        const hasPermissions = await canEndCall(serverUrl, channelId);
+
+        if (!hasPermissions) {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.calls_end_permission_title',
+                    defaultMessage: 'Error',
+                }),
+                intl.formatMessage({
+                    id: 'mobile.calls_end_permission_msg',
+                    defaultMessage: 'You don\'t have permission to end the call. Please ask the call owner to end the call.',
+                }));
+            return;
+        }
+
+        const message = await getEndCallMessage(serverUrl, channelId, currentUserId, intl);
+        const title = intl.formatMessage({id: 'mobile.calls_end_call_title', defaultMessage: 'End call'});
+
+        Alert.alert(
+            title,
+            message,
+            [
+                {
+                    text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+                },
+                {
+                    text: title,
+                    onPress: async () => {
+                        try {
+                            await endCall(serverUrl, channelId);
+                        } catch (e) {
+                            const err = (e as ClientError).message || 'unable to complete command, see server logs';
+                            Alert.alert('Error', `Error: ${err}`);
+                        }
+                    },
+                    style: 'cancel',
+                },
+            ],
+        );
+    }, [serverUrl, channelId, currentUserId, intl]);
+
     const sendCommand = useCallback(async () => {
+        if (value.trim() === '/call end') {
+            await handleEndCall();
+            setSendingMessage(false);
+            clearDraft();
+            return;
+        }
+
         const status = DraftUtils.getStatusFromSlashCommand(value);
         if (userIsOutOfOffice && status) {
             const updateStatus = (newStatus: string) => {
@@ -163,7 +214,7 @@ export default function SendHandler({
         if (data?.goto_location && !value.startsWith('/leave')) {
             handleGotoLocation(serverUrl, intl, data.goto_location);
         }
-    }, [userIsOutOfOffice, currentUserId, intl, value, serverUrl, channelId, rootId]);
+    }, [userIsOutOfOffice, currentUserId, intl, value, serverUrl, channelId, rootId, handleEndCall]);
 
     const sendMessage = useCallback(() => {
         const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;

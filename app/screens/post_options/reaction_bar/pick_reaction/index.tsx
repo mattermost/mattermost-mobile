@@ -37,7 +37,7 @@ const PickReaction = ({openEmojiPicker, width, height}: PickReactionProps) => {
             style={[styles.container, {
                 width, height,
             }]}
-            testID='post_options.reaction_bar.pick_reaction'
+            testID='post_options.reaction_bar.pick_reaction.button'
         >
             <CompassIcon
                 onPress={openEmojiPicker}

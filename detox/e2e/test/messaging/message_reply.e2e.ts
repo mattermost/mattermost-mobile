@@ -60,7 +60,7 @@ describe('Messaging - Message Reply', () => {
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toExist();
+        await expect(postListPostItem).toBeVisible();
 
         // # Open post options for the message that was just posted, tap reply option
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -69,7 +69,7 @@ describe('Messaging - Message Reply', () => {
         // * Verify on reply thread screen and parent post is shown
         await ThreadScreen.toBeVisible();
         const {postListPostItem: threadParentPostListPostItem} = ThreadScreen.getPostListPostItem(post.id, message);
-        await expect(threadParentPostListPostItem).toExist();
+        await expect(threadParentPostListPostItem).toBeVisible();
 
         // # Reply to parent post
         const replyMessage = `${message} reply`;
@@ -78,14 +78,14 @@ describe('Messaging - Message Reply', () => {
         // * Verify reply message is posted
         const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id, replyMessage);
-        await expect(replyPostListPostItem).toExist();
+        await expect(replyPostListPostItem).toBeVisible();
 
         // # Go back to channel list screen
         await ThreadScreen.back();
         await ChannelScreen.back();
     });
 
-    it('MM-T4785_2 - should be able to open reply thread by tapping the post', async () => {
+    it('MM-T4785_2 - should be able to open reply thread by tapping on the post', async () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -94,9 +94,9 @@ describe('Messaging - Message Reply', () => {
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toExist();
+        await expect(postListPostItem).toBeVisible();
 
-        // # Tap the post
+        // # Tap on post to open thread
         await postListPostItem.tap();
 
         // * Verify on reply thread screen

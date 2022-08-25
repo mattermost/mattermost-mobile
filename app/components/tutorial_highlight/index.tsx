@@ -11,7 +11,7 @@ type Props = {
     itemBounds: TutorialItemBounds;
     itemBorderRadius?: number;
     onDismiss: () => void;
-    onShow: () => void;
+    onShow?: () => void;
 }
 
 const TutorialHighlight = ({children, itemBounds, itemBorderRadius, onDismiss, onShow}: Props) => {
@@ -37,6 +37,7 @@ const TutorialHighlight = ({children, itemBounds, itemBorderRadius, onDismiss, o
             onDismiss={onDismiss}
             onRequestClose={onDismiss}
             supportedOrientations={[supportedOrientations]}
+            testID='tutorial_highlight'
         >
             <View
                 style={StyleSheet.absoluteFill}

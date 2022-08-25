@@ -9,15 +9,16 @@ import {Text, TextStyle} from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {getUserTimezone} from '@actions/local/timezone';
 import FormattedDate from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeCurrentUser} from '@queries/servers/user';
 import {getCurrentMomentForTimezone} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {getUserTimezoneProps} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type UserModel from '@typings/database/models/servers/user';
@@ -45,7 +46,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const CustomStatusExpiry = ({currentUser, isMilitaryTime, showPrefix, showTimeCompulsory, showToday, testID = '', textStyles = {}, theme, time, withinBrackets}: Props) => {
-    const userTimezone = getUserTimezone(currentUser);
+    const userTimezone = getUserTimezoneProps(currentUser);
     const timezone = userTimezone.useAutomaticTimezone ? userTimezone.automaticTimezone : userTimezone.manualTimezone;
     const styles = getStyleSheet(theme);
     const currentMomentTime = getCurrentMomentForTimezone(timezone);
@@ -61,6 +62,7 @@ const CustomStatusExpiry = ({currentUser, isMilitaryTime, showPrefix, showTimeCo
             <FormattedText
                 id='custom_status.expiry_time.today'
                 defaultMessage='Today'
+                style={[styles.text, textStyles]}
             />
         );
     } else if (expiryMomentTime.isAfter(todayEndTime) && expiryMomentTime.isSameOrBefore(tomorrowEndTime)) {
@@ -68,6 +70,7 @@ const CustomStatusExpiry = ({currentUser, isMilitaryTime, showPrefix, showTimeCo
             <FormattedText
                 id='custom_status.expiry_time.tomorrow'
                 defaultMessage='Tomorrow'
+                style={[styles.text, textStyles]}
             />
         );
     } else if (expiryMomentTime.isAfter(tomorrowEndTime)) {
@@ -83,11 +86,12 @@ const CustomStatusExpiry = ({currentUser, isMilitaryTime, showPrefix, showTimeCo
                 format={format}
                 timezone={timezone}
                 value={expiryMomentTime.toDate()}
+                style={[styles.text, textStyles]}
             />
         );
     }
 
-    const useTime = showTimeCompulsory || !(expiryMomentTime.isSame(todayEndTime) || expiryMomentTime.isAfter(tomorrowEndTime));
+    const useTime = showTimeCompulsory ?? !(expiryMomentTime.isSame(todayEndTime) || expiryMomentTime.isAfter(tomorrowEndTime));
 
     return (
         <Text
@@ -99,6 +103,7 @@ const CustomStatusExpiry = ({currentUser, isMilitaryTime, showPrefix, showTimeCo
                 <FormattedText
                     id='custom_status.expiry.until'
                     defaultMessage='Until'
+                    style={[styles.text, textStyles]}
                 />
             )}
             {showPrefix && ' '}
@@ -109,6 +114,7 @@ const CustomStatusExpiry = ({currentUser, isMilitaryTime, showPrefix, showTimeCo
                     <FormattedText
                         id='custom_status.expiry.at'
                         defaultMessage='at'
+                        style={[styles.text, textStyles]}
                     />
                     {' '}
                 </>
@@ -118,6 +124,7 @@ const CustomStatusExpiry = ({currentUser, isMilitaryTime, showPrefix, showTimeCo
                     isMilitaryTime={isMilitaryTime}
                     timezone={timezone || ''}
                     value={expiryMomentTime.toDate()}
+                    style={[styles.text, textStyles]}
                 />
             )}
             {withinBrackets && ')'}
@@ -126,6 +133,7 @@ const CustomStatusExpiry = ({currentUser, isMilitaryTime, showPrefix, showTimeCo
 };
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
+    currentUser: observeCurrentUser(database),
     isMilitaryTime: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).
         observeWithColumns(['value']).pipe(
             switchMap(

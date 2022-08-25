@@ -3,7 +3,7 @@
 
 import {Parser, Node} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
-import React, {ReactElement, useRef} from 'react';
+import React, {ReactElement, useMemo, useRef} from 'react';
 import {Dimensions, GestureResponderEvent, Platform, StyleProp, Text, TextStyle, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -37,21 +37,29 @@ import type {
 type MarkdownProps = {
     autolinkedUrlSchemes?: string[];
     baseTextStyle: StyleProp<TextStyle>;
+    baseParagraphStyle?: StyleProp<TextStyle>;
     blockStyles?: MarkdownBlockStyles;
+    channelId?: string;
     channelMentions?: ChannelMentions;
     disableAtChannelMentionHighlight?: boolean;
     disableAtMentions?: boolean;
+    disableBlockQuote?: boolean;
     disableChannelLink?: boolean;
+    disableCodeBlock?: boolean;
     disableGallery?: boolean;
     disableHashtags?: boolean;
+    disableHeading?: boolean;
+    disableQuotes?: boolean;
+    disableTables?: boolean;
     enableLatex: boolean;
     enableInlineLatex: boolean;
     imagesMetadata?: Record<string, PostImage>;
     isEdited?: boolean;
     isReplyPost?: boolean;
     isSearchResult?: boolean;
+    layoutHeight?: number;
     layoutWidth?: number;
-    location?: string;
+    location: string;
     mentionKeys?: UserMentionKey[];
     minimumHashtagLength?: number;
     onPostPress?: (event: GestureResponderEvent) => void;
@@ -87,6 +95,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         atMentionOpacity: {
             opacity: 1,
         },
+        bold: {
+            fontWeight: '600',
+        },
     };
 });
 
@@ -115,12 +126,13 @@ const computeTextStyle = (textStyles: MarkdownTextStyles, baseStyle: StyleProp<T
 };
 
 const Markdown = ({
-    autolinkedUrlSchemes, baseTextStyle, blockStyles, channelMentions,
-    disableAtChannelMentionHighlight = false, disableAtMentions = false, disableChannelLink = false,
-    disableGallery = false, disableHashtags = false, enableInlineLatex, enableLatex,
-    imagesMetadata, isEdited, isReplyPost, isSearchResult, layoutWidth,
+    autolinkedUrlSchemes, baseTextStyle, blockStyles, channelId, channelMentions,
+    disableAtChannelMentionHighlight, disableAtMentions, disableBlockQuote, disableChannelLink,
+    disableCodeBlock, disableGallery, disableHashtags, disableHeading, disableTables,
+    enableInlineLatex, enableLatex,
+    imagesMetadata, isEdited, isReplyPost, isSearchResult, layoutHeight, layoutWidth,
     location, mentionKeys, minimumHashtagLength = 3, onPostPress, postId, searchPatterns,
-    textStyles = {}, theme, value = '',
+    textStyles = {}, theme, value = '', baseParagraphStyle,
 }: MarkdownProps) => {
     const style = getStyleSheet(theme);
 
@@ -136,10 +148,12 @@ const Markdown = ({
 
         return (
             <AtMention
+                channelId={channelId}
                 disableAtChannelMentionHighlight={disableAtChannelMentionHighlight}
                 mentionStyle={textStyles.mention}
                 textStyle={[computeTextStyle(textStyles, baseTextStyle, context), style.atMentionOpacity]}
                 isSearchResult={isSearchResult}
+                location={location}
                 mentionName={mentionName}
                 onPostPress={onPostPress}
                 mentionKeys={mentionKeys}
@@ -148,6 +162,10 @@ const Markdown = ({
     };
 
     const renderBlockQuote = ({children, ...otherProps}: any) => {
+        if (disableBlockQuote) {
+            return null;
+        }
+
         return (
             <MarkdownBlockQuote
                 iconStyle={blockStyles?.quoteBlockIcon}
@@ -159,7 +177,7 @@ const Markdown = ({
     };
 
     const renderBreak = () => {
-        return <Text>{'\n'}</Text>;
+        return <Text testID='markdown_break'>{'\n'}</Text>;
     };
 
     const renderChannelLink = ({context, channelName}: MarkdownChannelMentionRenderer) => {
@@ -179,7 +197,7 @@ const Markdown = ({
 
     const renderCheckbox = ({isChecked}: {isChecked: boolean}) => {
         return (
-            <Text>
+            <Text testID='markdown_checkbox'>
                 <CompassIcon
                     name={isChecked ? 'checkbox-marked' : 'checkbox-blank-outline'}
                     size={16}
@@ -191,6 +209,10 @@ const Markdown = ({
     };
 
     const renderCodeBlock = (props: any) => {
+        if (disableCodeBlock) {
+            return null;
+        }
+
         // These sometimes include a trailing newline
         const content = props.literal.replace(/\n$/, '');
 
@@ -214,7 +236,14 @@ const Markdown = ({
 
     const renderCodeSpan = ({context, literal}: MarkdownBaseRenderer) => {
         const {code} = textStyles;
-        return <Text style={computeTextStyle(textStyles, [baseTextStyle, code], context)}>{literal}</Text>;
+        return (
+            <Text
+                style={computeTextStyle(textStyles, [baseTextStyle, code], context)}
+                testID='markdown_code_span'
+            >
+                {literal}
+            </Text>
+        );
     };
 
     const renderEditedIndicator = ({context}: {context: string[]}) => {
@@ -264,13 +293,28 @@ const Markdown = ({
     };
 
     const renderHeading = ({children, level}: {children: ReactElement; level: string}) => {
+        if (disableHeading) {
+            return (
+                <Text
+                    style={style.bold}
+                    testID='markdown_heading'
+                >
+                    {children}
+                </Text>
+            );
+        }
+
         const containerStyle = [
             style.block,
             textStyles[`heading${level}`],
         ];
         const textStyle = textStyles[`heading${level}Text`];
+
         return (
-            <View style={containerStyle}>
+            <View
+                style={containerStyle}
+                testID='markdown_heading'
+            >
                 <Text style={textStyle}>
                     {children}
                 </Text>
@@ -283,7 +327,10 @@ const Markdown = ({
 
         if (props.isBlock) {
             rendered = (
-                <View style={style.block}>
+                <View
+                    style={style.block}
+                    testID='markdown_html'
+                >
                     {rendered}
                 </View>
             );
@@ -314,6 +361,7 @@ const Markdown = ({
             <MarkdownImage
                 disabled={disableGallery ?? Boolean(!location)}
                 errorTextStyle={[computeTextStyle(textStyles, baseTextStyle, context), textStyles.error]}
+                layoutHeight={layoutHeight}
                 layoutWidth={layoutWidth}
                 linkDestination={linkDestination}
                 imagesMetadata={imagesMetadata}
@@ -387,8 +435,11 @@ const Markdown = ({
         }
 
         return (
-            <View style={blockStyle}>
-                <Text>
+            <View
+                style={blockStyle}
+                testID='markdown_paragraph'
+            >
+                <Text style={baseParagraphStyle}>
                     {children}
                 </Text>
             </View>
@@ -396,6 +447,9 @@ const Markdown = ({
     };
 
     const renderTable = ({children, numColumns}: {children: ReactElement; numColumns: number}) => {
+        if (disableTables) {
+            return null;
+        }
         return (
             <MarkdownTable
                 numColumns={numColumns}
@@ -425,7 +479,12 @@ const Markdown = ({
         }
 
         // Construct the text style based off of the parents of this node since RN's inheritance is limited
-        const styles = computeTextStyle(textStyles, baseTextStyle, context);
+        let styles;
+        if (disableHeading) {
+            styles = computeTextStyle(textStyles, baseTextStyle, context.filter((c) => !c.startsWith('heading')));
+        } else {
+            styles = computeTextStyle(textStyles, baseTextStyle, context);
+        }
 
         return (
             <Text
@@ -497,7 +556,7 @@ const Markdown = ({
     };
 
     const parser = useRef(new Parser({urlFilter, minimumHashtagLength})).current;
-    const renderer = useRef(createRenderer()).current;
+    const renderer = useMemo(createRenderer, [theme, textStyles]);
     let ast = parser.parse(value.toString());
 
     ast = combineTextNodes(ast);

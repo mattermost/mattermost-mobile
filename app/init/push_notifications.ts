@@ -17,17 +17,19 @@ import {
 import {storeDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
 import {backgroundNotification, openNotification} from '@actions/remote/notifications';
+import {markThreadAsRead} from '@actions/remote/thread';
 import {Device, Events, Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
-import {getTotalMentionsForServer} from '@database/subscription/unreads';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import NativeNotifications from '@notifications';
 import {queryServerName} from '@queries/app/servers';
 import {getCurrentChannelId} from '@queries/servers/system';
-import {getIsCRTEnabled} from '@queries/servers/thread';
+import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
 import {showOverlay} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
+import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
 
 const CATEGORY = 'CAN_REPLY';
@@ -48,50 +50,6 @@ class PushNotifications {
         Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground);
         Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground);
     }
-
-    cancelAllLocalNotifications = () => {
-        Notifications.cancelAllLocalNotifications();
-    };
-
-    cancelChannelNotifications = async (channelId: string) => {
-        const notifications = await NativeNotifications.getDeliveredNotifications();
-        this.cancelNotificationsForChannel(notifications, channelId);
-    };
-
-    cancelChannelsNotifications = async (channelIds: string[]) => {
-        const notifications = await NativeNotifications.getDeliveredNotifications();
-        for (const channelId of channelIds) {
-            this.cancelNotificationsForChannel(notifications, channelId);
-        }
-    };
-
-    cancelNotificationsForChannel = (notifications: NotificationWithChannel[], channelId: string) => {
-        if (Platform.OS === 'android') {
-            NativeNotifications.removeDeliveredNotifications(channelId);
-        } else {
-            const ids: string[] = [];
-
-            for (const notification of notifications) {
-                if (notification.channel_id === channelId) {
-                    ids.push(notification.identifier);
-                }
-            }
-
-            if (ids.length) {
-                NativeNotifications.removeDeliveredNotifications(ids);
-            }
-
-            let badgeCount = notifications.length - ids.length;
-
-            const serversUrl = Object.keys(DatabaseManager.serverDatabases);
-            const mentionPromises = serversUrl.map((url) => getTotalMentionsForServer(url));
-            Promise.all(mentionPromises).then((result) => {
-                badgeCount += result.reduce((acc, count) => (acc + count), 0);
-                badgeCount = badgeCount <= 0 ? 0 : badgeCount;
-                Notifications.ios.setBadgeCount(badgeCount);
-            });
-        }
-    };
 
     createReplyCategory = () => {
         const replyTitle = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.title'));
@@ -126,9 +84,13 @@ class PushNotifications {
             if (database) {
                 const isCRTEnabled = await getIsCRTEnabled(database);
                 if (isCRTEnabled && payload.root_id) {
-                    return;
+                    const thread = await getThreadById(database, payload.root_id);
+                    if (thread?.isFollowing) {
+                        markThreadAsRead(serverUrl, payload.team_id, payload.post_id);
+                    }
+                } else {
+                    markChannelAsViewed(serverUrl, payload.channel_id, false);
                 }
-                markChannelAsViewed(serverUrl, payload.channel_id, false);
             }
         }
     };
@@ -147,12 +109,13 @@ class PushNotifications {
             }
 
             const isDifferentChannel = payload?.channel_id !== channelId;
-            let isChannelScreenVisible = EphemeralStore.getNavigationTopComponentId() === Screens.CHANNEL;
+            const isVisibleThread = payload?.root_id === EphemeralStore.getCurrentThreadId();
+            let isChannelScreenVisible = NavigationStore.getNavigationTopComponentId() === Screens.CHANNEL;
             if (isTabletDevice) {
-                isChannelScreenVisible = EphemeralStore.getVisibleTab() === Screens.HOME;
+                isChannelScreenVisible = NavigationStore.getVisibleTab() === Screens.HOME;
             }
 
-            if (isDifferentChannel || !isChannelScreenVisible) {
+            if (isDifferentChannel || (!isChannelScreenVisible && !isVisibleThread)) {
                 DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
 
                 const screen = Screens.IN_APP_NOTIFICATION;
@@ -185,8 +148,7 @@ class PushNotifications {
     };
 
     handleSessionNotification = async (notification: NotificationWithData) => {
-        // eslint-disable-next-line no-console
-        console.log('Session expired notification');
+        logInfo('Session expired notification');
 
         const serverUrl = await this.getServerUrlFromNotification(notification);
 
@@ -219,11 +181,13 @@ class PushNotifications {
 
     // This triggers when a notification is tapped and the app was in the background (iOS)
     onNotificationOpened = (incoming: Notification, completion: () => void) => {
-        const notification = convertToNotificationData(incoming, false);
-        notification.userInteraction = true;
+        if (Platform.OS === 'ios') {
+            const notification = convertToNotificationData(incoming, false);
+            notification.userInteraction = true;
 
-        this.processNotification(notification);
-        completion();
+            this.processNotification(notification);
+            completion();
+        }
     };
 
     // This triggers when the app was in the background (iOS)
@@ -267,6 +231,18 @@ class PushNotifications {
             this.requestNotificationReplyPermissions();
         }
         return null;
+    };
+
+    removeChannelNotifications = async (serverUrl: string, channelId: string) => {
+        NativeNotifications.removeChannelNotifications(serverUrl, channelId);
+    };
+
+    removeServerNotifications = (serverUrl: string) => {
+        NativeNotifications.removeServerNotifications(serverUrl);
+    };
+
+    removeThreadNotifications = async (serverUrl: string, threadId: string) => {
+        NativeNotifications.removeThreadNotifications(serverUrl, threadId);
     };
 
     requestNotificationReplyPermissions = () => {

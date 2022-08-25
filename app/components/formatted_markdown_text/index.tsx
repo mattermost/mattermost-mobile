@@ -10,6 +10,7 @@ import {GestureResponderEvent, StyleProp, Text, TextStyle} from 'react-native';
 import AtMention from '@components/markdown/at_mention';
 import MarkdownLink from '@components/markdown/markdown_link';
 import {useTheme} from '@context/theme';
+import {logWarning} from '@utils/log';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {concatStyles, changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -17,8 +18,10 @@ import type {PrimitiveType} from 'intl-messageformat';
 
 type Props = {
     baseTextStyle: StyleProp<TextStyle>;
+    channelId?: string;
     defaultMessage: string;
     id: string;
+    location: string;
     onPostPress?: (e: GestureResponderEvent) => void;
     style?: StyleProp<TextStyle>;
     textStyles: {
@@ -47,7 +50,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const FormattedMarkdownText = ({baseTextStyle, defaultMessage, id, onPostPress, style, textStyles, values}: Props) => {
+const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, location, onPostPress, style, textStyles, values}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -84,8 +87,10 @@ const FormattedMarkdownText = ({baseTextStyle, defaultMessage, id, onPostPress, 
     const renderAtMention = ({context, mentionName}: {context: string[]; mentionName: string}) => {
         return (
             <AtMention
+                channelId={channelId}
                 mentionStyle={textStyles.mention}
                 mentionName={mentionName}
+                location={location}
                 onPostPress={onPostPress}
                 textStyle={[computeTextStyle(baseTextStyle, context), styles.atMentionOpacity]}
             />
@@ -102,7 +107,7 @@ const FormattedMarkdownText = ({baseTextStyle, defaultMessage, id, onPostPress, 
     };
 
     const renderHTML = (props: never) => {
-        console.warn(`HTML used in FormattedMarkdownText component with id ${id}`); // eslint-disable-line no-console
+        logWarning(`HTML used in FormattedMarkdownText component with id ${id}`);
         return renderText(props);
     };
 

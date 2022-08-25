@@ -10,7 +10,6 @@
 import {
     Post,
     Setup,
-    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -35,19 +34,13 @@ describe('Threads - Global Threads', () => {
     let testUser: any;
 
     beforeAll(async () => {
-        System.apiUpdateConfig(siteOneUrl, {
-            ServiceSettings: {
-                CollapsedThreads: 'default_on',
-            },
-        });
-
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testUser = user;
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await LoginScreen.login(user);
+        await LoginScreen.login(testUser);
     });
 
     beforeEach(async () => {
@@ -62,7 +55,7 @@ describe('Threads - Global Threads', () => {
 
     it('MM-T4805_1 - should match elements on global threads screen', async () => {
         // # Open global threads screen
-        await ChannelListScreen.open();
+        await GlobalThreadsScreen.open();
 
         // * Verify basic elements on global threads screen
         await expect(GlobalThreadsScreen.headerAllThreadsButton).toBeVisible();
@@ -75,7 +68,7 @@ describe('Threads - Global Threads', () => {
     });
 
     it('MM-T4805_2 - should be able to go to a thread a user started and followed', async () => {
-        // # Create a thread started by the current user
+        // # Create a thread started by the current user which current user replied to
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
@@ -92,6 +85,7 @@ describe('Threads - Global Threads', () => {
         // # Go back to channel list screen, then go to global threads screen, and tap on all your threads button
         await ThreadScreen.back();
         await ChannelScreen.back();
+        await device.reloadReactNative();
         await GlobalThreadsScreen.open();
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
 

@@ -43,7 +43,7 @@ const {
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 1,
+            version: 3,
             tables: {
                 [CATEGORY]: {
                     name: CATEGORY,
@@ -137,10 +137,12 @@ describe('*** Test schema for SERVER database ***', () => {
                     columns: {
                         channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
                         user_id: {name: 'user_id', type: 'string', isIndexed: true},
+                        scheme_admin: {name: 'scheme_admin', type: 'boolean'},
                     },
                     columnArray: [
                         {name: 'channel_id', type: 'string', isIndexed: true},
                         {name: 'user_id', type: 'string', isIndexed: true},
+                        {name: 'scheme_admin', type: 'boolean'},
                     ],
                 },
                 [CUSTOM_EMOJI]: {
@@ -163,6 +165,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         message_count: {name: 'message_count', type: 'number'},
                         roles: {name: 'roles', type: 'string'},
                         viewed_at: {name: 'viewed_at', type: 'number'},
+                        last_fetched_at: {name: 'last_fetched_at', type: 'number', isIndexed: true},
                     },
                     columnArray: [
                         {name: 'is_unread', type: 'boolean'},
@@ -173,6 +176,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'message_count', type: 'number'},
                         {name: 'roles', type: 'string'},
                         {name: 'viewed_at', type: 'number'},
+                        {name: 'last_fetched_at', type: 'number', isIndexed: true},
                     ],
                 },
                 [MY_CHANNEL_SETTINGS]: {
@@ -253,6 +257,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         created_at: {name: 'created_at', type: 'number'},
                         updated_at: {name: 'updated_at', type: 'number'},
                         deleted_at: {name: 'deleted_at', type: 'number'},
+                        member_count: {name: 'member_count', type: 'number'},
                     },
                     columnArray: [
                         {name: 'display_name', type: 'string'},
@@ -263,6 +268,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'created_at', type: 'number'},
                         {name: 'updated_at', type: 'number'},
                         {name: 'deleted_at', type: 'number'},
+                        {name: 'member_count', type: 'number'},
                     ],
                 },
                 [GROUP_CHANNEL]: {
@@ -486,10 +492,12 @@ describe('*** Test schema for SERVER database ***', () => {
                     columns: {
                         team_id: {name: 'team_id', type: 'string', isIndexed: true},
                         user_id: {name: 'user_id', type: 'string', isIndexed: true},
+                        scheme_admin: {name: 'scheme_admin', type: 'boolean'},
                     },
                     columnArray: [
                         {name: 'team_id', type: 'string', isIndexed: true},
                         {name: 'user_id', type: 'string', isIndexed: true},
+                        {name: 'scheme_admin', type: 'boolean'},
                     ],
                 },
                 [TEAM_SEARCH_HISTORY]: {
@@ -519,6 +527,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         unread_mentions: {name: 'unread_mentions', type: 'number'},
                         unread_replies: {name: 'unread_replies', type: 'number'},
                         viewed_at: {name: 'viewed_at', type: 'number'},
+                        last_fetched_at: {name: 'last_fetched_at', type: 'number', isIndexed: true},
                     },
                     columnArray: [
                         {name: 'is_following', type: 'boolean'},
@@ -528,6 +537,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'unread_mentions', type: 'number'},
                         {name: 'unread_replies', type: 'number'},
                         {name: 'viewed_at', type: 'number'},
+                        {name: 'last_fetched_at', type: 'number', isIndexed: true},
                     ],
                 },
                 [THREAD_PARTICIPANT]: {

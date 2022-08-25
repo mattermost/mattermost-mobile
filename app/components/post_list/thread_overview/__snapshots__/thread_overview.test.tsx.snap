@@ -62,6 +62,7 @@ exports[`ThreadOverview should match snapshot when post is not saved and 0 repli
       onHandlerStateChange={[Function]}
       rippleColor={0}
       testID="thread-overview.unsave.button"
+      touchSoundDisabled={false}
     >
       <View
         accessible={true}
@@ -91,6 +92,7 @@ exports[`ThreadOverview should match snapshot when post is not saved and 0 repli
       onHandlerStateChange={[Function]}
       rippleColor={0}
       testID="thread-overview.post_options.button"
+      touchSoundDisabled={false}
     >
       <View
         accessible={true}
@@ -172,6 +174,7 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
       onHandlerStateChange={[Function]}
       rippleColor={0}
       testID="thread-overview.save.button"
+      touchSoundDisabled={false}
     >
       <View
         accessible={true}
@@ -201,6 +204,7 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
       onHandlerStateChange={[Function]}
       rippleColor={0}
       testID="thread-overview.post_options.button"
+      touchSoundDisabled={false}
     >
       <View
         accessible={true}

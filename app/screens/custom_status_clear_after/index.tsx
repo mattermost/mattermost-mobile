@@ -15,9 +15,10 @@ import {
     Options,
 } from 'react-native-navigation';
 
-import {CustomStatusDuration} from '@constants/custom_status';
+import {CustomStatusDurationEnum} from '@constants/custom_status';
 import {observeCurrentUser} from '@queries/servers/user';
 import {dismissModal, popTopScreen} from '@screens/navigation';
+import NavigationStore from '@store/navigation_store';
 import {mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -111,31 +112,35 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
     }
 
     onBackPress = () => {
-        if (this.props.isModal) {
-            dismissModal();
-        } else {
-            popTopScreen();
-        }
+        const {componentId} = this.props;
+        if (NavigationStore.getNavigationTopComponentId() === componentId) {
+            if (this.props.isModal) {
+                dismissModal({componentId});
+            } else {
+                popTopScreen(componentId);
+            }
 
-        return true;
+            return true;
+        }
+        return false;
     };
 
     onDone = () => {
-        const {handleClearAfterClick, isModal} = this.props;
+        const {componentId, handleClearAfterClick, isModal} = this.props;
         handleClearAfterClick(this.state.duration, this.state.expiresAt);
         if (isModal) {
-            dismissModal();
+            dismissModal({componentId});
             return;
         }
 
-        popTopScreen();
+        popTopScreen(componentId);
     };
 
     handleItemClick = (duration: CustomStatusDuration, expiresAt: string) =>
         this.setState({
             duration,
             expiresAt,
-            showExpiryTime: duration === CustomStatusDuration.DATE_AND_TIME && expiresAt !== '',
+            showExpiryTime: duration === 'date_and_time' && expiresAt !== '',
         });
 
     renderClearAfterMenu = () => {
@@ -144,7 +149,7 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
 
         const {duration} = this.state;
 
-        const clearAfterMenu = Object.values(CustomStatusDuration).map(
+        const clearAfterMenu = Object.values(CustomStatusDurationEnum).map(
             (item, index, arr) => {
                 if (index === arr.length - 1) {
                     return null;
@@ -190,12 +195,12 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
                     <View style={style.block}>
                         <ClearAfterMenuItem
                             currentUser={currentUser}
-                            duration={CustomStatusDuration.DATE_AND_TIME}
+                            duration={'date_and_time'}
                             expiryTime={expiresAt}
                             handleItemClick={this.handleItemClick}
-                            isSelected={duration === CustomStatusDuration.DATE_AND_TIME && expiresAt === ''}
+                            isSelected={duration === 'date_and_time' && expiresAt === ''}
                             separator={false}
-                            showDateTimePicker={duration === CustomStatusDuration.DATE_AND_TIME}
+                            showDateTimePicker={duration === 'date_and_time'}
                             showExpiryTime={showExpiryTime}
                         />
                     </View>

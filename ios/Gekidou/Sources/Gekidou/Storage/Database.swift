@@ -58,6 +58,8 @@ public class Database: NSObject {
     internal var fileTable = Table("File")
     internal var emojiTable = Table("CustomEmoji")
     internal var userTable = Table("User")
+    internal var threadTable = Table("Thread")
+    internal var threadParticipantTable = Table("ThreadParticipant")
     
     @objc public static let `default` = Database()
     
@@ -134,6 +136,59 @@ public class Database: NSObject {
         throw DatabaseError.NoResults(query.asSQL())
     }
     
+    public func getAllActiveDatabases<T: Codable>() -> [T] {
+        guard let db = try? Connection(DEFAULT_DB_PATH) else {return []}
+        let lastActiveAt = Expression<Int64>("last_active_at")
+        let identifier = Expression<String>("identifier")
+        let query = serversTable.filter(lastActiveAt > 0 && identifier != "").order(lastActiveAt.desc)
+        do {
+            let rows = try db.prepare(query)
+            let servers: [T] = try rows.map { row in
+                return try row.decode()
+            }
+
+            return servers
+        } catch {
+            return []
+        }
+    }
+    
+    public func getAllActiveServerUrls() -> [String] {
+        guard let db = try? Connection(DEFAULT_DB_PATH) else {return []}
+        let lastActiveAt = Expression<Int64>("last_active_at")
+        let identifier = Expression<String>("identifier")
+        let url = Expression<String>("url")
+        let query = serversTable.filter(lastActiveAt > 0 && identifier != "").order(lastActiveAt.desc)
+        do {
+            let rows = try db.prepare(query)
+            let servers: [String] = try rows.map { row in
+                return try row.get(url)
+            }
+
+            return servers
+        } catch {
+            return []
+        }
+    }
+    
+    public func getCurrentServerDatabase<T: Codable>() -> T? {
+        guard let db = try? Connection(DEFAULT_DB_PATH) else {return nil}
+        do {
+            let lastActiveAt = Expression<Int64>("last_active_at")
+            let identifier = Expression<String>("identifier")
+            let query = serversTable.filter(lastActiveAt > 0 && identifier != "").order(lastActiveAt.desc)
+            
+            if let result = try db.pluck(query) {
+                let server: T = try result.decode()
+                return server
+            }
+            
+            return nil
+        } catch {
+            return nil
+        }
+    }
+    
     internal func getDatabaseForServer(_ serverUrl: String) throws -> Connection {
         let db = try Connection(DEFAULT_DB_PATH)
         let url = Expression<String>("url")
@@ -143,33 +198,6 @@ public class Database: NSObject {
         if let result = try db.pluck(query) {
             let path = try result.get(dbPath)
             return try Connection(path)
-        }
-        
-        throw DatabaseError.NoResults(query.asSQL())
-    }
-    
-    internal func queryCurrentUserId(_ serverUrl: String) throws -> String {
-        let db = try getDatabaseForServer(serverUrl)
-        
-        let idCol = Expression<String>("id")
-        let valueCol = Expression<String>("value")
-        let query = systemTable.where(idCol == "currentUserId")
-        
-        if let result = try db.pluck(query) {
-            return try result.get(valueCol).replacingOccurrences(of: "\"", with: "")
-        }
-        
-        throw DatabaseError.NoResults(query.asSQL())
-    }
-    
-    internal func queryCurrentUser(_ serverUrl: String) throws -> Row? {
-        let currentUserId = try queryCurrentUserId(serverUrl)
-        let idCol = Expression<String>("id")
-        let query = userTable.where(idCol == currentUserId)
-        let db = try getDatabaseForServer(serverUrl)
-
-        if let result = try db.pluck(query) {
-            return result
         }
         
         throw DatabaseError.NoResults(query.asSQL())

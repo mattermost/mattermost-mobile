@@ -5,23 +5,18 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getRecentReactions} from '@queries/servers/system';
 import {getEmojiFirstAlias} from '@utils/emoji/helpers';
+import {logError} from '@utils/log';
 
 const MAXIMUM_RECENT_EMOJI = 27;
 
 export const addRecentReaction = async (serverUrl: string, emojiNames: string[], prepareRecordsOnly = false) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-    const {database} = operator;
-
-    if (!emojiNames.length) {
-        return [];
-    }
-
-    let recent = await getRecentReactions(database);
-
     try {
+        if (!emojiNames.length) {
+            return [];
+        }
+
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        let recent = await getRecentReactions(database);
         const recentEmojis = new Set(recent);
         const aliases = emojiNames.map((e) => getEmojiFirstAlias(e));
         for (const alias of aliases) {
@@ -43,6 +38,7 @@ export const addRecentReaction = async (serverUrl: string, emojiNames: string[],
             prepareRecordsOnly,
         });
     } catch (error) {
+        logError('Failed addRecentReaction', error);
         return {error};
     }
 };

@@ -8,11 +8,11 @@ import {
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -44,14 +44,26 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         rowDisplayName: {
             color: theme.centerChannelColor,
-            flexShrink: 5,
+            flexShrink: 1,
             ...typography('Body', 200),
         },
         rowName: {
             ...typography('Body', 200),
             color: changeOpacity(theme.centerChannelColor, 0.64),
-            flexShrink: 1,
+            flexShrink: 2,
             marginLeft: 2,
+        },
+        rowTag: {
+            ...typography('Heading', 25),
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            marginLeft: 'auto',
+            width: 20,
+            borderRadius: 4,
+            overflow: 'hidden',
+            marginTop: 2,
+            paddingHorizontal: 4,
+            textAlign: 'center',
         },
     };
 });
@@ -59,13 +71,17 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 type Props = {
     name: string;
     displayName: string;
+    memberCount: number;
     onPress: (handle: string) => void;
+    testID?: string;
 }
 
 const GroupMentionItem = ({
     onPress,
     name,
     displayName,
+    memberCount,
+    testID,
 }: Props) => {
     const insets = useSafeAreaInsets();
     const theme = useTheme();
@@ -79,11 +95,14 @@ const GroupMentionItem = ({
         onPress(name);
     }, [onPress, name]);
 
+    const groupMentionItemTestId = `${testID}.${name}`;
+
     return (
         <TouchableWithFeedback
             onPress={completeMention}
             style={touchableStyle}
             type={'opacity'}
+            testID={groupMentionItemTestId}
         >
             <View style={style.rowPicture}>
                 <CompassIcon
@@ -92,9 +111,25 @@ const GroupMentionItem = ({
                 />
             </View>
             <View style={style.rowInfo}>
-                <Text style={style.rowDisplayName}>{`${displayName} `}</Text>
-                <Text style={style.rowName}>{`@${name}`}</Text>
+                <Text
+                    style={style.rowDisplayName}
+                    testID={`${groupMentionItemTestId}.display_name`}
+                    numberOfLines={1}
+                >
+                    {`${displayName} `}
+                </Text>
+                <Text
+                    style={style.rowName}
+                    testID={`${groupMentionItemTestId}.name`}
+                    numberOfLines={1}
+                >
+                    {`@${name}`}
+                </Text>
             </View>
+            <Text
+                numberOfLines={1}
+                style={style.rowTag}
+            >{`${memberCount >= 100 ? '99+' : memberCount}`}</Text>
         </TouchableWithFeedback>
     );
 };

@@ -46,6 +46,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row',
             flex: 1,
         },
+        mathStyle: {
+            color: theme.centerChannelColor,
+        },
         rightColumn: {
             flexDirection: 'column',
             flex: 1,
@@ -193,6 +196,7 @@ const LatexCodeBlock = ({content, theme}: Props) => {
             onPress={handlePress}
             onLongPress={handleLongPress}
             type={'opacity'}
+            testID='markdown_latex_code_block'
         >
             <View style={styles.container}>
                 <ErrorBoundary
@@ -209,6 +213,7 @@ const LatexCodeBlock = ({content, theme}: Props) => {
                                     math={latexCode}
                                     renderError={onRenderErrorMessage}
                                     resizeMode={'cover'}
+                                    style={styles.mathStyle}
                                 />
                             </View>
                         ))}

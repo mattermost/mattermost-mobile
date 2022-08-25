@@ -39,7 +39,7 @@ type Props = {
     currentChannelId: string;
     onlyUnreads: boolean;
     unreadsAndMentions: {
-        unreads: number;
+        unreads: boolean;
         mentions: number;
     };
 };
@@ -81,7 +81,7 @@ const ThreadsButton = ({currentChannelId, onlyUnreads, unreadsAndMentions}: Prop
         return [container, icon, text];
     }, [customStyles, isActive, styles, unreads]);
 
-    if (onlyUnreads && !unreads && !mentions) {
+    if (onlyUnreads && !isActive && !unreads && !mentions) {
         return null;
     }
 

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {NativeScrollEvent, NativeSyntheticEvent, PanResponder} from 'react-native';
+import {ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, PanResponder} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import {fetchUsersByIds} from '@actions/remote/user';
@@ -13,10 +13,11 @@ import Reactor from './reactor';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 
 type Props = {
+    location: string;
     reactions: ReactionModel[];
 }
 
-const ReactorsList = ({reactions}: Props) => {
+const ReactorsList = ({location, reactions}: Props) => {
     const serverUrl = useServerUrl();
     const [enabled, setEnabled] = useState(false);
     const [direction, setDirection] = useState<'down' | 'up'>('down');
@@ -34,8 +35,11 @@ const ReactorsList = ({reactions}: Props) => {
         },
     })).current;
 
-    const renderItem = useCallback(({item}) => (
-        <Reactor reaction={item}/>
+    const renderItem = useCallback(({item}: ListRenderItemInfo<ReactionModel>) => (
+        <Reactor
+            location={location}
+            reaction={item}
+        />
     ), [reactions]);
 
     const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -62,6 +66,7 @@ const ReactorsList = ({reactions}: Props) => {
             scrollEnabled={enabled}
             scrollEventThrottle={60}
             {...panResponder.panHandlers}
+            testID='reactions.reactors_list.flat_list'
         />
     );
 };

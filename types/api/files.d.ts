@@ -4,6 +4,7 @@
 type FileInfo = {
     id?: string;
     bytesRead?: number;
+    channel_id?: string;
     clientId?: string;
     create_at?: number;
     delete_at?: number;
@@ -32,4 +33,9 @@ type FilesState = {
 type FileUploadResponse = {
     file_infos: FileInfo[];
     client_ids: string[];
+};
+
+type FileSearchParams = {
+    terms: string;
+    is_or_search: boolean;
 };

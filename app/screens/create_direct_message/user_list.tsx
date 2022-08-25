@@ -2,14 +2,18 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
+import {useIntl} from 'react-intl';
 import {FlatList, Keyboard, ListRenderItemInfo, Platform, SectionList, SectionListData, Text, View} from 'react-native';
 
+import {storeProfile} from '@actions/local/user';
 import Loading from '@components/loading';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import UserListRow from '@components/user_list_row';
-import {General} from '@constants';
+import {General, Screens} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
+import {openAsBottomSheet} from '@screens/navigation';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -112,6 +116,7 @@ type Props = {
     selectedIds: {[id: string]: UserProfile};
     testID?: string;
     term?: string;
+    tutorialWatched: boolean;
 }
 
 export default function UserList({
@@ -125,8 +130,11 @@ export default function UserList({
     showNoResults,
     term,
     testID,
+    tutorialWatched,
 }: Props) {
+    const intl = useIntl();
     const theme = useTheme();
+    const serverUrl = useServerUrl();
     const style = getStyleFromTheme(theme);
     const keyboardHeight = useKeyboardHeight();
     const noResutsStyle = useMemo(() => [
@@ -134,7 +142,31 @@ export default function UserList({
         {paddingBottom: keyboardHeight},
     ], [style, keyboardHeight]);
 
-    const renderItem = useCallback(({item}: ListRenderItemInfo<UserProfile>) => {
+    const data = useMemo(() => {
+        if (term) {
+            return profiles;
+        }
+        return createProfilesSections(profiles);
+    }, [term, profiles]);
+
+    const openUserProfile = useCallback(async (profile: UserProfile) => {
+        const {user} = await storeProfile(serverUrl, profile);
+        if (user) {
+            const screen = Screens.USER_PROFILE;
+            const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
+            const closeButtonId = 'close-user-profile';
+            const props = {
+                closeButtonId,
+                userId: user.id,
+                location: Screens.USER_PROFILE,
+            };
+
+            Keyboard.dismiss();
+            openAsBottomSheet({screen, title, theme, closeButtonId, props});
+        }
+    }, []);
+
+    const renderItem = useCallback(({item, index, section}: ListRenderItemInfo<UserProfile> & {section?: SectionListData<UserProfile>}) => {
         // The list will re-render when the selection changes because it's passed into the list as extraData
         const selected = Boolean(selectedIds[item.id]);
         const canAdd = Object.keys(selectedIds).length < General.MAX_USERS_IN_GM;
@@ -142,18 +174,21 @@ export default function UserList({
         return (
             <UserListRow
                 key={item.id}
+                highlight={section?.id === data?.[0].id && index === 0}
                 id={item.id}
                 isMyUser={currentUserId === item.id}
                 onPress={handleSelectProfile}
+                onLongPress={openUserProfile}
                 selectable={canAdd}
                 selected={selected}
                 enabled={canAdd}
                 testID='create_direct_message.user_list.user_item'
                 teammateNameDisplay={teammateNameDisplay}
+                tutorialWatched={tutorialWatched}
                 user={item}
             />
         );
-    }, [selectedIds, currentUserId, handleSelectProfile, teammateNameDisplay]);
+    }, [selectedIds, currentUserId, handleSelectProfile, teammateNameDisplay, tutorialWatched, data]);
 
     const renderLoading = useCallback(() => {
         if (!loading) {
@@ -191,11 +226,11 @@ export default function UserList({
         );
     }, [style]);
 
-    const renderFlatList = (data: UserProfile[]) => {
+    const renderFlatList = (items: UserProfile[]) => {
         return (
             <FlatList
                 contentContainerStyle={style.container}
-                data={data}
+                data={items}
                 extraData={selectedIds}
                 keyboardShouldPersistTaps='always'
                 {...keyboardDismissProp}
@@ -213,7 +248,7 @@ export default function UserList({
         );
     };
 
-    const renderSectionList = (data: Array<SectionListData<UserProfile>>) => {
+    const renderSectionList = (sections: Array<SectionListData<UserProfile>>) => {
         return (
             <SectionList
                 contentContainerStyle={style.container}
@@ -229,7 +264,7 @@ export default function UserList({
                 renderItem={renderItem}
                 renderSectionHeader={renderSectionHeader}
                 scrollEventThrottle={SCROLL_EVENT_THROTTLE}
-                sections={data}
+                sections={sections}
                 style={style.list}
                 stickySectionHeadersEnabled={false}
                 testID={`${testID}.section_list`}
@@ -237,13 +272,6 @@ export default function UserList({
             />
         );
     };
-
-    const data = useMemo(() => {
-        if (term) {
-            return profiles;
-        }
-        return createProfilesSections(profiles);
-    }, [term, profiles]);
 
     if (term) {
         return renderFlatList(data as UserProfile[]);

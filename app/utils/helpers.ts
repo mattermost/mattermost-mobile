@@ -146,3 +146,7 @@ export const pluckUnique = (key: string) => (array: Array<{[key: string]: unknow
 export function bottomSheetSnapPoint(itemsCount: number, itemHeight: number, bottomInset = 0) {
     return ((itemsCount + Platform.select({android: 1, default: 0})) * itemHeight) + (bottomInset * 2.5);
 }
+
+export function hasTrailingSpaces(term: string) {
+    return term.length !== term.trimEnd().length;
+}

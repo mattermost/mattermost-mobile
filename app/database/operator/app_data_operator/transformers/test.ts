@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {OperationType} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {
     transformInfoRecord,
     transformGlobalRecord,
 } from '@database/operator/app_data_operator/transformers/index';
-import {OperationType} from '@typings/database/enums';
 
 describe('** APP DATA TRANSFORMER **', () => {
     beforeAll(async () => {

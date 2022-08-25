@@ -58,7 +58,7 @@ describe('*** Database Manager tests ***', () => {
 
         // as we haven't set an active server yet, so the first registered server should be the active one
         expect(activeServerUrl).toBe(serverUrls[0]);
-        expect(serverA).toEqual(DatabaseManager.serverDatabases[serverUrls[0]].database);
+        expect(serverA).toEqual(DatabaseManager.serverDatabases[serverUrls[0]]!.database);
 
         await DatabaseManager.setActiveServerDatabase('https://appv2.mattermost.com');
 
@@ -66,7 +66,7 @@ describe('*** Database Manager tests ***', () => {
         activeServerUrl = await DatabaseManager.getActiveServerUrl();
         const serverB = await DatabaseManager.getActiveServerDatabase();
         expect(activeServerUrl).toBe(serverUrls[1]);
-        expect(serverB).toEqual(DatabaseManager.serverDatabases[serverUrls[1]].database);
+        expect(serverB).toEqual(DatabaseManager.serverDatabases[serverUrls[1]]!.database);
     });
 
     it('=> should delete appv1 server from the servers table of App database', async () => {

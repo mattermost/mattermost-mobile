@@ -70,7 +70,7 @@ describe('Messaging - Message Post', () => {
         // * Verify message is added to post list, cleared from post draft, and send button is disabled again
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toExist();
+        await expect(postListPostItem).toBeVisible();
         await expect(ChannelScreen.postInput).not.toHaveValue(message);
         await expect(ChannelScreen.sendButtonDisabled).toBeVisible();
 
@@ -88,14 +88,14 @@ describe('Messaging - Message Post', () => {
 
         // * Verify long message is posted and displays show more button (chevron down button)
         const {postListPostItem, postListPostItemShowLessButton, postListPostItemShowMoreButton} = ChannelScreen.getPostListPostItem(post.id, longMessage);
-        await expect(postListPostItem).toExist();
-        await expect(postListPostItemShowMoreButton).toExist();
+        await expect(postListPostItem).toBeVisible();
+        await expect(postListPostItemShowMoreButton).toBeVisible();
 
         // # Tap on show more button on long message post
         await postListPostItemShowMoreButton.tap();
 
         // * Verify long message post displays show less button (chevron up button)
-        await expect(postListPostItemShowLessButton).toExist();
+        await expect(postListPostItemShowLessButton).toBeVisible();
 
         // # Go back to channel list screen
         await ChannelScreen.back();

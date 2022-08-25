@@ -18,6 +18,7 @@ import {freezeOtherScreens} from '@utils/gallery';
 import {calculateDimensions} from '@utils/images';
 
 import type {BackdropProps} from './backdrop';
+import type {GalleryItemType, GalleryManagerSharedValues} from '@typings/screens/gallery';
 
 interface Size {
     height: number;
@@ -316,19 +317,23 @@ const LightboxSwipeout = forwardRef<LightboxSwipeoutRef, LightboxSwipeoutProps>(
                 })}
 
             <Animated.View style={StyleSheet.absoluteFillObject}>
-                {target.type !== 'image' && typeof renderItem === 'function' ? (
-                    renderItem({
-                        source: imageSource,
-                        width: targetWidth.value,
-                        height: targetHeight.value,
-                        itemStyles,
-                    })
-                ) : (
-                    <AnimatedImage
-                        source={imageSource}
-                        style={itemStyles}
-                    />
-                )}
+                {
+                    target.type !== 'image' &&
+                    target.type !== 'avatar' &&
+                    typeof renderItem === 'function' ? (
+                            renderItem({
+                                source: imageSource,
+                                width: targetWidth.value,
+                                height: targetHeight.value,
+                                itemStyles,
+                            })
+                        ) : (
+                            <AnimatedImage
+                                source={imageSource}
+                                style={itemStyles}
+                            />
+                        )
+                }
             </Animated.View>
 
             <Animated.View

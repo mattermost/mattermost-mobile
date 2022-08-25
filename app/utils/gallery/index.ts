@@ -11,6 +11,8 @@ import {showOverlay} from '@screens/navigation';
 import {isImage, isVideo} from '@utils/file';
 import {generateId} from '@utils/general';
 
+import type {GalleryItemType, GalleryManagerSharedValues} from '@typings/screens/gallery';
+
 export const clamp = (value: number, lowerBound: number, upperBound: number) => {
     'worklet';
 

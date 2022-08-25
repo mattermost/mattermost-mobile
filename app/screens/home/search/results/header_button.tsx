@@ -11,17 +11,13 @@ import {typography} from '@utils/typography';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        flex: {
-            flex: 1,
-        },
         button: {
             alignItems: 'center',
             borderRadius: 4,
-            height: 40,
         },
         text: {
-            marginHorizontal: 16,
-            marginVertical: 8,
+            paddingHorizontal: 16,
+            paddingVertical: 8,
             ...typography('Body', 200, 'SemiBold'),
         },
         selectedButton: {

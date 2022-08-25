@@ -30,8 +30,8 @@ export type SearchProps = TextInputProps & {
     containerStyle?: StyleProp<ViewStyle>;
     inputContainerStyle?: StyleProp<ViewStyle>;
     inputStyle?: StyleProp<TextStyle>;
-    loadingProps?: ActivityIndicatorProps;
     leftIconContainerStyle?: StyleProp<ViewStyle>;
+    loadingProps?: ActivityIndicatorProps;
     onCancel?(): void;
     onClear?(): void;
     rightIconContainerStyle?: StyleProp<ViewStyle>;

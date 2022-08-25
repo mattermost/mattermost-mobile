@@ -5,7 +5,7 @@ import Database from '@nozbe/watermelondb/Database';
 import React from 'react';
 
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
-import {CustomStatusDuration} from '@constants';
+import {CustomStatusDurationEnum} from '@constants/custom_status';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -19,7 +19,7 @@ describe('components/custom_status/custom_status_emoji', () => {
     const customStatus: UserCustomStatus = {
         emoji: 'calendar',
         text: 'In a meeting',
-        duration: CustomStatusDuration.DONT_CLEAR,
+        duration: CustomStatusDurationEnum.DONT_CLEAR,
     };
     it('should match snapshot', () => {
         const wrapper = renderWithEverything(

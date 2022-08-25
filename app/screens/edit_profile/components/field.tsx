@@ -72,6 +72,7 @@ const Field = ({
 
     const textInputStyle = isDisabled ? style.disabledStyle : undefined;
     const subContainer = [style.viewContainer, {paddingHorizontal: isTablet ? 42 : 20}];
+    const fieldInputTestId = isDisabled ? `${testID}.input.disabled` : `${testID}.input`;
 
     return (
         <View
@@ -88,7 +89,7 @@ const Field = ({
                 label={formattedLabel}
                 maxLength={maxLength}
                 onChangeText={onChangeText}
-                testID={`${testID}.input`}
+                testID={fieldInputTestId}
                 theme={theme}
                 value={value}
                 ref={fieldRef}

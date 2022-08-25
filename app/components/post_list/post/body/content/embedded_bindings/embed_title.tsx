@@ -8,6 +8,8 @@ import Markdown from '@components/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
+    channelId: string;
+    location: string;
     theme: Theme;
     value: string;
 }
@@ -32,16 +34,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const EmbedTitle = ({theme, value}: Props) => {
+const EmbedTitle = ({channelId, location, theme, value}: Props) => {
     const style = getStyleSheet(theme);
 
     return (
         <View style={style.container}>
             <Markdown
+                channelId={channelId}
                 disableHashtags={true}
                 disableAtMentions={true}
                 disableChannelLink={true}
                 disableGallery={true}
+                location={location}
                 autolinkedUrlSchemes={[]}
                 mentionKeys={[]}
                 theme={theme}

@@ -3,23 +3,21 @@
 
 import DatabaseManager from '@database/manager';
 import {getFileById} from '@queries/servers/file';
+import {logError} from '@utils/log';
 
 export const updateLocalFile = async (serverUrl: string, file: FileInfo) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        return operator.handleFiles({files: [file], prepareRecordsOnly: false});
+    } catch (error) {
+        logError('Failed updateLocalFile', error);
+        return {error};
     }
-
-    return operator.handleFiles({files: [file], prepareRecordsOnly: false});
 };
 
 export const updateLocalFilePath = async (serverUrl: string, fileId: string, localPath: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
     try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const file = await getFileById(database, fileId);
         if (file) {
             await database.write(async () => {
@@ -31,6 +29,8 @@ export const updateLocalFilePath = async (serverUrl: string, fileId: string, loc
 
         return {error: undefined};
     } catch (error) {
+        logError('Failed updateLocalFilePath', error);
         return {error};
     }
 };
+

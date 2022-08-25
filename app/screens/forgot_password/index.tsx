@@ -21,7 +21,6 @@ import {isEmail} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-// @ts-expect-error svg extension
 import Inbox from './inbox.svg';
 
 type Props = {

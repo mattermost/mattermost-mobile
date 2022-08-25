@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES} from '@constants/database';
+import {MM_TABLES, OperationType} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
 import {extractChannelDisplayName} from '@helpers/database';
-import {OperationType} from '@typings/database/enums';
 
 import type {TransformerArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -39,6 +38,7 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
         channel.createAt = raw.create_at;
         channel.creatorId = raw.creator_id;
         channel.deleteAt = raw.delete_at;
+        channel.updateAt = raw.update_at;
 
         channel.displayName = extractChannelDisplayName(raw, record);
         channel.isGroupConstrained = Boolean(raw.group_constrained);
@@ -137,6 +137,7 @@ export const transformMyChannelRecord = async ({action, database, value}: Transf
         myChannel.isUnread = Boolean(raw.is_unread);
         myChannel.lastViewedAt = raw.last_viewed_at;
         myChannel.viewedAt = record?.viewedAt || 0;
+        myChannel.lastFetchedAt = record?.lastFetchedAt || 0;
     };
 
     return prepareBaseRecord({
@@ -165,6 +166,7 @@ export const transformChannelMembershipRecord = ({action, database, value}: Tran
         channelMember._raw.id = isCreateAction ? (raw?.id ?? channelMember.id) : record.id;
         channelMember.channelId = raw.channel_id;
         channelMember.userId = raw.user_id;
+        channelMember.schemeAdmin = raw.scheme_admin ?? false;
     };
 
     return prepareBaseRecord({

@@ -12,7 +12,6 @@ import {prepareMyPreferences, queryPreferencesByCategoryAndName} from '@queries/
 import {prepareCommonSystemValues, getCommonSystemValues} from '@queries/servers/system';
 import {prepareMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
-import TeamModel from '@typings/database/models/servers/team';
 import {isDMorGM, selectDefaultChannelForTeam} from '@utils/channel';
 
 import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, MyChannelsRequest} from './channel';
@@ -23,6 +22,7 @@ import {ConfigAndLicenseRequest, fetchConfigAndLicense} from './systems';
 import {fetchMyTeams, MyTeamsRequest} from './team';
 
 import type {Model} from '@nozbe/watermelondb';
+import type TeamModel from '@typings/database/models/servers/team';
 
 export async function retryInitialTeamAndChannel(serverUrl: string) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;

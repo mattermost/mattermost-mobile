@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES} from '@constants/database';
+import {MM_TABLES, OperationType} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
-import {OperationType} from '@typings/database/enums';
 
 import type {TransformerArgs} from '@typings/database/database';
 import type ThreadModel from '@typings/database/models/servers/thread';
@@ -24,7 +23,7 @@ const {
  * @returns {Promise<ThreadModel>}
  */
 export const transformThreadRecord = ({action, database, value}: TransformerArgs): Promise<ThreadModel> => {
-    const raw = value.raw as Thread;
+    const raw = value.raw as ThreadWithLastFetchedAt;
     const record = value.record as ThreadModel;
     const isCreateAction = action === OperationType.CREATE;
 
@@ -38,6 +37,7 @@ export const transformThreadRecord = ({action, database, value}: TransformerArgs
         thread.unreadReplies = raw.unread_replies ?? record?.unreadReplies ?? 0;
         thread.unreadMentions = raw.unread_mentions ?? record?.unreadMentions ?? 0;
         thread.viewedAt = record?.viewedAt || 0;
+        thread.lastFetchedAt = Math.max(record?.lastFetchedAt || 0, raw.lastFetchedAt || 0);
     };
 
     return prepareBaseRecord({

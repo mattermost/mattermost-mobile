@@ -15,6 +15,8 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     author?: UserModel;
+    channelId: string;
+    location: string;
     participants: UserModel[];
     testID: string;
     thread: ThreadModel;
@@ -46,7 +48,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const ThreadFooter = ({author, participants, testID, thread}: Props) => {
+const ThreadFooter = ({author, channelId, location, participants, testID, thread}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
@@ -91,6 +93,8 @@ const ThreadFooter = ({author, participants, testID, thread}: Props) => {
     if (author && participantsList.length) {
         userAvatarsStack = (
             <UserAvatarsStack
+                channelId={channelId}
+                location={location}
                 style={style.avatarsContainer}
                 users={participantsList}
             />

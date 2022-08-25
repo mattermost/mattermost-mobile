@@ -3,9 +3,8 @@
 
 import React, {useMemo, useState} from 'react';
 import {Platform, useWindowDimensions, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {LIST_BOTTOM, MAX_LIST_DIFF, MAX_LIST_HEIGHT, MAX_LIST_TABLET_DIFF} from '@constants/autocomplete';
+import {MAX_LIST_HEIGHT, MAX_LIST_TABLET_DIFF} from '@constants/autocomplete';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -54,10 +53,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 
 type Props = {
     cursorPosition: number;
-    postInputTop: number;
+    position: number;
     rootId?: string;
     channelId?: string;
-    fixedBottomPosition?: boolean;
     isSearch?: boolean;
     value: string;
     enableDateSuggestion?: boolean;
@@ -65,19 +63,19 @@ type Props = {
     nestedScrollEnabled?: boolean;
     updateValue: (v: string) => void;
     hasFilesAttached?: boolean;
-    maxHeightOverride?: number;
+    availableSpace: number;
     inPost?: boolean;
+    growDown?: boolean;
 }
 
 const Autocomplete = ({
     cursorPosition,
-    postInputTop,
+    position,
     rootId,
     channelId,
     isSearch = false,
-    fixedBottomPosition,
     value,
-    maxHeightOverride,
+    availableSpace,
 
     //enableDateSuggestion = false,
     isAppsEnabled,
@@ -85,12 +83,12 @@ const Autocomplete = ({
     updateValue,
     hasFilesAttached,
     inPost = false,
+    growDown = false,
 }: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
-    const dimensions = useWindowDimensions();
     const style = getStyleFromTheme(theme);
-    const insets = useSafeAreaInsets();
+    const dimensions = useWindowDimensions();
 
     const [showingAtMention, setShowingAtMention] = useState(false);
     const [showingChannelMention, setShowingChannelMention] = useState(false);
@@ -104,44 +102,31 @@ const Autocomplete = ({
     const appsTakeOver = showingAppCommand;
     const showCommands = !(showingChannelMention || showingEmoji || showingAtMention);
 
-    const maxListHeight = useMemo(() => {
-        if (maxHeightOverride) {
-            return maxHeightOverride;
-        }
-        const isLandscape = dimensions.width > dimensions.height;
-        let postInputDiff = 0;
-        if (isTablet && postInputTop && isLandscape) {
-            postInputDiff = MAX_LIST_TABLET_DIFF;
-        } else if (postInputTop) {
-            postInputDiff = MAX_LIST_DIFF;
-        }
-        return MAX_LIST_HEIGHT - postInputDiff;
-    }, [maxHeightOverride, postInputTop, isTablet, dimensions.width]);
-
     const wrapperStyles = useMemo(() => {
         const s = [];
         if (Platform.OS === 'ios') {
             s.push(style.shadow);
         }
-        if (isSearch) {
-            s.push(style.base, style.searchContainer, {height: maxListHeight});
-        }
         return s;
-    }, [style, isSearch && maxListHeight, hasElements]);
+    }, [style]);
 
     const containerStyles = useMemo(() => {
-        const s = [];
-        if (!isSearch && !fixedBottomPosition) {
-            const iOSInsets = Platform.OS === 'ios' && (!isTablet || rootId) ? insets.bottom : 0;
-            s.push(style.base, {bottom: postInputTop + LIST_BOTTOM + iOSInsets});
-        } else if (fixedBottomPosition) {
-            s.push(style.base, {bottom: 0});
+        const s = [style.base];
+        if (growDown) {
+            s.push({top: -position});
+        } else {
+            s.push({bottom: position});
         }
         if (hasElements) {
             s.push(style.borders);
         }
         return s;
-    }, [!isSearch, isTablet, hasElements, postInputTop]);
+    }, [hasElements, position, growDown, style]);
+
+    const isLandscape = dimensions.width > dimensions.height;
+    const maxHeightAdjust = (isTablet && isLandscape) ? MAX_LIST_TABLET_DIFF : 0;
+    const defaultMaxHeight = MAX_LIST_HEIGHT - maxHeightAdjust;
+    const maxListHeight = Math.min(availableSpace, defaultMaxHeight);
 
     return (
         <View

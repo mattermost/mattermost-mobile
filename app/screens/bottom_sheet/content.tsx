@@ -14,14 +14,21 @@ type Props = {
     buttonIcon?: string;
     buttonText?: string;
     children: React.ReactNode;
+    disableButton?: boolean;
     onPress?: (e: GestureResponderEvent) => void;
     showButton: boolean;
     showTitle: boolean;
     testID?: string;
     title?: string;
+    titleSeparator?: boolean;
 }
 
-export const TITLE_HEIGHT = 38;
+const TITLE_MARGIN_TOP = 4;
+const TITLE_MARGIN_BOTTOM = 12;
+
+export const TITLE_HEIGHT = TITLE_MARGIN_TOP + TITLE_MARGIN_BOTTOM + 30; // typography 600 line height
+export const TITLE_SEPARATOR_MARGIN = 12;
+export const TITLE_SEPARATOR_MARGIN_TABLET = 20;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -29,8 +36,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
         },
         titleContainer: {
-            marginTop: 4,
-            marginBottom: 12,
+            marginTop: TITLE_MARGIN_TOP,
+            marginBottom: TITLE_MARGIN_BOTTOM,
         },
         titleText: {
             color: theme.centerChannelColor,
@@ -45,7 +52,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const BottomSheetContent = ({buttonText, buttonIcon, children, onPress, showButton, showTitle, testID, title}: Props) => {
+const BottomSheetContent = ({buttonText, buttonIcon, children, disableButton, onPress, showButton, showTitle, testID, title, titleSeparator}: Props) => {
     const dimensions = useWindowDimensions();
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -68,13 +75,17 @@ const BottomSheetContent = ({buttonText, buttonIcon, children, onPress, showButt
                     </Text>
                 </View>
             }
+            {titleSeparator &&
+                <View style={[styles.separator, {width: separatorWidth, marginBottom: (isTablet ? TITLE_SEPARATOR_MARGIN_TABLET : TITLE_SEPARATOR_MARGIN)}]}/>
+            }
             <>
                 {children}
             </>
             {showButton && (
                 <>
-                    <View style={[styles.separator, {width: separatorWidth, marginBottom: (isTablet ? 20 : 12)}]}/>
+                    <View style={[styles.separator, {width: separatorWidth, marginBottom: (isTablet ? TITLE_SEPARATOR_MARGIN_TABLET : TITLE_SEPARATOR_MARGIN)}]}/>
                     <Button
+                        disabled={disableButton}
                         onPress={onPress}
                         icon={buttonIcon}
                         testID={buttonTestId}

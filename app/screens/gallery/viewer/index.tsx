@@ -9,6 +9,8 @@ import {InteractionType} from '../image_renderer/transformer';
 import Pager from '../pager';
 import {RenderPageProps} from '../pager/page';
 
+import type {GalleryItemType} from '@typings/screens/gallery';
+
 export interface GalleryViewerProps extends Handlers {
     gutterWidth?: number;
     height: number;
@@ -109,7 +111,11 @@ const GalleryViewer = ({
             onInteraction: interaction,
         };
 
-        if (props.item.type !== 'image' && typeof renderPage === 'function') {
+        if (
+            props.item.type !== 'image' &&
+            props.item.type !== 'avatar' &&
+            typeof renderPage === 'function'
+        ) {
             return renderPage(props, index);
         }
 

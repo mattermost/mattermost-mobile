@@ -105,33 +105,66 @@ extension Network {
         } catch {
             
         }
-        
     }
     
     public func fetchAndStoreDataForPushNotification(_ notification: UNMutableNotificationContent, withContentHandler contentHandler: ((UNNotificationContent) -> Void)?) {
-
         let operation = BlockOperation {
             let group = DispatchGroup()
             
             let channelId = notification.userInfo["channel_id"] as! String
+            let rootId = notification.userInfo.index(forKey: "root_id") != nil ? notification.userInfo["root_id"] as! String : ""
             let serverUrl =  notification.userInfo["server_url"] as! String
+            let isCRTEnabled = notification.userInfo["is_crt_enabled"] as! Bool
             let currentUser = try! Database.default.queryCurrentUser(serverUrl)
             let currentUserId = currentUser?[Expression<String>("id")]
             let currentUsername = currentUser?[Expression<String>("username")]
             
             var postData: PostData? = nil
+            var myChannelData: ChannelMemberData? = nil
+            var threadData: ThreadData? = nil
+            var threads: [Post] = []
             var userIdsToLoad: Set<String> = Set()
             var usernamesToLoad: Set<String> = Set()
             var users: Set<User> = Set()
 
+            if isCRTEnabled && !rootId.isEmpty {
+                // Fetch the thread mentions
+                let teamId = Gekidou.Database.default.queryTeamIdForChannel(withId: channelId, withServerUrl: serverUrl) ?? ""
+
+                if !teamId.isEmpty {
+                    group.enter()
+                    self.fetchThreadMentions(teamId: teamId, threadId: rootId, withServerUrl: serverUrl, completionHandler: {data, response, error in
+                        if self.responseOK(response), let data = data {
+                            threadData = try? JSONDecoder().decode(ThreadData.self, from: data)
+                        }
+                        group.leave()
+                    })
+                }
+            } else {
+                // Fetch the channel mentions
+                group.enter()
+                self.fetchChannelMentions(channelId: channelId, withServerUrl: serverUrl, completionHandler: { data, response, error in
+                    if self.responseOK(response), let data = data {
+                        myChannelData = try? JSONDecoder().decode(ChannelMemberData.self, from: data)
+                    }
+                    group.leave()
+                })
+            }
+            
+            
             group.enter()
             let since = try? Database.default.queryPostsSinceForChannel(withId: channelId, withServerUrl: serverUrl)
-            self.fetchPostsForChannel(withId: channelId, withSince: since, withServerUrl: serverUrl) { data, response, error in
+            self.fetchPostsForChannel(withId: channelId, withSince: since, withServerUrl: serverUrl, withIsCRTEnabled: isCRTEnabled, withRootId: rootId) { data, response, error in
                 if self.responseOK(response), let data = data {
                    postData = try! JSONDecoder().decode(PostData.self, from: data)
                     if postData?.posts.count ?? 0 > 0 {
                         var authorIds: Set<String> = Set()
                         var usernames: Set<String> = Set()
+
+                        var threadParticipantUserIds: Set<String> = Set() // Used to exclude the "userIds" present in the thread participants
+                        var threadParticipantUsernames: Set<String> = Set() // Used to exclude the "usernames" present in the thread participants
+                        var threadParticipantUsers = [String: User]() // All unique users from thread participants are stored here
+
                         postData!.posts.forEach{post in
                             if (currentUserId != nil && post.user_id != currentUserId) {
                                 authorIds.insert(post.user_id)
@@ -141,11 +174,41 @@ extension Network {
                                     usernames.insert($0)
                                 }
                             }
+
+                            if (isCRTEnabled) {
+                                // Add root post as a thread
+                                let rootId = post.root_id
+                                if (rootId.isEmpty) {
+                                    threads.append(post)
+                                }
+
+                                let participants = post.participants ?? []
+                                if (participants.count > 0) {
+                                    participants.forEach { participant in
+                                        let userId = participant.id
+                                        if (userId != currentUserId) {
+                                            threadParticipantUserIds.insert(userId)
+                                            if (threadParticipantUsers[userId] == nil) {
+                                                threadParticipantUsers[userId] = participant
+                                            }
+                                        }
+
+                                        let username = participant.username
+                                        if (username != "" && username != currentUsername) {
+                                            threadParticipantUsernames.insert(username)
+                                        }
+                                    }
+                                }
+                            }
                         }
-                    
+
                         if (authorIds.count > 0) {
                             if let existingIds = try? Database.default.queryUsers(byIds: authorIds, withServerUrl: serverUrl) {
                                 userIdsToLoad = authorIds.filter { !existingIds.contains($0) }
+                                // Filter the users found in the thread participants list
+                                if (threadParticipantUserIds.count > 0) {
+                                    userIdsToLoad = userIdsToLoad.filter{ !threadParticipantUserIds.contains($0) }
+                                }
                                 if (userIdsToLoad.count > 0) {
                                     group.enter()
                                     self.fetchUsers(byIds: Array(userIdsToLoad), withServerUrl: serverUrl) { data, response, error in
@@ -158,10 +221,14 @@ extension Network {
                                 }
                             }
                         }
-                    
+
                         if (usernames.count > 0) {
                             if let existingUsernames = try? Database.default.queryUsers(byUsernames: usernames, withServerUrl: serverUrl) {
                                 usernamesToLoad = usernames.filter{ !existingUsernames.contains($0)}
+                                // Filter the users found in the thread participants list
+                                if (threadParticipantUsernames.count > 0) {
+                                    usernamesToLoad = usernamesToLoad.filter{ !threadParticipantUsernames.contains($0) }
+                                }
                                 if (usernamesToLoad.count > 0) {
                                     group.enter()
 
@@ -175,6 +242,18 @@ extension Network {
                                 }
                             }
                         }
+
+                        if (threadParticipantUserIds.count > 0) {
+                            if let existingThreadParticipantUserIds = try? Database.default.queryUsers(byIds: threadParticipantUserIds, withServerUrl: serverUrl) {
+                                threadParticipantUsers.forEach { (userId: String, user: User) in
+                                    if (!existingThreadParticipantUserIds.contains(userId)) {
+                                        users.insert(user)
+                                    }
+                                }
+                            }
+                            
+                        }
+                        
                     }
                 }
                 
@@ -182,21 +261,37 @@ extension Network {
             }
             
             group.wait()
-            
+
             group.enter()
             if (postData != nil && postData?.posts != nil && postData!.posts.count > 0) {
                 if let db = try? Database.default.getDatabaseForServer(serverUrl) {
+                    let receivingThreads = isCRTEnabled && !rootId.isEmpty
                     try? db.transaction {
-                        try? Database.default.handlePostData(db, postData!, channelId, since != nil)
-                        if (users.count > 0) {
+                        try? Database.default.handlePostData(db, postData!, channelId, since != nil, receivingThreads)
+                        
+                        if threads.count > 0 {
+                            try? Database.default.handleThreads(db, threads)
+                        }
+                        
+                        if users.count > 0 {
                             try? Database.default.insertUsers(db, users)
+                        }
+                        
+                        if myChannelData != nil {
+                            try? Database.default.handleMyChannelMentions(db, myChannelData!, withCRTEnabled: isCRTEnabled)
+                        }
+                        
+                        if threadData != nil {
+                            try? Database.default.handleThreadMentions(db, threadData!)
                         }
                     }
                 }
             }
             group.leave()
-            
+
             if let contentHandler = contentHandler {
+                // Get the total mentions from all databases and set the badge icon
+                notification.badge = Gekidou.Database.default.getTotalMentions() as NSNumber
                 contentHandler(notification)
             }
         }

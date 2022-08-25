@@ -31,12 +31,15 @@ import {getMarkdownImageSize} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {normalizeProtocol, tryOpenURL} from '@utils/url';
 
+import type {GalleryItemType} from '@typings/screens/gallery';
+
 type MarkdownImageProps = {
     disabled?: boolean;
     errorTextStyle: StyleProp<TextStyle>;
     imagesMetadata: Record<string, PostImage>;
     isReplyPost?: boolean;
     linkDestination?: string;
+    layoutHeight?: number;
     layoutWidth?: number;
     location?: string;
     postId: string;
@@ -67,7 +70,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const MarkdownImage = ({
     disabled, errorTextStyle, imagesMetadata, isReplyPost = false,
-    layoutWidth, linkDestination, location, postId, source, sourceSize,
+    layoutWidth, layoutHeight, linkDestination, location, postId, source, sourceSize,
 }: MarkdownImageProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -78,7 +81,7 @@ const MarkdownImage = ({
     const genericFileId = useRef(generateId('uid')).current;
     const metadata = imagesMetadata?.[source] || Object.values(imagesMetadata || {})[0];
     const [failed, setFailed] = useState(isGifTooLarge(metadata));
-    const originalSize = getMarkdownImageSize(isReplyPost, isTablet, sourceSize, metadata, layoutWidth);
+    const originalSize = getMarkdownImageSize(isReplyPost, isTablet, sourceSize, metadata, layoutWidth, layoutHeight);
     const serverUrl = useServerUrl();
     const galleryIdentifier = `${postId}-${genericFileId}-${location}`;
     const uri = source.startsWith('/') ? serverUrl + source : source;
@@ -222,8 +225,6 @@ const MarkdownImage = ({
                     style={{flex: 1, backgroundColor: changeOpacity(theme.centerChannelColor, 0.06), borderRadius: 8}}
                     width={width}
                     height={height}
-
-                    // @ts-expect-error onError missing in type definition
                     onError={handleOnError}
                 />
             );
@@ -234,10 +235,7 @@ const MarkdownImage = ({
                     onLongPress={handleLinkLongPress}
                     onPress={onGestureEvent}
                 >
-                    <Animated.View
-                        style={[styles, {width, height}, style.container]}
-                        testID='markdown_image'
-                    >
+                    <Animated.View style={[styles, {width, height}, style.container]}>
                         <ProgressiveImage
                             forwardRef={ref}
                             id={fileInfo.id!}

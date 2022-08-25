@@ -6,9 +6,9 @@ import {FlatList} from 'react-native';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {fetchDirectChannelsInfo} from '@actions/remote/channel';
-import {useServerUrl} from '@app/context/server';
 import ChannelItem from '@components/channel_item';
 import {DMS_CATEGORY} from '@constants/categories';
+import {useServerUrl} from '@context/server';
 import {isDMorGM} from '@utils/channel';
 
 import type CategoryModel from '@typings/database/models/servers/category';
@@ -19,21 +19,26 @@ type Props = {
     category: CategoryModel;
     limit: number;
     onChannelSwitch: (channelId: string) => void;
-    unreadChannels: ChannelModel[];
+    unreadIds: Set<string>;
+    unreadsOnTop: boolean;
 };
 
 const extractKey = (item: ChannelModel) => item.id;
 
-const CategoryBody = ({sortedChannels, category, limit, onChannelSwitch, unreadChannels}: Props) => {
+const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, limit, onChannelSwitch}: Props) => {
     const serverUrl = useServerUrl();
     const ids = useMemo(() => {
-        const filteredChannels = sortedChannels;
+        const filteredChannels = unreadsOnTop ? sortedChannels.filter((c) => !unreadIds.has(c.id)) : sortedChannels;
 
         if (category.type === DMS_CATEGORY && limit > 0) {
             return filteredChannels.slice(0, limit);
         }
         return filteredChannels;
-    }, [category.type, limit, sortedChannels]);
+    }, [category.type, limit, sortedChannels, unreadIds, unreadsOnTop]);
+
+    const unreadChannels = useMemo(() => {
+        return unreadsOnTop ? [] : ids.filter((c) => unreadIds.has(c.id));
+    }, [ids, unreadIds, unreadsOnTop]);
 
     const directChannels = useMemo(() => {
         return ids.concat(unreadChannels).filter(isDMorGM);
@@ -43,9 +48,9 @@ const CategoryBody = ({sortedChannels, category, limit, onChannelSwitch, unreadC
         return (
             <ChannelItem
                 channel={item}
-                testID={`category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_list_item`}
                 onPress={onChannelSwitch}
                 key={item.id}
+                testID={`channel_list.category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_item`}
             />
         );
     }, [onChannelSwitch]);
@@ -72,6 +77,10 @@ const CategoryBody = ({sortedChannels, category, limit, onChannelSwitch, unreadC
         };
     }, [height, unreadHeight]);
 
+    const listHeight = useMemo(() => ({
+        height: category.collapsed ? unreadHeight : height,
+    }), [category.collapsed, height, unreadHeight]);
+
     return (
         <Animated.View style={animatedStyle}>
             <FlatList
@@ -81,6 +90,7 @@ const CategoryBody = ({sortedChannels, category, limit, onChannelSwitch, unreadC
 
                 // @ts-expect-error strictMode not exposed on the types
                 strictMode={true}
+                style={listHeight}
             />
         </Animated.View>
     );

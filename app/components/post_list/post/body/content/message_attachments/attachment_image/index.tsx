@@ -5,7 +5,7 @@ import React, {useCallback, useRef, useState} from 'react';
 import {TouchableWithoutFeedback, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import FileIcon from '@components/post_list/post/body/files/file_icon';
+import FileIcon from '@components/files/file_icon';
 import ProgressiveImage from '@components/progressive_image';
 import {GalleryInit} from '@context/gallery';
 import {useIsTablet} from '@hooks/device';
@@ -16,6 +16,8 @@ import {generateId} from '@utils/general';
 import {isGifTooLarge, calculateDimensions, getViewPortWidth} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {extractFilenameFromUrl, isValidUrl} from '@utils/url';
+
+import type {GalleryItemType} from '@typings/screens/gallery';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {

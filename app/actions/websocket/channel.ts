@@ -9,11 +9,13 @@ import {
     markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt,
     storeMyChannelsForTeam, updateChannelInfoFromChannel, updateMyChannelFromWebsocket,
 } from '@actions/local/channel';
+import {storePostsForChannel} from '@actions/local/post';
 import {switchToGlobalThreads} from '@actions/local/thread';
 import {fetchMissingDirectChannelsInfo, fetchMyChannel, fetchChannelStats, fetchChannelById, switchToChannelById} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
+import {loadCallForChannel} from '@calls/actions/calls';
 import {Events, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
@@ -68,6 +70,10 @@ export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
 
 export async function handleChannelUnarchiveEvent(serverUrl: string, msg: any) {
     try {
+        if (EphemeralStore.isArchivingChannel(msg.data.channel_id)) {
+            return;
+        }
+
         await setChannelDeleteAt(serverUrl, msg.data.channel_id, 0);
     } catch {
         // do nothing
@@ -82,6 +88,10 @@ export async function handleChannelConvertedEvent(serverUrl: string, msg: any) {
 
     try {
         const channelId = msg.data.channel_id;
+        if (EphemeralStore.isConvertingChannel(channelId)) {
+            return;
+        }
+
         const {channel} = await fetchChannelById(serverUrl, channelId);
         if (channel) {
             operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
@@ -122,7 +132,7 @@ export async function handleChannelViewedEvent(serverUrl: string, msg: any) {
         const activeServerUrl = await DatabaseManager.getActiveServerUrl();
         const currentChannelId = await getCurrentChannelId(database);
 
-        if (activeServerUrl !== serverUrl || currentChannelId !== channelId) {
+        if (activeServerUrl !== serverUrl || (currentChannelId !== channelId && !EphemeralStore.isSwitchingToChannel(channelId))) {
             await markChannelAsViewed(serverUrl, channelId, false);
         }
     } catch {
@@ -149,6 +159,11 @@ export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: an
         }
         models.push(...await operator.handleMyChannelSettings({
             settings: [updatedChannelMember],
+            prepareRecordsOnly: true,
+        }));
+
+        models.push(...await operator.handleChannelMembership({
+            channelMemberships: [updatedChannelMember],
             prepareRecordsOnly: true,
         }));
         const rolesRequest = await fetchRolesIfNeeded(serverUrl, updatedChannelMember.roles.split(','), true);
@@ -268,19 +283,19 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
             }
 
             const {posts, order, authors, actionType, previousPostId} = await fetchPostsForChannel(serverUrl, channelId, true);
-            if (actionType) {
-                models.push(...await operator.handlePosts({
-                    actionType,
-                    order,
-                    posts,
-                    previousPostId,
-                    prepareRecordsOnly: true,
-                }));
+            if (posts?.length && order?.length) {
+                const {models: prepared} = await storePostsForChannel(
+                    serverUrl, channelId,
+                    posts, order, previousPostId ?? '',
+                    actionType, authors, true,
+                );
+
+                if (prepared?.length) {
+                    models.push(...prepared);
+                }
             }
 
-            if (authors?.length) {
-                models.push(...await operator.handleUsers({users: authors, prepareRecordsOnly: true}));
-            }
+            loadCallForChannel(serverUrl, channelId);
         } else {
             const addedUser = getUserById(database, userId);
             if (!addedUser) {
@@ -394,7 +409,7 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocke
     try {
         const {database} = operator;
         const {channel_id: channelId, delete_at: deleteAt} = msg.data;
-        if (EphemeralStore.isLeavingChannel(channelId)) {
+        if (EphemeralStore.isLeavingChannel(channelId) || EphemeralStore.isArchivingChannel(channelId)) {
             return;
         }
 

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {markTeamThreadsAsRead, processReceivedThreads, updateThread} from '@actions/local/thread';
-import DatabaseManager from '@database/manager';
+import EphemeralStore from '@store/ephemeral_store';
 
 export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     try {
@@ -18,23 +18,24 @@ export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocket
 }
 
 export async function handleThreadReadChangedEvent(serverUrl: string, msg: WebSocketMessage<ThreadReadChangedData>): Promise<void> {
-    const operator = DatabaseManager.serverDatabases[serverUrl].operator;
-    if (!operator) {
-        return;
-    }
-
     try {
-        if (operator) {
-            const {thread_id, timestamp, unread_mentions, unread_replies} = msg.data;
-            if (thread_id) {
-                await updateThread(serverUrl, thread_id, {
-                    last_viewed_at: timestamp,
-                    unread_mentions,
-                    unread_replies,
-                });
-            } else {
-                await markTeamThreadsAsRead(serverUrl, msg.broadcast.team_id);
+        const {thread_id, timestamp, unread_mentions, unread_replies} = msg.data;
+        if (thread_id) {
+            const data: Partial<ThreadWithViewedAt> = {
+                unread_mentions,
+                unread_replies,
+                last_viewed_at: timestamp,
+            };
+
+            // Do not update viewing data if the user is currently in the same thread
+            const isThreadVisible = EphemeralStore.getCurrentThreadId() === thread_id;
+            if (!isThreadVisible) {
+                data.viewed_at = timestamp;
             }
+
+            await updateThread(serverUrl, thread_id, data);
+        } else {
+            await markTeamThreadsAsRead(serverUrl, msg.broadcast.team_id);
         }
     } catch (error) {
         // Do nothing
@@ -42,23 +43,16 @@ export async function handleThreadReadChangedEvent(serverUrl: string, msg: WebSo
 }
 
 export async function handleThreadFollowChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    const operator = DatabaseManager.serverDatabases[serverUrl].operator;
-    if (!operator) {
-        return;
-    }
-
     try {
-        if (operator) {
-            const {reply_count, state, thread_id} = msg.data as {
+        const {reply_count, state, thread_id} = msg.data as {
                 reply_count: number;
                 state: boolean;
                 thread_id: string;
             };
-            await updateThread(serverUrl, thread_id, {
-                is_following: state,
-                reply_count,
-            });
-        }
+        await updateThread(serverUrl, thread_id, {
+            is_following: state,
+            reply_count,
+        });
     } catch (error) {
         // Do nothing
     }

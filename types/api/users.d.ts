@@ -4,18 +4,20 @@
 type UserNotifyProps = {
     auto_responder_active?: 'true' | 'false';
     auto_responder_message?: string;
+    channel: 'true' | 'false';
+    comments: 'never' | 'root' | 'any';
     desktop: 'default' | 'all' | 'mention' | 'none';
     desktop_notification_sound?: string;
     desktop_sound: 'true' | 'false';
     email: 'true' | 'false';
-    mark_unread: 'all' | 'mention';
+    first_name: 'true' | 'false';
+    mark_unread?: 'all' | 'mention';
+    mention_keys: string;
     push: 'default' | 'all' | 'mention' | 'none';
     push_status: 'ooo' | 'offline' | 'away' | 'dnd' | 'online';
-    comments: 'never' | 'root' | 'any';
-    first_name: 'true' | 'false';
-    channel: 'true' | 'false';
-    mention_keys: string;
     user_id?: string;
+    push_threads?: 'all' | 'mention';
+    email_threads?: 'all' | 'mention';
 };
 
 type UserProfile = {
@@ -39,10 +41,12 @@ type UserProfile = {
     terms_of_service_id?: string;
     terms_of_service_create_at?: number;
     timezone?: UserTimezone;
-    is_bot: boolean;
-    last_picture_update: number;
+    is_bot?: boolean;
+    last_picture_update?: number;
     remote_id?: string;
     status?: string;
+    bot_description?: string;
+    bot_last_icon_update?: number;
 };
 
 type UsersState = {
@@ -92,3 +96,5 @@ type UserCustomStatus = {
     expires_at?: string;
     duration?: CustomStatusDuration;
 };
+
+type CustomStatusDuration = '' | 'thirty_minutes' | 'one_hour' | 'four_hours' | 'today' | 'this_week' | 'date_and_time';

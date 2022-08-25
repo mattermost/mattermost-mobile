@@ -9,15 +9,15 @@ import {ImageResource, Navigation, Options, OptionsModalPresentationStyle, Optio
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
-import {Device, Events, Screens} from '@constants';
-import NavigationConstants from '@constants/navigation';
+import {Device, Events, Screens, Navigation as NavigationConstants, Launch} from '@constants';
 import {NOT_READY} from '@constants/screens';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import EphemeralStore from '@store/ephemeral_store';
-import {LaunchProps, LaunchType} from '@typings/launch';
+import NavigationStore from '@store/navigation_store';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
+import type {LaunchProps} from '@typings/launch';
 import type {NavButtons} from '@typings/screens/navigation';
 
 const {MattermostManaged} = NativeModules;
@@ -80,16 +80,14 @@ export const loginAnimationOptions = () => {
 export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string) => {
     if (closeButtonId) {
         const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
+        const closeButtonTestId = `${closeButtonId.replace('close-', 'close.').replace(/-/g, '_')}.button`;
         return {
             modalPresentationStyle: OptionsModalPresentationStyle.formSheet,
-            modal: {
-                swipeToDismiss: true,
-            },
             topBar: {
                 leftButtons: [{
                     id: closeButtonId,
                     icon: closeButton,
-                    testID: closeButtonId,
+                    testID: closeButtonTestId,
                 }],
                 leftButtonColor: changeOpacity(theme.centerChannelColor, 0.56),
                 background: {
@@ -111,7 +109,10 @@ export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string) =>
                 enabled: false,
             },
         },
-        modal: {swipeToDismiss: true},
+        modalPresentationStyle: Platform.select({
+            ios: OptionsModalPresentationStyle.overFullScreen,
+            default: OptionsModalPresentationStyle.overCurrentContext,
+        }),
         statusBar: {
             backgroundColor: null,
             drawBehind: true,
@@ -145,7 +146,7 @@ Navigation.setDefaultOptions({
 
 Appearance.addChangeListener(() => {
     const theme = getThemeFromState();
-    const screens = EphemeralStore.getAllNavigationComponents();
+    const screens = NavigationStore.getAllNavigationComponents();
 
     if (screens.includes(Screens.SERVER)) {
         for (const screen of screens) {
@@ -181,20 +182,21 @@ function isScreenRegistered(screen: string) {
     return true;
 }
 
-export function resetToHome(passProps: LaunchProps = {launchType: LaunchType.Normal}) {
+export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}) {
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
-    if (passProps.launchType === LaunchType.AddServer) {
+    if (passProps.launchType === Launch.AddServer) {
         dismissModal({componentId: Screens.SERVER});
         dismissModal({componentId: Screens.LOGIN});
         dismissModal({componentId: Screens.SSO});
         dismissModal({componentId: Screens.BOTTOM_SHEET});
+        DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
         return;
     }
 
-    EphemeralStore.clearNavigationComponents();
+    NavigationStore.clearNavigationComponents();
 
     const stack = {
         children: [{
@@ -236,7 +238,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
     const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
-    EphemeralStore.clearNavigationComponents();
+    NavigationStore.clearNavigationComponents();
 
     const children = [{
         component: {
@@ -284,7 +286,7 @@ export function resetToTeams() {
     const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
-    EphemeralStore.clearNavigationComponents();
+    NavigationStore.clearNavigationComponents();
 
     Navigation.setRoot({
         root: {
@@ -327,7 +329,7 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
 
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
-    const componentId = EphemeralStore.getNavigationTopComponentId();
+    const componentId = NavigationStore.getNavigationTopComponentId();
     DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, false);
     const defaultOptions: Options = {
         layout: {
@@ -339,7 +341,6 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
             right: {enabled: false},
         },
         statusBar: {
-            backgroundColor: null,
             style: isDark ? 'light' : 'dark',
         },
         topBar: {
@@ -374,13 +375,13 @@ export function popTopScreen(screenId?: string) {
     if (screenId) {
         Navigation.pop(screenId);
     } else {
-        const componentId = EphemeralStore.getNavigationTopComponentId();
+        const componentId = NavigationStore.getNavigationTopComponentId();
         Navigation.pop(componentId);
     }
 }
 
 export async function popToRoot() {
-    const componentId = EphemeralStore.getNavigationTopComponentId();
+    const componentId = NavigationStore.getNavigationTopComponentId();
 
     try {
         await Navigation.popToRoot(componentId);
@@ -407,7 +408,7 @@ export async function dismissAllModalsAndPopToRoot() {
  */
 export async function dismissAllModalsAndPopToScreen(screenId: string, title: string, passProps = {}, options = {}) {
     await dismissAllModals();
-    if (EphemeralStore.getNavigationComponents().includes(screenId)) {
+    if (NavigationStore.getNavigationComponents().includes(screenId)) {
         let mergeOptions = options;
         if (title) {
             mergeOptions = merge(mergeOptions, {
@@ -460,9 +461,10 @@ export function showModal(name: string, title: string, passProps = {}, options =
             leftButtonColor: theme.sidebarHeaderTextColor,
             rightButtonColor: theme.sidebarHeaderTextColor,
         },
+        modal: {swipeToDismiss: false},
     };
 
-    EphemeralStore.addNavigationModal(name);
+    NavigationStore.addNavigationModal(name);
     Navigation.showModal({
         stack: {
             children: [{
@@ -524,7 +526,7 @@ export function showModalOverCurrentContext(name: string, passProps = {}, option
             break;
     }
     const defaultOptions = {
-        modalPresentationStyle: 'overCurrentContext',
+        modalPresentationStyle: OptionsModalPresentationStyle.overCurrentContext,
         layout: {
             backgroundColor: 'transparent',
             componentBackgroundColor: 'transparent',
@@ -539,35 +541,16 @@ export function showModalOverCurrentContext(name: string, passProps = {}, option
     showModal(name, title, passProps, mergeOptions);
 }
 
-export function showSearchModal(initialValue = '') {
-    const name = 'Search';
-    const title = '';
-    const passProps = {initialValue};
-    const options = {
-        topBar: {
-            visible: false,
-            height: 0,
-        },
-        ...Platform.select({
-            ios: {
-                modalPresentationStyle: 'pageSheet',
-            },
-        }),
-    };
-
-    showModal(name, title, passProps, options);
-}
-
 export async function dismissModal(options?: Options & { componentId: string}) {
-    if (!EphemeralStore.hasModalsOpened()) {
+    if (!NavigationStore.hasModalsOpened()) {
         return;
     }
 
-    const componentId = options?.componentId || EphemeralStore.getNavigationTopModalId();
+    const componentId = options?.componentId || NavigationStore.getNavigationTopModalId();
     if (componentId) {
         try {
             await Navigation.dismissModal(componentId, options);
-            EphemeralStore.removeNavigationModal(componentId);
+            NavigationStore.removeNavigationModal(componentId);
         } catch (error) {
             // RNN returns a promise rejection if there is no modal to
             // dismiss. We'll do nothing in this case.
@@ -576,17 +559,16 @@ export async function dismissModal(options?: Options & { componentId: string}) {
 }
 
 export async function dismissAllModals() {
-    if (!EphemeralStore.hasModalsOpened()) {
+    if (!NavigationStore.hasModalsOpened()) {
         return;
     }
 
     try {
-        const modals = EphemeralStore.navigationModalStack;
+        const modals = [...NavigationStore.getAllNavigationModals()];
         for await (const modal of modals) {
+            NavigationStore.removeNavigationModal(modal);
             await Navigation.dismissModal(modal, {animations: {dismissModal: {enabled: false}}});
         }
-
-        EphemeralStore.clearNavigationModals();
     } catch (error) {
         // RNN returns a promise rejection if there are no modals to
         // dismiss. We'll do nothing in this case.
@@ -682,7 +664,29 @@ export async function bottomSheet({title, renderContent, snapPoints, initialSnap
 
 export async function dismissBottomSheet(alternativeScreen = Screens.BOTTOM_SHEET) {
     DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
-    await EphemeralStore.waitUntilScreensIsRemoved(alternativeScreen);
+    await NavigationStore.waitUntilScreensIsRemoved(alternativeScreen);
+}
+
+type AsBottomSheetArgs = {
+    closeButtonId: string;
+    props?: Record<string, any>;
+    screen: typeof Screens[keyof typeof Screens];
+    theme: Theme;
+    title: string;
+}
+
+export async function openAsBottomSheet({closeButtonId, screen, theme, title, props}: AsBottomSheetArgs) {
+    const {isSplitView} = await isRunningInSplitView();
+    const isTablet = Device.IS_TABLET && !isSplitView;
+
+    if (isTablet) {
+        showModal(screen, title, {
+            closeButtonId,
+            ...props,
+        }, bottomSheetModalOptions(theme, closeButtonId));
+    } else {
+        showModalOverCurrentContext(screen, props, bottomSheetModalOptions(theme));
+    }
 }
 
 export const showAppForm = async (form: AppForm, call: AppCallRequest) => {
@@ -691,14 +695,14 @@ export const showAppForm = async (form: AppForm, call: AppCallRequest) => {
 };
 
 export async function findChannels(title: string, theme: Theme) {
-    const options: Options = {modal: {swipeToDismiss: false}};
+    const options: Options = {};
     const closeButtonId = 'close-find-channels';
     const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
     options.topBar = {
         leftButtons: [{
             id: closeButtonId,
             icon: closeButton,
-            testID: closeButtonId,
+            testID: 'close.find_channels.button',
         }],
     };
 

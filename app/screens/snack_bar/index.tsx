@@ -104,7 +104,7 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
                     marginBottom: 30,
                 };
                 break;
-            case sourceScreen === Screens.SAVED_POSTS :
+            case sourceScreen === Screens.SAVED_MESSAGES :
                 tabletStyle = {
                     marginBottom: 20,
                     marginLeft: TABLET_SIDEBAR_WIDTH,
@@ -234,10 +234,10 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
                 >
                     <Toast
                         animatedStyle={snackBarStyle}
-                        message={intl.formatMessage({id: config.id, defaultMessage: config.defaultMessage})}
                         iconName={config.iconName}
+                        message={intl.formatMessage({id: config.id, defaultMessage: config.defaultMessage})}
+                        style={[styles.toast, barType === SNACK_BAR_TYPE.LINK_COPIED && {backgroundColor: theme.onlineIndicator}]}
                         textStyle={styles.text}
-                        style={styles.toast}
                     >
                         {config.canUndo && onAction && (
                             <TouchableOpacity onPress={onUndoPressHandler}>

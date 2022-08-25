@@ -14,8 +14,16 @@ type Thread = {
     delete_at: number;
 };
 
+type ThreadWithLastFetchedAt = Thread & {
+    lastFetchedAt: number;
+}
+
+type ThreadWithViewedAt = Thread & {
+    viewed_at: number;
+};
+
 type ThreadParticipant = {
-    id: $ID<User>;
+    id: $ID<UserProfile>;
     thread_id: $ID<Thread>;
 };
 

@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {OperationType} from '@constants/database';
 import {transformPreferenceRecord, transformUserRecord} from '@database/operator/server_data_operator/transformers/user';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
-import {OperationType} from '@typings/database/enums';
 
 describe('*** USER Prepare Records Test ***', () => {
     it('=> transformPreferenceRecord: should return an array of type Preference', async () => {

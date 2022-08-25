@@ -8,6 +8,8 @@ import {Keyboard, Platform, StyleProp, View, ViewStyle, TouchableHighlight} from
 import {removePost} from '@actions/local/post';
 import {showPermalink} from '@actions/remote/permalink';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import CallsCustomMessage from '@calls/components/calls_custom_message';
+import {isCallsCustomMessage} from '@calls/utils';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import {POST_TIME_TO_FAIL} from '@constants/post';
@@ -38,7 +40,7 @@ type PostProps = {
     canDelete: boolean;
     currentUser: UserModel;
     differentThreadSequence: boolean;
-    filesCount: number;
+    hasFiles: boolean;
     hasReplies: boolean;
     highlight?: boolean;
     highlightPinnedOrSaved?: boolean;
@@ -53,8 +55,9 @@ type PostProps = {
     isPostAddChannelMember: boolean;
     location: string;
     post: PostModel;
+    rootId?: string;
     previousPost?: PostModel;
-    reactionsCount: number;
+    hasReactions: boolean;
     searchPatterns?: SearchPattern[];
     shouldRenderReplyButton?: boolean;
     showAddReaction?: boolean;
@@ -84,10 +87,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: changeOpacity(theme.mentionHighlightBg, 0.2),
         },
         pendingPost: {opacity: 0.5},
+        postContent: {paddingHorizontal: 16},
         postStyle: {
             overflow: 'hidden',
             flex: 1,
-            paddingHorizontal: 16,
         },
         profilePictureContainer: {
             marginBottom: 5,
@@ -99,14 +102,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'column',
         },
         rightColumnPadding: {paddingBottom: 3},
-        touchableContainer: {marginHorizontal: -16, paddingHorizontal: 16},
     };
 });
 
 const Post = ({
-    appsEnabled, canDelete, currentUser, differentThreadSequence, filesCount, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
+    appsEnabled, canDelete, currentUser, differentThreadSequence, hasFiles, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
     isCRTEnabled, isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
-    location, post, reactionsCount, searchPatterns, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
+    location, post, rootId, hasReactions, searchPatterns, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
     testID, thread, previousPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
@@ -119,6 +121,8 @@ const Post = ({
     const isPendingOrFailed = isPostPendingOrFailed(post);
     const isFailed = isPostFailed(post);
     const isSystemPost = isSystemMessage(post);
+    const isCallsPost = isCallsCustomMessage(post);
+    const hasBeenDeleted = (post.deleteAt !== 0);
     const isWebHook = isFromWebhook(post);
     const hasSameRoot = useMemo(() => {
         if (isFirstReply) {
@@ -133,18 +137,18 @@ const Post = ({
     }, [isConsecutivePost, post, previousPost, isFirstReply]);
 
     const handlePostPress = () => {
-        if ([Screens.SAVED_POSTS, Screens.MENTIONS, Screens.SEARCH].includes(location)) {
+        if ([Screens.SAVED_MESSAGES, Screens.MENTIONS, Screens.SEARCH, Screens.PINNED_MESSAGES].includes(location)) {
             showPermalink(serverUrl, '', post.id, intl);
             return;
         }
 
         const isValidSystemMessage = isAutoResponder || !isSystemPost;
-        if (post.deleteAt === 0 && isValidSystemMessage && !isPendingOrFailed) {
+        if (isValidSystemMessage && !hasBeenDeleted && !isPendingOrFailed) {
             if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
-                const rootId = post.rootId || post.id;
-                fetchAndSwitchToThread(serverUrl, rootId);
+                const postRootId = post.rootId || post.id;
+                fetchAndSwitchToThread(serverUrl, postRootId);
             }
-        } else if ((isEphemeral || post.deleteAt > 0)) {
+        } else if ((isEphemeral || hasBeenDeleted)) {
             removePost(serverUrl, post);
         }
 
@@ -168,7 +172,6 @@ const Post = ({
             return;
         }
 
-        const hasBeenDeleted = (post.deleteAt !== 0);
         if (isSystemPost && (!canDelete || hasBeenDeleted)) {
             return;
         }
@@ -230,6 +233,7 @@ const Post = ({
                 ) : (
                     <Avatar
                         isAutoReponse={isAutoResponder}
+                        location={location}
                         post={post}
                     />
                 )}
@@ -266,6 +270,14 @@ const Post = ({
     if (isSystemPost && !isEphemeral && !isAutoResponder) {
         body = (
             <SystemMessage
+                location={location}
+                post={post}
+            />
+        );
+    } else if (isCallsPost && !hasBeenDeleted) {
+        body = (
+            <CallsCustomMessage
+                serverUrl={serverUrl}
                 post={post}
             />
         );
@@ -273,10 +285,11 @@ const Post = ({
         body = (
             <Body
                 appsEnabled={appsEnabled}
-                filesCount={filesCount}
-                hasReactions={reactionsCount > 0}
+                hasFiles={hasFiles}
+                hasReactions={hasReactions}
                 highlight={Boolean(highlightedStyle)}
                 highlightReplyBar={highlightReplyBar}
+                isCRTEnabled={isCRTEnabled}
                 isEphemeral={isEphemeral}
                 isFirstReply={isFirstReply}
                 isJumboEmoji={isJumboEmoji}
@@ -294,10 +307,14 @@ const Post = ({
 
     let unreadDot;
     let footer;
-    if (isCRTEnabled && thread) {
+    if (isCRTEnabled && thread && location !== Screens.THREAD && !(rootId && location === Screens.PERMALINK)) {
         if (thread.replyCount > 0 || thread.isFollowing) {
             footer = (
-                <Footer thread={thread}/>
+                <Footer
+                    channelId={post.channelId}
+                    location={location}
+                    thread={thread}
+                />
             );
         }
         if (thread.unreadMentions || thread.unreadReplies) {
@@ -318,7 +335,7 @@ const Post = ({
                 onLongPress={showPostOptions}
                 delayLongPress={200}
                 underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
-                style={styles.touchableContainer}
+                style={styles.postContent}
             >
                 <>
                     <PreHeader

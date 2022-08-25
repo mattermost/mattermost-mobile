@@ -28,14 +28,14 @@ const PlusMenuList = ({canCreateChannels, canJoinChannels}: Props) => {
 
         showModal(Screens.BROWSE_CHANNELS, title, {
             closeButton,
-        }, {modal: {swipeToDismiss: false}});
+        });
     }, [intl, theme]);
 
     const createNewChannel = useCallback(async () => {
         await dismissBottomSheet();
 
         const title = intl.formatMessage({id: 'mobile.create_channel.title', defaultMessage: 'New channel'});
-        showModal(Screens.CREATE_OR_EDIT_CHANNEL, title, undefined, {modal: {swipeToDismiss: false}});
+        showModal(Screens.CREATE_OR_EDIT_CHANNEL, title);
     }, [intl]);
 
     const openDirectMessage = useCallback(async () => {
@@ -45,7 +45,7 @@ const PlusMenuList = ({canCreateChannels, canJoinChannels}: Props) => {
         const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
         showModal(Screens.CREATE_DIRECT_MESSAGE, title, {
             closeButton,
-        }, {modal: {swipeToDismiss: false}});
+        });
     }, [intl, theme]);
 
     return (

@@ -11,7 +11,6 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
 import NetworkManager from '@managers/network_manager';
-import {dismissBottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ProfileImagePicker from './profile_image_picker';
@@ -81,7 +80,6 @@ const EditProfilePicture = ({user, onUpdateProfilePicture}: ChangeProfilePicture
 
         setPictureUrl(pUrl);
         onUpdateProfilePicture({isRemoved, localPath});
-        dismissBottomSheet();
     }, [onUpdateProfilePicture]);
 
     const pictureSource = useMemo(() => {
@@ -105,7 +103,7 @@ const EditProfilePicture = ({user, onUpdateProfilePicture}: ChangeProfilePicture
     return (
         <View
             style={styles.container}
-            testID={`${EditProfilePicture}.${user.id}`}
+            testID={`edit_profile.${user.id}.profile_picture`}
         >
             <ProfileImage
                 size={SIZE}

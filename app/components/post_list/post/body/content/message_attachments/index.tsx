@@ -8,6 +8,7 @@ import MessageAttachment from './message_attachment';
 
 type Props = {
     attachments: MessageAttachment[];
+    channelId: string;
     layoutWidth?: number;
     location: string;
     metadata?: PostMetadata;
@@ -22,13 +23,14 @@ const styles = StyleSheet.create({
     },
 });
 
-const MessageAttachments = ({attachments, layoutWidth, location, metadata, postId, theme}: Props) => {
+const MessageAttachments = ({attachments, channelId, layoutWidth, location, metadata, postId, theme}: Props) => {
     const content: React.ReactNode[] = [];
 
     attachments.forEach((attachment, i) => {
         content.push(
             <MessageAttachment
                 attachment={attachment}
+                channelId={channelId}
                 key={'att_' + i.toString()}
                 layoutWidth={layoutWidth}
                 location={location}

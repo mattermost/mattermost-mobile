@@ -30,6 +30,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             minHeight: '100%',
         },
+        mathStyle: {
+            color: theme.centerChannelColor,
+        },
         scrollCode: {
             minHeight: '100%',
             flexDirection: 'column',
@@ -87,6 +90,7 @@ const Latex = ({content}: Props) => {
                                 onError={onErrorMessage}
                                 renderError={onRenderErrorMessage}
                                 resizeMode={'cover'}
+                                style={style.mathStyle}
                             />
                         </View>
                     ))}

@@ -1,10 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import moment from 'moment-timezone';
+import moment from 'moment';
+import mtz from 'moment-timezone';
 import React from 'react';
 import {useIntl} from 'react-intl';
 import {Text, TextProps} from 'react-native';
+
+import {getLocaleFromLanguage} from '@i18n';
 
 type FormattedDateProps = TextProps & {
     format?: string;
@@ -14,8 +17,8 @@ type FormattedDateProps = TextProps & {
 
 const FormattedDate = ({format = 'MMM DD, YYYY', timezone, value, ...props}: FormattedDateProps) => {
     const {locale} = useIntl();
-    moment.locale(locale);
-    let formattedDate = moment(value).format(format);
+    moment.locale(getLocaleFromLanguage(locale).toLowerCase());
+    let formattedDate = mtz(value).format(format);
     if (timezone) {
         let zone: string;
         if (typeof timezone === 'object') {
@@ -23,7 +26,7 @@ const FormattedDate = ({format = 'MMM DD, YYYY', timezone, value, ...props}: For
         } else {
             zone = timezone;
         }
-        formattedDate = moment.tz(value, zone).format(format);
+        formattedDate = mtz.tz(value, zone).format(format);
     }
 
     return <Text {...props}>{formattedDate}</Text>;

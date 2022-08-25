@@ -8,7 +8,7 @@ import LinearGradient from 'react-native-linear-gradient';
 
 import CompassIcon from '@components/compass_icon';
 import {CELL_MAX_WIDTH, CELL_MIN_WIDTH} from '@components/markdown/markdown_table_cell';
-import DeviceTypes from '@constants/device';
+import {Screens, Device} from '@constants';
 import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -144,15 +144,15 @@ class MarkdownTable extends PureComponent<MarkdownTableProps, MarkdownTableState
 
     handlePress = preventDoubleTap(() => {
         const {intl} = this.props;
-        const screen = 'Table';
+        const screen = Screens.TABLE;
         const title = intl.formatMessage({
             id: 'mobile.routes.table',
             defaultMessage: 'Table',
         });
         const passProps = {
-            renderRows: this.renderRows,
-            tableWidth: this.getTableWidth(true),
             renderAsFlex: this.shouldRenderAsFlex(true),
+            renderRows: this.renderRows,
+            width: this.getTableWidth(true),
         };
 
         goToScreen(screen, title, passProps);
@@ -181,7 +181,7 @@ class MarkdownTable extends PureComponent<MarkdownTableProps, MarkdownTableState
 
         // render as flex in the channel screen, only for mobile phones on the portrait mode,
         // and if tables have 2 ~ 4 columns
-        if (!isFullView && numColumns > 1 && numColumns < 4 && !DeviceTypes.IS_TABLET) {
+        if (!isFullView && numColumns > 1 && numColumns < 4 && !Device.IS_TABLET) {
             return true;
         }
 
@@ -193,7 +193,7 @@ class MarkdownTable extends PureComponent<MarkdownTableProps, MarkdownTableState
 
         // render as flex in full table screen, only for mobile phones on portrait mode,
         // and if tables have 3 or 4 columns
-        if (isFullView && numColumns >= 3 && numColumns <= 4 && !DeviceTypes.IS_TABLET) {
+        if (isFullView && numColumns >= 3 && numColumns <= 4 && !Device.IS_TABLET) {
             return true;
         }
 

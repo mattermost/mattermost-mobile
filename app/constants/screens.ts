@@ -6,10 +6,11 @@ export const ACCOUNT = 'Account';
 export const APPS_FORM = 'AppForm';
 export const BOTTOM_SHEET = 'BottomSheet';
 export const BROWSE_CHANNELS = 'BrowseChannels';
+export const CALL = 'Call';
 export const CHANNEL = 'Channel';
 export const CHANNEL_ADD_PEOPLE = 'ChannelAddPeople';
-export const CHANNEL_EDIT = 'ChannelEdit';
 export const CHANNEL_INFO = 'ChannelInfo';
+export const CHANNEL_MENTION = 'ChannelMention';
 export const CODE = 'Code';
 export const CREATE_DIRECT_MESSAGE = 'CreateDirectMessage';
 export const CREATE_OR_EDIT_CHANNEL = 'CreateOrEditChannel';
@@ -33,18 +34,28 @@ export const LOGIN = 'Login';
 export const MENTIONS = 'Mentions';
 export const MFA = 'MFA';
 export const PERMALINK = 'Permalink';
+export const PINNED_MESSAGES = 'PinnedMessages';
 export const POST_OPTIONS = 'PostOptions';
 export const REACTIONS = 'Reactions';
-export const SAVED_POSTS = 'SavedPosts';
+export const SAVED_MESSAGES = 'SavedMessages';
 export const SEARCH = 'Search';
 export const SELECT_TEAM = 'SelectTeam';
 export const SERVER = 'Server';
 export const SETTINGS = 'Settings';
+export const SETTINGS_ADVANCED = 'SettingsAdvanced';
 export const SETTINGS_DISPLAY = 'SettingsDisplay';
+export const SETTINGS_DISPLAY_CLOCK = 'SettingsDisplayClock';
+export const SETTINGS_DISPLAY_THEME = 'SettingsDisplayTheme';
+export const SETTINGS_DISPLAY_TIMEZONE = 'SettingsDisplayTimezone';
+export const SETTINGS_DISPLAY_TIMEZONE_SELECT = 'SettingsDisplayTimezoneSelect';
 export const SETTINGS_NOTIFICATION = 'SettingsNotification';
+export const SETTINGS_NOTIFICATION_AUTO_RESPONDER = 'SettingsNotificationAutoResponder';
+export const SETTINGS_NOTIFICATION_EMAIL = 'SettingsNotificationEmail';
 export const SETTINGS_NOTIFICATION_MENTION = 'SettingsNotificationMention';
+export const SETTINGS_NOTIFICATION_PUSH = 'SettingsNotificationPush';
 export const SNACK_BAR = 'SnackBar';
 export const SSO = 'SSO';
+export const TABLE = 'Table';
 export const THREAD = 'Thread';
 export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
 export const THREAD_OPTIONS = 'ThreadOptions';
@@ -56,10 +67,11 @@ export default {
     APPS_FORM,
     BOTTOM_SHEET,
     BROWSE_CHANNELS,
+    CALL,
     CHANNEL,
     CHANNEL_ADD_PEOPLE,
-    CHANNEL_EDIT,
     CHANNEL_INFO,
+    CHANNEL_MENTION,
     CODE,
     CREATE_DIRECT_MESSAGE,
     CREATE_OR_EDIT_CHANNEL,
@@ -83,25 +95,35 @@ export default {
     MENTIONS,
     MFA,
     PERMALINK,
+    PINNED_MESSAGES,
     POST_OPTIONS,
     REACTIONS,
-    SAVED_POSTS,
+    SAVED_MESSAGES,
     SEARCH,
     SELECT_TEAM,
     SERVER,
     SETTINGS,
+    SETTINGS_ADVANCED,
     SETTINGS_DISPLAY,
+    SETTINGS_DISPLAY_CLOCK,
+    SETTINGS_DISPLAY_THEME,
+    SETTINGS_DISPLAY_TIMEZONE,
+    SETTINGS_DISPLAY_TIMEZONE_SELECT,
     SETTINGS_NOTIFICATION,
+    SETTINGS_NOTIFICATION_AUTO_RESPONDER,
+    SETTINGS_NOTIFICATION_EMAIL,
     SETTINGS_NOTIFICATION_MENTION,
+    SETTINGS_NOTIFICATION_PUSH,
     SNACK_BAR,
     SSO,
+    TABLE,
     THREAD,
     THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
     USER_PROFILE,
 };
 
-export const MODAL_SCREENS_WITHOUT_BACK = [
+export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
     BROWSE_CHANNELS,
     CHANNEL_INFO,
     CREATE_DIRECT_MESSAGE,
@@ -115,14 +137,22 @@ export const MODAL_SCREENS_WITHOUT_BACK = [
     GALLERY,
     PERMALINK,
     REACTIONS,
-    SAVED_POSTS,
-];
+]);
+
+export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
+    BOTTOM_SHEET,
+    POST_OPTIONS,
+    THREAD_OPTIONS,
+    PERMALINK,
+    REACTIONS,
+    SNACK_BAR,
+    USER_PROFILE,
+]);
 
 export const NOT_READY = [
     CHANNEL_ADD_PEOPLE,
-    CHANNEL_INFO,
+    CHANNEL_MENTION,
     CREATE_TEAM,
     INTEGRATION_SELECTOR,
     INTERACTIVE_DIALOG,
-    USER_PROFILE,
 ];

@@ -31,13 +31,48 @@ public struct PostData: Codable {
 }
 
 extension Network {
-    public func fetchPostsForChannel(withId channelId: String, withSince since: Int64?, withServerUrl serverUrl: String, completionHandler: @escaping ResponseHandler) {
-        let queryParams = since == nil ?
+    public func fetchPostsForChannel(withId channelId: String, withSince since: Int64?, withServerUrl serverUrl: String, withIsCRTEnabled isCRTEnabled: Bool, withRootId rootId: String, completionHandler: @escaping ResponseHandler) {
+        
+        let additionalParams = isCRTEnabled ? "&collapsedThreads=true&collapsedThreadsExtended=true" : ""
+        
+        let endpoint: String
+        if (isCRTEnabled && !rootId.isEmpty) {
+            let queryParams = "?skipFetchThreads=false&perPage=60&fromCreatedAt=0&direction=up"
+            endpoint = "/posts/\(rootId)/thread\(queryParams)\(additionalParams)"
+        } else {
+            let queryParams = since == nil ?
             "?page=0&per_page=\(POST_CHUNK_SIZE)" :
             "?since=\(since!)"
-        let endpoint = "/channels/\(channelId)/posts\(queryParams)"
+            endpoint = "/channels/\(channelId)/posts\(queryParams)\(additionalParams)"
+        }
         let url = buildApiUrl(serverUrl, endpoint)
         
         return request(url, withMethod: "GET", withServerUrl: serverUrl, completionHandler: completionHandler)
+    }
+    
+    public func createPost(serverUrl: String, channelId: String, message: String, fileIds: [String], completionHandler: @escaping ResponseHandler) {
+        do {
+            if !message.isEmpty || !fileIds.isEmpty {
+                let json: [String: Any] = [
+                    "channel_id": channelId,
+                    "message": message,
+                    "file_ids": fileIds
+                ]
+                let data = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+                let headers = ["Content-Type": "application/json; charset=utf-8"]
+                let endpoint = "/posts"
+                let url = buildApiUrl(serverUrl, endpoint)
+                request(
+                    url,
+                    withMethod: "POST",
+                    withBody: data,
+                    withHeaders: headers,
+                    withServerUrl: serverUrl,
+                    completionHandler: completionHandler
+                )
+            }
+        } catch {
+            
+        }
     }
 }

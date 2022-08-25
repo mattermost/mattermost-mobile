@@ -28,14 +28,14 @@ const HeaderTag = ({
         return (
             <BotTag
                 style={style.tag}
-                testID='post_header.bot_tag'
+                testID='post_header.bot.tag'
             />
         );
     } else if (isGuest) {
         return (
             <GuestTag
                 style={style.tag}
-                testID='post_header.guest_tag'
+                testID='post_header.guest.tag'
             />
         );
     } else if (isAutoResponder) {
@@ -44,6 +44,7 @@ const HeaderTag = ({
                 id={t('post_info.auto_responder')}
                 defaultMessage={'Automatic Reply'}
                 style={style.tag}
+                testID='post_header.auto_responder.tag'
             />
         );
     }

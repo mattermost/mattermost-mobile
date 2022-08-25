@@ -4,7 +4,7 @@
 declare class Notification {
     fireDate?: number | string;
     identifier: string;
-    payload: any;
+    payload?: any;
     title: string;
     body: string;
     sound: string;
@@ -49,4 +49,5 @@ interface NotificationWithData extends Notification {
 
 declare class NotificationWithChannel extends Notification {
     channel_id?: string;
+    root_id?: string;
 }

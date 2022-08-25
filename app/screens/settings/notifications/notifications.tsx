@@ -1,104 +1,122 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Platform, ScrollView, View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import {Screens} from '@constants';
-import {useTheme} from '@context/theme';
+import {General, Screens} from '@constants';
 import {t} from '@i18n';
-import {goToScreen} from '@screens/navigation';
-import SettingOption from '@screens/settings/setting_option';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {gotoSettingsScreen} from '@screens/settings/config';
+import {getEmailInterval, getEmailIntervalTexts, getNotificationProps} from '@utils/user';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg,
-        },
-        wrapper: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-            ...Platform.select({
-                ios: {
-                    flex: 1,
-                    paddingTop: 35,
-                },
-            }),
-        },
-        divider: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 1,
-            width: '100%',
-        },
-    };
-});
-const edges: Edge[] = ['left', 'right'];
+import SettingContainer from '../setting_container';
+import SettingItem from '../setting_item';
+
+import type UserModel from '@typings/database/models/servers/user';
+
+const mentionTexts = {
+    crtOn: {
+        id: t('notification_settings.mentions'),
+        defaultMessage: 'Mentions',
+    },
+    crtOff: {
+        id: t('notification_settings.mentions_replies'),
+        defaultMessage: 'Mentions and Replies',
+    },
+};
 
 type NotificationsProps = {
-    isCRTEnabled: boolean;
+    currentUser: UserModel;
+    emailInterval: string;
     enableAutoResponder: boolean;
+    enableEmailBatching: boolean;
+    isCRTEnabled: boolean;
+    sendEmailNotifications: boolean;
 }
-const Notifications = ({isCRTEnabled, enableAutoResponder}: NotificationsProps) => {
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
+const Notifications = ({
+    currentUser,
+    emailInterval,
+    enableAutoResponder,
+    enableEmailBatching,
+    isCRTEnabled,
+    sendEmailNotifications,
+}: NotificationsProps) => {
     const intl = useIntl();
+    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
 
-    let mentionsI18nId = t('notification_settings.mentions_replies');
-    let mentionsI18nDefault = 'Mentions and Replies';
-    if (isCRTEnabled) {
-        mentionsI18nId = t('notification_settings.mentions');
-        mentionsI18nDefault = 'Mentions';
-    }
+    const emailIntervalPref = useMemo(() =>
+        getEmailInterval(
+            sendEmailNotifications && notifyProps?.email === 'true',
+            enableEmailBatching,
+            parseInt(emailInterval, 10),
+        ).toString(),
+    [emailInterval, enableEmailBatching, notifyProps, sendEmailNotifications]);
 
-    const onPressHandler = () => {
-        return Alert.alert(
-            'The functionality you are trying to use has not yet been implemented.',
-        );
-    };
-
-    const goToNotificationSettingsMentions = () => {
+    const goToNotificationSettingsMentions = useCallback(() => {
         const screen = Screens.SETTINGS_NOTIFICATION_MENTION;
 
         const id = isCRTEnabled ? t('notification_settings.mentions') : t('notification_settings.mentions_replies');
         const defaultMessage = isCRTEnabled ? 'Mentions' : 'Mentions and Replies';
         const title = intl.formatMessage({id, defaultMessage});
+        gotoSettingsScreen(screen, title);
+    }, [isCRTEnabled]);
 
-        goToScreen(screen, title);
-    };
+    const goToNotificationSettingsPush = useCallback(() => {
+        const screen = Screens.SETTINGS_NOTIFICATION_PUSH;
+        const title = intl.formatMessage({
+            id: 'notification_settings.push_notification',
+            defaultMessage: 'Push Notifications',
+        });
+
+        gotoSettingsScreen(screen, title);
+    }, []);
+
+    const goToNotificationAutoResponder = useCallback(() => {
+        const screen = Screens.SETTINGS_NOTIFICATION_AUTO_RESPONDER;
+        const title = intl.formatMessage({
+            id: 'notification_settings.auto_responder',
+            defaultMessage: 'Automatic Replies',
+        });
+        gotoSettingsScreen(screen, title);
+    }, []);
+
+    const goToEmailSettings = useCallback(() => {
+        const screen = Screens.SETTINGS_NOTIFICATION_EMAIL;
+        const title = intl.formatMessage({id: 'notification_settings.email', defaultMessage: 'Email Notifications'});
+        gotoSettingsScreen(screen, title);
+    }, []);
 
     return (
-        <SafeAreaView
-            edges={edges}
-            testID='notification_settings.screen'
-            style={styles.container}
-        >
-            <ScrollView
-                contentContainerStyle={styles.wrapper}
-                alwaysBounceVertical={false}
-            >
-                <View style={styles.divider}/>
-                <SettingOption
-                    defaultMessage={mentionsI18nDefault}
-                    i18nId={mentionsI18nId}
-                    onPress={goToNotificationSettingsMentions}
-                    optionName='mentions'
+        <SettingContainer testID='notification_settings'>
+            <SettingItem
+                onPress={goToNotificationSettingsMentions}
+                optionName='mentions'
+                label={intl.formatMessage({
+                    id: isCRTEnabled ? mentionTexts.crtOn.id : mentionTexts.crtOff.id,
+                    defaultMessage: isCRTEnabled ? mentionTexts.crtOn.defaultMessage : mentionTexts.crtOff.defaultMessage,
+                })}
+                testID='notification_settings.mentions.option'
+            />
+            <SettingItem
+                optionName='push_notification'
+                onPress={goToNotificationSettingsPush}
+                testID='notification_settings.push_notifications.option'
+            />
+            <SettingItem
+                optionName='email'
+                onPress={goToEmailSettings}
+                info={intl.formatMessage(getEmailIntervalTexts(emailIntervalPref))}
+                testID='notification_settings.email_notifications.option'
+            />
+            {enableAutoResponder && (
+                <SettingItem
+                    onPress={goToNotificationAutoResponder}
+                    optionName='automatic_dm_replies'
+                    info={currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active === 'true' ? 'On' : 'Off'}
+                    testID='notification_settings.automatic_replies.option'
                 />
-                <SettingOption
-                    optionName='push_notification'
-                    onPress={onPressHandler}
-                />
-                {enableAutoResponder && (
-                    <SettingOption
-                        onPress={onPressHandler}
-                        optionName='automatic_dm_replies'
-                    />
-                )}
-                <View style={styles.divider}/>
-            </ScrollView>
-        </SafeAreaView>
+            )}
+        </SettingContainer>
     );
 };
 

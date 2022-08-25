@@ -24,6 +24,7 @@ const UserProfilePicture = ({currentUser, lockedPicture, onUpdateProfilePicture}
                 author={currentUser}
                 size={USER_PROFILE_PICTURE_SIZE}
                 showStatus={false}
+                testID={`edit_profile.${currentUser.id}.profile_picture`}
             />
         );
     }

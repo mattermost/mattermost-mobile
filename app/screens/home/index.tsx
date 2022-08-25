@@ -11,16 +11,18 @@ import {enableFreeze, enableScreens} from 'react-native-screens';
 
 import {Events, Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {findChannels} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
+import {findChannels, popToRoot} from '@screens/navigation';
+import NavigationStore from '@store/navigation_store';
 import {alertChannelArchived, alertChannelRemove, alertTeamRemove} from '@utils/navigation';
 import {notificationError} from '@utils/notification';
 
 import Account from './account';
 import ChannelList from './channel_list';
 import RecentMentions from './recent_mentions';
-import Search from './search';
+import SavedMessages from './saved_messages';
 import TabBar from './tab_bar';
+
+// import Search from './search';
 
 import type {LaunchProps} from '@typings/launch';
 
@@ -65,16 +67,23 @@ export default function HomeScreen(props: HomeProps) {
             alertChannelArchived(displayName, intl);
         });
 
+        const crtToggledListener = DeviceEventEmitter.addListener(Events.CRT_TOGGLED, (isSameServer: boolean) => {
+            if (isSameServer) {
+                popToRoot();
+            }
+        });
+
         return () => {
             leaveTeamListener.remove();
             leaveChannelListener.remove();
             archivedChannelListener.remove();
+            crtToggledListener.remove();
         };
     }, [intl.locale]);
 
     useEffect(() => {
         const listener = HWKeyboardEvent.onHWKeyPressed((keyEvent: {pressedKey: string}) => {
-            const screen = EphemeralStore.getAllNavigationComponents();
+            const screen = NavigationStore.getAllNavigationComponents();
             if (!screen.includes(Screens.FIND_CHANNELS) && keyEvent.pressedKey === 'find-channels') {
                 findChannels(
                     intl.formatMessage({id: 'find_channels.title', defaultMessage: 'Find Channels'}),
@@ -103,6 +112,7 @@ export default function HomeScreen(props: HomeProps) {
         >
             <Tab.Navigator
                 screenOptions={{headerShown: false, lazy: true, unmountOnBlur: false}}
+                backBehavior='none'
                 tabBar={(tabProps: BottomTabBarProps) => (
                     <TabBar
                         {...tabProps}
@@ -115,15 +125,20 @@ export default function HomeScreen(props: HomeProps) {
                 >
                     {() => <ChannelList {...props}/>}
                 </Tab.Screen>
-                <Tab.Screen
+                {/* <Tab.Screen
                     name={Screens.SEARCH}
                     component={Search}
                     options={{unmountOnBlur: false, lazy: true, tabBarTestID: 'tab_bar.search.tab'}}
-                />
+                /> */}
                 <Tab.Screen
                     name={Screens.MENTIONS}
                     component={RecentMentions}
                     options={{tabBarTestID: 'tab_bar.mentions.tab', lazy: true, unmountOnBlur: false}}
+                />
+                <Tab.Screen
+                    name={Screens.SAVED_MESSAGES}
+                    component={SavedMessages}
+                    options={{unmountOnBlur: false, lazy: true, tabBarTestID: 'tab_bar.saved_messages.tab'}}
                 />
                 <Tab.Screen
                     name={Screens.ACCOUNT}

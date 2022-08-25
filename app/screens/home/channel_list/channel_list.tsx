@@ -5,17 +5,17 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {BackHandler, StyleSheet, ToastAndroid} from 'react-native';
+import {BackHandler, DeviceEventEmitter, StyleSheet, ToastAndroid} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FreezeScreen from '@components/freeze_screen';
 import TeamSidebar from '@components/team_sidebar';
-import {Screens} from '@constants';
+import {Navigation as NavigationConstants, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {resetToTeams} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 
 import AdditionalTabletView from './additional_tablet_view';
 import CategoriesList from './categories_list';
@@ -54,7 +54,9 @@ const ChannelListScreen = (props: ChannelProps) => {
     const canAddOtherServers = managedConfig?.allowOtherServers !== 'false';
 
     const handleBackPress = useCallback(() => {
-        const focused = navigation.isFocused() && EphemeralStore.getNavigationTopComponentId() === Screens.HOME;
+        const isHomeScreen = NavigationStore.getNavigationTopComponentId() === Screens.HOME;
+        const homeTab = NavigationStore.getVisibleTab() === Screens.HOME;
+        const focused = navigation.isFocused() && isHomeScreen && homeTab;
         if (!backPressedCount && focused) {
             backPressedCount++;
             ToastAndroid.show(intl.formatMessage({
@@ -69,6 +71,9 @@ const ChannelListScreen = (props: ChannelProps) => {
                 clearTimeout(backPressTimeout!);
                 backPressedCount = 0;
             }, 2000);
+            return true;
+        } else if (isHomeScreen && !homeTab) {
+            DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME);
             return true;
         }
         return false;

@@ -4,27 +4,34 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Database} from '@nozbe/watermelondb';
 import Clipboard from '@react-native-community/clipboard';
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {GestureResponderEvent, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
+import {GestureResponderEvent, Keyboard, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import CompassIcon from '@components/compass_icon';
+import {fetchUserOrGroupsByMentionsInBatch} from '@actions/remote/user';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
+import {Screens} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import GroupModel from '@database/models/server/group';
 import UserModel from '@database/models/server/user';
-import {bottomSheet, dismissBottomSheet, showModal} from '@screens/navigation';
+import {bottomSheet, dismissBottomSheet, openAsBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {displayUsername, getUsersByUsername} from '@utils/user';
 
+import type GroupModelType from '@typings/database/models/servers/group';
+import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type UserModelType from '@typings/database/models/servers/user';
 
 type AtMentionProps = {
+    channelId?: string;
     currentUserId: string;
     database: Database;
     disableAtChannelMentionHighlight?: boolean;
     isSearchResult?: boolean;
+    location: string;
     mentionKeys?: Array<{key: string }>;
     mentionName: string;
     mentionStyle: TextStyle;
@@ -32,19 +39,23 @@ type AtMentionProps = {
     teammateNameDisplay: string;
     textStyle?: StyleProp<TextStyle>;
     users: UserModelType[];
+    groups: GroupModel[];
+    groupMemberships: GroupMembershipModel[];
 }
 
-const {SERVER: {USER}} = MM_TABLES;
+const {SERVER: {GROUP, USER}} = MM_TABLES;
 
 const style = StyleSheet.create({
     bottomSheet: {flex: 1},
 });
 
 const AtMention = ({
+    channelId,
     currentUserId,
     database,
     disableAtChannelMentionHighlight,
     isSearchResult,
+    location,
     mentionName,
     mentionKeys,
     mentionStyle,
@@ -52,11 +63,15 @@ const AtMention = ({
     teammateNameDisplay,
     textStyle,
     users,
+    groups,
+    groupMemberships,
 }: AtMentionProps) => {
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const theme = useTheme();
     const insets = useSafeAreaInsets();
+    const serverUrl = useServerUrl();
+
     const user = useMemo(() => {
         const usersByUsername = getUsersByUsername(users);
         let mn = mentionName.toLowerCase();
@@ -89,26 +104,57 @@ const AtMention = ({
         return user.mentionKeys;
     }, [currentUserId, mentionKeys, user]);
 
-    const goToUserProfile = () => {
-        const screen = 'UserProfile';
+    // Checks if the mention is a group
+    const group = useMemo(() => {
+        if (user?.username) {
+            return undefined;
+        }
+        const getGroupsByName = (gs: GroupModelType[]) => {
+            const groupsByName: Dictionary<GroupModelType> = {};
+
+            for (const g of gs) {
+                groupsByName[g.name] = g;
+            }
+
+            return groupsByName;
+        };
+
+        const groupsByName = getGroupsByName(groups);
+        let mn = mentionName.toLowerCase();
+
+        while (mn.length > 0) {
+            if (groupsByName[mn]) {
+                return groupsByName[mn];
+            }
+
+            // Repeatedly trim off trailing punctuation in case this is at the end of a sentence
+            if ((/[._-]$/).test(mn)) {
+                mn = mn.substring(0, mn.length - 1);
+            } else {
+                break;
+            }
+        }
+
+        // @ts-expect-error: The model constructor is hidden within WDB type definition
+        return new GroupModel(database.get(GROUP), {name: ''});
+    }, [groups, user, mentionName]);
+
+    // Effects
+    useEffect(() => {
+        // Fetches and updates the local db store with the mention
+        if (!user.username) {
+            fetchUserOrGroupsByMentionsInBatch(serverUrl, mentionName);
+        }
+    }, []);
+
+    const openUserProfile = () => {
+        const screen = Screens.USER_PROFILE;
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
-        const passProps = {
-            userId: user.id,
-        };
+        const closeButtonId = 'close-user-profile';
+        const props = {closeButtonId, location, userId: user.id, channelId};
 
-        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-
-        const options = {
-            topBar: {
-                leftButtons: [{
-                    id: 'close-settings',
-                    icon: closeButton,
-                    testID: 'close.settings.button',
-                }],
-            },
-        };
-
-        showModal(screen, title, passProps, options);
+        Keyboard.dismiss();
+        openAsBottomSheet({screen, title, theme, closeButtonId, props});
     };
 
     const handleLongPress = useCallback(() => {
@@ -180,6 +226,11 @@ const AtMention = ({
         mention = displayUsername(user, user.locale, teammateNameDisplay);
         isMention = true;
         canPress = true;
+    } else if (group?.name) {
+        mention = group.name;
+        highlighted = groupMemberships.some((gm) => gm.groupId === group.id);
+        isMention = true;
+        canPress = false;
     } else {
         const pattern = new RegExp(/\b(all|channel|here)(?:\.\B|_\b|\b)/, 'i');
         const mentionMatch = pattern.exec(mentionName);
@@ -196,7 +247,7 @@ const AtMention = ({
 
     if (canPress) {
         onLongPress = handleLongPress;
-        onPress = (isSearchResult ? onPostPress : goToUserProfile);
+        onPress = (isSearchResult ? onPostPress : openUserProfile);
     }
 
     if (suffix) {

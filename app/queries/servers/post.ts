@@ -7,10 +7,10 @@ import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
-import PostModel from '@typings/database/models/servers/post';
 
 import {queryPreferencesByCategoryAndName} from './preference';
 
+import type PostModel from '@typings/database/models/servers/post';
 import type PostInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 
@@ -177,4 +177,17 @@ export const queryPostsBetween = (database: Database, earliest: number, latest: 
         clauses.push(Q.sortBy('create_at', sort));
     }
     return database.get<PostModel>(POST).query(...clauses);
+};
+
+export const queryPinnedPostsInChannel = (database: Database, channelId: string) => {
+    return database.get<PostModel>(POST).query(
+        Q.and(
+            Q.where('channel_id', channelId),
+            Q.where('is_pinned', Q.eq(true)),
+        ),
+    );
+};
+
+export const observePinnedPostsInChannel = (database: Database, channelId: string) => {
+    return queryPinnedPostsInChannel(database, channelId).observe();
 };

@@ -1,9 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import moment from 'moment-timezone';
+import moment from 'moment';
+import mtz from 'moment-timezone';
 import React from 'react';
+import {useIntl} from 'react-intl';
 import {Text, TextProps} from 'react-native';
+
+import {getLocaleFromLanguage} from '@i18n';
 
 type FormattedTimeProps = TextProps & {
     isMilitaryTime: boolean;
@@ -12,10 +16,12 @@ type FormattedTimeProps = TextProps & {
 }
 
 const FormattedTime = ({isMilitaryTime, timezone, value, ...props}: FormattedTimeProps) => {
+    const {locale} = useIntl();
+    moment.locale(getLocaleFromLanguage(locale).toLowerCase());
     const getFormattedTime = () => {
         let format = 'H:mm';
         if (!isMilitaryTime) {
-            const localeFormat = moment.localeData().longDateFormat('LT');
+            const localeFormat = mtz.localeData().longDateFormat('LT');
             format = localeFormat?.includes('A') ? localeFormat : 'h:mm A';
         }
 
@@ -26,7 +32,7 @@ const FormattedTime = ({isMilitaryTime, timezone, value, ...props}: FormattedTim
             zone = timezone;
         }
 
-        return timezone ? moment.tz(value, zone).format(format) : moment(value).format(format);
+        return timezone ? mtz.tz(value, zone).format(format) : mtz(value).format(format);
     };
 
     const formattedTime = getFormattedTime();
