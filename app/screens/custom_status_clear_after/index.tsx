@@ -76,7 +76,7 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
                     enabled: true,
                     id: CLEAR_AFTER,
                     showAsAction: 'always',
-                    testID: 'clear_after.done.button',
+                    testID: 'custom_status_clear_after.done.button',
                     text: props.intl.formatMessage({
                         id: 'mobile.custom_status.modal_confirm',
                         defaultMessage: 'Done',
@@ -173,7 +173,7 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
         }
 
         return (
-            <View testID='clear_after.menu'>
+            <View testID='custom_status_clear_after.menu'>
                 <View style={style.block}>{clearAfterMenu}</View>
             </View>
         );
@@ -186,7 +186,7 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
         return (
             <SafeAreaView
                 style={style.container}
-                testID='clear_after.screen'
+                testID='custom_status_clear_after.screen'
             >
                 <KeyboardAwareScrollView bounces={false}>
                     <View style={style.scrollView}>
