@@ -8,7 +8,6 @@ import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
 import {queryChannelsById} from '@queries/servers/channel';
-import {queryPostsById} from '@queries/servers/post';
 import {observeLicense, observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {getTimezone} from '@utils/user';
@@ -16,19 +15,12 @@ import {getTimezone} from '@utils/user';
 import Results from './results';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type PostModel from '@typings/database/models/servers/post';
 
 type enhancedProps = WithDatabaseArgs & {
-    postIds: string[];
     fileChannelIds: string[];
 }
 
-const sortPosts = (a: PostModel, b: PostModel) => a.createAt - b.createAt;
-
-const enhance = withObservables(['postIds', 'fileChannelIds'], ({database, postIds, fileChannelIds}: enhancedProps) => {
-    const posts = queryPostsById(database, postIds).observeWithColumns(['type', 'createAt']).pipe(
-        switchMap((pp) => of$(pp.sort(sortPosts))),
-    );
+const enhance = withObservables(['fileChannelIds'], ({database, fileChannelIds}: enhancedProps) => {
     const fileChannels = queryChannelsById(database, fileChannelIds).observeWithColumns(['displayName']);
     const currentUser = observeCurrentUser(database);
 
@@ -45,7 +37,6 @@ const enhance = withObservables(['postIds', 'fileChannelIds'], ({database, postI
     return {
         currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone))))),
         isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
-        posts,
         fileChannels,
         canDownloadFiles,
         publicLinkEnabled: observeConfigBooleanValue(database, 'EnablePublicLink'),

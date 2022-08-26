@@ -16,8 +16,8 @@ const headerText = {
 };
 
 type MobilePushStatusProps = {
-    pushStatus: PushStatus;
-    setMobilePushStatus: (status: PushStatus) => void;
+    pushStatus: UserNotifyPropsPushStatus;
+    setMobilePushStatus: (status: UserNotifyPropsPushStatus) => void;
 }
 const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusProps) => {
     const intl = useIntl();
