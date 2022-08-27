@@ -3,7 +3,8 @@
 
 import {chunk} from 'lodash';
 import React, {useCallback, useMemo, useRef, useState} from 'react';
-import {Dimensions, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, SectionList, SectionListData, StyleSheet, View} from 'react-native';
+import {Dimensions, SectionListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, SectionList as RNSectionList, SectionListData, StyleSheet, View} from 'react-native';
+import {createNativeWrapper} from 'react-native-gesture-handler';
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
 import {fetchCustomEmojis} from '@actions/remote/custom_emoji';
@@ -26,8 +27,8 @@ export const EMOJI_GUTTER = 8;
 export const EMOJI_SIZE = 32;
 export const EMOJI_FULL_SIZE = EMOJI_SIZE + EMOJI_GUTTER;
 export const ITEM_HEIGHT = EMOJI_SIZE + (EMOJI_GUTTER * 2);
-export const CONTAINER_WIDTH = windowWidth - (2 * CONTAINER_PADDING_HORIZONTAL);
-export const MOBILE_EMOJI_WIDTH = CONTAINER_WIDTH / Math.floor(CONTAINER_WIDTH / EMOJI_FULL_SIZE);
+export const CONTAINER_WIDTH = (Device.IS_TABLET ? 500 : windowWidth) - (2 * CONTAINER_PADDING_HORIZONTAL);
+export const EMOJI_WIDTH = CONTAINER_WIDTH / Math.floor(CONTAINER_WIDTH / EMOJI_FULL_SIZE);
 
 const ICONS: Record<string, string> = {
     recent: 'clock-outline',
@@ -56,7 +57,7 @@ const styles = StyleSheet.create(({
     },
     emoji: {
         height: EMOJI_FULL_SIZE,
-        width: Device.IS_TABLET ? EMOJI_FULL_SIZE : MOBILE_EMOJI_WIDTH,
+        width: EMOJI_WIDTH,
 
     },
 }));
@@ -80,9 +81,11 @@ CategoryNames.forEach((name: string) => {
     }
 });
 
+const SectionList = createNativeWrapper(RNSectionList, {disallowInterruption: true, shouldCancelWhenOutside: false});
+
 const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis, skinTone, width}: Props) => {
     const serverUrl = useServerUrl();
-    const list = useRef<SectionList<EmojiSection>>(null);
+    const list = useRef<typeof SectionList & RNSectionList>(null);
     const [sectionIndex, setSectionIndex] = useState(0);
     const [customEmojiPage, setCustomEmojiPage] = useState(0);
     const [fetchingCustomEmojis, setFetchingCustomEmojis] = useState(false);
@@ -198,8 +201,7 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
         return fetchingCustomEmojis ? <SectionFooter/> : null;
     }, [fetchingCustomEmojis]);
 
-    const renderItem = useCallback(({item}: ListRenderItemInfo<EmojiAlias[]>) => {
-        // const itemWidth = width / Math.floor(width / EMOJI_FULL_SIZE);
+    const renderItem = useCallback(({item}: SectionListRenderItemInfo<EmojiAlias[]>) => {
         return (
             <View style={styles.row}>
                 {item.map((emoji) => {

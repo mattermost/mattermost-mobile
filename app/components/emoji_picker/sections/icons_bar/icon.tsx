@@ -22,6 +22,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
         justifyContent: 'center',
         zIndex: 10,
+        borderRadius: 4,
+        overflow: 'hidden',
     },
     icon: {
         fontSize: 18,
@@ -29,9 +31,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         padding: 8,
     },
     selected: {
-        borderRadius: 4,
-        borderWidth: 1,
-        borderColor: changeOpacity(theme.buttonBg, 0.08),
         backgroundColor: changeOpacity(theme.buttonBg, 0.08),
         color: theme.buttonBg,
     },

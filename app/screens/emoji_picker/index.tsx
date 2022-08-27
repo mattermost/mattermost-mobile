@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef} from 'react';
-import {Keyboard} from 'react-native';
+import {View, Keyboard, StyleSheet} from 'react-native';
 import RNBottomSheet from 'reanimated-bottom-sheet';
 
 import {Device, Screens} from '@app/constants';
@@ -10,7 +10,13 @@ import EmojiPicker from '@components/emoji_picker';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissBottomSheet, dismissModal, setButtons} from '@screens/navigation';
 
-import BottomSheet from '../bottom_sheet';
+import BottomSheet, {CONTAINER_PADDING_HORIZONTAL} from '../bottom_sheet';
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1, paddingHorizontal: CONTAINER_PADDING_HORIZONTAL,
+    },
+});
 
 type Props = {
     componentId: string;
@@ -53,13 +59,13 @@ const EmojiPickerScreen = ({closeButton, componentId, onEmojiPress}: Props) => {
         close();
     }, []);
 
-    const onSearchFocus = () => {
+    const onSearchFocus = useCallback(() => {
         if (!Device.IS_TABLET) {
             bottomSheetRef?.current?.snapTo(0);
         }
-    };
+    }, []);
 
-    const renderContent = () => {
+    const renderContent = useCallback(() => {
         return (
             <EmojiPicker
                 onEmojiPress={handleEmojiPress}
@@ -67,7 +73,15 @@ const EmojiPickerScreen = ({closeButton, componentId, onEmojiPress}: Props) => {
                 testID='emoji_picker'
             />
         );
-    };
+    }, []);
+
+    if (Device.IS_TABLET) {
+        return (
+            <View style={styles.container}>
+                {renderContent()}
+            </View>
+        );
+    }
 
     return (
         <BottomSheet

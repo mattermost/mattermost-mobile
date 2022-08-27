@@ -3,7 +3,8 @@
 
 import Fuse from 'fuse.js';
 import React, {useCallback, useMemo} from 'react';
-import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {FlatList} from 'react-native-gesture-handler';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {getEmojis, searchEmojis} from '@utils/emoji/helpers';

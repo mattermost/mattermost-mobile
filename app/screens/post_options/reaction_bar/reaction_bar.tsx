@@ -58,10 +58,10 @@ const ReactionBar = ({recentEmojis = [], postId}: QuickReactionProps) => {
         await dismissBottomSheet(Screens.POST_OPTIONS);
 
         const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        const title = intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
-        const passProps = {closeButton, onEmojiPress: handleEmojiPress};
         const closeButtonId = 'close-emoji-picker';
+        const passProps = {closeButton, onEmojiPress: handleEmojiPress};
         const screen = Screens.EMOJI_PICKER;
+        const title = intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
         openAsBottomSheet({closeButtonId, screen, props: passProps, title, theme});
     }, [intl, theme]);
 
