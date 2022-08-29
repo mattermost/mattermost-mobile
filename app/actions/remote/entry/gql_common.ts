@@ -57,7 +57,7 @@ export async function deferredAppEntryGraphQLActions(
     setTimeout(() => {
         if (chData?.channels?.length && chData.memberships?.length) {
             // defer fetching posts for unread channels on initial team
-            fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId);
+            fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId, true);
         }
     }, FETCH_UNREADS_TIMEOUT);
 
