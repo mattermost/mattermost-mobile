@@ -8,6 +8,7 @@ import {FlatList, LayoutChangeEvent, Platform, StyleSheet, ViewProps} from 'reac
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {getPosts} from '@actions/local/post';
 import {addSearchToTeamSearchHistory} from '@actions/local/team';
 import {searchPosts, searchFiles} from '@actions/remote/search';
 import Autocomplete from '@components/autocomplete';
@@ -27,11 +28,13 @@ import Initial from './initial';
 import Results from './results';
 import Header from './results/header';
 
+import type PostModel from '@typings/database/models/servers/post';
+
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 const emptyFileResults: FileInfo[] = [];
-const emptyPostResults: string[] = [];
+const emptyPosts: PostModel[] = [];
 const emptyChannelIds: string[] = [];
 
 const dummyData = [1];
@@ -87,8 +90,7 @@ const SearchScreen = ({teamId}: Props) => {
     const [loading, setLoading] = useState(false);
     const [resultsLoading, setResultsLoading] = useState(false);
     const [lastSearchedValue, setLastSearchedValue] = useState('');
-
-    const [postIds, setPostIds] = useState<string[]>(emptyPostResults);
+    const [posts, setPosts] = useState<PostModel[]>(emptyPosts);
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
     const [fileChannelIds, setFileChannelIds] = useState<string[]>([]);
 
@@ -130,9 +132,11 @@ const SearchScreen = ({teamId}: Props) => {
         ]);
 
         setFileInfos(files?.length ? files : emptyFileResults);
-        setPostIds(postResults?.order?.length ? postResults.order : emptyPostResults);
+        if (postResults.order) {
+            const postModels = await getPosts(serverUrl, postResults.order);
+            setPosts(postModels.length ? postModels : emptyPosts);
+        }
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
-
         handleLoading(false);
         setShowResults(true);
     }, [handleCancelAndClearSearch, handleLoading, showResults]);
@@ -184,29 +188,14 @@ const SearchScreen = ({teamId}: Props) => {
         />
     ), [searchValue, searchTeamId, handleRecentSearch, handleTextChange]);
 
-    const resultsComponent = useMemo(() => (
-        <Results
-            loading={resultsLoading}
-            selectedTab={selectedTab}
-            searchValue={lastSearchedValue}
-            postIds={postIds}
-            fileInfos={fileInfos}
-            fileChannelIds={fileChannelIds}
-        />
-    ), [selectedTab, lastSearchedValue, postIds, fileInfos, fileChannelIds, resultsLoading]);
-
     const renderItem = useCallback(() => {
         if (loading) {
             return loadingComponent;
         }
-        if (!showResults) {
-            return initialComponent;
-        }
-        return resultsComponent;
+        return initialComponent;
     }, [
         loading && loadingComponent,
-        !loading && !showResults && initialComponent,
-        !loading && showResults && resultsComponent,
+        initialComponent,
     ]);
 
     const animated = useAnimatedStyle(() => {
@@ -243,7 +232,7 @@ const SearchScreen = ({teamId}: Props) => {
                 setTeamId={handleResultsTeamChange}
                 onTabSelect={setSelectedTab}
                 onFilterChanged={handleFilterChange}
-                numberMessages={postIds.length}
+                numberMessages={posts.length}
                 selectedTab={selectedTab}
                 numberFiles={fileInfos.length}
                 selectedFilter={filter}
@@ -300,21 +289,34 @@ const SearchScreen = ({teamId}: Props) => {
                         <RoundedHeaderContext/>
                         {header}
                     </Animated.View>
-                    <AnimatedFlatList
-                        data={dummyData}
-                        contentContainerStyle={containerStyle}
-                        keyboardShouldPersistTaps='handled'
-                        keyboardDismissMode={'interactive'}
-                        nestedScrollEnabled={true}
-                        indicatorStyle='black'
-                        onScroll={onScroll}
-                        scrollEventThrottle={16}
-                        removeClippedSubviews={false}
-                        scrollToOverflowEnabled={true}
-                        overScrollMode='always'
-                        ref={scrollRef}
-                        renderItem={renderItem}
-                    />
+                    {!showResults &&
+                        <AnimatedFlatList
+                            data={dummyData}
+                            contentContainerStyle={containerStyle}
+                            keyboardShouldPersistTaps='handled'
+                            keyboardDismissMode={'interactive'}
+                            nestedScrollEnabled={true}
+                            indicatorStyle='black'
+                            onScroll={onScroll}
+                            scrollEventThrottle={16}
+                            removeClippedSubviews={false}
+                            scrollToOverflowEnabled={true}
+                            overScrollMode='always'
+                            ref={scrollRef}
+                            renderItem={renderItem}
+                        />
+                    }
+                    {showResults && !loading &&
+                        <Results
+                            loading={resultsLoading}
+                            selectedTab={selectedTab}
+                            searchValue={lastSearchedValue}
+                            posts={posts}
+                            fileInfos={fileInfos}
+                            scrollPaddingTop={scrollPaddingTop}
+                            fileChannelIds={fileChannelIds}
+                        />
+                    }
                 </Animated.View>
             </SafeAreaView>
         </FreezeScreen>

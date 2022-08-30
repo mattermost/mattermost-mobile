@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {t} from '@i18n';
+import {goToScreen} from '@screens/navigation';
 import {typography} from '@utils/typography';
 
 import type {IntlShape} from 'react-intl';
@@ -15,6 +16,18 @@ export const getSaveButton = (buttonId: string, intl: IntlShape, color: string) 
     text: intl.formatMessage({id: 'settings.save', defaultMessage: 'Save'}),
     ...typography('Body', 100, 'SemiBold'),
 });
+
+export const gotoSettingsScreen = (screen: string, title: string) => {
+    const passProps = {};
+    const options = {
+        topBar: {
+            backButton: {
+                popStackOnPress: false,
+            },
+        },
+    };
+    return goToScreen(screen, title, passProps, options);
+};
 
 type SettingConfigDetails = {
         defaultMessage?: string;

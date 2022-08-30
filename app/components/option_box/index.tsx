@@ -33,7 +33,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
         maxHeight: OPTIONS_HEIGHT,
         justifyContent: 'center',
-        minWidth: 80,
+        minWidth: 60,
     },
     destructiveContainer: {
         backgroundColor: changeOpacity(theme.dndIndicator, 0.04),

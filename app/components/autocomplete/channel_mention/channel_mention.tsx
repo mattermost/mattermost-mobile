@@ -17,6 +17,7 @@ import useDidUpdate from '@hooks/did_update';
 import {t} from '@i18n';
 import {queryAllChannelsForTeam} from '@queries/servers/channel';
 import {getCurrentTeamId} from '@queries/servers/system';
+import {hasTrailingSpaces} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -148,11 +149,12 @@ const makeSections = (channels: Array<Channel | ChannelModel>, myMembers: MyChan
     return newSections;
 };
 
-const filterLocalResults = (channels: ChannelModel[], term: string) => {
-    return channels.filter((c) =>
-        c.name.toLowerCase().startsWith(term) ||
-        c.displayName.toLowerCase().startsWith(term),
-    );
+const filterResults = (channels: Array<Channel | ChannelModel>, term: string) => {
+    return channels.filter((c) => {
+        const displayName = ('displayName' in c ? c.displayName : c.display_name).toLowerCase();
+        return c.name.toLowerCase().includes(term) ||
+            displayName.includes(term);
+    });
 };
 
 type Props = {
@@ -186,8 +188,7 @@ const getAllChannels = async (serverUrl: string) => {
 };
 
 const emptySections: Array<SectionListData<Channel>> = [];
-const emptyChannels: Channel[] = [];
-const emptyModelList: ChannelModel[] = [];
+const emptyChannels: Array<Channel | ChannelModel> = [];
 
 const ChannelMention = ({
     cursorPosition,
@@ -204,13 +205,13 @@ const ChannelMention = ({
     const style = getStyleFromTheme(theme);
 
     const [sections, setSections] = useState<Array<SectionListData<(Channel | ChannelModel)>>>(emptySections);
-    const [channels, setChannels] = useState<Channel[]>(emptyChannels);
+    const [channels, setChannels] = useState<Array<ChannelModel | Channel>>(emptyChannels);
     const [loading, setLoading] = useState(false);
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
     const [localCursorPosition, setLocalCursorPosition] = useState(cursorPosition); // To avoid errors due to delay between value changes and cursor position changes.
     const [useLocal, setUseLocal] = useState(true);
     const [localChannels, setlocalChannels] = useState<ChannelModel[]>();
-    const [filteredLocalChannels, setFilteredLocalChannels] = useState(emptyModelList);
+    const [filteredLocalChannels, setFilteredLocalChannels] = useState(emptyChannels);
 
     const listStyle = useMemo(() =>
         [style.listView, {maxHeight: maxListHeight}]
@@ -227,17 +228,21 @@ const ChannelMention = ({
                 fallbackChannels = await getAllChannels(sUrl);
                 setlocalChannels(fallbackChannels);
             }
-            const filteredChannels = filterLocalResults(fallbackChannels, term);
-            setFilteredLocalChannels(filteredChannels.length ? filteredChannels : emptyModelList);
+            const filteredChannels = filterResults(fallbackChannels, term);
+            setFilteredLocalChannels(filteredChannels.length ? filteredChannels : emptyChannels);
         } else if (receivedChannels) {
-            setChannels(receivedChannels.length ? receivedChannels : emptyChannels);
+            let channelsToStore: Array<Channel | ChannelModel> = receivedChannels;
+            if (hasTrailingSpaces(term)) {
+                channelsToStore = filterResults(receivedChannels, term);
+            }
+            setChannels(channelsToStore.length ? channelsToStore : emptyChannels);
         }
         setLoading(false);
     }, 200), []);
 
     const matchTerm = getMatchTermForChannelMention(value.substring(0, localCursorPosition), isSearch);
     const resetState = () => {
-        setFilteredLocalChannels(emptyModelList);
+        setFilteredLocalChannels(emptyChannels);
         setChannels(emptyChannels);
         setSections(emptySections);
         runSearch.cancel();

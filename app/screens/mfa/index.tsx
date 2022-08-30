@@ -19,8 +19,8 @@ import {Screens} from '@constants';
 import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import Background from '@screens/background';
+import {resetToTeams} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
-import {logInfo} from '@utils/log';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -151,9 +151,10 @@ const MFA = ({config, goToHome, license, loginId, password, serverDisplayName, s
             }
 
             setError(result.error.message);
+            return;
         }
         if (!result.hasTeams && !result.error) {
-            logInfo('GO TO NO TEAMS');
+            resetToTeams();
             return;
         }
         goToHome(result.time || 0, result.error as never);
