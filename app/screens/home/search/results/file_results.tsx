@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {StyleSheet, FlatList, ListRenderItemInfo, StyleProp, View, ViewStyle} from 'react-native';
+import {LayoutChangeEvent, StyleSheet, FlatList, ListRenderItemInfo, StyleProp, View, ViewStyle, useWindowDimensions} from 'react-native';
+import Animated from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import File from '@components/files/file';
@@ -25,6 +26,11 @@ import FileOptions from './file_options';
 import {HEADER_HEIGHT} from './file_options/header';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
+
+const tabletZindex = 11;
+const tabletTop = 10;
+
+const AnimatedView = Animated.createAnimatedComponent(View);
 
 const styles = StyleSheet.create({
     container: {
@@ -55,7 +61,11 @@ const FileResults = ({
     const theme = useTheme();
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
+    const dimensions = useWindowDimensions();
+    const [yOffset, setYOffset] = useState(0);
+    const [openUp, setOpenUp] = useState(false);
     const [lastViewedIndex, setLastViewedIndex] = useState<number | undefined>(undefined);
+    const [selectedItemNumber, setSelectedItemNumber] = useState<number | undefined>(undefined);
     const containerStyle = useMemo(() => ({top: fileInfos.length ? 8 : 0}), [fileInfos]);
 
     const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
@@ -84,6 +94,11 @@ const FileResults = ({
     }), [orderedFilesForGallery]);
 
     const handleOptionsPress = useCallback((item: number) => {
+        if (isTablet) {
+            setSelectedItemNumber(selectedItemNumber === item ? undefined : item);
+            return;
+        }
+
         setLastViewedIndex(item);
         let numberOptions = 1;
         numberOptions += canDownloadFiles ? 1 : 0;
@@ -100,7 +115,7 @@ const FileResults = ({
             theme,
             title: '',
         });
-    }, [canDownloadFiles, publicLinkEnabled, orderedFilesForGallery, theme]);
+    }, [canDownloadFiles, publicLinkEnabled, orderedFilesForGallery, selectedItemNumber, theme]);
 
     // This effect handles the case where a user has the FileOptions Modal
     // open and the server changes the ability to download files or copy public
@@ -126,9 +141,19 @@ const FileResults = ({
         const container: StyleProp<ViewStyle> = fileInfos.length > 1 ? styles.container : undefined;
         const isSingleImage = orderedFilesForGallery.length === 1 && (isImage(orderedFilesForGallery[0]) || isVideo(orderedFilesForGallery[0]));
         const isReplyPost = false;
+        const optionSelected = (selectedItemNumber !== undefined) && (selectedItemNumber === filesForGalleryIndexes[item.id!]);
+
+        const onLayout = (event: LayoutChangeEvent) => {
+            if (selectedItemNumber === filesForGalleryIndexes[item.id!]) {
+                const {height} = dimensions;
+                setOpenUp(event.nativeEvent.layout.y > height / 2);
+                setYOffset(event.nativeEvent.layout.y);
+            }
+        };
 
         return (
             <View
+                onLayout={onLayout}
                 style={container}
                 key={item.id}
             >
@@ -144,6 +169,7 @@ const FileResults = ({
                     key={item.id}
                     nonVisibleImagesCount={0}
                     onOptionsPress={handleOptionsPress}
+                    optionSelected={optionSelected}
                     onPress={handlePreviewPress}
                     publicLinkEnabled={publicLinkEnabled}
                     showDate={true}
@@ -161,6 +187,7 @@ const FileResults = ({
         handleOptionsPress,
         handlePreviewPress,
         isTablet,
+        selectedItemNumber,
         publicLinkEnabled,
         theme,
     ]);
@@ -172,24 +199,54 @@ const FileResults = ({
         />
     ), [searchValue]);
 
+    const onActionComplete = useCallback(() => {
+        setSelectedItemNumber(undefined);
+    }, []);
+
+    const tabletOptions = useMemo(() => {
+        if (selectedItemNumber === undefined) {
+            return null;
+        }
+
+        const fileInfo = orderedFilesForGallery[selectedItemNumber];
+        return (
+            <AnimatedView
+                style={{
+                    zIndex: tabletZindex,
+                    top: yOffset + tabletTop,
+                }}
+            >
+
+                <FileOptions
+                    fileInfo={fileInfo}
+                    onActionComplete={onActionComplete}
+                    openUp={openUp}
+                />
+            </AnimatedView>
+        );
+    }, [selectedItemNumber, orderedFilesForGallery, onActionComplete, openUp, yOffset]);
+
     return (
-        <FlatList
-            ListEmptyComponent={noResults}
-            contentContainerStyle={[paddingTop, containerStyle]}
-            data={orderedFilesForGallery}
-            indicatorStyle='black'
-            initialNumToRender={10}
-            listKey={'files'}
-            maxToRenderPerBatch={5}
-            nestedScrollEnabled={true}
-            refreshing={false}
-            removeClippedSubviews={true}
-            renderItem={renderItem}
-            scrollEventThrottle={16}
-            scrollToOverflowEnabled={true}
-            showsVerticalScrollIndicator={true}
-            testID='search_results.post_list.flat_list'
-        />
+        <>
+            {isTablet && tabletOptions}
+            <FlatList
+                ListEmptyComponent={noResults}
+                contentContainerStyle={[paddingTop, containerStyle]}
+                data={orderedFilesForGallery}
+                indicatorStyle='black'
+                initialNumToRender={10}
+                listKey={'files'}
+                maxToRenderPerBatch={5}
+                nestedScrollEnabled={true}
+                refreshing={false}
+                removeClippedSubviews={true}
+                renderItem={renderItem}
+                scrollEventThrottle={16}
+                scrollToOverflowEnabled={true}
+                showsVerticalScrollIndicator={true}
+                testID='search_results.post_list.flat_list'
+            />
+        </>
     );
 };
 
