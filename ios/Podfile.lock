@@ -438,7 +438,7 @@ PODS:
     - React
   - ReactNativeExceptionHandler (2.10.10):
     - React-Core
-  - ReactNativeIncallManager (3.3.0):
+  - ReactNativeIncallManager (4.0.0):
     - React-Core
   - ReactNativeKeyboardTrackingView (5.7.0):
     - React
@@ -923,7 +923,7 @@ SPEC CHECKSUMS:
   ReactCommon: af7636436b382db7cde4583bbd642f0978e6e3ed
   ReactNativeART: 78edc68dd4a1e675338cd0cd113319cf3a65f2ab
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
-  ReactNativeIncallManager: 642c22630caadff0a0619413aff4a9da08d63df9
+  ReactNativeIncallManager: b169b57d3064d8f62478f8fc3c485da6c75045d1
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
   ReactNativeNavigation: 3b09d0b7a64326dbcea7e64231287c766b18adf0
   RNCClipboard: 41d8d918092ae8e676f18adada19104fa3e68495
