@@ -10,6 +10,9 @@ import {timeouts} from '@support/utils';
 
 class ChannelListScreen {
     testID = {
+        categoryHeaderPrefix: 'channel_list.category_header.',
+        categoryPrefix: 'channel_list.category.',
+        teamItemPrefix: 'team_sidebar.team_list.team_item.',
         channelListScreen: 'channel_list.screen',
         serverIcon: 'channel_list.servers.server_icon',
         headerTeamDisplayName: 'channel_list_header.team_display_name',
@@ -38,35 +41,35 @@ class ChannelListScreen {
     openDirectMessageItem = PlusMenu.openDirectMessageItem;
 
     getCategoryCollapsed = (categoryKey: string) => {
-        return element(by.id(`channel_list.category_header.${categoryKey}.collapsed.true`));
+        return element(by.id(`${this.testID.categoryHeaderPrefix}${categoryKey}.collapsed.true`));
     };
 
     getCategoryExpanded = (categoryKey: string) => {
-        return element(by.id(`channel_list.category_header.${categoryKey}.collapsed.false`));
+        return element(by.id(`${this.testID.categoryHeaderPrefix}${categoryKey}.collapsed.false`));
     };
 
     getCategoryHeaderDisplayName = (categoryKey: string) => {
-        return element(by.id(`channel_list.category_header.${categoryKey}.display_name`));
+        return element(by.id(`${this.testID.categoryHeaderPrefix}${categoryKey}.display_name`));
     };
 
     getChannelItem = (categoryKey: string, channelName: string) => {
-        return element(by.id(`channel_list.category.${categoryKey}.channel_item.${channelName}`));
+        return element(by.id(`${this.testID.categoryPrefix}${categoryKey}.channel_item.${channelName}`));
     };
 
     getChannelItemDisplayName = (categoryKey: string, channelName: string) => {
-        return element(by.id(`channel_list.category.${categoryKey}.channel_item.${channelName}.display_name`));
+        return element(by.id(`${this.testID.categoryPrefix}${categoryKey}.channel_item.${channelName}.display_name`));
     };
 
     getTeamItemSelected = (teamId: string) => {
-        return element(by.id(`team_sidebar.team_list.team_item.${teamId}.selected`));
+        return element(by.id(`${this.testID.teamItemPrefix}${teamId}.selected`));
     };
 
     getTeamItemNotSelected = (teamId: string) => {
-        return element(by.id(`team_sidebar.team_list.team_item.${teamId}.not_selected`));
+        return element(by.id(`${this.testID.teamItemPrefix}${teamId}.not_selected`));
     };
 
     getTeamItemDisplayNameAbbreviation = (teamId: string) => {
-        return element(by.id(`team_sidebar.team_list.team_item.${teamId}.team_icon.display_name_abbreviation`));
+        return element(by.id(`${this.testID.teamItemPrefix}${teamId}.team_icon.display_name_abbreviation`));
     };
 
     toBeVisible = async () => {

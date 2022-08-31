@@ -92,12 +92,13 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
     }, [userTimezone.useAutomaticTimezone]);
 
     return (
-        <SettingContainer testID='display_timezone'>
+        <SettingContainer testID='timezone_display_settings'>
             <SettingOption
                 action={updateAutomaticTimezone}
                 description={toggleDesc}
                 label={intl.formatMessage({id: 'settings_display.timezone.automatically', defaultMessage: 'Set automatically'})}
                 selected={userTimezone.useAutomaticTimezone}
+                testID='timezone_display_settings.automatic.option'
                 type='toggle'
             />
             <SettingSeparator/>
@@ -106,6 +107,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
                     action={goToSelectTimezone}
                     info={getTimezoneRegion(userTimezone.manualTimezone)}
                     label={intl.formatMessage({id: 'settings_display.timezone.manual', defaultMessage: 'Change timezone'})}
+                    testID='timezone_display_settings.manual.option'
                     type='arrow'
                 />
             )}

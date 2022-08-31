@@ -12,6 +12,7 @@ import {expect} from 'detox';
 class AccountScreen {
     testID = {
         userInfoPrefix: 'account.user_info.',
+        customStatusPrefix: 'account.custom_status.',
         accountScreen: 'account.screen',
         userPresenceOption: 'account.user_presence.option',
         setStatusOption: 'account.custom_status.option',
@@ -22,6 +23,8 @@ class AccountScreen {
         awayUserStatusOption: 'user_status.away.option',
         dndUserStatusOption: 'user_status.dnd.option',
         offlineUserStatusOption: 'user_status.offline.option',
+        customStatusFailureMessage: 'account.custom_status.failure_message',
+        customStatusClearButton: 'account.custom_status.clear.button',
     };
 
     accountScreen = element(by.id(this.testID.accountScreen));
@@ -34,6 +37,8 @@ class AccountScreen {
     awayUserStatusOption = element(by.id(this.testID.awayUserStatusOption));
     dndUserStatusOption = element(by.id(this.testID.dndUserStatusOption));
     offlineUserStatusOption = element(by.id(this.testID.offlineUserStatusOption));
+    customStatusFailureMessage = element(by.id(this.testID.customStatusFailureMessage));
+    customStatusClearButton = element(by.id(this.testID.customStatusClearButton));
 
     getUserInfo = (userId: string) => {
         const userInfoTestId = `${this.testID.userInfoPrefix}${userId}`;
@@ -54,6 +59,18 @@ class AccountScreen {
 
     getUserPresenceLabel = (status: string) => {
         return element(by.id(`user_status.label.${status}`)).atIndex(0);
+    };
+
+    getCustomStatus = (emojiName: string, duration: string) => {
+        const accountCustomStatusEmojiMatcher = by.id(`${this.testID.customStatusPrefix}custom_status_emoji.${emojiName}`);
+        const accountCustomStatusTextMatcher = by.id(`${this.testID.customStatusPrefix}custom_status_text`);
+        const accountCustomStatusExpiryMatcher = by.id(`${this.testID.customStatusPrefix}custom_status_duration.${duration}.custom_status_expiry`);
+
+        return {
+            accountCustomStatusEmoji: element(accountCustomStatusEmojiMatcher),
+            accountCustomStatusText: element(accountCustomStatusTextMatcher),
+            accountCustomStatusExpiry: element(accountCustomStatusExpiryMatcher),
+        };
     };
 
     toBeVisible = async () => {

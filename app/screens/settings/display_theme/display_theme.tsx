@@ -49,7 +49,7 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
     useAndroidHardwareBackHandler(componentId, setThemePreference);
 
     return (
-        <SettingContainer testID='display_theme'>
+        <SettingContainer testID='theme_display_settings'>
             <ThemeTiles
                 allowedThemeKeys={allowedThemeKeys}
                 onThemeChange={setThemePreference}

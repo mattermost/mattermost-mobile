@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class ServerListScreen {
@@ -61,6 +61,7 @@ class ServerListScreen {
         await ChannelListScreen.serverIcon.tap();
 
         // # Close tip overlay
+        await wait(timeouts.FOUR_SEC);
         await this.serverListScreen.tap({x: 5, y: 10});
 
         return this.toBeVisible();
