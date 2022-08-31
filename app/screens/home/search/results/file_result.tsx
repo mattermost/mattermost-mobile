@@ -14,7 +14,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         marginHorizontal: 20,
-        zIndex: 12,
     },
 });
 
@@ -28,7 +27,7 @@ type Props = {
     onPress: (idx: number) => void;
     optionSelected: boolean;
     publicLinkEnabled: boolean;
-    setSelectedItemNumber: (value: number) => void;
+    setSelectedItemNumber: (value: number | undefined) => void;
     updateFileForGallery: (idx: number, file: FileInfo) => void;
 }
 
@@ -51,13 +50,19 @@ const FileResult = ({
     const isReplyPost = false;
     const elementsRef = useRef<View | null>(null);
     const {height} = Dimensions.get('window');
-    const [openUp, setOpenUp] = useState<boolean | null>(null);
+    const [openUp, setOpenUp] = useState<boolean>(false);
+    const [yOffset, setYoffset] = useState(0);
+    const [xOffset, setXoffset] = useState(0);
+    const [isOpen, setIsOpen] = useState(false);
 
     const fileRef = useCallback((element: View) => {
         if (optionSelected) {
             elementsRef.current = element;
-            elementsRef?.current?.measureInWindow((_, y) => {
+            elementsRef?.current?.measureInWindow((x, y) => {
                 setOpenUp((y > height / 2));
+                setYoffset(y);
+                setXoffset(x);
+                setIsOpen(true);
             });
         }
     }, [optionSelected]);
@@ -85,12 +90,15 @@ const FileResult = ({
                 updateFileForGallery={updateFileForGallery}
                 wrapperWidth={(getViewPortWidth(isReplyPost, isTablet) - 6)}
             />
-            {isTablet && optionSelected && (openUp !== null) &&
-            <FileOptions
-                fileInfo={fileInfo}
-                setSelectedItemNumber={setSelectedItemNumber}
-                openUp={openUp}
-            />
+            {isOpen &&
+                <FileOptions
+                    fileInfo={fileInfo}
+                    setSelectedItemNumber={setSelectedItemNumber}
+                    xOffset={xOffset}
+                    yOffset={yOffset}
+                    openUp={openUp}
+                    setIsOpen={setIsOpen}
+                />
             }
         </View>
     );

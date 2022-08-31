@@ -3,9 +3,10 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
+import {Overlay} from 'react-native-elements';
 
 import {showPermalink} from '@actions/remote/permalink';
-import OptionItem from '@components/option_item';
+import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -27,33 +28,46 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         position: 'absolute',
         right: 20,
         width: 252,
+        marginRight: 20,
     },
-    openUp: {
-        bottom: 54,
-    },
-    openDown: {
-        top: 64,
-    },
+    backDrop: {opacity: 0},
     toast: {
         marginTop: 100,
         alignItems: 'center',
     },
 }));
 
+const openDownMargin = 64;
+
 type Props = {
-    canDownloadFiles: boolean;
-    enablePublicLink: boolean;
+    canDownloadFiles?: boolean;
+    enablePublicLink?: boolean;
     fileInfo: FileInfo;
     setSelectedItemNumber?: (index: number | undefined) => void;
     openUp?: boolean;
+    xOffset?: number;
+    yOffset?: number;
+    setIsOpen?: (open: boolean) => void;
 }
-const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink, setSelectedItemNumber, openUp = false}: Props) => {
+const FileOptions = ({
+    fileInfo,
+    canDownloadFiles,
+    enablePublicLink,
+    setSelectedItemNumber,
+    xOffset,
+    yOffset,
+    openUp = false,
+    setIsOpen,
+}: Props) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
+
     const theme = useTheme();
+    const [numItems, setNumItems] = useState(0);
     const serverUrl = useServerUrl();
     const [action, setAction] = useState<GalleryAction>('none');
     const styles = getStyleSheet(theme);
+    const [visible, setVisible] = useState(true);
 
     const galleryItem = {...fileInfo, type: 'image'} as GalleryItemType;
 
@@ -72,50 +86,71 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink, setSelectedI
         setSelectedItemNumber?.(undefined);
     }, [serverUrl, fileInfo.post_id, intl]);
 
-    const optionItems = useMemo(() => (
-        <>
-            {canDownloadFiles &&
+    const optionItems = useMemo(() => {
+        const items = [];
+        if (canDownloadFiles) {
+            items.push(
                 <OptionItem
+                    key={'download'}
                     action={handleDownload}
                     label={intl.formatMessage({id: 'screen.search.results.file_options.download', defaultMessage: 'Download'})}
                     icon={'download-outline'}
                     type='default'
-                />
-            }
+                />,
+            );
+        }
+        items.push(
             <OptionItem
+                key={'permalink'}
                 action={handlePermalink}
                 label={intl.formatMessage({id: 'screen.search.results.file_options.open_in_channel', defaultMessage: 'Open in channel'})}
                 icon={'globe'}
                 type='default'
-            />
-            {enablePublicLink &&
+            />,
+        );
+        if (enablePublicLink) {
+            items.push(
                 <OptionItem
+                    key={'link'}
                     action={handleCopyLink}
                     label={intl.formatMessage({id: 'screen.search.results.file_options.copy_link', defaultMessage: 'Copy link'})}
                     icon={'link-variant'}
                     type='default'
-                />
-            }
-        </>
-    ), [canDownloadFiles, enablePublicLink, handlePermalink, handleDownload, handleCopyLink]);
+                />,
+            );
+        }
+        setNumItems(items.length);
+        return items.flat();
+    }, [canDownloadFiles, enablePublicLink, handlePermalink, handleDownload, handleCopyLink]);
+
+    const toggleOverlay = useCallback(() => {
+        setVisible(!visible);
+        setIsOpen?.(false);
+        setSelectedItemNumber?.(undefined);
+    }, [visible]);
+
+    const overlayStyle = useMemo(() => ({
+        top: yOffset ? yOffset - (openUp ? ITEM_HEIGHT * numItems : 0) : 0,
+        marginTop: openUp ? 0 : openDownMargin,
+        right: xOffset,
+    }), [xOffset, yOffset, numItems]);
 
     const tablet = useMemo(() => {
-        let openStyle = null;
-        if (openUp !== null) {
-            openStyle = openUp ? styles.openUp : styles.openDown;
-        }
-
         return (
-            <View
-                style={[
+            <Overlay
+                isVisible={visible}
+                onBackdropPress={toggleOverlay}
+                backdropStyle={styles.backDrop}
+                fullScreen={false}
+                overlayStyle={[
                     styles.tablet,
-                    openStyle,
+                    overlayStyle,
                 ]}
             >
                 {optionItems}
-            </View>
+            </Overlay>
         );
-    }, [optionItems, openUp, styles]);
+    }, [optionItems, openUp, overlayStyle, styles]);
 
     const mobile = useMemo(() => {
         return (
