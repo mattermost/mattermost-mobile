@@ -57,7 +57,7 @@ const FileResult = ({
         if (optionSelected) {
             elementsRef.current = element;
             elementsRef?.current?.measureInWindow((_, y) => {
-                setOpenUp(!(y < height / 2));
+                setOpenUp((y > height / 2));
             });
         }
     }, [optionSelected]);
