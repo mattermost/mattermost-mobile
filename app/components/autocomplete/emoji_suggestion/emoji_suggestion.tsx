@@ -4,8 +4,7 @@
 import Fuse from 'fuse.js';
 import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo} from 'react';
-import {FlatList, Platform, Text, View, ViewStyle} from 'react-native';
-import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
+import {FlatList, Platform, StyleProp, Text, View, ViewStyle} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {searchCustomEmojis} from '@actions/remote/custom_emoji';
@@ -63,8 +62,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 
 const keyExtractor = (item: string) => item;
 
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList<string>);
-
 type Props = {
     cursorPosition: number;
     customEmojis: CustomEmojiModel[];
@@ -76,7 +73,7 @@ type Props = {
     skinTone: string;
     hasFilesAttached?: boolean;
     inPost: boolean;
-    listStyle: AnimatedStyleProp<ViewStyle>;
+    listStyle: StyleProp<ViewStyle>;
 }
 const EmojiSuggestion = ({
     cursorPosition,
@@ -216,7 +213,7 @@ const EmojiSuggestion = ({
     }
 
     return (
-        <AnimatedFlatList
+        <FlatList
             keyboardShouldPersistTaps='always'
             style={[style.listView, listStyle]}
             data={data}

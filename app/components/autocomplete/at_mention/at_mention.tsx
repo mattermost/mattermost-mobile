@@ -3,8 +3,7 @@
 
 import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {Platform, SectionList, SectionListData, SectionListRenderItemInfo, ViewStyle} from 'react-native';
-import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
+import {Platform, SectionList, SectionListData, SectionListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
 
 import {searchGroupsByName, searchGroupsByNameInChannel, searchGroupsByNameInTeam} from '@actions/local/group';
 import {searchUsers} from '@actions/remote/user';
@@ -35,8 +34,6 @@ type SpecialMention = {
 }
 
 type UserMentionSections = Array<SectionListData<UserProfile|UserModel|GroupModel|SpecialMention>>
-
-const AnimatedSectionList = Animated.createAnimatedComponent(SectionList<UserProfile|UserModel|GroupModel|SpecialMention>);
 
 const getMatchTermForAtMention = (() => {
     let lastMatchTerm: string | null = null;
@@ -191,7 +188,7 @@ type Props = {
     useGroupMentions: boolean;
     isChannelConstrained: boolean;
     isTeamConstrained: boolean;
-    listStyle: AnimatedStyleProp<ViewStyle>;
+    listStyle: StyleProp<ViewStyle>;
 }
 
 const emptyUserlList: Array<UserModel | UserProfile> = [];
@@ -441,7 +438,7 @@ const AtMention = ({
     }
 
     return (
-        <AnimatedSectionList
+        <SectionList
             keyboardShouldPersistTaps='always'
             keyExtractor={keyExtractor}
             initialNumToRender={10}

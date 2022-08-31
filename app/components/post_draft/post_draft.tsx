@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {RefObject, useEffect, useState} from 'react';
-import {Platform, View} from 'react-native';
+import {Platform} from 'react-native';
 import {KeyboardTrackingView, KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -147,9 +147,7 @@ function PostDraft({
             >
                 {draftHandler}
             </KeyboardTrackingView>
-            <View>
-                {autoComplete}
-            </View>
+            {autoComplete}
         </>
     );
 }

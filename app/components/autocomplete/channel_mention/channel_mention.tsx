@@ -3,8 +3,7 @@
 
 import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {Platform, SectionList, SectionListData, SectionListRenderItemInfo, ViewStyle} from 'react-native';
-import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
+import {Platform, SectionList, SectionListData, SectionListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
 
 import {searchChannels} from '@actions/remote/channel';
 import AutocompleteSectionHeader from '@components/autocomplete/autocomplete_section_header';
@@ -156,8 +155,6 @@ const filterResults = (channels: Array<Channel | ChannelModel>, term: string) =>
     });
 };
 
-const AnimatedSectionList = Animated.createAnimatedComponent(SectionList<Channel | ChannelModel>);
-
 type Props = {
     cursorPosition: number;
     isSearch: boolean;
@@ -166,7 +163,7 @@ type Props = {
     onShowingChange: (c: boolean) => void;
     value: string;
     nestedScrollEnabled: boolean;
-    listStyle: AnimatedStyleProp<ViewStyle>;
+    listStyle: StyleProp<ViewStyle>;
 }
 
 const getAllChannels = async (serverUrl: string) => {
@@ -330,7 +327,7 @@ const ChannelMention = ({
     }
 
     return (
-        <AnimatedSectionList
+        <SectionList
             keyboardShouldPersistTaps='always'
             keyExtractor={keyExtractor}
             initialNumToRender={10}

@@ -4,8 +4,7 @@
 import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, Platform, ViewStyle} from 'react-native';
-import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
+import {FlatList, Platform, StyleProp, ViewStyle} from 'react-native';
 
 import AtMentionItem from '@components/autocomplete/at_mention_item';
 import ChannelMentionItem from '@components/autocomplete/channel_mention_item';
@@ -30,14 +29,12 @@ export type Props = {
     rootId?: string;
     channelId: string;
     isAppsEnabled: boolean;
-    listStyle: AnimatedStyleProp<ViewStyle>;
+    listStyle: StyleProp<ViewStyle>;
 };
 
 const keyExtractor = (item: ExtendedAutocompleteSuggestion): string => item.Suggestion + item.type + item.item;
 
 const emptySuggestonList: AutocompleteSuggestion[] = [];
-
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList<ExtendedAutocompleteSuggestion>);
 
 const AppSlashSuggestion = ({
     channelId,
@@ -178,7 +175,7 @@ const AppSlashSuggestion = ({
     }
 
     return (
-        <AnimatedFlatList
+        <FlatList
             testID='app_slash_suggestion.list'
             keyboardShouldPersistTaps='always'
             style={listStyle}

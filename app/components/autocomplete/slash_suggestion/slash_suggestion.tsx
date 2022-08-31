@@ -7,9 +7,9 @@ import {useIntl} from 'react-intl';
 import {
     FlatList,
     Platform,
+    StyleProp,
     ViewStyle,
 } from 'react-native';
-import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
 
 import {fetchSuggestions} from '@actions/remote/command';
 import {useServerUrl} from '@context/server';
@@ -60,13 +60,11 @@ type Props = {
     rootId?: string;
     channelId: string;
     isAppsEnabled: boolean;
-    listStyle: AnimatedStyleProp<ViewStyle>;
+    listStyle: StyleProp<ViewStyle>;
 };
 
 const emptyCommandList: Command[] = [];
 const emptySuggestionList: AutocompleteSuggestion[] = [];
-
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList<AutocompleteSuggestion>);
 
 const SlashSuggestion = ({
     channelId,
@@ -220,7 +218,7 @@ const SlashSuggestion = ({
     }
 
     return (
-        <AnimatedFlatList
+        <FlatList
             keyboardShouldPersistTaps='always'
             style={listStyle}
             data={dataSource}

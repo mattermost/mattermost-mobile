@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo, useState} from 'react';
-import {Platform, StyleProp, useWindowDimensions, View, ViewStyle} from 'react-native';
-import Animated, {SharedValue, useAnimatedStyle} from 'react-native-reanimated';
+import {Platform, StyleProp, useWindowDimensions, ViewStyle} from 'react-native';
+import Animated, {SharedValue, useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 
 import {MAX_LIST_HEIGHT, MAX_LIST_TABLET_DIFF} from '@constants/autocomplete';
 import {useTheme} from '@context/theme';
@@ -20,8 +20,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         base: {
             left: 8,
-            position: 'absolute',
             right: 8,
+            position: 'absolute',
         },
         borders: {
             borderWidth: 1,
@@ -29,16 +29,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             overflow: 'hidden',
             borderRadius: 8,
             elevation: 3,
-        },
-        searchContainer: {
-            ...Platform.select({
-                android: {
-                    top: 42,
-                },
-                ios: {
-                    top: 55,
-                },
-            }),
         },
         shadow: {
             shadowColor: '#000',
@@ -48,6 +38,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                 width: 0,
                 height: 6,
             },
+        },
+        listStyle: {
+            backgroundColor: theme.centerChannelBg,
+            borderRadius: 4,
         },
     };
 });
@@ -105,82 +99,73 @@ const Autocomplete = ({
     const appsTakeOver = showingAppCommand;
     const showCommands = !(showingChannelMention || showingEmoji || showingAtMention);
 
-    const wrapperStyles = useMemo(() => {
-        const s = [];
-        if (Platform.OS === 'ios') {
-            s.push(style.shadow);
-        }
-        return s;
-    }, [style]);
+    const isLandscape = dimensions.width > dimensions.height;
+    const maxHeightAdjust = (isTablet && isLandscape) ? MAX_LIST_TABLET_DIFF : 0;
+    const defaultMaxHeight = MAX_LIST_HEIGHT - maxHeightAdjust;
+    const maxHeight = useDerivedValue(() => {
+        return Math.min(availableSpace.value, defaultMaxHeight);
+    }, [defaultMaxHeight]);
 
     const containerAnimatedStyle = useAnimatedStyle(() => {
-        return growDown ? {top: -position.value, bottom: undefined} : {top: undefined, bottom: position.value};
-    });
+        return growDown ?
+            {top: position.value, bottom: Platform.OS === 'ios' ? 'auto' : undefined, maxHeight: maxHeight.value} :
+            {top: Platform.OS === 'ios' ? 'auto' : undefined, bottom: position.value, maxHeight: maxHeight.value};
+    }, [growDown]);
 
     const containerStyles = useMemo(() => {
         const s = [style.base, containerAnimatedStyle];
         if (hasElements) {
             s.push(style.borders);
         }
-        s.push(containerStyle);
+        if (Platform.OS === 'ios') {
+            s.push(style.shadow);
+        }
+        if (containerStyle) {
+            s.push(containerStyle);
+        }
         return s;
     }, [hasElements, position, growDown, style, containerStyle, containerAnimatedStyle]);
 
-    const isLandscape = dimensions.width > dimensions.height;
-    const maxHeightAdjust = (isTablet && isLandscape) ? MAX_LIST_TABLET_DIFF : 0;
-    const defaultMaxHeight = MAX_LIST_HEIGHT - maxHeightAdjust;
-
-    const listStyle = useAnimatedStyle(() => {
-        return {
-            backgroundColor: theme.centerChannelBg,
-            borderRadius: 4,
-            maxHeight: Math.min(availableSpace.value, defaultMaxHeight),
-        };
-    }, [theme.centerChannelBg]);
-
     return (
-        <View
-            style={wrapperStyles}
+        <Animated.View
+            testID='autocomplete'
+            style={containerStyles}
         >
-            <Animated.View
-                testID='autocomplete'
-                style={[containerStyles]}
-            >
-                {isAppsEnabled && channelId && (
-                    <AppSlashSuggestion
-                        listStyle={listStyle}
-                        updateValue={updateValue}
-                        onShowingChange={setShowingAppCommand}
-                        value={value || ''}
-                        nestedScrollEnabled={nestedScrollEnabled}
-                        channelId={channelId}
-                        rootId={rootId}
-                    />
-                )}
-                {(!appsTakeOver || !isAppsEnabled) && (<>
-                    <AtMention
-                        cursorPosition={cursorPosition}
-                        listStyle={listStyle}
-                        updateValue={updateValue}
-                        onShowingChange={setShowingAtMention}
-                        value={value || ''}
-                        nestedScrollEnabled={nestedScrollEnabled}
-                        isSearch={isSearch}
-                        channelId={channelId}
-                    />
-                    <ChannelMention
-                        cursorPosition={cursorPosition}
-                        listStyle={listStyle}
-                        updateValue={updateValue}
-                        onShowingChange={setShowingChannelMention}
-                        value={value || ''}
-                        nestedScrollEnabled={nestedScrollEnabled}
-                        isSearch={isSearch}
-                    />
-                    {!isSearch &&
+            {isAppsEnabled && channelId && (
+                <AppSlashSuggestion
+                    listStyle={style.listStyle}
+                    updateValue={updateValue}
+                    onShowingChange={setShowingAppCommand}
+                    value={value || ''}
+                    nestedScrollEnabled={nestedScrollEnabled}
+                    channelId={channelId}
+                    rootId={rootId}
+                />
+            )}
+            {(!appsTakeOver || !isAppsEnabled) && (<>
+                <AtMention
+                    cursorPosition={cursorPosition}
+                    listStyle={style.listStyle}
+                    updateValue={updateValue}
+                    onShowingChange={setShowingAtMention}
+                    value={value || ''}
+                    nestedScrollEnabled={nestedScrollEnabled}
+                    isSearch={isSearch}
+                    channelId={channelId}
+                />
+                <ChannelMention
+                    cursorPosition={cursorPosition}
+                    listStyle={style.listStyle}
+                    updateValue={updateValue}
+                    onShowingChange={setShowingChannelMention}
+                    value={value || ''}
+                    nestedScrollEnabled={nestedScrollEnabled}
+                    isSearch={isSearch}
+                />
+                {!isSearch &&
                     <EmojiSuggestion
                         cursorPosition={cursorPosition}
-                        listStyle={listStyle}
+                        listStyle={style.listStyle}
                         updateValue={updateValue}
                         onShowingChange={setShowingEmoji}
                         value={value || ''}
@@ -189,10 +174,10 @@ const Autocomplete = ({
                         hasFilesAttached={hasFilesAttached}
                         inPost={inPost}
                     />
-                    }
-                    {showCommands && channelId &&
+                }
+                {showCommands && channelId &&
                     <SlashSuggestion
-                        listStyle={listStyle}
+                        listStyle={style.listStyle}
                         updateValue={updateValue}
                         onShowingChange={setShowingCommand}
                         value={value || ''}
@@ -200,8 +185,8 @@ const Autocomplete = ({
                         channelId={channelId}
                         rootId={rootId}
                     />
-                    }
-                    {/* {(isSearch && enableDateSuggestion) &&
+                }
+                {/* {(isSearch && enableDateSuggestion) &&
                     <DateSuggestion
                         cursorPosition={cursorPosition}
                         updateValue={updateValue}
@@ -209,9 +194,8 @@ const Autocomplete = ({
                         value={value || ''}
                     />
                     } */}
-                </>)}
-            </Animated.View>
-        </View>
+            </>)}
+        </Animated.View>
     );
 };
 
