@@ -25,14 +25,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderWidth: 1,
         paddingLeft: 20,
         position: 'absolute',
-        right: 40,
+        right: 20,
         width: 252,
     },
     openUp: {
-        bottom: -22,
+        bottom: 54,
     },
     openDown: {
-        top: 60,
+        top: 64,
     },
     toast: {
         marginTop: 100,
@@ -44,10 +44,10 @@ type Props = {
     canDownloadFiles: boolean;
     enablePublicLink: boolean;
     fileInfo: FileInfo;
-    onActionComplete?: () => void;
+    setSelectedItemNumber?: (index: number | undefined) => void;
     openUp?: boolean;
 }
-const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink, onActionComplete, openUp = false}: Props) => {
+const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink, setSelectedItemNumber, openUp = false}: Props) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
@@ -59,17 +59,17 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink, onActionComp
 
     const handleDownload = useCallback(() => {
         setAction('downloading');
-        onActionComplete?.();
+        setSelectedItemNumber?.(undefined);
     }, []);
 
     const handleCopyLink = useCallback(() => {
         setAction('copying');
-        onActionComplete?.();
+        setSelectedItemNumber?.(undefined);
     }, []);
 
     const handlePermalink = useCallback(() => {
         showPermalink(serverUrl, '', fileInfo.post_id, intl);
-        onActionComplete?.();
+        setSelectedItemNumber?.(undefined);
     }, [serverUrl, fileInfo.post_id, intl]);
 
     const optionItems = useMemo(() => (
@@ -100,14 +100,22 @@ const FileOptions = ({fileInfo, canDownloadFiles, enablePublicLink, onActionComp
     ), [canDownloadFiles, enablePublicLink, handlePermalink, handleDownload, handleCopyLink]);
 
     const tablet = useMemo(() => {
+        let openStyle = null;
+        if (openUp !== null) {
+            openStyle = openUp ? styles.openUp : styles.openDown;
+        }
+
         return (
             <View
-                style={[styles.tablet, openUp ? styles.openUp : styles.openDown]}
+                style={[
+                    styles.tablet,
+                    openStyle,
+                ]}
             >
                 {optionItems}
             </View>
         );
-    }, [optionItems, openUp]);
+    }, [optionItems, openUp, styles]);
 
     const mobile = useMemo(() => {
         return (
