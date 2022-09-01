@@ -10,9 +10,9 @@ import Animated, {useAnimatedStyle, withTiming, Easing} from 'react-native-reani
 
 import CompassIcon from '@components/compass_icon';
 
-import {BORDER_DEFAULT_WIDTH, BORDER_FOCUSED_WIDTH, MULTILINE_INPUT_HEIGHT, DEFAULT_INPUT_CONTAINER_HEIGHT, MULTILINE_INPUT_CONTAINER_HEIGHT, DEFAULT_INPUT_HEIGHT} from './constants';
+import {BORDER_DEFAULT_WIDTH, BORDER_FOCUSED_WIDTH, INPUT_CONTAINER_VERTICAL_SPACING} from './constants';
 import {getStyleSheet} from './styles';
-import {getLabelPositions, onExecution} from './utils';
+import {getLabelPositions, onExecution, getInputContainerHeight} from './utils';
 
 export type FloatingTextInputRef = {
     blur: () => void;
@@ -37,6 +37,7 @@ type FloatingTextInputProps = TextInputProps & {
     showErrorIcon?: boolean;
     testID?: string;
     textInputStyle?: TextStyle;
+    textInputContainerStyle?: ViewStyle;
     theme: Theme;
     value: string;
     startAdornment?: React.ReactNode;
@@ -64,6 +65,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     value = '',
     startAdornment,
     endAdornment,
+    textInputContainerStyle,
     ...props
 }: FloatingTextInputProps, ref) => {
     const [focused, setIsFocused] = useState(false);
@@ -76,6 +78,8 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     const hasEndAdornment = Boolean(endAdornment);
     const positions = useMemo(() => getLabelPositions(styles.textInputContainer, styles.label, styles.smallLabel), [styles]);
     const size = useMemo(() => [styles.textInput.fontSize, styles.smallLabel.fontSize], [styles]);
+    const textInputContainerHeight = useMemo(() => getInputContainerHeight(multiline, textInputContainerStyle), [multiline, textInputContainerStyle]);
+    const textInputHeight = useMemo(() => textInputContainerHeight - (INPUT_CONTAINER_VERTICAL_SPACING * 2), [textInputContainerHeight]);
 
     const onTextInputBlur = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => onExecution(e,
         () => {
@@ -100,15 +104,11 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     const shouldShowError = (!focused && error);
     const onPressAction = !isKeyboardInput && editable && onPress ? onPress : undefined;
 
-    const combinedInputContainerStyle = useMemo(() => {
-        const res: StyleProp<TextStyle> = [styles.textInputContainer, {height: DEFAULT_INPUT_CONTAINER_HEIGHT}];
+    const combinedTextInputContainerStyle = useMemo(() => {
+        const res: StyleProp<TextStyle> = [styles.textInputContainer, textInputContainerStyle, {height: textInputContainerHeight}];
         res.push({
             borderWidth: focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH,
         });
-
-        if (multiline) {
-            res.push({height: MULTILINE_INPUT_CONTAINER_HEIGHT});
-        }
 
         if (focused) {
             res.push({borderColor: theme.buttonBg});
@@ -117,17 +117,11 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
         }
 
         return res;
-    }, [styles, theme, shouldShowError, focused, focusedLabel, multiline]);
+    }, [styles, theme, shouldShowError, focused, focusedLabel, textInputContainerStyle, textInputContainerHeight]);
 
     const combinedTextInputStyle = useMemo(() => {
-        const res: StyleProp<TextStyle> = [styles.textInput, textInputStyle, {height: DEFAULT_INPUT_HEIGHT}];
-
-        if (multiline) {
-            res.push({height: MULTILINE_INPUT_HEIGHT, textAlignVertical: 'top'});
-        }
-
-        return res;
-    }, [styles, textInputStyle, multiline]);
+        return [styles.textInput, textInputStyle, {height: textInputHeight}];
+    }, [styles, textInputStyle, textInputHeight]);
 
     const textAnimatedTextStyle = useAnimatedStyle(() => {
         const inputText = placeholder || value;
@@ -186,7 +180,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
                     {label}
                 </Animated.Text>
                 <Pressable
-                    style={combinedInputContainerStyle}
+                    style={combinedTextInputContainerStyle}
                     onPress={focusInput}
                     disabled={!(isKeyboardInput && editable)}
                 >

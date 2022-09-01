@@ -33,9 +33,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         input: {
             color: theme.centerChannelColor,
-            height: 150,
-            paddingHorizontal: 15,
             ...typography('Body', 100, 'Regular'),
+        },
+        inputContainer: {
+            height: 128,
         },
         containerStyle: {
             marginTop: 30,
@@ -209,6 +210,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
                     theme={theme}
                     underlineColorAndroid='transparent'
                     value={mentionKeywords}
+                    textInputContainerStyle={styles.inputContainer}
                 />
                 <Text
                     style={styles.keywordLabelStyle}
