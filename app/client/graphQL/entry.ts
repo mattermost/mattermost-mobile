@@ -234,6 +234,7 @@ query ${QueryNames.QUERY_CHANNELS}($teamId: String!, $perPage: Int!, $exclude: B
             purpose
             type
             createAt
+            updateAt
             creatorId
             deleteAt
             displayName
@@ -283,6 +284,7 @@ query ${QueryNames.QUERY_CHANNELS_NEXT}($teamId: String!, $perPage: Int!, $exclu
             purpose
             type
             createAt
+            updateAt
             creatorId
             deleteAt
             displayName
@@ -317,6 +319,7 @@ query ${QueryNames.QUERY_ALL_CHANNELS}($perPage: Int!){
             purpose
             type
             createAt
+            updateAt
             creatorId
             deleteAt
             displayName
@@ -351,6 +354,7 @@ query ${QueryNames.QUERY_ALL_CHANNELS_NEXT}($perPage: Int!, $cursor: String!) {
             purpose
             type
             createAt
+            updateAt
             creatorId
             deleteAt
             displayName
