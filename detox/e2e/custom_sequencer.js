@@ -13,9 +13,7 @@ class CustomSequencer extends Sequencer {
         const shardStart = shardSize * (shardIndex - 1);
         const shardEnd = shardSize * shardIndex;
 
-        return [...tests]
-            .sort((a, b) => (a.path > b.path ? 1 : -1))
-            .slice(shardStart, shardEnd);
+        return [...tests].sort((a, b) => (a.path > b.path ? 1 : -1)).slice(shardStart, shardEnd);
     }
 
     /**
