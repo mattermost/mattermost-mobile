@@ -226,7 +226,7 @@ export default function ChannelInfoForm({
     const workingSpace = wrapperHeight - keyboardOverlap;
     const spaceOnTop = otherElementsSize - scrollPosition - AUTOCOMPLETE_ADJUST;
     const spaceOnBottom = (workingSpace + scrollPosition) - (otherElementsSize + headerFieldHeight + BOTTOM_AUTOCOMPLETE_SEPARATION);
-    const insetsAdjust = keyboardHeight ? keyboardHeight : insets.bottom;
+    const insetsAdjust = keyboardHeight || insets.bottom;
     const keyboardAdjust = Platform.select({
         ios: isTablet ?
             keyboardOverlap :
