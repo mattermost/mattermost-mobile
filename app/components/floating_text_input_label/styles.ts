@@ -52,7 +52,6 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         fontSize: 16,
         lineHeight: 24,
         color: theme.centerChannelColor,
-        padding: 0,
         flex: 1,
     },
     startAdornment: {
