@@ -50,6 +50,16 @@ function setup() {
           npm run pod-install || exit 1
         fi
 
+        COMPASS_ICONS="node_modules/@mattermost/compass-icons/font/compass-icons.ttf"
+        if [ -z "$COMPASS_ICONS" ]; then
+            echo "Compass Icons font not found"
+            exit 1
+        else
+            echo "Configuring Compass Icons font"
+            cp "$COMPASS_ICONS" "assets/fonts/"
+            cp "$COMPASS_ICONS" "android/app/src/main/assets/fonts"
+        fi
+
         ASSETS=$(node scripts/generate-assets.js)
         if [ -z "$ASSETS" ]; then
             echo "Error Generating app assets"
