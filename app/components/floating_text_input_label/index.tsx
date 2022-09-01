@@ -5,85 +5,14 @@
 
 import {debounce} from 'lodash';
 import React, {useState, useEffect, useRef, useImperativeHandle, forwardRef, useMemo, useCallback} from 'react';
-import {GestureResponderEvent, LayoutChangeEvent, NativeSyntheticEvent, Platform, StyleProp, TargetedEvent, Text, TextInput, TextInputFocusEventData, TextInputProps, TextStyle, TouchableWithoutFeedback, View, ViewStyle} from 'react-native';
+import {GestureResponderEvent, LayoutChangeEvent, NativeSyntheticEvent, StyleProp, TargetedEvent, Text, TextInput, TextInputFocusEventData, TextInputProps, TextStyle, TouchableWithoutFeedback, View, ViewStyle} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming, Easing} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-const DEFAULT_INPUT_HEIGHT = 48;
-const BORDER_DEFAULT_WIDTH = 1;
-const BORDER_FOCUSED_WIDTH = 2;
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    container: {
-        height: DEFAULT_INPUT_HEIGHT + (2 * BORDER_DEFAULT_WIDTH),
-        width: '100%',
-    },
-    errorContainer: {
-        flexDirection: 'row',
-    },
-    errorIcon: {
-        color: theme.errorTextColor,
-        fontSize: 14,
-        marginRight: 7,
-        top: 5,
-    },
-    errorText: {
-        color: theme.errorTextColor,
-        fontFamily: 'OpenSans',
-        fontSize: 12,
-        lineHeight: 16,
-        paddingVertical: 5,
-    },
-    label: {
-        position: 'absolute',
-        color: changeOpacity(theme.centerChannelColor, 0.64),
-        left: 16,
-        fontFamily: 'OpenSans',
-        fontSize: 16,
-        zIndex: 10,
-        maxWidth: 315,
-    },
-    smallLabel: {
-        fontSize: 10,
-    },
-    textInput: {
-        fontFamily: 'OpenSans',
-        fontSize: 16,
-        paddingTop: 12,
-        paddingBottom: 12,
-        paddingHorizontal: 16,
-        color: theme.centerChannelColor,
-        borderColor: changeOpacity(theme.centerChannelColor, 0.16),
-        borderRadius: 4,
-        borderWidth: BORDER_DEFAULT_WIDTH,
-        backgroundColor: theme.centerChannelBg,
-    },
-}));
-
-const onExecution = (
-    e: NativeSyntheticEvent<TextInputFocusEventData>,
-    innerFunc?: () => void,
-    outerFunc?: ((event: NativeSyntheticEvent<TargetedEvent>) => void),
-) => {
-    innerFunc?.();
-    outerFunc?.(e);
-};
-
-const getLabelPositions = (style: TextStyle, labelStyle: TextStyle, smallLabelStyle: TextStyle) => {
-    const top: number = style.paddingTop as number || 0;
-    const bottom: number = style.paddingBottom as number || 0;
-
-    const height: number = (style.height as number || (top + bottom) || style.padding as number) || 0;
-    const textInputFontSize = style.fontSize || 13;
-    const labelFontSize = labelStyle.fontSize || 16;
-    const smallLabelFontSize = smallLabelStyle.fontSize || 10;
-    const fontSizeDiff = textInputFontSize - labelFontSize;
-    const unfocused = (height * 0.5) + (fontSizeDiff * (Platform.OS === 'android' ? 0.5 : 0.6));
-    const focused = -(labelFontSize + smallLabelFontSize) * 0.25;
-    return [unfocused, focused];
-};
+import {BORDER_DEFAULT_WIDTH, BORDER_FOCUSED_WIDTH, MULTILINE_INPUT_HEIGHT, DEFAULT_INPUT_CONTAINER_HEIGHT, MULTILINE_INPUT_CONTAINER_HEIGHT} from './constants';
+import {getStyleSheet} from './styles';
+import {getLabelPositions, onExecution} from './utils';
 
 export type FloatingTextInputRef = {
     blur: () => void;
@@ -110,6 +39,8 @@ type FloatingTextInputProps = TextInputProps & {
     textInputStyle?: TextStyle;
     theme: Theme;
     value: string;
+    startAdornment?: React.ReactNode;
+    endAdornment?: React.ReactNode;
 }
 
 const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProps>(({
@@ -120,7 +51,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     isKeyboardInput = true,
     label = '',
     labelTextStyle,
-    multiline,
+    multiline = false,
     onBlur,
     onFocus,
     onLayout,
@@ -131,6 +62,8 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     textInputStyle,
     theme,
     value = '',
+    startAdornment,
+    endAdornment,
     ...props
 }: FloatingTextInputProps, ref) => {
     const [focused, setIsFocused] = useState(false);
@@ -139,23 +72,10 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     const debouncedOnFocusTextInput = debounce(setIsFocusLabel, 500, {leading: true, trailing: false});
     const styles = getStyleSheet(theme);
 
-    const positions = useMemo(() => getLabelPositions(styles.textInput, styles.label, styles.smallLabel), [styles]);
+    const hasStartAdornment = Boolean(startAdornment);
+    const hasEndAdornment = Boolean(endAdornment);
+    const positions = useMemo(() => getLabelPositions(styles.textInputContainer, styles.label, styles.smallLabel), [styles]);
     const size = useMemo(() => [styles.textInput.fontSize, styles.smallLabel.fontSize], [styles]);
-
-    useImperativeHandle(ref, () => ({
-        blur: () => inputRef.current?.blur(),
-        focus: () => inputRef.current?.focus(),
-        isFocused: () => inputRef.current?.isFocused() || false,
-    }), [inputRef]);
-
-    useEffect(
-        () => {
-            if (!focusedLabel && value) {
-                debouncedOnFocusTextInput(true);
-            }
-        },
-        [value],
-    );
 
     const onTextInputBlur = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => onExecution(e,
         () => {
@@ -180,21 +100,15 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     const shouldShowError = (!focused && error);
     const onPressAction = !isKeyboardInput && editable && onPress ? onPress : undefined;
 
-    const combinedContainerStyle = useMemo(() => {
-        const res = [styles.container];
-        if (multiline) {
-            res.push({height: 100 + (2 * BORDER_DEFAULT_WIDTH)});
-        }
-        res.push(containerStyle);
-        return res;
-    }, [styles, containerStyle, multiline]);
-
-    const combinedTextInputStyle = useMemo(() => {
-        const res: StyleProp<TextStyle> = [styles.textInput];
+    const combinedInputContainerStyle = useMemo(() => {
+        const res: StyleProp<TextStyle> = [styles.textInputContainer, {height: DEFAULT_INPUT_CONTAINER_HEIGHT}];
         res.push({
             borderWidth: focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH,
-            height: DEFAULT_INPUT_HEIGHT + ((focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH) * 2),
         });
+
+        if (multiline) {
+            res.push({height: MULTILINE_INPUT_CONTAINER_HEIGHT});
+        }
 
         if (focused) {
             res.push({borderColor: theme.buttonBg});
@@ -202,43 +116,63 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
             res.push({borderColor: theme.errorTextColor});
         }
 
-        res.push(textInputStyle);
+        return res;
+    }, [styles, theme, shouldShowError, focused, focusedLabel, multiline]);
+
+    const combinedTextInputStyle = useMemo(() => {
+        const res: StyleProp<TextStyle> = [styles.textInput, textInputStyle];
 
         if (multiline) {
-            res.push({height: 100, textAlignVertical: 'top'});
+            res.push({height: MULTILINE_INPUT_HEIGHT, textAlignVertical: 'top'});
         }
 
         return res;
-    }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, multiline]);
+    }, [styles, textInputStyle, multiline]);
 
     const textAnimatedTextStyle = useAnimatedStyle(() => {
         const inputText = placeholder || value;
-        const index = inputText || focusedLabel ? 1 : 0;
+        const showLabelOnTop = inputText || focusedLabel || hasStartAdornment;
+        const index = showLabelOnTop ? 1 : 0;
         const toValue = positions[index];
         const toSize = size[index];
 
         let color = styles.label.color;
         if (shouldShowError) {
             color = theme.errorTextColor;
-        } else if (focused) {
+        } else if (focused || hasStartAdornment) {
             color = theme.buttonBg;
         }
 
         return {
             top: withTiming(toValue, {duration: 100, easing: Easing.linear}),
             fontSize: withTiming(toSize, {duration: 100, easing: Easing.linear}),
-            backgroundColor: focusedLabel || inputText ? theme.centerChannelBg : 'transparent',
+            backgroundColor: showLabelOnTop ? theme.centerChannelBg : 'transparent',
             paddingHorizontal: focusedLabel || inputText ? 4 : 0,
             color,
         };
     });
+
+    useImperativeHandle(ref, () => ({
+        blur: () => inputRef.current?.blur(),
+        focus: () => inputRef.current?.focus(),
+        isFocused: () => inputRef.current?.isFocused() || false,
+    }), [inputRef]);
+
+    useEffect(
+        () => {
+            if (!focusedLabel && value) {
+                debouncedOnFocusTextInput(true);
+            }
+        },
+        [value],
+    );
 
     return (
         <TouchableWithoutFeedback
             onPress={onPressAction}
             onLayout={onLayout}
         >
-            <View style={combinedContainerStyle}>
+            <View style={[styles.container, containerStyle]}>
                 <Animated.Text
                     onPress={onAnimatedTextPress}
                     style={[styles.label, labelTextStyle, textAnimatedTextStyle]}
@@ -247,21 +181,42 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
                 >
                     {label}
                 </Animated.Text>
-                <TextInput
-                    {...props}
-                    editable={isKeyboardInput && editable}
-                    style={combinedTextInputStyle}
-                    placeholder={placeholder}
-                    placeholderTextColor={styles.label.color}
-                    multiline={multiline}
-                    value={value}
-                    pointerEvents={isKeyboardInput ? 'auto' : 'none'}
-                    onFocus={onTextInputFocus}
-                    onBlur={onTextInputBlur}
-                    ref={inputRef}
-                    underlineColorAndroid='transparent'
-                    testID={testID}
-                />
+                <View
+                    style={combinedInputContainerStyle}
+                >
+                    {hasStartAdornment && (
+                        <View
+                            style={styles.startAdornment}
+                            testID={`${testID}.start_adornment_container`}
+                        >
+                            {startAdornment}
+                        </View>
+                    )}
+                    <TextInput
+                        {...props}
+                        editable={isKeyboardInput && editable}
+                        style={combinedTextInputStyle}
+                        placeholder={placeholder}
+                        placeholderTextColor={styles.label.color}
+                        multiline={multiline}
+                        value={value}
+                        pointerEvents={isKeyboardInput ? 'auto' : 'none'}
+                        onFocus={onTextInputFocus}
+                        onBlur={onTextInputBlur}
+                        ref={inputRef}
+                        underlineColorAndroid='transparent'
+                        testID={testID}
+                    />
+                    {hasEndAdornment && (
+                        <View
+                            style={styles.endAdornment}
+                            testID={`${testID}.end_adornment_container`}
+                        >
+                            {endAdornment}
+                        </View>
+                    )}
+                </View>
+
                 {Boolean(error) && (
                     <View style={styles.errorContainer}>
                         {showErrorIcon && errorIcon &&

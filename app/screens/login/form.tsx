@@ -4,7 +4,7 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {MutableRefObject, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, TextInput, useWindowDimensions, View} from 'react-native';
+import {Keyboard, Platform, TextInput, TouchableOpacity, useWindowDimensions, View} from 'react-native';
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
@@ -20,6 +20,8 @@ import {goToScreen, loginAnimationOptions, resetToHome, resetToTeams} from '@scr
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+
+import {PasswordEyeIcon} from './password_eye_icon';
 
 import type {LaunchProps} from '@typings/launch';
 
@@ -83,6 +85,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
     const [loginId, setLoginId] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [buttonDisabled, setButtonDisabled] = useState(true);
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const emailEnabled = config.EnableSignInWithEmail === 'true';
     const usernameEnabled = config.EnableSignInWithUsername === 'true';
     const ldapEnabled = license.IsLicensed === 'true' && config.EnableLdap === 'true' && license.LDAP === 'true';
@@ -265,6 +268,10 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
         goToScreen(FORGOT_PASSWORD, '', passProps, loginAnimationOptions());
     }, [theme]);
 
+    const togglePasswordVisiblity = useCallback(() => {
+        setIsPasswordVisible((prevState) => !prevState);
+    }, []);
+
     // useEffect to set userName for EMM
     useEffect(() => {
         const setEmmUsernameIfAvailable = async () => {
@@ -365,10 +372,13 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
                 ref={passwordRef}
                 returnKeyType='join'
                 spellCheck={false}
-                secureTextEntry={true}
+                secureTextEntry={!isPasswordVisible}
                 testID='login_form.password.input'
                 theme={theme}
                 value={password}
+                endAdornment={<TouchableOpacity onPress={togglePasswordVisiblity}>
+                    <PasswordEyeIcon isVisible={isPasswordVisible}/>
+                </TouchableOpacity>}
             />
 
             {(emailEnabled || usernameEnabled) && (
