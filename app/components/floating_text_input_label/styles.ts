@@ -53,6 +53,7 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         lineHeight: 24,
         color: theme.centerChannelColor,
         flex: 1,
+        padding: 0,
     },
     startAdornment: {
         marginRight: ADORNMENT_TO_INPUT_SPACE,
