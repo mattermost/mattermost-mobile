@@ -75,14 +75,12 @@ export default function QuickActions({
                 disabled={atDisabled}
                 inputType='at'
                 onTextChange={updateValue}
-                value={value}
             />
             <InputAction
                 testID={slashInputActionTestID}
                 disabled={slashDisabled}
                 inputType='slash'
                 onTextChange={updateValue}
-                value={''} // Only enabled when value == ''
             />
             <FileAction
                 testID={fileActionTestID}

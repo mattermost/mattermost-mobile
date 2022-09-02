@@ -21,7 +21,7 @@ type Props = {
     currentUserId: string;
 
     // Cursor Position Handler
-    updateCursorPosition: (pos: number) => void;
+    updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
     cursorPosition: number;
 
     // Send Handler
@@ -33,7 +33,7 @@ type Props = {
     files: FileInfo[];
     value: string;
     uploadFileError: React.ReactNode;
-    updateValue: (value: string) => void;
+    updateValue: React.Dispatch<React.SetStateAction<string>>;
     addFiles: (files: FileInfo[]) => void;
     updatePostInputTop: (top: number) => void;
 }

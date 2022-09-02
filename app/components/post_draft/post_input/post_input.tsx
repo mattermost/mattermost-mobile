@@ -34,10 +34,10 @@ type Props = {
     enableUserTypingMessage: boolean;
     membersInChannel: number;
     value: string;
-    updateValue: (value: string) => void;
+    updateValue: React.Dispatch<React.SetStateAction<string>>;
     addFiles: (files: ExtractedFileInfo[]) => void;
     cursorPosition: number;
-    updateCursorPosition: (pos: number) => void;
+    updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
     sendMessage: () => void;
 }
 
@@ -231,12 +231,12 @@ export default function PostInput({
                     sendMessage();
                     break;
                 case 'shift-enter':
-                    updateValue(value.substring(0, cursorPosition) + '\n' + value.substring(cursorPosition));
-                    updateCursorPosition(cursorPosition + 1);
+                    updateValue((v) => v.substring(0, cursorPosition) + '\n' + v.substring(cursorPosition));
+                    updateCursorPosition((pos) => pos + 1);
                     break;
             }
         }
-    }, [sendMessage, updateValue, value, cursorPosition, isTablet]);
+    }, [sendMessage, updateValue, cursorPosition, isTablet]);
 
     const onAppStateChange = useCallback((appState: AppStateStatus) => {
         if (appState !== 'active' && previousAppState.current === 'active') {
@@ -285,6 +285,12 @@ export default function PostInput({
                 text: value,
             });
             lastNativeValue.current = value;
+        }
+    }, [value]);
+
+    useEffect(() => {
+        if (!input.current?.isFocused()) {
+            updateCursorPosition(value.length);
         }
     }, [value]);
 
