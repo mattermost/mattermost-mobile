@@ -7,7 +7,7 @@ import {View} from 'react-native';
 
 import {getDefaultThemeByAppearance} from '@app/context/theme';
 
-import {getStyleSheet} from './styles';
+import {getStyleSheet} from './styles';
 import {getLabelPositions} from './utils';
 
 import FloatingTextInput, {FloatingTextInputProps, FloatingTextInputRef} from './index';
@@ -61,7 +61,8 @@ const makeFloatingTextInput = ({endAdornment = null,
             isKeyboardInput={isKeyboardInput}
             onPress={onPressHandler}
             ref={ref}
-                                />),
+        // eslint-disable-next-line react/jsx-closing-bracket-location
+        />),
     };
 };
 

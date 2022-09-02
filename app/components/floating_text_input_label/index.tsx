@@ -12,7 +12,7 @@ import CompassIcon from '@components/compass_icon';
 
 import {BORDER_DEFAULT_WIDTH, BORDER_FOCUSED_WIDTH, INPUT_CONTAINER_VERTICAL_SPACING} from './constants';
 import {getStyleSheet} from './styles';
-import {getLabelPositions, onExecution, getInputContainerHeight} from './utils';
+import {getLabelPositions, onExecution, getInputContainerHeight} from './utils';
 
 export type FloatingTextInputRef = {
     blur: () => void;
@@ -82,6 +82,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     const textInputHeight = useMemo(() => textInputContainerHeight - (INPUT_CONTAINER_VERTICAL_SPACING * 2), [textInputContainerHeight]);
 
     const onTextInputBlur = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => onExecution(e,
+        // eslint-disable-next-line max-nested-callbacks
         () => {
             setIsFocusLabel(Boolean(value));
             setIsFocused(false);
@@ -90,6 +91,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     ), [onBlur]);
 
     const onTextInputFocus = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => onExecution(e,
+        // eslint-disable-next-line max-nested-callbacks
         () => {
             setIsFocusLabel(true);
             setIsFocused(true);

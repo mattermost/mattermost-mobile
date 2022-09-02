@@ -21,7 +21,7 @@ import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import {PasswordEyeIcon} from './password_eye_icon';
+import {PasswordEyeIcon} from './password_eye_icon';
 
 import type {LaunchProps} from '@typings/launch';
 

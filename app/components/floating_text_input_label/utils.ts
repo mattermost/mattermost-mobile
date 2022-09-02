@@ -3,7 +3,7 @@
 
 import {NativeSyntheticEvent, TargetedEvent, TextInputFocusEventData, TextStyle, ViewStyle} from 'react-native';
 
-import {DEFAULT_INPUT_CONTAINER_HEIGHT, INPUT_CONTAINER_VERTICAL_SPACING, MULTILINE_INPUT_CONTAINER_HEIGHT} from './constants';
+import {DEFAULT_INPUT_CONTAINER_HEIGHT, MULTILINE_INPUT_CONTAINER_HEIGHT} from './constants';
 
 export const onExecution = (
     e: NativeSyntheticEvent<TextInputFocusEventData>,
@@ -27,7 +27,7 @@ export const getLabelPositions = (textInputContainerStyle: ViewStyle, labelStyle
 };
 
 export const getInputContainerHeight = (
-    multiline: Boolean, textInputContainerOverrideStyle: ViewStyle,
+    multiline: Boolean, textInputContainerOverrideStyle: ViewStyle | undefined,
 ) => {
     let height = multiline ? MULTILINE_INPUT_CONTAINER_HEIGHT : DEFAULT_INPUT_CONTAINER_HEIGHT;
 

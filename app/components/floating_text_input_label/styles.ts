@@ -3,7 +3,7 @@
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import {BORDER_DEFAULT_WIDTH, ADORNMENT_TO_INPUT_SPACE, INPUT_CONTAINER_HORIZONTAL_SPACING, INPUT_CONTAINER_VERTICAL_SPACING} from './constants';
+import {BORDER_DEFAULT_WIDTH, ADORNMENT_TO_INPUT_SPACE, INPUT_CONTAINER_HORIZONTAL_SPACING, INPUT_CONTAINER_VERTICAL_SPACING} from './constants';
 
 export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
