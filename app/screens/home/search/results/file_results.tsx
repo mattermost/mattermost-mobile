@@ -84,13 +84,8 @@ const FileResults = ({
         openGalleryAtIndex(galleryIdentifier, idx, items);
     }), [orderedFilesForGallery]);
 
-    const {
-        action,
-        handleCopyLink,
-        handleDownload,
-        handlePermalink,
-        setAction,
-    } = useHandleFileOptions({lastViewedIndex, orderedFilesForGallery, setSelectedItemNumber});
+    const {action, handleCopyLink, handleDownload, handlePermalink, setAction} =
+        useHandleFileOptions({lastViewedIndex, orderedFilesForGallery, setSelectedItemNumber});
     const handleOptionsPress = useCallback((item: number) => {
         if (isTablet) {
             // setOpenTabletOptions(true);
