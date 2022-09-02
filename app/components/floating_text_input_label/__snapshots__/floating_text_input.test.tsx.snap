@@ -113,6 +113,7 @@ exports[`FloatingTextInput test snapshot 1`] = `
             "fontFamily": "OpenSans",
             "fontSize": 16,
             "lineHeight": 24,
+            "padding": 0,
           },
           undefined,
           Object {
