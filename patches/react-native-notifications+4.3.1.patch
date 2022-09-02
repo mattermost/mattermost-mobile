@@ -40,10 +40,10 @@ index 90969b2..778cb29 100644
      @ReactMethod
 diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/helpers/ScheduleNotificationHelper.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/helpers/ScheduleNotificationHelper.java
 new file mode 100644
-index 0000000..dde4a2c
+index 0000000..433c754
 --- /dev/null
 +++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/helpers/ScheduleNotificationHelper.java
-@@ -0,0 +1,89 @@
+@@ -0,0 +1,91 @@
 +package com.wix.reactnativenotifications.core.helpers;
 +
 +import android.app.AlarmManager;
@@ -84,13 +84,15 @@ index 0000000..dde4a2c
 +        Intent notificationIntent = new Intent(mContext, PushNotificationPublisher.class);
 +        notificationIntent.putExtra(ScheduleNotificationHelper.NOTIFICATION_ID, notificationId);
 +        notificationIntent.putExtras(bundle);
-+        return PendingIntent.getBroadcast(mContext, notificationId, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
++        return PendingIntent.getBroadcast(mContext, notificationId, notificationIntent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
 +    }
 +
 +    public void schedulePendingNotificationIntent(PendingIntent intent, long fireDate) {
 +        AlarmManager alarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
 +
-+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
++        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
++            alarmManager.set(AlarmManager.RTC_WAKEUP, fireDate, intent);
++        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 +            alarmManager.setExact(AlarmManager.RTC_WAKEUP, fireDate, intent);
 +        } else {
 +            alarmManager.set(AlarmManager.RTC_WAKEUP, fireDate, intent);
