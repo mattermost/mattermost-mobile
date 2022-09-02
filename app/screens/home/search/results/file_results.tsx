@@ -116,19 +116,21 @@ const FileResults = ({
         }
 
         showMobileOptionsBottomSheet({
-            fileInfo: orderedFilesForGallery[item],
             canDownloadFiles,
-            publicLinkEnabled,
+            fileInfo: orderedFilesForGallery[item],
             handleCopyLink,
             handleDownload,
             handlePermalink,
             insets,
             numOptions,
+            publicLinkEnabled,
             theme,
         });
-    }, [canDownloadFiles, isTablet, numOptions,
-        handleCopyLink, handleDownload, handlePermalink,
-        publicLinkEnabled, orderedFilesForGallery, selectedItemNumber, theme]);
+    }, [
+        canDownloadFiles, handleCopyLink, handleDownload, handlePermalink,
+        isTablet, numOptions, orderedFilesForGallery, publicLinkEnabled,
+        selectedItemNumber, theme,
+    ]);
 
     // This effect handles the case where a user has the FileOptions Modal
     // open and the server changes the ability to download files or copy public
