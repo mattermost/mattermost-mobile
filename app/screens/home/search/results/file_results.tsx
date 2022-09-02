@@ -19,8 +19,8 @@ import {bottomSheetSnapPoint} from '@utils/helpers';
 import {TabTypes} from '@utils/search';
 import {preventDoubleTap} from '@utils/tap';
 
-import FileOptions from './file_options';
 import {HEADER_HEIGHT} from './file_options/header';
+import MobileOptions from './file_options/mobile_options';
 import FileResult from './file_result';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -44,13 +44,21 @@ const FileResults = ({
     paddingTop,
     searchValue,
 }: Props) => {
-    const theme = useTheme();
-    const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
+    const isTablet = useIsTablet();
+    const theme = useTheme();
 
-    const [lastViewedIndex, setLastViewedIndex] = useState<number | undefined>(undefined);
     const [selectedItemNumber, setSelectedItemNumber] = useState<number | undefined>(undefined);
+    const [lastViewedIndex, setLastViewedIndex] = useState<number | undefined>(undefined);
+
     const containerStyle = useMemo(() => ({top: fileInfos.length ? 8 : 0}), [fileInfos]);
+
+    const numOptions = useMemo(() => {
+        let numberItems = 1;
+        numberItems += canDownloadFiles ? 1 : 0;
+        numberItems += publicLinkEnabled ? 1 : 0;
+        return numberItems;
+    }, [canDownloadFiles, publicLinkEnabled]);
 
     const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
     const channelNames = useMemo(() => fileChannels.reduce<{[id: string]: string | undefined}>((acc, v) => {
@@ -84,22 +92,21 @@ const FileResults = ({
         }
 
         setLastViewedIndex(item);
-        let numberOptions = 1;
-        numberOptions += canDownloadFiles ? 1 : 0;
-        numberOptions += publicLinkEnabled ? 1 : 0;
         const renderContent = () => (
-            <FileOptions
+            <MobileOptions
                 fileInfo={orderedFilesForGallery[item]}
+                canDownloadFiles={canDownloadFiles}
+                publicLinkEnabled={publicLinkEnabled}
             />
         );
         bottomSheet({
             closeButtonId: 'close-search-file-options',
             renderContent,
-            snapPoints: [bottomSheetSnapPoint(numberOptions, ITEM_HEIGHT, insets.bottom) + HEADER_HEIGHT, 10],
+            snapPoints: [bottomSheetSnapPoint(numOptions, ITEM_HEIGHT, insets.bottom) + HEADER_HEIGHT, 10],
             theme,
             title: '',
         });
-    }, [canDownloadFiles, publicLinkEnabled, orderedFilesForGallery, selectedItemNumber, theme]);
+    }, [canDownloadFiles, isTablet, numOptions, publicLinkEnabled, orderedFilesForGallery, selectedItemNumber, theme]);
 
     // This effect handles the case where a user has the FileOptions Modal
     // open and the server changes the ability to download files or copy public
@@ -128,15 +135,16 @@ const FileResults = ({
             <FileResult
                 canDownloadFiles={canDownloadFiles}
                 channelName={channelNames[item.channel_id!]}
+                fileInfo={item}
                 index={filesForGalleryIndexes[item.id!] || 0}
                 isSingleImage={isSingleImage}
+                numOptions={numOptions}
                 onOptionsPress={handleOptionsPress}
-                optionSelected={optionSelected}
                 onPress={handlePreviewPress}
+                optionSelected={optionSelected}
                 publicLinkEnabled={publicLinkEnabled}
-                updateFileForGallery={updateFileForGallery}
-                fileInfo={item}
                 setSelectedItemNumber={setSelectedItemNumber}
+                updateFileForGallery={updateFileForGallery}
             />
         );
     }, [
@@ -146,8 +154,8 @@ const FileResults = ({
         filesForGalleryIndexes,
         handleOptionsPress,
         handlePreviewPress,
-        selectedItemNumber,
         publicLinkEnabled,
+        selectedItemNumber,
     ]);
 
     const noResults = useMemo(() => (
