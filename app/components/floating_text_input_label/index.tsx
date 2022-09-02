@@ -20,7 +20,7 @@ export type FloatingTextInputRef = {
     isFocused: () => boolean;
 }
 
-type FloatingTextInputProps = TextInputProps & {
+export type FloatingTextInputProps = TextInputProps & {
     containerStyle?: ViewStyle;
     editable?: boolean;
     error?: string;
@@ -141,7 +141,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
             top: withTiming(toValue, {duration: 100, easing: Easing.linear}),
             fontSize: withTiming(toSize, {duration: 100, easing: Easing.linear}),
             backgroundColor: showLabelOnTop ? theme.centerChannelBg : 'transparent',
-            paddingHorizontal: focusedLabel || inputText ? 4 : 0,
+            paddingHorizontal: showLabelOnTop ? 4 : 0,
             color,
         };
     });
@@ -170,7 +170,10 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
             onPress={onPressAction}
             onLayout={onLayout}
         >
-            <View style={[styles.container, containerStyle]}>
+            <View
+                style={[styles.container, containerStyle]}
+                testID={`${testID}.container`}
+            >
                 <Animated.Text
                     onPress={onAnimatedTextPress}
                     style={[styles.label, labelTextStyle, textAnimatedTextStyle]}
@@ -183,6 +186,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
                     style={combinedTextInputContainerStyle}
                     onPress={focusInput}
                     disabled={!(isKeyboardInput && editable)}
+                    testID={`${testID}.input_container`}
                 >
                     {hasStartAdornment && (
                         <View
@@ -223,6 +227,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
                         <CompassIcon
                             name={errorIcon}
                             style={styles.errorIcon}
+                            testID={`${testID}.error_icon`}
                         />
                         }
                         <Text
