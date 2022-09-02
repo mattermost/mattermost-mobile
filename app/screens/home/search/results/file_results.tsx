@@ -2,9 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {useIntl} from 'react-intl';
 import {FlatList, ListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {showPermalink} from '@actions/remote/permalink';
+import {useServerUrl} from '@app/context/server';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
@@ -13,6 +16,7 @@ import {useIsTablet} from '@hooks/device';
 import {useImageAttachments} from '@hooks/files';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
+import {GalleryAction} from '@typings/screens/gallery';
 import {isImage, isVideo} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -21,6 +25,7 @@ import {preventDoubleTap} from '@utils/tap';
 
 import {HEADER_HEIGHT} from './file_options/header';
 import MobileOptions from './file_options/mobile_options';
+import Toasts from './file_options/toasts';
 import FileResult from './file_result';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -47,9 +52,12 @@ const FileResults = ({
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
     const theme = useTheme();
+    const intl = useIntl();
+    const serverUrl = useServerUrl();
 
     const [selectedItemNumber, setSelectedItemNumber] = useState<number | undefined>(undefined);
     const [lastViewedIndex, setLastViewedIndex] = useState<number | undefined>(undefined);
+    const [action, setAction] = useState<GalleryAction>('none');
 
     const containerStyle = useMemo(() => ({top: fileInfos.length ? 8 : 0}), [fileInfos]);
 
@@ -85,18 +93,39 @@ const FileResults = ({
         openGalleryAtIndex(galleryIdentifier, idx, items);
     }), [orderedFilesForGallery]);
 
+    const handleDownload = useCallback(() => {
+        dismissBottomSheet();
+        setAction('downloading');
+        setSelectedItemNumber?.(undefined);
+    }, []);
+
+    const handleCopyLink = useCallback(() => {
+        dismissBottomSheet();
+        setAction('copying');
+        setSelectedItemNumber?.(undefined);
+    }, []);
+
+    const handlePermalink = useCallback(() => {
+        showPermalink(serverUrl, '', orderedFilesForGallery[lastViewedIndex!].post_id, intl);
+
+        // dismissBottomSheet();
+        setSelectedItemNumber(undefined);
+    }, [intl, selectedItemNumber, serverUrl, orderedFilesForGallery, setSelectedItemNumber, lastViewedIndex]);
     const handleOptionsPress = useCallback((item: number) => {
         if (isTablet) {
+            // setOpenTabletOptions(true);
             setSelectedItemNumber(selectedItemNumber === item ? undefined : item);
             return;
         }
 
-        setLastViewedIndex(item);
         const renderContent = () => (
             <MobileOptions
                 fileInfo={orderedFilesForGallery[item]}
                 canDownloadFiles={canDownloadFiles}
                 publicLinkEnabled={publicLinkEnabled}
+                handleCopyLink={handleCopyLink}
+                handleDownload={handleDownload}
+                handlePermalink={handlePermalink}
             />
         );
         bottomSheet({
@@ -106,7 +135,9 @@ const FileResults = ({
             theme,
             title: '',
         });
-    }, [canDownloadFiles, isTablet, numOptions, publicLinkEnabled, orderedFilesForGallery, selectedItemNumber, theme]);
+    }, [canDownloadFiles, isTablet, numOptions,
+        handleCopyLink, handleDownload, handlePermalink,
+        publicLinkEnabled, orderedFilesForGallery, selectedItemNumber, theme]);
 
     // This effect handles the case where a user has the FileOptions Modal
     // open and the server changes the ability to download files or copy public
@@ -128,6 +159,10 @@ const FileResults = ({
         orderedFilesForGallery[idx] = file;
     };
 
+    const optionSelected = useCallback((item: FileInfo) => {
+        return selectedItemNumber === filesForGalleryIndexes[item.id!];
+    }, [selectedItemNumber, filesForGalleryIndexes]);
+
     const renderItem = useCallback(({item}: ListRenderItemInfo<FileInfo>) => {
         const isSingleImage = orderedFilesForGallery.length === 1 && (isImage(orderedFilesForGallery[0]) || isVideo(orderedFilesForGallery[0]));
         const optionSelected = selectedItemNumber === filesForGalleryIndexes[item.id!];
@@ -136,6 +171,9 @@ const FileResults = ({
                 canDownloadFiles={canDownloadFiles}
                 channelName={channelNames[item.channel_id!]}
                 fileInfo={item}
+                handleCopyLink={handleCopyLink}
+                handleDownload={handleDownload}
+                handlePermalink={handlePermalink}
                 index={filesForGalleryIndexes[item.id!] || 0}
                 isSingleImage={isSingleImage}
                 numOptions={numOptions}
@@ -152,10 +190,15 @@ const FileResults = ({
         canDownloadFiles,
         channelNames,
         filesForGalleryIndexes,
+        handleCopyLink,
+        handleDownload,
+        handlePermalink,
         handleOptionsPress,
         handlePreviewPress,
+        numOptions,
         publicLinkEnabled,
         selectedItemNumber,
+        optionSelected,
     ]);
 
     const noResults = useMemo(() => (
@@ -166,23 +209,31 @@ const FileResults = ({
     ), [searchValue]);
 
     return (
-        <FlatList
-            ListEmptyComponent={noResults}
-            contentContainerStyle={[paddingTop, containerStyle]}
-            data={orderedFilesForGallery}
-            indicatorStyle='black'
-            initialNumToRender={10}
-            listKey={'files'}
-            maxToRenderPerBatch={5}
-            nestedScrollEnabled={true}
-            refreshing={false}
-            removeClippedSubviews={true}
-            renderItem={renderItem}
-            scrollEventThrottle={16}
-            scrollToOverflowEnabled={true}
-            showsVerticalScrollIndicator={true}
-            testID='search_results.post_list.flat_list'
-        />
+        <>
+            <FlatList
+                ListEmptyComponent={noResults}
+                contentContainerStyle={[paddingTop, containerStyle]}
+                data={orderedFilesForGallery}
+                indicatorStyle='black'
+                initialNumToRender={10}
+                listKey={'files'}
+                maxToRenderPerBatch={5}
+                nestedScrollEnabled={true}
+                refreshing={false}
+                removeClippedSubviews={true}
+                renderItem={renderItem}
+                scrollEventThrottle={16}
+                scrollToOverflowEnabled={true}
+                showsVerticalScrollIndicator={true}
+                testID='search_results.post_list.flat_list'
+            />
+            <Toasts
+                action={action}
+                fileInfo={orderedFilesForGallery[lastViewedIndex!]}
+                setAction={setAction}
+                setSelectedItemNumber={setSelectedItemNumber}
+            />
+        </>
     );
 };
 

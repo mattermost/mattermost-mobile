@@ -10,20 +10,14 @@ import DownloadWithAction from '@screens/gallery/footer/download_with_action';
 import type {GalleryAction, GalleryItemType} from '@typings/screens/gallery';
 
 const styles = StyleSheet.create({
-    tablet: {
-
-        // bottom: 100,
-    },
     toast: {
-
-        // flex: 1,
         flex: 1,
         backgroundColor: 'transparent',
         justifyContent: 'flex-end',
 
         // position: 'absolute',
         // zIndex: 100,
-        // top: 400,
+        // bottom: 100,
         alignItems: 'center',
     },
     backDrop: {opacity: 0},
@@ -64,10 +58,7 @@ const Toasts = ({
             isVisible={showToast}
             onBackdropPress={toggleOverlay}
             overlayStyle={[
-                styles.tablet,
                 styles.toast,
-
-                //overlayStyle,
             ]}
         >
             {action === 'downloading' &&

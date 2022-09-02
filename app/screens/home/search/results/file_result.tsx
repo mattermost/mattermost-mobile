@@ -2,18 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
 import {Dimensions, StyleSheet, View} from 'react-native';
 
-import {showPermalink} from '@actions/remote/permalink';
-import {useServerUrl} from '@app/context/server';
 import File from '@components/files/file';
 import {useIsTablet} from '@hooks/device';
-import {GalleryAction} from '@typings/screens/gallery';
 import {getViewPortWidth} from '@utils/images';
 
 import TabletOptions from './file_options/tablet_options';
-import Toasts from './file_options/toasts';
 
 const styles = StyleSheet.create({
     container: {
@@ -26,6 +21,9 @@ type Props = {
     canDownloadFiles: boolean;
     channelName: string | undefined;
     fileInfo: FileInfo;
+    handleCopyLink: () => void;
+    handleDownload: () => void;
+    handlePermalink: () => void;
     index: number;
     isSingleImage: boolean;
     numOptions: number;
@@ -43,6 +41,9 @@ const FileResult = ({
     canDownloadFiles,
     channelName,
     fileInfo,
+    handleCopyLink,
+    handleDownload,
+    handlePermalink,
     index,
     isSingleImage,
     numOptions,
@@ -55,11 +56,8 @@ const FileResult = ({
 }: Props) => {
     const elementsRef = useRef<View | null>(null);
     const isTablet = useIsTablet();
-    const intl = useIntl();
-    const serverUrl = useServerUrl();
     const isReplyPost = false;
-    const [action, setAction] = useState<GalleryAction>('none');
-    const [showToasts, setShowToasts] = useState(false);
+
     const [isOpen, setIsOpen] = useState(false);
     const [openUp, setOpenUp] = useState<boolean>(false);
     const [xOffset, setXoffset] = useState(0);
@@ -77,28 +75,6 @@ const FileResult = ({
             });
         }
     }, [optionSelected]);
-
-    const handleCopyLink = useCallback(() => {
-        setAction('copying');
-        setSelectedItemNumber?.(undefined);
-        setShowToasts(true);
-        setIsOpen?.(false);
-    }, [setSelectedItemNumber]);
-
-    const handleDownload = useCallback(() => {
-        setAction('downloading');
-        setSelectedItemNumber?.(undefined);
-        setShowToasts(true);
-
-        // setIsOpen?.(false);
-    }, [setSelectedItemNumber]);
-
-    const handlePermalink = useCallback(() => {
-        showPermalink(serverUrl, '', fileInfo.post_id, intl);
-        setSelectedItemNumber?.(undefined);
-
-        // setIsOpen?.(false);
-    }, [fileInfo.post_id, intl, serverUrl, setSelectedItemNumber]);
 
     return (
         <>
@@ -134,21 +110,12 @@ const FileResult = ({
                         optionSelected={optionSelected}
                         openUp={openUp}
                         publicLinkEnabled={publicLinkEnabled}
-                        setIsOpen={setIsOpen}
                         setSelectedItemNumber={setSelectedItemNumber}
                         xOffset={xOffset}
                         yOffset={yOffset}
                     />
                 }
             </View>
-            {isTablet && showToasts &&
-                <Toasts
-                    action={action}
-                    fileInfo={fileInfo}
-                    setAction={setAction}
-                    setSelectedItemNumber={setSelectedItemNumber}
-                />
-            }
         </>
     );
 };
