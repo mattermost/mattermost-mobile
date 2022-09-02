@@ -168,6 +168,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
                             description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveName', defaultMessage: 'Your case sensitive first name'})}
                             label={currentUser.firstName}
                             selected={firstNameMentionOn}
+                            testID='mention_notification_settings.case_sensitive_first_name.option'
                             type='toggle'
                         />
                         <SettingSeparator/>
@@ -180,6 +181,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
                         description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveUsername', defaultMessage: 'Your non-case sensitive username'})}
                         label={currentUser.username}
                         selected={usernameMentionOn}
+                        testID='mention_notification_settings.non_case_sensitive_username.option'
                         type='toggle'
                     />
                 )}
@@ -189,6 +191,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
                     description={intl.formatMessage({id: 'notification_settings.mentions.channelWide', defaultMessage: 'Channel-wide mentions'})}
                     label='@channel, @all, @here'
                     selected={channelMentionOn}
+                    testID='mention_notification_settings.channel_wide_mentions.option'
                     type='toggle'
                 />
                 <SettingSeparator/>
@@ -205,6 +208,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
                     placeholder={intl.formatMessage({id: 'notification_settings.mentions..keywordsDescription', defaultMessage: 'Other words that trigger a mention'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
                     returnKeyType='done'
+                    testID='mention_notification_settings.keywords.input'
                     textInputStyle={styles.input}
                     textAlignVertical='top'
                     theme={theme}
@@ -214,6 +218,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
                 />
                 <Text
                     style={styles.keywordLabelStyle}
+                    testID='mention_notification_settings.keywords.input.description'
                 >
                     {intl.formatMessage({id: 'notification_settings.mentions.keywordsLabel', defaultMessage: 'Keywords are not case-sensitive. Separate keywords with commas.'})}
                 </Text>

@@ -97,10 +97,11 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
     useAndroidHardwareBackHandler(componentId, saveAutoResponder);
 
     return (
-        <SettingContainer testID='notification_auto_responder'>
+        <SettingContainer testID='auto_responder_notification_settings'>
             <SettingOption
                 label={intl.formatMessage({id: 'notification_settings.auto_responder.to.enable', defaultMessage: 'Enable automatic replies'})}
                 action={setAutoResponderActive}
+                testID='auto_responder_notification_settings.enable_automatic_replies.option'
                 type='toggle'
                 selected={autoResponderActive}
             />
@@ -118,6 +119,7 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
                     placeholder={intl.formatMessage(label)}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
                     returnKeyType='default'
+                    testID='auto_responder_notification_settings.message.input'
                     textAlignVertical='top'
                     textInputStyle={styles.input}
                     theme={theme}
@@ -129,6 +131,7 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
                 id={'notification_settings.auto_responder.footer.message'}
                 defaultMessage={'Set a custom message that is automatically sent in response to direct messages, such as an out of office or vacation reply. Enabling this setting changes your status to Out of Office and disables notifications.'}
                 style={styles.footer}
+                testID='auto_responder_notification_settings.message.input.description'
             />
         </SettingContainer>
     );
