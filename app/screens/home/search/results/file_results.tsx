@@ -2,12 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
 import {FlatList, ListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {showPermalink} from '@actions/remote/permalink';
-import {useServerUrl} from '@app/context/server';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
@@ -15,12 +12,12 @@ import {useIsTablet} from '@hooks/device';
 import {useImageAttachments} from '@hooks/files';
 import {dismissBottomSheet} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
-import {GalleryAction} from '@typings/screens/gallery';
 import {isImage, isVideo} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {TabTypes} from '@utils/search';
 import {preventDoubleTap} from '@utils/tap';
 
+import {useHandleFileOptions} from './file_options/hooks';
 import {showMobileOptionsBottomSheet} from './file_options/mobile_options';
 import Toasts from './file_options/toasts';
 import FileResult from './file_result';
@@ -49,12 +46,9 @@ const FileResults = ({
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
     const theme = useTheme();
-    const intl = useIntl();
-    const serverUrl = useServerUrl();
 
     const [selectedItemNumber, setSelectedItemNumber] = useState<number | undefined>(undefined);
     const [lastViewedIndex, setLastViewedIndex] = useState<number | undefined>(undefined);
-    const [action, setAction] = useState<GalleryAction>('none');
 
     const containerStyle = useMemo(() => ({top: fileInfos.length ? 8 : 0}), [fileInfos]);
 
@@ -90,24 +84,13 @@ const FileResults = ({
         openGalleryAtIndex(galleryIdentifier, idx, items);
     }), [orderedFilesForGallery]);
 
-    const handleDownload = useCallback(() => {
-        dismissBottomSheet();
-        setAction('downloading');
-        setSelectedItemNumber?.(undefined);
-    }, []);
-
-    const handleCopyLink = useCallback(() => {
-        dismissBottomSheet();
-        setAction('copying');
-        setSelectedItemNumber?.(undefined);
-    }, []);
-
-    const handlePermalink = useCallback(() => {
-        showPermalink(serverUrl, '', orderedFilesForGallery[lastViewedIndex!].post_id, intl);
-
-        // dismissBottomSheet();
-        setSelectedItemNumber(undefined);
-    }, [intl, selectedItemNumber, serverUrl, orderedFilesForGallery, setSelectedItemNumber, lastViewedIndex]);
+    const {
+        action,
+        handleCopyLink,
+        handleDownload,
+        handlePermalink,
+        setAction,
+    } = useHandleFileOptions({lastViewedIndex, orderedFilesForGallery, setSelectedItemNumber});
     const handleOptionsPress = useCallback((item: number) => {
         if (isTablet) {
             // setOpenTabletOptions(true);
