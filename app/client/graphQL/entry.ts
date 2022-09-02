@@ -188,6 +188,7 @@ query ${QueryNames.QUERY_ENTRY} {
     }
     teamMembers(userId:"me") {
         deleteAt
+        schemeAdmin
         roles {
             id
             name
@@ -221,6 +222,8 @@ query ${QueryNames.QUERY_CHANNELS}($teamId: String!, $perPage: Int!, $exclude: B
         msgCount
         msgCountRoot
         mentionCount
+        mentionCountRoot
+        schemeAdmin
         lastViewedAt
         notifyProps
         roles {
@@ -254,6 +257,7 @@ query ${QueryNames.QUERY_CHANNELS}($teamId: String!, $perPage: Int!, $exclude: B
     sidebarCategories(userId:"me", teamId:$teamId, excludeTeam:$exclude) {
         displayName
         id
+        sortOrder
         sorting
         type
         muted
@@ -271,6 +275,8 @@ query ${QueryNames.QUERY_CHANNELS_NEXT}($teamId: String!, $perPage: Int!, $exclu
         msgCount
         msgCountRoot
         mentionCount
+        mentionCountRoot
+        schemeAdmin
         lastViewedAt
         notifyProps
         roles {
@@ -311,6 +317,8 @@ query ${QueryNames.QUERY_ALL_CHANNELS}($perPage: Int!){
         msgCount
         msgCountRoot
         mentionCount
+        mentionCountRoot
+        schemeAdmin
         lastViewedAt
         notifyProps
         channel {
@@ -346,6 +354,8 @@ query ${QueryNames.QUERY_ALL_CHANNELS_NEXT}($perPage: Int!, $cursor: String!) {
         msgCount
         msgCountRoot
         mentionCount
+        mentionCountRoot
+        schemeAdmin
         lastViewedAt
         notifyProps
         channel {
