@@ -1,8 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
+import {EdgeInsets} from 'react-native-safe-area-context';
 
-import Header from './header';
+import {ITEM_HEIGHT} from '@app/components/slide_up_panel_item';
+import {bottomSheet} from '@app/screens/navigation';
+import {bottomSheetSnapPoint} from '@app/utils/helpers';
+
+import Header, {HEADER_HEIGHT} from './header';
 import OptionMenus from './option_menus';
 
 type Props = {
@@ -11,17 +16,24 @@ type Props = {
     handleCopyLink: () => void;
     handleDownload: () => void;
     handlePermalink: () => void;
+    insets: EdgeInsets;
+    numOptions: number;
     publicLinkEnabled?: boolean;
+    theme: Theme;
 }
-const MobileOptions = ({
+
+export const showMobileOptionsBottomSheet = ({
     canDownloadFiles,
     fileInfo,
     handleCopyLink,
     handleDownload,
     handlePermalink,
+    insets,
+    numOptions,
     publicLinkEnabled,
+    theme,
 }: Props) => {
-    return (
+    const renderContent = () => (
         <>
             <Header fileInfo={fileInfo}/>
             <OptionMenus
@@ -33,6 +45,14 @@ const MobileOptions = ({
             />
         </>
     );
-};
 
-export default MobileOptions;
+    bottomSheet({
+        closeButtonId: 'close-search-file-options',
+        renderContent,
+        snapPoints: [
+            bottomSheetSnapPoint(numOptions, ITEM_HEIGHT, insets.bottom) + HEADER_HEIGHT, 10,
+        ],
+        theme,
+        title: '',
+    });
+};

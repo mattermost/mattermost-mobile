@@ -9,22 +9,19 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {showPermalink} from '@actions/remote/permalink';
 import {useServerUrl} from '@app/context/server';
 import NoResultsWithTerm from '@components/no_results_with_term';
-import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useImageAttachments} from '@hooks/files';
-import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {GalleryAction} from '@typings/screens/gallery';
 import {isImage, isVideo} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
-import {bottomSheetSnapPoint} from '@utils/helpers';
 import {TabTypes} from '@utils/search';
 import {preventDoubleTap} from '@utils/tap';
 
-import {HEADER_HEIGHT} from './file_options/header';
-import MobileOptions from './file_options/mobile_options';
+import {showMobileOptionsBottomSheet} from './file_options/mobile_options';
 import Toasts from './file_options/toasts';
 import FileResult from './file_result';
 
@@ -118,22 +115,16 @@ const FileResults = ({
             return;
         }
 
-        const renderContent = () => (
-            <MobileOptions
-                fileInfo={orderedFilesForGallery[item]}
-                canDownloadFiles={canDownloadFiles}
-                publicLinkEnabled={publicLinkEnabled}
-                handleCopyLink={handleCopyLink}
-                handleDownload={handleDownload}
-                handlePermalink={handlePermalink}
-            />
-        );
-        bottomSheet({
-            closeButtonId: 'close-search-file-options',
-            renderContent,
-            snapPoints: [bottomSheetSnapPoint(numOptions, ITEM_HEIGHT, insets.bottom) + HEADER_HEIGHT, 10],
+        showMobileOptionsBottomSheet({
+            fileInfo: orderedFilesForGallery[item],
+            canDownloadFiles,
+            publicLinkEnabled,
+            handleCopyLink,
+            handleDownload,
+            handlePermalink,
+            insets,
+            numOptions,
             theme,
-            title: '',
         });
     }, [canDownloadFiles, isTablet, numOptions,
         handleCopyLink, handleDownload, handlePermalink,
