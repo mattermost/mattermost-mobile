@@ -79,8 +79,6 @@ const TabletOptions = ({
                 ]}
             >
                 <OptionMenus
-                    canDownloadFiles={canDownloadFiles}
-                    enablePublicLink={publicLinkEnabled}
                     fileInfo={fileInfo}
                     setSelectedItemNumber={setSelectedItemNumber}
                 />

@@ -5,7 +5,7 @@ import {useIntl} from 'react-intl';
 
 import OptionItem from '@components/option_item';
 
-import {useHandleFileOptions} from './hooks';
+import {useHandleFileOptions} from '../hooks';
 
 type Props = {
     canDownloadFiles?: boolean;

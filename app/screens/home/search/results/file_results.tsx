@@ -69,8 +69,10 @@ const FileResults = ({
         openGalleryAtIndex(galleryIdentifier, idx, orderedGalleryItems);
     }), [orderedFileInfos]);
 
-    const {action, handleCopyLink, handleDownload, handlePermalink, setAction} =
-        useHandleFileOptions({postId: lastViewedFileInfo?.post_id, setSelectedItemNumber});
+    const {action, setAction} = useHandleFileOptions({
+        postId: lastViewedFileInfo?.post_id,
+        setSelectedItemNumber,
+    });
     const onOptionsPress = useCallback((item: number) => {
         setLastViewedIndex(item);
         setLastViewedFileInfo(orderedFileInfos[item]);
@@ -81,16 +83,14 @@ const FileResults = ({
         }
 
         showMobileOptionsBottomSheet({
-            canDownloadFiles,
             fileInfo: orderedFileInfos[item],
             insets,
             numOptions,
-            publicLinkEnabled,
             setSelectedItemNumber,
             theme,
         });
     }, [
-        canDownloadFiles, handleCopyLink, handleDownload, handlePermalink,
+        canDownloadFiles,
         isTablet, numOptions, orderedFileInfos, publicLinkEnabled,
         selectedItemNumber, theme,
     ]);
@@ -126,9 +126,6 @@ const FileResults = ({
                 canDownloadFiles={canDownloadFiles}
                 channelName={channelNames[item.channel_id!]}
                 fileInfo={item}
-                handleCopyLink={handleCopyLink}
-                handleDownload={handleDownload}
-                handlePermalink={handlePermalink}
                 index={fileInfosIndexes[item.id!] || 0}
                 isSingleImage={isSingleImage}
                 onOptionsPress={onOptionsPress}
@@ -144,9 +141,6 @@ const FileResults = ({
         canDownloadFiles,
         channelNames,
         fileInfosIndexes,
-        handleCopyLink,
-        handleDownload,
-        handlePermalink,
         onOptionsPress,
         onPreviewPress,
         publicLinkEnabled,

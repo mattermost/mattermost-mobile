@@ -21,9 +21,6 @@ type Props = {
     canDownloadFiles: boolean;
     channelName: string | undefined;
     fileInfo: FileInfo;
-    handleCopyLink: () => void;
-    handleDownload: () => void;
-    handlePermalink: () => void;
     index: number;
     isSingleImage: boolean;
     onOptionsPress: (item: number) => void;

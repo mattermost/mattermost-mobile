@@ -11,21 +11,17 @@ import Header, {HEADER_HEIGHT} from './header';
 import OptionMenus from './option_menus';
 
 type Props = {
-    canDownloadFiles?: boolean;
     fileInfo: FileInfo;
     insets: EdgeInsets;
     numOptions: number;
     setSelectedItemNumber: (index: number | undefined) => void;
-    publicLinkEnabled?: boolean;
     theme: Theme;
 }
 
 export const showMobileOptionsBottomSheet = ({
-    canDownloadFiles,
     fileInfo,
     insets,
     numOptions,
-    publicLinkEnabled,
     setSelectedItemNumber,
     theme,
 }: Props) => {
@@ -33,8 +29,6 @@ export const showMobileOptionsBottomSheet = ({
         <>
             <Header fileInfo={fileInfo}/>
             <OptionMenus
-                canDownloadFiles={canDownloadFiles}
-                enablePublicLink={publicLinkEnabled}
                 fileInfo={fileInfo}
                 setSelectedItemNumber={setSelectedItemNumber}
             />
