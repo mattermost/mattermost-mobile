@@ -7,6 +7,7 @@ import {ITEM_HEIGHT} from '@components/option_item';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import {useNumberItems} from './hooks';
 import OptionMenus from './option_menus';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -27,25 +28,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const openDownMargin = 64;
 
 type Props = {
-    canDownloadFiles?: boolean;
-    handleCopyLink: () => void;
-    handleDownload: () => void;
-    handlePermalink: () => void;
-    numOptions: number;
+    canDownloadFiles: boolean;
+    fileInfo: FileInfo;
     openUp?: boolean;
     optionSelected?: boolean;
-    publicLinkEnabled?: boolean;
-    setIsOpen?: (open: boolean) => void;
-    setSelectedItemNumber?: (index: number | undefined) => void;
+    publicLinkEnabled: boolean;
+    setSelectedItemNumber: (index: number | undefined) => void;
     xOffset?: number;
     yOffset?: number;
 }
 const TabletOptions = ({
     canDownloadFiles,
-    handleCopyLink,
-    handleDownload,
-    handlePermalink,
-    numOptions,
+    fileInfo,
     openUp = false,
     optionSelected,
     publicLinkEnabled,
@@ -57,12 +51,14 @@ const TabletOptions = ({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const [visible, setVisible] = useState(optionSelected);
+    const numOptions = useNumberItems(canDownloadFiles, publicLinkEnabled);
 
     const toggleOverlay = useCallback(() => {
         setVisible(!visible);
         setSelectedItemNumber?.(undefined);
         setIsOpen?.(false);
     }, [setIsOpen, setSelectedItemNumber, visible]);
+    }, [setSelectedItemNumber, visible]);
 
     const overlayStyle = useMemo(() => ({
         marginTop: openUp ? 0 : openDownMargin,
@@ -85,9 +81,8 @@ const TabletOptions = ({
                 <OptionMenus
                     canDownloadFiles={canDownloadFiles}
                     enablePublicLink={publicLinkEnabled}
-                    handleCopyLink={handleCopyLink}
-                    handleDownload={handleDownload}
-                    handlePermalink={handlePermalink}
+                    fileInfo={fileInfo}
+                    setSelectedItemNumber={setSelectedItemNumber}
                 />
             </Overlay>
         </>

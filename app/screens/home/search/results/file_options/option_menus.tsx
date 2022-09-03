@@ -5,21 +5,31 @@ import {useIntl} from 'react-intl';
 
 import OptionItem from '@components/option_item';
 
+import {useHandleFileOptions} from './hooks';
+
 type Props = {
     canDownloadFiles?: boolean;
     enablePublicLink?: boolean;
-    handleCopyLink: () => void;
-    handleDownload: () => void;
-    handlePermalink: () => void;
+    fileInfo: FileInfo;
+    setSelectedItemNumber: (index: number | undefined) => void;
 }
 const OptionMenus = ({
     canDownloadFiles,
     enablePublicLink,
-    handleCopyLink,
-    handleDownload,
-    handlePermalink,
+    fileInfo,
+    setSelectedItemNumber,
 }: Props) => {
     const intl = useIntl();
+
+    const {
+        handleCopyLink,
+        handleDownload,
+        handlePermalink,
+    } = useHandleFileOptions({
+        postId: fileInfo.post_id,
+        setSelectedItemNumber,
+    });
+
     return (
         <>
             {canDownloadFiles &&

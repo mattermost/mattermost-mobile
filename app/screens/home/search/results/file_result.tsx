@@ -26,7 +26,6 @@ type Props = {
     handlePermalink: () => void;
     index: number;
     isSingleImage: boolean;
-    numOptions: number;
     onOptionsPress: (item: number) => void;
     onPress: (idx: number) => void;
     optionSelected: boolean;
@@ -41,12 +40,8 @@ const FileResult = ({
     canDownloadFiles,
     channelName,
     fileInfo,
-    handleCopyLink,
-    handleDownload,
-    handlePermalink,
     index,
     isSingleImage,
-    numOptions,
     onOptionsPress,
     onPress,
     optionSelected,
@@ -103,10 +98,7 @@ const FileResult = ({
                 {isTablet && isOpen &&
                     <TabletOptions
                         canDownloadFiles={canDownloadFiles}
-                        handleCopyLink={handleCopyLink}
-                        handleDownload={handleDownload}
-                        handlePermalink={handlePermalink}
-                        numOptions={numOptions}
+                        fileInfo={fileInfo}
                         optionSelected={optionSelected}
                         openUp={openUp}
                         publicLinkEnabled={publicLinkEnabled}

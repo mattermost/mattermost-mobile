@@ -9,15 +9,21 @@ import NoResultsWithTerm from '@components/no_results_with_term';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {useImageAttachments} from '@hooks/files';
 import {dismissBottomSheet} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {isImage, isVideo} from '@utils/file';
-import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
+import {openGalleryAtIndex} from '@utils/gallery';
 import {TabTypes} from '@utils/search';
 import {preventDoubleTap} from '@utils/tap';
 
-import {useHandleFileOptions} from './file_options/hooks';
+import {
+    useChannelNames,
+    useFileInfosIndexes,
+    useHandleFileOptions,
+    useNumberItems,
+    useOrderedFileInfos,
+    useOrderedGalleryItems,
+} from './file_options/hooks';
 import {showMobileOptionsBottomSheet} from './file_options/mobile_options';
 import Toasts from './file_options/toasts';
 import FileResult from './file_result';
@@ -49,44 +55,25 @@ const FileResults = ({
 
     const [selectedItemNumber, setSelectedItemNumber] = useState<number | undefined>(undefined);
     const [lastViewedIndex, setLastViewedIndex] = useState<number | undefined>(undefined);
+    const [lastViewedFileInfo, setLastViewedFileInfo] = useState<FileInfo | undefined>(undefined);
 
     const containerStyle = useMemo(() => ({top: fileInfos.length ? 8 : 0}), [fileInfos]);
+    const numOptions = useNumberItems(canDownloadFiles, publicLinkEnabled);
 
-    const numOptions = useMemo(() => {
-        let numberItems = 1;
-        numberItems += canDownloadFiles ? 1 : 0;
-        numberItems += publicLinkEnabled ? 1 : 0;
-        return numberItems;
-    }, [canDownloadFiles, publicLinkEnabled]);
+    const channelNames = useChannelNames(fileChannels);
+    const orderedFileInfos = useOrderedFileInfos(fileInfos, publicLinkEnabled);
+    const fileInfosIndexes = useFileInfosIndexes(orderedFileInfos);
+    const orderedGalleryItems = useOrderedGalleryItems(orderedFileInfos);
 
-    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
-    const channelNames = useMemo(() => fileChannels.reduce<{[id: string]: string | undefined}>((acc, v) => {
-        acc[v.id] = v.displayName;
-        return acc;
-    }, {}), [fileChannels]);
-
-    const orderedFilesForGallery = useMemo(() => {
-        const filesForGallery = imageAttachments.concat(nonImageAttachments);
-        return filesForGallery.sort((a: FileInfo, b: FileInfo) => {
-            return (b.create_at || 0) - (a.create_at || 0);
-        });
-    }, [imageAttachments, nonImageAttachments]);
-
-    const filesForGalleryIndexes = useMemo(() => orderedFilesForGallery.reduce<{[id: string]: number | undefined}>((acc, v, idx) => {
-        if (v.id) {
-            acc[v.id] = idx;
-        }
-        return acc;
-    }, {}), [orderedFilesForGallery]);
-
-    const handlePreviewPress = useCallback(preventDoubleTap((idx: number) => {
-        const items = orderedFilesForGallery.map((f) => fileToGalleryItem(f, f.user_id));
-        openGalleryAtIndex(galleryIdentifier, idx, items);
-    }), [orderedFilesForGallery]);
+    const onPreviewPress = useCallback(preventDoubleTap((idx: number) => {
+        openGalleryAtIndex(galleryIdentifier, idx, orderedGalleryItems);
+    }), [orderedFileInfos]);
 
     const {action, handleCopyLink, handleDownload, handlePermalink, setAction} =
-        useHandleFileOptions({lastViewedIndex, orderedFilesForGallery, setSelectedItemNumber});
-    const handleOptionsPress = useCallback((item: number) => {
+        useHandleFileOptions({postId: lastViewedFileInfo?.post_id, setSelectedItemNumber});
+    const onOptionsPress = useCallback((item: number) => {
+        setLastViewedIndex(item);
+        setLastViewedFileInfo(orderedFileInfos[item]);
         if (isTablet) {
             // setOpenTabletOptions(true);
             setSelectedItemNumber(selectedItemNumber === item ? undefined : item);
@@ -95,18 +82,16 @@ const FileResults = ({
 
         showMobileOptionsBottomSheet({
             canDownloadFiles,
-            fileInfo: orderedFilesForGallery[item],
-            handleCopyLink,
-            handleDownload,
-            handlePermalink,
+            fileInfo: orderedFileInfos[item],
             insets,
             numOptions,
             publicLinkEnabled,
+            setSelectedItemNumber,
             theme,
         });
     }, [
         canDownloadFiles, handleCopyLink, handleDownload, handlePermalink,
-        isTablet, numOptions, orderedFilesForGallery, publicLinkEnabled,
+        isTablet, numOptions, orderedFileInfos, publicLinkEnabled,
         selectedItemNumber, theme,
     ]);
 
@@ -120,23 +105,22 @@ const FileResults = ({
         }
         if (NavigationStore.getNavigationTopComponentId() === Screens.BOTTOM_SHEET) {
             dismissBottomSheet().then(() => {
-                handleOptionsPress(lastViewedIndex);
+                onOptionsPress(lastViewedIndex);
             });
         }
     }, [canDownloadFiles, publicLinkEnabled]);
 
     const updateFileForGallery = (idx: number, file: FileInfo) => {
         'worklet';
-        orderedFilesForGallery[idx] = file;
+        orderedFileInfos[idx] = file;
     };
 
     const optionSelected = useCallback((item: FileInfo) => {
-        return selectedItemNumber === filesForGalleryIndexes[item.id!];
-    }, [selectedItemNumber, filesForGalleryIndexes]);
+        return selectedItemNumber === fileInfosIndexes[item.id!];
+    }, [selectedItemNumber, fileInfosIndexes]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<FileInfo>) => {
-        const isSingleImage = orderedFilesForGallery.length === 1 && (isImage(orderedFilesForGallery[0]) || isVideo(orderedFilesForGallery[0]));
-        const optionSelected = selectedItemNumber === filesForGalleryIndexes[item.id!];
+        const isSingleImage = orderedFileInfos.length === 1 && (isImage(orderedFileInfos[0]) || isVideo(orderedFileInfos[0]));
         return (
             <FileResult
                 canDownloadFiles={canDownloadFiles}
@@ -145,28 +129,26 @@ const FileResults = ({
                 handleCopyLink={handleCopyLink}
                 handleDownload={handleDownload}
                 handlePermalink={handlePermalink}
-                index={filesForGalleryIndexes[item.id!] || 0}
+                index={fileInfosIndexes[item.id!] || 0}
                 isSingleImage={isSingleImage}
-                numOptions={numOptions}
-                onOptionsPress={handleOptionsPress}
-                onPress={handlePreviewPress}
-                optionSelected={optionSelected}
+                onOptionsPress={onOptionsPress}
+                onPress={onPreviewPress}
+                optionSelected={optionSelected(item)}
                 publicLinkEnabled={publicLinkEnabled}
                 setSelectedItemNumber={setSelectedItemNumber}
                 updateFileForGallery={updateFileForGallery}
             />
         );
     }, [
-        (orderedFilesForGallery.length === 1) && orderedFilesForGallery[0].mime_type,
+        (orderedFileInfos.length === 1) && orderedFileInfos[0].mime_type,
         canDownloadFiles,
         channelNames,
-        filesForGalleryIndexes,
+        fileInfosIndexes,
         handleCopyLink,
         handleDownload,
         handlePermalink,
-        handleOptionsPress,
-        handlePreviewPress,
-        numOptions,
+        onOptionsPress,
+        onPreviewPress,
         publicLinkEnabled,
         selectedItemNumber,
         optionSelected,
@@ -184,7 +166,7 @@ const FileResults = ({
             <FlatList
                 ListEmptyComponent={noResults}
                 contentContainerStyle={[paddingTop, containerStyle]}
-                data={orderedFilesForGallery}
+                data={orderedFileInfos}
                 indicatorStyle='black'
                 initialNumToRender={10}
                 listKey={'files'}
@@ -200,7 +182,7 @@ const FileResults = ({
             />
             <Toasts
                 action={action}
-                fileInfo={orderedFilesForGallery[lastViewedIndex!]}
+                fileInfo={orderedFileInfos[lastViewedIndex!]}
                 setAction={setAction}
                 setSelectedItemNumber={setSelectedItemNumber}
             />
